@@ -1,0 +1,11 @@
+# Build
+Build/
+OpenOCD/
+Core/
+CMSIS/
+
+# Visual Studio
+*.suo
+*.user
+*.VC.db
+.vs/
