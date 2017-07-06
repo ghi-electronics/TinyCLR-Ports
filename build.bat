@@ -108,16 +108,15 @@ SET AdditionalIncludes=%AdditionalIncludes% -I"%ScriptRoot%\Targets\%ProcessorPa
 SET AdditionalIncludes=%AdditionalIncludes% -I"%ScriptRoot%\Devices\%Device%"
 SET AdditionalIncludes=%AdditionalIncludes% -I"%ScriptRoot%\Core"
 
-SET AdditionalDefines=%AdditionalDefines% -DTARGETLOCATION_FLASH
 SET AdditionalDefines=%AdditionalDefines% -DGCC
-SET AdditionalCompilerArguments=-mstructure-size-boundary=8 -fno-exceptions -fno-rtti -fno-use-cxa-atexit -fno-threadsafe-statics -fno-default-inline -ffunction-sections -fdata-sections -fomit-frame-pointer -fdollars-in-identifiers -fshort-wchar -funsigned-char -mabi=aapcs -mlong-calls
+SET AdditionalCompilerArguments=-mstructure-size-boundary=8 -fno-exceptions -ffunction-sections -fdata-sections -fshort-wchar -funsigned-char -mlong-calls
 
 IF "%BuildConfiguration%" == "debug" (
     SET AdditionalDefines=%AdditionalDefines% -DDEBUG -D_DEBUG
     SET AdditionalAssemblerArguments=%AdditionalAssemblerArguments% -g
     SET AdditionalCompilerArguments=-O0 -femit-class-debug-always -g3 -ggdb %AdditionalCompilerArguments%
 ) ELSE (
-    SET AdditionalDefines=%AdditionalDefines% -DNDEBUG
+    SET AdditionalDefines=%AdditionalDefines%
     SET AssemblerCompileArguments=%AdditionalAssemblerArguments%
     SET AdditionalCompilerArguments=-Os %AdditionalCompilerArguments%
 )
@@ -161,13 +160,13 @@ IF "%DoBuild%" == "1" (
         FOR /R %%B IN ("*.gcc.s") DO (
             ECHO %%B
 
-            "%GccDirectory%\bin\arm-none-eabi-as.exe" --defsym TARGETLOCATION_FLASH=1 --defsym BUILD_RTM=0 %AdditionalAssemblerArguments% -mcpu=%MCpu% -mlittle-endian %FloatCompileArguments% -o "%OutputDirectory%\%%~nB.obj" "%%B"
+            "%GccDirectory%\bin\arm-none-eabi-as.exe" %AdditionalAssemblerArguments% -mcpu=%MCpu% -mlittle-endian %FloatCompileArguments% -o "%OutputDirectory%\%%~nB.obj" "%%B"
         )
 
         FOR /R %%B IN ("*.cpp") DO (
             ECHO %%B
 
-            "%GccDirectory%\bin\arm-none-eabi-g++.exe" -std=c++11 -xc++ -w -Wabi %AdditionalCompilerArguments% -fcheck-new -fabi-version=0 -mcpu=%MCpu% -mlittle-endian %FloatCompileArguments% %AdditionalDefines% %AdditionalIncludes% -o "%OutputDirectory%\%%~nB.obj" -c "%%B"
+            "%GccDirectory%\bin\arm-none-eabi-g++.exe" -std=c++11 -xc++ %AdditionalCompilerArguments% -mcpu=%MCpu% -mlittle-endian %FloatCompileArguments% %AdditionalDefines% %AdditionalIncludes% -o "%OutputDirectory%\%%~nB.obj" -c "%%B"
         )
 
         POPD
@@ -175,7 +174,7 @@ IF "%DoBuild%" == "1" (
 
     "%GccDirectory%\bin\arm-none-eabi-g++.exe" -mcpu=%MCpu% -mlittle-endian -nostartfiles %FloatCompileArguments% -Xlinker %AdditionalCompilerArguments% -L "%GccLibrary%" -Wl,-static,--gc-sections,--no-wchar-size-warning,-Map="%OutputDirectory%\tinyclr.map" -specs="%GccLibrary%\nano.specs" -T"%ScriptRoot%\Devices\%Device%\tinyclr_scatterfile_gcc.ldf" "%OutputDirectory%\*.obj" "%CoreLibraryFile%" -o "%OutputDirectory%\tinyclr.axf"
 
-    "%GccDirectory%\bin\arm-none-eabi-objcopy.exe" -S -j ER_FLASH -j ER_IRAM_TC -j ER_FLASH_CONT -j ER_RAM_RO -j ER_RAM_RW -O binary "%OutputDirectory%\tinyclr.axf" "%OutputDirectory%\%Device% Firmware.bin"
+    "%GccDirectory%\bin\arm-none-eabi-objcopy.exe" -S -j ER_FLASH -j ER_RAM_RO -j ER_RAM_RW -O binary "%OutputDirectory%\tinyclr.axf" "%OutputDirectory%\%Device% Firmware.bin"
     "%GccDirectory%\bin\arm-none-eabi-objcopy.exe" -S -R ER_DAT -R ER_CONFIG -O ihex "%OutputDirectory%\tinyclr.axf" "%OutputDirectory%\%Device% Firmware.hex"
 
     IF NOT "%ImageGenParameters%" == ""  "%ScriptRoot%\imagegen.exe" %ImageGenParameters% "%OutputDirectory%\%Device% Firmware.bin"

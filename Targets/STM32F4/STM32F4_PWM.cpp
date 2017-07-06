@@ -82,7 +82,7 @@ typedef  TIM_TypeDef* ptr_TIM_TypeDef;
 struct PwmController {
     ptr_TIM_TypeDef     port;
     uint32_t            gpioAlternateFunction;
-    int32_t             gpioPin[MAX_PWM_PER_CONTROLLER];
+    uint32_t             gpioPin[MAX_PWM_PER_CONTROLLER];
 
     bool                invert[MAX_PWM_PER_CONTROLLER];
     double              actualFreq;
