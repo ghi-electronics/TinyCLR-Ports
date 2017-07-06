@@ -1,0 +1,1 @@
+When you download and extract the TinyCLR OS core files into this folder, you should see "TinyCLR.h" and one "TinyCLR_[architecture].lib" for each architecture.

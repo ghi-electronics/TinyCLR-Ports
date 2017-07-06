@@ -1,0 +1,112 @@
+ENTRY(EntryPoint)
+MEMORY
+{
+    D_CCM : ORIGIN = 0x10000000, LENGTH = 0x00010000
+    IRAM : ORIGIN = 0x20000000, LENGTH = 0x00030000
+    LR_FLASH : ORIGIN = 0x08000000, LENGTH = 0x000B7C00
+}
+SECTIONS
+{
+    ER_FLASH 0x08000000 :
+    {
+        * (i.EntryPoint)
+        * (SectionForBootstrapOperations)
+        * (SectionForFlashOperations)
+        * (.text*)
+        * (i.*)
+        * (.rodata*)
+        * (rodata)
+        * (.constdata*)
+        * (.conststring*)
+        * (.glue*)
+        * (tinyclr_metadata)
+        PROVIDE(_sbrk = .);
+        PROVIDE(_write = .);
+        PROVIDE(_close = .);
+        PROVIDE(_fstat = .);
+        PROVIDE(_lseek = .);
+        PROVIDE(_read = .);
+        PROVIDE(_exit = .);
+        PROVIDE(_getpid = .);
+        PROVIDE(_kill = .);
+        PROVIDE(abort = .);
+        PROVIDE(__errno = .);
+        PROVIDE(_read = .);
+        PROVIDE(isatty = .);
+        PROVIDE(_isatty = .);
+    }>LR_FLASH
+
+    ER_VECTORS 0x20000000 :
+    {
+        * (VectorTable)
+    }>IRAM
+
+    ER_RAM_RW 0x20000400 :
+    {
+        * (rwdata)
+        * (.data*)
+    }>IRAM AT>LR_FLASH
+
+    .bss (NOLOAD) : ALIGN(0x08)
+    {
+        * (.bss*)
+        * (.zidata*)
+        PROVIDE(__exidx_start = .);
+        PROVIDE(__exidx_end = .);
+        * (COMMON)
+    }>IRAM
+
+    ER_RAM_RO  : ALIGN(0x08)
+    {
+
+    }>IRAM AT>LR_FLASH
+
+    /DISCARD/  :
+    {
+        * (.ARM.exidx*)
+        * (.ARM.extab*)
+    }
+
+    ER_HEAP_BEGIN 0x20009000 :
+    {
+        * (SectionForHeapBegin)
+    }>IRAM
+    
+    ER_HEAP_END 0x2002F000 - 0x08 :
+    {
+        * (SectionForHeapEnd)
+    }>IRAM
+    
+    ER_RLP_BEGIN 0x2002F000 :
+    {
+        * (SectionForRlpBegin)
+    }>IRAM
+    
+    ER_RLP_END 0x20030000 - 0x08 : 
+    {
+        * (SectionForRlpEnd)
+    }>IRAM
+        
+    ER_STACK_BOTTOM 0x10000000 :
+    {
+        * (SectionForStackBottom)
+    }>D_CCM
+    
+    ER_STACK_TOP 0x10008000 - 0x08 :
+    {
+        * (SectionForStackTop +LAST)
+    }>D_CCM
+}
+Load$$ER_FLASH$$Base = LOADADDR(ER_FLASH);
+Image$$ER_FLASH$$Length = SIZEOF(ER_FLASH);
+Image$$ER_RAM_RO$$Base = ADDR(ER_RAM_RO);
+Image$$ER_RAM_RO$$Length = SIZEOF(ER_RAM_RO);
+Load$$ER_RAM_RO$$Base = LOADADDR(ER_RAM_RO);
+Image$$ER_RAM_RW$$Base = ADDR(ER_RAM_RW);
+Image$$ER_RAM_RW$$Length = SIZEOF(ER_RAM_RW);
+Load$$ER_RAM_RW$$Base = LOADADDR(ER_RAM_RW);
+Image$$ER_RAM_RW$$ZI$$Base = ADDR(.bss);
+Image$$ER_RAM_RW$$ZI$$Length = SIZEOF(.bss);
+Load$$ER_RLP$$Base = LOADADDR(ER_RLP_BEGIN);
+Image$$ER_RLP$$Length = LOADADDR(ER_RLP_END) - LOADADDR(ER_RLP_BEGIN);
+__use_no_semihosting_swi = 0;
