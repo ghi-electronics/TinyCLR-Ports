@@ -72,27 +72,27 @@ SECTIONS
         * (SectionForHeapBegin)
     }>IRAM
     
-    ER_HEAP_END 0x20015000 - 0x08: 
+    ER_HEAP_END 0x20016000 - 0x08: 
     {
         * (SectionForHeapEnd)
     }>IRAM
     
-    ER_RLP_BEGIN 0x20015000 :
+    ER_RLP_BEGIN 0x20016000 :
     {
         * (SectionForRlpBegin)
     }>IRAM
     
-    ER_RLP_END 0x20016000 - 0x08: 
+    ER_RLP_END 0x20016400 - 0x08: 
     {
         * (SectionForRlpEnd)
     }>IRAM
     
-    ER_STACK_BOTTOM 0x20016000 :
+    ER_STACK_BOTTOM 0x20016400 :
     {
         * (SectionForStackBottom)
     }>IRAM
     
-    ER_STACK_TOP 0x20016000 - 0x08 :
+    ER_STACK_TOP 0x20018000 - 0x08 :
     {
         * (SectionForStackTop +LAST)
     }>IRAM
