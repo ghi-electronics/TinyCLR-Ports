@@ -45,7 +45,7 @@ IF "%Device%" == "FEZ" (
     GOTO :EOF
 ))))))
 
-IF NOT "%BuildTarget%" == "build" IF NOT "%BuildTarget%" == "cleanbuild" IF NOT "%BuildTarget%" == "clean" IF NOT "%BuildTarget%" == "corebuild" IF NOT "%BuildTarget%" == "corecleanbuild" IF NOT "%BuildTarget%" == "coreclean" (
+IF NOT "%BuildTarget%" == "build" IF NOT "%BuildTarget%" == "cleanbuild" IF NOT "%BuildTarget%" == "clean" (
     ECHO Unsupported target passed: %BuildTarget%
     GOTO :EOF
 )
