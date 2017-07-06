@@ -58,10 +58,10 @@ static UartController g_UartController[TOTAL_UART_CONTROLLERS];
 static const USART_TypeDef_Ptr g_STM32F4_Uart_Ports[] = { USART1, USART2, USART3, UART4, UART5, USART6, UART7, UART8 };
 
 // Pins
-static const uint8_t g_STM32F4_Uart_Rx_Pins[] = STM32F4_UART_RXD_PINS;
-static const uint8_t g_STM32F4_Uart_Tx_Pins[] = STM32F4_UART_TXD_PINS;
-static const uint8_t g_STM32F4_Uart_Cts_Pins[] = STM32F4_UART_CTS_PINS;
-static const uint8_t g_STM32F4_Uart_Rts_Pins[] = STM32F4_UART_RTS_PINS;
+static const uint32_t g_STM32F4_Uart_Rx_Pins[] = STM32F4_UART_RXD_PINS;
+static const uint32_t g_STM32F4_Uart_Tx_Pins[] = STM32F4_UART_TXD_PINS;
+static const uint32_t g_STM32F4_Uart_Cts_Pins[] = STM32F4_UART_CTS_PINS;
+static const uint32_t g_STM32F4_Uart_Rts_Pins[] = STM32F4_UART_RTS_PINS;
 
 static uint8_t uartProviderDefs[TOTAL_UART_CONTROLLERS * sizeof(TinyCLR_Uart_Provider)];
 static TinyCLR_Uart_Provider* uartProviders[TOTAL_UART_CONTROLLERS];

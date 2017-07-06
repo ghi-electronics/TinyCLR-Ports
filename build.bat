@@ -166,7 +166,7 @@ IF "%DoBuild%" == "1" (
         FOR /R %%B IN ("*.cpp") DO (
             ECHO %%B
 
-            "%GccDirectory%\bin\arm-none-eabi-g++.exe" -std=c++11 -xc++ -w %AdditionalCompilerArguments% -mcpu=%MCpu% -mlittle-endian %FloatCompileArguments% %AdditionalDefines% %AdditionalIncludes% -o "%OutputDirectory%\%%~nB.obj" -c "%%B"
+            "%GccDirectory%\bin\arm-none-eabi-g++.exe" -std=c++11 -xc++ %AdditionalCompilerArguments% -mcpu=%MCpu% -mlittle-endian %FloatCompileArguments% %AdditionalDefines% %AdditionalIncludes% -o "%OutputDirectory%\%%~nB.obj" -c "%%B"
         )
 
         POPD

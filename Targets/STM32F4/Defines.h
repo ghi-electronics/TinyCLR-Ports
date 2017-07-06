@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #if defined(__GNUC__)
-#define __section(x)    __attribute__((section(x)))
 #define PACKED(x)       x __attribute__((packed))
 #elif defined(arm) || defined(__arm)
 #define __section(x)
