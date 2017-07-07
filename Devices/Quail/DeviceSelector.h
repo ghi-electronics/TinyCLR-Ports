@@ -81,19 +81,15 @@
 
 // PWM
 #define MAX_PWM_PER_CONTROLLER           4
-#define TOTAL_PWM_CONTROLLER            14
+#define TOTAL_PWM_CONTROLLER            10
 #define STM32F4_PWM                     {   { TIM1  ,  0x12,     { _P(E, 9) , _P(E,11) , _P(E,13) , _P(E,14)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0 },\
                                             { TIM2  ,  0x12,     { _P(A,15) , _P(B, 3) , _P(B,10) , _P(B,11)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0 },\
                                             { TIM3  ,  0x22,     { _P(B, 4) , _P(B, 5) , _P(B, 0) , _P(B, 1)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0 },\
                                             { TIM4  ,  0x22,     { _P(D,12) , _P(D,13) , _P(D,14) , _P(D,15)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0 },\
-                                            { 0x00  ,  0x00,     { _P_NONE_ , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0 },\
-                                            { 0x00  ,  0x00,     { _P_NONE_ , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0 },\
-                                            { 0x00  ,  0x00,     { _P_NONE_ , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0 },\
                                             { TIM8  ,  0x32,     { _P(C, 6) , _P(C, 7) , _P(C, 8) , _P(C, 9)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0 },\
                                             { TIM9  ,  0x32,     { _P(A, 2) , _P(A, 3) , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0 },\
                                             { TIM10 ,  0x32,     { _P(B, 8) , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0 },\
                                             { TIM11 ,  0x92,     { _P(B, 9) , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0 },\
-                                            { 0x00  ,  0x00,     { _P_NONE_ , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0 },\
                                             { TIM13 ,  0x92,     { _P(A, 6) , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0 },\
                                             { TIM14 ,  0x92,     { _P(A, 7) , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0 }}
 
