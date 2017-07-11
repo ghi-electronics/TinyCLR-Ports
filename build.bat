@@ -40,10 +40,16 @@ IF "%Device%" == "FEZ" (
 ) ELSE (IF "%Device%" == "Quail" (
     SET ProcessorPart=STM32F4
     SET ProcessorArchitecture=CortexM4
+) ELSE (IF "%Device%" == "clicker" (
+    SET ProcessorPart=STM32F4
+    SET ProcessorArchitecture=CortexM4
+) ELSE (IF "%Device%" == "clicker2" (
+    SET ProcessorPart=STM32F4
+    SET ProcessorArchitecture=CortexM4
 ) ELSE (
     ECHO Unsupported device passed: %Device%
     GOTO :EOF
-))))))
+))))))))
 
 IF NOT "%BuildTarget%" == "build" IF NOT "%BuildTarget%" == "cleanbuild" IF NOT "%BuildTarget%" == "clean" (
     ECHO Unsupported target passed: %BuildTarget%
