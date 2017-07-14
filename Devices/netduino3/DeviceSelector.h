@@ -119,8 +119,8 @@
 #define USB_MAX_QUEUES                  16
 #define USB_VENDOR_ID                   0x1B9F
 #define USB_PRODUCT_ID                  0x0110
-#define USB_MANUFACTURER_NAME           {'N', 'e', 't', 'd', 'u', 'i', 'n', 'o', ' ', '3'}
-#define USB_PRODUCT_NAME                {'N', 'e', 't', 'd', 'u', 'i', 'n', 'o', ' ', '3'}
+#define USB_MANUFACTURER_NAME           {'n', 'e', 't', 'd', 'u', 'i', 'n', 'o', ' ', '3'}
+#define USB_PRODUCT_NAME                {'n', 'e', 't', 'd', 'u', 'i', 'n', 'o', ' ', '3'}
 #define USB_DISPLAY_NAME                USB_PRODUCT_NAME
 #define USB_FRIENDLY_NAME               USB_PRODUCT_NAME
 
@@ -142,7 +142,7 @@
 #define USB_DEBUGGER_INDEX 0
 
 // OEM information
-#define OEM_STRING                      "Netduino 3\0"
+#define OEM_STRING                      "netduino 3\0"
 #define OEM_VERSION_MAJOR               0
 #define OEM_VERSION_MINOR               5
 #define OEM_VERSION_PATCH               0
