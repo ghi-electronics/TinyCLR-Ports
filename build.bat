@@ -18,7 +18,7 @@ IF "%BuildTarget%" == "" SET BuildTarget=build
 IF "%BuildConfiguration%" == "" SET BuildConfiguration=release
 IF "%BuildVerbosity%" == "" SET BuildVerbosity=quiet
 
-IF "%Device%" == "FEZ" (
+IF "%Device%" == "FEZCLR" (
     SET ProcessorPart=STM32F4
     SET ProcessorArchitecture=CortexM4
     SET ImageGenParameters=0x884DED08 0x3671259A 0x08008000 0x00038000
