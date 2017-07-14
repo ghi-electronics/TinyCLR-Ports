@@ -70,6 +70,13 @@ void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 
     EXPAND(_UsbClient_Reset)();
 #endif
+
+#ifdef INCLUDE_DISPLAY
+    apiProvider->Add(apiProvider, EXPAND(_Display_GetApi)());
+    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::DisplayProvider, EXPAND(_Display_GetApi)()->Name);
+
+    EXPAND(_Display_Reset)();
+#endif
 }
 
 int main() {
@@ -96,9 +103,9 @@ int main() {
         value == LMODE_USB_STATE ? TinyCLR_Startup_SetDebugger(EXPAND(_UsbClient_GetApi)(), USB_DEBUGGER_INDEX) : TinyCLR_Startup_SetDebugger(EXPAND(_Uart_GetApi)(), UART_DEBUGGER_INDEX);
     }
 #elif defined(INCLUDE_UART)
-    TinyCLR_Startup_SetDebugger(EXPAND(_Uart_GetApi)());
+    TinyCLR_Startup_SetDebugger(EXPAND(_Uart_GetApi)(), UART_DEBUGGER_INDEX);
 #elif defined(INCLUDE_USBCLIENT)
-    TinyCLR_Startup_SetDebugger(EXPAND(_UsbClient_GetApi)());
+    TinyCLR_Startup_SetDebugger(EXPAND(_UsbClient_GetApi)(), USB_DEBUGGER_INDEX);
 #endif
 
     TinyCLR_Startup_SetRequiredProviders(EXPAND(_Deployment_GetApi)(), EXPAND(_Interrupt_GetApi)(), EXPAND(_Power_GetApi)(), EXPAND(_Time_GetApi)());
