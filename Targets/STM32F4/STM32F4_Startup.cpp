@@ -397,6 +397,11 @@ void STM32F4_Startup_InitializeRegions() {
 
 }
 
+int32_t STM32F4_Startup_GetLModePin() {
+        return LMODE_PIN;
+}
 
-
+TinyCLR_Gpio_PinValue STM32F4_Startup_GetLModeUsbState() {
+        return LMODE_USB_STATE;
+}
 
