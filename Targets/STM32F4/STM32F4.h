@@ -232,6 +232,8 @@ TinyCLR_Result STM32F4_UsbClient_SetOsExtendedPropertyHandler(const TinyCLR_UsbC
 //Startup
 void STM32F4_Startup_InitializeRegions();
 void STM32F4_Startup_GetHeap(uint8_t*& start, size_t& length);
+int32_t STM32F4_Startup_GetLModePin();
+TinyCLR_Gpio_PinValue STM32F4_Startup_GetLModeUsbState();
 
 #include "core_cm4.h"
 #include "stm32f4xx.h"
