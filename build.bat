@@ -34,7 +34,7 @@ IF "%Device%" == "FEZCLR" (
     SET ProcessorPart=STM32F4
     SET ProcessorArchitecture=CortexM4
     SET ImageGenParameters=0x526603B1 0xE16B218D 0x08008000 0x00038000
-) ELSE (IF "%Device%" == "Netduino3" (
+) ELSE (IF "%Device%" == "netduino3" (
     SET ProcessorPart=STM32F4
     SET ProcessorArchitecture=CortexM4
 ) ELSE (IF "%Device%" == "Quail" (

@@ -1,6 +1,6 @@
 ENTRY(EntryPoint)
 MEMORY
-{    
+{
     IRAM : ORIGIN = 0x20000000, LENGTH = 0x00018000
     LR_FLASH : ORIGIN = 0x08000000, LENGTH = 0x00037C00
 }
@@ -34,72 +34,69 @@ SECTIONS
         PROVIDE(isatty = .);
         PROVIDE(_isatty = .);
     }>LR_FLASH
-    
+
     ER_VECTORS 0x20000000 :
     {
         * (VectorTable)
     }>IRAM
-    
+
     ER_RAM_RW 0x20000400 :
     {
         * (rwdata)
         * (.data*)
-    }>IRAM AT>LR_FLASH 
-    
+    }>IRAM AT>LR_FLASH
+
     .bss (NOLOAD) : ALIGN(0x08)
     {
         * (.bss*)
         * (.zidata*)
-        PROVIDE(__exidx_start = .); 
-        PROVIDE(__exidx_end = .); 
+        PROVIDE(__exidx_start = .);
+        PROVIDE(__exidx_end = .);
         * (COMMON)
     }>IRAM
-    
+
     ER_RAM_RO  : ALIGN(0x08)
     {
-    
-    }>IRAM AT>LR_FLASH	
-	    
+
+    }>IRAM AT>LR_FLASH
+
     /DISCARD/  :
     {
         * (.ARM.exidx*)
         * (.ARM.extab*)
-    }    
-    
+    }
+
     ER_HEAP_BEGIN 0x20007000 :
     {
         * (SectionForHeapBegin)
     }>IRAM
-    
-    ER_HEAP_END 0x20016000 - 0x08: 
+
+    ER_HEAP_END 0x20016000 - 0x08:
     {
         * (SectionForHeapEnd)
     }>IRAM
-    
+
     ER_RLP_BEGIN 0x20016000 :
     {
         * (SectionForRlpBegin)
     }>IRAM
-    
-    ER_RLP_END 0x20016400 - 0x08: 
+
+    ER_RLP_END 0x20016400 - 0x08:
     {
         * (SectionForRlpEnd)
     }>IRAM
-    
+
     ER_STACK_BOTTOM 0x20016400 :
     {
         * (SectionForStackBottom)
     }>IRAM
-    
+
     ER_STACK_TOP 0x20018000 - 0x08 :
     {
         * (SectionForStackTop +LAST)
-    }>IRAM        
-    
-    ER_CONFIG 0x08004000 :
-    {
-        * (SectionForConfig)
-    }>LR_CONFIG
+    }>IRAM
+
+
 }
 Load$$ER_FLASH$$Base = LOADADDR(ER_FLASH);
 Image$$ER_FLASH$$Length = SIZEOF(ER_FLASH);
