@@ -30,7 +30,7 @@ IF "%Device%" == "FEZCLR" (
     SET ProcessorPart=STM32F4
     SET ProcessorArchitecture=CortexM4
     SET ImageGenParameters=0x5FB39ABC 0x14EF5B6A 0x08008000 0x000B8000 0x45023756 0xBCBFA856 0x28A347EB 0xCDACEBAF
-) ELSE (IF "%Device%" == "FEZCerberus" (
+) ELSE (IF "%Device%" == "Cerb" (
     SET ProcessorPart=STM32F4
     SET ProcessorArchitecture=CortexM4
     SET ImageGenParameters=0x526603B1 0xE16B218D 0x08008000 0x00038000

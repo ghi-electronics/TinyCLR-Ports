@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef _DEVICE_FEZCERBERUS_H_
-#define _DEVICE_FEZCERBERUS_H_
+#ifndef _DEVICE_CERB_H_
+#define _DEVICE_CERB_H_
 
 #define PLATFORM_ARM_DEFINED
 
@@ -37,7 +37,7 @@
 #define INTERRUPT_END           STM32F4_Interrupt_Ended();
 
 // Device
-#define HAL_SYSTEM_NAME "FEZ Cerberus"
+#define HAL_SYSTEM_NAME "Cerb"
 
 // System clock
 #define SYSTEM_CLOCK_HZ                 168000000   // 84 MHz
@@ -113,7 +113,7 @@
 #define USB_VENDOR_ID                   0x1B9F
 #define USB_PRODUCT_ID                  0x0110
 #define USB_MANUFACTURER_NAME           {'G', 'H', 'I', ' ', 'E', 'l', 'e', 'c', 't', 'r', 'o', 'n', 'i', 'c', 's', ',', ' ', 'L', 'L', 'C'}
-#define USB_PRODUCT_NAME                {'F', 'E', 'Z', ' ', 'C', 'e', 'r', 'b', 'e', 'r', 'u', 's'}
+#define USB_PRODUCT_NAME                {'C', 'e', 'r', 'b'}
 #define USB_DISPLAY_NAME                USB_PRODUCT_NAME
 #define USB_FRIENDLY_NAME               USB_PRODUCT_NAME
 
