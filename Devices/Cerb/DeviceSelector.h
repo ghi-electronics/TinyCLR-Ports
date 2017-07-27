@@ -134,6 +134,9 @@
 #define UART_DEBUGGER_INDEX 0
 #define USB_DEBUGGER_INDEX 0
 
+#define RAM_BOOTLOADER_HOLD_ADDRESS 0x20017FF8
+#define RAM_BOOTLOADER_HOLD_VALUE 0x45A8B7D3
+
 // OEM information
 #define OEM_STRING                      "GHI Electronics, LLC\0"
 #define OEM_VERSION_MAJOR               0
