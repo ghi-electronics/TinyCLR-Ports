@@ -207,7 +207,7 @@ void STM32F4_Time_GetDriftParameters(const TinyCLR_Time_Provider* self, int32_t*
 const TinyCLR_Api_Info* STM32F4_Power_GetApi();
 void STM32F4_Power_SetHandlers(void(*stop)(), void(*restart)());
 void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep_Level level);
-void STM32F4_Power_Reset(const TinyCLR_Power_Provider* self);
+void STM32F4_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter);
 TinyCLR_Result STM32F4_Power_Acquire(const TinyCLR_Power_Provider* self);
 TinyCLR_Result STM32F4_Power_Release(const TinyCLR_Power_Provider* self);
 

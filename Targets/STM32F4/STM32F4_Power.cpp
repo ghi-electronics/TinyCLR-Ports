@@ -97,7 +97,12 @@ void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep
     }
 }
 
-void STM32F4_Power_Reset(const TinyCLR_Power_Provider* self) {
+void STM32F4_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) {
+#if defined RAM_BOOTLOADER_HOLD_VALUE && defined RAM_BOOTLOADER_HOLD_ADDRESS && RAM_BOOTLOADER_HOLD_ADDRESS > 0
+    if (!runCoreAfter)
+        *((uint32_t*)RAM_BOOTLOADER_HOLD_ADDRESS) = RAM_BOOTLOADER_HOLD_VALUE;
+#endif
+
     SCB->AIRCR = (0x5FA << SCB_AIRCR_VECTKEY_Pos)  // unlock key
         | (1 << SCB_AIRCR_SYSRESETREQ_Pos); // reset request
 
