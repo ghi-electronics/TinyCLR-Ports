@@ -136,9 +136,7 @@ TinyCLR_Result STM32F4_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* sel
 bool STM32F4_Flash_IsSupportsXIP(const TinyCLR_Deployment_Provider* self);
 
 // Interrupt
-class STM32F4_SmartPtr_IRQ {
-    const uint32_t DISABLED_MASK = 0x00000001;
-
+class STM32F4_SmartPtr_IRQ {   
     uint32_t m_state;
 
 public:
@@ -166,12 +164,13 @@ bool STM32F4_Interrupt_Enable(uint32_t Irq_Index);
 bool STM32F4_Interrupt_Disable(uint32_t Irq_Index);
 bool STM32F4_Interrupt_EnableState(uint32_t Irq_Index);
 bool STM32F4_Interrupt_InterruptState(uint32_t Irq_Index);
-void STM32F4_Interrupt_GlobalEnabled();
-void STM32F4_Interrupt_GlobalDisabled();
-bool STM32F4_Interrupt_IsDisabled();
-void STM32F4_Interrupt_GlobalSetState(uint32_t state);
+
+bool STM32F4_Interrupt_GlobalEnabled(bool force);
+bool STM32F4_Interrupt_GlobalDisabled(bool force);
+bool STM32F4_Interrupt_GlobalIsDisabled();
 void STM32F4_Interrupt_GlobalWaitForInterrupt();
-uint32_t STM32F4_Interrupt_GlobalGetState();
+void STM32F4_Interrupt_GlobalRestore();
+
 extern TinyCLR_Interrupt_StartStopHandler STM32F4_Interrupt_Started;
 extern TinyCLR_Interrupt_StartStopHandler STM32F4_Interrupt_Ended;
 

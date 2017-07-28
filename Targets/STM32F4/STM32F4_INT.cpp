@@ -16,6 +16,8 @@
 
 #include "STM32F4.h"
 
+#define DISABLED_MASK  0x00000001
+
 TinyCLR_Interrupt_StartStopHandler STM32F4_Interrupt_Started;
 TinyCLR_Interrupt_StartStopHandler STM32F4_Interrupt_Ended;
 
@@ -31,7 +33,8 @@ const TinyCLR_Api_Info* STM32F4_Interrupt_GetApi() {
     interruptProvider.Enable = &STM32F4_Interrupt_GlobalEnabled;
     interruptProvider.Disable = &STM32F4_Interrupt_GlobalDisabled;
     interruptProvider.WaitForInterrupt = &STM32F4_Interrupt_GlobalWaitForInterrupt;
-    interruptProvider.IsDisabled = &STM32F4_Interrupt_IsDisabled;
+    interruptProvider.IsDisabled = &STM32F4_Interrupt_GlobalIsDisabled;
+    interruptProvider.Restore = &STM32F4_Interrupt_GlobalRestore;
 
     interruptApi.Author = "GHI Electronics, LLC";
     interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.InterruptProvider";
@@ -180,34 +183,37 @@ void STM32F4_SmartPtr_IRQ::Restore() {
 //////////////////////////////////////////////////////////////////////////////
 //Global Interrupt - Use in System Cote
 //////////////////////////////////////////////////////////////////////////////
-bool STM32F4_Interrupt_IsDisabled() {
-    return (STM32F4_Interrupt_GlobalGetState() & 1) == 1; //1 == DISABLED_MASK
+bool STM32F4_Interrupt_GlobalIsDisabled() {
+    return (__get_PRIMASK() & DISABLED_MASK) == DISABLED_MASK;
 }
 
-void STM32F4_Interrupt_GlobalEnabled() {
+bool STM32F4_Interrupt_GlobalEnabled(bool force) {
     __enable_irq();
+
+    return true;
 }
 
-void STM32F4_Interrupt_GlobalDisabled() {
+bool STM32F4_Interrupt_GlobalDisabled(bool force) {
+    bool wasDisable = STM32F4_Interrupt_GlobalIsDisabled();
+
     __disable_irq();
+
+    return wasDisable;
 }
 
-uint32_t STM32F4_Interrupt_GlobalGetState() {
-    return __get_PRIMASK();
-}
-
-void STM32F4_Interrupt_GlobalSetState(uint32_t state) {
-    __set_PRIMASK(state);
-}
 
 void STM32F4_Interrupt_GlobalWaitForInterrupt() {
-    register uint32_t state = STM32F4_Interrupt_GlobalGetState();
+    register uint32_t state = __get_PRIMASK();
 
-    STM32F4_Interrupt_GlobalEnabled();
+    __enable_irq();
 
     // just to allow an interupt to an occur
     __WFI();
 
     // restore irq state
-    STM32F4_Interrupt_GlobalSetState(state);
+    __set_PRIMASK(state);
+}
+
+void STM32F4_Interrupt_GlobalRestore() {
+    __enable_irq();
 }
