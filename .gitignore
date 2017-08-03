@@ -1,6 +1,6 @@
 # Build
 Build/
-Core/
+Core/TinyCLR*
 CMSIS/
 
 # Visual Studio

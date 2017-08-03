@@ -1,6 +1,6 @@
 @ECHO OFF
 
-SETLOCAL
+SETLOCAL EnableDelayedExpansion
 
 SET ScriptRoot=%~dp0
 
@@ -18,38 +18,10 @@ IF "%BuildTarget%" == "" SET BuildTarget=build
 IF "%BuildConfiguration%" == "" SET BuildConfiguration=release
 IF "%BuildVerbosity%" == "" SET BuildVerbosity=quiet
 
-IF "%DeviceName%" == "FEZCLR" (
-    SET TargetName=STM32F4
-    SET TargetArchitecture=CortexM4
-    SET ImageGenParameters=0x884DED08 0x3671259A 0x08008000 0x00038000
-) ELSE (IF "%DeviceName%" == "G30" (
-    SET TargetName=STM32F4
-    SET TargetArchitecture=CortexM4
-    SET ImageGenParameters=0x69FA3B0D 0xF754B64C 0x08008000 0x00038000 0x78A2A46B 0xA817BB9F 0x47B6A877 0x57C56E3E
-) ELSE (IF "%DeviceName%" == "G80" (
-    SET TargetName=STM32F4
-    SET TargetArchitecture=CortexM4
-    SET ImageGenParameters=0x5FB39ABC 0x14EF5B6A 0x08008000 0x000B8000 0x45023756 0xBCBFA856 0x28A347EB 0xCDACEBAF
-) ELSE (IF "%DeviceName%" == "Cerb" (
-    SET TargetName=STM32F4
-    SET TargetArchitecture=CortexM4
-    SET ImageGenParameters=0x526603B1 0xE16B218D 0x08008000 0x00038000
-) ELSE (IF "%DeviceName%" == "netduino3" (
-    SET TargetName=STM32F4
-    SET TargetArchitecture=CortexM4
-) ELSE (IF "%DeviceName%" == "Quail" (
-    SET TargetName=STM32F4
-    SET TargetArchitecture=CortexM4
-) ELSE (IF "%DeviceName%" == "clicker" (
-    SET TargetName=STM32F4
-    SET TargetArchitecture=CortexM4
-) ELSE (IF "%DeviceName%" == "clicker2" (
-    SET TargetName=STM32F4
-    SET TargetArchitecture=CortexM4
-) ELSE (
+IF NOT EXIST "%ScriptRoot%\Devices\%DeviceName%" (
     ECHO Unsupported device passed: %DeviceName%
     GOTO :EOF
-))))))))
+)
 
 IF NOT "%BuildTarget%" == "build" IF NOT "%BuildTarget%" == "cleanbuild" IF NOT "%BuildTarget%" == "clean" (
     ECHO Unsupported target passed: %BuildTarget%
@@ -71,36 +43,42 @@ IF NOT EXIST "%GccDirectory%" (
 
 IF "%GccDirectory:~-1%"=="\" SET "GccDirectory=%GccDirectory:~0,-1%"
 
-IF "%TargetArchitecture%" == "CortexM3" (
-    SET InstructionType=THUMB2
-    SET MCpu=cortex-m3
-    SET FloatCompileArguments=
-    SET AdditionalIncludes=-I"%ScriptRoot%\CMSIS\CMSIS\Include"
-    SET AdditionalDefines=-DPLATFORM_ARM_CORTEX_M3 -D__CORTEX_M3F -DCORTEX_M3 -DCOMPILE_THUMB2
-    SET AdditionalAssemblerArguments=--defsym COMPILE_THUMB2=1 -mthumb
-    SET AdditionalCompilerArguments=-mthumb
-    SET "GccLibrary=%GccDirectory%\arm-none-eabi\lib\thumb\v7-m"
-    SET NeedCmsis=1
-) ELSE IF "%TargetArchitecture%" == "CortexM4" (
-    SET InstructionType=THUMB2FP
-    SET MCpu=cortex-m4
-    SET FloatCompileArguments=-mfloat-abi=hard -mfpu=fpv4-sp-d16
-    SET AdditionalIncludes=-I"%ScriptRoot%\CMSIS\CMSIS\Include"
-    SET AdditionalDefines=-DPLATFORM_ARM_CORTEX_M4 -D__CORTEX_M4F -DCORTEX_M4 -DCOMPILE_THUMB2
-    SET AdditionalAssemblerArguments=--defsym COMPILE_THUMB2=1 -mthumb
-    SET AdditionalCompilerArguments=-mthumb
-    SET "GccLibrary=%GccDirectory%\arm-none-eabi\lib\thumb\v7e-m\fpv4-sp\hard"
-    SET NeedCmsis=1
-) ELSE IF "%TargetArchitecture%" == "ARM9" (
-    SET InstructionType=ARM
-    SET MCpu=arm926ej-s
-    SET FloatCompileArguments=-mfloat-abi=soft
-    SET AdditionalIncludes=
-    SET AdditionalDefines=-DCOMPILE_ARM -DPLATFORM_ARM_ARM9
-    SET AdditionalAssemblerArguments=--defsym COMPILE_ARM=1
-    SET AdditionalCompilerArguments=-marm -mthumb-interwork
-    SET "GccLibrary=%GccDirectory%\arm-none-eabi\lib"
+SET DeviceBuildConfiguration=%ScriptRoot%\Devices\%DeviceName%\BuildConfiguration.txt
+
+IF NOT EXIST "%DeviceBuildConfiguration%" (
+    ECHO Cannot find device configuration at "%DeviceBuildConfiguration%".
+    GOTO :EOF
 )
+
+FOR /F "usebackq tokens=1,2 delims=:" %%A IN ("%DeviceBuildConfiguration%") DO SET %%A=%%B
+
+IF "%TargetName%" == "" (
+    ECHO TargetName not defined in "%DeviceBuildConfiguration%".
+    GOTO :EOF
+)
+
+SET TargetBuildConfiguration=%ScriptRoot%\Targets\%TargetName%\BuildConfiguration.txt
+
+IF NOT EXIST "%TargetBuildConfiguration%" (
+    ECHO Cannot find target configuration at "%TargetBuildConfiguration%".
+    GOTO :EOF
+)
+
+FOR /F "usebackq tokens=1,2 delims=:" %%A IN ("%TargetBuildConfiguration%") DO SET %%A=%%B
+
+IF "%TargetArchitecture%" == "" (
+    ECHO TargetArchitecture not defined in "%TargetBuildConfiguration%".
+    GOTO :EOF
+)
+
+SET LibraryBuildConfiguration=%ScriptRoot%\Core\%TargetArchitecture%BuildConfiguration.txt
+
+IF NOT EXIST "%LibraryBuildConfiguration%" (
+    ECHO Cannot find library configuration at "%LibraryBuildConfiguration%".
+    GOTO :EOF
+)
+
+FOR /F "usebackq tokens=1,2 delims=:" %%A IN ("%LibraryBuildConfiguration%") DO SET "%%A=%%B"
 
 IF "%NeedCmsis%" == "1" (
     IF NOT EXIST "%ScriptRoot%\CMSIS\ARM.CMSIS.pdsc" (
