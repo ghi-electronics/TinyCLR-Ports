@@ -8,7 +8,7 @@ IF %ScriptRoot:~-1%==\ SET ScriptRoot=%ScriptRoot:~0,-1%
 
 PUSHD "%ScriptRoot%"
 
-SET Device=%1
+SET DeviceName=%1
 SET BuildTarget=%2
 SET BuildConfiguration=%3
 SET BuildVerbosity=%4
@@ -18,36 +18,36 @@ IF "%BuildTarget%" == "" SET BuildTarget=build
 IF "%BuildConfiguration%" == "" SET BuildConfiguration=release
 IF "%BuildVerbosity%" == "" SET BuildVerbosity=quiet
 
-IF "%Device%" == "FEZCLR" (
-    SET ProcessorPart=STM32F4
-    SET ProcessorArchitecture=CortexM4
+IF "%DeviceName%" == "FEZCLR" (
+    SET TargetName=STM32F4
+    SET TargetArchitecture=CortexM4
     SET ImageGenParameters=0x884DED08 0x3671259A 0x08008000 0x00038000
-) ELSE (IF "%Device%" == "G30" (
-    SET ProcessorPart=STM32F4
-    SET ProcessorArchitecture=CortexM4
+) ELSE (IF "%DeviceName%" == "G30" (
+    SET TargetName=STM32F4
+    SET TargetArchitecture=CortexM4
     SET ImageGenParameters=0x69FA3B0D 0xF754B64C 0x08008000 0x00038000 0x78A2A46B 0xA817BB9F 0x47B6A877 0x57C56E3E
-) ELSE (IF "%Device%" == "G80" (
-    SET ProcessorPart=STM32F4
-    SET ProcessorArchitecture=CortexM4
+) ELSE (IF "%DeviceName%" == "G80" (
+    SET TargetName=STM32F4
+    SET TargetArchitecture=CortexM4
     SET ImageGenParameters=0x5FB39ABC 0x14EF5B6A 0x08008000 0x000B8000 0x45023756 0xBCBFA856 0x28A347EB 0xCDACEBAF
-) ELSE (IF "%Device%" == "Cerb" (
-    SET ProcessorPart=STM32F4
-    SET ProcessorArchitecture=CortexM4
+) ELSE (IF "%DeviceName%" == "Cerb" (
+    SET TargetName=STM32F4
+    SET TargetArchitecture=CortexM4
     SET ImageGenParameters=0x526603B1 0xE16B218D 0x08008000 0x00038000
-) ELSE (IF "%Device%" == "netduino3" (
-    SET ProcessorPart=STM32F4
-    SET ProcessorArchitecture=CortexM4
-) ELSE (IF "%Device%" == "Quail" (
-    SET ProcessorPart=STM32F4
-    SET ProcessorArchitecture=CortexM4
-) ELSE (IF "%Device%" == "clicker" (
-    SET ProcessorPart=STM32F4
-    SET ProcessorArchitecture=CortexM4
-) ELSE (IF "%Device%" == "clicker2" (
-    SET ProcessorPart=STM32F4
-    SET ProcessorArchitecture=CortexM4
+) ELSE (IF "%DeviceName%" == "netduino3" (
+    SET TargetName=STM32F4
+    SET TargetArchitecture=CortexM4
+) ELSE (IF "%DeviceName%" == "Quail" (
+    SET TargetName=STM32F4
+    SET TargetArchitecture=CortexM4
+) ELSE (IF "%DeviceName%" == "clicker" (
+    SET TargetName=STM32F4
+    SET TargetArchitecture=CortexM4
+) ELSE (IF "%DeviceName%" == "clicker2" (
+    SET TargetName=STM32F4
+    SET TargetArchitecture=CortexM4
 ) ELSE (
-    ECHO Unsupported device passed: %Device%
+    ECHO Unsupported device passed: %DeviceName%
     GOTO :EOF
 ))))))))
 
@@ -71,7 +71,7 @@ IF NOT EXIST "%GccDirectory%" (
 
 IF "%GccDirectory:~-1%"=="\" SET "GccDirectory=%GccDirectory:~0,-1%"
 
-IF "%ProcessorArchitecture%" == "CortexM3" (
+IF "%TargetArchitecture%" == "CortexM3" (
     SET InstructionType=THUMB2
     SET MCpu=cortex-m3
     SET FloatCompileArguments=
@@ -81,7 +81,7 @@ IF "%ProcessorArchitecture%" == "CortexM3" (
     SET AdditionalCompilerArguments=-mthumb
     SET "GccLibrary=%GccDirectory%\arm-none-eabi\lib\thumb\v7-m"
     SET NeedCmsis=1
-) ELSE IF "%ProcessorArchitecture%" == "CortexM4" (
+) ELSE IF "%TargetArchitecture%" == "CortexM4" (
     SET InstructionType=THUMB2FP
     SET MCpu=cortex-m4
     SET FloatCompileArguments=-mfloat-abi=hard -mfpu=fpv4-sp-d16
@@ -91,7 +91,7 @@ IF "%ProcessorArchitecture%" == "CortexM3" (
     SET AdditionalCompilerArguments=-mthumb
     SET "GccLibrary=%GccDirectory%\arm-none-eabi\lib\thumb\v7e-m\fpv4-sp\hard"
     SET NeedCmsis=1
-) ELSE IF "%ProcessorArchitecture%" == "ARM9" (
+) ELSE IF "%TargetArchitecture%" == "ARM9" (
     SET InstructionType=ARM
     SET MCpu=arm926ej-s
     SET FloatCompileArguments=-mfloat-abi=soft
@@ -110,8 +110,8 @@ IF "%NeedCmsis%" == "1" (
 )
 
 SET AdditionalIncludes=%AdditionalIncludes% -I"%GccDirectory%\lib\gcc\arm-none-eabi\6.3.1\include"
-SET AdditionalIncludes=%AdditionalIncludes% -I"%ScriptRoot%\Targets\%ProcessorPart%"
-SET AdditionalIncludes=%AdditionalIncludes% -I"%ScriptRoot%\Devices\%Device%"
+SET AdditionalIncludes=%AdditionalIncludes% -I"%ScriptRoot%\Targets\%TargetName%"
+SET AdditionalIncludes=%AdditionalIncludes% -I"%ScriptRoot%\Devices\%DeviceName%"
 SET AdditionalIncludes=%AdditionalIncludes% -I"%ScriptRoot%\Core"
 
 SET AdditionalDefines=%AdditionalDefines% -DGCC
@@ -127,9 +127,9 @@ IF "%BuildConfiguration%" == "debug" (
     SET AdditionalCompilerArguments=-Os %AdditionalCompilerArguments%
 )
 
-SET OutputDirectory=%ScriptRoot%\Build\%BuildConfiguration%\%Device%
+SET OutputDirectory=%ScriptRoot%\Build\%BuildConfiguration%\%DeviceName%
 SET CoreDirectory=%ScriptRoot%\Core
-SET CoreLibraryFile=%CoreDirectory%\TinyCLR_%ProcessorArchitecture%.lib
+SET CoreLibraryFile=%CoreDirectory%\TinyCLR_%TargetArchitecture%.lib
 SET CoreHeaderFile=%CoreDirectory%\TinyCLR.h
 
 IF "%BuildTarget%" == "cleanbuild" (
@@ -151,7 +151,7 @@ IF "%DoBuild%" == "1" (
     IF NOT EXIST "%OutputDirectory%" MD "%OutputDirectory%"
 
     IF NOT EXIST "%CoreLibraryFile%" (
-        ECHO Cannot find the core library file. Please make sure it is downloaded and extracted to repo_root\Core\TinyCLR_%ProcessorArchitecture%.lib.
+        ECHO Cannot find the core library file. Please make sure it is downloaded and extracted to repo_root\Core\TinyCLR_%TargetArchitecture%.lib.
         GOTO :EOF
     )
 
@@ -160,7 +160,7 @@ IF "%DoBuild%" == "1" (
         GOTO :EOF
     )
 
-    FOR %%A IN ("%ScriptRoot%\Targets\%ProcessorPart%", "%ScriptRoot%\Main") DO (
+    FOR %%A IN ("%ScriptRoot%\Targets\%TargetName%", "%ScriptRoot%\Main") DO (
         PUSHD "%%A"
 
         FOR /R %%B IN ("*.gcc.s") DO (
@@ -178,12 +178,12 @@ IF "%DoBuild%" == "1" (
         POPD
     )
 
-    "%GccDirectory%\bin\arm-none-eabi-g++.exe" -mcpu=%MCpu% -mlittle-endian -nostartfiles %FloatCompileArguments% -Xlinker %AdditionalCompilerArguments% -L "%GccLibrary%" -Wl,-static,--gc-sections,--no-wchar-size-warning,-Map="%OutputDirectory%\tinyclr.map" -specs="%GccLibrary%\nano.specs" -T"%ScriptRoot%\Devices\%Device%\tinyclr_scatterfile_gcc.ldf" "%OutputDirectory%\*.obj" "%CoreLibraryFile%" -o "%OutputDirectory%\tinyclr.axf"
+    "%GccDirectory%\bin\arm-none-eabi-g++.exe" -mcpu=%MCpu% -mlittle-endian -nostartfiles %FloatCompileArguments% -Xlinker %AdditionalCompilerArguments% -L "%GccLibrary%" -Wl,-static,--gc-sections,--no-wchar-size-warning,-Map="%OutputDirectory%\tinyclr.map" -specs="%GccLibrary%\nano.specs" -T"%ScriptRoot%\Devices\%DeviceName%\tinyclr_scatterfile_gcc.ldf" "%OutputDirectory%\*.obj" "%CoreLibraryFile%" -o "%OutputDirectory%\tinyclr.axf"
 
-    "%GccDirectory%\bin\arm-none-eabi-objcopy.exe" -S -j ER_FLASH -j ER_RAM_RO -j ER_RAM_RW -O binary "%OutputDirectory%\tinyclr.axf" "%OutputDirectory%\%Device% Firmware.bin"
-    "%GccDirectory%\bin\arm-none-eabi-objcopy.exe" -S -R ER_DAT -R ER_CONFIG -O ihex "%OutputDirectory%\tinyclr.axf" "%OutputDirectory%\%Device% Firmware.hex"
+    "%GccDirectory%\bin\arm-none-eabi-objcopy.exe" -S -j ER_FLASH -j ER_RAM_RO -j ER_RAM_RW -O binary "%OutputDirectory%\tinyclr.axf" "%OutputDirectory%\%DeviceName% Firmware.bin"
+    "%GccDirectory%\bin\arm-none-eabi-objcopy.exe" -S -R ER_DAT -R ER_CONFIG -O ihex "%OutputDirectory%\tinyclr.axf" "%OutputDirectory%\%DeviceName% Firmware.hex"
 
-    IF NOT "%ImageGenParameters%" == ""  "%ScriptRoot%\imagegen.exe" %ImageGenParameters% "%OutputDirectory%\%Device% Firmware.bin"
+    IF NOT "%ImageGenParameters%" == ""  "%ScriptRoot%\imagegen.exe" %ImageGenParameters% "%OutputDirectory%\%DeviceName% Firmware.bin"
 )
 
 ECHO Done
