@@ -24,6 +24,8 @@
 // ADC
 const TinyCLR_Api_Info* STM32F4_Adc_GetApi();
 void STM32F4_Adc_Reset();
+TinyCLR_Result STM32F4_Adc_Acquire(const TinyCLR_Adc_Provider* self);
+TinyCLR_Result STM32F4_Adc_Release(const TinyCLR_Adc_Provider* self);
 TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
 TinyCLR_Result STM32F4_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
 TinyCLR_Result STM32F4_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t channel, int32_t& value);
@@ -38,6 +40,8 @@ bool STM32F4_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCL
 //DAC
 const TinyCLR_Api_Info* STM32F4_Dac_GetApi();
 void STM32F4_Dac_Reset();
+TinyCLR_Result STM32F4_Dac_Acquire(const TinyCLR_Dac_Provider* self);
+TinyCLR_Result STM32F4_Dac_Release(const TinyCLR_Dac_Provider* self);
 TinyCLR_Result STM32F4_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t channel);
 TinyCLR_Result STM32F4_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t channel);
 TinyCLR_Result STM32F4_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t channel, int32_t value);
@@ -49,6 +53,8 @@ int32_t STM32F4_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self);
 // GPIO
 void STM32F4_Gpio_Reset();
 const TinyCLR_Api_Info* STM32F4_Gpio_GetApi();
+TinyCLR_Result STM32F4_Gpio_Acquire(const TinyCLR_Gpio_Provider* self);
+TinyCLR_Result STM32F4_Gpio_Release(const TinyCLR_Gpio_Provider* self);
 TinyCLR_Result STM32F4_Gpio_EnableAlternatePin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor, uint32_t output, uint32_t alternate);
 TinyCLR_Result STM32F4_Gpio_Read(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue& value);
 TinyCLR_Result STM32F4_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue value);
@@ -68,6 +74,9 @@ bool STM32F4_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor
 // PWM
 const TinyCLR_Api_Info* STM32F4_Pwm_GetApi();
 void STM32F4_Pwm_Reset();
+void STM32F4_Pwm_ResetController(int32_t controller);
+TinyCLR_Result STM32F4_Pwm_Acquire(const TinyCLR_Pwm_Provider* self);
+TinyCLR_Result STM32F4_Pwm_Release(const TinyCLR_Pwm_Provider* self);
 int32_t STM32F4_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t pin);
 TinyCLR_Result STM32F4_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self, double& frequency);
 TinyCLR_Result STM32F4_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t pin);
@@ -136,7 +145,7 @@ TinyCLR_Result STM32F4_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* sel
 bool STM32F4_Flash_IsSupportsXIP(const TinyCLR_Deployment_Provider* self);
 
 // Interrupt
-class STM32F4_SmartPtr_IRQ {   
+class STM32F4_SmartPtr_IRQ {
     uint32_t m_state;
 
 public:

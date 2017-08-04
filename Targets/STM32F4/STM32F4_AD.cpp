@@ -45,6 +45,8 @@ static TinyCLR_Api_Info adcApi;
 const TinyCLR_Api_Info* STM32F4_Adc_GetApi() {
     adcProvider.Parent = &adcApi;
     adcProvider.Index = 0;
+    adcProvider.Acquire = &STM32F4_Adc_Acquire;
+    adcProvider.Release = &STM32F4_Adc_Release;
     adcProvider.AcquireChannel = &STM32F4_Adc_AcquireChannel;
     adcProvider.ReleaseChannel = &STM32F4_Adc_ReleaseChannel;
     adcProvider.IsChannelModeSupported = &STM32F4_Adc_IsChannelModeSupported;
@@ -64,6 +66,18 @@ const TinyCLR_Api_Info* STM32F4_Adc_GetApi() {
     adcApi.Implementation = &adcProvider;
 
     return &adcApi;
+}
+
+TinyCLR_Result STM32F4_Adc_Acquire(const TinyCLR_Adc_Provider* self) {
+    STM32F4_Adc_Reset();
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Adc_Release(const TinyCLR_Adc_Provider* self) {
+    STM32F4_Adc_Reset();
+
+    return TinyCLR_Result::Success;
 }
 
 int32_t STM32F4_Adc_GetPinForChannel(int32_t channel) {

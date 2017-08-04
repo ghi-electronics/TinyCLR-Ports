@@ -29,6 +29,8 @@ static TinyCLR_Api_Info dacApi;
 const TinyCLR_Api_Info* STM32F4_Dac_GetApi() {
     dacProvider.Parent = &dacApi;
     dacProvider.Index = 0;
+    dacProvider.Acquire = &STM32F4_Dac_Acquire;
+    dacProvider.Release = &STM32F4_Dac_Release;
     dacProvider.AcquireChannel = &STM32F4_Dac_AcquireChannel;
     dacProvider.ReleaseChannel = &STM32F4_Dac_ReleaseChannel;
     dacProvider.WriteValue = &STM32F4_Dac_WriteValue;
@@ -45,6 +47,18 @@ const TinyCLR_Api_Info* STM32F4_Dac_GetApi() {
     dacApi.Implementation = &dacProvider;
 
     return &dacApi;
+}
+
+TinyCLR_Result STM32F4_Dac_Acquire(const TinyCLR_Dac_Provider* self) {
+    STM32F4_Dac_Reset();
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Dac_Release(const TinyCLR_Dac_Provider* self) {
+    STM32F4_Dac_Reset();
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t channel) {

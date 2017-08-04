@@ -45,6 +45,8 @@ static TinyCLR_Api_Info gpioApi;
 const TinyCLR_Api_Info* STM32F4_Gpio_GetApi() {
     gpioProvider.Parent = &gpioApi;
     gpioProvider.Index = 0;
+    gpioProvider.Acquire = &STM32F4_Gpio_Acquire;
+    gpioProvider.Release = &STM32F4_Gpio_Release;
     gpioProvider.AcquirePin = &STM32F4_Gpio_AcquirePin;
     gpioProvider.ReleasePin = &STM32F4_Gpio_ReleasePin;
     gpioProvider.IsDriveModeSupported = &STM32F4_Gpio_IsDriveModeSupported;
@@ -65,6 +67,18 @@ const TinyCLR_Api_Info* STM32F4_Gpio_GetApi() {
     gpioApi.Implementation = &gpioProvider;
 
     return &gpioApi;
+}
+
+TinyCLR_Result STM32F4_Gpio_Acquire(const TinyCLR_Gpio_Provider* self) {
+    STM32F4_Gpio_Reset();
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Gpio_Release(const TinyCLR_Gpio_Provider* self) {
+    STM32F4_Gpio_Reset();
+
+    return TinyCLR_Result::Success;
 }
 
 /*

@@ -54,6 +54,8 @@ const TinyCLR_Api_Info* STM32F4_Pwm_GetApi() {
         pwmProviders[i] = (TinyCLR_Pwm_Provider*)(pwmProviderDefs + (i * sizeof(TinyCLR_Pwm_Provider)));
         pwmProviders[i]->Parent = &pwmApi;
         pwmProviders[i]->Index = i;
+        pwmProviders[i]->Acquire = &STM32F4_Pwm_Acquire;
+        pwmProviders[i]->Release = &STM32F4_Pwm_Release;
         pwmProviders[i]->SetDesiredFrequency = &STM32F4_Pwm_SetDesiredFrequency;
         pwmProviders[i]->AcquirePin = &STM32F4_Pwm_AcquirePin;
         pwmProviders[i]->ReleasePin = &STM32F4_Pwm_ReleasePin;
@@ -383,21 +385,40 @@ TinyCLR_Result STM32F4_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self,
     return TinyCLR_Result::Success;
 }
 
+TinyCLR_Result STM32F4_Pwm_Acquire(const TinyCLR_Pwm_Provider* self) {
+    if (self == nullptr) return TinyCLR_Result::ArgumentNull;
+
+    STM32F4_Pwm_ResetController(self->Index);
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Pwm_Release(const TinyCLR_Pwm_Provider* self) {
+    if (self == nullptr) return TinyCLR_Result::ArgumentNull;
+
+    STM32F4_Pwm_ResetController(self->Index);
+
+    return TinyCLR_Result::Success;
+}
+
 void STM32F4_Pwm_Reset() {
-    for (auto index = 0; index < TOTAL_PWM_CONTROLLER; index++) {
-        for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-            if (pwmController(index).gpioPin[p] != GPIO_PIN_NONE) {
-                STM32F4_Pwm_DisablePin(pwmProviders[index], p);
-                STM32F4_Pwm_ReleasePin(pwmProviders[index], p);
+    for (auto index = 0; index < TOTAL_PWM_CONTROLLER; index++)
+        STM32F4_Pwm_ResetController(index);
+}
 
-                pwmController(index).dutyCycle[p] = 0;
-                pwmController(index).invert[p] = false;
-            }
+void STM32F4_Pwm_ResetController(int32_t controller) {
+    for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
+        if (pwmController(controller).gpioPin[p] != GPIO_PIN_NONE) {
+            STM32F4_Pwm_DisablePin(pwmProviders[controller], p);
+            STM32F4_Pwm_ReleasePin(pwmProviders[controller], p);
+
+            pwmController(controller).dutyCycle[p] = 0;
+            pwmController(controller).invert[p] = false;
         }
-
-        pwmController(index).theoryFreq = 0;
-        pwmController(index).actualFreq = 0;
-        pwmController(index).period = 0;
-        pwmController(index).presc = 0;
     }
+
+    pwmController(controller).theoryFreq = 0;
+    pwmController(controller).actualFreq = 0;
+    pwmController(controller).period = 0;
+    pwmController(controller).presc = 0;
 }
