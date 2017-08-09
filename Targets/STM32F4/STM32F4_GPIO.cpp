@@ -342,11 +342,11 @@ bool STM32F4_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_
         return false;
 
     switch (mode) {
-    case TinyCLR_Gpio_PinDriveMode::Output:
-    case TinyCLR_Gpio_PinDriveMode::Input:
-    case TinyCLR_Gpio_PinDriveMode::InputPullUp:
-    case TinyCLR_Gpio_PinDriveMode::InputPullDown:
-        return true;
+		case TinyCLR_Gpio_PinDriveMode::Output:
+		case TinyCLR_Gpio_PinDriveMode::Input:
+		case TinyCLR_Gpio_PinDriveMode::InputPullUp:
+		case TinyCLR_Gpio_PinDriveMode::InputPullDown:
+			return true;
     }
 
     return false;
@@ -363,33 +363,39 @@ TinyCLR_Result STM32F4_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int3
     TinyCLR_Gpio_PinValue pinState;
 
     switch (driveMode) {
-    case TinyCLR_Gpio_PinDriveMode::Output:
-        STM32F4_Gpio_Read(self, pin, pinState);
+		case TinyCLR_Gpio_PinDriveMode::Output:
+			STM32F4_Gpio_Read(self, pin, pinState);
 
-        STM32F4_Gpio_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High  STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
+			STM32F4_Gpio_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High  STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
 
-        STM32F4_Gpio_Write(self, pin, pinState);
+			STM32F4_Gpio_Write(self, pin, pinState);
 
-        break;
+			break;
 
-    case TinyCLR_Gpio_PinDriveMode::Input:
-        STM32F4_Gpio_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
-        break;
+		case TinyCLR_Gpio_PinDriveMode::Input:
+			STM32F4_Gpio_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
+			break;
 
-    case TinyCLR_Gpio_PinDriveMode::InputPullUp:
-        STM32F4_Gpio_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, STM32F4_Gpio_AlternateFunction::AF0);
-        break;
+		case TinyCLR_Gpio_PinDriveMode::InputPullUp:
+			STM32F4_Gpio_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, STM32F4_Gpio_AlternateFunction::AF0);
+			break;
 
-    case TinyCLR_Gpio_PinDriveMode::InputPullDown:
-        STM32F4_Gpio_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullDown, STM32F4_Gpio_AlternateFunction::AF0);
-        break;
+		case TinyCLR_Gpio_PinDriveMode::InputPullDown:
+			STM32F4_Gpio_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullDown, STM32F4_Gpio_AlternateFunction::AF0);
+			break;
 
-    case TinyCLR_Gpio_PinDriveMode::OutputOpenDrain:
-    case TinyCLR_Gpio_PinDriveMode::OutputOpenDrainPullUp:
-    case TinyCLR_Gpio_PinDriveMode::OutputOpenSource:
-    case TinyCLR_Gpio_PinDriveMode::OutputOpenSourcePullDown:
-    default:
-        return     TinyCLR_Result::NotSupported;
+		case TinyCLR_Gpio_PinDriveMode::OutputOpenDrain:
+			STM32F4_Gpio_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode::Output, STM32F4_Gpio_OutputType::OpenDrain, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
+			break;
+
+		case TinyCLR_Gpio_PinDriveMode::OutputOpenDrainPullUp:
+			STM32F4_Gpio_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode::Output, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, STM32F4_Gpio_AlternateFunction::AF0);
+			break;
+
+		case TinyCLR_Gpio_PinDriveMode::OutputOpenSource:
+		case TinyCLR_Gpio_PinDriveMode::OutputOpenSourcePullDown:
+		default:
+			return TinyCLR_Result::NotSupported;
     }
 
     g_pinDriveMode[pin] = driveMode;
