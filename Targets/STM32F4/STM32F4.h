@@ -51,6 +51,50 @@ int32_t STM32F4_Dac_GetMinValue(const TinyCLR_Dac_Provider* self);
 int32_t STM32F4_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self);
 
 // GPIO
+enum class STM32F4_Gpio_PullDirection : uint8_t {
+    None = 0,
+    PullUp = 1,
+    PullDown = 2,
+    Reserved = 3
+};
+enum class STM32F4_Gpio_PortMode : uint8_t {
+    Input = 0,
+    Output = 1,
+    AlternateFunction = 2,
+    Analog = 3
+};
+
+enum class STM32F4_Gpio_OutputSpeed : uint8_t {
+    Low = 0,
+    Medium = 1,
+    Fast = 2,
+    High = 3
+};
+
+enum class STM32F4_Gpio_AlternateFunction : uint8_t {
+    AF0 = 0,
+    AF1 = 1,
+    AF2 = 2,
+    AF3 = 3,
+    AF4 = 4,
+    AF5 = 5,
+    AF6 = 6,
+    AF7 = 7,
+    AF8 = 8,
+    AF9 = 9,
+    AF10 = 10,
+    AF11 = 11,
+    AF12 = 12,
+    AF13 = 12,
+    AF14 = 14,
+    AF15 = 15
+};
+
+enum class STM32F4_Gpio_OutputType : uint8_t {
+    PushPull = 0,
+    OpenDrain = 1,
+};
+
 void STM32F4_Gpio_Reset();
 const TinyCLR_Api_Info* STM32F4_Gpio_GetApi();
 TinyCLR_Result STM32F4_Gpio_Acquire(const TinyCLR_Gpio_Provider* self);
@@ -67,9 +111,10 @@ int32_t STM32F4_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32
 int32_t STM32F4_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self);
 TinyCLR_Result STM32F4_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR);
 TinyCLR_Result STM32F4_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t pin);
-
-void STM32F4_Gpio_EnableOutputPin(int32_t pin, bool initialState);
-bool STM32F4_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
+const TinyCLR_Gpio_Provider *GetGpioProvider();
+void STM32F4_Gpio_OpenPin(int32_t pin);
+void STM32F4_Gpio_ClosePin(int32_t pin);
+void STM32F4_Gpio_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode portMode, STM32F4_Gpio_OutputType outputType, STM32F4_Gpio_OutputSpeed outputSpeed, STM32F4_Gpio_PullDirection pullDirection, STM32F4_Gpio_AlternateFunction alternateFunction);
 
 // PWM
 const TinyCLR_Api_Info* STM32F4_Pwm_GetApi();
