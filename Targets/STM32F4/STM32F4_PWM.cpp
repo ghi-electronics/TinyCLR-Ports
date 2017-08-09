@@ -82,9 +82,9 @@ const TinyCLR_Api_Info* STM32F4_Pwm_GetApi() {
 typedef  TIM_TypeDef* ptr_TIM_TypeDef;
 
 struct PwmController {
-    ptr_TIM_TypeDef     port;
-    uint32_t            gpioAlternateFunction;
-    uint32_t            gpioPin[MAX_PWM_PER_CONTROLLER];
+    ptr_TIM_TypeDef                            port;
+    STM32F4_Gpio_AlternateFunction             gpioAlternateFunction;
+    uint32_t                                   gpioPin[MAX_PWM_PER_CONTROLLER];
 
     bool                invert[MAX_PWM_PER_CONTROLLER];
     double              actualFreq;
@@ -106,10 +106,8 @@ TinyCLR_Result STM32F4_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t 
 
     int32_t actualPin = STM32F4_Pwm_GetGpioPinForChannel(self, pin);
 
-    TinyCLR_Result acquirePin = STM32F4_Gpio_AcquirePin(nullptr, actualPin);
-
-    if (acquirePin != TinyCLR_Result::Success)
-        return acquirePin;
+    if (!STM32F4_Gpio_OpenPin(actualPin))
+        return TinyCLR_Result::SharingViolation;
 
     // relevant RCC register & bit
     __IO uint32_t* enReg = &RCC->APB1ENR;
@@ -134,11 +132,13 @@ TinyCLR_Result STM32F4_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t 
     if (pin & 2) reg = &treg->CCMR2; // 2 or 3
     *reg |= mode;
 
-    return acquirePin;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t pin) {
     ptr_TIM_TypeDef treg = pwmController(self->Index).port;
+
+    int32_t actualPin = STM32F4_Pwm_GetGpioPinForChannel(self, pin);
 
     uint32_t mask = 0xFF; // disable PWM channel
     if (pin & 1) mask = 0xFF00; // 1 or 3
@@ -152,6 +152,8 @@ TinyCLR_Result STM32F4_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t 
         int enBit = 1 << (((uint32_t)treg >> 10) & 0x1F);
         *enReg &= ~enBit; // disable timer clock
     }
+
+    STM32F4_Gpio_ClosePin(actualPin);
 
     return TinyCLR_Result::Success;
 }
@@ -256,7 +258,7 @@ TinyCLR_Result STM32F4_Pwm_EnablePin(const TinyCLR_Pwm_Provider* self, int32_t p
 
     int32_t actualPin = STM32F4_Pwm_GetGpioPinForChannel(self, pin);
 
-    STM32F4_Gpio_EnableAlternatePin(actualPin, TinyCLR_Gpio_PinDriveMode::Input, 1, (uint32_t)pwmController(self->Index).gpioAlternateFunction);
+    STM32F4_Gpio_ConfigurePin(actualPin, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, pwmController(self->Index).gpioAlternateFunction);
 
     uint16_t enBit = TIM_CCER_CC1E << (4 * pin);
 
@@ -282,7 +284,7 @@ TinyCLR_Result STM32F4_Pwm_DisablePin(const TinyCLR_Pwm_Provider* self, int32_t 
     ccer &= ~(TIM_CCER_CC1E << (4 * pin));
     treg->CCER = ccer; // disable output
 
-    STM32F4_Gpio_EnableAlternatePin(actualPin, TinyCLR_Gpio_PinDriveMode::Input, 0, GPIO_ALT_MODE(0));
+    STM32F4_Gpio_ConfigurePin(actualPin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
 
     if ((ccer & (TIM_CCER_CC1E | TIM_CCER_CC2E | TIM_CCER_CC3E | TIM_CCER_CC4E)) == 0) { // idle
         treg->CR1 &= ~TIM_CR1_CEN; // stop timer

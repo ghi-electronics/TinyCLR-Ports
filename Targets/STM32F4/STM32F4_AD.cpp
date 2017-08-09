@@ -98,6 +98,9 @@ int32_t STM32F4_Adc_GetPinForChannel(int32_t channel) {
 TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t channel) {
     int chNum = g_STM32F4_AD_Channel[channel];
 
+    if (!STM32F4_Gpio_OpenPin(STM32F4_Adc_GetPinForChannel(channel)))
+        return TinyCLR_Result::SharingViolation;
+
     // init this channel if it's listed in the STM32F4_AD_CHANNELS array
     for (int i = 0; i < STM32F4_AD_NUM; i++) {
         if (g_STM32F4_AD_Channel[i] == chNum) {
@@ -114,7 +117,7 @@ TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int3
 
             // set pin as analog input if channel is not one of the internally connected
             if (chNum <= 15) {
-                STM32F4_Gpio_EnableAlternatePin(STM32F4_Adc_GetPinForChannel(channel), TinyCLR_Gpio_PinDriveMode::Input, 0, GPIO_ALT_MODE(1));
+                STM32F4_Gpio_ConfigurePin(STM32F4_Adc_GetPinForChannel(channel), STM32F4_Gpio_PortMode::Analog, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
                 return TinyCLR_Result::Success;
             }
         }
@@ -129,9 +132,8 @@ TinyCLR_Result STM32F4_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int3
 
     // free GPIO pin if this channel is listed in the STM32F4_AD_CHANNELS array
     // and if it's not one of the internally connected ones as these channels don't take any GPIO pins
-    if (chNum <= 15) {
-        STM32F4_Gpio_EnableAlternatePin(STM32F4_Adc_GetPinForChannel(channel), TinyCLR_Gpio_PinDriveMode::Input, 0, GPIO_ALT_MODE(0));
-    }
+    if (chNum <= 15)
+        STM32F4_Gpio_ClosePin(STM32F4_Adc_GetPinForChannel(channel));
 
     return TinyCLR_Result::Success;
 }

@@ -163,12 +163,6 @@ bool STM32F4_Spi_Transaction_Start(int32_t controller) {
     int32_t misoPin = g_STM32F4_Spi_Miso_Pins[controller];
     int32_t mosiPin = g_STM32F4_Spi_Mosi_Pins[controller];
 
-    STM32F4_Gpio_OpenPin(clkPin);
-    STM32F4_Gpio_OpenPin(misoPin);
-    STM32F4_Gpio_OpenPin(mosiPin);
-    STM32F4_Gpio_OpenPin(g_SpiController[controller].ChipSelectLine);
-
-
     if (controller == 2 && mosiPin != 54) {
         alternate = STM32F4_Gpio_AlternateFunction::AF6;
     }
@@ -178,8 +172,8 @@ bool STM32F4_Spi_Transaction_Start(int32_t controller) {
     STM32F4_Gpio_ConfigurePin(mosiPin, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::None, alternate);
 
     // CS setup
-    STM32F4_Gpio_ConfigurePin(g_SpiController[controller].ChipSelectLine, STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::None, AF0);
-    STM32F4_Gpio_Write(STM32F4_Gpio_GetGpioProvider(), g_SpiController[controller].ChipSelectLine, TinyCLR_Gpio_PinValue::Low);
+    STM32F4_Gpio_ConfigurePin(g_SpiController[controller].ChipSelectLine, STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
+    STM32F4_Gpio_WritePin(g_SpiController[controller].ChipSelectLine, false);
 
     return true;
 }
@@ -192,7 +186,7 @@ bool STM32F4_Spi_Transaction_Stop(int32_t controller) {
     spi->CR1 = 0; // disable SPI
 
 
-    STM32F4_Gpio_Write(STM32F4_Gpio_GetGpioProvider(), g_SpiController[controller].ChipSelectLine, TinyCLR_Gpio_PinValue::High);
+    STM32F4_Gpio_WritePin(g_SpiController[controller].ChipSelectLine, true);
 
     int32_t clkPin = g_STM32F4_Spi_Sclk_Pins[controller];
     int32_t misoPin = g_STM32F4_Spi_Miso_Pins[controller];
@@ -201,12 +195,12 @@ bool STM32F4_Spi_Transaction_Stop(int32_t controller) {
     TinyCLR_Gpio_PinDriveMode res = TinyCLR_Gpio_PinDriveMode::InputPullDown;
 
     if (g_SpiController[controller].Mode == TinyCLR_Spi_Mode::Mode3)
-        STM32F4_Gpio_ConfigurePin(clkPin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::PullUp, AF0);
+        STM32F4_Gpio_ConfigurePin(clkPin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::PullUp, STM32F4_Gpio_AlternateFunction::AF0);
     else
-        STM32F4_Gpio_ConfigurePin(clkPin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::PullDown, AF0);
+        STM32F4_Gpio_ConfigurePin(clkPin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::PullDown, STM32F4_Gpio_AlternateFunction::AF0);
 
-    STM32F4_Gpio_ConfigurePin(misoPin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::PullDown, AF0);
-    STM32F4_Gpio_ConfigurePin(mosiPin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::PullDown, AF0);
+    STM32F4_Gpio_ConfigurePin(misoPin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::PullDown, STM32F4_Gpio_AlternateFunction::AF0);
+    STM32F4_Gpio_ConfigurePin(mosiPin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::PullDown, STM32F4_Gpio_AlternateFunction::AF0);
 
     switch (controller) {
     case 0:
@@ -450,7 +444,10 @@ TinyCLR_Result STM32F4_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, i
     g_SpiController[controller].DataBitLength = dataBitLength;
     g_SpiController[controller].Mode = mode;
 
-    return TinyCLR_Result::Success;
+    if (STM32F4_Gpio_OpenPin(g_SpiController[controller].ChipSelectLine))
+        return TinyCLR_Result::Success;
+
+    return TinyCLR_Result::NotAvailable;
 }
 
 TinyCLR_Result STM32F4_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
@@ -460,15 +457,13 @@ TinyCLR_Result STM32F4_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
     int32_t misoPin = g_STM32F4_Spi_Miso_Pins[controller];
     int32_t mosiPin = g_STM32F4_Spi_Mosi_Pins[controller];
 
-    // Check each pin single time make sure once fail not effect to other pins
-    if (STM32F4_Gpio_AcquirePin(nullptr, clkPin) != TinyCLR_Result::Success)
-        return TinyCLR_Result::NotAvailable;
-    if (STM32F4_Gpio_AcquirePin(nullptr, misoPin) != TinyCLR_Result::Success)
-        return TinyCLR_Result::NotAvailable;
-    if (STM32F4_Gpio_AcquirePin(nullptr, mosiPin) != TinyCLR_Result::Success)
-        return TinyCLR_Result::NotAvailable;
+    g_SpiController[controller].ChipSelectLine = GPIO_PIN_NONE;
 
-    return TinyCLR_Result::Success;
+    // Check each pin single time make sure once fail not effect to other pins
+    if (STM32F4_Gpio_OpenPin(clkPin) && STM32F4_Gpio_OpenPin(misoPin) && STM32F4_Gpio_OpenPin(mosiPin))
+        return TinyCLR_Result::Success;
+
+    return TinyCLR_Result::NotAvailable;
 }
 
 TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Provider* self) {
@@ -479,9 +474,12 @@ TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Provider* self) {
     int32_t mosiPin = g_STM32F4_Spi_Mosi_Pins[controller];
 
     // Check each pin single time make sure once fail not effect to other pins
-    STM32F4_Gpio_ReleasePin(nullptr, clkPin);
-    STM32F4_Gpio_ReleasePin(nullptr, misoPin);
-    STM32F4_Gpio_ReleasePin(nullptr, mosiPin);
+    STM32F4_Gpio_ClosePin(clkPin);
+    STM32F4_Gpio_ClosePin(misoPin);
+    STM32F4_Gpio_ClosePin(mosiPin);
+
+    if (g_SpiController[controller].ChipSelectLine != GPIO_PIN_NONE)
+        STM32F4_Gpio_ClosePin(g_SpiController[controller].ChipSelectLine);
 
     return TinyCLR_Result::Success;
 }

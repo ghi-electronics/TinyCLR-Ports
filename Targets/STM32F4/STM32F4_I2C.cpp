@@ -349,13 +349,13 @@ TinyCLR_Result STM32F4_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, i
 }
 
 TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Provider* self) {
-    uint32_t altMode = (uint32_t)(STM32F4_I2C_PORT == 2 && STM32F4_I2C_SDA_PIN == 25 ? 0x93 : 0x43);
+    STM32F4_Gpio_AlternateFunction altMode = (STM32F4_I2C_PORT == 2 && STM32F4_I2C_SDA_PIN == 25) ? STM32F4_Gpio_AlternateFunction::AF9 : STM32F4_Gpio_AlternateFunction::AF4;
 
-    if (STM32F4_Gpio_AcquirePin(nullptr, STM32F4_I2C_SDA_PIN) != TinyCLR_Result::Success || STM32F4_Gpio_AcquirePin(nullptr, STM32F4_I2C_SCL_PIN) != TinyCLR_Result::Success)
+    if (!STM32F4_Gpio_OpenPin(STM32F4_I2C_SDA_PIN) || !STM32F4_Gpio_OpenPin(STM32F4_I2C_SCL_PIN))
         return TinyCLR_Result::SharingViolation;
 
-    STM32F4_Gpio_EnableAlternatePin(STM32F4_I2C_SDA_PIN, TinyCLR_Gpio_PinDriveMode::InputPullUp, 0, altMode);
-    STM32F4_Gpio_EnableAlternatePin(STM32F4_I2C_SCL_PIN, TinyCLR_Gpio_PinDriveMode::InputPullUp, 0, altMode);
+    STM32F4_Gpio_ConfigurePin(STM32F4_I2C_SDA_PIN, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, altMode);
+    STM32F4_Gpio_ConfigurePin(STM32F4_I2C_SCL_PIN, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, altMode);
 
     RCC->APB1ENR |= RCC_APB1ENR_I2CxEN; // enable I2C clock
     RCC->APB1RSTR = RCC_APB1RSTR_I2CxRST; // reset I2C peripheral
@@ -382,8 +382,8 @@ TinyCLR_Result STM32F4_I2c_Release(const TinyCLR_I2c_Provider* self) {
     I2Cx->CR1 = 0; // disable peripheral
     RCC->APB1ENR &= ~RCC_APB1ENR_I2CxEN; // disable I2C clock
 
-    if (STM32F4_Gpio_ReleasePin(nullptr, STM32F4_I2C_SDA_PIN) != TinyCLR_Result::Success || STM32F4_Gpio_ReleasePin(nullptr, STM32F4_I2C_SCL_PIN) != TinyCLR_Result::Success)
-        return TinyCLR_Result::UnknownFailure;
+    STM32F4_Gpio_ClosePin(STM32F4_I2C_SDA_PIN);
+    STM32F4_Gpio_ClosePin(STM32F4_I2C_SCL_PIN);
 
     return TinyCLR_Result::Success;
 }
