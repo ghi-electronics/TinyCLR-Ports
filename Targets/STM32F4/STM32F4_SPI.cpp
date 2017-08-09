@@ -179,7 +179,7 @@ bool STM32F4_Spi_Transaction_Start(int32_t controller) {
 
     // CS setup
     STM32F4_Gpio_ConfigurePin(g_SpiController[controller].ChipSelectLine, STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::None, AF0);
-    STM32F4_Gpio_Write(GetGpioProvider(), g_SpiController[controller].ChipSelectLine, TinyCLR_Gpio_PinValue::Low);
+    STM32F4_Gpio_Write(STM32F4_Gpio_GetGpioProvider(), g_SpiController[controller].ChipSelectLine, TinyCLR_Gpio_PinValue::Low);
 
     return true;
 }
@@ -192,7 +192,7 @@ bool STM32F4_Spi_Transaction_Stop(int32_t controller) {
     spi->CR1 = 0; // disable SPI
 
 
-    STM32F4_Gpio_Write(GetGpioProvider(), g_SpiController[controller].ChipSelectLine, TinyCLR_Gpio_PinValue::High);
+    STM32F4_Gpio_Write(STM32F4_Gpio_GetGpioProvider(), g_SpiController[controller].ChipSelectLine, TinyCLR_Gpio_PinValue::High);
 
     int32_t clkPin = g_STM32F4_Spi_Sclk_Pins[controller];
     int32_t misoPin = g_STM32F4_Spi_Miso_Pins[controller];

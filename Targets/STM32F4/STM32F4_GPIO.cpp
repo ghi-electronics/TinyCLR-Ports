@@ -81,7 +81,7 @@ TinyCLR_Result STM32F4_Gpio_Release(const TinyCLR_Gpio_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-const TinyCLR_Gpio_Provider* GetGpioProvider() {
+const TinyCLR_Gpio_Provider* STM32F4_Gpio_GetGpioProvider() {
     return (const TinyCLR_Gpio_Provider *)&gpioProvider;
 }
 
