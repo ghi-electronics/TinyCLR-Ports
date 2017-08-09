@@ -82,16 +82,16 @@
 // PWM
 #define MAX_PWM_PER_CONTROLLER           4
 #define TOTAL_PWM_CONTROLLER            10
-#define STM32F4_PWM                     {   { TIM1  ,  0x12,     { _P(E, 9) , _P(E,11) , _P(E,13) , _P(E,14)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 1 },\
-                                            { TIM2  ,  0x12,     { _P(A,15) , _P(B, 3) , _P(B,10) , _P(B,11)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 2 },\
-                                            { TIM3  ,  0x22,     { _P(B, 4) , _P(B, 5) , _P(B, 0) , _P(B, 1)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 3 },\
-                                            { TIM4  ,  0x22,     { _P(D,12) , _P(D,13) , _P(D,14) , _P(D,15)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 4 },\
-                                            { TIM8  ,  0x32,     { _P(C, 6) , _P(C, 7) , _P(C, 8) , _P(C, 9)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 8 },\
-                                            { TIM9  ,  0x32,     { _P(A, 2) , _P(A, 3) , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 9 },\
-                                            { TIM10 ,  0x32,     { _P(B, 8) , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 10 },\
-                                            { TIM11 ,  0x92,     { _P(B, 9) , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 11 },\
-                                            { TIM13 ,  0x92,     { _P(A, 6) , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 13 },\
-                                            { TIM14 ,  0x92,     { _P(A, 7) , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 14 }}
+#define STM32F4_PWM                     {   { TIM1  ,  STM32F4_Gpio_AlternateFunction::AF1,     { _P(E, 9) , _P(E,11) , _P(E,13) , _P(E,14)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 1 },\
+                                            { TIM2  ,  STM32F4_Gpio_AlternateFunction::AF1,     { _P(A,15) , _P(B, 3) , _P(B,10) , _P(B,11)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 2 },\
+                                            { TIM3  ,  STM32F4_Gpio_AlternateFunction::AF2,     { _P(B, 4) , _P(B, 5) , _P(B, 0) , _P(B, 1)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 3 },\
+                                            { TIM4  ,  STM32F4_Gpio_AlternateFunction::AF2,     { _P(D,12) , _P(D,13) , _P(D,14) , _P(D,15)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 4 },\
+                                            { TIM8  ,  STM32F4_Gpio_AlternateFunction::AF3,     { _P(C, 6) , _P(C, 7) , _P(C, 8) , _P(C, 9)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 8 },\
+                                            { TIM9  ,  STM32F4_Gpio_AlternateFunction::AF3,     { _P(A, 2) , _P(A, 3) , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 9 },\
+                                            { TIM10 ,  STM32F4_Gpio_AlternateFunction::AF3,     { _P(B, 8) , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 10 },\
+                                            { TIM11 ,  STM32F4_Gpio_AlternateFunction::AF9,     { _P(B, 9) , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 11 },\
+                                            { TIM13 ,  STM32F4_Gpio_AlternateFunction::AF9,     { _P(A, 6) , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 13 },\
+                                            { TIM14 ,  STM32F4_Gpio_AlternateFunction::AF9,     { _P(A, 7) , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 14 }}
 
 // I2C
 #define STM32F4_I2C_PORT                1
