@@ -226,7 +226,7 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
     g_UartController[portNum].portPtr = g_STM32F4_Uart_Ports[portNum];
     g_UartController[portNum].provider = self;
 
-    if (STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Rx_Pins[portNum]) && STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Tx_Pins[portNum]) && STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Cts_Pins[portNum]) && STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Rts_Pins[portNum]))
+    if (STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Rx_Pins[portNum]) && STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Tx_Pins[portNum]))
         return TinyCLR_Result::Success;
 
     return TinyCLR_Result::SharingViolation;
@@ -320,6 +320,9 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
     STM32F4_Gpio_ConfigurePin(g_STM32F4_Uart_Tx_Pins[portNum], STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, alternate);
 
     if (handshaking == TinyCLR_Uart_Handshake::RequestToSend) {
+        if (!STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Cts_Pins[portNum]) || !STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Rts_Pins[portNum])) 
+            return TinyCLR_Result::SharingViolation;
+
         STM32F4_Gpio_ConfigurePin(g_STM32F4_Uart_Cts_Pins[portNum], STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, alternate);
         STM32F4_Gpio_ConfigurePin(g_STM32F4_Uart_Rts_Pins[portNum], STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, alternate);
     }
