@@ -16,10 +16,10 @@
 
 #include "STM32F4.h"
 
-#define STM32F4_Gpio_DebounceDefaultMilisecond 	20
-#define STM32F4_Gpio_MaxPins 					(TOTAL_GPIO_PORT * 16)
-#define STM32F4_Gpio_MaxInt 					16
-#define STM32F4_Gpio_PinReserved 				1
+#define STM32F4_Gpio_DebounceDefaultMilisecond     20
+#define STM32F4_Gpio_MaxPins                     (TOTAL_GPIO_PORT * 16)
+#define STM32F4_Gpio_MaxInt                     16
+#define STM32F4_Gpio_PinReserved                 1
 
 // indexed port configuration access
 #define Port(port) ((GPIO_TypeDef *) (GPIOA_BASE + (port << 10)))
@@ -34,10 +34,10 @@ struct STM32F4_Int_State {
     TinyCLR_Gpio_PinValue                  currentValue;
 };
 
-static uint16_t 					g_pinReserved[STM32F4_Gpio_MaxPins]; //  1 bit per pin
-static uint64_t					 	g_debounceTicksPin[STM32F4_Gpio_MaxPins];
+static uint16_t                     g_pinReserved[STM32F4_Gpio_MaxPins]; //  1 bit per pin
+static uint64_t                         g_debounceTicksPin[STM32F4_Gpio_MaxPins];
 static STM32F4_Int_State            g_int_state[STM32F4_Gpio_MaxInt]; // interrupt state
-static TinyCLR_Gpio_PinDriveMode 	g_pinDriveMode[STM32F4_Gpio_MaxPins];
+static TinyCLR_Gpio_PinDriveMode     g_pinDriveMode[STM32F4_Gpio_MaxPins];
 
 static TinyCLR_Gpio_Provider gpioProvider;
 static TinyCLR_Api_Info gpioApi;
@@ -206,7 +206,7 @@ TinyCLR_Result STM32F4_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* 
     }
     return TinyCLR_Result::Success;
 }
-bool STM32F4_Gpio_Disable_Interrupt(uint32_t pin) {
+bool STM32F4_Gpio_DisableInterrupt(uint32_t pin) {
     uint32_t num = pin & 0x0F;
     uint32_t bit = 1 << num;
     uint32_t shift = (num & 0x3) << 2; // 4 bit fields
@@ -222,114 +222,98 @@ bool STM32F4_Gpio_Disable_Interrupt(uint32_t pin) {
     return true;
 }
 
-// mode:  0: input,  1: output,  2: alternate, 3: analog
-// alternate: od | AF << 4 | speed << 8
-void STM32F4_Gpio_Pin_Config(int32_t pin, uint32_t mode, TinyCLR_Gpio_PinDriveMode resistor, uint32_t alternate) {
-    GPIO_TypeDef* port = Port(pin >> 4); // pointer to the actual port registers
+bool STM32F4_Gpio_OpenPin(int32_t pin) {
+    if (g_pinReserved[pin] == STM32F4_Gpio_PinReserved)
+        return false;
+
+    g_pinReserved[pin] |= STM32F4_Gpio_PinReserved;
+
+    return true;
+}
+
+bool STM32F4_Gpio_ClosePin(int32_t pin) {
+    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
+        return false;
+    g_pinReserved[pin] &= ~STM32F4_Gpio_PinReserved;
+
+    // reset to default state
+    return STM32F4_Gpio_ConfigurePin(pin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
+}
+
+bool STM32F4_Gpio_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode portMode, STM32F4_Gpio_OutputType outputType, STM32F4_Gpio_OutputSpeed outputSpeed, STM32F4_Gpio_PullDirection pullDirection, STM32F4_Gpio_AlternateFunction alternateFunction) {
+    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
+        return false;
+
+    GPIO_TypeDef* port = Port(pin >> 4);
+
     pin &= 0x0F; // bit number
+
     uint32_t bit = 1 << pin;
     uint32_t shift = pin << 1; // 2 bits / pin
     uint32_t mask = 0x3 << shift;
-    uint32_t pull = 0;
-    if (resistor == TinyCLR_Gpio_PinDriveMode::InputPullUp)
-        pull = GPIO_PUPDR_PUPDR0_0;
-
-    if (resistor == TinyCLR_Gpio_PinDriveMode::InputPullDown)
-        pull = GPIO_PUPDR_PUPDR0_1;
-
-    pull <<= shift;
-    mode <<= shift;
-
-    uint32_t speed = 0x3 << shift; // Force all ports to 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
+    uint32_t pullDir = (uint8_t)pullDirection;
+    uint32_t mode = (uint8_t)portMode;
+    uint32_t alternate = (uint8_t)alternateFunction;
+    uint32_t speed = (uint8_t)outputSpeed; // Force all ports to 100 MHz High speed on 30 pF (80 MHz Output max speed on 15 pF)
     uint32_t altSh = (pin & 0x7) << 2; // 4 bits / pin
     uint32_t altMsk = 0xF << altSh;
     uint32_t idx = pin >> 3;
-    uint32_t af = ((alternate >> 4) & 0xF) << altSh;
+    uint32_t af = alternate << altSh;
 
+    mode <<= shift;
+    pullDir <<= shift;
+    speed <<= shift;
+
+    // Write to register
     GLOBAL_LOCK(irq);
 
     port->MODER = port->MODER & ~mask | mode;
-    port->PUPDR = port->PUPDR & ~mask | pull;
+    port->PUPDR = port->PUPDR & ~mask | pullDir;
     port->OSPEEDR = port->OSPEEDR & ~mask | speed;
     port->AFR[idx] = port->AFR[idx] & ~altMsk | af;
 
-    if (alternate & 1) {
+    if (outputType == STM32F4_Gpio_OutputType::OpenDrain) {
         // open drain
         port->OTYPER |= bit;
     }
     else {
         port->OTYPER &= ~bit;
     }
+
+    return true;
 }
 
-/*
- * alternate:
- * GPIO_ALT_MODE(0): GPIO
- * GPIO_ALT_MODE(1): Analog
- * GPIO_ALT_MODE_2 | AF << 4 | speed << 8: Alternate Function
- * GPIO_ALT_MODE_3 | AF << 4 | speed << 8: Alternate Function with open drain
- * speed: 0: 2MHZ, 1: 25MHz, 2: 50MHz, 3: 100MHz
- */
-TinyCLR_Result STM32F4_Gpio_EnableAlternatePin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor, uint32_t output, uint32_t alternate) {
-    if (pin < STM32F4_Gpio_MaxPins) {
-        uint32_t mode = output;
-        uint32_t altMode = (uint32_t)alternate & 0x0F;
+bool STM32F4_Gpio_ReadPin(int32_t pin) {
+    GPIO_TypeDef* port = Port(pin >> 4); // pointer to the actual port registers
 
-        if (altMode == 1)
-            mode = 3; // analog
-        else if (altMode)
-            mode = 2; // alternate pin function
+    return ((port->IDR >> (pin & 0xF)) & 1) > 0 ? true : false;
 
-        STM32F4_Gpio_Pin_Config(pin, mode, resistor, (uint32_t)alternate);
-        STM32F4_Gpio_Disable_Interrupt(pin); // disable interrupt
-
-        return TinyCLR_Result::Success;
-    }
-
-    return TinyCLR_Result::ArgumentOutOfRange;
 }
+void STM32F4_Gpio_WritePin(int32_t pin, bool value) {
+    GPIO_TypeDef* port = Port(pin >> 4); // pointer to the actual port registers
 
-void STM32F4_Gpio_EnableOutputPin(int32_t pin, bool initialState) {
-    if (pin < STM32F4_Gpio_MaxPins) {
-        TinyCLR_Gpio_PinValue value = (initialState == true ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+    uint16_t bit = 1 << (pin & 0x0F);
 
-        STM32F4_Gpio_Write(nullptr, pin, value);
-        STM32F4_Gpio_Pin_Config(pin, 1, TinyCLR_Gpio_PinDriveMode::Input, 0); // general purpose output
-        STM32F4_Gpio_Disable_Interrupt(pin); // disable interrupt
-    }
-}
-
-bool STM32F4_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor) {
-    STM32F4_Gpio_Pin_Config(pin, 0, resistor, 0); // input
-    return STM32F4_Gpio_Disable_Interrupt(pin);
+    if (value)
+        port->BSRRL = bit; // set bit
+    else
+        port->BSRRH = bit; // reset bit
 }
 
 TinyCLR_Result STM32F4_Gpio_Read(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue& value) {
-    if (pin >= STM32F4_Gpio_MaxPins)
+    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    GPIO_TypeDef* port = Port(pin >> 4); // pointer to the actual port registers
-
-    if ((port->IDR >> (pin & 0xF)) & 1)
-        value = TinyCLR_Gpio_PinValue::High;
-    else
-        value = TinyCLR_Gpio_PinValue::Low;
+    value = STM32F4_Gpio_ReadPin(pin) ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue value) {
-    if (pin >= STM32F4_Gpio_MaxPins)
+    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    GPIO_TypeDef* port = Port(pin >> 4); // pointer to the actual port registers
-
-    uint16_t bit = 1 << (pin & 0x0F);
-
-    if (value == TinyCLR_Gpio_PinValue::High)
-        port->BSRRL = bit; // set bit
-    else
-        port->BSRRH = bit; // reset bit
+    STM32F4_Gpio_WritePin(pin, value == TinyCLR_Gpio_PinValue::High ? true : false);
 
     return TinyCLR_Result::Success;
 }
@@ -337,45 +321,42 @@ TinyCLR_Result STM32F4_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t pin
 TinyCLR_Result STM32F4_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t pin) {
     GLOBAL_LOCK(irq);
 
-    if (pin >= STM32F4_Gpio_MaxPins)
-        return TinyCLR_Result::NotFound;
-
-    int port = pin >> 4, bit = 1 << (pin & 0x0F), sh = pin & 0x0F;
+    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
+        return TinyCLR_Result::ArgumentOutOfRange;
 
     if (g_pinReserved[pin] == STM32F4_Gpio_PinReserved) {
         return TinyCLR_Result::SharingViolation;
     }
 
-    g_pinReserved[pin] |= STM32F4_Gpio_PinReserved;
+    if (STM32F4_Gpio_OpenPin(pin))
+        return TinyCLR_Result::Success;
 
-    return TinyCLR_Result::Success;
+    return TinyCLR_Result::NotAvailable;
 }
 
 TinyCLR_Result STM32F4_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t pin) {
 
     GLOBAL_LOCK(irq);
 
-    if (pin >= STM32F4_Gpio_MaxPins)
-        return TinyCLR_Result::NotFound;
+    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
+        return TinyCLR_Result::ArgumentOutOfRange;
 
-    g_pinReserved[pin] = 0;
-
-    STM32F4_Gpio_SetDriveMode(self, pin, TinyCLR_Gpio_PinDriveMode::Input);
+    STM32F4_Gpio_ClosePin(pin);
 
     return TinyCLR_Result::Success;
 
 }
 
 bool STM32F4_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode) {
-    if (pin >= STM32F4_Gpio_MaxPins)
+    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
         return false;
 
     switch (mode) {
-        case TinyCLR_Gpio_PinDriveMode::Output:
-        case TinyCLR_Gpio_PinDriveMode::Input:
-        case TinyCLR_Gpio_PinDriveMode::InputPullUp:
-        case TinyCLR_Gpio_PinDriveMode::InputPullDown:
-            return true;
+    case TinyCLR_Gpio_PinDriveMode::Output:
+    case TinyCLR_Gpio_PinDriveMode::Input:
+    case TinyCLR_Gpio_PinDriveMode::InputPullUp:
+    case TinyCLR_Gpio_PinDriveMode::InputPullDown:
+        return true;
     }
 
     return false;
@@ -386,31 +367,45 @@ TinyCLR_Gpio_PinDriveMode STM32F4_Gpio_GetDriveMode(const TinyCLR_Gpio_Provider*
 }
 
 TinyCLR_Result STM32F4_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode driveMode) {
-    if (pin >= STM32F4_Gpio_MaxPins)
-        return TinyCLR_Result::NotFound;
+    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
+        return TinyCLR_Result::ArgumentOutOfRange;
 
     TinyCLR_Gpio_PinValue pinState;
 
     switch (driveMode) {
-        case TinyCLR_Gpio_PinDriveMode::Output:
-            STM32F4_Gpio_Read(self, pin, pinState);
+    case TinyCLR_Gpio_PinDriveMode::Output:
+        STM32F4_Gpio_Read(self, pin, pinState);
 
-            STM32F4_Gpio_EnableOutputPin(pin, (pinState == TinyCLR_Gpio_PinValue::High ? true : false));
+        STM32F4_Gpio_ConfigurePin(pin, STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
 
-            break;
+        STM32F4_Gpio_Write(self, pin, pinState);
 
-        case TinyCLR_Gpio_PinDriveMode::Input:
-        case TinyCLR_Gpio_PinDriveMode::InputPullUp:
-        case TinyCLR_Gpio_PinDriveMode::InputPullDown:
-            STM32F4_Gpio_EnableInputPin(pin, driveMode);
-            break;
+        break;
 
-        case TinyCLR_Gpio_PinDriveMode::OutputOpenDrain:
-        case TinyCLR_Gpio_PinDriveMode::OutputOpenDrainPullUp:
-        case TinyCLR_Gpio_PinDriveMode::OutputOpenSource:
-        case TinyCLR_Gpio_PinDriveMode::OutputOpenSourcePullDown:
-        default:
-            return 	TinyCLR_Result::NotSupported;
+    case TinyCLR_Gpio_PinDriveMode::Input:
+        STM32F4_Gpio_ConfigurePin(pin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
+        break;
+
+    case TinyCLR_Gpio_PinDriveMode::InputPullUp:
+        STM32F4_Gpio_ConfigurePin(pin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, STM32F4_Gpio_AlternateFunction::AF0);
+        break;
+
+    case TinyCLR_Gpio_PinDriveMode::InputPullDown:
+        STM32F4_Gpio_ConfigurePin(pin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullDown, STM32F4_Gpio_AlternateFunction::AF0);
+        break;
+
+    case TinyCLR_Gpio_PinDriveMode::OutputOpenDrain:
+        STM32F4_Gpio_ConfigurePin(pin, STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::OpenDrain, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
+        break;
+
+    case TinyCLR_Gpio_PinDriveMode::OutputOpenDrainPullUp:
+        STM32F4_Gpio_ConfigurePin(pin, STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, STM32F4_Gpio_AlternateFunction::AF0);
+        break;
+
+    case TinyCLR_Gpio_PinDriveMode::OutputOpenSource:
+    case TinyCLR_Gpio_PinDriveMode::OutputOpenSourcePullDown:
+    default:
+        return TinyCLR_Result::NotSupported;
     }
 
     g_pinDriveMode[pin] = driveMode;
@@ -423,8 +418,8 @@ int32_t STM32F4_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32
 }
 
 TinyCLR_Result STM32F4_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, int32_t debounceTime) {
-    if (pin >= STM32F4_Gpio_MaxPins)
-        return TinyCLR_Result::NotFound;
+    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
+        return TinyCLR_Result::ArgumentOutOfRange;
 
     if (debounceTime > 0 && debounceTime < 10000) {
         g_debounceTicksPin[pin] = STM32F4_Time_MillisecondsToTicks(nullptr, (uint64_t)debounceTime);
@@ -443,6 +438,7 @@ void STM32F4_Gpio_Reset() {
     for (int i = 0; i < STM32F4_Gpio_MaxPins; i++) {
         g_pinReserved[i] = 0;
         STM32F4_Gpio_SetDebounceTimeout(nullptr, i, STM32F4_Gpio_DebounceDefaultMilisecond);
+        STM32F4_Gpio_DisableInterrupt(i);
     }
 
     EXTI->IMR = 0; // disable all external interrups;

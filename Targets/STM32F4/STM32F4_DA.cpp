@@ -19,9 +19,9 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define STM32F4_DAC_CHANNELS 			2       // number of channels
+#define STM32F4_DAC_CHANNELS             2       // number of channels
 #define STM32F4_DAC_FIRST_PIN           4       // channel 0 pin (A4)
-#define STM32F4_DAC_RESOLUTION_INT_BIT	12      // max resolution in bit
+#define STM32F4_DAC_RESOLUTION_INT_BIT    12      // max resolution in bit
 
 static TinyCLR_Dac_Provider dacProvider;
 static TinyCLR_Api_Info dacApi;
@@ -62,16 +62,14 @@ TinyCLR_Result STM32F4_Dac_Release(const TinyCLR_Dac_Provider* self) {
 }
 
 TinyCLR_Result STM32F4_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t channel) {
-    TinyCLR_Result acquirePin = STM32F4_Gpio_AcquirePin(nullptr, STM32F4_DAC_FIRST_PIN + channel);
-
-    if (acquirePin != TinyCLR_Result::Success)
-        return acquirePin;
+    if (!STM32F4_Gpio_OpenPin(STM32F4_DAC_FIRST_PIN + channel))
+        return TinyCLR_Result::SharingViolation;
 
     // enable DA clock
     RCC->APB1ENR |= RCC_APB1ENR_DACEN;
 
     // set pin as analog
-    STM32F4_Gpio_EnableAlternatePin(STM32F4_DAC_FIRST_PIN + channel, TinyCLR_Gpio_PinDriveMode::Input, 0, GPIO_ALT_MODE(1));
+    STM32F4_Gpio_ConfigurePin(STM32F4_DAC_FIRST_PIN + channel, STM32F4_Gpio_PortMode::Analog, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
 
     if (channel) {
         DAC->CR |= DAC_CR_EN2; // enable channel 2
@@ -97,7 +95,7 @@ TinyCLR_Result STM32F4_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int3
     }
 
     // free pin
-    STM32F4_Gpio_EnableAlternatePin(STM32F4_DAC_FIRST_PIN + channel, TinyCLR_Gpio_PinDriveMode::Input, 0, GPIO_ALT_MODE(0));
+    STM32F4_Gpio_ClosePin(STM32F4_DAC_FIRST_PIN + channel);
 
     if ((DAC->CR & (DAC_CR_EN1 | DAC_CR_EN2)) == 0) { // all channels off
         // disable DA clock
