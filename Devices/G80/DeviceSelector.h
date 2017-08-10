@@ -153,7 +153,7 @@
 
 // STM32F4 requires to define specific
 #define STM32F4XX                        1
-#define STM32F427X                         1
+#define STM32F427xx                         1
 
 #define INCLUDE_ADC
 #define INCLUDE_DAC
@@ -166,7 +166,6 @@
 
 #define TARGET STM32F4
 
-#include <stm32f4xx.h>
 #include <STM32F4.h>
 
 #endif

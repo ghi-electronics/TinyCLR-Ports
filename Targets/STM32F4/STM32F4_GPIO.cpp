@@ -295,9 +295,9 @@ void STM32F4_Gpio_WritePin(int32_t pin, bool value) {
     uint16_t bit = 1 << (pin & 0x0F);
 
     if (value)
-        port->BSRRL = bit; // set bit
+        port->BSRR = bit; // set bit
     else
-        port->BSRRH = bit; // reset bit
+        port->BSRR = (bit << 16); // reset bit
 }
 
 TinyCLR_Result STM32F4_Gpio_Read(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue& value) {

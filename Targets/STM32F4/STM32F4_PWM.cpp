@@ -128,7 +128,7 @@ TinyCLR_Result STM32F4_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t 
     // enable PWM channel
     uint32_t mode = TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1PE; // PWM1 mode, double buffered
     if (pin & 1) mode <<= 8; // 1 or 3
-    __IO uint16_t* reg = &treg->CCMR1;
+    __IO uint32_t* reg = &treg->CCMR1;
     if (pin & 2) reg = &treg->CCMR2; // 2 or 3
     *reg |= mode;
 
@@ -142,7 +142,7 @@ TinyCLR_Result STM32F4_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t 
 
     uint32_t mask = 0xFF; // disable PWM channel
     if (pin & 1) mask = 0xFF00; // 1 or 3
-    __IO uint16_t* reg = &treg->CCMR1;
+    __IO uint32_t* reg = &treg->CCMR1;
     if (pin & 2) reg = &treg->CCMR2; // 2 or 3
     *reg &= ~mask;
 
