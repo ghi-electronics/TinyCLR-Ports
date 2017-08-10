@@ -206,7 +206,7 @@ TinyCLR_Result STM32F4_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* 
     }
     return TinyCLR_Result::Success;
 }
-bool STM32F4_Gpio_Disable_Interrupt(uint32_t pin) {
+bool STM32F4_Gpio_DisableInterrupt(uint32_t pin) {
     uint32_t num = pin & 0x0F;
     uint32_t bit = 1 << num;
     uint32_t shift = (num & 0x3) << 2; // 4 bit fields
@@ -438,6 +438,7 @@ void STM32F4_Gpio_Reset() {
     for (int i = 0; i < STM32F4_Gpio_MaxPins; i++) {
         g_pinReserved[i] = 0;
         STM32F4_Gpio_SetDebounceTimeout(nullptr, i, STM32F4_Gpio_DebounceDefaultMilisecond);
+        STM32F4_Gpio_DisableInterrupt(i);
     }
 
     EXTI->IMR = 0; // disable all external interrups;
