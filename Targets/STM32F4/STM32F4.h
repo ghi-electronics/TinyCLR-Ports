@@ -112,10 +112,10 @@ int32_t STM32F4_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self);
 TinyCLR_Result STM32F4_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR);
 TinyCLR_Result STM32F4_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t pin);
 bool STM32F4_Gpio_OpenPin(int32_t pin);
-void STM32F4_Gpio_ClosePin(int32_t pin);
+bool STM32F4_Gpio_ClosePin(int32_t pin);
 bool STM32F4_Gpio_ReadPin(int32_t pin);
 void STM32F4_Gpio_WritePin(int32_t pin, bool value);
-void STM32F4_Gpio_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode portMode, STM32F4_Gpio_OutputType outputType, STM32F4_Gpio_OutputSpeed outputSpeed, STM32F4_Gpio_PullDirection pullDirection, STM32F4_Gpio_AlternateFunction alternateFunction);
+bool STM32F4_Gpio_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode portMode, STM32F4_Gpio_OutputType outputType, STM32F4_Gpio_OutputSpeed outputSpeed, STM32F4_Gpio_PullDirection pullDirection, STM32F4_Gpio_AlternateFunction alternateFunction);
 
 // PWM
 const TinyCLR_Api_Info* STM32F4_Pwm_GetApi();
