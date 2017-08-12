@@ -130,7 +130,6 @@ PACKED(struct) USB_SETUP_PACKET {
 
 // USB 2.0 response structure lengths
 #define USB_STRING_DESCRIPTOR_MAX_LENGTH        126  // Maximum number of characters allowed in USB string descriptor
-#define USB_FRIENDLY_NAME_LENGTH                 32
 #define USB_DEVICE_DESCRIPTOR_LENGTH             18
 #define USB_CONFIGURATION_DESCRIPTOR_LENGTH       9
 #define USB_STRING_DESCRIPTOR_HEADER_LENGTH       2
@@ -666,7 +665,7 @@ OTG_TypeDef;
 
 
 #define MAX_EP_SIZE            64     // maximum control channel packet size
-#define DEF_EP0_SIZE            8      // default control channel packet size
+#define MAX_EP0_SIZE            8      // default control channel packet size
 #define STM32F4_USB_FS_MAX_EP   4 // OTG FS supports 4 endpoints
 
 // use OTG Full Speed
@@ -1287,7 +1286,7 @@ TinyCLR_UsbClient_DeviceDescriptor deviceDescriptor = {
     0,                                  // Device class (none)
     0,                                  // Device subclass (none)
     0,                                  // Device protocol (none)
-    MAX_EP_SIZE,                        // Endpoint 0 size
+    MAX_EP0_SIZE,                        // Endpoint 0 size
     USB_VENDOR_ID,                          // Vendor ID
     USB_PRODUCT_ID,                         // Product ID
     DEVICE_RELEASE_VERSION,             // Product version 1.00 (BCD)
@@ -1452,7 +1451,7 @@ bool UsbClient_Driver::Initialize(int controller) {
     State->CurrentState = USB_DEVICE_STATE_UNINITIALIZED;
     State->DeviceStatus = USB_STATUS_DEVICE_SELF_POWERED;
     State->EndpointCount = STM32F4_USB_FS_MAX_EP;
-    State->PacketSize = MAX_EP_SIZE;
+    State->PacketSize = MAX_EP0_SIZE;
     State->Initialized = true;
 
     for (auto i = 0; i < USB_MAX_QUEUES; i++) {
