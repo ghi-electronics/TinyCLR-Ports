@@ -370,16 +370,9 @@ TinyCLR_Result STM32F4_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int3
     if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    TinyCLR_Gpio_PinValue pinState;
-
     switch (driveMode) {
     case TinyCLR_Gpio_PinDriveMode::Output:
-        STM32F4_Gpio_Read(self, pin, pinState);
-
         STM32F4_Gpio_ConfigurePin(pin, STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
-
-        STM32F4_Gpio_Write(self, pin, pinState);
-
         break;
 
     case TinyCLR_Gpio_PinDriveMode::Input:
