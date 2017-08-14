@@ -138,7 +138,7 @@
 // OEM information
 #define OEM_STRING                      "GHI Electronics, LLC\0"
 #define OEM_VERSION_MAJOR               0
-#define OEM_VERSION_MINOR               5
+#define OEM_VERSION_MINOR               6
 #define OEM_VERSION_PATCH               0
 
 
