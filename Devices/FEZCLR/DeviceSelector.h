@@ -82,10 +82,10 @@
 // PWM
 #define MAX_PWM_PER_CONTROLLER               4
 #define TOTAL_PWM_CONTROLLER                 4
-#define STM32F4_PWM                     {   {TIM1  ,  0x12,     { _P(A, 8) , _P(A, 9) , _P(A,10) , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 1} ,\
-                                            {TIM2  ,  0x12,     { _P(A, 0) , _P(A, 1) , _P(A, 2) , _P(A, 3)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 2} ,\
-                                            {TIM3  ,  0x22,     { _P(C, 6) , _P(B, 5) , _P(C, 8) , _P(C, 9)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 3} ,\
-                                            {TIM4  ,  0x22,     { _P(B, 6) , _P(B, 7) , _P(B, 8) , _P(B, 9)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 4} }
+#define STM32F4_PWM                     {   {TIM1  ,  STM32F4_Gpio_AlternateFunction::AF1,     { _P(A, 8) , _P(A, 9) , _P(A,10) , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 1} ,\
+                                            {TIM2  ,  STM32F4_Gpio_AlternateFunction::AF1,     { _P(A, 0) , _P(A, 1) , _P(A, 2) , _P(A, 3)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 2} ,\
+                                            {TIM3  ,  STM32F4_Gpio_AlternateFunction::AF2,     { _P(C, 6) , _P(B, 5) , _P(C, 8) , _P(C, 9)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 3} ,\
+                                            {TIM4  ,  STM32F4_Gpio_AlternateFunction::AF2,     { _P(B, 6) , _P(B, 7) , _P(B, 8) , _P(B, 9)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 4} }
 
 // I2C
 #define STM32F4_I2C_PORT                1
