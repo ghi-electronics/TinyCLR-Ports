@@ -22,7 +22,11 @@ typedef  SPI_TypeDef* ptr_SPI_TypeDef;
 #define DATA_BIT_LENGTH_8   8
 
 // IO addresses
+#if TOTAL_SPI_CONTROLLERS > 2
 static const ptr_SPI_TypeDef g_STM32_Spi_Port[] = { SPI1, SPI2, SPI3, SPI4, SPI5, SPI6 };
+#else
+static const ptr_SPI_TypeDef g_STM32_Spi_Port[] = { SPI1, SPI2 };
+#endif
 
 // Pins
 static const uint8_t g_STM32F4_Spi_Sclk_Pins[] = STM32F4_SPI_SCLK_PINS;
@@ -86,7 +90,7 @@ bool STM32F4_Spi_Transaction_Start(int32_t controller) {
     case 1:
         RCC->APB1ENR |= RCC_APB1ENR_SPI2EN;
         break; // enable SPI2 clock
-
+#if TOTAL_SPI_CONTROLLERS > 2
     case 2:
         RCC->APB1ENR |= RCC_APB1ENR_SPI3EN;
         break; // enable SPI3 clock
@@ -102,6 +106,7 @@ bool STM32F4_Spi_Transaction_Start(int32_t controller) {
     case 5:
         RCC->APB2ENR |= RCC_APB2ENR_SPI6EN;
         break; // enable SPI6 clock
+#endif        
     }
 
     ptr_SPI_TypeDef spi = g_STM32_Spi_Port[controller];
@@ -210,7 +215,7 @@ bool STM32F4_Spi_Transaction_Stop(int32_t controller) {
     case 1:
         RCC->APB1ENR &= ~RCC_APB1ENR_SPI2EN;
         break; // disable SPI2 clock
-
+#if TOTAL_SPI_CONTROLLERS > 2
     case 2:
         RCC->APB1ENR &= ~RCC_APB1ENR_SPI3EN;
         break; // disable SPI3 clock
@@ -226,6 +231,7 @@ bool STM32F4_Spi_Transaction_Stop(int32_t controller) {
     case 5:
         RCC->APB2ENR &= ~RCC_APB2ENR_SPI6EN;
         break; // disable SPI6 clock
+#endif
     }
 
     return true;
