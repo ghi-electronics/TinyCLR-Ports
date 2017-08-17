@@ -354,8 +354,8 @@ TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Provider* self) {
     if (!STM32F4_Gpio_OpenPin(STM32F4_I2C_SDA_PIN) || !STM32F4_Gpio_OpenPin(STM32F4_I2C_SCL_PIN))
         return TinyCLR_Result::SharingViolation;
 
-    STM32F4_Gpio_ConfigurePin(STM32F4_I2C_SDA_PIN, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, altMode);
-    STM32F4_Gpio_ConfigurePin(STM32F4_I2C_SCL_PIN, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, altMode);
+    STM32F4_Gpio_ConfigurePin(STM32F4_I2C_SDA_PIN, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::OpenDrain, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, altMode);
+    STM32F4_Gpio_ConfigurePin(STM32F4_I2C_SCL_PIN, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::OpenDrain, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, altMode);
 
     RCC->APB1ENR |= RCC_APB1ENR_I2CxEN; // enable I2C clock
     RCC->APB1RSTR = RCC_APB1RSTR_I2CxRST; // reset I2C peripheral
