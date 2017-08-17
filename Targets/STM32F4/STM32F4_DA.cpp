@@ -16,7 +16,7 @@
 
 #include "STM32F4.h"
 
-
+#ifdef STM32F427xx
 ///////////////////////////////////////////////////////////////////////////////
 
 #define STM32F4_DAC_CHANNELS             2       // number of channels
@@ -138,3 +138,4 @@ void STM32F4_Dac_Reset() {
     }
 }
 
+#endif
