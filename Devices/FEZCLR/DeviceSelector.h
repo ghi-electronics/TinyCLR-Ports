@@ -37,7 +37,7 @@
 #define INTERRUPT_END           STM32F4_Interrupt_Ended();
 
 // Device
-#define HAL_SYSTEM_NAME "FEZ CLR"
+#define HAL_SYSTEM_NAME "FEZCLR"
 
 // System clock
 #define SYSTEM_CLOCK_HZ                  84000000   // 84 MHz
