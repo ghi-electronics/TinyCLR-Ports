@@ -69,14 +69,10 @@ const TinyCLR_Api_Info* STM32F4_Adc_GetApi() {
 }
 
 TinyCLR_Result STM32F4_Adc_Acquire(const TinyCLR_Adc_Provider* self) {
-    STM32F4_Adc_Reset();
-
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Adc_Release(const TinyCLR_Adc_Provider* self) {
-    STM32F4_Adc_Reset();
-
     return TinyCLR_Result::Success;
 }
 
