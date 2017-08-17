@@ -55,7 +55,11 @@ struct UartController {
 static UartController g_UartController[TOTAL_UART_CONTROLLERS];
 
 // IO addresses
+#if TOTAL_UART_CONTROLLERS > 2
 static const USART_TypeDef_Ptr g_STM32F4_Uart_Ports[] = { USART1, USART2, USART3, UART4, UART5, USART6, UART7, UART8 };
+#else
+static const USART_TypeDef_Ptr g_STM32F4_Uart_Ports[] = { USART1, USART2 };
+#endif
 
 // Pins
 static const uint32_t g_STM32F4_Uart_Rx_Pins[] = STM32F4_UART_RXD_PINS;
@@ -170,6 +174,7 @@ void STM32F4_Uart_Interrupt1(void* param) {
         STM32F4_Uart_IrqTx(1);
 }
 
+#if TOTAL_UART_CONTROLLERS > 2
 void STM32F4_Uart_Interrupt2(void* param) {
     uint16_t sr = USART3->SR;
 
@@ -206,6 +211,7 @@ void STM32F4_Uart_Interrupt5(void* param) {
     if (sr & USART_SR_TXE)
         STM32F4_Uart_IrqTx(5);
 }
+#endif
 
 TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
     int32_t portNum = self->Index;
@@ -249,11 +255,12 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
         RCC->APB1ENR |= RCC_APB1ENR_USART2EN >> 1 << portNum;
         clk = SYSTEM_APB1_CLOCK_HZ;
     }
+#if TOTAL_UART_CONTROLLERS > 2
     else { // COM7-8 on APB1
         RCC->APB1ENR |= RCC_APB1ENR_UART7EN >> 6 << portNum;
         clk = SYSTEM_APB1_CLOCK_HZ;
     }
-
+#endif
     //  baudrate
     uint16_t div = (uint16_t)((clk + (baudRate >> 1)) / baudRate); // rounded
 
@@ -320,7 +327,7 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
     STM32F4_Gpio_ConfigurePin(g_STM32F4_Uart_Tx_Pins[portNum], STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, alternate);
 
     if (handshaking == TinyCLR_Uart_Handshake::RequestToSend) {
-        if (!STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Cts_Pins[portNum]) || !STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Rts_Pins[portNum])) 
+        if (!STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Cts_Pins[portNum]) || !STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Rts_Pins[portNum]))
             return TinyCLR_Result::SharingViolation;
 
         STM32F4_Gpio_ConfigurePin(g_STM32F4_Uart_Cts_Pins[portNum], STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, alternate);
@@ -335,7 +342,7 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
     case 1:
         STM32F4_Interrupt_Activate(USART2_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt1, 0);
         break;
-
+#if TOTAL_UART_CONTROLLERS > 2
     case 2:
         STM32F4_Interrupt_Activate(USART3_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt2, 0);
         break;
@@ -352,8 +359,6 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
         STM32F4_Interrupt_Activate(USART6_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt5, 0);
         break;
 
-        // some SoCS have more UARTs (default is 6 )
-#if TOTAL_UART_CONTROLLERS > 6
     case 6:
         STM32F4_Interrupt_Activate(UART7_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt4, 0);
         break;
@@ -390,7 +395,7 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
     case 1:
         STM32F4_Interrupt_Deactivate(USART2_IRQn);
         break;
-
+#if TOTAL_UART_CONTROLLERS > 2
     case 2:
         STM32F4_Interrupt_Deactivate(USART3_IRQn);
         break;
@@ -407,8 +412,6 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
         STM32F4_Interrupt_Deactivate(USART6_IRQn);
         break;
 
-        // some SoCS have more UARTs (default is 6 )
-#if TOTAL_UART_CONTROLLERS > 6
     case 6:
         STM32F4_Interrupt_Deactivate(UART7_IRQn);
         break;
@@ -432,9 +435,11 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
     else if (portNum < 5) { // COM2-5 on APB1
         RCC->APB1ENR &= ~(RCC_APB1ENR_USART2EN >> 1 << portNum);
     }
+#if TOTAL_UART_CONTROLLERS > 2
     else { // COM7-8 on APB1
         RCC->APB1ENR &= ~(RCC_APB1ENR_UART7EN >> 6 << portNum);
     }
+#endif
 
     g_UartController[portNum].txBufferCount = 0;
     g_UartController[portNum].txBufferIn = 0;

@@ -16,7 +16,7 @@
 
 #include "STM32F4.h"
 
-
+#ifdef STM32F427xx
 ///////////////////////////////////////////////////////////////////////////////
 
 #define STM32F4_DAC_CHANNELS             2       // number of channels
@@ -50,14 +50,10 @@ const TinyCLR_Api_Info* STM32F4_Dac_GetApi() {
 }
 
 TinyCLR_Result STM32F4_Dac_Acquire(const TinyCLR_Dac_Provider* self) {
-    STM32F4_Dac_Reset();
-
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Dac_Release(const TinyCLR_Dac_Provider* self) {
-    STM32F4_Dac_Reset();
-
     return TinyCLR_Result::Success;
 }
 
@@ -138,3 +134,4 @@ void STM32F4_Dac_Reset() {
     }
 }
 
+#endif

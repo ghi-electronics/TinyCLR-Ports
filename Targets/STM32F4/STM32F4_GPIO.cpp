@@ -34,8 +34,8 @@ struct STM32F4_Int_State {
     TinyCLR_Gpio_PinValue                  currentValue;
 };
 
-static uint16_t                     g_pinReserved[STM32F4_Gpio_MaxPins]; //  1 bit per pin
-static uint64_t                         g_debounceTicksPin[STM32F4_Gpio_MaxPins];
+static uint8_t                     g_pinReserved[STM32F4_Gpio_MaxPins]; //  1 bit per pin
+static uint32_t                         g_debounceTicksPin[STM32F4_Gpio_MaxPins];
 static STM32F4_Int_State            g_int_state[STM32F4_Gpio_MaxInt]; // interrupt state
 static TinyCLR_Gpio_PinDriveMode     g_pinDriveMode[STM32F4_Gpio_MaxPins];
 
@@ -415,7 +415,7 @@ TinyCLR_Result STM32F4_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self
         return TinyCLR_Result::ArgumentOutOfRange;
 
     if (debounceTime > 0 && debounceTime < 10000) {
-        g_debounceTicksPin[pin] = STM32F4_Time_MillisecondsToTicks(nullptr, (uint64_t)debounceTime);
+        g_debounceTicksPin[pin] = (uint32_t)STM32F4_Time_MillisecondsToTicks(nullptr, (uint64_t)debounceTime);
         return TinyCLR_Result::Success;
     }
 

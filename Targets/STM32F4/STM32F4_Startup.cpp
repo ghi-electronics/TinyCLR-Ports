@@ -286,10 +286,14 @@ extern "C" {
         STM32F4_RTC_Initialize(); // enable RTC
 #endif
 
+#ifdef STM32F401xE
+    // Enable GPIO clocks for ports A - F
+        RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN | RCC_AHB1ENR_GPIOEEN;
+#else
     // Enable GPIO clocks for ports A - G
-        RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN
-            | RCC_AHB1ENR_GPIODEN | RCC_AHB1ENR_GPIOEEN | RCC_AHB1ENR_GPIOFEN
-            | RCC_AHB1ENR_GPIOGEN;
+        RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN | RCC_AHB1ENR_GPIOEEN | RCC_AHB1ENR_GPIOFEN | RCC_AHB1ENR_GPIOGEN;
+
+#endif
     }
 }
 
@@ -398,10 +402,10 @@ void STM32F4_Startup_InitializeRegions() {
 }
 
 int32_t STM32F4_Startup_GetLModePin() {
-        return LMODE_PIN;
+    return LMODE_PIN;
 }
 
 TinyCLR_Gpio_PinValue STM32F4_Startup_GetLModeUsbState() {
-        return LMODE_USB_STATE;
+    return LMODE_USB_STATE;
 }
 
