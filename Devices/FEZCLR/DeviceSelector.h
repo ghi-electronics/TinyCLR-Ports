@@ -56,7 +56,7 @@
 #define FLASH_MEMORY_Size                   0x00080000  // 512KB
 #define SRAM1_MEMORY_Base                   0x20000000
 #define SRAM1_MEMORY_Size                   0x00018000  // 98KB
-#define ENABLE_CCM_RAM					    0
+
 #define FLASH_DEPLOYMENT_SECTOR_ADDRESS     {0x08040000, 0x08060000}
 #define FLASH_DEPLOYMENT_SECTOR_SIZE        {0x00020000, 0x00020000}
 
@@ -146,7 +146,7 @@
 
 // STM32F4 requires to define specific
 #define STM32F4XX						1
-#define STM32F427xx 					1
+#define STM32F401xE                     1
 
 #define INCLUDE_ADC
 #define INCLUDE_GPIO
