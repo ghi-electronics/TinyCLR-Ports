@@ -441,10 +441,6 @@ TinyCLR_Result STM32F4_Spi_Write(const TinyCLR_Spi_Provider* self, const uint8_t
 TinyCLR_Result STM32F4_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode) {
     int32_t controller = (self->Index);
 
-    int32_t clkPin = g_STM32F4_Spi_Sclk_Pins[controller];
-    int32_t misoPin = g_STM32F4_Spi_Miso_Pins[controller];
-    int32_t mosiPin = g_STM32F4_Spi_Mosi_Pins[controller];
-
     if (controller >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
@@ -452,10 +448,6 @@ TinyCLR_Result STM32F4_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, i
     g_SpiController[controller].ClockFrequency = clockFrequency;
     g_SpiController[controller].DataBitLength = dataBitLength;
     g_SpiController[controller].Mode = mode;
-
-    // Check each pin single time make sure once fail not effect to other pins
-    if (STM32F4_Gpio_OpenPin(clkPin) && STM32F4_Gpio_OpenPin(misoPin) && STM32F4_Gpio_OpenPin(mosiPin))
-        return TinyCLR_Result::Success;
 
     if (g_SpiController[controller].ChipSelectLine == GPIO_PIN_NONE) // For case no need CS. CS always high
         return TinyCLR_Result::Success;
@@ -472,9 +464,17 @@ TinyCLR_Result STM32F4_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
 
     int32_t controller = (self->Index);
 
+    int32_t clkPin = g_STM32F4_Spi_Sclk_Pins[controller];
+    int32_t misoPin = g_STM32F4_Spi_Miso_Pins[controller];
+    int32_t mosiPin = g_STM32F4_Spi_Mosi_Pins[controller];
+
     g_SpiController[controller].ChipSelectLine = GPIO_PIN_NONE;
 
-    return TinyCLR_Result::NotAvailable;
+    // Check each pin single time make sure once fail not effect to other pins
+    if (STM32F4_Gpio_OpenPin(clkPin) && STM32F4_Gpio_OpenPin(misoPin) && STM32F4_Gpio_OpenPin(mosiPin))
+        return TinyCLR_Result::Success;
+
+    return TinyCLR_Result::SharingViolation;
 }
 
 TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Provider* self) {
@@ -482,6 +482,10 @@ TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Provider* self) {
         return TinyCLR_Result::ArgumentNull;
 
     int32_t controller = (self->Index);
+
+    int32_t clkPin = g_STM32F4_Spi_Sclk_Pins[controller];
+    int32_t misoPin = g_STM32F4_Spi_Miso_Pins[controller];
+    int32_t mosiPin = g_STM32F4_Spi_Mosi_Pins[controller];
 
     switch (controller) {
     case 0:
@@ -509,6 +513,10 @@ TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Provider* self) {
         break; // disable SPI6 clock
 #endif
     }
+
+    STM32F4_Gpio_ClosePin(clkPin);
+    STM32F4_Gpio_ClosePin(misoPin);
+    STM32F4_Gpio_ClosePin(mosiPin);
 
     return TinyCLR_Result::Success;
 }
@@ -561,17 +569,10 @@ TinyCLR_Result STM32F4_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider
 void STM32F4_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         int32_t controller = i;
-        int32_t clkPin = g_STM32F4_Spi_Sclk_Pins[controller];
-        int32_t misoPin = g_STM32F4_Spi_Miso_Pins[controller];
-        int32_t mosiPin = g_STM32F4_Spi_Mosi_Pins[controller];
 
-        STM32F4_Gpio_ClosePin(clkPin);
-        STM32F4_Gpio_ClosePin(misoPin);
-        STM32F4_Gpio_ClosePin(mosiPin);
+        STM32F4_Spi_Release(spiProviders[controller]);
 
         if (g_SpiController[controller].ChipSelectLine != GPIO_PIN_NONE)
             STM32F4_Gpio_ClosePin(g_SpiController[controller].ChipSelectLine);
-
-        STM32F4_Spi_Release(spiProviders[controller]);
     }
 }
