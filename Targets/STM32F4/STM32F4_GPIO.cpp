@@ -34,7 +34,7 @@ struct STM32F4_Int_State {
     TinyCLR_Gpio_PinValue                  currentValue;
 };
 
-static uint8_t                     g_pinReserved[STM32F4_Gpio_MaxPins]; //  1 bit per pin
+static bool                     g_pinReserved[STM32F4_Gpio_MaxPins]; //  1 bit per pin
 static uint32_t                         g_debounceTicksPin[STM32F4_Gpio_MaxPins];
 static STM32F4_Int_State            g_int_state[STM32F4_Gpio_MaxInt]; // interrupt state
 static TinyCLR_Gpio_PinDriveMode     g_pinDriveMode[STM32F4_Gpio_MaxPins];
@@ -223,10 +223,13 @@ bool STM32F4_Gpio_DisableInterrupt(uint32_t pin) {
 }
 
 bool STM32F4_Gpio_OpenPin(int32_t pin) {
-    if (g_pinReserved[pin] == STM32F4_Gpio_PinReserved)
+    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
         return false;
 
-    g_pinReserved[pin] |= STM32F4_Gpio_PinReserved;
+    if (g_pinReserved[pin])
+        return false;
+
+    g_pinReserved[pin] = true;
 
     return true;
 }
@@ -234,7 +237,8 @@ bool STM32F4_Gpio_OpenPin(int32_t pin) {
 bool STM32F4_Gpio_ClosePin(int32_t pin) {
     if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
         return false;
-    g_pinReserved[pin] &= ~STM32F4_Gpio_PinReserved;
+
+    g_pinReserved[pin] = false;
 
     // reset to default state
     return STM32F4_Gpio_ConfigurePin(pin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
