@@ -391,6 +391,8 @@ TinyCLR_Result STM32F4_Pwm_Acquire(const TinyCLR_Pwm_Provider* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
+    STM32F4_Pwm_ResetController(self->Index);
+
     return TinyCLR_Result::Success;
 }
 
@@ -398,24 +400,35 @@ TinyCLR_Result STM32F4_Pwm_Release(const TinyCLR_Pwm_Provider* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
+    STM32F4_Pwm_ResetController(self->Index);
+
     return TinyCLR_Result::Success;
 }
 
 void STM32F4_Pwm_Reset() {
     for (auto controller = 0; controller < TOTAL_PWM_CONTROLLER; controller++) {
+        STM32F4_Pwm_ResetController(controller);
+
         for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
             if (pwmController(controller).gpioPin[p] != GPIO_PIN_NONE) {
                 STM32F4_Pwm_DisablePin(pwmProviders[controller], p);
                 STM32F4_Pwm_ReleasePin(pwmProviders[controller], p);
-
-                pwmController(controller).dutyCycle[p] = 0;
-                pwmController(controller).invert[p] = false;
             }
         }
-
-        pwmController(controller).theoryFreq = 0;
-        pwmController(controller).actualFreq = 0;
-        pwmController(controller).period = 0;
-        pwmController(controller).presc = 0;
     }
 }
+
+void STM32F4_Pwm_ResetController(int32_t controller) {
+    for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
+        if (pwmController(controller).gpioPin[p] != GPIO_PIN_NONE) {
+            pwmController(controller).dutyCycle[p] = 0;
+            pwmController(controller).invert[p] = false;
+        }
+    }
+
+    pwmController(controller).theoryFreq = 0;
+    pwmController(controller).actualFreq = 0;
+    pwmController(controller).period = 0;
+    pwmController(controller).presc = 0;
+}
+
