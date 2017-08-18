@@ -50,10 +50,16 @@ const TinyCLR_Api_Info* STM32F4_Dac_GetApi() {
 }
 
 TinyCLR_Result STM32F4_Dac_Acquire(const TinyCLR_Dac_Provider* self) {
+    if (self == nullptr)
+        return TinyCLR_Result::ArgumentNull;
+
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Dac_Release(const TinyCLR_Dac_Provider* self) {
+    if (self == nullptr)
+        return TinyCLR_Result::ArgumentNull;
+
     return TinyCLR_Result::Success;
 }
 

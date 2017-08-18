@@ -362,6 +362,9 @@ TinyCLR_Result STM32F4_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, i
 TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Provider* self) {
     STM32F4_Gpio_AlternateFunction altMode = (STM32F4_I2C_PORT == 2 && STM32F4_I2C_SDA_PIN == 25) ? STM32F4_Gpio_AlternateFunction::AF9 : STM32F4_Gpio_AlternateFunction::AF4;
 
+    if (self == nullptr)
+        return TinyCLR_Result::ArgumentNull;
+
     if (!STM32F4_Gpio_OpenPin(STM32F4_I2C_SDA_PIN) || !STM32F4_Gpio_OpenPin(STM32F4_I2C_SCL_PIN))
         return TinyCLR_Result::SharingViolation;
 
@@ -386,6 +389,8 @@ TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Provider* self) {
 }
 
 TinyCLR_Result STM32F4_I2c_Release(const TinyCLR_I2c_Provider* self) {
+    if (self == nullptr)
+        return TinyCLR_Result::ArgumentNull;
 
     STM32F4_Interrupt_Deactivate(I2Cx_EV_IRQn);
     STM32F4_Interrupt_Deactivate(I2Cx_ER_IRQn);

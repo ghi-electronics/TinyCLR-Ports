@@ -388,17 +388,15 @@ TinyCLR_Result STM32F4_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self,
 }
 
 TinyCLR_Result STM32F4_Pwm_Acquire(const TinyCLR_Pwm_Provider* self) {
-    if (self == nullptr) return TinyCLR_Result::ArgumentNull;
-
-    STM32F4_Pwm_ResetController(self->Index);
+    if (self == nullptr)
+        return TinyCLR_Result::ArgumentNull;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Pwm_Release(const TinyCLR_Pwm_Provider* self) {
-    if (self == nullptr) return TinyCLR_Result::ArgumentNull;
-
-    STM32F4_Pwm_ResetController(self->Index);
+    if (self == nullptr)
+        return TinyCLR_Result::ArgumentNull;
 
     return TinyCLR_Result::Success;
 }
