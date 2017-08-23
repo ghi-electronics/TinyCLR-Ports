@@ -138,7 +138,7 @@ IF "%DoBuild%" == "1" (
         GOTO :EOF
     )
 
-    FOR %%A IN ("%ScriptRoot%\Targets\%TargetName%", "%ScriptRoot%\Main") DO (
+    FOR %%A IN ("%ScriptRoot%\Targets\%TargetName%", "%ScriptRoot%\Devices\%DeviceName%", "%ScriptRoot%\Main") DO (
         PUSHD "%%A"
 
         FOR /R %%B IN ("*.gcc.s") DO (
