@@ -1,5 +1,5 @@
 // Copyright Microsoft Corporation
-// Implementation for CortexM: Copyright Oberon microsystems, Inc
+// Copyright Oberon microsystems, Inc
 // Copyright 2017 GHI Electronics, LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
