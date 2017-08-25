@@ -1,1 +1,2 @@
 TargetName:STM32F4
+OptimizeLevel:-Os
