@@ -158,6 +158,7 @@
 #define STM32F427xx 					1
 
 #define INCLUDE_ADC
+#define INCLUDE_DAC
 #define INCLUDE_GPIO
 #define INCLUDE_I2C
 #define INCLUDE_PWM
