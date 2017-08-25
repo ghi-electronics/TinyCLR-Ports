@@ -70,22 +70,31 @@
 #define GPIO_PORTC  2
 #define GPIO_PORTD  3
 
-
 // GPIO
 #define TOTAL_GPIO_PORT                 (GPIO_PORTD + 1)
 #define TOTAL_GPIO_PINS                 (TOTAL_GPIO_PORT*16)
 
-// I2C
+// ADC
 #define STM32F4_ADC 					1
-#define STM32F4_AD_CHANNELS 			{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }
+#define STM32F4_AD_CHANNELS 			{ STM32F4_ADC_CHANNEL_NONE, STM32F4_ADC_CHANNEL_NONE, 2, 3, 4, 5, 6, STM32F4_ADC_CHANNEL_NONE, 8, 9, 10, 11, 12, 13, STM32F4_ADC_CHANNEL_NONE, STM32F4_ADC_CHANNEL_NONE }
 
 // PWM
-#define MAX_PWM_PER_CONTROLLER               4
-#define TOTAL_PWM_CONTROLLER                 4
-#define STM32F4_PWM                     {   {TIM1  ,  STM32F4_Gpio_AlternateFunction::AF1,     { _P(A, 8) , _P(A, 9) , _P(A,10) , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 1} ,\
-                                            {TIM2  ,  STM32F4_Gpio_AlternateFunction::AF1,     { _P(A, 0) , _P(A, 1) , _P(A, 2) , _P(A, 3)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 2} ,\
-                                            {TIM3  ,  STM32F4_Gpio_AlternateFunction::AF2,     { _P(C, 6) , _P(C, 7) , _P(C, 8) , _P(C, 9)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 3} ,\
-                                            {TIM4  ,  STM32F4_Gpio_AlternateFunction::AF2,     { _P(B, 6) , _P(B, 7) , _P(B, 8) , _P(B, 9)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 4} }
+#define MAX_PWM_PER_CONTROLLER           4
+#define TOTAL_PWM_CONTROLLER            14
+#define STM32F4_PWM                     {   { TIM1  ,  STM32F4_Gpio_AlternateFunction::AF1,     { _P(A, 8) , _P(A, 9) , _P(A,10) , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 1 },\
+                                            { TIM2  ,  STM32F4_Gpio_AlternateFunction::AF1,     { _P(A,15) , _P(B, 3) , _P(B,10) , _P(B,11)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 2 },\
+                                            { TIM3  ,  STM32F4_Gpio_AlternateFunction::AF2,     { _P(B, 4) , _P(B, 5) , _P(B, 0) , _P(B, 1)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 3 },\
+                                            { TIM4  ,  STM32F4_Gpio_AlternateFunction::AF2,     { _P_NONE_ , _P_NONE_ , _P(B, 8) , _P(B, 9)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 4 },\
+                                            { TIM5  ,  STM32F4_Gpio_AlternateFunction::AF0,     { _P_NONE_ , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 5 },\
+                                            { TIM6  ,  STM32F4_Gpio_AlternateFunction::AF0,     { _P_NONE_ , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 6 },\
+                                            { TIM7  ,  STM32F4_Gpio_AlternateFunction::AF0,     { _P_NONE_ , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 7 },\
+                                            { TIM8  ,  STM32F4_Gpio_AlternateFunction::AF3,     { _P(C, 6) , _P(C, 7) , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 8 },\
+                                            { TIM9  ,  STM32F4_Gpio_AlternateFunction::AF3,     { _P_NONE_ , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 9 },\
+                                            { TIM10 ,  STM32F4_Gpio_AlternateFunction::AF3,     { _P_NONE_ , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 10 },\
+                                            { TIM11 ,  STM32F4_Gpio_AlternateFunction::AF3,     { _P_NONE_ , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 11 },\
+                                            { TIM12 ,  STM32F4_Gpio_AlternateFunction::AF0,     { _P_NONE_ , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 12 },\
+                                            { TIM13 ,  STM32F4_Gpio_AlternateFunction::AF9,     { _P_NONE_ , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 13 },\
+                                            { TIM14 ,  STM32F4_Gpio_AlternateFunction::AF9,     { _P(A, 7) , _P_NONE_ , _P_NONE_ , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 14 }}
 
 // I2C
 #define STM32F4_I2C_PORT                1
@@ -93,19 +102,19 @@
 #define STM32F4_I2C_SDA_PIN             _P(B, 7)
 
 // SPI
-#define TOTAL_SPI_CONTROLLERS           2
-#define STM32F4_SPI_SCLK_PINS           { _P(B, 3), _P(B,13) }
-#define STM32F4_SPI_MISO_PINS           { _P(B, 4), _P(B,14) }
-#define STM32F4_SPI_MOSI_PINS           { _P(B, 5), _P(B,15) }
+#define TOTAL_SPI_CONTROLLERS           1
+#define STM32F4_SPI_SCLK_PINS           { _P(B, 3)}
+#define STM32F4_SPI_MISO_PINS           { _P(B, 4)}
+#define STM32F4_SPI_MOSI_PINS           { _P(B, 5)}
 
 // UART
-#define TOTAL_UART_CONTROLLERS          2
+#define TOTAL_UART_CONTROLLERS          6
 #define STM32F4_UART_TX_BUFFER_SIZE     256
 #define STM32F4_UART_RX_BUFFER_SIZE     512
-#define STM32F4_UART_RXD_PINS           { _P(A,10), _P(A, 3) }
-#define STM32F4_UART_TXD_PINS           { _P(A, 9), _P(A, 2) }
-#define STM32F4_UART_CTS_PINS           { GPIO_PIN_NONE, _P(A, 0) }
-#define STM32F4_UART_RTS_PINS           { GPIO_PIN_NONE, _P(A, 1) }
+#define STM32F4_UART_RXD_PINS           { GPIO_PIN_NONE, _P(A, 3), _P(B, 11), GPIO_PIN_NONE, GPIO_PIN_NONE, _P(C, 7)     }
+#define STM32F4_UART_TXD_PINS           { GPIO_PIN_NONE, _P(A, 2), _P(B, 10), GPIO_PIN_NONE, GPIO_PIN_NONE, _P(C, 6)     }
+#define STM32F4_UART_CTS_PINS           { GPIO_PIN_NONE, _P(A, 0), _P(B, 13), GPIO_PIN_NONE, GPIO_PIN_NONE, GPIO_PIN_NONE}
+#define STM32F4_UART_RTS_PINS           { GPIO_PIN_NONE, _P(A, 1), _P(B, 14), GPIO_PIN_NONE, GPIO_PIN_NONE, GPIO_PIN_NONE}
 
 //  USBC
 #define TOTAL_USB_CONTROLLER            1
@@ -149,6 +158,7 @@
 #define STM32F427xx 					1
 
 #define INCLUDE_ADC
+#define INCLUDE_DAC
 #define INCLUDE_GPIO
 #define INCLUDE_I2C
 #define INCLUDE_PWM
