@@ -35,8 +35,11 @@
 #endif
 
 // Channels
+#define STM32F4_ADC_CHANNEL_NONE    0xFF
+
 static const uint8_t g_STM32F4_AD_Channel[] = STM32F4_AD_CHANNELS;
 static const uint8_t g_STM32F4_AD_Pins[] = STM32F4_ADC_PINS;
+
 #define STM32F4_AD_NUM SIZEOF_CONST_ARRAY(g_STM32F4_AD_Channel)  // number of channels
 
 static TinyCLR_Adc_Provider adcProvider;
@@ -87,6 +90,9 @@ int32_t STM32F4_Adc_GetPinForChannel(int32_t channel) {
     // for internally connected channels this is GPIO_PIN_NONE as these don't take any GPIO pins
     int chNum = g_STM32F4_AD_Channel[channel];
 
+    if (chNum >= STM32F4_AD_NUM)
+        return GPIO_PIN_NONE;
+
     for (int i = 0; i < STM32F4_AD_NUM; i++) {
         if (g_STM32F4_AD_Channel[i] == chNum) {
             return (int32_t)g_STM32F4_AD_Pins[chNum];
@@ -98,7 +104,10 @@ int32_t STM32F4_Adc_GetPinForChannel(int32_t channel) {
 }
 
 TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t channel) {
-    int chNum = g_STM32F4_AD_Channel[channel];
+    int32_t chNum = g_STM32F4_AD_Channel[channel];
+
+    if (chNum >= STM32F4_AD_NUM)
+        return TinyCLR_Result::NotAvailable;
 
     if (!STM32F4_Gpio_OpenPin(STM32F4_Adc_GetPinForChannel(channel)))
         return TinyCLR_Result::SharingViolation;
@@ -134,7 +143,7 @@ TinyCLR_Result STM32F4_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int3
 
     // free GPIO pin if this channel is listed in the STM32F4_AD_CHANNELS array
     // and if it's not one of the internally connected ones as these channels don't take any GPIO pins
-    if (chNum <= 15)
+    if (chNum < STM32F4_AD_NUM)
         STM32F4_Gpio_ClosePin(STM32F4_Adc_GetPinForChannel(channel));
 
     return TinyCLR_Result::Success;
