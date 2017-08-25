@@ -102,10 +102,10 @@
 #define STM32F4_I2C_SDA_PIN             _P(B, 7)
 
 // SPI
-#define TOTAL_SPI_CONTROLLERS           2
-#define STM32F4_SPI_SCLK_PINS           { _P(B, 3), _P(B,13) }
-#define STM32F4_SPI_MISO_PINS           { _P(B, 4), _P(B,14) }
-#define STM32F4_SPI_MOSI_PINS           { _P(B, 5), _P(B,15) }
+#define TOTAL_SPI_CONTROLLERS           1
+#define STM32F4_SPI_SCLK_PINS           { _P(B, 3)}
+#define STM32F4_SPI_MISO_PINS           { _P(B, 4)}
+#define STM32F4_SPI_MOSI_PINS           { _P(B, 5)}
 
 // UART
 #define TOTAL_UART_CONTROLLERS          6
