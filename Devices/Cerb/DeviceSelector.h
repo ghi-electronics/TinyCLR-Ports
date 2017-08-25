@@ -70,7 +70,6 @@
 #define GPIO_PORTC  2
 #define GPIO_PORTD  3
 
-
 // GPIO
 #define TOTAL_GPIO_PORT                 (GPIO_PORTD + 1)
 #define TOTAL_GPIO_PINS                 (TOTAL_GPIO_PORT*16)
@@ -99,13 +98,13 @@
 #define STM32F4_SPI_MOSI_PINS           { _P(B, 5), _P(B,15) }
 
 // UART
-#define TOTAL_UART_CONTROLLERS          2
+#define TOTAL_UART_CONTROLLERS          6
 #define STM32F4_UART_TX_BUFFER_SIZE     256
 #define STM32F4_UART_RX_BUFFER_SIZE     512
-#define STM32F4_UART_RXD_PINS           { _P(A,10), _P(A, 3) }
-#define STM32F4_UART_TXD_PINS           { _P(A, 9), _P(A, 2) }
-#define STM32F4_UART_CTS_PINS           { GPIO_PIN_NONE, _P(A, 0) }
-#define STM32F4_UART_RTS_PINS           { GPIO_PIN_NONE, _P(A, 1) }
+#define STM32F4_UART_RXD_PINS           { GPIO_PIN_NONE, _P(A, 3), _P(B, 11), GPIO_PIN_NONE, GPIO_PIN_NONE, _P(C, 7)     }
+#define STM32F4_UART_TXD_PINS           { GPIO_PIN_NONE, _P(A, 2), _P(B, 10), GPIO_PIN_NONE, GPIO_PIN_NONE, _P(C, 6)     }
+#define STM32F4_UART_CTS_PINS           { GPIO_PIN_NONE, _P(A, 0), _P(B, 13), GPIO_PIN_NONE, GPIO_PIN_NONE, GPIO_PIN_NONE}
+#define STM32F4_UART_RTS_PINS           { GPIO_PIN_NONE, _P(A, 1), _P(B, 14), GPIO_PIN_NONE, GPIO_PIN_NONE, GPIO_PIN_NONE}
 
 //  USBC
 #define TOTAL_USB_CONTROLLER            1
