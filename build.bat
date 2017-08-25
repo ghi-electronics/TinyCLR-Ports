@@ -102,7 +102,7 @@ IF "%BuildConfiguration%" == "debug" (
 ) ELSE (
     SET AdditionalDefines=%AdditionalDefines%
     SET AssemblerCompileArguments=%AdditionalAssemblerArguments%
-    SET AdditionalCompilerArguments=-Os %AdditionalCompilerArguments%
+    SET AdditionalCompilerArguments=%OptimizeLevel% %AdditionalCompilerArguments%
 )
 
 SET OutputDirectory=%ScriptRoot%\Build\%BuildConfiguration%\%DeviceName%
