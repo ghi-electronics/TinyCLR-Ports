@@ -137,7 +137,7 @@
 #define LMODE_USB_STATE                 TinyCLR_Gpio_PinValue::High
 
 // Loader
-#define RUNAPP_PIN						_P(C,13)
+#define RUNAPP_PIN						_P(A,10)
 #define RUNAPP_STATE 				    TinyCLR_Gpio_PinValue::High
 
 #define UART_DEBUGGER_INDEX 0
