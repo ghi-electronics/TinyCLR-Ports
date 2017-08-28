@@ -40,14 +40,14 @@
 #define HAL_SYSTEM_NAME "Cerb"
 
 // System clock
-#define SYSTEM_CLOCK_HZ                 168000000   // 84 MHz
-#define SYSTEM_CYCLE_CLOCK_HZ           168000000   // 84 MHz
+#define SYSTEM_CLOCK_HZ                 168000000   // 168 MHz
+#define SYSTEM_CYCLE_CLOCK_HZ           168000000   // 168 MHz
 #define SYSTEM_APB1_CLOCK_HZ             42000000   // 42 MHz
 #define SYSTEM_APB2_CLOCK_HZ             84000000   // 84 MHz
 #define SYSTEM_CRYSTAL_CLOCK_HZ          12000000   // 12 MHz external clock
 #define SUPPLY_VOLTAGE_MV                    3300   // 3.3V supply
 #define CLOCK_COMMON_FACTOR               1000000   // GCD(SYSTEM_CLOCK_HZ, 1M)
-#define SLOW_CLOCKS_PER_SECOND          168000000   // 84 MHz
+#define SLOW_CLOCKS_PER_SECOND          168000000   // 168 MHz
 #define SLOW_CLOCKS_TEN_MHZ_GCD           1000000   // GCD(SLOW_CLOCKS_PER_SECOND, 10M)
 #define SLOW_CLOCKS_MILLISECOND_GCD          1000   // GCD(SLOW_CLOCKS_PER_SECOND, 1k)
 
@@ -111,8 +111,8 @@
 #define TOTAL_UART_CONTROLLERS          6
 #define STM32F4_UART_TX_BUFFER_SIZE     256
 #define STM32F4_UART_RX_BUFFER_SIZE     512
-#define STM32F4_UART_RXD_PINS           { GPIO_PIN_NONE, _P(A, 3), _P(B, 11), GPIO_PIN_NONE, GPIO_PIN_NONE, _P(C, 7)     }
-#define STM32F4_UART_TXD_PINS           { GPIO_PIN_NONE, _P(A, 2), _P(B, 10), GPIO_PIN_NONE, GPIO_PIN_NONE, _P(C, 6)     }
+#define STM32F4_UART_RXD_PINS           { _P(B, 7)     , _P(A, 3), _P(B, 11), GPIO_PIN_NONE, GPIO_PIN_NONE, _P(C, 7)     }
+#define STM32F4_UART_TXD_PINS           { _P(B, 6)     , _P(A, 2), _P(B, 10), GPIO_PIN_NONE, GPIO_PIN_NONE, _P(C, 6)     }
 #define STM32F4_UART_CTS_PINS           { GPIO_PIN_NONE, _P(A, 0), _P(B, 13), GPIO_PIN_NONE, GPIO_PIN_NONE, GPIO_PIN_NONE}
 #define STM32F4_UART_RTS_PINS           { GPIO_PIN_NONE, _P(A, 1), _P(B, 14), GPIO_PIN_NONE, GPIO_PIN_NONE, GPIO_PIN_NONE}
 
@@ -137,7 +137,7 @@
 #define LMODE_USB_STATE                 TinyCLR_Gpio_PinValue::High
 
 // Loader
-#define RUNAPP_PIN						_P(C,13)
+#define RUNAPP_PIN						_P(C,3)
 #define RUNAPP_STATE 				    TinyCLR_Gpio_PinValue::High
 
 #define UART_DEBUGGER_INDEX 0
