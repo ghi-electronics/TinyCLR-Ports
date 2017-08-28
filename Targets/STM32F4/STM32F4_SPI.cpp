@@ -76,7 +76,7 @@ const TinyCLR_Api_Info* STM32F4_Spi_GetApi() {
     spiApi.Type = TinyCLR_Api_Type::SpiProvider;
     spiApi.Version = 0;
     spiApi.Count = TOTAL_SPI_CONTROLLERS;
-    spiApi.Implementation = spiProviders;
+    spiApi.Implementation = (spiApi.Count > 1) ? spiProviders : (TinyCLR_Spi_Provider**)&spiProviderDefs;
 
     return &spiApi;
 }
