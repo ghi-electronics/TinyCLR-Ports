@@ -37,7 +37,7 @@
 #define INTERRUPT_END           STM32F4_Interrupt_Ended();
 
 // Device
-#define HAL_SYSTEM_NAME "Netduino 3"
+#define HAL_SYSTEM_NAME "netduino3"
 
 // System clock
 #define SYSTEM_CLOCK_HZ                  180000000   // 180 MHz
@@ -123,8 +123,8 @@
 #define USB_MAX_QUEUES                  16
 #define USB_VENDOR_ID                   0x1B9F
 #define USB_PRODUCT_ID                  0x0110
-#define USB_MANUFACTURER_NAME           {'n', 'e', 't', 'd', 'u', 'i', 'n', 'o', ' ', '3'}
-#define USB_PRODUCT_NAME                {'n', 'e', 't', 'd', 'u', 'i', 'n', 'o', ' ', '3'}
+#define USB_MANUFACTURER_NAME           {'n', 'e', 't', 'd', 'u', 'i', 'n', 'o', '3'}
+#define USB_PRODUCT_NAME                {'n', 'e', 't', 'd', 'u', 'i', 'n', 'o', '3'}
 #define USB_DISPLAY_NAME                USB_PRODUCT_NAME
 #define USB_FRIENDLY_NAME               USB_PRODUCT_NAME
 
