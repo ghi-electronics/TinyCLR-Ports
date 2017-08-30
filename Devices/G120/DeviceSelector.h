@@ -85,7 +85,7 @@
 #define USB_FRIENDLY_NAME               USB_PRODUCT_NAME
 
 // UART
-#define TOTAL_UART_CONTROLLERS               4
+#define TOTAL_UART_CONTROLLERS               5
 #define LPC17_UART_TX_BUFFER_SIZE           (16*1024)
 #define LPC17_UART_RX_BUFFER_SIZE           (16*1024)
 
