@@ -528,6 +528,8 @@ TinyCLR_Result LPC17_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
 
         case 3: LPC_SC->PCONP |= PCONP_PCUART3; break;
 
+        case 4: LPC_SC->PCONP |= PCONP_PCUART4; break;
+
     }
 
     switch (baudRate) {
@@ -729,6 +731,8 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Provider* self) {
             case 2: LPC_SC->PCONP &= ~PCONP_PCUART2; break;
 
             case 3: LPC_SC->PCONP &= ~PCONP_PCUART3; break;
+
+            case 4: LPC_SC->PCONP &= ~PCONP_PCUART4; break;
         }
 
         LPC17_Uart_PinConfiguration(portNum, false);
