@@ -1,0 +1,981 @@
+// Copyright Microsoft Corporation
+// Copyright GHI Electronics, LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include "AT91.h"
+
+#ifdef INCLUDE_DISPLAY
+
+#define VIDEO_RAM_SIZE              800*600*2
+
+#define LCD_MAX_ROW	                32
+#define LCD_MAX_COLUMN              70
+
+#define BITS_PER_PIXEL              16
+
+const uint8_t characters[129][5] = {
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+0x00,0x00,0x00,0x00,0x00,
+
+0x00,0x00,0x00,0x00,0x00, /* Espace	0x20 */
+0x00,0x00,0x4f,0x00,0x00, /* ! */
+0x00,0x07,0x00,0x07,0x00, /* " */
+0x14,0x7f,0x14,0x7f,0x14, /* # */
+0x24,0x2a,0x7f,0x2a,0x12, /* 0x */
+0x23,0x13,0x08,0x64,0x62, /* % */
+0x36,0x49,0x55,0x22,0x20, /* & */
+0x00,0x05,0x03,0x00,0x00, /* ' */
+0x00,0x1c,0x22,0x41,0x00, /* ( */
+0x00,0x41,0x22,0x1c,0x00, /* ) */
+0x14,0x08,0x3e,0x08,0x14, /* // */
+0x08,0x08,0x3e,0x08,0x08, /* + */
+0x50,0x30,0x00,0x00,0x00, /* , */
+0x08,0x08,0x08,0x08,0x08, /* - */
+0x00,0x60,0x60,0x00,0x00, /* . */
+0x20,0x10,0x08,0x04,0x02, /* / */
+0x3e,0x51,0x49,0x45,0x3e, /* 0		0x30 */
+0x00,0x42,0x7f,0x40,0x00, /* 1 */
+0x42,0x61,0x51,0x49,0x46, /* 2 */
+0x21,0x41,0x45,0x4b,0x31, /* 3 */
+0x18,0x14,0x12,0x7f,0x10, /* 4 */
+0x27,0x45,0x45,0x45,0x39, /* 5 */
+0x3c,0x4a,0x49,0x49,0x30, /* 6 */
+0x01,0x71,0x09,0x05,0x03, /* 7 */
+0x36,0x49,0x49,0x49,0x36, /* 8 */
+0x06,0x49,0x49,0x29,0x1e, /* 9 */
+0x00,0x36,0x36,0x00,0x00, /* : */
+0x00,0x56,0x36,0x00,0x00, /* ; */
+0x08,0x14,0x22,0x41,0x00, /* < */
+0x14,0x14,0x14,0x14,0x14, /* = */
+0x00,0x41,0x22,0x14,0x08, /* > */
+0x02,0x01,0x51,0x09,0x06, /* ? */
+0x3e,0x41,0x5d,0x55,0x1e, /* @		0x40 */
+0x7e,0x11,0x11,0x11,0x7e, /* A */
+0x7f,0x49,0x49,0x49,0x36, /* B */
+0x3e,0x41,0x41,0x41,0x22, /* C */
+0x7f,0x41,0x41,0x22,0x1c, /* D */
+0x7f,0x49,0x49,0x49,0x41, /* E */
+0x7f,0x09,0x09,0x09,0x01, /* F */
+0x3e,0x41,0x49,0x49,0x7a, /* G */
+0x7f,0x08,0x08,0x08,0x7f, /* H */
+0x00,0x41,0x7f,0x41,0x00, /* I */
+0x20,0x40,0x41,0x3f,0x01, /* J */
+0x7f,0x08,0x14,0x22,0x41, /* K */
+0x7f,0x40,0x40,0x40,0x40, /* L */
+0x7f,0x02,0x0c,0x02,0x7f, /* M */
+0x7f,0x04,0x08,0x10,0x7f, /* N */
+0x3e,0x41,0x41,0x41,0x3e, /* O */
+0x7f,0x09,0x09,0x09,0x06, /* P		0x50 */
+0x3e,0x41,0x51,0x21,0x5e, /* Q */
+0x7f,0x09,0x19,0x29,0x46, /* R */
+0x26,0x49,0x49,0x49,0x32, /* S */
+0x01,0x01,0x7f,0x01,0x01, /* T */
+0x3f,0x40,0x40,0x40,0x3f, /* U */
+0x1f,0x20,0x40,0x20,0x1f, /* V */
+0x3f,0x40,0x38,0x40,0x3f, /* W */
+0x63,0x14,0x08,0x14,0x63, /* X */
+0x07,0x08,0x70,0x08,0x07, /* Y */
+0x61,0x51,0x49,0x45,0x43, /* Z */
+0x00,0x7f,0x41,0x41,0x00, /* [ */
+0x02,0x04,0x08,0x10,0x20, /* \ */
+0x00,0x41,0x41,0x7f,0x00, /* ] */
+0x04,0x02,0x01,0x02,0x04, /* ^ */
+0x40,0x40,0x40,0x40,0x40, /* _ */
+0x00,0x00,0x03,0x05,0x00, /* `		0x60 */
+0x20,0x54,0x54,0x54,0x78, /* a */
+0x7F,0x44,0x44,0x44,0x38, /* b */
+0x38,0x44,0x44,0x44,0x44, /* c */
+0x38,0x44,0x44,0x44,0x7f, /* d */
+0x38,0x54,0x54,0x54,0x18, /* e */
+0x04,0x04,0x7e,0x05,0x05, /* f */
+0x08,0x54,0x54,0x54,0x3c, /* g */
+0x7f,0x08,0x04,0x04,0x78, /* h */
+0x00,0x44,0x7d,0x40,0x00, /* i */
+0x20,0x40,0x44,0x3d,0x00, /* j */
+0x7f,0x10,0x28,0x44,0x00, /* k */
+0x00,0x41,0x7f,0x40,0x00, /* l */
+0x7c,0x04,0x7c,0x04,0x78, /* m */
+0x7c,0x08,0x04,0x04,0x78, /* n */
+0x38,0x44,0x44,0x44,0x38, /* o */
+0x7c,0x14,0x14,0x14,0x08, /* p		0x70 */
+0x08,0x14,0x14,0x14,0x7c, /* q */
+0x7c,0x08,0x04,0x04,0x00, /* r */
+0x48,0x54,0x54,0x54,0x24, /* s */
+0x04,0x04,0x3f,0x44,0x44, /* t */
+0x3c,0x40,0x40,0x20,0x7c, /* u */
+0x1c,0x20,0x40,0x20,0x1c, /* v */
+0x3c,0x40,0x30,0x40,0x3c, /* w */
+0x44,0x28,0x10,0x28,0x44, /* x */
+0x0c,0x50,0x50,0x50,0x3c, /* y */
+0x44,0x64,0x54,0x4c,0x44, /* z */
+0x08,0x36,0x41,0x41,0x00, /* { */
+0x00,0x00,0x77,0x00,0x00, /* | */
+0x00,0x41,0x41,0x36,0x08, /* } */
+0x08,0x08,0x2a,0x1c,0x08, /* <- */
+0x08,0x1c,0x2a,0x08,0x08, /* -> */
+0xff,0xff,0xff,0xff,0xff, /* 	 	0x80 */
+};
+
+/***********************************************************************
+ * _BIT(p) sets the bit at position "p"
+ **********************************************************************/
+#undef _BIT
+#define _BIT(p)	(((uint32_t)(1)) << (p))
+
+ /***********************************************************************
+  * _BITMASK constructs a symbol with 'field_width' least significant bits set.
+  **********************************************************************/
+#undef _BITMASK
+#define _BITMASK(field_width) (_BIT(field_width) - 1)
+
+  /***********************************************************************
+   * _SBF(p,v) sets the bit field starting at position "p" to value "v".
+   **********************************************************************/
+#undef _SBF
+#define _SBF(p,v) (((uint32_t)(v)) << (p))
+
+   /***********************************************************************
+    * Color LCD controller horizontal axis plane control register definitions
+    **********************************************************************/
+
+    /* LCD controller horizontal axis plane control register pixels per line */
+#define CLCDC_LCDTIMING0_PPL_WIDTH 6
+#define CLCDC_LCDTIMING0_PPL(n) _SBF(2, (((n) / 16) - 1) & _BITMASK(CLCDC_LCDTIMING0_PPL_WIDTH))
+/* LCD controller horizontal axis plane control register HSYNC pulse width */
+#define CLCDC_LCDTIMING0_HSW_WIDTH 8
+#define CLCDC_LCDTIMING0_HSW(n) _SBF(8, ((n) - 1) & _BITMASK(CLCDC_LCDTIMING0_HSW_WIDTH))
+/* LCD controller horizontal axis plane control register horizontal front porch */
+#define CLCDC_LCDTIMING0_HFP_WIDTH 8
+#define CLCDC_LCDTIMING0_HFP(n)	_SBF(16, ((n) - 1) & _BITMASK(CLCDC_LCDTIMING0_HFP_WIDTH))
+/* LCD controller horizontal axis plane control register horizontal back porch */
+#define CLCDC_LCDTIMING0_HBP_WIDTH 8
+#define CLCDC_LCDTIMING0_HBP(n)	_SBF(24, ((n) - 1) & _BITMASK(CLCDC_LCDTIMING0_HBP_WIDTH))
+
+/***********************************************************************
+ * Color LCD controller vertical axis plane control register definitions
+ **********************************************************************/
+
+ /* LCD controller vertical axis plane control register lines per panel */
+#define CLCDC_LCDTIMING1_LPP_WIDTH 10
+#define CLCDC_LCDTIMING1_LPP(n)	_SBF(0, ((n) - 1) & _BITMASK(CLCDC_LCDTIMING1_LPP_WIDTH))
+/* LCD controller vertical axis plane control register VSYNC pulse width */
+#define CLCDC_LCDTIMING1_VSW_WIDTH 6
+#define CLCDC_LCDTIMING1_VSW(n)	_SBF(10, ((n) - 1) & _BITMASK(CLCDC_LCDTIMING1_VSW_WIDTH))
+/* LCD controller vertical axis plane control register vertical front porch */
+#define CLCDC_LCDTIMING1_VFP_WIDTH 8
+#define CLCDC_LCDTIMING1_VFP(n)	_SBF(16, (n) & _BITMASK(CLCDC_LCDTIMING1_VFP_WIDTH))
+/* LCD controller vertical axis plane control register vertical back porch */
+#define CLCDC_LCDTIMING1_VBP_WIDTH 8
+#define CLCDC_LCDTIMING1_VBP(n)	_SBF(24, (n) & _BITMASK(CLCDC_LCDTIMING1_VBP_WIDTH))
+
+/***********************************************************************
+ * Color LCD controller clock and signal polarity control register definitions
+ **********************************************************************/
+
+ /* LCD controller clock and signal polarity control register panel clock divisor low*/
+#define CLCDC_LCDTIMING2_PCD(n)	 CLCDC_LCDTIMING2_PCD_hi(n) | CLCDC_LCDTIMING2_PCD_lo(n)
+#define CLCDC_LCDTIMING2_PCD_lo(n)	 (_SBF(0, ((n) - 2 )) & 0x0000001f)
+/* LCD controller clock and signal polarity control register clock select */
+#define CLCDC_LCDTIMING2_CLKSEL _BIT(5)
+/* LCD controller clock and signal polarity control register AC bias pin frequency */
+#define CLCDC_LCDTIMING2_ACB_WIDTH 5
+#define CLCDC_LCDTIMING2_ACB(n)	_SBF(6, ((n) - 1) & _BITMASK(CLCDC_LCDTIMING2_ACB_WIDTH))
+/* LCD controller clock and signal polarity control register invert VSYNC */
+#define CLCDC_LCDTIMING2_IVS    _BIT(11)
+/* LCD controller clock and signal polarity control register invert HSYNC */
+#define CLCDC_LCDTIMING2_IHS    _BIT(12)
+/* LCD controller clock and signal polarity control register invert plane clock */
+#define CLCDC_LCDTIMING2_IPC    _BIT(13)
+/* LCD controller clock and signal polarity control register invert output enable */
+#define CLCDC_LCDTIMING2_IOE    _BIT(14)
+/* LCD controller clock and signal polarity control register clocks per line */
+#define CLCDC_LCDTIMING2_CPL_WIDTH 10
+#define CLCDC_LCDTIMING2_CPL(n)	_SBF(16, (n) & _BITMASK(CLCDC_LCDTIMING2_CPL_WIDTH))
+/* LCD controller clock and signal polarity control register bypass pixel clock divider */
+#define CLCDC_LCDTIMING2_BCD 	_BIT(26)
+/* LCD controller clock and signal polarity control register panel clock divisor high*/
+#define CLCDC_LCDTIMING2_PCD_hi(n)	 (_SBF(22,((n) - 2 )) & 0xf8000000)
+
+/**********************************************************************
+ * Color LCD Controller line end control register definitions
+ *********************************************************************/
+
+ /* Line End Signal Delay */
+#define CLCDC_LCDTIMING3_LED_WIDTH 7
+#define CLCDC_LCDTIMING3_LED(n) _SBF(0, ((n) - 1) & _BITMASK(CLCDC_LCDTIMING3_LED_WIDTH))
+/* Line End Enable */
+#define CLCDC_LCDTIMING3_LEE    _BIT(16)
+
+/***********************************************************************
+ * Color LCD controller control register definitions
+ **********************************************************************/
+
+ /* LCD control enable bit */
+#define CLCDC_LCDCTRL_ENABLE    _BIT(0)
+/* LCD control 1 bit per pixel bit field */
+#define CLCDC_LCDCTRL_BPP1      _SBF(1, 0)
+/* LCD control 2 bits per pixel bit field */
+#define CLCDC_LCDCTRL_BPP2      _SBF(1, 1)
+/* LCD control 4 bits per pixel bit field */
+#define CLCDC_LCDCTRL_BPP4      _SBF(1, 2)
+/* LCD control 8 bits per pixel bit field */
+#define CLCDC_LCDCTRL_BPP8      _SBF(1, 3)
+/* LCD control 16 bits per pixel bit field */
+#define CLCDC_LCDCTRL_BPP16     _SBF(1, 4)
+/* LCD control 24 bits per pixel bit field */
+#define CLCDC_LCDCTRL_BPP24     _SBF(1, 5)
+/* LCD control 16 bits (5:6:5 mode) per pixel bit field */
+#define CLCDC_LCDCTRL_BPP16_565_MODE _SBF(1, 6)
+/* LCD control 12 bits (4:4:4 mode) per pixel bit field */
+#define CLCDC_LCDCTRL_BPP12_444_MODE _SBF(1, 7)
+/* LCD control mono select bit */
+#define CLCDC_LCDCTRL_BW_COLOR  _SBF(4, 0)
+#define CLCDC_LCDCTRL_BW_MONO   _SBF(4, 1)
+/* LCD controler TFT select bit */
+#define CLCDC_LCDCTRL_TFT       _BIT(5)
+/* LCD control monochrome LCD has 4-bit/8-bit select bit */
+#define CLCDC_LCDCTRL_MON8      _BIT(6)
+/* LCD control dual panel select bit */
+#define CLCDC_LCDCTRL_DUAL      _BIT(7)
+/* LCD control RGB or BGR format select bit */
+#define CLCDC_LCDCTRL_RGB       _SBF(8, 0)
+#define CLCDC_LCDCTRL_BGR       _SBF(8, 1)
+/* LCD control big-endian byte order select bit */
+#define CLCDC_LCDCTRL_BEBO      _BIT(9)
+/* LCD control big-endian pixel order within a byte select bit */
+#define CLCDC_LCDCTRL_BEPO      _BIT(10)
+/* LCD control power enable bit */
+#define CLCDC_LCDCTRL_PWR       _BIT(11)
+/* LCD control VCOMP interrupt is start of VSYNC */
+#define CLCDC_LCDCTRL_VCOMP_VS  _SBF(12, 0)
+/* LCD control VCOMP interrupt is start of back porch */
+#define CLCDC_LCDCTRL_VCOMP_BP  _SBF(12, 1)
+/* LCD control VCOMP interrupt is start of active video */
+#define CLCDC_LCDCTRL_VCOMP_AV  _SBF(12, 2)
+/* LCD control VCOMP interrupt is start of front porch */
+#define CLCDC_LCDCTRL_VCOMP_FP  _SBF(12, 3)
+/* LCD control watermark level is 8 or more words free bit */
+#define CLCDC_LCDCTRL_WATERMARK _BIT(16)
+
+/* PINSEL11 selction for TFT 16 5:6:5 */
+#define TFT_16_565 0xB
+
+//////////////////////////////////////////////////////////////////////////////
+// LCD Controller
+//
+struct AT91XX_LCDC {
+    static const uint32_t c_LCDC_Base = 0xFFE10000;
+
+    //    // LCD pins
+    //    static const uint32_t c_LCD_PWR  = AT91XX_GPIO::c_P2_00;
+    //    static const uint32_t c_LCD_LE   = AT91XX_GPIO::c_P2_01;
+    //    static const uint32_t c_LCD_DCLK = AT91XX_GPIO::c_P2_02;
+    //    static const uint32_t c_LCD_FP   = AT91XX_GPIO::c_P2_03;
+    //    static const uint32_t c_LCD_ENAB = AT91XX_GPIO::c_P2_04;
+    //    static const uint32_t c_LCD_LP   = AT91XX_GPIO::c_P2_05;
+    //
+    //    // Assignment for TFT 16 5:6:5 mode
+    //    static const uint32_t c_LCD_VD_7  = AT91XX_GPIO::c_P2_09; // Red 4
+    //    static const uint32_t c_LCD_VD_6  = AT91XX_GPIO::c_P2_08; // Red 3
+    //    static const uint32_t c_LCD_VD_5  = AT91XX_GPIO::c_P2_07; // Red 2
+    //    static const uint32_t c_LCD_VD_4  = AT91XX_GPIO::c_P2_06; // Red 1
+    //    static const uint32_t c_LCD_VD_3  = AT91XX_GPIO::c_P2_12; // Red 0
+    //
+    //    static const uint32_t c_LCD_VD_15 = AT91XX_GPIO::c_P1_25; // Green 5
+    //    static const uint32_t c_LCD_VD_14 = AT91XX_GPIO::c_P1_24; // Green 4
+    //    static const uint32_t c_LCD_VD_13 = AT91XX_GPIO::c_P1_23; // Green 3
+    //    static const uint32_t c_LCD_VD_12 = AT91XX_GPIO::c_P1_22; // Green 2
+    //    static const uint32_t c_LCD_VD_11 = AT91XX_GPIO::c_P1_21; // Green 1
+    //    static const uint32_t c_LCD_VD_10 = AT91XX_GPIO::c_P1_20; // Green 0
+    //
+    //    static const uint32_t c_LCD_VD_23 = AT91XX_GPIO::c_P1_29; // Blue 4
+    //    static const uint32_t c_LCD_VD_22 = AT91XX_GPIO::c_P1_28; // Blue 3
+    //    static const uint32_t c_LCD_VD_21 = AT91XX_GPIO::c_P1_27; // Blue 2
+    //    static const uint32_t c_LCD_VD_20 = AT91XX_GPIO::c_P1_26; // Blue 1
+    //    static const uint32_t c_LCD_VD_19 = AT91XX_GPIO::c_P2_13; // Blue 0
+
+    /****/ volatile uint32_t LCD_TIMH;      /* LCD horizontal axis plane control register */
+    /****/ volatile uint32_t LCD_TIMV;      /* LCD vertical axis plane control register */
+    /****/ volatile uint32_t LCD_POL;       /* LCD clock and signal polarity control register */
+    /****/ volatile uint32_t LCD_LE;        /* LCD line end control register */
+    /****/ volatile uint32_t LCD_UPBASE;    /* LCD upper plane frame base address register */
+    /****/ volatile uint32_t LCD_LPBASE;    /* LCD lower plane frame base address register */
+    /****/ volatile uint32_t LCD_CTRL;      /* LCD control register */
+    /****/ volatile uint32_t LCD_INTMSK;    /* LCD interrupt mask set/clear register */
+    /****/ volatile uint32_t LCD_INTRAW;    /* LCD raw interrupt status register */
+    /****/ volatile uint32_t LCD_INTSTAT;   /* LCD masked interrupt status register */
+    /****/ volatile uint32_t LCD_INTCLR;    /* LCD interrupt clear register */
+    /****/ volatile uint32_t LCD_UPCURR;    /* LCD upper panel current address value register */
+    /****/ volatile uint32_t LCD_LPCURR;    /* LCD lower panel current address value register */
+    /****/ volatile uint32_t dummy0[115];   /* LCD reserved */
+    /****/ volatile uint32_t LCD_PAL[128];  /* LCD palette registers */
+    /****/ volatile uint32_t dummy1[256];   /* LCD reserved */
+    /****/ volatile uint32_t CRSR_IMG[256]; /* LCD cursor image */
+    /****/ volatile uint32_t CRSR_CTRL;     /* LCD cursor control register */
+    /****/ volatile uint32_t CRSR_CFG;      /* LCD cursor configuration register */
+    /****/ volatile uint32_t CRSR_PAL0;     /* LCD cursor palette register */
+    /****/ volatile uint32_t CRSR_PAL1;     /* LCD cursor palette register */
+    /****/ volatile uint32_t CRSR_XY;       /* LCD cursor xy position register */
+    /****/ volatile uint32_t CRSR_CLIP;     /* LCD cursor clip position register */
+    /****/ volatile uint32_t dummy2[2];     /* LCD reserved */
+    /****/ volatile uint32_t CRSR_INTMSK;   /* LCD cursor interrupt mask set/clear register */
+    /****/ volatile uint32_t CRSR_INTCLR;   /* LCD cursor interrupt clear register */
+    /****/ volatile uint32_t CRSR_INTRAW;   /* LCD cursor raw interrupt status register */
+    /****/ volatile uint32_t CRSR_INTSTAT;  /* LCD cursor masked interrupt status register */
+};
+
+// LCD Controller Driver
+//
+//////////////////////////////////////////////////////////////////////////////
+
+enum LPC17xx_LCD_Rotation {
+    rotateNormal_0,
+    rotateCW_90,
+    rotate_180,
+    rotateCCW_90,
+};
+
+int64_t m_AT91_Display_ReservedVitualRamLocation[VIDEO_RAM_SIZE / 8];
+
+uint32_t m_AT91_DisplayWidth = 0;
+uint32_t m_AT91_DisplayHeight = 0;
+uint32_t m_AT91_DisplayPixelClockRateKHz = 0;
+uint32_t m_AT91_DisplayHorizontalSyncPulseWidth = 0;
+uint32_t m_AT91_DisplayHorizontalFrontPorch = 0;
+uint32_t m_AT91_DisplayHorizontalBackPorch = 0;
+uint32_t m_AT91_DisplayVerticalSyncPulseWidth = 0;
+uint32_t m_AT91_DisplayVerticalFrontPorch = 0;
+uint32_t m_AT91_DisplayVerticalBackPorch = 0;
+uint32_t m_AT91_Display_TextRow = 0;
+uint32_t m_AT91_Display_TextColumn = 0;
+
+bool m_AT91_DisplayOutputEnableIsFixed = false;
+bool m_AT91_DisplayOutputEnablePolarity = false;
+bool m_AT91_DisplayPixelPolarity = false;
+bool m_AT91_DisplayHorizontalSyncPolarity = false;
+bool m_AT91_DisplayVerticalSyncPolarity = false;
+bool m_AT91_DisplayEnable = false;
+
+uint16_t* m_AT91_Display_VituralRam;
+uint8_t m_AT91_Display_TextBuffer[LCD_MAX_COLUMN][LCD_MAX_ROW];
+
+LPC17xx_LCD_Rotation m_AT91_Display_CurrentRotation = LPC17xx_LCD_Rotation::rotateNormal_0;
+
+bool AT91_Display_Initialize();
+bool AT91_Display_Uninitialize();
+bool AT91_Display_SetPinConfiguration();
+
+void AT91_Display_WriteFormattedChar(uint8_t c);
+void AT91_Display_WriteChar(uint8_t c, int32_t row, int32_t col);
+void AT91_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height, uint32_t data[]);
+void AT91_Display_PaintPixel(uint32_t x, uint32_t y, uint8_t c);
+void AT91_Display_Paint8HorizontalPixels(uint32_t x, uint32_t y, uint8_t p);
+void AT91_Display_TextEnterClearMode();
+void AT91_Display_PrintChracter(uint32_t x, uint32_t y, uint8_t c);
+void AT91_Display_TextShiftColUp();
+void AT91_Display_Clear();
+void AT91_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenHeight);
+
+int32_t AT91_Display_GetWidth();
+int32_t AT91_Display_GetHeight();
+int32_t AT91_Display_BitPerPixel();
+uint32_t AT91_Display_GetPixelClockDivider();
+int32_t AT91_Display_GetOrientation();
+uint32_t* AT91_Display_GetFrameBuffer();
+
+static TinyCLR_Display_Provider displayProvider;
+static TinyCLR_Api_Info displayApi;
+
+
+#define AHBCFG1		(*(volatile unsigned *)0xe01fc188)
+
+bool AT91_Display_Initialize() {
+    int32_t i;
+    uint32_t * p32;
+
+    uint32_t newFreq;
+    uint8_t divider;
+
+    AT91XX_LCDC & LCDC = *(AT91XX_LCDC *)AT91XX_LCDC::c_LCDC_Base;
+
+    if (m_AT91_DisplayPixelClockRateKHz > 10)
+        // change peripherals priority, LCD first
+        AHBCFG1 = 0x12340144;
+
+    /* Power Up the LCD controller. */
+    AT91XX::SYSCON().PCONP |= AT91XX_SYSCON::ENABLE_LCD;
+    AT91_Time_Delay(nullptr, 1000 * 10);
+
+    /* Disable the display in case it is on */
+    LCDC.LCD_CTRL = 0;
+    AT91_Time_Delay(nullptr, 1000 * 10);
+
+    LCDC.LCD_TIMH = ((m_AT91_DisplayHorizontalBackPorch - 1) << 24) | ((m_AT91_DisplayHorizontalFrontPorch - 1) << 16) | ((m_AT91_DisplayHorizontalSyncPulseWidth - 1) << 8) | (((m_AT91_DisplayWidth / 16) - 1) << 2);//(1<<24)|(16<<16)|(40<<8)|(((480/16)-1)<<2);
+    LCDC.LCD_TIMV = ((m_AT91_DisplayVerticalBackPorch) << 24) | ((m_AT91_DisplayVerticalFrontPorch) << 16) | ((m_AT91_DisplayVerticalSyncPulseWidth - 1) << 10) | (m_AT91_DisplayHeight - 1);//AT91_Display_VerticalTimingReg;//(2<<24)|(16<<16)|(9<<10)|(271);
+    LCDC.LCD_POL = (1 << 26) | ((m_AT91_DisplayWidth - 1) << 16) | (!m_AT91_DisplayOutputEnablePolarity << 14) | (m_AT91_DisplayPixelPolarity << 13) | (!m_AT91_DisplayHorizontalSyncPolarity << 12) | (!m_AT91_DisplayVerticalSyncPolarity << 11);//AT91_Display_PolarityReg;//(1<<26)|(479<<16)|(1<<14)|(0<<13)|(1<<12)|(1<<11);
+    LCDC.LCD_LE = 0;//not used
+
+    LCDC.LCD_INTMSK = 0;
+
+    // don ot use grayscaler!!!?? manual
+    LCDC.LCD_CTRL = (6 << 1) | (1 << 5) | (1 << 11) | (1 << 8)/*RGB*/ | (0 << 9)/*endian*/ | (0 << 10)/*pixel order*/;
+
+    // clear pallete
+    p32 = (uint32_t*)&LCDC.LCD_PAL;
+    for (i = 0; i < 128; i++) {
+        p32[i] = 0;
+    }
+
+    if (m_AT91_DisplayPixelClockRateKHz == 0) {
+        divider = 0xFF;
+    }
+    else {
+        newFreq = (uint32_t)((SYSTEM_CYCLE_CLOCK_HZ / 1000) % m_AT91_DisplayPixelClockRateKHz);
+
+        if (newFreq != 0)
+            divider = ((SYSTEM_CYCLE_CLOCK_HZ / 1000) / m_AT91_DisplayPixelClockRateKHz) + 1;
+        else
+            divider = ((SYSTEM_CYCLE_CLOCK_HZ / 1000) / m_AT91_DisplayPixelClockRateKHz);
+    }
+
+    AT91XX::SYSCON().LCD_CFG = (divider - 1); //config.PixelClockDivider - 1;
+    AT91XX::PCB().PINSEL11 = (5 << 1) | 1;//LCD only config
+    // configure GPIO
+    AT91XX::PCB().PINSEL10 = 0;// no ETM trace
+
+    LCDC.LCD_UPBASE = (uint32_t)&m_AT91_Display_VituralRam[0];
+
+    AT91_Time_Delay(nullptr, 1000 * 10);
+
+    LCDC.LCD_CTRL |= 1;//enable ....also add power
+
+    AT91_Time_Delay(nullptr, 1000 * 10);
+
+    AT91_Display_TextEnterClearMode();
+
+    m_AT91_DisplayEnable = true;
+
+    return true;
+}
+
+bool AT91_Display_Uninitialize() {
+    int32_t i;
+
+    AT91XX_LCDC & LCDC = *(AT91XX_LCDC *)AT91XX_LCDC::c_LCDC_Base;
+
+    if (m_AT91_DisplayEnable == false)
+        return true;
+
+    // powerdown
+    LCDC.LCD_CTRL &= ~1;
+    AT91_Time_Delay(nullptr, 1000 * 10);
+    LCDC.LCD_CTRL = 0;
+    AT91_Time_Delay(nullptr, 1000 * 10);
+
+    for (i = 51; i <= 70; i++) {
+        AT91_Gpio_ReleasePin(nullptr, i);
+    }
+
+    m_AT91_DisplayEnable = false;
+
+    return true;
+}
+
+//====================================================
+void AT91_Display_WriteFormattedChar(uint8_t c) {
+    if (m_AT91_DisplayEnable == false)
+        return;
+
+    if (c == '\f') {
+        AT91_Display_Clear();
+        AT91_Display_TextEnterClearMode();
+        m_AT91_Display_TextColumn = 0;
+
+        return;
+    }
+
+    if (c == '\r') {
+        m_AT91_Display_TextColumn = 0;
+
+        return;
+    }
+    if (c == '\n') {
+        m_AT91_Display_TextColumn = 0;
+
+        if (++m_AT91_Display_TextRow >= LCD_MAX_ROW) {
+            m_AT91_Display_TextRow = LCD_MAX_ROW - 1;
+            AT91_Display_TextShiftColUp();
+        }
+        // clean the new line
+        for (c = 0; c < (LCD_MAX_COLUMN - 1); c++) {
+            m_AT91_Display_TextBuffer[c][m_AT91_Display_TextRow] = ' ';
+        }
+
+        return;
+    }
+
+    AT91_Display_PrintChracter(m_AT91_Display_TextColumn * 6, m_AT91_Display_TextRow * 8, c);
+    m_AT91_Display_TextBuffer[m_AT91_Display_TextColumn][m_AT91_Display_TextRow] = c;
+
+    if (++m_AT91_Display_TextColumn >= (LCD_MAX_COLUMN - 1)) {
+        m_AT91_Display_TextColumn = 0;
+
+        if (++m_AT91_Display_TextRow >= LCD_MAX_ROW) {
+            m_AT91_Display_TextRow = LCD_MAX_ROW - 1;
+            AT91_Display_TextShiftColUp();
+        }
+        else {
+            // clean the new line
+            for (c = 0; c < LCD_MAX_COLUMN; c++) {
+                m_AT91_Display_TextBuffer[c][m_AT91_Display_TextRow] = ' ';
+            }
+        }
+    }
+}
+//=======================================================
+void AT91_Display_PaintPixel(uint32_t x, uint32_t y, uint8_t c) {
+    volatile uint16_t * loc;
+
+    if (m_AT91_DisplayEnable == false)
+        return;
+
+    if (x >= m_AT91_DisplayWidth)
+        return;
+    if (y >= m_AT91_DisplayHeight)
+        return;
+
+    loc = m_AT91_Display_VituralRam + (y *m_AT91_DisplayWidth) + (x);
+
+    if (c)
+        *loc = 0x0fff;
+    else
+        *loc = 0;
+}
+//=======================================================
+void AT91_Display_Paint8HorizontalPixels(uint32_t x, uint32_t y, uint8_t p) {
+    if (m_AT91_DisplayEnable == false)
+        return;
+
+    for (int32_t i = 0; i < 8; i++) {
+        if (p&(1 << i))
+            AT91_Display_PaintPixel(x, y + i, 1);
+        else
+            AT91_Display_PaintPixel(x, y + i, 0);//clear
+    }
+}
+//===========================================================
+void AT91_Display_TextEnterClearMode() {
+    uint32_t r, c;
+
+    if (m_AT91_DisplayEnable == false)
+        return;
+
+    AT91_Display_Clear();
+    m_AT91_Display_TextRow = 0;
+    m_AT91_Display_TextColumn = 0;
+
+    for (r = 0; r < LCD_MAX_ROW; r++) {
+        for (c = 0; c < (LCD_MAX_COLUMN - 1); c++) {
+            m_AT91_Display_TextBuffer[c][r] = '1';
+        }
+    }
+}
+//===========================================================
+void AT91_Display_PrintChracter(uint32_t x, uint32_t y, uint8_t c) {
+    uint8_t i;
+
+    if (m_AT91_DisplayEnable == false)
+        return;
+
+    for (i = 0; i < 5; i++)
+        AT91_Display_Paint8HorizontalPixels(x + i, y, characters[c][i]);
+
+    AT91_Display_Paint8HorizontalPixels(x + i, y, 0);
+}
+
+void AT91_Display_TextShiftColUp() {
+    uint32_t r, c;
+
+    if (m_AT91_DisplayEnable == false)
+        return;
+
+    // refresh with new data
+    AT91_Display_Clear();
+    m_AT91_Display_TextRow = 0;
+    m_AT91_Display_TextColumn = 0;
+
+    for (r = 0; r < (LCD_MAX_ROW - 1); r++) {
+        for (c = 0; c < LCD_MAX_COLUMN - 1; c++) {
+            m_AT91_Display_TextBuffer[c][r] = m_AT91_Display_TextBuffer[c][r + 1];
+            AT91_Display_WriteFormattedChar(m_AT91_Display_TextBuffer[c][r]);
+        }
+    }
+}
+
+void AT91_Display_Clear() {
+    if (m_AT91_DisplayEnable == false)
+        return;
+
+    memset((uint32_t*)m_AT91_Display_VituralRam, 0, VIDEO_RAM_SIZE);
+}
+
+bool  AT91_Display_SetPinConfiguration() {
+
+
+
+
+    AT91_Gpio_ConfigurePin(1 * 32 + 20, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction1, AT91_Gpio_PinMode::Inactive); // 51
+    AT91_Gpio_ConfigurePin(1 * 32 + 21, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction1, AT91_Gpio_PinMode::Inactive); // 52
+    AT91_Gpio_ConfigurePin(1 * 32 + 22, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction1, AT91_Gpio_PinMode::Inactive); // 53
+    AT91_Gpio_ConfigurePin(1 * 32 + 23, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction1, AT91_Gpio_PinMode::Inactive); // 54
+    AT91_Gpio_ConfigurePin(1 * 32 + 24, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction1, AT91_Gpio_PinMode::Inactive); // 55
+    AT91_Gpio_ConfigurePin(1 * 32 + 25, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction1, AT91_Gpio_PinMode::Inactive); // 56
+    AT91_Gpio_ConfigurePin(1 * 32 + 26, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction1, AT91_Gpio_PinMode::Inactive); // 57
+    //AT91_Gpio_ConfigurePin(1*32 + 27, TinyCLR_Gpio_PinDriveMode::Input,  AT91_Gpio_PinFunction::PinFunction1); // 58
+    AT91_Gpio_ConfigurePin(1 * 32 + 28, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction1, AT91_Gpio_PinMode::Inactive); // 59
+    AT91_Gpio_ConfigurePin(1 * 32 + 29, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction1, AT91_Gpio_PinMode::Inactive); // 60
+    AT91_Gpio_ConfigurePin(2 * 32 + 2, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction3, AT91_Gpio_PinMode::Inactive); // 61
+    AT91_Gpio_ConfigurePin(2 * 32 + 3, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction3, AT91_Gpio_PinMode::Inactive); // 62
+
+    if (m_AT91_DisplayOutputEnableIsFixed)
+        AT91_Gpio_EnableOutputPin(2 * 32 + 4, m_AT91_DisplayOutputEnablePolarity);
+    else
+        AT91_Gpio_ConfigurePin(2 * 32 + 4, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction3, AT91_Gpio_PinMode::Inactive);
+
+    AT91_Gpio_ConfigurePin(2 * 32 + 5, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction3, AT91_Gpio_PinMode::Inactive);
+    AT91_Gpio_ConfigurePin(2 * 32 + 6, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction3, AT91_Gpio_PinMode::Inactive);
+    AT91_Gpio_ConfigurePin(2 * 32 + 7, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction3, AT91_Gpio_PinMode::Inactive);
+    AT91_Gpio_ConfigurePin(2 * 32 + 8, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction3, AT91_Gpio_PinMode::Inactive);
+    AT91_Gpio_ConfigurePin(2 * 32 + 9, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction3, AT91_Gpio_PinMode::Inactive);
+    AT91_Gpio_ConfigurePin(2 * 32 + 12, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction1, AT91_Gpio_PinMode::Inactive);
+    AT91_Gpio_ConfigurePin(2 * 32 + 13, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction1, AT91_Gpio_PinMode::Inactive);
+
+
+
+    return true;
+}
+uint32_t* AT91_Display_GetFrameBuffer() {
+    return (uint32_t*)m_AT91_Display_VituralRam;
+}
+
+int32_t AT91_Display_GetWidth() {
+    int32_t width = m_AT91_DisplayWidth;
+    int32_t height = m_AT91_DisplayHeight;
+
+    AT91_Display_GetRotatedDimensions(&width, &height);
+
+    return width;
+}
+
+int32_t AT91_Display_GetHeight() {
+    int32_t width = m_AT91_DisplayWidth;
+    int32_t height = m_AT91_DisplayHeight;
+
+    AT91_Display_GetRotatedDimensions(&width, &height);
+
+    return height;
+}
+
+uint32_t AT91_Display_GetPixelClockDivider() {
+    return m_AT91_DisplayPixelClockRateKHz;
+}
+
+int32_t AT91_Display_GetOrientation() {
+    return m_AT91_Display_CurrentRotation;
+}
+
+void  AT91_Display_MemCopy(void *dest, void *src, int32_t size) {
+    const int32_t MEMCOPY_BYTES_ALIGNED = 8;
+
+    uint64_t *from64 = (uint64_t *)src;
+    uint64_t *to64 = (uint64_t *)dest;
+
+    int32_t block = size / MEMCOPY_BYTES_ALIGNED;
+    int32_t remainder = size % MEMCOPY_BYTES_ALIGNED;
+
+    while (block > 0) {
+        *to64++ = *from64++;
+        block--;
+    }
+
+    if (remainder > 0) {
+        uint8_t *from8 = (uint8_t *)from64;
+        uint8_t *to8 = (uint8_t *)to64;
+
+        while (remainder > 0) {
+            *to8++ = *from8++;
+
+            remainder--;
+        }
+    }
+}
+
+void AT91_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height, uint32_t data[]) {
+
+    int32_t xTo, yTo, xFrom, yFrom;
+    int32_t xOffset = x;
+    int32_t yOffset = y;
+    uint16_t *from = (uint16_t *)data;
+    uint16_t *to = (uint16_t *)m_AT91_Display_VituralRam;
+
+
+    int32_t screenWidth = m_AT91_DisplayWidth;
+    int32_t screenHeight = m_AT91_DisplayHeight;
+    int32_t startPx, toAddition;
+
+    if (m_AT91_DisplayEnable == false)
+        return;
+
+    switch (m_AT91_Display_CurrentRotation) {
+        case LPC17xx_LCD_Rotation::rotateNormal_0:
+
+            if (xOffset == 0 && yOffset == 0 &&
+                width == screenWidth &&    height == screenHeight) {
+                AT91_Display_MemCopy(to, from, (screenWidth*screenHeight * 2));
+            }
+            else {
+                for (yTo = yOffset; yTo < (yOffset + height); yTo++) {
+                    AT91_Display_MemCopy((void*)(to + yTo * screenWidth + xOffset), (void*)(from + yTo * screenWidth + xOffset), (width * 2));
+                }
+            }
+
+            break;
+
+        case LPC17xx_LCD_Rotation::rotateCCW_90:
+
+            startPx = yOffset * screenHeight;
+            xFrom = xOffset + width;
+            yTo = screenHeight - xOffset - width;
+            xTo = yOffset;
+            to += yTo * screenWidth + xTo;
+            toAddition = screenWidth - height;
+
+            for (; yTo < (screenHeight - xOffset); yTo++) {
+                xFrom--;
+                yFrom = startPx + xFrom;
+
+                for (xTo = yOffset; xTo < (yOffset + height); xTo++) {
+                    *to++ = from[yFrom];
+                    yFrom += screenHeight;
+                }
+
+                to += toAddition;
+            }
+
+            break;
+
+        case LPC17xx_LCD_Rotation::rotateCW_90:
+
+            startPx = (yOffset + height - 1) * screenHeight;
+            xFrom = xOffset;
+
+            yTo = xOffset;
+            xTo = screenWidth - yOffset - height;
+            to += yTo * screenWidth + xTo;
+            toAddition = screenWidth - height;
+
+            for (; yTo < (xOffset + width); yTo++) {
+                yFrom = startPx + xFrom;
+
+                for (xTo = screenWidth - yOffset - height; xTo < (screenWidth - yOffset); xTo++) {
+                    *to++ = from[yFrom];
+                    yFrom -= screenHeight;
+                }
+
+                to += toAddition;
+                xFrom++;
+            }
+
+            break;
+
+        case LPC17xx_LCD_Rotation::rotate_180:
+
+            xFrom = (yOffset + height - 1) * screenWidth + xOffset + width;
+
+            yTo = screenHeight - yOffset - height;
+            xTo = screenWidth - xOffset - width;
+            to += yTo * screenWidth + xTo;
+            toAddition = screenWidth - width;
+
+            for (; yTo < (screenHeight - yOffset); yTo++) {
+
+                for (xTo = screenWidth - xOffset - width; xTo < (screenWidth - xOffset); xTo++) {
+                    xFrom--;
+                    *to++ = from[xFrom];
+                }
+
+                to += toAddition;
+                xFrom -= toAddition;
+            }
+
+            break;
+    }
+
+}
+
+void AT91_Display_WriteChar(uint8_t c, int32_t row, int32_t col) {
+    m_AT91_Display_TextRow = row;
+    m_AT91_Display_TextColumn = col;
+    AT91_Display_WriteFormattedChar(c);
+
+}
+void AT91_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenHeight) {
+    switch (m_AT91_Display_CurrentRotation) {
+        case LPC17xx_LCD_Rotation::rotateNormal_0:
+        case LPC17xx_LCD_Rotation::rotate_180:
+            *screenWidth = m_AT91_DisplayWidth;
+            *screenHeight = m_AT91_DisplayHeight;
+            break;
+
+        case LPC17xx_LCD_Rotation::rotateCCW_90:
+        case LPC17xx_LCD_Rotation::rotateCW_90:
+            *screenWidth = m_AT91_DisplayHeight;
+            *screenHeight = m_AT91_DisplayWidth;
+            break;
+    }
+}
+
+TinyCLR_Result AT91_Display_Acquire(const TinyCLR_Display_Provider* self, uint32_t width, uint32_t height) {
+    m_AT91_DisplayWidth = width;
+    m_AT91_DisplayHeight = height;
+
+    m_AT91_Display_CurrentRotation = LPC17xx_LCD_Rotation::rotateNormal_0;
+
+    m_AT91_Display_VituralRam = (uint16_t*)m_AT91_Display_ReservedVitualRamLocation;
+
+    if (AT91_Display_SetPinConfiguration())
+        return TinyCLR_Result::Success;
+
+    return  TinyCLR_Result::InvalidOperation;
+}
+
+TinyCLR_Result AT91_Display_Release(const TinyCLR_Display_Provider* self) {
+    if (AT91_Display_Uninitialize())
+        return TinyCLR_Result::Success;
+
+    return  TinyCLR_Result::InvalidOperation;
+}
+
+TinyCLR_Result AT91_Display_SetLcdConfiguration(const TinyCLR_Display_Provider* self, bool outputEnableIsFixed, bool outputEnablePolarity, bool pixelPolarity, uint32_t pixelClockRate, bool horizontalSyncPolarity, uint32_t horizontalSyncPulseWidth, uint32_t horizontalFrontPorch, uint32_t horizontalBackPorch, bool verticalSyncPolarity, uint32_t verticalSyncPulseWidth, uint32_t verticalFrontPorch, uint32_t verticalBackPorch) {
+    m_AT91_DisplayOutputEnableIsFixed = outputEnableIsFixed;
+    m_AT91_DisplayOutputEnablePolarity = outputEnablePolarity;
+    m_AT91_DisplayPixelPolarity = pixelPolarity;
+
+    m_AT91_DisplayPixelClockRateKHz = pixelClockRate / 1000;
+
+    m_AT91_DisplayHorizontalSyncPolarity = horizontalSyncPolarity;
+
+    m_AT91_DisplayHorizontalSyncPulseWidth = horizontalSyncPulseWidth;
+    m_AT91_DisplayHorizontalFrontPorch = horizontalFrontPorch;
+    m_AT91_DisplayHorizontalBackPorch = horizontalBackPorch;
+
+    m_AT91_DisplayVerticalSyncPolarity = verticalSyncPolarity;
+
+    m_AT91_DisplayVerticalSyncPulseWidth = verticalSyncPulseWidth;
+    m_AT91_DisplayVerticalFrontPorch = verticalFrontPorch;
+    m_AT91_DisplayVerticalBackPorch = verticalBackPorch;
+
+    if (AT91_Display_Initialize())
+        return TinyCLR_Result::Success;
+
+    return  TinyCLR_Result::InvalidOperation;
+}
+
+TinyCLR_Result AT91_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data, TinyCLR_Display_Format dataFormat) {
+    switch (dataFormat) {
+        case TinyCLR_Display_Format::Rgb565:
+            AT91_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
+            return TinyCLR_Result::Success;
+    }
+
+    return  TinyCLR_Result::InvalidOperation;
+}
+
+TinyCLR_Result AT91_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer) {
+    while (buffer != '\0') {
+        AT91_Display_WriteFormattedChar(buffer[0]);
+        buffer++;
+    }
+    return TinyCLR_Result::Success;
+}
+
+int32_t AT91_Display_GetWidth(const TinyCLR_Display_Provider* self) {
+    return AT91_Display_GetWidth();;
+}
+
+int32_t AT91_Display_GetHeight(const TinyCLR_Display_Provider* self) {
+    return AT91_Display_GetHeight();
+}
+
+TinyCLR_Display_InterfaceType AT91_Display_GetType(const TinyCLR_Display_Provider* self) {
+    return TinyCLR_Display_InterfaceType::Parallel;
+}
+
+const TinyCLR_Api_Info* AT91_Display_GetApi() {
+    displayProvider.Parent = &displayApi;
+    displayProvider.Index = 0;
+    displayProvider.Acquire = &AT91_Display_Acquire;
+    displayProvider.Release = &AT91_Display_Release;
+    displayProvider.SetLcdConfiguration = &AT91_Display_SetLcdConfiguration;
+    displayProvider.DrawBuffer = &AT91_Display_DrawBuffer;
+    displayProvider.WriteString = &AT91_Display_WriteString;
+    displayProvider.GetWidth = &AT91_Display_GetWidth;
+    displayProvider.GetHeight = &AT91_Display_GetHeight;
+    displayProvider.GetType = &AT91_Display_GetType;
+
+    displayApi.Author = "GHI Electronics, LLC";
+    displayApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.DisplayProvider";
+    displayApi.Type = TinyCLR_Api_Type::DisplayProvider;
+    displayApi.Version = 0;
+    displayApi.Count = 1;
+    displayApi.Implementation = &displayProvider;
+
+    return &displayApi;
+}
+
+void AT91_Display_Reset() {
+    AT91_Display_Uninitialize();
+}
+
+#endif // INCLUDE_DISPLAY
