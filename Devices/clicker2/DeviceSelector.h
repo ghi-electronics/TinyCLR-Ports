@@ -37,7 +37,7 @@
 #define INTERRUPT_END           STM32F4_Interrupt_Ended();
 
 // Device
-#define HAL_SYSTEM_NAME "G30"
+#define HAL_SYSTEM_NAME "clicker2"
 
 // System clock
 #define SYSTEM_CLOCK_HZ                  84000000   // 84 MHz
@@ -113,8 +113,8 @@
 #define USB_MAX_QUEUES                  16
 #define USB_VENDOR_ID                   0x1B9F
 #define USB_PRODUCT_ID                  0x0110
-#define USB_MANUFACTURER_NAME           {'G', 'H', 'I', ' ', 'E', 'l', 'e', 'c', 't', 'r', 'o', 'n', 'i', 'c', 's', ',', ' ', 'L', 'L', 'C'}
-#define USB_PRODUCT_NAME                {'c', 'l', 'i', 'c', 'k', 'e', 'r'}
+#define USB_MANUFACTURER_NAME           {'c', 'l', 'i', 'c', 'k', 'e', 'r', '2'}
+#define USB_PRODUCT_NAME                {'c', 'l', 'i', 'c', 'k', 'e', 'r', '2'}
 #define USB_DISPLAY_NAME                USB_PRODUCT_NAME
 #define USB_FRIENDLY_NAME               USB_PRODUCT_NAME
 

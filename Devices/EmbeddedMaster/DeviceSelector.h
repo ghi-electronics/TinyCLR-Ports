@@ -35,7 +35,7 @@
 #define INTERRUPT_END           LPC24_Interrupt_Ended();
 
 // Device
-#define HAL_SYSTEM_NAME "EMM"
+#define HAL_SYSTEM_NAME "EmbeddedMaster"
 
 // System clock
 #define SYSTEM_CLOCK_HZ                      18000000 // 18 MHz
