@@ -1,36 +1,16 @@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@
-@  Copyright Microsoft Corporation
-@  Copyright GHI Electronics, LLC
-@
-@  Licensed under the Apache License, Version 2.0 (the "License");
-@  you may not use this file except in compliance with the License.
-@  You may obtain a copy of the License at
-@
-@      http://www.apache.org/licenses/LICENSE-2.0
-@
-@  Unless required by applicable law or agreed to in writing, software
-@  distributed under the License is distributed on an "AS IS" BASIS,
-@  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-@  See the License for the specific language governing permissions and
-@  limitations under the License.
-@
-@  CORTEX-M3 Standard Entry Code
-@
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-@
-@ This version of the "boot entry" support is used when the application is
-@ loaded or otherwise started from a bootloader. (e.g. this application isn't
-@ a boot loader). More specifically this version is used whenever the application
-@ does NOT run from the power on reset vector because some other code is already
-@ there.
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@ Copyright (c) Microsoft Corporation.  All rights reserved.
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
     .global  EntryPoint
     .global  PreStackInit_Exit_Pointer
-    .global  PreStackInit
-    .global  ARM_Vectors
+	.global  PreStackInit
+	.global  ARM_Vectors
+	.global CPU_InvalidateTLBs_asm
+	.global CPU_EnableMMU_asm
+	.global CPU_DisableMMU_asm
+	.global CPU_IsMMUEnabled_asm
 
     .global IRQ_LOCK_Release_asm
     .global IRQ_LOCK_Probe_asm
@@ -39,19 +19,14 @@
     .global IRQ_LOCK_ForceEnabled_asm
     .global IRQ_LOCK_Disable_asm
     .global IRQ_LOCK_Restore_asm
-
     .global IDelayLoop
 
     @ .extern  PreStackInit
-    .global UNDEF_SubHandler
-    .global ABORTP_SubHandler
-    .global ABORTD_SubHandler
+
 
     .extern AT91_Interrupt_UndefHandler               @ void AT91_Interrupt_UndefHandler  (unsigned int*, unsigned int, unsigned int)
     .extern AT91_Interrupt_AbortpHandler              @ void AT91_Interrupt_AbortpHandler (unsigned int*, unsigned int, unsigned int)
     .extern AT91_Interrupt_AbortdHandler              @ void AT91_Interrupt_AbortdHandler (unsigned int*, unsigned int, unsigned int)
-    .extern IRQ_Handler
-    .extern  ARM_Vectors
 
 
 
@@ -100,10 +75,144 @@ HeapEnd:
     .global StackTop
     .global HeapBegin
     .global HeapEnd
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+	.section    SectionForBootstrapOperations, "xa", %progbits
+
+
+CPU_InvalidateTLBs_asm: 
+    mov		r0, #0
+    mcr		p15, 0, r0, c8, c7, 0
+    mrc     p15, 0, r1, c2, c0, 0
+    nop          
+
+    mov     pc, lr
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-    .section SectionForBootstrapOperations, "xa", %progbits
+CPU_EnableMMU_asm:
+	mcr     p15, 0, r0, c2, c0, 0		@ Set the TTB address location to CP15
+    mrc     p15, 0, r1, c2, c0, 0
+    nop  
+    mrc     p15, 0, r1, c1, c0, 0
+    orr     r1, r1, #0x0001             @ Enable MMU
+    mcr     p15, 0, r1, c1, c0, 0
+    mrc     p15, 0, r1, c2, c0, 0
+    nop 
+        
+    @ Note that the 2 preceeding instruction would still be prefetched
+    @ under the physical address space instead of in virtual address space. 
+    mov     pc, lr
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+CPU_DisableMMU_asm:
+    mrc     p15, 0, r0, c1, c0, 0
+    bic     r0, r0, #0x0001           @ Disable MMU
+    mcr     p15, 0, r0, c1, c0, 0
+    mrc     p15, 0, r0, c2, c0, 0
+    nop 
+        
+    @ Note that the 2 preceeding instruction would still be prefetched
+    @ under the physical address space instead of in virtual address space.
+    mov     pc, lr
+    
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    
+CPU_IsMMUEnabled_asm:
+    mrc     p15, 0, r0, c1, c0, 0
+    mrc     p15, 0, r1, c2, c0, 0
+    nop 
+    
+    and		r0, r0, #1
+    mov     pc, lr    
+	
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+    .section   SectionForFlashOperations,"xa", %progbits       @  void IDelayLoop(UINT32 count)
+
+IDelayLoop:
+
+IDelayLoop__Fi_b:
+
+    subs    r0, r0, #4          @@ 1 cycle
+    bgt     IDelayLoop__Fi_b    @@ 3 cycles, expect the last round, which is 1 cycle.
+
+    mov     pc, lr              @@ 3 cycles, expect the last round, which is 1 cycle.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+    .section   SectionForFlashOperations,  "xa", %progbits
+
+IRQ_LOCK_Release_asm:
+    mrs     r0, CPSR
+    bic     r1, r0, #0x80
+    msr     CPSR_c, r1
+
+    mov     pc, lr
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+IRQ_LOCK_Probe_asm:
+    mrs		r0, CPSR
+    bic		r1, r0, #0x80
+    msr		CPSR_c, r1
+    msr		CPSR_c, r0
+
+    mov     pc, lr
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+IRQ_LOCK_GetState_asm:
+    mrs		r0, CPSR
+    mvn		r0, r0
+    and		r0, r0, #0x80
+
+    mov     pc, lr
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+IRQ_LOCK_ForceDisabled_asm:
+    mrs		r0, CPSR
+    orr		r1, r0, #0x80
+    msr		CPSR_c, r1
+    mvn		r0, r0
+    and		r0, r0, #0x80
+
+    mov     pc, lr
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+IRQ_LOCK_ForceEnabled_asm:
+    mrs		r0, CPSR
+    bic		r1, r0, #0x80
+    msr		CPSR_c, r1
+    mvn		r0, r0
+    and		r0, r0, #0x80
+
+    mov     pc, lr
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+IRQ_LOCK_Disable_asm:
+    mrs		r0, CPSR
+    orr		r1, r0, #0x80
+    msr		CPSR_c, r1
+
+    mov     pc, lr
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+IRQ_LOCK_Restore_asm:
+    mrs		r0, CPSR
+    bic		r0, r0, #0x80
+    msr		CPSR_c, r0
+
+    mov     pc, lr
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+	.section SectionForBootstrapOperations, "xa", %progbits
 
 PreStackInit:
 
@@ -113,33 +222,33 @@ PreStackInit:
     @ TODO: Enter your pre stack initialization code here (if needed)
     @       e.g. SDRAM initialization if you don't have/use SRAM for the stack
     @
-
+    
     @ << ADD CODE HERE >>
 
     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    @ DO NOT CHANGE THE FOLLOWING CODE! we can not use pop to return because we
-    @ loaded the PC register to get here (since the stack has not been initialized).
-    @ Make sure the PreStackInit_Exit_Pointer is within range and
+    @ DO NOT CHANGE THE FOLLOWING CODE! we can not use pop to return because we 
+    @ loaded the PC register to get here (since the stack has not been initialized).  
+    @ Make sure the PreStackInit_Exit_Pointer is within range and 
     @ in the SectionForBootstrapOperations
-    @ go back to the firstentry(_loader) code
+    @ go back to the firstentry(_loader) code 
     @
 
 
 PreStackEnd:
     B     PreStackInit_Exit_Pointer
 
-
+    
     @
     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-    .section    .text.UNDEF_SubHandler, "xa", %progbits
-    UNDEF_SubHandler:
+	
+	.section    .text.UNDEF_SubHandler, "xa", %progbits
+	UNDEF_SubHandler:
 @ on entry, were are in UNDEF mode, without a usable stack
     stmfd   r13!, {r0}                  @ store the r0 at undef stack first
     mrs     r0, spsr                    @ get the previous mode.
     orr     r0, r0, #0xC0               @ keep interrupts disabled.
     msr     cpsr_c, r0                  @ go back to the previous mode.
-
+  
     stmfd   r13!, {r1-r12}              @ push unbanked registers on the stack
     msr     cpsr_c, #PSR_MODE_UNDEF     @ go back into UNDEF mode, but keep IRQs off
     mov     r3,r0
@@ -229,104 +338,22 @@ ABORTD_SubHandler:
     ldr     pc,ABORTD_Handler_Ptr       @ address of vector routine in C to jump to, never expect to return
 
 ABORTD_Handler_Ptr:
-    .word   AT91_Interrupt_AbortdHandler
+    .word   ABORTD_Handler
+	
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-    .section   SectionForFlashOperations,"xa", %progbits       @  void IDelayLoop(UINT32 count)
-
-IDelayLoop:
-
-IDelayLoop__Fi_b:
-
-    subs    r0, r0, #4          @@ 1 cycle
-    bgt     IDelayLoop__Fi_b    @@ 3 cycles, expect the last round, which is 1 cycle.
-
-    mov     pc, lr              @@ 3 cycles, expect the last round, which is 1 cycle.
-
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-    .section   SectionForFlashOperations,  "xa", %progbits
-
-IRQ_LOCK_Release_asm:
-    mrs     r0, CPSR
-    bic     r1, r0, #0x80
-    msr     CPSR_c, r1
-
-    mov     pc, lr
-
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-IRQ_LOCK_Probe_asm:
-    mrs		r0, CPSR
-    bic		r1, r0, #0x80
-    msr		CPSR_c, r1
-    msr		CPSR_c, r0
-
-    mov     pc, lr
-
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-IRQ_LOCK_GetState_asm:
-    mrs		r0, CPSR
-    mvn		r0, r0
-    and		r0, r0, #0x80
-
-    mov     pc, lr
-
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-IRQ_LOCK_ForceDisabled_asm:
-    mrs		r0, CPSR
-    orr		r1, r0, #0x80
-    msr		CPSR_c, r1
-    mvn		r0, r0
-    and		r0, r0, #0x80
-
-    mov     pc, lr
-
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-IRQ_LOCK_ForceEnabled_asm:
-    mrs		r0, CPSR
-    bic		r1, r0, #0x80
-    msr		CPSR_c, r1
-    mvn		r0, r0
-    and		r0, r0, #0x80
-
-    mov     pc, lr
-
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-IRQ_LOCK_Disable_asm:
-    mrs		r0, CPSR
-    orr		r1, r0, #0x80
-    msr		CPSR_c, r1
-
-    mov     pc, lr
-
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-IRQ_LOCK_Restore_asm:
-    mrs		r0, CPSR
-    bic		r0, r0, #0x80
-    msr		CPSR_c, r0
-
-    mov     pc, lr
-
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
-    .section i.EntryPoint, "xa", %progbits
-
-.ifdef COMPILE_THUMB
-    .arm
-.endif
+   .section VectorsTrampolines, "xa", %progbits
+   
+	.ifdef COMPILE_THUMB
+		.arm
+	.endif
 
 ARM_Vectors:
 
     @ RESET
 RESET_VECTOR:
-    b       EntryPoint
+    b       UNDEF_VECTOR
 
     @ UNDEF INSTR
 UNDEF_VECTOR:
@@ -357,7 +384,7 @@ IRQ_VECTOR:
     @ this saves an additional 3+ clock cycle branch to the handler
 FIQ_Handler:
     .ifdef FIQ_SAMPLING_PROFILER
-    ldr     pc,FIQ_SubHandler_Trampoline
+    ldr     pc,FIQ_SubHandler_Trampoline    
 
 FIQ_SubHandler_Trampoline:
     .word   FIQ_SubHandler
@@ -372,11 +399,17 @@ ABORTP_SubHandler_Trampoline:
 ABORTD_SubHandler_Trampoline:
     .word   ABORTD_SubHandler
 
-    @ route the normal interupt handler to the proper lowest level driver
-IRQ_SubHandler_Trampoline:
+
+        @ route the normal interupt handler to the proper lowest level driver
+IRQ_SubHandler_Trampoline: 
     .word  	IRQ_Handler
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+    .section i.EntryPoint, "xa", %progbits
+
+    .arm
 
 EntryPoint:
 
