@@ -45,11 +45,16 @@
 #define SLOW_CLOCKS_TEN_MHZ_GCD              1000000 // GCD(SLOW_CLOCKS_PER_SECOND, 10M)
 #define SLOW_CLOCKS_MILLISECOND_GCD          1000 // GCD(SLOW_CLOCKS_PER_SECOND, 1k)
 
-// external Memory - Flash
-#define EXT_FLASH_MEMORY_Base                0x80000000
-#define EXT_FLASH_MEMORY_Size                0x00400000 // 4MB ext flash
-#define EXT_SDRAM_MEMORY_Base                0xA0000000
-#define EXT_SDRAM_MEMORY_Size                0x01000000 // 16MB ext ram
+// Memory
+#define SRAM_MEMORY_Base                    0x00300000
+#define SRAM_MEMORY_Size                    (32*1024)
+#define SDRAM_MEMORY_Base                   0x20000000
+#define SDRAM_MEMORY_Size                   (128*1024*1024)
+
+//Flash
+#define FLASH_MEMORY_Base                   0x00000000
+#define FLASH_MEMORY_Size                   0x00420000
+
 
 // Macro
 #define PORT_PIN(port,pin)                   (((int)port)*32 + (pin))

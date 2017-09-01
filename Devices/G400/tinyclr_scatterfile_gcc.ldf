@@ -71,10 +71,20 @@ SECTIONS
         * (SectionForHeapBegin)
     }
     
-    ER_HEAP_END 0x266FFFF8 : ALIGN(0x8)
+    ER_HEAP_END 0x26700000 - 0x8 : ALIGN(0x8)
     {
         * (SectionForHeapEnd)
     }
+    
+    ER_RLP_BEGIN 0x26700000 : ALIGN(0x8)
+    {
+        * (SectionForRlpBegin)
+    }>IRAM
+    
+    ER_RLP_END 0x27E00000 - 0x08: 
+    {
+        * (SectionForRlpEnd)
+    }>IRAM
     
     ER_STACK_BOTTOM 0x300030 : ALIGN(0x8)
     {
@@ -101,4 +111,8 @@ Image$$ER_RAM_RW$$Length = SIZEOF(ER_RAM_RW);
 Load$$ER_RAM_RW$$Base = LOADADDR(ER_RAM_RW);
 Image$$ER_RAM_RW$$ZI$$Base = ADDR(.bss);
 Image$$ER_RAM_RW$$ZI$$Length = SIZEOF(.bss);
+
+Load$$ER_RLP_BEGIN$$Base = LOADADDR(ER_RLP_BEGIN);
+Load$$ER_RLP_END$$Base = LOADADDR(ER_RLP_END);
+
 __use_no_semihosting_swi = 0;

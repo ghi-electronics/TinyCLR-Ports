@@ -40,6 +40,8 @@ extern "C" {
 
     extern uint32_t Load$$ER_FLASH$$Base;
 
+    extern uint32_t ARM_Vectors ;
+
 }
 
 #pragma arm section code = "SectionForBootstrapOperations"
@@ -140,11 +142,22 @@ void AT91_Startup_InitializeRegions() {
     }
     
     //
-    // Map vector to RAM.
+    // Copy Vector.
     //
     {
-        uint32_t* memoryMapReg = (uint32_t*)MEM_MAP_REG;
-        *memoryMapReg = 0x2; // map ping memory to RAM
+
+        uint32_t* src = (uint32_t*)((uint32_t)&ARM_Vectors);
+        uint32_t* dst = (uint32_t*)0x0000000; 
+        uint32_t  len =  44; 
+
+        if((dst != src) && (*src != 0))
+        {
+            while(len)
+            {
+                *dst++ = *src++;
+                len -= 4;
+            }
+        }
     }
 
 }

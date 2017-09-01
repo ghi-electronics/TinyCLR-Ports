@@ -142,8 +142,6 @@ IDelayLoop__Fi_b:
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-    .section   SectionForFlashOperations,  "xa", %progbits
-
 IRQ_LOCK_Release_asm:
     mrs     r0, CPSR
     bic     r1, r0, #0x80
@@ -338,7 +336,7 @@ ABORTD_SubHandler:
     ldr     pc,ABORTD_Handler_Ptr       @ address of vector routine in C to jump to, never expect to return
 
 ABORTD_Handler_Ptr:
-    .word   ABORTD_Handler
+    .word   AT91_Interrupt_AbortdHandler
 	
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
