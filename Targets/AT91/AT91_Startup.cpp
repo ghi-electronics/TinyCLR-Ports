@@ -40,9 +40,6 @@ extern "C" {
 
     extern uint32_t Load$$ER_FLASH$$Base;
 
-    extern uint32_t ARM_Vectors;
-    extern uint32_t Image$$ER_VECTOR$$Base;
-    extern uint32_t Image$$ER_VECTOR$$Length;
 }
 
 #pragma arm section code = "SectionForBootstrapOperations"
@@ -141,17 +138,7 @@ void AT91_Startup_InitializeRegions() {
 
         Prepare_Zero(dst, len);
     }
-
-    //
-    // Copy Interrupt to RAM.
-    //
-    {
-        uint32_t *src = (uint32_t*)((uint32_t)&ARM_Vectors);
-        uint32_t *dst = (uint32_t*)((uint32_t)&Image$$ER_VECTOR$$Base);
-        uint32_t  len = (uint32_t)((uint32_t)&Image$$ER_VECTOR$$Length);
-        memcpy(dst, src, len);
-    }
-
+    
     //
     // Map vector to RAM.
     //

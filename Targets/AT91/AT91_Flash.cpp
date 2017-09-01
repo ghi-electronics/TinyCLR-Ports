@@ -15,8 +15,12 @@
 
 #include "AT91.h"
 
-const uint32_t flashAddresses[] = { INTERNAL_FLASH_SECTOR_ADDRESS };
-const uint32_t flashSize[] = { INTERNAL_FLASH_SECTOR_SIZE };
+#define DEPLOYMENT_SECTOR_START 17
+#define DEPLOYMENT_SECTOR_END   27
+#define DEPLOYMENT_SECTOR_NUM   (DEPLOYMENT_SECTOR_END - DEPLOYMENT_SECTOR_START + 1)
+
+const uint32_t flashAddresses[] = { 0 };
+const uint32_t flashSize[] = { 0 };
 
 static uint32_t deploymentAddress[DEPLOYMENT_SECTOR_NUM];
 static uint32_t deploymentSize[DEPLOYMENT_SECTOR_NUM];

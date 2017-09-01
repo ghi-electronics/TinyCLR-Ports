@@ -84,31 +84,19 @@ void AT91_Gpio_InterruptHandler(void* param) {
 
     bool executeIsr = true;
 
-    for (auto port = 0; port <= 2; port += 2) { // Only port 0 and port 2 support interrupts
-        auto status_mask_register = 1 << port;
+    AT91_Int_State* state = nullptr; 
 
-        for (auto pin = 0; ((*GPIO_INTERRUPT_STATUS_REG) & status_mask_register) && (pin < 32); pin++) {
-
-            if (!(GET_PIN_INTERRUPT_RISING_EDGE_STATUS(port, pin)) && !(GET_PIN_INTERRUPT_FALLING_EDGE_STATUS(port, pin))) // If this is not the Pin, skip to next pin
-                continue;
-
-            AT91_Int_State* state = &g_int_state[pin + port * 32];
-
-            CLEAR_PIN_INTERRUPT(port, pin); // Clear this pin's IRQ
-
-            if (state->debounce) {
-                if ((AT91_Time_GetCurrentTicks(nullptr) - state->lastDebounceTicks) >= g_debounceTicksPin[state->pin]) {
-                    state->lastDebounceTicks = AT91_Time_GetCurrentTicks(nullptr);
-                }
-                else {
-                    executeIsr = false;
-                }
-            }
-
-            if (executeIsr)
-                state->ISR(state->controller, state->pin, state->currentValue);
+    if (state->debounce) {
+        if ((AT91_Time_GetCurrentTicks(nullptr) - state->lastDebounceTicks) >= g_debounceTicksPin[state->pin]) {
+            state->lastDebounceTicks = AT91_Time_GetCurrentTicks(nullptr);
+        }
+        else {
+            executeIsr = false;
         }
     }
+
+    if (executeIsr)
+        state->ISR(state->controller, state->pin, state->currentValue);
 
     INTERRUPT_END
 }
@@ -118,8 +106,8 @@ TinyCLR_Result AT91_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* sel
 
     GLOBAL_LOCK(irq);
 
-    uint32_t port = GET_PORT(pin);
-    uint32_t pinMask = GET_PIN_MASK(pin);
+    uint32_t port = 0;
+    uint32_t pinMask = 0;
     
     AT91_Gpio_EnableInputPin(pin, g_pinDriveMode[pin]);
 

@@ -465,7 +465,7 @@ const TinyCLR_UsbClient_DescriptorHeader * USB_FindRecord(USB_CONTROLLER_STATE* 
 #define ENDPOINT_DIR_IN_MASK        0x02
 #define ENDPOINT_DIR_OUT_MASK       0x04
 
-extern USB_CONTROLLER_STATE UsbControllerState[1];
+USB_CONTROLLER_STATE UsbControllerState[1];
 
 int8_t AT91_UsbClient_EndpointMap[] = { ENDPOINT_INUSED_MASK,                          // Endpoint 0
                                                 ENDPOINT_DIR_IN_MASK | ENDPOINT_DIR_OUT_MASK,  // Endpoint 1
@@ -1914,8 +1914,6 @@ const TinyCLR_Api_Info* AT91_UsbClient_GetApi() {
 }
 
 // AT91 USBD HAL drive
-
-
 bool AT91_UsbClient_Initialize(int controller) {
     if ((uint32_t)controller >= TOTAL_USB_CONTROLLER)
         return false;
@@ -1927,6 +1925,10 @@ bool AT91_UsbClient_Uninitialize(int controller) {
     return true;
 }
 
+bool AT91_UsbClient_SoftReset(int controller) {
+
+    return true;
+}
 bool AT91_UsbClient_StartOutput(USB_CONTROLLER_STATE* State, int ep) {
 
     return true;

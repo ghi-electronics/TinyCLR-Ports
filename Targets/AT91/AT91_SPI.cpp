@@ -219,11 +219,11 @@ TinyCLR_Result AT91_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
 
     switch (controller) {
         case 0:
-            AT91XX::SYSCON().PCONP |= PCONP_PCSSP0;
+            
             break;
 
         case 1:
-            AT91XX::SYSCON().PCONP |= PCONP_PCSSP1;
+            
             break;
     }
 

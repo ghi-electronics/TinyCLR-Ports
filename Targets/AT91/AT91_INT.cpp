@@ -59,25 +59,6 @@ struct AT91_Interrupt_Vectors {
     AT91_Interrupt_Callback    Handler;
 };
 
-static AT91_Interrupt_Vectors* AT91_Interrupt_IrqToVector(uint32_t Irq);
-
-
-AT91_Interrupt_Vectors* AT91_Interrupt_IrqToVector(uint32_t Irq) {
-    AT91_Interrupt_Vectors* IsrVector = s_IsrTable;
-
-    while (IsrVector->Index != VECTORING_GUARD) {
-        if (IsrVector->Index == Irq) return IsrVector;
-
-        IsrVector++;
-    }
-
-    return NULL;
-}
-
-void AT91_Interrupt_StubIrqVector(void* Param) {
-
-}
-
 TinyCLR_Interrupt_StartStopHandler AT91_Interrupt_Started;
 TinyCLR_Interrupt_StartStopHandler AT91_Interrupt_Ended;
 
@@ -121,21 +102,21 @@ TinyCLR_Result AT91_Interrupt_Release() {
 
 bool AT91_Interrupt_Activate(uint32_t Irq_Index, uint32_t *ISR, void* ISR_Param) {
     // figure out the interrupt
-    return true;
+    return false;
 
 }
 
 bool AT91_Interrupt_Deactivate(uint32_t Irq_Index) {
     // figure out the interrupt
-    return true;
+    return false;
 }
 
 bool AT91_Interrupt_Enable(uint32_t Irq_Index) {
-    return WasEnabled;
+    return false;
 }
 
 bool AT91_Interrupt_Disable(uint32_t Irq_Index) {
-    return WasEnabled;
+    return false;
 }
 
 bool AT91_Interrupt_EnableState(uint32_t Irq_Index) { 

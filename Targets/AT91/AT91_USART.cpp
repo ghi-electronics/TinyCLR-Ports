@@ -117,32 +117,12 @@ void AT91_Uart_SetErrorEvent(int32_t portNum, TinyCLR_Uart_Error error) {
         g_AT91_Uart_Controller[portNum].errorEventHandler(g_AT91_Uart_Controller[portNum].provider, error);
 }
 
-void AT91_Uart_ReceiveData(int portNum, uint32_t LSR_Value, uint32_t IIR_Value) {
-    INTERRUPT_START
-
-    GLOBAL_LOCK(irq);
-
-   
-    INTERRUPT_END
-}
-void AT91_Uart_TransmitData(int portNum, uint32_t LSR_Value, uint32_t IIR_Value) {
-    INTERRUPT_START
-
-    GLOBAL_LOCK(irq);
-
-    INTERRUPT_END
-}
-
 void AT91_Uart_InterruptHandler(void *param) {
     INTERRUPT_START
 
     GLOBAL_LOCK(irq);
 
     uint32_t portNum = (uint32_t)param;
-
-    AT91_Uart_ReceiveData(portNum, LSR_Value, IIR_Value);
-
-    AT91_Uart_TransmitData(portNum, LSR_Value, IIR_Value);
 
     INTERRUPT_END
 }
@@ -218,19 +198,19 @@ TinyCLR_Result AT91_Uart_Release(const TinyCLR_Uart_Provider* self) {
 
     switch (portNum) {
         case 0:
-            AT91XX::SYSCON().PCONP &= ~PCONP_PCUART0;
+            
             break;
 
         case 1:
-            AT91XX::SYSCON().PCONP &= ~PCONP_PCUART1;
+            
             break;
 
         case 2:
-            AT91XX::SYSCON().PCONP &= ~PCONP_PCUART2;
+            
             break;
 
         case 3:
-            AT91XX::SYSCON().PCONP &= ~PCONP_PCUART3;
+            
             break;
     }
 
