@@ -15,8 +15,6 @@
 
 #include "AT91.h"
 
-#define PCON (*(volatile unsigned char *)0xE01FC0C0)
-
 static void(*g_AT91_stopHandler)();
 static void(*g_AT91_restartHandler)();
 
@@ -63,9 +61,8 @@ void AT91_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep_Le
             return;
 
         default: // sleep
-            PCON |= 1;
 
-            return;
+        return;
     }
 }
 
@@ -77,19 +74,6 @@ void AT91_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) {
         *((volatile uint32_t*)RAM_BOOTLOADER_HOLD_ADDRESS) = RAM_BOOTLOADER_HOLD_VALUE;
     }
 #endif
-
-    AT91XX_WATCHDOG& WTDG = AT91XX::WTDG();
-
-    // disable interrupts
-    GLOBAL_LOCK(irq);
-    // set the smallest value
-    WTDG.WDTC = 0xFF;
-
-    // assure its enabled (and counter is zero)
-    WTDG.WDMOD = AT91XX_WATCHDOG::WDMOD__WDEN | AT91XX_WATCHDOG::WDMOD__WDRESET;
-
-    WTDG.WDFEED = AT91XX_WATCHDOG::WDFEED_reload_1;
-    WTDG.WDFEED = AT91XX_WATCHDOG::WDFEED_reload_2;
 
     while (1); // wait for reset
 }

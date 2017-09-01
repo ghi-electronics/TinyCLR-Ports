@@ -15,9 +15,6 @@
 
 #include "AT91.h"
 
-#define DACR (*(volatile unsigned long *)0xE006C000)
-
-
 #define AT91_DAC_PRECISION_BITS 	10	// Number of Bits in the DAC Convertion
 #define AT91_DAC_MAX_VALUE 	(1<<AT91_DAC_PRECISION_BITS)
 
@@ -73,9 +70,7 @@ TinyCLR_Result AT91_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t
     if (!AT91_Gpio_OpenPin(g_AT91_Dac_Pins[channel]))
         return TinyCLR_Result::SharingViolation;
 
-    AT91_Gpio_ConfigurePin(g_AT91_Dac_Pins[channel], AT91_Gpio_Direction::Input, g_AT91_Dac_altMode[channel], AT91_Gpio_PinMode::Inactive);
-
-    DACR = (0 << 6); // This sets the initial starting voltage at 0
+    AT91_Gpio_ConfigurePin(g_AT91_Dac_Pins[channel], AT91_Gpio_Direction::Input, g_AT91_Dac_altMode[channel], AT91_Gpio_PinMode::Inactive);   
 
     return TinyCLR_Result::Success;
 }
@@ -100,8 +95,6 @@ TinyCLR_Result AT91_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t cha
     if (value < 1) {
         value = 1;
     }
-
-    DACR = ((value - 1) << 6); // Sets voltage level between 0 and 1023.
 
     return TinyCLR_Result::Success;
 }

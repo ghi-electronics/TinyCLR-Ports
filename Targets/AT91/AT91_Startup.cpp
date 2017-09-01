@@ -49,60 +49,7 @@ extern "C" {
 
 extern "C" {
     void __section("SectionForBootstrapOperations") SystemInit() {
-        // Disconnect the PLL if already connected
-        volatile uint32_t i = 65355;
-        if ((AT91XX::SYSCON().PLLSTAT & AT91XX_SYSCON::CNCTD)) {
-            AT91XX::SYSCON().PLLCON = AT91XX_SYSCON::PLLE;
-            AT91XX::SYSCON().PLLFEED = 0xAA;
-            AT91XX::SYSCON().PLLFEED = 0x55;
-        }
-
-        // Disable the PLL
-        AT91XX::SYSCON().PLLCON = 0x0;
-        AT91XX::SYSCON().PLLFEED = 0xAA;
-        AT91XX::SYSCON().PLLFEED = 0x55;
-
-        // Enable the Oscillator and wait for it to be stable
-        AT91XX::SYSCON().SCS = (AT91XX::SYSCON().SCS | AT91XX_SYSCON::OSCEN);
-        while (((AT91XX::SYSCON().SCS & AT91XX_SYSCON::READY) == 0)) {
-        }
-
-        // Select Main Oscillator as the PLL clock source
-        AT91XX::SYSCON().CLKSRCSEL = AT91XX_SYSCON::OSC;
-        AT91XX::SYSCON().PLLCFG = (((PLL_NVAL - 1) << 16) | (PLL_MVAL - 1));
-        AT91XX::SYSCON().PLLCON = AT91XX_SYSCON::PLLE;
-        AT91XX::SYSCON().PLLFEED = 0xAA;
-        AT91XX::SYSCON().PLLFEED = 0x55;
-
-        // Wait while PLL locks
-        while ((AT91XX::SYSCON().PLLSTAT & AT91XX_SYSCON::LOCKD) == 0x0) {
-        }
-
-        // Enable MAM
-        AT91XX::SYSCON().MAMCR = 0; // turn off
-        while (AT91XX::SYSCON().MAMCR != 0 && i > 0) {
-            i--;
-        }
-        AT91XX::SYSCON().MAMTIM = 4; // turn on
-        AT91XX::SYSCON().MAMCR = 2; // set max performance
-
-        // Set CCLK and USB clock divider
-        AT91XX::SYSCON().CCLKCFG = (CCLK_DIVIDER - 1);
-        AT91XX::SYSCON().USBCLKCFG = (USB_DIVIDER - 1);
-
-        // PLL locked now connect it
-        AT91XX::SYSCON().PLLCON = (AT91XX_SYSCON::PLLC | AT91XX_SYSCON::PLLE);
-        AT91XX::SYSCON().PLLFEED = 0xAA;
-        AT91XX::SYSCON().PLLFEED = 0x55;
-
-        AT91XX::SYSCON().PCONP &= (~(1 << 2 | 1 << 19 | 1 << 20 | 1 << 22 | 1 << 23 | 1 << 26 | 1 << 27));
-
-        AT91XX::SYSCON().PCONP |= 1 << 30;
-        AT91XX::SYSCON().PCONP |= 1 << 31;
-
-        // all perihperals run at 72 / 4, but spi make it 72/1. for uart see code.
-        AT91XX::SYSCON().PCLKSEL0 = 1 << 20;
-        AT91XX::SYSCON().PCLKSEL1 = 1 << 10;
+        
 
         return;
 

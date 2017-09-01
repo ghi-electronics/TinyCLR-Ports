@@ -61,43 +61,6 @@ struct AT91_Interrupt_Vectors {
 
 static AT91_Interrupt_Vectors* AT91_Interrupt_IrqToVector(uint32_t Irq);
 
-AT91_Interrupt_Vectors s_IsrTable[] =
-{
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_WDT),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_SW),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_DBG_COM_RX),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_DBG_COM_TX),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_TIMER0),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_TIMER1),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_UART0),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_UART1),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_PWM_0_1),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_I2C0),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_SPI_SSP0),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_SSP1),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_PLL),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_RTC),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_EINT0),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_EINT1),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_EINT2_LCD),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_EINT3),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_ADC0),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_I2C1),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_BOD),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_EMAC),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_USB),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_CAN),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_SD),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_DMA),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_TIMER2),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_TIMER3),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_UART2),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_UART3),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_I2C2),
-    DEFINE_IRQ(AT91XX_VIC::c_IRQ_INDEX_I2S),
-
-    DEFINE_IRQ(VECTORING_GUARD),
-};
 
 AT91_Interrupt_Vectors* AT91_Interrupt_IrqToVector(uint32_t Irq) {
     AT91_Interrupt_Vectors* IsrVector = s_IsrTable;
@@ -148,19 +111,7 @@ TinyCLR_Result AT91_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInter
     AT91_Interrupt_Started = onInterruptStart;
     AT91_Interrupt_Ended = onInterruptEnd;
 
-    AT91XX_VIC& VIC = AT91XX::VIC();
-
-    // disable all interrupts
-    VIC.INTENCLR = 0xFFFFFFFF;
-
-    AT91_Interrupt_Vectors* IsrVector = s_IsrTable;
-
-    while (IsrVector->Index != VECTORING_GUARD) {
-        IsrVector->Handler.Initialize((uint32_t*)&AT91_Interrupt_StubIrqVector, (void*)(size_t)IsrVector->Index);
-
-        IsrVector++;
-    }
-
+    
     return TinyCLR_Result::Success;
 }
 
@@ -170,97 +121,29 @@ TinyCLR_Result AT91_Interrupt_Release() {
 
 bool AT91_Interrupt_Activate(uint32_t Irq_Index, uint32_t *ISR, void* ISR_Param) {
     // figure out the interrupt
-    AT91_Interrupt_Vectors* IsrVector = AT91_Interrupt_IrqToVector(Irq_Index);
-
-    if (!IsrVector)
-        return false;
-
-    {
-        GLOBAL_LOCK(irq);
-
-        AT91XX_VIC& VIC = AT91XX::VIC();
-
-        // disable this interrupt while we change it
-        VIC.INTENCLR = 1 << IsrVector->Index;
-
-        // set the vector
-        IsrVector->Handler.Initialize(ISR, ISR_Param);
-
-        // Use Vector Address register to identify the source of interrupt
-        VIC.VECTADDR[Irq_Index] = Irq_Index;
-
-        // enable the interrupt if we have a vector
-        VIC.INTENABLE = 1 << IsrVector->Index;
-    }
-
     return true;
 
 }
 
 bool AT91_Interrupt_Deactivate(uint32_t Irq_Index) {
     // figure out the interrupt
-    AT91_Interrupt_Vectors* IsrVector = AT91_Interrupt_IrqToVector(Irq_Index);
-
-    if (!IsrVector)
-        return false;
-    {
-        GLOBAL_LOCK(irq);
-
-        AT91XX_VIC& VIC = AT91XX::VIC();
-
-        // disable this interrupt while we change it
-        VIC.INTENCLR = 1 << IsrVector->Index;
-
-        IsrVector->Handler.Initialize((uint32_t*)&AT91_Interrupt_StubIrqVector, (void*)(size_t)IsrVector->Index);
-    }
-
     return true;
 }
 
 bool AT91_Interrupt_Enable(uint32_t Irq_Index) {
-    AT91_Interrupt_Vectors* IsrVector = AT91_Interrupt_IrqToVector(Irq_Index);
-
-    if (!IsrVector)
-        return false;
-
-    AT91XX_VIC& VIC = AT91XX::VIC();
-
-    GLOBAL_LOCK(irq);
-
-    bool WasEnabled = VIC.IsInterruptEnabled(Irq_Index);
-
-    VIC.INTENABLE = 1 << IsrVector->Index;
-
     return WasEnabled;
 }
 
 bool AT91_Interrupt_Disable(uint32_t Irq_Index) {
-    AT91_Interrupt_Vectors* IsrVector = AT91_Interrupt_IrqToVector(Irq_Index);
-
-    if (!IsrVector)
-        return 0;
-
-    AT91XX_VIC& VIC = AT91XX::VIC();
-
-    GLOBAL_LOCK(irq);
-
-    bool WasEnabled = VIC.IsInterruptEnabled(Irq_Index);
-
-    VIC.INTENCLR = 1 << IsrVector->Index;
-
     return WasEnabled;
 }
 
-bool AT91_Interrupt_EnableState(uint32_t Irq_Index) {
-    AT91XX_VIC& VIC = AT91XX::VIC();
-
-    return VIC.IsInterruptEnabled(Irq_Index);
+bool AT91_Interrupt_EnableState(uint32_t Irq_Index) { 
+    return false;
 }
 
 bool AT91_Interrupt_InterruptState(uint32_t Irq_Index) {
-    AT91XX_VIC& VIC = AT91XX::VIC();
-
-    return VIC.GetInterruptState(Irq_Index);
+    return false;
 }
 
 bool AT91_SmartPtr_IRQ::WasDisabled() {
@@ -367,22 +250,10 @@ extern "C" {
         // set before jumping elsewhere or allowing other interrupts
         INTERRUPT_START
 
-            uint32_t index;
-
-        AT91XX_VIC& VIC = AT91XX::VIC();
-
-        index = VIC.ADDRESS;
-
-        AT91_Interrupt_Vectors* IsrVector = &s_IsrTable[index];
-
-        // In case the interrupt was forced, remove the flag.
-        VIC.RemoveForcedInterrupt(index);
-
-        IsrVector->Handler.Execute();
+        uint32_t index;
 
         INTERRUPT_END
 
-            // Reset VIC priority hw logic.
-            VIC.ADDRESS = 0xFF;
+            
     }
 }

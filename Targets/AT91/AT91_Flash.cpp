@@ -15,23 +15,6 @@
 
 #include "AT91.h"
 
-typedef void(*IAP)(uint32_t[], uint32_t[]);
-
-#define IAP_LOCATION 0x7ffffff1
-
-#ifdef USE_INTERNAL_FLASH_DEPLOYMENT
-
-//Deployment
-#define DEPLOYMENT_SECTOR_START 17
-#define DEPLOYMENT_SECTOR_END   27
-#define DEPLOYMENT_SECTOR_NUM   (DEPLOYMENT_SECTOR_END - DEPLOYMENT_SECTOR_START + 1)
-
-#define INTERNAL_FLASH_PROGRAM_SIZE_256 (256)
-#define INTERNAL_FLASH_SECTOR_ADDRESS 0x00000000, 0x00001000, 0x00002000, 0x00003000, 0x00004000, 0x00005000, 0x00006000, 0x00007000, 0x00008000, 0x00010000, 0x00018000, 0x00020000, 0x00028000, 0x00030000, 0x00038000, 0x00040000, 0x00048000, 0x00050000, 0x00058000, 0x00060000, 0x00068000, 0x00070000, 0x00078000,  0x00079000, 0x0007A000, 0x0007B000,  0x0007C000,  0x0007D000
-#define INTERNAL_FLASH_SECTOR_SIZE    0x00001000, 0x00001000, 0x00001000, 0x00001000, 0x00001000, 0x00001000, 0x00001000, 0x00001000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00001000,  0x00001000, 0x00001000, 0x00001000,  0x00001000,  0x00001000
-
-#define SYSTEM_CYCLE_CLOCK_HZ 72000000
-
 const uint32_t flashAddresses[] = { INTERNAL_FLASH_SECTOR_ADDRESS };
 const uint32_t flashSize[] = { INTERNAL_FLASH_SECTOR_SIZE };
 
@@ -40,8 +23,6 @@ static uint32_t deploymentSize[DEPLOYMENT_SECTOR_NUM];
 
 static TinyCLR_Deployment_Provider deploymentProvider;
 static TinyCLR_Api_Info deploymentApi;
-
-static uint8_t data256[INTERNAL_FLASH_PROGRAM_SIZE_256];
 
 const TinyCLR_Api_Info* AT91_Deployment_GetApi() {
     deploymentProvider.Parent = &deploymentApi;
@@ -64,34 +45,8 @@ const TinyCLR_Api_Info* AT91_Deployment_GetApi() {
     return &deploymentApi;
 }
 
-int32_t __section("SectionForFlashOperations") AT91_Flash_PrepaireSector(int32_t startsec, int32_t endsec) {
-
-    uint32_t command[3];
-    uint32_t iap_result[2];
-
-    command[0] = 50;
-    command[1] = startsec;
-    command[2] = endsec;
-
-    IAP iap_entry = (IAP)IAP_LOCATION;
-
-    GLOBAL_LOCK(irq);
-
-    iap_entry(command, iap_result);
-
-    return iap_result[0];
-}
-
 TinyCLR_Result __section("SectionForFlashOperations") AT91_Flash_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer) {
     GLOBAL_LOCK(irq);
-
-    uint16_t* ChipAddress = (uint16_t *)address;
-    uint16_t* EndAddress = (uint16_t *)(address + length);
-    uint16_t *pBuf = (uint16_t *)buffer;
-
-    while (ChipAddress < EndAddress) {
-        *pBuf++ = *ChipAddress++;
-    }
 
     return TinyCLR_Result::Success;
 }
@@ -99,109 +54,11 @@ TinyCLR_Result __section("SectionForFlashOperations") AT91_Flash_Read(const Tiny
 TinyCLR_Result __section("SectionForFlashOperations") AT91_Flash_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer) {
     GLOBAL_LOCK(irq);
 
-    uint32_t command[5];
-    uint32_t iap_result[4];
-
-    uint8_t *ptr = (uint8_t *)&data256[0];
-
-    IAP iap_entry = (IAP)IAP_LOCATION;
-
-    int32_t block = length / INTERNAL_FLASH_PROGRAM_SIZE_256;
-    int32_t remainder = length % INTERNAL_FLASH_PROGRAM_SIZE_256;
-
-    while (block > 0) {
-        int32_t startRegion, endRegion;
-        uint32_t regions = sizeof(flashAddresses) / sizeof(flashAddresses[0]);
-        uint32_t startAddress = address;
-        uint32_t endAddress = startAddress + (INTERNAL_FLASH_PROGRAM_SIZE_256)-1;
-
-        for (startRegion = 0; startRegion < regions - 1; startRegion++)
-            if (startAddress < flashAddresses[startRegion + 1])
-                break;
-
-        for (endRegion = regions - 1; endRegion > 0; endRegion--)
-            if (endAddress > flashAddresses[endRegion])
-                break;
-
-        if (AT91_Flash_PrepaireSector(startRegion, endRegion))
-            return TinyCLR_Result::InvalidOperation;
-
-        memcpy(ptr, buffer, INTERNAL_FLASH_PROGRAM_SIZE_256);
-
-        command[0] = 51;
-        command[1] = (int)address;
-        command[2] = (int)ptr;
-        command[3] = INTERNAL_FLASH_PROGRAM_SIZE_256;
-        command[4] = SYSTEM_CYCLE_CLOCK_HZ / 1000;
-
-        iap_entry(command, iap_result);
-
-        if (iap_result[0])
-            return TinyCLR_Result::InvalidOperation;
-
-        block--;
-        address += INTERNAL_FLASH_PROGRAM_SIZE_256;
-        buffer += INTERNAL_FLASH_PROGRAM_SIZE_256;
-
-    }
-
-    if (remainder > 0) {
-        int32_t startRegion, endRegion;
-        uint32_t regions = sizeof(flashAddresses) / sizeof(flashAddresses[0]);
-        uint32_t startAddress = address;
-        uint32_t endAddress = startAddress + (remainder)-1;
-
-        for (startRegion = 0; startRegion < regions - 1; startRegion++)
-            if (startAddress < flashAddresses[startRegion + 1])
-                break;
-
-        for (endRegion = regions - 1; endRegion > 0; endRegion--)
-            if (endAddress > flashAddresses[endRegion])
-                break;
-
-        if (AT91_Flash_PrepaireSector(startRegion, endRegion))
-            return TinyCLR_Result::InvalidOperation;
-
-        memset(ptr, 0xFF, INTERNAL_FLASH_PROGRAM_SIZE_256);
-        memcpy(ptr, buffer, remainder);
-
-        command[0] = 51;
-        command[1] = (int)address;
-        command[2] = (int)ptr;
-        command[3] = INTERNAL_FLASH_PROGRAM_SIZE_256;
-        command[4] = SYSTEM_CYCLE_CLOCK_HZ / 1000;
-
-        iap_entry(command, iap_result);
-
-        if (iap_result[0])
-            return TinyCLR_Result::InvalidOperation;
-
-    }
-
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") AT91_Flash_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
     GLOBAL_LOCK(irq);
-
-    uint32_t address = deploymentAddress[sector];
-    int32_t size = deploymentSize[sector];
-    uint32_t endAddress = address + size;
-
-    erased = true;
-
-    while (address < endAddress) {
-        uint16_t data;
-
-        AT91_Flash_Read(self, address, 2, reinterpret_cast<uint8_t*>(&data));
-
-        if (data != 0xFFFF) {
-            erased = false;
-            break;
-        }
-
-        address += 2;
-    }
 
     return TinyCLR_Result::Success;
 }
@@ -209,40 +66,11 @@ TinyCLR_Result __section("SectionForFlashOperations") AT91_Flash_IsBlockErased(c
 TinyCLR_Result __section("SectionForFlashOperations") AT91_Flash_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
     GLOBAL_LOCK(irq);
 
-    uint32_t command[5];
-    uint32_t iap_result[4];
-
-    // Convert deployment sector to flash sector
-    int32_t startRegion;
-    uint32_t regions = sizeof(flashAddresses) / sizeof(flashAddresses[0]);
-    uint32_t startAddress = deploymentAddress[sector];
-
-    for (startRegion = 0; startRegion < regions - 1; startRegion++)
-        if (startAddress < flashAddresses[startRegion + 1])
-            break;
-
-    if (AT91_Flash_PrepaireSector(startRegion, startRegion))
-        return TinyCLR_Result::InvalidOperation;
-
-    //erase
-    command[0] = 52;
-    command[1] = startRegion;
-    command[2] = startRegion;
-    command[3] = SYSTEM_CYCLE_CLOCK_HZ / 1000;
-
-    IAP iap_entry = (IAP)IAP_LOCATION;
-
-    iap_entry(command, iap_result);
-
-    if (iap_result[0])
-        return TinyCLR_Result::InvalidOperation;
-
-
     TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Flash_Acquire(const TinyCLR_Deployment_Provider* self, bool& supportXIP) {
-    supportXIP = true;
+    supportXIP = false;
 
     return TinyCLR_Result::Success;
 }
@@ -283,193 +111,4 @@ TinyCLR_Result AT91_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* self, 
 
 TinyCLR_Result AT91_Flash_Reset(const TinyCLR_Deployment_Provider* self) {
     return TinyCLR_Result::Success;
-}
-
-#else // Using external flash for deployment
-
-#define FLASH_BASE_ADDRESS                      0x80000000
-#define FLASH_SECTOR_SIZE                       (64*1024)
-
-#define GET_ADDR(addr)	(volatile uint16_t *)(FLASH_BASE_ADDRESS | (addr<<1))
-
-//Deployment
-#define DEPLOYMENT_SECTOR_START 3
-#define DEPLOYMENT_SECTOR_END   12
-#define DEPLOYMENT_SECTOR_NUM   (DEPLOYMENT_SECTOR_END - DEPLOYMENT_SECTOR_START + 1)
-
-uint32_t deploymentAddress[DEPLOYMENT_SECTOR_NUM];
-uint32_t deploymentSize[DEPLOYMENT_SECTOR_NUM];
-
-static TinyCLR_Deployment_Provider deploymentProvider;
-static TinyCLR_Api_Info deploymentApi;
-
-const TinyCLR_Api_Info* AT91_Deployment_GetApi() {
-    deploymentProvider.Parent = &deploymentApi;
-    deploymentProvider.Index = 0;
-    deploymentProvider.Acquire = &AT91_Flash_Acquire;
-    deploymentProvider.Release = &AT91_Flash_Release;
-    deploymentProvider.Read = &AT91_Flash_Read;
-    deploymentProvider.Write = &AT91_Flash_Write;
-    deploymentProvider.EraseSector = &AT91_Flash_EraseBlock;
-    deploymentProvider.IsSectorErased = &AT91_Flash_IsBlockErased;
-    deploymentProvider.GetSectorMap = &AT91_Flash_GetSectorMap;
-
-    deploymentApi.Author = "GHI Electronics, LLC";
-    deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.DeploymentProvider";
-    deploymentApi.Type = TinyCLR_Api_Type::DeploymentProvider;
-    deploymentApi.Version = 0;
-    deploymentApi.Count = 1;
-    deploymentApi.Implementation = &deploymentProvider;
-
-    return &deploymentApi;
-}
-
-
-TinyCLR_Result __section("SectionForFlashOperations") AT91_Flash_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer) {
-    GLOBAL_LOCK(irq);
-
-    uint16_t* ChipAddress = (uint16_t *)address;
-    uint16_t* EndAddress = (uint16_t *)(address + length);
-    uint16_t *pBuf = (uint16_t *)buffer;
-
-    while (ChipAddress < EndAddress) {
-        *pBuf++ = *ChipAddress++;
-    }
-
-    return TinyCLR_Result::Success;
-}
-
-
-TinyCLR_Result __section("SectionForFlashOperations") AT91_Flash_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer) {
-    GLOBAL_LOCK(irq);
-
-    volatile uint16_t *ip;
-    uint32_t startAddress = address;
-    int32_t length16 = length >> 1;
-
-    while (length16 > 0) {
-
-        ip = (uint16_t*)(startAddress);
-        if (*ip != 0xffff)
-            return TinyCLR_Result::InvalidOperation;//not eased
-
-        ip = GET_ADDR(0x5555);
-        *ip = 0x00AA;
-        ip = GET_ADDR(0x2aaa);
-        *ip = 0x0055;
-        ip = GET_ADDR(0x5555);
-        *ip = 0x00A0;
-
-        ip = (uint16_t*)(startAddress);
-        *ip = *((uint16_t*)(buffer));
-
-        while (*ip != *ip);
-
-        length16--;
-        buffer += 2;
-        startAddress += 2;
-    }
-
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result __section("SectionForFlashOperations") AT91_Flash_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
-    GLOBAL_LOCK(irq);
-
-    uint32_t address = deploymentAddress[sector];
-    int32_t size = deploymentSize[sector];
-    uint32_t endAddress = address + size;
-
-    erased = true;
-
-    while (address < endAddress) {
-        uint16_t data;
-
-        AT91_Flash_Read(self, address, 2, reinterpret_cast<uint8_t*>(&data));
-
-        if (data != 0xFFFF) {
-            erased = false;
-            break;
-        }
-
-        address += 2;
-    }
-
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result __section("SectionForFlashOperations") AT91_Flash_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
-    GLOBAL_LOCK(irq);
-
-    volatile uint16_t *ip;
-    uint32_t address = deploymentAddress[sector];
-
-    ip = GET_ADDR(0x5555);
-    *ip = 0x00AA;
-    ip = GET_ADDR(0x2AAA);
-    *ip = 0x0055;
-    ip = GET_ADDR(0x5555);
-    *ip = 0x0080;
-    ip = GET_ADDR(0x5555);
-    *ip = 0x00AA;
-    ip = GET_ADDR(0x2AAA);
-    *ip = 0x0055;
-
-    ip = (uint16_t*)(address);
-    *ip = 0x0030;
-
-    //wait until finished
-    while (*ip != *ip);
-
-    TinyCLR_Result::Success;
-}
-
-TinyCLR_Result AT91_Flash_Acquire(const TinyCLR_Deployment_Provider* self, bool& supportXIP) {
-    supportXIP = true;
-
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result AT91_Flash_Release(const TinyCLR_Deployment_Provider* self) {
-    // UnInitialize Flash can be here
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result AT91_Flash_GetBytesPerSector(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size) {
-    size = FLASH_SECTOR_SIZE;
-
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result AT91_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
-    for (auto i = 0; i < DEPLOYMENT_SECTOR_NUM; i++) {
-        deploymentAddress[i] = ((DEPLOYMENT_SECTOR_START + i) * FLASH_SECTOR_SIZE) | FLASH_BASE_ADDRESS;
-        deploymentSize[i] = FLASH_SECTOR_SIZE;
-    }
-
-    addresses = deploymentAddress;
-    sizes = deploymentSize;
-    count = DEPLOYMENT_SECTOR_NUM;
-
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result AT91_Flash_Reset(const TinyCLR_Deployment_Provider* self) {
-    return TinyCLR_Result::Success;
-}
-#endif //USE_INTERNAL_FLASH_DEPLOYMENT
-
-uint32_t AT91_Flash_GetPartId() {
-    uint32_t command[1];
-    uint32_t iap_result[2];
-
-    IAP iap_entry = (IAP)IAP_LOCATION;
-
-    command[0] = 54;
-
-    GLOBAL_LOCK(irq);
-
-    iap_entry(command, iap_result);
-
-    return iap_result[1];
 }

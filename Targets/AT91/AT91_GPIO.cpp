@@ -15,81 +15,6 @@
 
 #include "AT91.h"
 
-#define SCS_BASE (*(volatile unsigned long *)0xE01FC1A0)
-
-#define GPIO_BASE 0xE0028000
-#define IO0IntStatR_OFFSET 0x84
-#define IO0IntStatF_OFFSET 0x88
-#define IO0IntClr_OFFSET 0x8C
-#define IO0IntEnR_OFFSET 0x90
-#define IO0IntEnF_OFFSET 0x94
-
-#define PCB_BASE 0xE002C000
-
-#define PINSEL0 (*(volatile unsigned long *)0xE002C000)
-#define PINSEL0_OFFSET 0x0
-
-#define PINMODE0 (*(volatile unsigned long *)0xE002C040)
-#define PINMODE0_OFFSET 0x40
-
-#define FIO_BASE 0x3FFFC000
-
-#define FIO0DIR (*(volatile unsigned long *)0x3FFFC000)
-#define FIO0DIR_OFFSET 0x0
-
-#define FIO0PIN (*(volatile unsigned long *)0x3FFFC014)
-#define FIO0PIN_OFFSET 0x14
-
-#define FIO0PIN0 (*(volatile unsigned char *)0x3FFFC014)
-#define FIO0PIN0_OFFSET 0x14
-
-#define FIO0SET (*(volatile unsigned long *)0x3FFFC018)
-#define FIO0SET_OFFSET 0x18
-
-#define FIO0SET0 (*(volatile unsigned char *)0x3FFFC018)
-#define FIO0SET0_OFFSET 0x18
-
-#define FIO0CLR (*(volatile unsigned long *)0x3FFFC01C)
-#define FIO0CLR_OFFSET 0x1C
-
-// Primary functions
-#define GET_PORT(pin)                       (pin / 32)
-#define GET_PIN(pin)                        (pin % 32)
-#define GET_PIN_MASK(pin)                   (1<<(pin % 32))
-
-#define SET_PINSEL_ALTERNATE_0(port, pin)   *((volatile uint32_t *)(PCB_BASE+PINSEL0_OFFSET  + (2*port+((pin>>4) != 0))*0x4)) &= ~(3u<<((2*pin)&0x1F))
-#define SET_PINSEL_ALTERNATE_1(port, pin)   *((volatile uint32_t *)(PCB_BASE+PINSEL0_OFFSET  + (2*port+((pin>>4) != 0))*0x4)) |=  (1u<<((2*pin)&0x1F));\
-                                            *((volatile uint32_t *)(PCB_BASE+PINSEL0_OFFSET  + (2*port+((pin>>4) != 0))*0x4)) &= ~(2u<<((2*pin)&0x1F))
-#define SET_PINSEL_ALTERNATE_2(port, pin)   *((volatile uint32_t *)(PCB_BASE+PINSEL0_OFFSET  + (2*port+((pin>>4) != 0))*0x4)) &= ~(1u<<((2*pin)&0x1F));\
-                                            *((volatile uint32_t *)(PCB_BASE+PINSEL0_OFFSET  + (2*port+((pin>>4) != 0))*0x4)) |=  (2u<<((2*pin)&0x1F))
-#define SET_PINSEL_ALTERNATE_3(port, pin)   *((volatile uint32_t *)(PCB_BASE+PINSEL0_OFFSET  + (2*port+((pin>>4) != 0))*0x4)) |=  (3u<<((2*pin)&0x1F))
-
-#define SET_PINMODE_PULLUP(port, pin)       *((volatile uint32_t *)(PCB_BASE+PINMODE0_OFFSET + (2*port+((pin>>4) != 0))*0x4)) &= ~(3u<<((2*pin)&0x1F))
-#define SET_PINMODE_PULLDOWN(port, pin)     *((volatile uint32_t *)(PCB_BASE+PINMODE0_OFFSET + (2*port+((pin>>4) != 0))*0x4)) |=  (3u<<((2*pin)&0x1F))
-#define SET_PINMODE_NOPULL(port, pin)       *((volatile uint32_t *)(PCB_BASE+PINMODE0_OFFSET + (2*port+((pin>>4) != 0))*0x4)) &= ~(1u<<((2*pin)&0x1F));\
-                                            *((volatile uint32_t *)(PCB_BASE+PINMODE0_OFFSET + (2*port+((pin>>4) != 0))*0x4)) |=  (2u<<((2*pin)&0x1F))
-#define SET_PINDIR_OUTPUT(port, pin)        *((volatile uint32_t *)(FIO_BASE+FIO0DIR_OFFSET + port*0x20 )) |=  (1u<<pin)
-#define SET_PINDIR_INPUT(port, pin)         *((volatile uint32_t *)(FIO_BASE+FIO0DIR_OFFSET + port*0x20 )) &= ~(1u<<pin)
-
-#define SET_PIN_HIGH(port, pin)             *((volatile uint32_t *)(FIO_BASE+FIO0SET_OFFSET + port*0x20 )) =   (1u<<pin)
-#define SET_PIN_LOW(port, pin)              *((volatile uint32_t *)(FIO_BASE+FIO0CLR_OFFSET + port*0x20 )) =   (1u<<pin)
-
-#define GET_PIN_STATUS(port, pin)           ((*((volatile uint32_t *)(FIO_BASE+FIO0PIN_OFFSET + port*0x20))&(1u<<pin)) == (1u<<pin))
-
-// Interrupt
-#define GPIO_INTERRUPT_STATUS_REG                           ((volatile uint32_t *)0xE0028080)
-
-#define SET_PIN_INTERRUPT_RISING_EDGE(port, pin)		    *((volatile unsigned long *)(GPIO_BASE + IO0IntEnR_OFFSET + port*0x10 )) |=  (1u<<pin)
-#define DISABLE_PIN_INTERRUPT_RISING_EDGE(port, pin)	    *((volatile unsigned long *)(GPIO_BASE + IO0IntEnR_OFFSET + port*0x10 )) &= ~(1u<<pin)
-
-#define SET_PIN_INTERRUPT_FALLING_EDGE(port, pin)   	    *((volatile unsigned long *)(GPIO_BASE + IO0IntEnF_OFFSET + port*0x10 )) |=  (1u<<pin)
-#define DISABLE_PIN_INTERRUPT_FALLING_EDGE(port, pin)	    *((volatile unsigned long *)(GPIO_BASE + IO0IntEnF_OFFSET + port*0x10 )) &= ~(1u<<pin)
-
-#define GET_PIN_INTERRUPT_RISING_EDGE_STATUS(port, pin)	    ((*((volatile unsigned long *)(GPIO_BASE + IO0IntStatR_OFFSET + port*0x10 ))&(1u<<pin)) == (1u<<pin))
-#define GET_PIN_INTERRUPT_FALLING_EDGE_STATUS(port, pin)    ((*((volatile unsigned long *)(GPIO_BASE + IO0IntStatF_OFFSET + port*0x10 ))&(1u<<pin)) == (1u<<pin))
-
-#define CLEAR_PIN_INTERRUPT(port, pin)                      *((volatile unsigned long *)(GPIO_BASE + IO0IntClr_OFFSET + port*0x10 )) =  (1u<<pin)
-
 // Driver
 #define AT91_Gpio_DebounceDefaultMilisecond   20
 #define AT91_Gpio_MaxPins                     TOTAL_GPIO_PINS
@@ -105,10 +30,10 @@ struct AT91_Int_State {
     TinyCLR_Gpio_PinValue                       currentValue;
 };
 
-static bool                     g_pinReserved[AT91_Gpio_MaxPins] __attribute__((section(".bss2.g_pinReserved")));
-static uint64_t                     g_debounceTicksPin[AT91_Gpio_MaxPins] __attribute__((section(".bss2.g_debounceTicksPin")));
-static AT91_Int_State              g_int_state[AT91_Gpio_MaxPins] __attribute__((section(".bss2.g_int_state"))); // interrupt state
-static TinyCLR_Gpio_PinDriveMode    g_pinDriveMode[AT91_Gpio_MaxPins] __attribute__((section(".bss2.g_pinDriveMode")));
+static bool                     g_pinReserved[AT91_Gpio_MaxPins];
+static uint64_t                     g_debounceTicksPin[AT91_Gpio_MaxPins];
+static AT91_Int_State              g_int_state[AT91_Gpio_MaxPins]; // interrupt state
+static TinyCLR_Gpio_PinDriveMode    g_pinDriveMode[AT91_Gpio_MaxPins];
 
 static TinyCLR_Gpio_Provider gpioProvider;
 static TinyCLR_Api_Info gpioApi;
@@ -155,7 +80,7 @@ TinyCLR_Result AT91_Gpio_Release(const TinyCLR_Gpio_Provider* self) {
 void AT91_Gpio_InterruptHandler(void* param) {
     INTERRUPT_START
 
-        GLOBAL_LOCK(irq);
+    GLOBAL_LOCK(irq);
 
     bool executeIsr = true;
 
@@ -195,10 +120,7 @@ TinyCLR_Result AT91_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* sel
 
     uint32_t port = GET_PORT(pin);
     uint32_t pinMask = GET_PIN_MASK(pin);
-
-    if (ISR && ((port != 0) && (port != 2))) // If interrupt is called on a non interrupt capable pin return false
-        return TinyCLR_Result::ArgumentInvalid;
-
+    
     AT91_Gpio_EnableInputPin(pin, g_pinDriveMode[pin]);
 
     if (ISR) {
@@ -208,16 +130,9 @@ TinyCLR_Result AT91_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* sel
         state->ISR = ISR;
         state->lastDebounceTicks = AT91_Time_GetCurrentTicks(nullptr);
 
-        SET_PIN_INTERRUPT_RISING_EDGE(GET_PORT(pin), GET_PIN(pin));
-        SET_PIN_INTERRUPT_FALLING_EDGE(GET_PORT(pin), GET_PIN(pin));
-
-        AT91_Interrupt_Activate(AT91XX_VIC::c_IRQ_INDEX_EINT3, (uint32_t*)&AT91_Gpio_InterruptHandler, 0);
     }
     else {
-        DISABLE_PIN_INTERRUPT_RISING_EDGE(GET_PORT(pin), GET_PIN(pin));
-        DISABLE_PIN_INTERRUPT_FALLING_EDGE(GET_PORT(pin), GET_PIN(pin));
 
-        AT91_Interrupt_Disable(AT91XX_VIC::c_IRQ_INDEX_EINT3);
     }
 
     return TinyCLR_Result::Success;
@@ -252,17 +167,19 @@ bool AT91_Gpio_ReadPin(int32_t pin) {
     if (pin >= AT91_Gpio_MaxPins || pin < 0)
         return false;
 
-    return GET_PIN_STATUS(GET_PORT(pin), GET_PIN(pin));
+    return true;
 }
 
 void AT91_Gpio_WritePin(int32_t pin, bool value) {
     if (pin >= AT91_Gpio_MaxPins || pin < 0)
         return;
 
-    if (value)
-        SET_PIN_HIGH(GET_PORT(pin), GET_PIN(pin));
-    else
-        SET_PIN_LOW(GET_PORT(pin), GET_PIN(pin));
+    if (value){
+	
+    }    
+    else {
+    
+	}
 }
 
 bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PinFunction alternateFunction, AT91_Gpio_PinMode pullResistor) {
@@ -272,29 +189,21 @@ bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_P
     switch (alternateFunction) {
         case AT91_Gpio_PinFunction::PinFunction0:
             if (pinDir == AT91_Gpio_Direction::Output) {
-                SET_PINDIR_OUTPUT(GET_PORT(pin), GET_PIN(pin));
-                SET_PINMODE_NOPULL(GET_PORT(pin), GET_PIN(pin));
-                SET_PINSEL_ALTERNATE_0(GET_PORT(pin), GET_PIN(pin));
-            }
+    
+    }
             else {
                 switch (pullResistor) {
                     case AT91_Gpio_PinMode::Inactive:
-                        SET_PINDIR_INPUT(GET_PORT(pin), GET_PIN(pin));
-                        SET_PINMODE_NOPULL(GET_PORT(pin), GET_PIN(pin));
-                        SET_PINSEL_ALTERNATE_0(GET_PORT(pin), GET_PIN(pin));
-                        break;
+
+                    break;
 
                     case AT91_Gpio_PinMode::PullUp:
-                        SET_PINSEL_ALTERNATE_0(GET_PORT(pin), GET_PIN(pin));
-                        SET_PINDIR_INPUT(GET_PORT(pin), GET_PIN(pin));
-                        SET_PINMODE_PULLUP(GET_PORT(pin), GET_PIN(pin));
-                        break;
+
+                    break;
 
                     case AT91_Gpio_PinMode::PullDown:
-                        SET_PINSEL_ALTERNATE_0(GET_PORT(pin), GET_PIN(pin));
-                        SET_PINDIR_INPUT(GET_PORT(pin), GET_PIN(pin));
-                        SET_PINMODE_PULLDOWN(GET_PORT(pin), GET_PIN(pin));
-                        break;
+
+                    break;
 
                 }
             }
@@ -302,23 +211,15 @@ bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_P
             break;
 
         case AT91_Gpio_PinFunction::PinFunction1:
-            SET_PINDIR_INPUT(GET_PORT(pin), GET_PIN(pin));
-            SET_PINMODE_NOPULL(GET_PORT(pin), GET_PIN(pin));
-            SET_PINSEL_ALTERNATE_1(GET_PORT(pin), GET_PIN(pin));
 
             break;
 
         case AT91_Gpio_PinFunction::PinFunction2:
-            SET_PINDIR_INPUT(GET_PORT(pin), GET_PIN(pin));
-            SET_PINMODE_NOPULL(GET_PORT(pin), GET_PIN(pin));
-            SET_PINSEL_ALTERNATE_2(GET_PORT(pin), GET_PIN(pin));
-
+            
             break;
 
         case AT91_Gpio_PinFunction::PinFunction3:
-            SET_PINDIR_INPUT(GET_PORT(pin), GET_PIN(pin));
-            SET_PINMODE_NOPULL(GET_PORT(pin), GET_PIN(pin));
-            SET_PINSEL_ALTERNATE_3(GET_PORT(pin), GET_PIN(pin));
+            
             break;
     }
 
@@ -459,7 +360,6 @@ int32_t AT91_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self) {
 }
 
 void AT91_Gpio_Reset() {
-    SCS_BASE |= (1 << 0); // Enable for port 0 and 1
 
     for (auto pin = 0; pin < AT91_Gpio_GetPinCount(&gpioProvider); pin++) {
         g_pinReserved[pin] = false;

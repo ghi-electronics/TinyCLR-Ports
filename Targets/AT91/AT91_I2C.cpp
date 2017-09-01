@@ -69,9 +69,7 @@ void AT91_I2c_InterruptHandler(void *param) {
     uint8_t address;
     
 }
-void AT91_I2c_StartTransaction() {
-    AT91XX_I2C& I2C = *(AT91XX_I2C*)(size_t)(AT91XX_I2C::c_I2C_Base);
-
+void AT91_I2c_StartTransaction() {    
     if (!g_WriteI2cTransactionAction.repeatedStart || g_WriteI2cTransactionAction.bytesTransferred == 0) {
        
     }
@@ -201,7 +199,7 @@ TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int3
     else
         return TinyCLR_Result::NotSupported;
 
-    uint32_t divider = AT91XX_I2C::c_I2C_Clk_KHz / (2 * rateKhz);
+    uint32_t divider = 0;
 
     g_I2cConfiguration.clockRate = (uint8_t)divider; // low byte
     g_I2cConfiguration.clockRate2 = (uint8_t)(divider >> 8); // high byte
@@ -210,28 +208,17 @@ TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int3
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_I2c_Acquire(const TinyCLR_I2c_Provider* self) {
-    AT91XX_I2C& I2C = AT91XX::I2C();
-
+TinyCLR_Result AT91_I2c_Acquire(const TinyCLR_I2c_Provider* self) {    
     if (!AT91_Gpio_OpenPin(AT91_I2C_SDA_PIN) || !AT91_Gpio_OpenPin(AT91_I2C_SCL_PIN))
         return TinyCLR_Result::SharingViolation;
 
     AT91_Gpio_ConfigurePin(AT91_I2C_SDA_PIN, AT91_Gpio_Direction::Input, AT91_I2C_SDA_ALT_MODE, AT91_Gpio_PinMode::Inactive);
     AT91_Gpio_ConfigurePin(AT91_I2C_SCL_PIN, AT91_Gpio_Direction::Input, AT91_I2C_SCL_ALT_MODE, AT91_Gpio_PinMode::Inactive);
 
-    AT91_Interrupt_Activate(AT91XX_VIC::c_IRQ_INDEX_I2C0, (uint32_t*)&AT91_I2c_InterruptHandler, 0);
-
-   
-
-
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_I2c_Release(const TinyCLR_I2c_Provider* self) {
-    AT91XX_I2C& I2C = AT91XX::I2C();
-
-    AT91_Interrupt_Deactivate(AT91XX_VIC::c_IRQ_INDEX_I2C0);
-
     
     AT91_Gpio_ClosePin(AT91_I2C_SDA_PIN);
     AT91_Gpio_ClosePin(AT91_I2C_SCL_PIN);

@@ -15,38 +15,6 @@
 
 #include "AT91.h"
 
-#define PWM0_BASE 0xE0014000
-
-#define PWM0IR (*(volatile unsigned long *)0xE0014000)
-#define PWM0TCR (*(volatile unsigned long *)0xE0014004)
-#define PWM0TC (*(volatile unsigned long *)0xE0014008)
-#define PWM0PR (*(volatile unsigned long *)0xE001400C)
-#define PWM0PC (*(volatile unsigned long *)0xE0014010)
-#define PWM0MCR (*(volatile unsigned long *)0xE0014014)
-#define PWM0PCR (*(volatile unsigned long *)0xE001404C)
-#define PWM0LER (*(volatile unsigned long *)0xE0014050)
-
-#define PWM1_BASE 0xE0018000
-
-#define PWM1IR (*(volatile unsigned long *)0xE0018000)
-#define PWM1TCR (*(volatile unsigned long *)0xE0018004)
-#define PWM1TC (*(volatile unsigned long *)0xE0018008)
-#define PWM1PR (*(volatile unsigned long *)0xE001800C)
-#define PWM1PC (*(volatile unsigned long *)0xE0018010)
-#define PWM1MCR (*(volatile unsigned long *)0xE0018014)
-#define PWM1CCR (*(volatile unsigned long *)0xE0018028)
-#define PWM1CR0 (*(volatile unsigned long *)0xE001802C)
-#define PWM1CR1 (*(volatile unsigned long *)0xE0018030)
-#define PWM1CR2 (*(volatile unsigned long *)0xE0018034)
-#define PWM1CR3 (*(volatile unsigned long *)0xE0018038)
-#define PWM1EMR (*(volatile unsigned long *)0xE001803C)
-#define PWM1PCR (*(volatile unsigned long *)0xE001804C)
-#define PWM1LER (*(volatile unsigned long *)0xE0018050)
-#define PWM1CTCR (*(volatile unsigned long *)0xE0018070)
-
-#define PCONP_PCPWM0 0x20
-#define PCONP_PCPWM1 0x40
-
 #define AT91_MAX_PWM_FREQUENCY (SYSTEM_CLOCK_HZ)
 #define AT91_MIN_PWM_FREQUENCY 1
 
@@ -94,32 +62,6 @@ TinyCLR_Result AT91_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t pin
 
     if (!AT91_Gpio_OpenPin(actualPin))
         return TinyCLR_Result::SharingViolation;
-
-    // enable PWM output
-    if (g_PwmController[self->Index].channel[pin] == 0) {
-
-        // Enable PWMs controller channel 0
-        AT91XX::SYSCON().PCONP |= PCONP_PCPWM0;
-
-        // Reset Timer Counter
-        PWM0TCR |= (1 << 1);
-        *g_PwmController[self->Index].matchAddress[pin] = 0;
-        PWM0MCR = (1 << 1); // Reset on MAT0
-        PWM0TCR = 1; // Enable
-        PWM0PCR |= (1 << (9 + g_PwmController[self->Index].subChannel[pin])); // To enable output on the proper channel
-    }
-    else if (g_PwmController[self->Index].channel[pin] == 1) {
-
-        // Enable PWMs controller channel 1
-        AT91XX::SYSCON().PCONP |= PCONP_PCPWM1;
-
-        // Reset Timer Counter
-        PWM1TCR |= (1 << 1);
-        *g_PwmController[self->Index].matchAddress[pin] = 0;
-        PWM1MCR = (1 << 1); // Reset on MAT0
-        PWM1TCR = 1; // Enable
-        PWM1PCR |= (1 << (9 + (g_PwmController[self->Index].subChannel[pin]))); // To enable output on the proper channel
-    }
 
     return TinyCLR_Result::Success;;
 }
@@ -174,10 +116,10 @@ double AT91_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self) {
             return 0;
     }
 
-    uint64_t periodTicks = (uint64_t)((AT91_PWM_PCLK / 1000000)) * periodInNanoSeconds / 1000;
+    uint64_t periodTicks = 0;
 
     // update actual period and duration, after few boudary changes base on current system clock
-    periodInNanoSeconds = ((uint64_t)(periodTicks * 1000)) / ((uint64_t)((AT91_PWM_PCLK / 1000000)));
+    periodInNanoSeconds = 0;
 
     switch (scale) {
         case PWM_MILLISECONDS:
@@ -269,18 +211,8 @@ TinyCLR_Result AT91_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int
     }
 
     // 18M/M = 18 * period / 1000 to get legal value.
-    uint32_t periodTicks = (uint64_t)((AT91_PWM_PCLK / 1000000)) * periodInNanoSeconds / 1000;
-    uint32_t highTicks = (uint64_t)((AT91_PWM_PCLK / 1000000)) * durationInNanoSeconds / 1000;
-
-    // A strange instance where if the periodInNanoSeconds would have ended in infinite 3 (calculated with float in NETMF), periodTicks are not computed correctly
-    if (0 == ((periodInNanoSeconds - 3) % 10))
-        periodTicks += 1;
-
-    if (0 == ((highTicks - 3) % 10))
-        highTicks += 1;
-
-    periodTicks -= 1;
-    highTicks -= 1;
+    uint32_t periodTicks = 0;
+    uint32_t highTicks = 0; 
 
     if ((int)periodTicks < 0)
         periodTicks = 0;
@@ -293,52 +225,6 @@ TinyCLR_Result AT91_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int
 
     if (invertPolarity)
         highTicks = periodTicks - highTicks;
-
-    if (period == 0 || duration == 0) {
-        AT91_Gpio_EnableOutputPin(g_PwmController[self->Index].gpioPin[pin], false);
-        g_PwmController[self->Index].outputEnabled[pin] = true;
-
-        return TinyCLR_Result::Success;
-    }
-    else if (duration >= period) {
-        AT91_Gpio_EnableOutputPin(g_PwmController[self->Index].gpioPin[pin], true);
-        g_PwmController[self->Index].outputEnabled[pin] = true;
-
-        return TinyCLR_Result::Success;
-    }
-    else {
-        if (g_PwmController[self->Index].channel[pin] == 0) {
-            // Re-scale with new frequency!
-            if ((PWM0MR0 != periodTicks)) {
-
-                // Reset Timer Counter
-                PWM0TCR |= (1 << 1);
-                PWM0MR0 = periodTicks;
-                PWM0MCR = (1 << 1); // Reset on MAT0
-                PWM0TCR = 1; // Enable
-            }
-
-            *g_PwmController[self->Index].matchAddress[pin] = highTicks;
-        }
-        else if (g_PwmController[self->Index].channel[pin] == 1) {
-            // Re-scale with new frequency!
-            if ((PWM1MR0 != periodTicks)) {
-                // Reset Timer Counter
-                PWM1TCR |= (1 << 1);
-                PWM1MR0 = periodTicks;
-                PWM1MCR = (1 << 1); // Reset on MAT0
-                PWM1TCR = 1; // Enable
-            }
-
-            *g_PwmController[self->Index].matchAddress[pin] = highTicks;
-        }
-
-        if (g_PwmController[self->Index].outputEnabled[pin] == true) {
-            AT91_Pwm_EnablePin(self, pin);
-
-            g_PwmController[self->Index].outputEnabled[pin] = false;
-        }
-    }
 
     g_PwmController[self->Index].invert[pin] = invertPolarity;
     g_PwmController[self->Index].dutyCycle[pin] = dutyCycle;

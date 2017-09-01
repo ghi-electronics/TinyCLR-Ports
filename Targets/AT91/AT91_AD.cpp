@@ -15,14 +15,6 @@
 
 #include "AT91.h"
 
-#define AD0CR (*(volatile unsigned *)0xE0034000)
-
-#define AT91xx_ADC_DataRegisterShiftBits	4
-#define AT91xx_ADC_BitRegisterMask			0xFFF
-
-#define ADC_DATA_BASE_ADDRESS	0xE0034010
-#define ADC_GLOBAR_DATA_ADDRESS 0xE0034004
-
 static TinyCLR_Adc_Provider adcProvider;
 static TinyCLR_Api_Info adcApi;
 
@@ -80,15 +72,7 @@ TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t
     if (AT91_Adc_GetPin(channel) == _P_NONE_)
         return TinyCLR_Result::ArgumentInvalid;
 
-    AT91XX::SYSCON().PCONP |= PCONP_PCAD;
-
     AT91_Gpio_ConfigurePin(AT91_Adc_GetPin(channel), AT91_Gpio_Direction::Input, AT91_Adc_GetPinFunction(channel), AT91_Gpio_PinMode::Inactive);
-
-    AD0CR |= (1 << channel) |// sample one of the pins
-        ((3 - 1) << 8) |//devide the clock by 14 60/14= 4.3 (must be <4.5)
-        (1 << 16) |//burst mode
-        (0 << 17) |//10 bits
-        (1 << 21);//operational
 
     return TinyCLR_Result::Success;
 }
@@ -105,17 +89,6 @@ TinyCLR_Result AT91_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t chan
         return TinyCLR_Result::ArgumentOutOfRange;
 
     value = 0;
-
-    // get the values
-    for (auto i = 0; i < 5; i++) {
-        AT91_Time_Delay(nullptr, 5);
-
-        result = ((*((uint32_t*)(ADC_DATA_BASE_ADDRESS)+channel)) >> 6) & 0x3FF;
-
-        value += result;
-    }
-
-    value /= 5;
 
     // channel not available
     return TinyCLR_Result::Success;
@@ -152,8 +125,5 @@ bool AT91_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCLR_A
 void AT91_Adc_Reset() {
     for (auto ch = 0; ch < AT91_Adc_GetControllerCount(); ch++) {
         AT91_Adc_ReleaseChannel(&adcProvider, ch);
-    }
-
-    AT91XX::SYSCON().PCONP &= ~(PCONP_PCAD);
-
+    }  
 }
