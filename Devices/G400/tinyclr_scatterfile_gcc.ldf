@@ -1,14 +1,14 @@
 ENTRY(EntryPoint)
 MEMORY
 {
-    IRAM : ORIGIN = 0x40000000, LENGTH = 0x00010000
-    SDRAM : ORIGIN = 0xA0000000, LENGTH = 0x00800000
-    LR_FLASH : ORIGIN = 0x00000000, LENGTH = 0x00080000
-    LR_CONFIG : ORIGIN = 0xA0EF0000, LENGTH = 0x00010000
+    IRAM : ORIGIN = 0x300000, LENGTH = 0x00008000
+    ERAM : ORIGIN = 0x20000000, LENGTH = 0x08000000
+    LR_FLASH : ORIGIN = 0x20000000, LENGTH = 0x08000000
+    LR_CONFIG : ORIGIN = 0x20AC0000, LENGTH = 0x00002100
 }
 SECTIONS
 {
-    ER_FLASH 0x00004400 :
+    ER_FLASH 0x20000400 :
     {
         * (i.EntryPoint)
         * (SectionForBootstrapOperations)
@@ -35,61 +35,58 @@ SECTIONS
         PROVIDE(_read = .);
         PROVIDE(isatty = .);
         PROVIDE(_isatty = .);
+        LONG(0xE12FFF1E); 
     }>LR_FLASH
 
-    ER_VECTOR 0x40000000 :
-    {
+    ER_RAM_RO 0x20500000 : ALIGN(0x8)
+    {        
         *(VectorsTrampolines)
-    }>IRAM
-
-    ER_RAM_RO 0xA0030000 : ALIGN(0x8)
-    {
-        * (SectionForCodeReadOnlyRAM)
-    }>SDRAM
-
-    ER_RAM_RW 0xA0040000 : ALIGN(0x8)
+        *(SectionForCodeReadOnlyRAM)       
+        *(SectionForBootstrapInRam)
+    }>ERAM AT>LR_FLASH
+    
+    ER_RAM_RW 0x20600000: ALIGN(0x8)
     {
         * (rwdata)
         * (.data*)
-    }>SDRAM AT>LR_FLASH
-
+    }>ERAM AT>LR_FLASH
+    
     .bss (NOLOAD) : ALIGN(0x8)
     {
-        * (.bss.*)
-        * (.bss2.*)
+        * (.bss*)
         * (.zidata*)
-        PROVIDE(__exidx_start = .);
-        PROVIDE(__exidx_end = .);
+        PROVIDE(__exidx_start = .); 
+        PROVIDE(__exidx_end = .); 
         * (COMMON)
-    }>SDRAM
-
+    }>ERAM AT>LR_FLASH
+    
     /DISCARD/  :
     {
         * (.ARM.exidx*)
         * (.ARM.extab*)
-    }
-
-    ER_HEAP_BEGIN 0xA0200000 :
+    }    
+    
+    ER_HEAP_BEGIN 0x22700000 : ALIGN(0x8)
     {
         * (SectionForHeapBegin)
-    }>SDRAM
-
-    ER_HEAP_END 0xA0400000 - 0x8 :
+    }
+    
+    ER_HEAP_END 0x266FFFF8 : ALIGN(0x8)
     {
         * (SectionForHeapEnd)
-    }>SDRAM
-
-    ER_STACK_BOTTOM 0x40001000 : ALIGN(0x8)
+    }
+    
+    ER_STACK_BOTTOM 0x300030 : ALIGN(0x8)
     {
         * (SectionForStackBottom)
-    }>IRAM
-
-    ER_STACK_TOP 0x40010000 - 0x8: ALIGN(0x8)
+    }
+    
+    ER_STACK_TOP 0x307FF0 : ALIGN(0x8)
     {
         * (SectionForStackTop +LAST)
-    }>IRAM
-
-    ER_CONFIG 0xA0EF0000 :
+    }
+    
+    ER_CONFIG 0x20AC0000 :
     {
         * (SectionForConfig)
     }>LR_CONFIG
@@ -104,6 +101,4 @@ Image$$ER_RAM_RW$$Length = SIZEOF(ER_RAM_RW);
 Load$$ER_RAM_RW$$Base = LOADADDR(ER_RAM_RW);
 Image$$ER_RAM_RW$$ZI$$Base = ADDR(.bss);
 Image$$ER_RAM_RW$$ZI$$Length = SIZEOF(.bss);
-Image$$ER_VECTOR$$Base = ADDR(ER_VECTOR);
-Image$$ER_VECTOR$$Length = 0x00000040;
 __use_no_semihosting_swi = 0;

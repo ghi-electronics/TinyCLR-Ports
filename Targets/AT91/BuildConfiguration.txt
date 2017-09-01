@@ -1,1 +1,1 @@
-TargetArchitecture:ARM7
+TargetArchitecture:ARM9
