@@ -153,7 +153,7 @@
 #define INCLUDE_PWM
 #define INCLUDE_SPI
 #define INCLUDE_UART
-#define INCLUDE_USBCLIENT
+//#define INCLUDE_USBCLIENT
 
 #define TARGET STM32F4
 
