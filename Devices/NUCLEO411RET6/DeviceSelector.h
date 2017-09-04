@@ -37,24 +37,25 @@
 #define INTERRUPT_END           STM32F4_Interrupt_Ended();
 
 // Device
-#define HAL_SYSTEM_NAME "FEZCLR"
+#define HAL_SYSTEM_NAME "NUCLEO411RE"
 
-// System clock
-#define SYSTEM_CLOCK_HZ                  96000000   // 96 MHz - changed to meet STM32F411RET6 clock 
-#define SYSTEM_CYCLE_CLOCK_HZ            96000000   // 96 MHz - changed to meet STM32F411RET6 clock
-#define SYSTEM_APB1_CLOCK_HZ             24000000   // 24 MHz - changed to meet STM32F411RET6 clock - QUARTER of SYSTEM_CLOCK_HZ Speed
-#define SYSTEM_APB2_CLOCK_HZ             48000000   // 48 MHz - changed to meet STM32F411RET6 clock - HALF of SYSTEM_CLOCK_HZ Speed
+// System clock                                     // Meet Nucleo 411 Requirments
+#define SYSTEM_CLOCK_HZ                  96000000   // 96 MHz
+#define SYSTEM_CYCLE_CLOCK_HZ            96000000   // 96 MHz
+#define SYSTEM_APB1_CLOCK_HZ             48000000   // 48 MHz
+#define SYSTEM_APB2_CLOCK_HZ             96000000   // 96 MHz
 #define SYSTEM_CRYSTAL_CLOCK_HZ           8000000   //  8 MHz external clock
 #define SUPPLY_VOLTAGE_MV                    3300   // 3.3V supply
 #define CLOCK_COMMON_FACTOR               1000000   // GCD(SYSTEM_CLOCK_HZ, 1M)
-#define SLOW_CLOCKS_PER_SECOND           96000000   // 96 MHz - changed to meet STM32F411RET6 clock for real clock based in external crystal and calculation
+#define SLOW_CLOCKS_PER_SECOND           96000000   // 96 MHz
 #define SLOW_CLOCKS_TEN_MHZ_GCD           1000000   // GCD(SLOW_CLOCKS_PER_SECOND, 10M)
 #define SLOW_CLOCKS_MILLISECOND_GCD          1000   // GCD(SLOW_CLOCKS_PER_SECOND, 1k)
-// Memory
+
+// Memory                                   // Meet Nucleo 411 Requirments
 #define FLASH_MEMORY_Base                   0x08000000
-#define FLASH_MEMORY_Size                   0x00080000  // 512KB
+#define FLASH_MEMORY_Size                   0x00080000  // 512KB - FLASH
 #define SRAM1_MEMORY_Base                   0x20000000
-#define SRAM1_MEMORY_Size                   0x00020000  // 98KB
+#define SRAM1_MEMORY_Size                   0x00020000  // 128KB - RAM 
 
 #define FLASH_DEPLOYMENT_SECTOR_ADDRESS     {0x08040000, 0x08060000}
 #define FLASH_DEPLOYMENT_SECTOR_SIZE        {0x00020000, 0x00020000}
@@ -82,7 +83,7 @@
 #define MAX_PWM_PER_CONTROLLER               4
 #define TOTAL_PWM_CONTROLLER                 4
 #define STM32F4_PWM                     {   {TIM1  ,  STM32F4_Gpio_AlternateFunction::AF1,     { _P(A, 8) , _P(A, 9) , _P(A,10) , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 1} ,\
-                                            {TIM2  ,  STM32F4_Gpio_AlternateFunction::AF1,     { _P(A, 0) , _P(A, 1) , _P(A, 2) , _P(A, 3)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 2} ,\
+                                            {TIM2  ,  STM32F4_Gpio_AlternateFunction::AF1,     { _P(A, 5) , _P(B, 3) , _P(A, 2) , _P(A, 3)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 2} ,\
                                             {TIM3  ,  STM32F4_Gpio_AlternateFunction::AF2,     { _P(C, 6) , _P(B, 5) , _P(C, 8) , _P(C, 9)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 3} ,\
                                             {TIM4  ,  STM32F4_Gpio_AlternateFunction::AF2,     { _P(B, 6) , _P(B, 7) , _P(B, 8) , _P(B, 9)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 4} }
 
@@ -98,7 +99,7 @@
 #define STM32F4_SPI_MOSI_PINS           { _P(B, 5), _P(B,15) }
 
 // UART
-#define TOTAL_UART_CONTROLLERS          2
+#define TOTAL_UART_CONTROLLERS          2  // changed to fit STM32F411RET6 capacity
 #define STM32F4_UART_TX_BUFFER_SIZE     256
 #define STM32F4_UART_RX_BUFFER_SIZE     512
 #define STM32F4_UART_RXD_PINS           { _P(A,10), _P(A, 3) }
@@ -112,7 +113,7 @@
 #define USB_VENDOR_ID                   0x1B9F
 #define USB_PRODUCT_ID                  0x0110
 #define USB_MANUFACTURER_NAME           {'S', 'T', 'M'}
-#define USB_PRODUCT_NAME                {'S', 'T', 'M', '3', '2', 'F', '4', '1', '1', 'N', 'u', 'c', 'l', 'e', 'o', ' '}
+#define USB_PRODUCT_NAME                 {'S', 'T', 'M', '3', '2', 'F', '4', '1', '1', 'N', 'u', 'c', 'l', 'e', 'o', ' '}
 #define USB_DISPLAY_NAME                USB_PRODUCT_NAME
 #define USB_FRIENDLY_NAME               USB_PRODUCT_NAME
 
@@ -130,7 +131,7 @@
 #define RUNAPP_PIN						_P(C,13)
 #define RUNAPP_STATE 				    TinyCLR_Gpio_PinValue::High
 
-#define UART_DEBUGGER_INDEX 1
+#define UART_DEBUGGER_INDEX 1           //allow debug from SERIAL PORT
 #define USB_DEBUGGER_INDEX 0
 
 #define RAM_BOOTLOADER_HOLD_ADDRESS 0x20017FF8
