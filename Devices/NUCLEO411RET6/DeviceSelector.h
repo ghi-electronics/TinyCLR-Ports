@@ -103,8 +103,8 @@
 #define STM32F4_UART_RX_BUFFER_SIZE     512
 #define STM32F4_UART_RXD_PINS           { _P(A,10), _P(A, 3) }
 #define STM32F4_UART_TXD_PINS           { _P(A, 9), _P(A, 2) }
-#define STM32F4_UART_CTS_PINS           { GPIO_PIN_NONE, _P(A, 0) }
-#define STM32F4_UART_RTS_PINS           { GPIO_PIN_NONE, _P(A, 1) }
+#define STM32F4_UART_CTS_PINS           { GPIO_PIN_NONE, GPIO_PIN_NONE }
+#define STM32F4_UART_RTS_PINS           { GPIO_PIN_NONE, GPIO_PIN_NONE }
 
 //  USBC
 #define TOTAL_USB_CONTROLLER            1
