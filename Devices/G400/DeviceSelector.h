@@ -136,7 +136,7 @@
 #define DEBUGGER_PORT                        USB1
 #define MESSAGING_PORT                       USB1
 
-#define LMODE_PIN                       	_P(3,23)
+#define LMODE_PIN                       	_P(0,25)
 #define LMODE_USB_STATE                 	TinyCLR_Gpio_PinValue::Low
 
 // Loader
@@ -146,8 +146,8 @@
 #define UART_DEBUGGER_INDEX                 0
 #define USB_DEBUGGER_INDEX                  0
 
-#define RAM_BOOTLOADER_HOLD_ADDRESS         (EXT_SDRAM_MEMORY_Base + EXT_SDRAM_MEMORY_Size - 8)
-#define RAM_BOOTLOADER_HOLD_VALUE           0xB53D0238
+#define RAM_BOOTLOADER_HOLD_ADDRESS         0x266FFFF0
+#define RAM_BOOTLOADER_HOLD_VALUE           0x8DB4DA67
 
 // OEM information
 #define OEM_STRING                          "GHI Electronics, LLC\0"
