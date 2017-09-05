@@ -157,6 +157,13 @@ struct ARM9_MMU
     static void    GenerateL1_Sections( uint32_t* baseOfTTBs, uint32_t mappedAddress, uint32_t physAddress, int32_t size, uint32_t AP, uint32_t domain, bool Cachable, bool Buffered, bool Xtended = false );
 };
 
+void AT91_MMU_Initialize();
+void AT91_CPU_InvalidateTLBs();
+void AT91_CPU_EnableMMU( void* TTB );
+void AT91_CPU_DisableMMU();
+bool AT91_CPU_IsMMUEnabled();
+void AT91_CPU_BootstrapCode();
+
 // Cache
 void AT91_Cache_FlushCaches();
 void AT91_Cache_DrainWriteBuffers();

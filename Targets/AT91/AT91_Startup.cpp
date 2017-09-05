@@ -40,7 +40,7 @@ extern "C" {
 
     extern uint32_t Load$$ER_FLASH$$Base;
 
-    extern uint32_t ARM_Vectors ;
+    extern uint32_t ARM_Vectors;
 
 }
 
@@ -48,7 +48,12 @@ extern "C" {
 
 extern "C" {
     void __section("SectionForBootstrapOperations") SystemInit() {
-        
+
+        AT91_CPU_BootstrapCode();
+
+        AT91_MMU_Initialize();
+
+        AT91_Cache_EnableCaches();
 
         return;
 
@@ -140,19 +145,19 @@ void AT91_Startup_InitializeRegions() {
 
         Prepare_Zero(dst, len);
     }
-    
+
     //
     // Copy Vector.
     //
     {
 
         uint32_t* src = (uint32_t*)((uint32_t)&ARM_Vectors);
-        uint32_t* dst = (uint32_t*)0x0000000; 
-        uint32_t  len =  44; 
+        uint32_t* dst = (uint32_t*)0x0000000;
+        uint32_t  len = 44;
 
-        if((dst != src) && (*src != 0))
+        if ((dst != src) && (*src != 0))
         {
-            while(len)
+            while (len)
             {
                 *dst++ = *src++;
                 len -= 4;

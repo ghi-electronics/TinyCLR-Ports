@@ -7,7 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // the arm3.0 compiler optimizes out much of the boot strap code which causes
-// the device not to boot for RTM builds (optimization level 3), adding this pragma 
+// the device not to boot for RTM builds (optimization level 3), adding this pragma
 // assures that the compiler will use the proper optimization level for this code
 #if !defined(DEBUG)
 #pragma O2
@@ -29,7 +29,7 @@
     nop \
 
 
-void __section("SectionForBootstrapOperations") CPU_ARM9_BootstrapCode()
+void __section("SectionForBootstrapOperations") AT91_CPU_BootstrapCode()
 {
     uint32_t reg;
 
@@ -38,10 +38,10 @@ void __section("SectionForBootstrapOperations") CPU_ARM9_BootstrapCode()
     reg = 0x2001;
 
 #ifdef __GNUC__
-	asm("MCR p15, 0, %0, c15, c1, 0" :: "r" (reg));
-	asm("NOP");
-	asm("NOP");
-	asm("NOP");
+    asm("MCR p15, 0, %0, c15, c1, 0" :: "r" (reg));
+    asm("NOP");
+    asm("NOP");
+    asm("NOP");
 #else
     __asm
     {
@@ -70,10 +70,10 @@ void __section("SectionForBootstrapOperations") CPU_ARM9_BootstrapCode()
 #endif
 
 #ifdef __GNUC__
-	asm("MCR p15, 0, %0, c1, c0, 0" :: "r" (reg));
-	asm("NOP");
-	asm("NOP");
-	asm("NOP");
+    asm("MCR p15, 0, %0, c1, c0, 0" :: "r" (reg));
+    asm("NOP");
+    asm("NOP");
+    asm("NOP");
 #else
     __asm
     {
@@ -87,12 +87,12 @@ void __section("SectionForBootstrapOperations") CPU_ARM9_BootstrapCode()
     reg = 0;
 
 #ifdef __GNUC__
-	asm("MCR p15, 0, %0, c8, c7, 0" :: "r" (reg));		// Invalidate all TLBs.
-	asm("MCR p15, 0, %0, c7, c7, 0" :: "r" (reg));		// Invalidate all caches.
-	asm("MCR p15, 0, %0, c7, c10, 4" :: "r" (reg));		// Drain write buffers.
-	asm("NOP");
-	asm("NOP");
-	asm("NOP");
+    asm("MCR p15, 0, %0, c8, c7, 0" :: "r" (reg));		// Invalidate all TLBs.
+    asm("MCR p15, 0, %0, c7, c7, 0" :: "r" (reg));		// Invalidate all caches.
+    asm("MCR p15, 0, %0, c7, c10, 4" :: "r" (reg));		// Drain write buffers.
+    asm("NOP");
+    asm("NOP");
+    asm("NOP");
 #else
     __asm
     {
@@ -108,10 +108,10 @@ void __section("SectionForBootstrapOperations") CPU_ARM9_BootstrapCode()
     reg = 0xFFFFFFFF;
 
 #ifdef __GNUC__
-	asm("MCR p15, 0, %0, c3, c0, 0" :: "r" (reg));
-	asm("NOP");
-	asm("NOP");
-	asm("NOP");
+    asm("MCR p15, 0, %0, c3, c0, 0" :: "r" (reg));
+    asm("NOP");
+    asm("NOP");
+    asm("NOP");
 #else
     __asm
     {
@@ -126,11 +126,10 @@ void __section("SectionForBootstrapOperations") CPU_ARM9_BootstrapCode()
 #endif
 
 #elif defined(COMPILE_THUMB2)
-void CPU_ARM9_BootstrapCode()
+void AT91_CPU_ARM9_BootstrapCode()
 {
 }
 
 #endif
 
 #pragma arm section code
-

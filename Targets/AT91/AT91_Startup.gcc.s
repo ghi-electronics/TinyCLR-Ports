@@ -5,12 +5,12 @@
 
     .global  EntryPoint
     .global  PreStackInit_Exit_Pointer
-	.global  PreStackInit
-	.global  ARM_Vectors
-	.global CPU_InvalidateTLBs_asm
-	.global CPU_EnableMMU_asm
-	.global CPU_DisableMMU_asm
-	.global CPU_IsMMUEnabled_asm
+    .global  PreStackInit
+    .global  ARM_Vectors
+    .global AT91_CPU_InvalidateTLBs_asm
+    .global AT91_CPU_EnableMMU_asm
+    .global AT91_CPU_DisableMMU_asm
+    .global AT91_CPU_IsMMUEnabled_asm
 
     .global IRQ_LOCK_Release_asm
     .global IRQ_LOCK_Probe_asm
@@ -77,56 +77,56 @@ HeapEnd:
     .global HeapEnd
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-	.section    SectionForBootstrapOperations, "xa", %progbits
+    .section    SectionForBootstrapOperations, "xa", %progbits
 
 
-CPU_InvalidateTLBs_asm: 
+AT91_CPU_InvalidateTLBs_asm:
     mov		r0, #0
     mcr		p15, 0, r0, c8, c7, 0
     mrc     p15, 0, r1, c2, c0, 0
-    nop          
+    nop
 
     mov     pc, lr
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-CPU_EnableMMU_asm:
-	mcr     p15, 0, r0, c2, c0, 0		@ Set the TTB address location to CP15
+AT91_CPU_EnableMMU_asm:
+    mcr     p15, 0, r0, c2, c0, 0		@ Set the TTB address location to CP15
     mrc     p15, 0, r1, c2, c0, 0
-    nop  
+    nop
     mrc     p15, 0, r1, c1, c0, 0
     orr     r1, r1, #0x0001             @ Enable MMU
     mcr     p15, 0, r1, c1, c0, 0
     mrc     p15, 0, r1, c2, c0, 0
-    nop 
-        
+    nop
+
     @ Note that the 2 preceeding instruction would still be prefetched
-    @ under the physical address space instead of in virtual address space. 
+    @ under the physical address space instead of in virtual address space.
     mov     pc, lr
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-CPU_DisableMMU_asm:
+AT91_CPU_DisableMMU_asm:
     mrc     p15, 0, r0, c1, c0, 0
     bic     r0, r0, #0x0001           @ Disable MMU
     mcr     p15, 0, r0, c1, c0, 0
     mrc     p15, 0, r0, c2, c0, 0
-    nop 
-        
+    nop
+
     @ Note that the 2 preceeding instruction would still be prefetched
     @ under the physical address space instead of in virtual address space.
     mov     pc, lr
-    
+
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    
-CPU_IsMMUEnabled_asm:
+
+AT91_CPU_IsMMUEnabled_asm:
     mrc     p15, 0, r0, c1, c0, 0
     mrc     p15, 0, r1, c2, c0, 0
-    nop 
-    
+    nop
+
     and		r0, r0, #1
-    mov     pc, lr    
-	
+    mov     pc, lr
+
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
     .section   SectionForFlashOperations,"xa", %progbits       @  void IDelayLoop(UINT32 count)
@@ -210,7 +210,7 @@ IRQ_LOCK_Restore_asm:
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-	.section SectionForBootstrapOperations, "xa", %progbits
+    .section SectionForBootstrapOperations, "xa", %progbits
 
 PreStackInit:
 
@@ -220,33 +220,33 @@ PreStackInit:
     @ TODO: Enter your pre stack initialization code here (if needed)
     @       e.g. SDRAM initialization if you don't have/use SRAM for the stack
     @
-    
+
     @ << ADD CODE HERE >>
 
     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    @ DO NOT CHANGE THE FOLLOWING CODE! we can not use pop to return because we 
-    @ loaded the PC register to get here (since the stack has not been initialized).  
-    @ Make sure the PreStackInit_Exit_Pointer is within range and 
+    @ DO NOT CHANGE THE FOLLOWING CODE! we can not use pop to return because we
+    @ loaded the PC register to get here (since the stack has not been initialized).
+    @ Make sure the PreStackInit_Exit_Pointer is within range and
     @ in the SectionForBootstrapOperations
-    @ go back to the firstentry(_loader) code 
+    @ go back to the firstentry(_loader) code
     @
 
 
 PreStackEnd:
     B     PreStackInit_Exit_Pointer
 
-    
+
     @
     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-	
-	.section    .text.UNDEF_SubHandler, "xa", %progbits
-	UNDEF_SubHandler:
+
+    .section    .text.UNDEF_SubHandler, "xa", %progbits
+    UNDEF_SubHandler:
 @ on entry, were are in UNDEF mode, without a usable stack
     stmfd   r13!, {r0}                  @ store the r0 at undef stack first
     mrs     r0, spsr                    @ get the previous mode.
     orr     r0, r0, #0xC0               @ keep interrupts disabled.
     msr     cpsr_c, r0                  @ go back to the previous mode.
-  
+
     stmfd   r13!, {r1-r12}              @ push unbanked registers on the stack
     msr     cpsr_c, #PSR_MODE_UNDEF     @ go back into UNDEF mode, but keep IRQs off
     mov     r3,r0
@@ -337,15 +337,15 @@ ABORTD_SubHandler:
 
 ABORTD_Handler_Ptr:
     .word   AT91_Interrupt_AbortdHandler
-	
+
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
    .section VectorsTrampolines, "xa", %progbits
-   
-	.ifdef COMPILE_THUMB
-		.arm
-	.endif
+
+    .ifdef COMPILE_THUMB
+        .arm
+    .endif
 
 ARM_Vectors:
 
@@ -382,7 +382,7 @@ IRQ_VECTOR:
     @ this saves an additional 3+ clock cycle branch to the handler
 FIQ_Handler:
     .ifdef FIQ_SAMPLING_PROFILER
-    ldr     pc,FIQ_SubHandler_Trampoline    
+    ldr     pc,FIQ_SubHandler_Trampoline
 
 FIQ_SubHandler_Trampoline:
     .word   FIQ_SubHandler
@@ -399,7 +399,7 @@ ABORTD_SubHandler_Trampoline:
 
 
         @ route the normal interupt handler to the proper lowest level driver
-IRQ_SubHandler_Trampoline: 
+IRQ_SubHandler_Trampoline:
     .word  	IRQ_Handler
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
