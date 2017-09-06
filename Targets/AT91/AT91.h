@@ -33,7 +33,7 @@
 #define AT91C_ID_USART1		((unsigned int)  6) // USART 1
 #define AT91C_ID_USART2		((unsigned int)  7) // USART 2
 #define AT91C_ID_TWI		AT91C_ID_TWI0       // only support one I2C
-#define AT91C_ID_TWI0		((unsigned int)  9) // Two-Wire Interface 0 
+#define AT91C_ID_TWI0		((unsigned int)  9) // Two-Wire Interface 0
 #define AT91C_ID_TWI1		((unsigned int) 10) // Two-Wire Interface 1
 #define AT91C_ID_TWI2		((unsigned int) 11) // Two-Wire Interface 2
 #define AT91C_ID_HSMCI0		((unsigned int) 12) // High Speed Multimedia Card Interface 0
@@ -75,8 +75,8 @@
 #define AT91C_BASE_CKGR         0xFFFFFC20 // (CKGR) Base Address
 #define AT91C_BASE_PMC          0xFFFFFC00 // (PMC) Base Address
 #define AT91C_BASE_RSTC         0xFFFFFE00 // (RSTC) Base Address				- Not same Memory Address
-#define AT91C_BASE_RSTC_SR      0xFFFFFD04 
-#define AT91C_BASE_RSTC_MR      0xFFFFFD08 
+#define AT91C_BASE_RSTC_SR      0xFFFFFD04
+#define AT91C_BASE_RSTC_MR      0xFFFFFD08
 #define AT91C_BASE_SHDWC        0xFFFFFD10 // (SHDWC) Base Address
 #define AT91C_BASE_RTTC         	0xFFFFFD20 // (RTTC) Base Address
 #define AT91C_BASE_PITC         	0xFFFFFE30 // (PITC) Base Address
@@ -115,7 +115,7 @@
 #define AT91C_BASE_DTCM         	0x00200000 // (DTCM) Base Address
 #define AT91C_BASE_LCDC         	0xF8038000 // Hydra original address 0x00500000 // (LCDC) Base Address
 #define AT91C_BASE_UDP_DMA			0x00500000 // Hydra original address 0x00600000 // (UDP DMA) Base Address
-#define AT91C_BASE_EMAC				0xF802C000	
+#define AT91C_BASE_EMAC				0xF802C000
 
 // RTSC bit defines
 #define AT91C_RTSC__PROCRST     0x01         // processor reset bit
@@ -138,28 +138,28 @@ struct ARM9_MMU
 {
     static const uint32_t c_TTB_size = 0x4000;
 
-    static const uint32_t c_MMU_L1_Fault   = 0x00;
-    static const uint32_t c_MMU_L1_Coarse  = 0x11;
+    static const uint32_t c_MMU_L1_Fault = 0x00;
+    static const uint32_t c_MMU_L1_Coarse = 0x11;
     static const uint32_t c_MMU_L1_Section = 0x12;
-    static const uint32_t c_MMU_L1_Fine    = 0x13;
-    static const uint32_t c_MMU_L1_size    = 1 << 20;
+    static const uint32_t c_MMU_L1_Fine = 0x13;
+    static const uint32_t c_MMU_L1_size = 1 << 20;
 
     static const uint32_t c_AP__NoAccess = 0;
-    static const uint32_t c_AP__Client   = 1;
+    static const uint32_t c_AP__Client = 1;
     static const uint32_t c_AP__Reserved = 2;
-    static const uint32_t c_AP__Manager  = 3;
+    static const uint32_t c_AP__Manager = 3;
 
     //--//
 
-    static uint32_t* GetL1Entry( uint32_t* base, uint32_t address );
+    static uint32_t* GetL1Entry(uint32_t* base, uint32_t address);
     static void    InitializeL1(uint32_t* baseOfTTBs);
-    static uint32_t  GenerateL1_Section (                     uint32_t address,                                       uint32_t AP, uint32_t domain, bool Cachable, bool Buffered, bool Xtended = false );
-    static void    GenerateL1_Sections( uint32_t* baseOfTTBs, uint32_t mappedAddress, uint32_t physAddress, int32_t size, uint32_t AP, uint32_t domain, bool Cachable, bool Buffered, bool Xtended = false );
+    static uint32_t  GenerateL1_Section(uint32_t address, uint32_t AP, uint32_t domain, bool Cachable, bool Buffered, bool Xtended = false);
+    static void    GenerateL1_Sections(uint32_t* baseOfTTBs, uint32_t mappedAddress, uint32_t physAddress, int32_t size, uint32_t AP, uint32_t domain, bool Cachable, bool Buffered, bool Xtended = false);
 };
 
 void AT91_MMU_Initialize();
 void AT91_CPU_InvalidateTLBs();
-void AT91_CPU_EnableMMU( void* TTB );
+void AT91_CPU_EnableMMU(void* TTB);
 void AT91_CPU_DisableMMU();
 bool AT91_CPU_IsMMUEnabled();
 void AT91_CPU_BootstrapCode();
@@ -170,9 +170,9 @@ void AT91_Cache_DrainWriteBuffers();
 void AT91_Cache_InvalidateCaches();
 void AT91_Cache_EnableCaches();
 void AT91_Cache_DisableCaches();
-template <typename T> void AT91_Cache_InvalidateAddress( T* address );
-size_t AT91_Cache_GetCachableAddress( size_t address );
-size_t AT91_Cache_GetUncachableAddress( size_t address );
+template <typename T> void AT91_Cache_InvalidateAddress(T* address);
+size_t AT91_Cache_GetCachableAddress(size_t address);
+size_t AT91_Cache_GetUncachableAddress(size_t address);
 
 // GPIO
 enum class AT91_Gpio_Direction : uint8_t {
@@ -347,6 +347,87 @@ bool AT91_Flash_IsSupportsXIP(const TinyCLR_Deployment_Provider* self);
 uint32_t AT91_Flash_GetPartId();
 
 // Interrupt
+//////////////////////////////////////////////////////////////////////////////
+// AT91_AIC
+//
+struct AT91_AIC
+{
+    static const uint32_t c_Base = AT91C_BASE_AIC;
+
+    /****/ volatile uint32_t AIC_SMR[32];    // Source Mode Register
+    static const    uint32_t AIC_PRIOR = (0x7 << 0); // (AIC) Priority Level
+    static const    uint32_t AIC_PRIOR_LOWEST = (0x0); // (AIC) Lowest priority level
+    static const    uint32_t AIC_PRIOR_HIGHEST = (0x7); // (AIC) Highest priority level
+    static const    uint32_t AIC_SRCTYPE = (0x3 << 5); // (AIC) Interrupt Source Type
+    static const    uint32_t AIC_SRCTYPE_INT_HIGH_LEVEL = (0x0 << 5); // (AIC) Internal Sources Code Label High-level Sensitive
+    static const    uint32_t AIC_SRCTYPE_EXT_LOW_LEVEL = (0x0 << 5); // (AIC) External Sources Code Label Low-level Sensitive
+    static const    uint32_t AIC_SRCTYPE_INT_POSITIVE_EDGE = (0x1 << 5); // (AIC) Internal Sources Code Label Positive Edge triggered
+    static const    uint32_t AIC_SRCTYPE_EXT_NEGATIVE_EDGE = (0x1 << 5); // (AIC) External Sources Code Label Negative Edge triggered
+    static const    uint32_t AIC_SRCTYPE_HIGH_LEVEL = (0x2 << 5); // (AIC) Internal Or External Sources Code Label High-level Sensitive
+    static const    uint32_t AIC_SRCTYPE_POSITIVE_EDGE = (0x3 << 5); // (AIC) Internal Or External Sources Code Label Positive Edge triggered
+
+
+
+    /****/ volatile uint32_t AIC_SVR[32];    // Source Vector Register
+
+    /****/ volatile uint32_t AIC_IVR;        // IRQ Vector Register
+
+    /****/ volatile uint32_t AIC_FVR;        // FIQ Vector Register
+
+    /****/ volatile uint32_t AIC_ISR;        // Interrupt Status Register
+
+    /****/ volatile uint32_t AIC_IPR;        // Interrupt Pending Register
+
+    /****/ volatile uint32_t AIC_IMR;        // Interrupt Mask Register
+
+    /****/ volatile uint32_t AIC_CISR;       // Core Interrupt Status Register
+    static const    uint32_t AIC_NFIQ = (0x1 << 0); // (AIC) NFIQ Status
+    static const    uint32_t AIC_NIRQ = (0x1 << 1); // (AIC) NIRQ Status
+
+    /****/ volatile uint32_t Reserved6[2];
+
+    /****/ volatile uint32_t AIC_IECR;       // Interrupt Enable Command Register
+
+    /****/ volatile uint32_t AIC_IDCR;       // Interrupt Disable Command Register
+    static const    uint32_t AIC_IDCR_DIABLE_ALL = 0xFFFFFFFF; // disable all
+
+    /****/ volatile uint32_t AIC_ICCR;       // Interrupt Clear Command Register
+    static const    uint32_t AIC_ICCR_CLEAR_ALL = 0xFFFFFFFF; // clear all
+
+    /****/ volatile uint32_t AIC_ISCR;       // Interrupt Set Command Register
+
+    /****/ volatile uint32_t AIC_EOICR;      // End of Interrupt Command Register
+
+    /****/ volatile uint32_t AIC_SPU;        // Spurious Vector Register
+
+    /****/ volatile uint32_t AIC_DCR;        // Debug Control Register (Protect)
+    static const    uint32_t AIC_DCR_PROT = (0x1 << 0); // (AIC) Protection Mode
+    static const    uint32_t AIC_DCR_GMSK = (0x1 << 1); // (AIC) General Mask
+
+    /****/ volatile uint32_t Reserved7[1];
+
+    /****/ volatile uint32_t AIC_FFER;       // Fast Forcing Enable Register
+
+    /****/ volatile uint32_t AIC_FFDR;       // Fast Forcing Disable Register
+
+    /****/ volatile uint32_t AIC_FFSR;       // Fast Forcing Status Register
+
+
+    bool IsInterruptPending()
+    {
+        if (AIC_IPR & AIC_IMR)
+        {
+            return true;
+        }
+
+        return false;
+    }
+};
+
+//
+// AT91_AIC
+//////////////////////////////////////////////////////////////////////////////
+
 class AT91_SmartPtr_IRQ {
 
     uint32_t m_state;
@@ -460,3 +541,49 @@ void AT91_Startup_GetHeap(uint8_t*& start, size_t& length);
 int32_t AT91_Startup_GetLModePin();
 int32_t AT91_Startup_GetDeviceId();
 TinyCLR_Gpio_PinValue AT91_Startup_GetLModeUsbState();
+
+struct AT91
+{
+    /*
+        static const UINT32 c_UncachableMask = 0x80000000;
+
+        static AT91_EIM     & EIM()             { return *(AT91_EIM     *)(size_t)(      AT91_EIM     ::c_Base                                      ); }
+        static AT91_SC      & SC()              { return *(AT91_SC      *)(size_t)(      AT91_SC      ::c_Base                                      ); }
+        static AT91_CMU     & CMU  (         )  { return *(AT91_CMU     *)(size_t)(      AT91_CMU     ::c_Base                                      ); }
+        static AT91_PWM     & PWM()             { return *(AT91_PWM     *)(size_t)(      AT91_PWM     ::c_Base                                      ); }
+        static AT91_DMA     & DMA()             { return *(AT91_DMA     *)(size_t)(      AT91_DMA     ::c_Base                                      ); }
+    */
+    //    static AT91_I2C     & I2C()             { return *(AT91_I2C     *)(size_t)(      AT91_I2C     ::c_Base                                      ); }
+    static AT91_AIC     & AIC() { return *(AT91_AIC     *)(size_t)(AT91_AIC::c_Base); }
+    //    static AT91_PIO     & PIO( int sel )    { return *(AT91_PIO     *)(size_t)(AT91_PIO     ::c_Base + AT91_PIO::c_Base_Offset * sel ); }
+    //    static AT91_PMC     & PMC()             { return *(AT91_PMC     *)(size_t)(AT91_PMC     ::c_Base                                      ); }
+    //    static AT91_SPI     & SPI( int sel )    { if ( sel==0 ) return *(AT91_SPI     *)(size_t)(AT91_SPI::c_Base_1);
+    //                                                  else      return *(AT91_SPI     *)(size_t)(AT91_SPI::c_Base_2);                              }
+
+    //    static AT91_TC      & TIMER( int sel );
+    //    static AT91_WATCHDOG& WTDG()            { return *(AT91_WATCHDOG*)(size_t)(AT91_WATCHDOG::c_Base                                      ); }
+    //***************************************************************************************************************************************************************************************************************
+        // static AT91_USART   & USART( int sel )
+        // {
+            // if(sel == 0)
+                // return *(AT91_USART*)(size_t)(AT91_USART::c_Base_dbg);
+            // else if((sel > 0) && (sel < 4))
+                // return *(AT91_USART   *)(size_t)(AT91_USART::c_Base_usart + ((sel - 1) * 0x4000));
+            // else
+                // return *(AT91_USART   *)(size_t)(AT91_USART::c_Base_uart + ((sel - 4) * 0x4000));
+        // }
+    //***************************************************************************************************************************************************************************************************************
+    // static AT91_UDP     & UDP()             { return *(AT91_UDP     *)(size_t)(AT91_UDP     ::c_Base                                      ); }
+
+    // #if defined(PLATFORM_ARM_SAM9261_ANY) || defined(PLATFORM_ARM_SAM9RL64_ANY)
+        // static AT91_LCDC    & LCDC()            { return *(AT91_LCDC    *)(size_t)(AT91_LCDC    ::c_Base                                      ); }
+
+        // static AT91_SDRAMC  & SDRAMC()          { return *(AT91_SDRAMC  *)(size_t)(AT91_SDRAMC  ::c_Base                                      ); }
+        // static AT91_SMC     & SMCTRL()          { return *(AT91_SMC     *)(size_t)(AT91_SMC     ::c_Base                                      ); }
+        // static AT91_MATRIX  & MATRIX()          { return *(AT91_MATRIX  *)(size_t)(AT91_MATRIX  ::c_Base                                      ); }
+    // #endif
+        // static AT91_DDRS     & DDRS()             { return *(AT91_DDRS     *)(size_t)(AT91_DDRS     ::c_Base                                      ); }
+        // static AT91_PIT     & PIT()             { return *(AT91_PIT     *)(size_t)(AT91_PIT     ::c_Base                                      ); }
+        //--//
+
+};

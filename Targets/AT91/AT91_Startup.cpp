@@ -55,6 +55,12 @@ extern "C" {
 
         AT91_Cache_EnableCaches();
 
+        volatile int a = 0;
+
+        while (a == 0) {
+            a += a;
+        }
+
         return;
 
     }
