@@ -38,12 +38,13 @@
 #define HAL_SYSTEM_NAME "G400"
 
 // System clock
-#define SYSTEM_CLOCK_HZ                      18000000 // 18 MHz
-#define SYSTEM_CYCLE_CLOCK_HZ                72000000 // 72 MHz
-#define CLOCK_COMMON_FACTOR                  1000000 // GCD(SYSTEM_CLOCK_HZ, 1M)
-#define SLOW_CLOCKS_PER_SECOND               18000000 // SYSTEM_CLOCK_HZ MHz
-#define SLOW_CLOCKS_TEN_MHZ_GCD              1000000 // GCD(SLOW_CLOCKS_PER_SECOND, 10M)
-#define SLOW_CLOCKS_MILLISECOND_GCD          1000 // GCD(SLOW_CLOCKS_PER_SECOND, 1k)
+#define SYSTEM_CYCLE_CLOCK_HZ               (400*1000*1000) // 400 MHz
+#define SYSTEM_PERIPHERAL_CLOCK_HZ          (SYSTEM_CYCLE_CLOCK_HZ / 3) // 133MHz
+#define SYSTEM_CLOCK_HZ                     (SYSTEM_PERIPHERAL_CLOCK_HZ/32) // 4MHz
+#define CLOCK_COMMON_FACTOR                 5000 // 333333 //5000
+#define SLOW_CLOCKS_PER_SECOND              (SYSTEM_CLOCK_HZ - ((SYSTEM_CLOCK_HZ/45))) //in 4.3.7.8, we use Div = 3 = 133MHz / 3 for slow lock
+#define SLOW_CLOCKS_TEN_MHZ_GCD             1000 // 33333 //1000
+#define SLOW_CLOCKS_MILLISECOND_GCD         10
 
 // Memory
 #define SRAM_MEMORY_Base                    0x00300000
@@ -155,15 +156,15 @@
 #define OEM_VERSION_MINOR                   6
 #define OEM_VERSION_PATCH                   0
 
-#define INCLUDE_ADC
-#define INCLUDE_DAC
+//#define INCLUDE_ADC
+//#define INCLUDE_DAC
 #define INCLUDE_GPIO
-#define INCLUDE_I2C
+//#define INCLUDE_I2C
 #define INCLUDE_PWM
-#define INCLUDE_SPI
+//#define INCLUDE_SPI
 #define INCLUDE_UART
-#define INCLUDE_USBCLIENT
-#define INCLUDE_DISPLAY
+//#define INCLUDE_USBCLIENT
+//#define INCLUDE_DISPLAY
 
 #define TARGET AT91
 
