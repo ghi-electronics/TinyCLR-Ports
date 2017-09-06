@@ -132,6 +132,126 @@
 #define AT91C_SHDWC__SHUTDOWN_KEY   0xA5000000   // reset key
 #define AT91C_SHDWC__SHDW           0x01         // processor reset bit
 
+struct AT91_PMC {
+    static const uint32_t c_Base = AT91C_BASE_PMC;
+
+    /****/ volatile uint32_t PMC_SCER;                // System Clock Enable Register
+
+    /****/ volatile uint32_t PMC_SCDR;                // System Clock Disable Register
+
+    /****/ volatile uint32_t PMC_SCSR;                // System Clock Status Register
+
+    /****/ volatile uint32_t Reserved0[1];            //
+
+    /****/ volatile uint32_t PMC_PCER;                // Peripheral Clock Enable Register
+
+    /****/ volatile uint32_t PMC_PCDR;                // Peripheral Clock Disable Register
+
+    /****/ volatile uint32_t PMC_PCSR;                // Peripheral Clock Status Register
+
+    /****/ volatile uint32_t PMC_CKGR_UCKR;            // UTMI Clock Register
+
+    /****/ volatile uint32_t PMC_CKGR_MOR;            // Main Oscillator Register
+    static const    uint32_t CKGR_MOSCEN = (0x1 << 0);       // (CKGR) Main Oscillator Enable
+    static const    uint32_t CKGR_OSCBYPASS = (0x1 << 1);       // (CKGR) Main Oscillator Bypass
+    static const    uint32_t CKGR_OSCOUNT = (0xFF << 8);      // (CKGR) Main Oscillator Start-up Time
+
+
+    /****/ volatile uint32_t PMC_CKGR_MCFR;  // Main Clock  Frequency Register
+    static const    uint32_t CKGR_MAINF = (0xFFFF << 0);     // (CKGR) Main Clock Frequency
+    static const    uint32_t CKGR_MAINRDY = (0x1 << 16);       // (CKGR) Main Clock Ready
+
+
+    /****/ volatile uint32_t PMC_CKGR_PLLAR;  // PLL Register
+
+
+    static const    uint32_t CKGR_DIV = (0xFF << 0);     // (CKGR) Divider Selected
+    static const    uint32_t CKGR_DIV_0 = (0x0);           // (CKGR) Divider output is 0
+    static const    uint32_t CKGR_DIV_BYPASS = (0x1);           // (CKGR) Divider is bypassed
+    static const    uint32_t CKGR_PLLCOUNT = (0x3F << 8);     // (CKGR) PLL Counter
+    static const    uint32_t CKGR_OUT = (0x3 << 14);     // (CKGR) PLL Output Frequency Range
+    static const    uint32_t CKGR_OUT_0 = (0x0 << 14);     // (CKGR) Please refer to the PLL datasheet
+    static const    uint32_t CKGR_OUT_1 = (0x1 << 14);     // (CKGR) Please refer to the PLL datasheet
+    static const    uint32_t CKGR_OUT_2 = (0x2 << 14);     // (CKGR) Please refer to the PLL datasheet
+    static const    uint32_t CKGR_OUT_3 = (0x3 << 14);     // (CKGR) Please refer to the PLL datasheet
+    static const    uint32_t CKGR_MUL = (0x7FF << 16);   // (CKGR) PLL Multiplier
+    static const    uint32_t CKGR_USBDIV = (0x3 << 28);     // (CKGR) Divider for USB Clocks
+    static const    uint32_t CKGR_USBDIV_0 = (0x0 << 28);     // (CKGR) Divider output is PLL clock output
+    static const    uint32_t CKGR_USBDIV_1 = (0x1 << 28);     // (CKGR) Divider output is PLL clock output divided by 2
+    static const    uint32_t CKGR_USBDIV_2 = (0x2 << 28);     // (CKGR) Divider output is PLL clock output divided by 4
+
+    /****/ volatile uint32_t Reserved1[1];            //
+
+    /****/ volatile uint32_t PMC_MCKR;  // Master Clock Register
+    static const    uint32_t PMC_CSS = (0x3 << 0);   //  (PMC) Programmable Clock Selection
+    static const    uint32_t PMC_CSS_SLOW_CLK = (0x0);         //  (PMC) Slow Clock is selected
+    static const    uint32_t PMC_CSS_MAIN_CLK = (0x1);         //  (PMC) Main Clock is selected
+    static const    uint32_t PMC_CSS_PLLA_CLK = (0x2);         //  (PMC) Clock from PLL1 is selected = (SAM9 only);
+    static const    uint32_t PMC_CSS_PLL_CLK = (0x3);         //  (PMC) Clock from PLL is selected
+    static const    uint32_t PMC_PRES = (0x7 << 2);   //  (PMC) Programmable Clock Prescaler
+    static const    uint32_t PMC_PRES_CLK = (0x0 << 2);   //  (PMC) Selected clock
+    static const    uint32_t PMC_PRES_CLK_2 = (0x1 << 2);   //  (PMC) Selected clock divided by 2
+    static const    uint32_t PMC_PRES_CLK_4 = (0x2 << 2);   //  (PMC) Selected clock divided by 4
+    static const    uint32_t PMC_PRES_CLK_8 = (0x3 << 2);   //  (PMC) Selected clock divided by 8
+    static const    uint32_t PMC_PRES_CLK_16 = (0x4 << 2);   //  (PMC) Selected clock divided by 16
+    static const    uint32_t PMC_PRES_CLK_32 = (0x5 << 2);   //  (PMC) Selected clock divided by 32
+    static const    uint32_t PMC_PRES_CLK_64 = (0x6 << 2);   //  (PMC) Selected clock divided by 64
+    static const    uint32_t PMC_MDIV = (0x3 << 8);   //  (PMC) Master Clock Division
+    static const    uint32_t PMC_MDIV_1 = (0x0 << 8);   //  (PMC) The master clock and the processor clock are the same
+    static const    uint32_t PMC_MDIV_2 = (0x1 << 8);   //  (PMC) The processor clock is twice as fast as the master clock
+    static const    uint32_t PMC_MDIV_3 = (0x2 << 8);   //  (PMC) The processor clock is four times faster than the master clock
+
+    /****/ volatile uint32_t Reserved3[3];  // TQD: Just a note PMC_USB and PMC_SMD are in here
+
+    /****/ volatile uint32_t PMC_PCKR[2];   // Programmable Clock Register
+
+    /****/ volatile uint32_t Reserved4[6];  //
+
+    /****/ volatile uint32_t PMC_IER;   // Interrupt Enable Register
+    static const    uint32_t PMC_MOSCS = (0x1 << 0);       // (PMC) MOSC Status/Enable/Disable/Mask
+    static const    uint32_t PMC_LOCKA = (0x1 << 1);       // (PMC) PLL Status/Enable/Disable/Mask =(SAM9 Only);
+    static const    uint32_t PMC_LOCK = (0x1 << 2);       // (PMC) PLL Status/Enable/Disable/Mask
+    static const    uint32_t PMC_MCKRDY = (0x1 << 3);       // (PMC) MCK_RDY Status/Enable/Disable/Mask
+    static const    uint32_t PMC_PCK0RDY = (0x1 << 8);       // (PMC) PCK0_RDY Status/Enable/Disable/Mask
+    static const    uint32_t PMC_PCK1RDY = (0x1 << 9);       // (PMC) PCK1_RDY Status/Enable/Disable/Mask
+    static const    uint32_t PMC_PCK2RDY = (0x1 << 10);       // (PMC) PCK2_RDY Status/Enable/Disable/Mask
+    static const    uint32_t PMC_PCK3RDY = (0x1 << 11);       // (PMC) PCK3_RDY Status/Enable/Disable/Mask
+    static const    uint32_t PMC_LOCKU = (0x1 << 6);           //(PMC) USB clock locked
+    /****/ volatile uint32_t PMC_IDR;   // Interrupt Disable Register
+
+    /****/ volatile uint32_t PMC_SR;    // Status Register
+
+    /****/ volatile uint32_t PMC_IMR;   // Interrupt Mask Register
+
+    /****/ volatile uint32_t Reserved5[3]; // Reserved
+
+    /****/ volatile uint32_t PMC_PLLICPR; // Charge Pump Current Register
+    static const    uint32_t PMC_PLLICPR__PLLA = (0x1 << 0);
+    static const    uint32_t PMC_PLLICPR__PLLB = (0x1 << 16);
+
+    __inline void EnableSystemClock(uint32_t clkIds)
+    {
+        PMC_SCER = clkIds;
+    }
+
+    __inline void DisableSystemClock(uint32_t clkIds)
+    {
+        PMC_SCDR = clkIds;
+    }
+
+    __inline void EnablePeriphClock(uint32_t periphIds)
+    {
+        PMC_PCER = (1 << periphIds);
+    }
+
+    __inline void DisablePeriphClock(uint32_t periphIds)
+    {
+        PMC_PCDR = (1 << periphIds);
+    }
+
+
+};
+
 
 // MMU
 struct ARM9_MMU
@@ -428,6 +548,31 @@ struct AT91_AIC
 // AT91_AIC
 //////////////////////////////////////////////////////////////////////////////
 
+typedef void(*AT91_Interrupt_Handler)(void* arg);
+
+struct AT91_Interrupt_Callback {
+
+public:
+    void* EntryPoint;
+    void* Argument;
+
+public:
+    void Initialize(uint32_t* EntryPoint, void* Argument) {
+        this->EntryPoint = (void*)EntryPoint;
+        this->Argument = Argument;
+    }
+
+    void Execute() const {
+        AT91_Interrupt_Handler EntryPoint = (AT91_Interrupt_Handler)this->EntryPoint;
+
+        void* Argument = this->Argument;
+
+        if (EntryPoint) {
+            EntryPoint(Argument);
+        }
+    }
+};
+
 class AT91_SmartPtr_IRQ {
 
     uint32_t m_state;
@@ -466,6 +611,8 @@ bool AT91_Interrupt_GlobalDisable(bool force);
 void AT91_Interrupt_GlobalRestore();
 void AT91_Interrupt_GlobalWaitForInterrupt();
 
+void AT91_Interrupt_ForceInterrupt(uint32_t Irq_Index);
+
 extern TinyCLR_Interrupt_StartStopHandler AT91_Interrupt_Started;
 extern TinyCLR_Interrupt_StartStopHandler AT91_Interrupt_Ended;
 
@@ -482,6 +629,145 @@ void AT91_I2c_StartTransaction();
 void AT91_I2c_StopTransaction();
 
 // Time
+//////////////////////////////////////////////////////////////////////////////
+// AT91 Timer Channel
+//
+struct AT91_TC {
+
+    static const uint32_t c_Base = AT91C_BASE_TC0;
+
+    /****/ volatile uint32_t TC_CCR;    // Channel Control Register
+    static const    uint32_t TC_CLKEN = (0x1 << 0);// (TC) Counter Clock Enable Command
+    static const    uint32_t TC_CLKDIS = (0x1 << 1);// (TC)Counter Clock Disable Command
+    static const    uint32_t TC_SWTRG = (0x1 << 2);// (TC)Software Trigger Command
+
+    /****/ volatile uint32_t TC_CMR;    // Channel Mode Register (Capture Mode / Waveform Mode)
+    static const    uint32_t TC_CLKS = (0x7 << 0);// (TC)Clock Selection
+    static const    uint32_t     TC_CLKS_TIMER_DIV1_CLOCK = (0x0);// (TC)Clock selected: TIMER_DIV1_CLOCK
+    static const    uint32_t     TC_CLKS_TIMER_DIV2_CLOCK = (0x1);// (TC)Clock selected: TIMER_DIV2_CLOCK
+    static const    uint32_t     TC_CLKS_TIMER_DIV3_CLOCK = (0x2);// (TC)Clock selected: TIMER_DIV3_CLOCK
+    static const    uint32_t     TC_CLKS_TIMER_DIV4_CLOCK = (0x3);// (TC)Clock selected: TIMER_DIV4_CLOCK
+    static const    uint32_t     TC_CLKS_TIMER_DIV5_CLOCK = (0x4);// (TC)Clock selected: TIMER_DIV5_CLOCK
+    static const    uint32_t     TC_CLKS_XC0 = (0x5);// (TC)Clock selected: XC0
+    static const    uint32_t     TC_CLKS_XC1 = (0x6);// (TC)Clock selected: XC1
+    static const    uint32_t     TC_CLKS_XC2 = (0x7);// (TC)Clock selected: XC2
+    static const    uint32_t TC_CLKI = (0x1 << 3);// (TC)Clock Invert
+    static const    uint32_t TC_BURST = (0x3 << 4);// (TC)Burst Signal Selection
+    static const    uint32_t     TC_BURST_NONE = (0x0 << 4);// (TC)The clock is not gated by an external signal
+    static const    uint32_t     TC_BURST_XC0 = (0x1 << 4);// (TC)XC0 is ANDed with the selected clock
+    static const    uint32_t     TC_BURST_XC1 = (0x2 << 4);// (TC)XC1 is ANDed with the selected clock
+    static const    uint32_t     TC_BURST_XC2 = (0x3 << 4);// (TC)XC2 is ANDed with the selected clock
+    static const    uint32_t TC_CPCSTOP = (0x1 << 6);// (TC)Counter Clock Stopped with RC Compare
+    static const    uint32_t TC_LDBSTOP = (0x1 << 6);// (TC)Counter Clock Stopped with RB Loading
+    static const    uint32_t TC_CPCDIS = (0x1 << 7);// (TC)Counter Clock Disable with RC Compare
+    static const    uint32_t TC_LDBDIS = (0x1 << 7);// (TC)Counter Clock Disabled with RB Loading
+    static const    uint32_t TC_ETRGEDG = (0x3 << 8);// (TC)External Trigger Edge Selection
+    static const    uint32_t     TC_ETRGEDG_NONE = (0x0 << 8);// (TC)Edge: None
+    static const    uint32_t     TC_ETRGEDG_RISING = (0x1 << 8);// (TC)Edge: rising edge
+    static const    uint32_t     TC_ETRGEDG_FALLING = (0x2 << 8);// (TC)Edge: falling edge
+    static const    uint32_t     TC_ETRGEDG_BOTH = (0x3 << 8);// (TC)Edge: each edge
+    static const    uint32_t TC_EEVTEDG = (0x3 << 8);// (TC)External Event Edge Selection
+    static const    uint32_t     TC_EEVTEDG_NONE = (0x0 << 8);// (TC)Edge: None
+    static const    uint32_t     TC_EEVTEDG_RISING = (0x1 << 8);// (TC)Edge: rising edge
+    static const    uint32_t     TC_EEVTEDG_FALLING = (0x2 << 8);// (TC)Edge: falling edge
+    static const    uint32_t     TC_EEVTEDG_BOTH = (0x3 << 8);// (TC)Edge: each edge
+    static const    uint32_t TC_EEVT = (0x3 << 10);// (TC)External Event  Selection
+    static const    uint32_t     TC_EEVT_TIOB = (0x0 << 10);// (TC)Signal selected as external event: TIOB TIOB direction: input
+    static const    uint32_t     TC_EEVT_XC0 = (0x1 << 10);// (TC)Signal selected as external event: XC0 TIOB direction: output
+    static const    uint32_t     TC_EEVT_XC1 = (0x2 << 10);// (TC)Signal selected as external event: XC1 TIOB direction: output
+    static const    uint32_t     TC_EEVT_XC2 = (0x3 << 10);// (TC)Signal selected as external event: XC2 TIOB direction: output
+    static const    uint32_t TC_ABETRG = (0x1 << 10);// (TC)TIOA or TIOB External Trigger Selection
+    static const    uint32_t TC_ENETRG = (0x1 << 12);// (TC)External Event Trigger enable
+    static const    uint32_t TC_WAVESEL = (0x3 << 13);// (TC)Waveform  Selection
+    static const    uint32_t     TC_WAVESEL_UP = (0x0 << 13);// (TC)UP mode without atomatic trigger on RC Compare
+    static const    uint32_t     TC_WAVESEL_UPDOWN = (0x1 << 13);// (TC)UPDOWN mode without automatic trigger on RC Compare
+    static const    uint32_t     TC_WAVESEL_UP_AUTO = (0x2 << 13);// (TC)UP mode with automatic trigger on RC Compare
+    static const    uint32_t     TC_WAVESEL_UPDOWN_AUTO = (0x3 << 13);// (TC)UPDOWN mode with automatic trigger on RC Compare
+    static const    uint32_t TC_CPCTRG = (0x1 << 14);// (TC)RC Compare Trigger Enable
+    static const    uint32_t TC_WAVE = (0x1 << 15);// (TC)
+    static const    uint32_t TC_ACPA = (0x3 << 16);// (TC)RA Compare Effect on TIOA
+    static const    uint32_t     TC_ACPA_NONE = (0x0 << 16);// (TC)Effect: none
+    static const    uint32_t     TC_ACPA_SET = (0x1 << 16);// (TC)Effect: set
+    static const    uint32_t     TC_ACPA_CLEAR = (0x2 << 16);// (TC)Effect: clear
+    static const    uint32_t     TC_ACPA_TOGGLE = (0x3 << 16);// (TC)Effect: toggle
+    static const    uint32_t TC_LDRA = (0x3 << 16);// (TC)RA Loading Selection
+    static const    uint32_t     TC_LDRA_NONE = (0x0 << 16);// (TC)Edge: None
+    static const    uint32_t     TC_LDRA_RISING = (0x1 << 16);// (TC)Edge: rising edge of TIOA
+    static const    uint32_t     TC_LDRA_FALLING = (0x2 << 16);// (TC)Edge: falling edge of TIOA
+    static const    uint32_t     TC_LDRA_BOTH = (0x3 << 16);// (TC)Edge: each edge of TIOA
+    static const    uint32_t TC_ACPC = (0x3 << 18);// (TC)RC Compare Effect on TIOA
+    static const    uint32_t     TC_ACPC_NONE = (0x0 << 18);// (TC)Effect: none
+    static const    uint32_t     TC_ACPC_SET = (0x1 << 18);// (TC)Effect: set
+    static const    uint32_t     TC_ACPC_CLEAR = (0x2 << 18);// (TC)Effect: clear
+    static const    uint32_t     TC_ACPC_TOGGLE = (0x3 << 18);// (TC)Effect: toggle
+    static const    uint32_t TC_LDRB = (0x3 << 18);// (TC)RB Loading Selection
+    static const    uint32_t     TC_LDRB_NONE = (0x0 << 18);// (TC)Edge: None
+    static const    uint32_t     TC_LDRB_RISING = (0x1 << 18);// (TC)Edge: rising edge of TIOA
+    static const    uint32_t     TC_LDRB_FALLING = (0x2 << 18);// (TC)Edge: falling edge of TIOA
+    static const    uint32_t     TC_LDRB_BOTH = (0x3 << 18);// (TC)Edge: each edge of TIOA
+    static const    uint32_t TC_AEEVT = (0x3 << 20);// (TC)External Event Effect on TIOA
+    static const    uint32_t     TC_AEEVT_NONE = (0x0 << 20);// (TC)Effect: none
+    static const    uint32_t     TC_AEEVT_SET = (0x1 << 20);// (TC)Effect: set
+    static const    uint32_t     TC_AEEVT_CLEAR = (0x2 << 20);// (TC)Effect: clear
+    static const    uint32_t     TC_AEEVT_TOGGLE = (0x3 << 20);// (TC)Effect: toggle
+    static const    uint32_t TC_ASWTRG = (0x3 << 22);// (TC)Software Trigger Effect on TIOA
+    static const    uint32_t     TC_ASWTRG_NONE = (0x0 << 22);// (TC)Effect: none
+    static const    uint32_t     TC_ASWTRG_SET = (0x1 << 22);// (TC)Effect: set
+    static const    uint32_t     TC_ASWTRG_CLEAR = (0x2 << 22);// (TC)Effect: clear
+    static const    uint32_t     TC_ASWTRG_TOGGLE = (0x3 << 22);// (TC)Effect: toggle
+    static const    uint32_t TC_BCPB = (0x3 << 24);// (TC)RB Compare Effect on TIOB
+    static const    uint32_t     TC_BCPB_NONE = (0x0 << 24);// (TC)Effect: none
+    static const    uint32_t     TC_BCPB_SET = (0x1 << 24);// (TC)Effect: set
+    static const    uint32_t     TC_BCPB_CLEAR = (0x2 << 24);// (TC)Effect: clear
+    static const    uint32_t     TC_BCPB_TOGGLE = (0x3 << 24);// (TC)Effect: toggle
+    static const    uint32_t TC_BCPC = (0x3 << 26);// (TC)RC Compare Effect on TIOB
+    static const    uint32_t     TC_BCPC_NONE = (0x0 << 26);// (TC)Effect: none
+    static const    uint32_t     TC_BCPC_SET = (0x1 << 26);// (TC)Effect: set
+    static const    uint32_t     TC_BCPC_CLEAR = (0x2 << 26);// (TC)Effect: clear
+    static const    uint32_t     TC_BCPC_TOGGLE = (0x3 << 26);// (TC)Effect: toggle
+    static const    uint32_t TC_BEEVT = (0x3 << 28);// (TC)External Event Effect on TIOB
+    static const    uint32_t     TC_BEEVT_NONE = (0x0 << 28);// (TC)Effect: none
+    static const    uint32_t     TC_BEEVT_SET = (0x1 << 28);// (TC)Effect: set
+    static const    uint32_t     TC_BEEVT_CLEAR = (0x2 << 28);// (TC)Effect: clear
+    static const    uint32_t     TC_BEEVT_TOGGLE = (0x3 << 28);// (TC)Effect: toggle
+    static const    uint32_t TC_BSWTRG = ((uint32_t)0x3 << 30);// (TC)Software Trigger Effect on TIOB
+    static const    uint32_t     TC_BSWTRG_NONE = ((uint32_t)0x0 << 30);// (TC)Effect: none
+    static const    uint32_t     TC_BSWTRG_SET = ((uint32_t)0x1 << 30);// (TC)Effect: set
+    static const    uint32_t     TC_BSWTRG_CLEAR = ((uint32_t)0x2 << 30);// (TC)Effect: clear
+    static const    uint32_t     TC_BSWTRG_TOGGLE = ((uint32_t)0x3 << 30);// (TC)Effect: toggle
+
+    /****/ volatile uint32_t Reserved0[2];
+
+    /****/ volatile uint32_t TC_CV;     // Counter Value
+
+    /****/ volatile uint32_t TC_RA;     // Register A
+
+    /****/ volatile uint32_t TC_RB;     // Register B
+
+    /****/ volatile uint32_t TC_RC;     // Register C
+
+    /****/ volatile uint32_t TC_SR;     // Status Register
+    static const    uint32_t TC_COVFS = (0x1 << 0);// (TC)Counter Overflow
+    static const    uint32_t TC_LOVRS = (0x1 << 1);// (TC)Load Overrun
+    static const    uint32_t TC_CPAS = (0x1 << 2);// (TC)RA Compare
+    static const    uint32_t TC_CPBS = (0x1 << 3);// (TC)RB Compare
+    static const    uint32_t TC_CPCS = (0x1 << 4);// (TC)RC Compare
+    static const    uint32_t TC_LDRAS = (0x1 << 5);// (TC)RA Loading
+    static const    uint32_t TC_LDRBS = (0x1 << 6);// (TC)RB Loading
+    static const    uint32_t TC_ETRGS = (0x1 << 7);// (TC)External Trigger
+    static const    uint32_t TC_CLKSTA = (0x1 << 16);// (TC)Clock Enabling
+    static const    uint32_t TC_MTIOA = (0x1 << 17);// (TC)TIOA Mirror
+    static const    uint32_t TC_MTIOB = (0x1 << 18);// (TC)TIOA Mirror
+
+    /****/ volatile uint32_t TC_IER;    // Interrupt Enable Register
+
+    /****/ volatile uint32_t TC_IDR;    // Interrupt Disable Register
+
+    /****/ volatile uint32_t TC_IMR;    // Interrupt Mask Register
+};
+
+//
+// AT91 Timer Channel
 const TinyCLR_Api_Info* AT91_Time_GetApi();
 TinyCLR_Result AT91_Time_Acquire(const TinyCLR_Time_Provider* self);
 TinyCLR_Result AT91_Time_Release(const TinyCLR_Time_Provider* self);
@@ -545,7 +831,7 @@ TinyCLR_Gpio_PinValue AT91_Startup_GetLModeUsbState();
 struct AT91
 {
     /*
-        static const UINT32 c_UncachableMask = 0x80000000;
+        static const uint32_t c_UncachableMask = 0x80000000;
 
         static AT91_EIM     & EIM()             { return *(AT91_EIM     *)(size_t)(      AT91_EIM     ::c_Base                                      ); }
         static AT91_SC      & SC()              { return *(AT91_SC      *)(size_t)(      AT91_SC      ::c_Base                                      ); }
@@ -556,11 +842,11 @@ struct AT91
     //    static AT91_I2C     & I2C()             { return *(AT91_I2C     *)(size_t)(      AT91_I2C     ::c_Base                                      ); }
     static AT91_AIC     & AIC() { return *(AT91_AIC     *)(size_t)(AT91_AIC::c_Base); }
     //    static AT91_PIO     & PIO( int sel )    { return *(AT91_PIO     *)(size_t)(AT91_PIO     ::c_Base + AT91_PIO::c_Base_Offset * sel ); }
-    //    static AT91_PMC     & PMC()             { return *(AT91_PMC     *)(size_t)(AT91_PMC     ::c_Base                                      ); }
+    static AT91_PMC     & PMC() { return *(AT91_PMC     *)(size_t)(AT91_PMC::c_Base); }
     //    static AT91_SPI     & SPI( int sel )    { if ( sel==0 ) return *(AT91_SPI     *)(size_t)(AT91_SPI::c_Base_1);
     //                                                  else      return *(AT91_SPI     *)(size_t)(AT91_SPI::c_Base_2);                              }
 
-    //    static AT91_TC      & TIMER( int sel );
+    static AT91_TC      & TIMER(int sel) { return *(AT91_TC*)(size_t)(AT91_TC::c_Base + (sel * 0x40)); }
     //    static AT91_WATCHDOG& WTDG()            { return *(AT91_WATCHDOG*)(size_t)(AT91_WATCHDOG::c_Base                                      ); }
     //***************************************************************************************************************************************************************************************************************
         // static AT91_USART   & USART( int sel )

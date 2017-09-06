@@ -30,31 +30,6 @@ extern "C" {
     void        IRQ_LOCK_Restore_asm();
 }
 
-typedef void(*AT91_Interrupt_Handler)(void* arg);
-
-struct AT91_Interrupt_Callback {
-
-public:
-    void* EntryPoint;
-    void* Argument;
-
-public:
-    void Initialize(uint32_t* EntryPoint, void* Argument) {
-        this->EntryPoint = (void*)EntryPoint;
-        this->Argument = Argument;
-    }
-
-    void Execute() const {
-        AT91_Interrupt_Handler EntryPoint = (AT91_Interrupt_Handler)this->EntryPoint;
-
-        void* Argument = this->Argument;
-
-        if (EntryPoint) {
-            EntryPoint(Argument);
-        }
-    }
-};
-
 struct AT91_Interrupt_Vectors {
     uint32_t                    Priority;
     AT91_Interrupt_Callback    Handler;
@@ -137,6 +112,19 @@ AT91_Interrupt_Vectors* AT91_Interrupt_IrqToVector(uint32_t Irq) {
     }
 
     return nullptr;
+}
+
+void AT91_Interrupt_ForceInterrupt(uint32_t Irq_Index)
+{
+    AT91_AIC &AIC = AT91::AIC();
+
+    AIC.AIC_ISCR = (1 << Irq_Index);
+}
+
+void AT91_Interrupt_RemoveForcedInterrupt(uint32_t Irq_Index)
+{
+    AT91_AIC &AIC = AT91::AIC();
+    AIC.AIC_ICCR = (1 << Irq_Index);
 }
 
 void AT91_Interrupt_StubIrqVector(void* Param) {
@@ -407,8 +395,8 @@ extern "C" {
             AT91_Interrupt_Vectors* IsrVector = &s_IsrTable[index];
 
             // In case the interrupt was forced, remove the flag.
-            //RemoveForcedInterrupt( index );
-            aic.AIC_ICCR = (1 << index);
+            AT91_Interrupt_RemoveForcedInterrupt(index);
+
 
             IsrVector->Handler.Execute();
 
