@@ -54,6 +54,10 @@ extern "C" {
         AT91_MMU_Initialize();
 
         AT91_Cache_EnableCaches();
+        
+        AT91_WATCHDOG &g_WDT = AT91::WTDG();
+        
+        g_WDT.WTDG_MR |=1<<15;  // Disable watchdog
 
         volatile int a = 0;
 

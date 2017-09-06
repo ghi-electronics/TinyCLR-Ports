@@ -821,6 +821,42 @@ int32_t AT91_Display_GetWidth(const TinyCLR_Display_Provider* self);
 int32_t AT91_Display_GetHeight(const TinyCLR_Display_Provider* self);
 TinyCLR_Display_InterfaceType AT91_Display_GetType(const TinyCLR_Display_Provider* self);
 
+//WatchDog
+//////////////////////////////////////////////////////////////////////////////
+// WATCHDOG
+//
+struct AT91_WATCHDOG
+{
+    static const uint32_t c_Base = AT91C_BASE_WDTC;
+
+    //--//
+
+    /****/ volatile uint32_t WTDG_CR;
+    static const    uint32_t WCR__KEY_mask = 0xFF000000;
+    static const    uint32_t WCR__KEY      = 0xA5000000;
+    static const    uint32_t WCR__RESTART  = 0x00000001;
+
+    /****/ volatile uint32_t WTDG_MR;
+    static const    uint32_t WMR_WDV_mask  = 0x00000FFF;
+    static const    uint32_t WMR_WDFIEN    = 0x00001000;
+    static const    uint32_t WMR_WDRSTEN   = 0x00002000;
+
+    static const    uint32_t WMR_WDRPROC   = 0x00004000;
+    static const    uint32_t WMR_WDDIS     = 0x00008000;
+
+    static const    uint32_t WMR_WDD_mask  = 0x0FFF0000;
+    static const    uint32_t WMR_WDDBGHLT  = 0x10000000;
+    static const    uint32_t WMR_WDIDLEHLT = 0x20000000;
+
+
+    /****/ volatile uint32_t WTDG_SR;
+    static const    uint32_t WSR__WDUNF    = 0x00000001;
+    static const    uint32_t WSR__WDERR    = 0x00000002;
+};
+//
+// WATCHDOG
+//////////////////////////////////////////////////////////////////////////////
+
 //Startup
 void AT91_Startup_InitializeRegions();
 void AT91_Startup_GetHeap(uint8_t*& start, size_t& length);
@@ -847,7 +883,7 @@ struct AT91
     //                                                  else      return *(AT91_SPI     *)(size_t)(AT91_SPI::c_Base_2);                              }
 
     static AT91_TC      & TIMER(int sel) { return *(AT91_TC*)(size_t)(AT91_TC::c_Base + (sel * 0x40)); }
-    //    static AT91_WATCHDOG& WTDG()            { return *(AT91_WATCHDOG*)(size_t)(AT91_WATCHDOG::c_Base                                      ); }
+    static AT91_WATCHDOG& WTDG()            { return *(AT91_WATCHDOG*)(size_t)(AT91_WATCHDOG::c_Base                                      ); }
     //***************************************************************************************************************************************************************************************************************
         // static AT91_USART   & USART( int sel )
         // {
