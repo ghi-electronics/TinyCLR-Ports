@@ -822,9 +822,7 @@ TinyCLR_Result AT91_Flash_EraseBlock(const TinyCLR_Deployment_Provider* self, ui
 TinyCLR_Result AT91_Flash_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased);
 TinyCLR_Result AT91_Flash_GetBytesPerSector(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size);
 TinyCLR_Result AT91_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count);
-bool AT91_Flash_PageProgram(uint32_t byteAddress, uint32_t NumberOfBytesToWrite, const uint8_t * pointerToWriteBuffer);
-bool AT91_Flash_IsSupportsXIP(const TinyCLR_Deployment_Provider* self);
-uint32_t AT91_Flash_GetPartId();
+TinyCLR_Result AT91_Flash_Reset(const TinyCLR_Deployment_Provider* self);
 
 // Interrupt
 //////////////////////////////////////////////////////////////////////////////
