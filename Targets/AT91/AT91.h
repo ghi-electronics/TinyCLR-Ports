@@ -517,6 +517,88 @@ double AT91_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self);
 int32_t AT91_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self);
 
 //SPI
+//////////////////////////////////////////////////////////////////////////////
+// AT91_SPI
+//
+
+struct AT91_SPI
+{
+    static const uint32_t c_Base_1 = AT91C_BASE_SPI0;
+    static const uint32_t c_Base_2 = AT91C_BASE_SPI1;
+
+
+    static const uint32_t c_MAX_SPI = 2;
+
+    /****/ volatile uint32_t SPI_CR;         // Control Register
+    static const    uint32_t SPI_CR_ENABLE_SPI = (0x1 << 0); // enable SPI
+    static const    uint32_t SPI_CR_DISABLE_SPI = (0x1 << 1); // disable SPI
+    static const    uint32_t SPI_CR_SW_RESET = (0x1 << 7); // Software reset SPI
+
+    /****/ volatile uint32_t SPI_MR;         // Mode Register
+    static const    uint32_t SPI_MR_MSTR = (0x1 << 0); // 1--Master mode\0--Slave mode
+    static const    uint32_t SPI_MR_PS = (0x1 << 1); // peripheral select 1--varable\0--fixed
+    static const    uint32_t SPI_MR_MODFDIS = (0x1 << 4); // peripheral select 1--varable\0--fixed
+    static const    uint32_t SPI_MR_CS0 = (0x0 << 16);
+    static const    uint32_t SPI_MR_CS1 = (0x1 << 16);
+    static const    uint32_t SPI_MR_CS2 = (0x3 << 16);
+    static const    uint32_t SPI_MR_CS3 = (0x7 << 16);
+
+    /****/ volatile uint32_t SPI_RDR;        // Receive Data Register
+
+    /****/ volatile uint32_t SPI_TDR;        // Transmit Data Register
+
+    /****/ volatile uint32_t SPI_SR;         // Status Register
+    static const    uint32_t SPI_SR_RDRF = (0x1 << 0); // RDR full
+    static const    uint32_t SPI_SR_TDRE = (0x1 << 1); // TDR empty
+    static const    uint32_t SPI_SR_RXBUFF = (0x1 << 6); // receive buffer full
+    static const    uint32_t SPI_SR_TXBUFE = (0x1 << 7); // transmit buffer empty
+    static const    uint32_t SPI_SR_NSSR = (0x1 << 8); // Slave mode control
+    static const    uint32_t SPI_SR_TXEMPTY = (0x1 << 9); // transmit register and internal shifters are empty
+    static const    uint32_t SPI_SR_SPIENS = (0x1 << 16); // SPI enable status
+
+    /****/ volatile uint32_t SPI_IER;        // Interrupt Enable Register
+    /****/ volatile uint32_t SPI_IDR;        // Interrupt Disable Register
+    /****/ volatile uint32_t SPI_IMR;        // Interrupt MaskRegister
+    /****/ volatile uint32_t Reserved1[4];
+
+    /****/ volatile uint32_t SPI_CSR0;       // Chip Select Register 0
+    static const    uint32_t SPI_CSR_CPOL = (0x1 << 0); // clock polarity
+    static const    uint32_t SPI_CSR_NCPHA = (0x1 << 1); // clock phase
+    static const    uint32_t SPI_CSR_BITS_MASK = (0xF << 4); // bits per transfer
+    static const    uint32_t SPI_CSR_8BITS = (0x0 << 4);
+    static const    uint32_t SPI_CSR_16BITS = (0x8 << 4);
+    static const    uint32_t SPI_CSR_SCBR_MASK = (0xFF << 8); // serial clock baud rate
+    static const    uint32_t SPI_CSR_SCBR_SHIFT = (0x8);     // serial clock baud rate
+    static const    uint32_t SPI_CSR_DLYBS_MASK = (0xFF << 16); // delay before SPCK
+    static const    uint32_t SPI_CSR_DLYBS_SHIFT = (16);     // delay before SPCK
+    static const    uint32_t SPI_CSR_DLYBCT_MASK = ((uint32_t)0xFF << 24); // delay between transfer
+    static const    uint32_t SPI_CSR_DLYBCT_SHIFT = (24);     // delay between transfer
+
+    /****/ volatile uint32_t SPI_CSR1;       // Chip Select Register 1
+    /****/ volatile uint32_t SPI_CSR2;       // Chip Select Register 2
+    /****/ volatile uint32_t SPI_CSR3;       // Chip Select Register 3
+
+    __inline static uint32_t ConvertClockRateToDivisor(uint32_t clockKHz)
+    {
+        uint32_t mckKHz = SYSTEM_PERIPHERAL_CLOCK_HZ / 1000;
+        uint32_t divisor = mckKHz / clockKHz;
+
+        if (mckKHz / divisor > clockKHz)
+            divisor++;
+
+        if (divisor > 0xFF)
+            divisor = 0xFF;
+
+        return divisor;
+    }
+
+    // no data in TX FIFO
+    __inline bool TransmitBufferEmpty(AT91_SPI & _SPI)
+    {
+        return (_SPI.SPI_SR & SPI_SR_TXEMPTY) != 0;
+    }
+};
+
 const TinyCLR_Api_Info* AT91_Spi_GetApi();
 void AT91_Spi_Reset();
 bool AT91_Spi_Transaction_Start(int32_t controller);
@@ -1157,8 +1239,10 @@ struct AT91
     static AT91_AIC     & AIC() { return *(AT91_AIC     *)(size_t)(AT91_AIC::c_Base); }
     static AT91_PIO     & PIO(int sel) { return *(AT91_PIO     *)(size_t)(AT91_PIO::c_Base + AT91_PIO::c_Base_Offset * sel); }
     static AT91_PMC     & PMC() { return *(AT91_PMC     *)(size_t)(AT91_PMC::c_Base); }
-    //    static AT91_SPI     & SPI( int sel )    { if ( sel==0 ) return *(AT91_SPI     *)(size_t)(AT91_SPI::c_Base_1);
-    //                                                  else      return *(AT91_SPI     *)(size_t)(AT91_SPI::c_Base_2);                              }
+    static AT91_SPI     & SPI(int sel) {
+        if (sel == 0) return *(AT91_SPI     *)(size_t)(AT91_SPI::c_Base_1);
+        else      return *(AT91_SPI     *)(size_t)(AT91_SPI::c_Base_2);
+    }
 
     static AT91_TC      & TIMER(int sel) { return *(AT91_TC*)(size_t)(AT91_TC::c_Base + (sel * 0x40)); }
     static AT91_WATCHDOG& WTDG() { return *(AT91_WATCHDOG*)(size_t)(AT91_WATCHDOG::c_Base); }
