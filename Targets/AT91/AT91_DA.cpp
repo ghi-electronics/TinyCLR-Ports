@@ -24,7 +24,7 @@ static TinyCLR_Dac_Provider dacProvider;
 static TinyCLR_Api_Info dacApi;
 
 static const uint32_t g_AT91_Dac_Pins[] = AT91_DAC_PINS;
-static const AT91_Gpio_PinFunction g_AT91_Dac_altMode[] = AT91_DAC_ALT_MODE;
+static const AT91_Gpio_PeripheralSelection g_AT91_DAC_ALT_MODE[] = AT91_DAC_ALT_MODE;
 
 const TinyCLR_Api_Info* AT91_Dac_GetApi() {
     dacProvider.Parent = &dacApi;
@@ -70,7 +70,7 @@ TinyCLR_Result AT91_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t
     if (!AT91_Gpio_OpenPin(g_AT91_Dac_Pins[channel]))
         return TinyCLR_Result::SharingViolation;
 
-    AT91_Gpio_ConfigurePin(g_AT91_Dac_Pins[channel], AT91_Gpio_Direction::Input, g_AT91_Dac_altMode[channel], AT91_Gpio_PinMode::Inactive);   
+    //AT91_Gpio_ConfigurePin(g_AT91_Dac_Pins[channel], AT91_Gpio_Direction::Input, g_AT91_DAC_ALT_MODE[channel], AT91_Gpio_PinMode::Inactive);   
 
     return TinyCLR_Result::Success;
 }

@@ -212,8 +212,8 @@ TinyCLR_Result AT91_I2c_Acquire(const TinyCLR_I2c_Provider* self) {
     if (!AT91_Gpio_OpenPin(AT91_I2C_SDA_PIN) || !AT91_Gpio_OpenPin(AT91_I2C_SCL_PIN))
         return TinyCLR_Result::SharingViolation;
 
-    AT91_Gpio_ConfigurePin(AT91_I2C_SDA_PIN, AT91_Gpio_Direction::Input, AT91_I2C_SDA_ALT_MODE, AT91_Gpio_PinMode::Inactive);
-    AT91_Gpio_ConfigurePin(AT91_I2C_SCL_PIN, AT91_Gpio_Direction::Input, AT91_I2C_SCL_ALT_MODE, AT91_Gpio_PinMode::Inactive);
+    // AT91_Gpio_ConfigurePin(AT91_I2C_SDA_PIN, AT91_Gpio_Direction::Input, AT91_I2C_SDA_ALT_MODE, AT91_Gpio_PinMode::Inactive);
+    // AT91_Gpio_ConfigurePin(AT91_I2C_SCL_PIN, AT91_Gpio_Direction::Input, AT91_I2C_SCL_ALT_MODE, AT91_Gpio_PinMode::Inactive);
 
     return TinyCLR_Result::Success;
 }

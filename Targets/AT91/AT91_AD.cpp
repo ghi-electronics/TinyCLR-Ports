@@ -72,13 +72,13 @@ TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t
     if (AT91_Adc_GetPin(channel) == _P_NONE_)
         return TinyCLR_Result::ArgumentInvalid;
 
-    AT91_Gpio_ConfigurePin(AT91_Adc_GetPin(channel), AT91_Gpio_Direction::Input, AT91_Adc_GetPinFunction(channel), AT91_Gpio_PinMode::Inactive);
+    //AT91_Gpio_ConfigurePin(AT91_Adc_GetPin(channel), AT91_Gpio_Direction::Input, AT91_Adc_GetPinFunction(channel), AT91_Gpio_PinMode::Inactive);
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t channel) {
-    AT91_Gpio_ConfigurePin(AT91_Adc_GetPin(channel), AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::Inactive);
+    //AT91_Gpio_ConfigurePin(AT91_Adc_GetPin(channel), AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::Inactive);
     return TinyCLR_Result::Success;
 }
 

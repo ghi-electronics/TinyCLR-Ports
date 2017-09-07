@@ -295,23 +295,89 @@ size_t AT91_Cache_GetCachableAddress(size_t address);
 size_t AT91_Cache_GetUncachableAddress(size_t address);
 
 // GPIO
-enum class AT91_Gpio_Direction : uint8_t {
-    Input = 0,
-    Output = 1,
+enum class AT91_Gpio_PioEnable : uint8_t {
+    None = 0,
+	Active = 1    
 };
 
-enum class AT91_Gpio_PinFunction : uint8_t {
-    PinFunction0 = 0,
-    PinFunction1 = 1,
-    PinFunction2 = 2,
-    PinFunction3 = 3,
+enum class AT91_Gpio_PioDisable : uint8_t {
+    None = 0,
+	Active = 1    
 };
 
-enum class AT91_Gpio_PinMode : uint8_t {
-    PullUp = 0,
-    Reserved = 1,
-    Inactive = 2,
-    PullDown = 3
+enum class AT91_Gpio_OutputEnable : uint8_t {
+    None = 0,
+	Active = 1   
+};
+
+enum class AT91_Gpio_OutputDisable : uint8_t {
+    None = 0,
+	Active = 1   
+};
+
+enum class AT91_Gpio_InterruptEnable : uint8_t {
+    None = 0,
+	Active = 1   
+};
+
+enum class AT91_Gpio_InterruptDisable : uint8_t {
+    None = 0,
+	Active = 1   
+};
+
+enum class AT91_Gpio_PeripheralSelection : uint8_t {
+    PeripheralA = 0,
+    PeripheralB = 1,
+    PeripheralC = 2,
+    PeripheralD = 3,
+};
+
+enum class AT91_Gpio_PullUpDisable : uint8_t {
+    None = 0,
+	Active = 1    
+};
+enum class AT91_Gpio_PullUpEnable : uint8_t {
+    None = 0,
+	Active = 1    
+};
+
+enum class AT91_Gpio_PullDownDisable : uint8_t {
+    None = 0,
+	Active = 1    
+};
+enum class AT91_Gpio_PullDownEnable : uint8_t {
+    None = 0,
+	Active = 1    
+};
+
+enum class AT91_Gpio_MultiDriverEnable : uint8_t {
+    None = 0,
+    Active = 1    
+};
+
+enum class AT91_Gpio_MultiDriverDisable : uint8_t {
+    None = 0,
+    Active = 1    
+};
+
+enum class AT91_Gpio_InputFilterEnable : uint8_t {
+    None = 0,
+    Active = 1    
+};
+
+enum class AT91_Gpio_InputFilterDisable : uint8_t {
+    None = 0,
+    Active = 1    
+};
+
+enum class AT91_Gpio_InputFilterSlowClockEnable : uint8_t {
+    None = 0,
+    Active = 1    
+};
+
+enum class AT91_Gpio_InputFilterSlowClockDisable : uint8_t {
+    None = 0,
+    Active = 1    
 };
 
 void AT91_Gpio_Reset();
@@ -336,14 +402,14 @@ bool AT91_Gpio_OpenPin(int32_t pin);
 bool AT91_Gpio_ClosePin(int32_t pin);
 bool AT91_Gpio_ReadPin(int32_t pin);
 void AT91_Gpio_WritePin(int32_t pin, bool value);
-bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PinFunction alternateFunction, AT91_Gpio_PinMode pullResistor);
+//bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PinFunction alternateFunction, AT91_Gpio_PinMode pullResistor);
 
 // ADC
 const TinyCLR_Api_Info* AT91_Adc_GetApi();
 void AT91_Adc_Reset();
 int32_t AT91_Adc_GetControllerCount();
 int32_t AT91_Adc_GetPin(int32_t channel);
-AT91_Gpio_PinFunction AT91_Adc_GetPinFunction(int32_t channel);
+AT91_Gpio_PeripheralSelection AT91_Adc_GetPinFunction(int32_t channel);
 TinyCLR_Result AT91_Adc_Acquire(const TinyCLR_Adc_Provider* self);
 TinyCLR_Result AT91_Adc_Release(const TinyCLR_Adc_Provider* self);
 TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
@@ -372,16 +438,16 @@ int32_t AT91_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self);
 
 // PWM
 struct PwmController {
-    int32_t                     id;
-    int32_t                     channel[MAX_PWM_PER_CONTROLLER];
-    int32_t                     subChannel[MAX_PWM_PER_CONTROLLER];
-    uint32_t                    gpioPin[MAX_PWM_PER_CONTROLLER];
-    AT91_Gpio_PinFunction      gpioAlternateFunction[MAX_PWM_PER_CONTROLLER];
-    uint32_t                    outputEnabled[MAX_PWM_PER_CONTROLLER];
-    uint32_t                    *matchAddress[MAX_PWM_PER_CONTROLLER];
-    bool                        invert[MAX_PWM_PER_CONTROLLER];
-    double                      frequency;
-    double                      dutyCycle[MAX_PWM_PER_CONTROLLER];
+    int32_t                         id;
+    int32_t                         channel[MAX_PWM_PER_CONTROLLER];
+    int32_t                         subChannel[MAX_PWM_PER_CONTROLLER];
+    uint32_t                        gpioPin[MAX_PWM_PER_CONTROLLER];
+    AT91_Gpio_PeripheralSelection   gpioAlternateFunction[MAX_PWM_PER_CONTROLLER];
+    uint32_t                        outputEnabled[MAX_PWM_PER_CONTROLLER];
+    uint32_t                        *matchAddress[MAX_PWM_PER_CONTROLLER];
+    bool                            invert[MAX_PWM_PER_CONTROLLER];
+    double                          frequency;
+    double                          dutyCycle[MAX_PWM_PER_CONTROLLER];
 };
 const TinyCLR_Api_Info* AT91_Pwm_GetApi();
 void AT91_Pwm_Reset();
@@ -426,10 +492,10 @@ int32_t AT91_Uart_GetTxPin(int32_t portNum);
 int32_t AT91_Uart_GetRxPin(int32_t portNum);
 int32_t AT91_Uart_GetRtsPin(int32_t portNum);
 int32_t AT91_Uart_GetCtsPin(int32_t portNum);
-AT91_Gpio_PinFunction AT91_Uart_GetTxAlternateFunction(int32_t portNum);
-AT91_Gpio_PinFunction AT91_Uart_GetRxAlternateFunction(int32_t portNum);
-AT91_Gpio_PinFunction AT91_Uart_GetRtsAlternateFunction(int32_t portNum);
-AT91_Gpio_PinFunction AT91_Uart_GetCtsAlternateFunction(int32_t portNum);
+AT91_Gpio_PeripheralSelection AT91_Uart_GetTxAlternateFunction(int32_t portNum);
+AT91_Gpio_PeripheralSelection AT91_Uart_GetRxAlternateFunction(int32_t portNum);
+AT91_Gpio_PeripheralSelection AT91_Uart_GetRtsAlternateFunction(int32_t portNum);
+AT91_Gpio_PeripheralSelection AT91_Uart_GetCtsAlternateFunction(int32_t portNum);
 bool AT91_Uart_TxHandshakeEnabledState(int portNum);
 void AT91_Uart_TxBufferEmptyInterruptEnable(int portNum, bool enable);
 void AT91_Uart_RxBufferFullInterruptEnable(int portNum, bool enable);

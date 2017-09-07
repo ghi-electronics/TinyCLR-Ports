@@ -30,9 +30,9 @@ struct AT91_Int_State {
     TinyCLR_Gpio_PinValue                       currentValue;
 };
 
-static bool                     g_pinReserved[AT91_Gpio_MaxPins];
+static bool                     	g_pinReserved[AT91_Gpio_MaxPins];
 static uint64_t                     g_debounceTicksPin[AT91_Gpio_MaxPins];
-static AT91_Int_State              g_int_state[AT91_Gpio_MaxPins]; // interrupt state
+static AT91_Int_State              	g_int_state[AT91_Gpio_MaxPins]; // interrupt state
 static TinyCLR_Gpio_PinDriveMode    g_pinDriveMode[AT91_Gpio_MaxPins];
 
 static TinyCLR_Gpio_Provider gpioProvider;
@@ -117,7 +117,6 @@ TinyCLR_Result AT91_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* sel
         state->debounce = AT91_Gpio_GetDebounceTimeout(self, pin);
         state->ISR = ISR;
         state->lastDebounceTicks = AT91_Time_GetCurrentTicks(nullptr);
-
     }
     else {
 
@@ -148,7 +147,7 @@ bool AT91_Gpio_ClosePin(int32_t pin) {
     g_pinReserved[pin] = false;
 
     // reset to default state
-    return AT91_Gpio_ConfigurePin(pin, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::Inactive);
+    return false ;//AT91_Gpio_ConfigurePin(pin, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::Inactive);
 }
 
 bool AT91_Gpio_ReadPin(int32_t pin) {
@@ -170,65 +169,65 @@ void AT91_Gpio_WritePin(int32_t pin, bool value) {
 	}
 }
 
-bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PinFunction alternateFunction, AT91_Gpio_PinMode pullResistor) {
-    if (pin >= AT91_Gpio_MaxPins || pin < 0)
-        return false;
+// bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PinFunction alternateFunction, AT91_Gpio_PinMode pullResistor) {
+    // if (pin >= AT91_Gpio_MaxPins || pin < 0)
+        // return false;
 
-    switch (alternateFunction) {
-        case AT91_Gpio_PinFunction::PinFunction0:
-            if (pinDir == AT91_Gpio_Direction::Output) {
+    // switch (alternateFunction) {
+        // case AT91_Gpio_PinFunction::PinFunction0:
+            // if (pinDir == AT91_Gpio_Direction::Output) {
     
-    }
-            else {
-                switch (pullResistor) {
-                    case AT91_Gpio_PinMode::Inactive:
+    // }
+            // else {
+                // switch (pullResistor) {
+                    // case AT91_Gpio_PinMode::Inactive:
 
-                    break;
+                    // break;
 
-                    case AT91_Gpio_PinMode::PullUp:
+                    // case AT91_Gpio_PinMode::PullUp:
 
-                    break;
+                    // break;
 
-                    case AT91_Gpio_PinMode::PullDown:
+                    // case AT91_Gpio_PinMode::PullDown:
 
-                    break;
+                    // break;
 
-                }
-            }
+                // }
+            // }
 
-            break;
+            // break;
 
-        case AT91_Gpio_PinFunction::PinFunction1:
+        // case AT91_Gpio_PinFunction::PinFunction1:
 
-            break;
+            // break;
 
-        case AT91_Gpio_PinFunction::PinFunction2:
+        // case AT91_Gpio_PinFunction::PinFunction2:
             
-            break;
+            // break;
 
-        case AT91_Gpio_PinFunction::PinFunction3:
+        // case AT91_Gpio_PinFunction::PinFunction3:
             
-            break;
-    }
+            // break;
+    // }
 
-    return true;
-}
+    // return true;
+// }
 
 void AT91_Gpio_EnableOutputPin(int32_t pin, bool initialState) {
-    AT91_Gpio_ConfigurePin(pin, AT91_Gpio_Direction::Output, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::Inactive);
+    //AT91_Gpio_ConfigurePin(pin, AT91_Gpio_Direction::Output, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::Inactive);
     AT91_Gpio_WritePin(pin, initialState);
 }
 
 void AT91_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode mode) {
     switch (mode) {
         case TinyCLR_Gpio_PinDriveMode::Input:
-            AT91_Gpio_ConfigurePin(pin, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::Inactive);
+            //AT91_Gpio_ConfigurePin(pin, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::Inactive);
             break;
         case TinyCLR_Gpio_PinDriveMode::InputPullUp:
-            AT91_Gpio_ConfigurePin(pin, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::PullUp);
+            //AT91_Gpio_ConfigurePin(pin, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::PullUp);
             break;
         case TinyCLR_Gpio_PinDriveMode::InputPullDown:
-            AT91_Gpio_ConfigurePin(pin, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::PullDown);
+            // AT91_Gpio_ConfigurePin(pin, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::PullDown);
             break;
     }
 }
@@ -299,19 +298,19 @@ TinyCLR_Result AT91_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t
 
     switch (driveMode) {
         case TinyCLR_Gpio_PinDriveMode::Output:
-            AT91_Gpio_ConfigurePin(pin, AT91_Gpio_Direction::Output, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::Inactive);
+            // AT91_Gpio_ConfigurePin(pin, AT91_Gpio_Direction::Output, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::Inactive);
             break;
 
         case TinyCLR_Gpio_PinDriveMode::Input:
-            AT91_Gpio_ConfigurePin(pin, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::Inactive);
+            // AT91_Gpio_ConfigurePin(pin, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::Inactive);
             break;
 
         case TinyCLR_Gpio_PinDriveMode::InputPullUp:
-            AT91_Gpio_ConfigurePin(pin, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::PullUp);
+            // AT91_Gpio_ConfigurePin(pin, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::PullUp);
             break;
 
         case TinyCLR_Gpio_PinDriveMode::InputPullDown:
-            AT91_Gpio_ConfigurePin(pin, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::PullDown);
+            // AT91_Gpio_ConfigurePin(pin, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::PullDown);
             break;
 
         case TinyCLR_Gpio_PinDriveMode::OutputOpenDrain:

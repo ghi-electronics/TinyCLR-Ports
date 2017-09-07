@@ -91,23 +91,23 @@ void AT91_Uart_PinConfiguration(int portNum, bool enable) {
     uint32_t ctsPin = AT91_Uart_GetCtsPin(portNum);
     uint32_t rtsPin = AT91_Uart_GetRtsPin(portNum);
 
-    AT91_Gpio_PinFunction txPinMode = AT91_Uart_GetTxAlternateFunction(portNum);
-    AT91_Gpio_PinFunction rxPinMode = AT91_Uart_GetRxAlternateFunction(portNum);
-    AT91_Gpio_PinFunction ctsPinMode = AT91_Uart_GetCtsAlternateFunction(portNum);
-    AT91_Gpio_PinFunction rtsPinMode = AT91_Uart_GetRtsAlternateFunction(portNum);
+    AT91_Gpio_PeripheralSelection txPinMode = AT91_Uart_GetTxAlternateFunction(portNum);
+    AT91_Gpio_PeripheralSelection rxPinMode = AT91_Uart_GetRxAlternateFunction(portNum);
+    AT91_Gpio_PeripheralSelection ctsPinMode = AT91_Uart_GetCtsAlternateFunction(portNum);
+    AT91_Gpio_PeripheralSelection rtsPinMode = AT91_Uart_GetRtsAlternateFunction(portNum);
 
     if (enable) {        
         if (g_AT91_Uart_Controller[portNum].handshakeEnable) {
-            AT91_Gpio_ConfigurePin(ctsPin, AT91_Gpio_Direction::Input, ctsPinMode, AT91_Gpio_PinMode::Inactive);
-            AT91_Gpio_ConfigurePin(rtsPin, AT91_Gpio_Direction::Input, rtsPinMode, AT91_Gpio_PinMode::Inactive);
+            //AT91_Gpio_ConfigurePin(ctsPin, AT91_Gpio_Direction::Input, ctsPinMode, AT91_Gpio_PinMode::Inactive);
+            //AT91_Gpio_ConfigurePin(rtsPin, AT91_Gpio_Direction::Input, rtsPinMode, AT91_Gpio_PinMode::Inactive);
         }
 
     }
     else {
         
         if (g_AT91_Uart_Controller[portNum].handshakeEnable) {
-            AT91_Gpio_ConfigurePin(ctsPin, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::Inactive);
-            AT91_Gpio_ConfigurePin(rtsPin, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::Inactive);
+            //AT91_Gpio_ConfigurePin(ctsPin, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::Inactive);
+            //AT91_Gpio_ConfigurePin(rtsPin, AT91_Gpio_Direction::Input, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::Inactive);
         }
     }
 }

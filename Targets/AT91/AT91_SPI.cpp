@@ -22,9 +22,9 @@ static const uint32_t g_AT91_Spi_Miso_Pins[] = AT91_SPI_MISO_PINS;
 static const uint32_t g_AT91_Spi_Mosi_Pins[] = AT91_SPI_MOSI_PINS;
 static const uint32_t g_AT91_Spi_Sclk_Pins[] = AT91_SPI_CLK_PINS;
 
-static const AT91_Gpio_PinFunction g_AT91_Spi_Miso_AltMode[] = AT91_SPI_MISO_ALT_MODE;
-static const AT91_Gpio_PinFunction g_AT91_Spi_Mosi_AltMode[] = AT91_SPI_MOSI_ALT_MODE;
-static const AT91_Gpio_PinFunction g_AT91_Spi_Sclk_AltMode[] = AT91_SPI_CLK_ALT_MODE;
+static const AT91_Gpio_PeripheralSelection g_AT91_Spi_Miso_AltMode[] = AT91_SPI_MISO_ALT_MODE;
+static const AT91_Gpio_PeripheralSelection g_AT91_Spi_Mosi_AltMode[] = AT91_SPI_MOSI_ALT_MODE;
+static const AT91_Gpio_PeripheralSelection g_AT91_Spi_Sclk_AltMode[] = AT91_SPI_CLK_ALT_MODE;
 
 struct SpiController {
     uint8_t *readBuffer;

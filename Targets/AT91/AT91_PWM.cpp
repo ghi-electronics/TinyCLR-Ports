@@ -144,7 +144,7 @@ double AT91_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self) {
 TinyCLR_Result AT91_Pwm_EnablePin(const TinyCLR_Pwm_Provider* self, int32_t pin) {
     int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, pin);
 
-    AT91_Gpio_ConfigurePin(actualPin, AT91_Gpio_Direction::Input, g_PwmController[self->Index].gpioAlternateFunction[pin], AT91_Gpio_PinMode::Inactive);
+    //AT91_Gpio_ConfigurePin(actualPin, AT91_Gpio_Direction::Input, g_PwmController[self->Index].gpioAlternateFunction[pin], AT91_Gpio_PinMode::Inactive);
 
     return TinyCLR_Result::Success;
 }
@@ -152,7 +152,7 @@ TinyCLR_Result AT91_Pwm_EnablePin(const TinyCLR_Pwm_Provider* self, int32_t pin)
 TinyCLR_Result AT91_Pwm_DisablePin(const TinyCLR_Pwm_Provider* self, int32_t pin) {
     int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, pin);
 
-    AT91_Gpio_ConfigurePin(actualPin, AT91_Gpio_Direction::Output, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::Inactive);
+    //AT91_Gpio_ConfigurePin(actualPin, AT91_Gpio_Direction::Output, AT91_Gpio_PinFunction::PinFunction0, AT91_Gpio_PinMode::Inactive);
 
     return TinyCLR_Result::Success;
 }
