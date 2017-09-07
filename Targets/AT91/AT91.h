@@ -295,90 +295,138 @@ size_t AT91_Cache_GetCachableAddress(size_t address);
 size_t AT91_Cache_GetUncachableAddress(size_t address);
 
 // GPIO
-enum class AT91_Gpio_PioEnable : uint8_t {
-    None = 0,
-	Active = 1    
+
+//////////////////////////////////////////////////////////////////////////////
+// AT91_GPIO
+//
+struct AT91_PIO {
+
+
+    static const uint32_t c_Base = AT91C_BASE_PIOA;
+
+    static const uint32_t c_Base_Offset = 0x200;
+
+
+    /****/ volatile uint32_t PIO_PER;   // PIO Enable Register
+
+    /****/ volatile uint32_t PIO_PDR;   // PIO Disable Register
+
+    /****/ volatile uint32_t PIO_PSR;   // PIO Status Register
+
+    /****/ volatile uint32_t Reserved0[1];  //
+
+    /****/ volatile uint32_t PIO_OER;   // Output Enable Register
+
+    /****/ volatile uint32_t PIO_ODR;   // Output Disable Registerr
+
+    /****/ volatile uint32_t PIO_OSR;   // Output Status Register
+
+    /****/ volatile uint32_t Reserved1[1];  //
+
+    /****/ volatile uint32_t PIO_IFER;  // Input Filter Enable Register
+
+    /****/ volatile uint32_t PIO_IFDR;  // Input Filter Disable Register
+
+    /****/ volatile uint32_t PIO_IFSR;  // Input Filter Status Register
+
+    /****/ volatile uint32_t Reserved2[1];  //
+
+    /****/ volatile uint32_t PIO_SODR;  // Set Output Data Register
+
+    /****/ volatile uint32_t PIO_CODR;  // Clear Output Data Register
+
+    /****/ volatile uint32_t PIO_ODSR;  // Output Data Status Register
+
+    /****/ volatile uint32_t PIO_PDSR;  // Pin Data Status Register
+
+    /****/ volatile uint32_t PIO_IER;   // Interrupt Enable Register
+
+    /****/ volatile uint32_t PIO_IDR;   // Interrupt Disable Register
+
+    /****/ volatile uint32_t PIO_IMR;   // Interrupt Mask Register
+
+    /****/ volatile uint32_t PIO_ISR;   // Interrupt Status Register
+
+    /****/ volatile uint32_t PIO_MDER;  // Multi-driver Enable Register
+
+    /****/ volatile uint32_t PIO_MDDR;  // Multi-driver Disable Register
+
+    /****/ volatile uint32_t PIO_MDSR;  // Multi-driver Status Register
+
+    /****/ volatile uint32_t Reserved3[1];  //
+
+    /****/ volatile uint32_t PIO_PPUDR;     // Pull-up Disable Register
+
+    /****/ volatile uint32_t PIO_PPUER;     // Pull-up Enable Register
+
+    /****/ volatile uint32_t PIO_PPUSR;     // Pull-up Status Register
+
+    /****/ volatile uint32_t Reserved4[1];  //
+
+    /****/ volatile uint32_t PIO_ASR;   // Select A Register
+
+    /****/ volatile uint32_t PIO_BSR;   // Select B Register
+
+    /****/ volatile uint32_t PIO_ABSR;  // AB Select Status Register
+
+    /****/ volatile uint32_t Reserved5[9];  //
+
+    /****/ volatile uint32_t PIO_OWER;  // Output Write Enable Register
+
+    /****/ volatile uint32_t PIO_OWDR;  // Output Write Disable Register
+
+    /****/ volatile uint32_t PIO_OWSR;  // Output Write Status Register
 };
 
-enum class AT91_Gpio_PioDisable : uint8_t {
-    None = 0,
-	Active = 1    
-};
+// --//
 
-enum class AT91_Gpio_OutputEnable : uint8_t {
-    None = 0,
-	Active = 1   
-};
-
-enum class AT91_Gpio_OutputDisable : uint8_t {
-    None = 0,
-	Active = 1   
-};
-
-enum class AT91_Gpio_InterruptEnable : uint8_t {
-    None = 0,
-	Active = 1   
-};
-
-enum class AT91_Gpio_InterruptDisable : uint8_t {
-    None = 0,
-	Active = 1   
-};
 
 enum class AT91_Gpio_PeripheralSelection : uint8_t {
-    PeripheralA = 0,
-    PeripheralB = 1,
-    PeripheralC = 2,
-    PeripheralD = 3,
+    None = 0,
+    PeripheralA = 1,
+    PeripheralB = 2,
+    PeripheralC = 3,
+    PeripheralD = 4
 };
 
-enum class AT91_Gpio_PullUpDisable : uint8_t {
-    None = 0,
-	Active = 1    
-};
-enum class AT91_Gpio_PullUpEnable : uint8_t {
-    None = 0,
-	Active = 1    
+enum class AT91_Gpio_Direction : uint8_t {
+    Input = 0,
+    Output = 1
 };
 
-enum class AT91_Gpio_PullDownDisable : uint8_t {
-    None = 0,
-	Active = 1    
-};
-enum class AT91_Gpio_PullDownEnable : uint8_t {
-    None = 0,
-	Active = 1    
+enum class AT91_Gpio_ResistorMode : uint8_t {
+    Inactive = 0,
+    PullUp = 1,
+    PullDown = 2,
 };
 
-enum class AT91_Gpio_MultiDriverEnable : uint8_t {
-    None = 0,
-    Active = 1    
+enum class AT91_Gpio_MultiDriver : uint8_t {
+    Disable = 0,
+    Enable = 1
 };
 
-enum class AT91_Gpio_MultiDriverDisable : uint8_t {
-    None = 0,
-    Active = 1    
+enum class AT91_Gpio_Filter : uint8_t {
+    Disable = 0,
+    Enable = 1
 };
 
-enum class AT91_Gpio_InputFilterEnable : uint8_t {
-    None = 0,
-    Active = 1    
+enum class AT91_Gpio_FilterSlowClock : uint8_t {
+    Disable = 0,
+    Enable = 1
 };
 
-enum class AT91_Gpio_InputFilterDisable : uint8_t {
-    None = 0,
-    Active = 1    
+enum class AT91_Gpio_Schmitt : uint8_t {
+    Enable = 0,
+    Disable = 1
 };
 
-enum class AT91_Gpio_InputFilterSlowClockEnable : uint8_t {
-    None = 0,
-    Active = 1    
+enum class AT91_Gpio_DriveSpeed : uint8_t {
+    High = 0,
+    Medium = 1,
+    Low = 2,
+    Reserved = 3
 };
 
-enum class AT91_Gpio_InputFilterSlowClockDisable : uint8_t {
-    None = 0,
-    Active = 1    
-};
 
 void AT91_Gpio_Reset();
 const TinyCLR_Api_Info* AT91_Gpio_GetApi();
@@ -402,7 +450,8 @@ bool AT91_Gpio_OpenPin(int32_t pin);
 bool AT91_Gpio_ClosePin(int32_t pin);
 bool AT91_Gpio_ReadPin(int32_t pin);
 void AT91_Gpio_WritePin(int32_t pin, bool value);
-//bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PinFunction alternateFunction, AT91_Gpio_PinMode pullResistor);
+bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PeripheralSelection peripheralSelection, AT91_Gpio_ResistorMode resistorMode);
+bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PeripheralSelection peripheralSelection, AT91_Gpio_ResistorMode resistorMode, AT91_Gpio_MultiDriver multiDrive, AT91_Gpio_Filter filter, AT91_Gpio_FilterSlowClock filterSlowClock, AT91_Gpio_Schmitt schmitt, AT91_Gpio_DriveSpeed driveSpeed);
 
 // ADC
 const TinyCLR_Api_Info* AT91_Adc_GetApi();
@@ -899,25 +948,25 @@ struct AT91_WATCHDOG
 
     /****/ volatile uint32_t WTDG_CR;
     static const    uint32_t WCR__KEY_mask = 0xFF000000;
-    static const    uint32_t WCR__KEY      = 0xA5000000;
-    static const    uint32_t WCR__RESTART  = 0x00000001;
+    static const    uint32_t WCR__KEY = 0xA5000000;
+    static const    uint32_t WCR__RESTART = 0x00000001;
 
     /****/ volatile uint32_t WTDG_MR;
-    static const    uint32_t WMR_WDV_mask  = 0x00000FFF;
-    static const    uint32_t WMR_WDFIEN    = 0x00001000;
-    static const    uint32_t WMR_WDRSTEN   = 0x00002000;
+    static const    uint32_t WMR_WDV_mask = 0x00000FFF;
+    static const    uint32_t WMR_WDFIEN = 0x00001000;
+    static const    uint32_t WMR_WDRSTEN = 0x00002000;
 
-    static const    uint32_t WMR_WDRPROC   = 0x00004000;
-    static const    uint32_t WMR_WDDIS     = 0x00008000;
+    static const    uint32_t WMR_WDRPROC = 0x00004000;
+    static const    uint32_t WMR_WDDIS = 0x00008000;
 
-    static const    uint32_t WMR_WDD_mask  = 0x0FFF0000;
-    static const    uint32_t WMR_WDDBGHLT  = 0x10000000;
+    static const    uint32_t WMR_WDD_mask = 0x0FFF0000;
+    static const    uint32_t WMR_WDDBGHLT = 0x10000000;
     static const    uint32_t WMR_WDIDLEHLT = 0x20000000;
 
 
     /****/ volatile uint32_t WTDG_SR;
-    static const    uint32_t WSR__WDUNF    = 0x00000001;
-    static const    uint32_t WSR__WDERR    = 0x00000002;
+    static const    uint32_t WSR__WDUNF = 0x00000001;
+    static const    uint32_t WSR__WDERR = 0x00000002;
 };
 //
 // WATCHDOG
@@ -943,13 +992,13 @@ struct AT91
     */
     //    static AT91_I2C     & I2C()             { return *(AT91_I2C     *)(size_t)(      AT91_I2C     ::c_Base                                      ); }
     static AT91_AIC     & AIC() { return *(AT91_AIC     *)(size_t)(AT91_AIC::c_Base); }
-    //    static AT91_PIO     & PIO( int sel )    { return *(AT91_PIO     *)(size_t)(AT91_PIO     ::c_Base + AT91_PIO::c_Base_Offset * sel ); }
+    static AT91_PIO     & PIO(int sel) { return *(AT91_PIO     *)(size_t)(AT91_PIO::c_Base + AT91_PIO::c_Base_Offset * sel); }
     static AT91_PMC     & PMC() { return *(AT91_PMC     *)(size_t)(AT91_PMC::c_Base); }
     //    static AT91_SPI     & SPI( int sel )    { if ( sel==0 ) return *(AT91_SPI     *)(size_t)(AT91_SPI::c_Base_1);
     //                                                  else      return *(AT91_SPI     *)(size_t)(AT91_SPI::c_Base_2);                              }
 
     static AT91_TC      & TIMER(int sel) { return *(AT91_TC*)(size_t)(AT91_TC::c_Base + (sel * 0x40)); }
-    static AT91_WATCHDOG& WTDG()            { return *(AT91_WATCHDOG*)(size_t)(AT91_WATCHDOG::c_Base                                      ); }
+    static AT91_WATCHDOG& WTDG() { return *(AT91_WATCHDOG*)(size_t)(AT91_WATCHDOG::c_Base); }
     //***************************************************************************************************************************************************************************************************************
         // static AT91_USART   & USART( int sel )
         // {
