@@ -100,7 +100,7 @@ bool AT91_Spi_Transaction_Start(int32_t controller) {
     }
     else
     {
-	CSR |= AT91_SPI::SPI_CSR_8BITS;
+        CSR |= AT91_SPI::SPI_CSR_8BITS;
     }
 
     // first build the mode register
@@ -124,11 +124,11 @@ bool AT91_Spi_Transaction_Start(int32_t controller) {
         CSR |= AT91_SPI::SPI_CSR_CPOL | AT91_SPI::SPI_CSR_NCPHA;
         break;
     }
-    
+
     int32_t clockRateKhz = g_SpiController[controller].ClockFrequency / 1000;
-    
-    CSR |=  AT91_SPI::ConvertClockRateToDivisor(clockRateKhz)<< AT91_SPI::SPI_CSR_SCBR_SHIFT ;
-    
+
+    CSR |= AT91_SPI::ConvertClockRateToDivisor(clockRateKhz) << AT91_SPI::SPI_CSR_SCBR_SHIFT;
+
     spi.SPI_CSR0 = CSR;
 
     spi.SPI_CR |= AT91_SPI::SPI_CR_ENABLE_SPI;
