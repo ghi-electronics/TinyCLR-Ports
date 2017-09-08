@@ -263,8 +263,6 @@ bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_P
         else if (resistorMode == AT91_Gpio_ResistorMode::PullUp)
             pioX.PIO_PPUER = bitmask;            // Enable the pull up resistor
 
-        pioX.PIO_PDR = bitmask; // Disable PIO function
-
         switch (peripheralSelection) {
         case AT91_Gpio_PeripheralSelection::PeripheralA:
             pioX.PIO_PDR = bitmask;
