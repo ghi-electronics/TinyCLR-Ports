@@ -100,7 +100,7 @@ bool AT91_Spi_Transaction_Start(int32_t controller) {
     }
     else
     {
-        CSR |= AT91_SPI::SPI_CSR_8BITS;
+	CSR |= AT91_SPI::SPI_CSR_8BITS;
     }
 
     // first build the mode register
@@ -189,10 +189,7 @@ bool AT91_Spi_Transaction_nWrite8_nRead8(int32_t controller) {
     // Start transmission
     while (loopCnt--)
     {
-        if (WriteCount)
-            spi.SPI_TDR = Write8[0];
-        else
-            spi.SPI_TDR = 0;
+        spi.SPI_TDR = Write8[0];
 
         // wait while the transmit buffer is empty
         while (!spi.TransmitBufferEmpty(spi));
