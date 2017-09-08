@@ -59,12 +59,6 @@ extern "C" {
         
         g_WDT.WTDG_MR |=1<<15;  // Disable watchdog
 
-        volatile int a = 0;
-
-        while (a == 0) {
-            a += a;
-        }
-
         return;
 
     }
