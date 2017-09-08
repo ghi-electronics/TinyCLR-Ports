@@ -104,14 +104,13 @@
 #define AT91_PWM                           {   { 0 ,  {0x0, 0x0, 0x0, 0x0, 0x0, 0x0} , {0x0, 0x1, 0x2, 0x3, 0x4, 0x5 } , { _P(D, 16), _P(D, 17), _P_NONE_ , _P_NONE_ , _P_NONE_ , _P_NONE_},   {AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA},  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {PWM0MR1, PWM0MR2, PWM0MR3, PWM0MR4, PWM0MR5, PWM0MR6 }, { false, false, false, false, false, false }, 0.0, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}  } ,\
                                                { 1 ,  {0x1, 0x1, 0x1, 0x1, 0x1, 0x1} , {0x0, 0x1, 0x2, 0x3, 0x4, 0x5 } , { _P(D, 24), _P_NONE_ , _P(D, 26), _P(D, 27), _P_NONE_ , _P(D, 29)},  {AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA},  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {PWM1MR1, PWM1MR2, PWM1MR3, PWM1MR4, PWM1MR5, PWM1MR6 }, { false, false, false, false, false, false }, 0.0, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}  } }
 // SPI
-#define TOTAL_SPI_CONTROLLERS               2
-#define AT91_SPI_PCLK_KHZ                 (SYSTEM_CYCLE_CLOCK_HZ/1000)
-#define AT91_SPI_MISO_PINS                {_P(A,17),_P(A,8)}
-#define AT91_SPI_MOSI_PINS                {_P(A,18),_P(A,9)}
-#define AT91_SPI_CLK_PINS                 {_P(A,15),_P(A,7)}
-#define AT91_SPI_MISO_ALT_MODE            {AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA}
-#define AT91_SPI_MOSI_ALT_MODE            {AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA}
-#define AT91_SPI_CLK_ALT_MODE             {AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA}
+#define TOTAL_SPI_CONTROLLERS              2
+#define AT91_SPI_MISO_PINS                {_P(A,11),_P(A,21)}
+#define AT91_SPI_MOSI_PINS                {_P(A,12),_P(A,22)}
+#define AT91_SPI_CLK_PINS                 {_P(A,13),_P(A,23)}
+#define AT91_SPI_MISO_ALT_MODE            {AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralB}
+#define AT91_SPI_MOSI_ALT_MODE            {AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralB}
+#define AT91_SPI_CLK_ALT_MODE             {AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralB}
 
 // UART
 #define TOTAL_UART_CONTROLLERS            6
@@ -133,7 +132,7 @@
 #define MESSAGING_PORT                       USB1
 
 #define LMODE_PIN                       	_P(A,25)
-#define LMODE_USB_STATE                 	TinyCLR_Gpio_PinValue::Low
+#define LMODE_USB_STATE                 	TinyCLR_Gpio_PinValue::High
 
 // Loader
 #define RUNAPP_PIN                          _P(A,4)
@@ -156,9 +155,9 @@
 #define INCLUDE_GPIO
 //#define INCLUDE_I2C
 #define INCLUDE_PWM
-//#define INCLUDE_SPI
+#define INCLUDE_SPI
 #define INCLUDE_UART
-//#define INCLUDE_USBCLIENT
+#define INCLUDE_USBCLIENT
 //#define INCLUDE_DISPLAY
 
 #define TARGET AT91
