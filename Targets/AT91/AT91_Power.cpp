@@ -62,11 +62,11 @@ void AT91_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep_Le
 
         default: // sleep
         
-            //uint32_t reg = 0;
+            uint32_t reg = 0;
 
             // ARM926EJ-S Wait For Interrupt
             #ifdef __GNUC__
-             //   asm("MCR p15, 0, %0, c7, c0, 4" :: "r" (reg));
+                asm("MCR p15, 0, %0, c7, c0, 4" :: "r" (reg));
             #else
                 __asm
                 {
