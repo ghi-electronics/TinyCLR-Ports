@@ -136,7 +136,7 @@ TinyCLR_Result AT91_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* sel
     GLOBAL_LOCK(irq);
 
     uint32_t port = GETPORT(pin);
-    uint32_t bitmask = GETBIT(pin);
+    uint32_t bitmask = 1 << GETBIT(pin);
 
     AT91_PIO &pioX = AT91::PIO(port);
 
