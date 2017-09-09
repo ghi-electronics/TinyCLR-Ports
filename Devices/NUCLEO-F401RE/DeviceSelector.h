@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef _DEVICE_FEZ_H_
-#define _DEVICE_FEZ_H_
+#ifndef _DEVICE_NUCLEO_F401RE_H_
+#define _DEVICE_NUCLEO_F401RE_H_
 
 #define PLATFORM_ARM_DEFINED
 
@@ -110,10 +110,10 @@
 //  USBC
 #define TOTAL_USB_CONTROLLER            1
 #define USB_MAX_QUEUES                  16
-#define USB_VENDOR_ID                   0x1B9F
-#define USB_PRODUCT_ID                  0x0110
-#define USB_MANUFACTURER_NAME           {'G', 'H', 'I', ' ', 'E', 'l', 'e', 'c', 't', 'r', 'o', 'n', 'i', 'c', 's', ',', ' ', 'L', 'L', 'C'}
-#define USB_PRODUCT_NAME                {'F', 'E', 'Z', 'C', 'L', 'R'}
+#define USB_VENDOR_ID                   0x0000
+#define USB_PRODUCT_ID                  0x0000
+#define USB_MANUFACTURER_NAME           {'S', 'T', 'M', 'i', 'c', 'r', 'o', 'e', 'l', 'e', 'c', 't', 'r', 'o', 'n', 'i', 'c', 's'}
+#define USB_PRODUCT_NAME                {'N', 'U', 'C', 'L', 'E', 'O', '-', 'F', '4', '0', '1', 'R', 'E'}
 #define USB_DISPLAY_NAME                USB_PRODUCT_NAME
 #define USB_FRIENDLY_NAME               USB_PRODUCT_NAME
 
@@ -124,21 +124,18 @@
 #define DEBUGGER_PORT                   USB1
 #define MESSAGING_PORT                  USB1
 
-#define LMODE_PIN                       _P(B,10)
-#define LMODE_USB_STATE                 TinyCLR_Gpio_PinValue::High
+#define LMODE_PIN                       _P(B,1)
+#define LMODE_USB_STATE                 TinyCLR_Gpio_PinValue::Low
 
 // Loader
-#define RUNAPP_PIN						_P(C,13)
+#define RUNAPP_PIN						_P(B,2)
 #define RUNAPP_STATE 				    TinyCLR_Gpio_PinValue::High
 
 #define UART_DEBUGGER_INDEX 1
 #define USB_DEBUGGER_INDEX 0
 
-#define RAM_BOOTLOADER_HOLD_ADDRESS 0x20017FF8
-#define RAM_BOOTLOADER_HOLD_VALUE 0x82469E42
-
 // OEM information
-#define OEM_STRING                      "GHI Electronics, LLC\0"
+#define OEM_STRING                      "STMicroelectronics\0"
 #define OEM_VERSION_MAJOR               0
 #define OEM_VERSION_MINOR               6
 #define OEM_VERSION_PATCH               0
@@ -154,7 +151,7 @@
 #define INCLUDE_PWM
 #define INCLUDE_SPI
 #define INCLUDE_UART
-//#define INCLUDE_USBCLIENT
+#define INCLUDE_USBCLIENT
 
 #define TARGET STM32F4
 
