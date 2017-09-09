@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef _DEVICE_NUCLEOF411RE_H_
-#define _DEVICE_NUCLEOF411RE_H_
+#ifndef _DEVICE_NUCLEO_F411RE_H_
+#define _DEVICE_NUCLEO_F411RE_H_
 
 #define PLATFORM_ARM_DEFINED
 
@@ -125,11 +125,11 @@
 #define DEBUGGER_PORT                   USB1
 #define MESSAGING_PORT                  USB1
 
-#define LMODE_PIN                       _P(B,10)
-#define LMODE_USB_STATE                 TinyCLR_Gpio_PinValue::High
+#define LMODE_PIN                       _P(B,1)
+#define LMODE_USB_STATE                 TinyCLR_Gpio_PinValue::Low
 
 // Loader
-#define RUNAPP_PIN						_P(C,13)
+#define RUNAPP_PIN						_P(B,2)
 #define RUNAPP_STATE 				    TinyCLR_Gpio_PinValue::High
 
 #define UART_DEBUGGER_INDEX 1
@@ -144,7 +144,7 @@
 
 // STM32F4 requires to define specific
 #define STM32F4XX						1
-#define STM32F401xE                     1 
+#define STM32F401xE                     1 //should be STM32F411xE but do not work
 
 #define INCLUDE_ADC
 #define INCLUDE_GPIO
@@ -152,7 +152,7 @@
 #define INCLUDE_PWM
 #define INCLUDE_SPI
 #define INCLUDE_UART
-//#define INCLUDE_USBCLIENT - need to disable to work with ST-LINK USB otherwise do not compile if enabled
+#define INCLUDE_USBCLIENT 
 
 #define TARGET STM32F4
 
