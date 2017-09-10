@@ -46,5 +46,6 @@ PA0,PA1,PA5,PA6,PA8,PA9,PA10,PA11,PA15,PB3,PB4,PB5,PB6,PB7,PB8,PB9,PB10,PC6,PC7,
 |------|------|------|
 | / | PB8  | PB9 |
 
-
-contact : valon.hoti@gmail.com 
+this port could be used from anyone as is or could be modified by needs without need of author 
+Author : VALON HOTI
+Contac : valon.hoti@gmail.com 
