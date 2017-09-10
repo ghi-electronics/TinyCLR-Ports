@@ -11,9 +11,6 @@ For information on porting TinyCLR of the device or building a firmware for an e
 |Type 1|Arduino Pinout Compatible|
 |Type 2|Morp Pinout|
 
-Author of pictures are MBED
-  https://developer.mbed.org/platforms/ST-Nucleo-F411RE/
-
 Nucleo STM32F411RET6 Pinout:
 ### Arduino Headers 
 ![alt text](https://github.com/valoni/netmf-interpreter/blob/dev/Solutions/STM32F411NUCLEO/NUCLEO.STM32F411RET6.Arduino.Headers.png "Arduino Headers")
