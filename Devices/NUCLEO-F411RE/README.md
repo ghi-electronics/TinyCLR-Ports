@@ -16,10 +16,10 @@ Author of pictures are MBED
 
 Nucleo STM32F411RET6 Pinout:
 ### Arduino Headers 
-![alt text](https://developer.mbed.org/media/uploads/bcostm/nucleo64_revc_f411re_mbed_pinout_v2_arduino.png "Arduino Headers")
+![alt text](https://github.com/valoni/netmf-interpreter/blob/dev/Solutions/STM32F411NUCLEO/NUCLEO.STM32F411RET6.Arduino.Headers.png "Arduino Headers")
 
 ### Morpho Headers 
-![alt text]( https://developer.mbed.org/media/uploads/bcostm/nucleo64_revc_f411re_mbed_pinout_v2_morpho.png "Morpho Headers")
+![alt text]( https://github.com/valoni/netmf-interpreter/blob/dev/Solutions/STM32F411NUCLEO/NUCLEO.STM32F411RET6.Morpho.Headers.png "Morpho Headers")
 
 ### TinyCLR PORT Have 
 
