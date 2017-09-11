@@ -486,14 +486,26 @@ int32_t AT91_Dac_GetMinValue(const TinyCLR_Dac_Provider* self);
 int32_t AT91_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self);
 
 // PWM
+#define PWM_MODE_REGISTER				(*(uint32_t *)(AT91C_BASE_PWMC + 0x00))
+#define PWM_ENABLE_REGISTER				(*(uint32_t *)(AT91C_BASE_PWMC + 0x04))
+#define PWM_DISABLE_REGISTER			(*(uint32_t *)(AT91C_BASE_PWMC + 0x08))
+#define PWM_INTERUPT_ENABLE_REGISTER	(*(uint32_t *)(AT91C_BASE_PWMC + 0x10))
+#define PWM_INTERUPT_DISABLE_REGISTER	(*(uint32_t *)(AT91C_BASE_PWMC + 0x14))
+
+#define PWM_CHANNEL_MODE_REGISTER(x)	(uint32_t *)(AT91C_BASE_PWMC + (0x200 + (x * 0x20) + 0x00))
+#define PWM_DUTY_REGISTER(x)            (uint32_t *)(AT91C_BASE_PWMC + (0x200 + (x * 0x20) + 0x04))
+#define PWM_CHANNEL_UPDATE_REGISTER(x)  (uint32_t *)(AT91C_BASE_PWMC + (0x200 + (x * 0x10) + ((x + 1) * 0x10)))
+
 struct PwmController {
-    int32_t                         id;
-    int32_t                         channel[MAX_PWM_PER_CONTROLLER];
-    int32_t                         subChannel[MAX_PWM_PER_CONTROLLER];
-    uint32_t                        gpioPin[MAX_PWM_PER_CONTROLLER];
-    AT91_Gpio_PeripheralSelection   gpioAlternateFunction[MAX_PWM_PER_CONTROLLER];
-    uint32_t                        outputEnabled[MAX_PWM_PER_CONTROLLER];
-    uint32_t                        *matchAddress[MAX_PWM_PER_CONTROLLER];
+
+    uint32_t                        *channelModeReg;
+    uint32_t                        *dutyCycleReg;
+    uint32_t                        *channelUpdateReg;
+
+    int32_t                         gpioPin[MAX_PWM_PER_CONTROLLER];
+
+    AT91_Gpio_PeripheralSelection   gpioPeripheralSelection[MAX_PWM_PER_CONTROLLER];
+
     bool                            invert[MAX_PWM_PER_CONTROLLER];
     double                          frequency;
     double                          dutyCycle[MAX_PWM_PER_CONTROLLER];
@@ -984,73 +996,73 @@ struct AT91_I2C
     static const uint32_t c_Base = AT91C_BASE_TWI;
 
     //--//
-    
+
     /****/ volatile uint32_t TWI_CR;         // Control Register
-    static const    uint32_t TWI_CR_START      = (0x1 <<  0); // send START condition 
-    static const    uint32_t TWI_CR_STOP       = (0x1 <<  1); // send STOP condition 
-    static const    uint32_t TWI_CR_MSEN       = (0x1 <<  2); // Enable Master Transfer
-    static const    uint32_t TWI_CR_MSDIS      = (0x1 <<  3); // Disable Master Transfer
+    static const    uint32_t TWI_CR_START = (0x1 << 0); // send START condition
+    static const    uint32_t TWI_CR_STOP = (0x1 << 1); // send STOP condition
+    static const    uint32_t TWI_CR_MSEN = (0x1 << 2); // Enable Master Transfer
+    static const    uint32_t TWI_CR_MSDIS = (0x1 << 3); // Disable Master Transfer
 // for SAM9
-    static const    uint32_t TWI_CR_SVEN       = (0x1 <<  4); // enable Slave Transfer
-    static const    uint32_t TWI_CR_SVDIS      = (0x1 <<  5); // Disable Slave Transfer
-    static const    uint32_t TWI_CR_QUICK      = (0x1 <<  6); // 
+    static const    uint32_t TWI_CR_SVEN = (0x1 << 4); // enable Slave Transfer
+    static const    uint32_t TWI_CR_SVDIS = (0x1 << 5); // Disable Slave Transfer
+    static const    uint32_t TWI_CR_QUICK = (0x1 << 6); //
 ////
 
-    static const    uint32_t TWI_CR_SWRST      = (0x1 <<  7); // Softwre Reset
+    static const    uint32_t TWI_CR_SWRST = (0x1 << 7); // Softwre Reset
 
     /****/ volatile uint32_t TWI_MMR;           // Master Mode Register
-    static const    uint32_t TWI_MMR_IADRSZ_0   = (0x0 <<  8);  // No internal device address
-    static const    uint32_t TWI_MMR_IADRSZ_1   = (0x1 <<  8);  // One byte device address
-    static const    uint32_t TWI_MMR_IADRSZ_2   = (0x2 <<  8);  // Two bytes device address
-    static const    uint32_t TWI_MMR_MREAD_W    = (0x0 <<  12); // Three bytes device address
-    static const    uint32_t TWI_MMR_MREAD_R    = (0x1 <<  12); // Three bytes device address
-    static const    uint32_t TWI_MMR_DADR_MASK  = 0x00FF0000 ;  // Subordinate device address mask
+    static const    uint32_t TWI_MMR_IADRSZ_0 = (0x0 << 8);  // No internal device address
+    static const    uint32_t TWI_MMR_IADRSZ_1 = (0x1 << 8);  // One byte device address
+    static const    uint32_t TWI_MMR_IADRSZ_2 = (0x2 << 8);  // Two bytes device address
+    static const    uint32_t TWI_MMR_MREAD_W = (0x0 << 12); // Three bytes device address
+    static const    uint32_t TWI_MMR_MREAD_R = (0x1 << 12); // Three bytes device address
+    static const    uint32_t TWI_MMR_DADR_MASK = 0x00FF0000;  // Subordinate device address mask
     static const    uint32_t TWI_MMR_DADR_SHIFT = 16;           // subordinate address position
 
-    /****/ volatile uint32_t Reserved0[1];    
-    
+    /****/ volatile uint32_t Reserved0[1];
+
     /****/ volatile uint32_t TWI_IADR;           // Internal address register
-    static const    uint32_t TWI_IADR_MASK_0     = 0x00000000; // No internal device address
-    static const    uint32_t TWI_IADR_MASK_1     = 0x000000FF; // One byte device address
-    static const    uint32_t TWI_IADR_MASK_2     = 0x0000FFFF; // Two bytes device address
-    static const    uint32_t TWI_IADR_MASK_3     = 0x00FFFFFF; // Three bytes device address
+    static const    uint32_t TWI_IADR_MASK_0 = 0x00000000; // No internal device address
+    static const    uint32_t TWI_IADR_MASK_1 = 0x000000FF; // One byte device address
+    static const    uint32_t TWI_IADR_MASK_2 = 0x0000FFFF; // Two bytes device address
+    static const    uint32_t TWI_IADR_MASK_3 = 0x00FFFFFF; // Three bytes device address
 
     /****/ volatile uint32_t TWI_CWGR;           // Clock waveform generator Register
     static const    uint32_t TWI_CWGR_CLDIV_MASK = 0x000000FF; // Clock Low Divider
     static const    uint32_t TWI_CWGR_CHDIV_MASK = 0x0000FF00; // Clock High Divider
-    static const    uint32_t TWI_CWGR_CHDIV_SHIFT= 8;         // Clock High Divider shift   
+    static const    uint32_t TWI_CWGR_CHDIV_SHIFT = 8;         // Clock High Divider shift
     static const    uint32_t TWI_CWGR_CKDIV_MASK = 0x00070000; // Clock Divider
-    static const    uint32_t TWI_CWGR_CKDIV_SHIFT= 16;         // Clock Divider shift
+    static const    uint32_t TWI_CWGR_CKDIV_SHIFT = 16;         // Clock Divider shift
 
-    /****/ volatile uint32_t Reserved1[3]; 
-    
+    /****/ volatile uint32_t Reserved1[3];
+
     /****/ volatile uint32_t TWI_SR;             // Status Register
-    static const    uint32_t TWI_SR_TXCOMP       = (0x1 <<  0); // holding and shift register are empty and STOP condition has been sent
-    static const    uint32_t TWI_SR_RXRDY        = (0x1 <<  1); // Data moved from shifter since last read
-    static const    uint32_t TWI_SR_TXRDY        = (0x1 <<  2); // Data moved to shifter
-    static const    uint32_t TWI_SR_NACK         = (0x1 <<  8); // No acknoledge received
+    static const    uint32_t TWI_SR_TXCOMP = (0x1 << 0); // holding and shift register are empty and STOP condition has been sent
+    static const    uint32_t TWI_SR_RXRDY = (0x1 << 1); // Data moved from shifter since last read
+    static const    uint32_t TWI_SR_TXRDY = (0x1 << 2); // Data moved to shifter
+    static const    uint32_t TWI_SR_NACK = (0x1 << 8); // No acknoledge received
 
     /****/ volatile uint32_t TWI_IER;            // Interrupt Enable Register
-    static const    uint32_t TWI_IER_TXCOMP      = (0x1 <<  0); // Transmission completed
-    static const    uint32_t TWI_IER_RXRDY       = (0x1 <<  1); // receive holding register ready
-    static const    uint32_t TWI_IER_TXRDY       = (0x1 <<  2); // transmit holding register ready
-    static const    uint32_t TWI_IER_NACK        = (0x1 <<  8); // No acknoledge received
+    static const    uint32_t TWI_IER_TXCOMP = (0x1 << 0); // Transmission completed
+    static const    uint32_t TWI_IER_RXRDY = (0x1 << 1); // receive holding register ready
+    static const    uint32_t TWI_IER_TXRDY = (0x1 << 2); // transmit holding register ready
+    static const    uint32_t TWI_IER_NACK = (0x1 << 8); // No acknoledge received
 
     /****/ volatile uint32_t TWI_IDR;            // Interrupt Disable Register
-    static const    uint32_t TWI_IDR_TXCOMP      = (0x1 <<  0); // Transmission completed
-    static const    uint32_t TWI_IDR_RXRDY       = (0x1 <<  1); // receive holding register ready
-    static const    uint32_t TWI_IDR_TXRDY       = (0x1 <<  2); // transmit holding register ready
-    static const    uint32_t TWI_IDR_NACK        = (0x1 <<  8); // No acknoledge received
+    static const    uint32_t TWI_IDR_TXCOMP = (0x1 << 0); // Transmission completed
+    static const    uint32_t TWI_IDR_RXRDY = (0x1 << 1); // receive holding register ready
+    static const    uint32_t TWI_IDR_TXRDY = (0x1 << 2); // transmit holding register ready
+    static const    uint32_t TWI_IDR_NACK = (0x1 << 8); // No acknoledge received
 
     /****/ volatile uint32_t TWI_IMR;            // Interrupt Mask Register
-    static const    uint32_t TWI_IMR_TXCOMP      = (0x1 <<  0); // Transmission completed
-    static const    uint32_t TWI_IMR_RXRDY       = (0x1 <<  1); // receive holding register ready
-    static const    uint32_t TWI_IMR_TXRDY       = (0x1 <<  2); // transmit holding register ready
-    static const    uint32_t TWI_IMR_NACK        = (0x1 <<  8); // No acknoledge received
+    static const    uint32_t TWI_IMR_TXCOMP = (0x1 << 0); // Transmission completed
+    static const    uint32_t TWI_IMR_RXRDY = (0x1 << 1); // receive holding register ready
+    static const    uint32_t TWI_IMR_TXRDY = (0x1 << 2); // transmit holding register ready
+    static const    uint32_t TWI_IMR_NACK = (0x1 << 8); // No acknoledge received
 
     /****/ volatile uint32_t TWI_RHR;            // Receive Holding Register
     static const    uint32_t TWI_RHR_RXDATA_MASK = 0x000000FF; // data mask
-    
+
     /****/ volatile uint32_t TWI_THR;            // Receive Holding Register
     static const    uint32_t TWI_THR_TXDATA_MASK = 0x000000FF; // data mask
 };
@@ -1306,16 +1318,16 @@ TinyCLR_Gpio_PinValue AT91_Startup_GetLModeUsbState();
 
 struct AT91
 {
-    /*
-        static const uint32_t c_UncachableMask = 0x80000000;
 
-        static AT91_EIM     & EIM()             { return *(AT91_EIM     *)(size_t)(      AT91_EIM     ::c_Base                                      ); }
-        static AT91_SC      & SC()              { return *(AT91_SC      *)(size_t)(      AT91_SC      ::c_Base                                      ); }
-        static AT91_CMU     & CMU  (         )  { return *(AT91_CMU     *)(size_t)(      AT91_CMU     ::c_Base                                      ); }
-        static AT91_PWM     & PWM()             { return *(AT91_PWM     *)(size_t)(      AT91_PWM     ::c_Base                                      ); }
-        static AT91_DMA     & DMA()             { return *(AT91_DMA     *)(size_t)(      AT91_DMA     ::c_Base                                      ); }
-    */
-    static AT91_I2C     & I2C()             { return *(AT91_I2C     *)(size_t)(      AT91_I2C     ::c_Base                                      ); }
+    static const uint32_t c_UncachableMask = 0x80000000;
+
+    //    static AT91_EIM     & EIM()             { return *(AT91_EIM     *)(size_t)(      AT91_EIM     ::c_Base                                      ); }
+    //    static AT91_SC      & SC()              { return *(AT91_SC      *)(size_t)(      AT91_SC      ::c_Base                                      ); }
+    //    static AT91_CMU     & CMU  (         )  { return *(AT91_CMU     *)(size_t)(      AT91_CMU     ::c_Base                                      ); }
+    //    static AT91_PWM     & PWM()             { return *(AT91_PWM     *)(size_t)(      AT91_PWM     ::c_Base                                      ); }
+    //    static AT91_DMA     & DMA()             { return *(AT91_DMA     *)(size_t)(      AT91_DMA     ::c_Base                                      ); }
+
+    static AT91_I2C     & I2C() { return *(AT91_I2C     *)(size_t)(AT91_I2C::c_Base); }
     static AT91_AIC     & AIC() { return *(AT91_AIC     *)(size_t)(AT91_AIC::c_Base); }
     static AT91_PIO     & PIO(int sel) { return *(AT91_PIO     *)(size_t)(AT91_PIO::c_Base + AT91_PIO::c_Base_Offset * sel); }
     static AT91_PMC     & PMC() { return *(AT91_PMC     *)(size_t)(AT91_PMC::c_Base); }
