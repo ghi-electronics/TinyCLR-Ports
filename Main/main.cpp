@@ -15,9 +15,7 @@
 #include <TinyCLR.h>
 #include <DeviceSelector.h>
 
-#define EXPAND3(a, b) a##b
-#define EXPAND2(a, b) EXPAND3(a, b)
-#define EXPAND(a) EXPAND2(DEVICE_TARGET, a)
+#define EXPAND(a) CONCAT(DEVICE_TARGET, a)
 
 void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 #ifdef INCLUDE_ADC
