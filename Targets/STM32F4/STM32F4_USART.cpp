@@ -107,7 +107,7 @@ const TinyCLR_Api_Info* STM32F4_Uart_GetApi() {
 }
 
 void STM32F4_Uart_IrqRx(int portNum) {
-    INTERRUPT_START;
+    INTERRUPT_STARTED_SCOPED(isr);
 
     uint8_t data = (uint8_t)(g_UartController[portNum].portPtr->DR); // read RX data
 
@@ -127,12 +127,10 @@ void STM32F4_Uart_IrqRx(int portNum) {
 
     if (g_UartController[portNum].dataReceivedEventHandler != nullptr)
         g_UartController[portNum].dataReceivedEventHandler(g_UartController[portNum].provider, 1);
-
-    INTERRUPT_END;
 }
 
 void STM32F4_Uart_IrqTx(int portNum) {
-    INTERRUPT_START;
+    INTERRUPT_STARTED_SCOPED(isr);
 
     if (STM32F4_Uart_TxHandshakeEnabledState(portNum)) {
         if (g_UartController[portNum].txBufferCount > 0) {
@@ -150,8 +148,6 @@ void STM32F4_Uart_IrqTx(int portNum) {
             STM32F4_Uart_TxBufferEmptyInterruptEnable(portNum, false); // Disable interrupt when no more data to send.
         }
     }
-
-    INTERRUPT_END;
 }
 
 void STM32F4_Uart_Interrupt0(void* param) {

@@ -229,6 +229,12 @@ void STM32F4_Interrupt_GlobalRestore();
 extern TinyCLR_Interrupt_StartStopHandler STM32F4_Interrupt_Started;
 extern TinyCLR_Interrupt_StartStopHandler STM32F4_Interrupt_Ended;
 
+class STM32F4_SmartPtr_Interrupt {
+public:
+    STM32F4_SmartPtr_Interrupt() { STM32F4_Interrupt_Started(); };
+    ~STM32F4_SmartPtr_Interrupt() { STM32F4_Interrupt_Ended(); };
+};
+
 // I2C
 const TinyCLR_Api_Info* STM32F4_I2c_GetApi();
 void STM32F4_I2c_Reset();
@@ -290,8 +296,7 @@ int32_t STM32F4_Startup_GetLModePin();
 TinyCLR_Gpio_PinValue STM32F4_Startup_GetLModeUsbState();
 
 #define DISABLE_INTERRUPTS_SCOPED(name) STM32F4_SmartPtr_IRQ name
-#define INTERRUPT_START         STM32F4_Interrupt_Started();
-#define INTERRUPT_END           STM32F4_Interrupt_Ended();
+#define INTERRUPT_STARTED_SCOPED(name) STM32F4_SmartPtr_Interrupt name
 
 #include "inc/stm32f4xx.h"
 #include "core_cm4.h"

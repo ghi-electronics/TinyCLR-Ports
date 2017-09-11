@@ -170,7 +170,7 @@ TinyCLR_Result STM32F4_Time_SetCompare(const TinyCLR_Time_Provider* self, uint64
 extern "C" {
 
     void SysTick_Handler(void *param) {
-        INTERRUPT_START
+        INTERRUPT_STARTED_SCOPED(isr);
 
             if (STM32F4_Time_GetCurrentTicks(nullptr) >= g_nextEvent) { // handle event
                 g_STM32F4_Timer_Driver.m_DequeuAndExecute();
@@ -178,8 +178,6 @@ extern "C" {
             else {
                 STM32F4_Time_SetCompare(nullptr, g_nextEvent);
             }
-
-            INTERRUPT_END
     }
 
 }

@@ -104,7 +104,7 @@ const TinyCLR_Api_Info* STM32F4_I2c_GetApi() {
 }
 
 void STM32F4_I2C_ER_Interrupt(void* param) {// Error Interrupt Handler
-    INTERRUPT_START
+    INTERRUPT_STARTED_SCOPED(isr);
 
         I2Cx->SR1 = 0; // reset errors
 
@@ -112,12 +112,10 @@ void STM32F4_I2C_ER_Interrupt(void* param) {// Error Interrupt Handler
         g_currentI2cTransactionAction->result = TinyCLR_I2c_TransferStatus::SlaveAddressNotAcknowledged;
 
     STM32F4_I2c_StopTransaction();
-
-    INTERRUPT_END
 }
 
 void STM32F4_I2C_EV_Interrupt(void* param) {// Event Interrupt Handler
-    INTERRUPT_START
+    INTERRUPT_STARTED_SCOPED(isr);
 
         STM32F4_I2c_Transaction *transaction = g_currentI2cTransactionAction;
 
@@ -194,8 +192,6 @@ void STM32F4_I2C_EV_Interrupt(void* param) {// Event Interrupt Handler
             STM32F4_I2c_StopTransaction();
         }
     }
-
-    INTERRUPT_END
 }
 
 void STM32F4_I2c_StartTransaction() {

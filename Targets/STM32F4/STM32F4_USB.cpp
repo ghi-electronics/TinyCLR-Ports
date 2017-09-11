@@ -1010,7 +1010,7 @@ void STM32F4_UsbClient_EndpointOutInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STA
  * Main Interrupt Handler
  */
 void STM32F4_UsbClient_Interrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State) {
-    INTERRUPT_START;
+    INTERRUPT_STARTED_SCOPED(isr);
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -1070,8 +1070,6 @@ void STM32F4_UsbClient_Interrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State) 
             OTG->GINTSTS = OTG_GINTSTS_WKUPINT; // clear interrupt
         }
     }
-
-    INTERRUPT_END;
 }
 
 /*
