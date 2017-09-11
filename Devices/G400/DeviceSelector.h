@@ -85,11 +85,6 @@
 #define AT91_ADC_PINS                     {_P(B,11),_P(B,12),_P(B,13),_P(B,14),_P(B,15),_P(B,16),_P(A,17),_P(B,6),_P(B,7),_P(B,8),_P(B,9),_P(B,10)}
 #define AT91_ADC_ALT_MODE                 {AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD}
 
-// DAC
-#define TOTAL_DAC_CONTROLLERS                1
-#define AT91_DAC_PINS                     {_P(A,26)}
-#define AT91_DAC_ALT_MODE                 {AT91_Gpio_PeripheralSelection::PeripheralA}
-
 // I2C
 #define AT91_I2C_SCL_PIN                  _P(A,31)
 #define AT91_I2C_SDA_PIN                  _P(A,30)
@@ -150,8 +145,7 @@
 #define OEM_VERSION_MINOR                   6
 #define OEM_VERSION_PATCH                   0
 
-//#define INCLUDE_ADC
-//#define INCLUDE_DAC
+#define INCLUDE_ADC
 #define INCLUDE_GPIO
 #define INCLUDE_I2C
 #define INCLUDE_PWM
