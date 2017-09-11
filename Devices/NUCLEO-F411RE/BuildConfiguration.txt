@@ -1,2 +1,0 @@
-TargetName:STM32F4
-OptimizeLevel:-Ofast
