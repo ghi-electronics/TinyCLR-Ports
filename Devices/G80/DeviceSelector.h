@@ -47,6 +47,13 @@
 #define STM32F4_SPI_MISO_PINS { { MAKE_PIN(B, 4), STM32F4_Gpio_AlternateFunction::AF5 }, { MAKE_PIN(C, 2), STM32F4_Gpio_AlternateFunction::AF5 } }
 #define STM32F4_SPI_MOSI_PINS { { MAKE_PIN(B, 5), STM32F4_Gpio_AlternateFunction::AF5 }, { MAKE_PIN(C, 3), STM32F4_Gpio_AlternateFunction::AF5 } }
 
+#define INCLUDE_UART
+#define STM32F4_UART_TX_BUFFER_SIZE 256
+#define STM32F4_UART_RX_BUFFER_SIZE 512
+#define STM32F4_UART_TX_PINS { { MAKE_PIN(A, 9), STM32F4_Gpio_AlternateFunction::AF7 }, { MAKE_PIN(D, 5), STM32F4_Gpio_AlternateFunction::AF7 }, { MAKE_PIN(D, 8), STM32F4_Gpio_AlternateFunction::AF7 }, { MAKE_PIN(A, 0), STM32F4_Gpio_AlternateFunction::AF8 } }
+#define STM32F4_UART_RX_PINS { { MAKE_PIN(A, 10), STM32F4_Gpio_AlternateFunction::AF7 }, { MAKE_PIN(D, 6), STM32F4_Gpio_AlternateFunction::AF7 }, { MAKE_PIN(D, 9), STM32F4_Gpio_AlternateFunction::AF7 }, { MAKE_PIN(A, 1), STM32F4_Gpio_AlternateFunction::AF8 } }
+#define STM32F4_UART_CTS_PINS { { PIN_NONE, STM32F4_Gpio_AlternateFunction::AF0 }, { MAKE_PIN(D, 3), STM32F4_Gpio_AlternateFunction::AF7 }, { MAKE_PIN(D, 11), STM32F4_Gpio_AlternateFunction::AF7 }, { PIN_NONE, STM32F4_Gpio_AlternateFunction::AF8 } }
+#define STM32F4_UART_RTS_PINS { { PIN_NONE, STM32F4_Gpio_AlternateFunction::AF0 }, { MAKE_PIN(D, 4), STM32F4_Gpio_AlternateFunction::AF7 }, { MAKE_PIN(D, 12), STM32F4_Gpio_AlternateFunction::AF7 }, { PIN_NONE, STM32F4_Gpio_AlternateFunction::AF8 } }
 
 
 
@@ -55,7 +62,6 @@
 #define INCLUDE_DAC
 #define INCLUDE_GPIO
 #define INCLUDE_PWM
-#define INCLUDE_UART
 #define INCLUDE_USBCLIENT
 
 // GPIO
@@ -83,15 +89,6 @@
                                             { TIM12 ,  STM32F4_Gpio_AlternateFunction::AF0,     { PIN_NONE , PIN_NONE , PIN_NONE , PIN_NONE} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 12 },\
                                             { TIM13 ,  STM32F4_Gpio_AlternateFunction::AF9,     { MAKE_PIN(A, 6) , PIN_NONE , PIN_NONE , PIN_NONE} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 13 },\
                                             { TIM14 ,  STM32F4_Gpio_AlternateFunction::AF9,     { MAKE_PIN(A, 7) , PIN_NONE , PIN_NONE , PIN_NONE} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 14 }}
-
-// UART
-#define TOTAL_UART_CONTROLLERS          4
-#define STM32F4_UART_TX_BUFFER_SIZE     256
-#define STM32F4_UART_RX_BUFFER_SIZE     512
-#define STM32F4_UART_RXD_PINS           { MAKE_PIN(A,10), MAKE_PIN(D, 6), MAKE_PIN(D, 9), MAKE_PIN(A, 1) }
-#define STM32F4_UART_TXD_PINS           { MAKE_PIN(A, 9), MAKE_PIN(D, 5), MAKE_PIN(D, 8), MAKE_PIN(A, 0) }
-#define STM32F4_UART_CTS_PINS           { PIN_NONE, MAKE_PIN(D, 3), MAKE_PIN(D,11), PIN_NONE }
-#define STM32F4_UART_RTS_PINS           { PIN_NONE, MAKE_PIN(D, 4), MAKE_PIN(D,12), PIN_NONE }
 
 //  USBC
 

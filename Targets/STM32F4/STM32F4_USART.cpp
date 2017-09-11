@@ -52,20 +52,16 @@ struct UartController {
 
 };
 
+static const STM32F4_Pin g_STM32F4_Uart_Tx_Pins[] = STM32F4_UART_TX_PINS;
+static const STM32F4_Pin g_STM32F4_Uart_Rx_Pins[] = STM32F4_UART_RX_PINS;
+static const STM32F4_Pin g_STM32F4_Uart_Cts_Pins[] = STM32F4_UART_CTS_PINS;
+static const STM32F4_Pin g_STM32F4_Uart_Rts_Pins[] = STM32F4_UART_RTS_PINS;
+
+static const int TOTAL_UART_CONTROLLERS = SIZEOF_CONST_ARRAY(g_STM32F4_Uart_Tx_Pins);
+
 static UartController g_UartController[TOTAL_UART_CONTROLLERS];
 
-// IO addresses
-#if TOTAL_UART_CONTROLLERS > 2
-static const USART_TypeDef_Ptr g_STM32F4_Uart_Ports[] = { USART1, USART2, USART3, UART4, UART5, USART6, UART7, UART8 };
-#else
-static const USART_TypeDef_Ptr g_STM32F4_Uart_Ports[] = { USART1, USART2 };
-#endif
-
-// Pins
-static const uint32_t g_STM32F4_Uart_Rx_Pins[] = STM32F4_UART_RXD_PINS;
-static const uint32_t g_STM32F4_Uart_Tx_Pins[] = STM32F4_UART_TXD_PINS;
-static const uint32_t g_STM32F4_Uart_Cts_Pins[] = STM32F4_UART_CTS_PINS;
-static const uint32_t g_STM32F4_Uart_Rts_Pins[] = STM32F4_UART_RTS_PINS;
+static USART_TypeDef_Ptr g_STM32F4_Uart_Ports[TOTAL_UART_CONTROLLERS];
 
 static uint8_t uartProviderDefs[TOTAL_UART_CONTROLLERS * sizeof(TinyCLR_Uart_Provider)];
 static TinyCLR_Uart_Provider* uartProviders[TOTAL_UART_CONTROLLERS];
@@ -228,7 +224,7 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
     g_UartController[portNum].portPtr = g_STM32F4_Uart_Ports[portNum];
     g_UartController[portNum].provider = self;
 
-    if (STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Rx_Pins[portNum]) && STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Tx_Pins[portNum]))
+    if (STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Rx_Pins[portNum].number) && STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Tx_Pins[portNum].number))
         return TinyCLR_Result::Success;
 
     return TinyCLR_Result::SharingViolation;
@@ -314,20 +310,20 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
 
     g_UartController[portNum].portPtr->CR3 = ctrl_cr3;
 
-    STM32F4_Gpio_AlternateFunction alternate = STM32F4_Gpio_AlternateFunction::AF7; // AF7 = USART1-3
+    auto& tx = g_STM32F4_Uart_Tx_Pins[portNum];
+    auto& rx = g_STM32F4_Uart_Rx_Pins[portNum];
+    auto& cts = g_STM32F4_Uart_Cts_Pins[portNum];
+    auto& rts = g_STM32F4_Uart_Rts_Pins[portNum];
 
-    if (portNum >= 3)
-        alternate = STM32F4_Gpio_AlternateFunction::AF8; // AF8 = UART4-8
-
-    STM32F4_Gpio_ConfigurePin(g_STM32F4_Uart_Rx_Pins[portNum], STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, alternate);
-    STM32F4_Gpio_ConfigurePin(g_STM32F4_Uart_Tx_Pins[portNum], STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, alternate);
+    STM32F4_Gpio_ConfigurePin(rx.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, rx.alternateFunction);
+    STM32F4_Gpio_ConfigurePin(tx.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, tx.alternateFunction);
 
     if (handshaking == TinyCLR_Uart_Handshake::RequestToSend) {
-        if (!STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Cts_Pins[portNum]) || !STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Rts_Pins[portNum]))
+        if (!STM32F4_Gpio_OpenPin(cts.number) || !STM32F4_Gpio_OpenPin(rts.number))
             return TinyCLR_Result::SharingViolation;
 
-        STM32F4_Gpio_ConfigurePin(g_STM32F4_Uart_Cts_Pins[portNum], STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, alternate);
-        STM32F4_Gpio_ConfigurePin(g_STM32F4_Uart_Rts_Pins[portNum], STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, alternate);
+        STM32F4_Gpio_ConfigurePin(cts.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, cts.alternateFunction);
+        STM32F4_Gpio_ConfigurePin(rts.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, rts.alternateFunction);
     }
 
     switch (portNum) {
@@ -447,10 +443,10 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
 
     g_UartController[portNum].isOpened = false;
 
-    STM32F4_Gpio_ClosePin(g_STM32F4_Uart_Rx_Pins[portNum]);
-    STM32F4_Gpio_ClosePin(g_STM32F4_Uart_Tx_Pins[portNum]);
-    STM32F4_Gpio_ClosePin(g_STM32F4_Uart_Cts_Pins[portNum]);
-    STM32F4_Gpio_ClosePin(g_STM32F4_Uart_Rts_Pins[portNum]);
+    STM32F4_Gpio_ClosePin(g_STM32F4_Uart_Rx_Pins[portNum].number);
+    STM32F4_Gpio_ClosePin(g_STM32F4_Uart_Tx_Pins[portNum].number);
+    STM32F4_Gpio_ClosePin(g_STM32F4_Uart_Cts_Pins[portNum].number);
+    STM32F4_Gpio_ClosePin(g_STM32F4_Uart_Rts_Pins[portNum].number);
 
     return TinyCLR_Result::Success;
 }
@@ -478,7 +474,7 @@ bool STM32F4_Uart_TxHandshakeEnabledState(int portNum) {
     if (g_UartController[portNum].portPtr->CR3 & USART_CR3_CTSE) {
         TinyCLR_Gpio_PinValue value;
 
-        STM32F4_Gpio_Read(nullptr, g_STM32F4_Uart_Cts_Pins[portNum], value);
+        STM32F4_Gpio_Read(nullptr, g_STM32F4_Uart_Cts_Pins[portNum].number, value);
 
         return !(value == TinyCLR_Gpio_PinValue::High);
     }
@@ -618,6 +614,15 @@ TinyCLR_Result STM32F4_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Provide
 }
 
 void STM32F4_Uart_Reset() {
+    if (TOTAL_UART_CONTROLLERS > 0) g_STM32F4_Uart_Ports[0] = USART1;
+    if (TOTAL_UART_CONTROLLERS > 1) g_STM32F4_Uart_Ports[1] = USART2;
+    if (TOTAL_UART_CONTROLLERS > 2) g_STM32F4_Uart_Ports[2] = USART3;
+    if (TOTAL_UART_CONTROLLERS > 3) g_STM32F4_Uart_Ports[3] = UART4;
+    if (TOTAL_UART_CONTROLLERS > 4) g_STM32F4_Uart_Ports[4] = UART5;
+    if (TOTAL_UART_CONTROLLERS > 5) g_STM32F4_Uart_Ports[5] = USART6;
+    if (TOTAL_UART_CONTROLLERS > 6) g_STM32F4_Uart_Ports[6] = UART7;
+    if (TOTAL_UART_CONTROLLERS > 7) g_STM32F4_Uart_Ports[7] = UART8;
+
     for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
         STM32F4_Uart_Release(uartProviders[i]);
     }
