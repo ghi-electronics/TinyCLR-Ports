@@ -20,28 +20,13 @@ struct AT91_I2c_Configuration {
     int32_t                  address;
     uint8_t                  clockRate;     // primary clock factor to generate the i2c clock
     uint8_t                  clockRate2;   // additional clock factors, if more than one is needed for the clock (optional)
+
+    bool                     initialized;
 };
 
-struct AT91_I2c_Transaction {
-    bool                        isReadTransaction;
-    bool                        repeatedStart;
-    bool                        isDone;
-
-    uint8_t                     *buffer;
-
-    size_t                      bytesToTransfer;
-    size_t                      bytesTransferred;
-
-    TinyCLR_I2c_TransferStatus  result;
-};
-
-#define I2C_TRANSACTION_TIMEOUT 2000 // 2 seconds
+#define I2C_TRANSACTION_TIMEOUT 2000000
 
 static AT91_I2c_Configuration g_I2cConfiguration;
-static AT91_I2c_Transaction   *g_currentI2cTransactionAction;
-static AT91_I2c_Transaction   g_ReadI2cTransactionAction;
-static AT91_I2c_Transaction   g_WriteI2cTransactionAction;
-
 static TinyCLR_I2c_Provider i2cProvider;
 static TinyCLR_Api_Info i2cApi;
 
@@ -65,53 +50,69 @@ const TinyCLR_Api_Info* AT91_I2c_GetApi() {
     return &i2cApi;
 }
 
-void AT91_I2c_InterruptHandler(void *param) {
-    uint8_t address;
-    
-}
-void AT91_I2c_StartTransaction() {    
-    if (!g_WriteI2cTransactionAction.repeatedStart || g_WriteI2cTransactionAction.bytesTransferred == 0) {
-       
-    }
-    else {
-        
-    }
-
-}
-
-void AT91_I2c_StopTransaction() {
-   
-
-    g_currentI2cTransactionAction->isDone = true;
-
-}
-
 TinyCLR_Result AT91_I2c_ReadTransaction(const TinyCLR_I2c_Provider* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
-    g_ReadI2cTransactionAction.isReadTransaction = true;
-    g_ReadI2cTransactionAction.buffer = buffer;
-    g_ReadI2cTransactionAction.bytesToTransfer = length;
-    g_ReadI2cTransactionAction.isDone = false;
-    g_ReadI2cTransactionAction.repeatedStart = false;
-    g_ReadI2cTransactionAction.bytesTransferred = 0;
+    uint32_t address;
+    uint32_t control = 0;
 
-    g_currentI2cTransactionAction = &g_ReadI2cTransactionAction;
+    size_t bytesToTransfer = length;
+    size_t bytesTransferred = 0;
 
-    AT91_I2c_StartTransaction();
+    AT91_I2C& I2C = AT91::I2C();
 
-    while (g_currentI2cTransactionAction->isDone == false && timeout > 0) {
-        AT91_Time_Delay(nullptr, 1000);
+    address = (g_I2cConfiguration.address << AT91_I2C::TWI_MMR_DADR_SHIFT) | AT91_I2C::TWI_MMR_MREAD_R;
+
+
+    I2C.TWI_CWGR = g_I2cConfiguration.clockRate | (g_I2cConfiguration.clockRate << AT91_I2C::TWI_CWGR_CHDIV_SHIFT) | (g_I2cConfiguration.clockRate2 << AT91_I2C::TWI_CWGR_CKDIV_SHIFT);
+
+    control = AT91_I2C::TWI_CR_MSEN | AT91_I2C::TWI_CR_SVDIS;
+
+    control |= AT91_I2C::TWI_CR_START;
+
+    I2C.TWI_MMR = address;
+
+    I2C.TWI_CR = control;
+
+    while (bytesToTransfer > 0 && timeout > 0) {
+        if (bytesToTransfer == 1) {
+            I2C.TWI_CR = AT91_I2C::TWI_CR_STOP;
+        }
+
+        while (!(I2C.TWI_SR & AT91_I2C::TWI_SR_RXRDY) && timeout > 0) {
+            AT91_Time_Delay(nullptr, 1);
+
+            timeout--;
+        }
+
+        buffer[bytesTransferred] = I2C.TWI_RHR;
+        bytesToTransfer--;
+        bytesTransferred++;
+        // Reset Timeout
+        if (timeout > 0) {
+            timeout = I2C_TRANSACTION_TIMEOUT;
+        }
+    }
+
+    // Reset Timeout
+    if (timeout > 0) {
+        timeout = I2C_TRANSACTION_TIMEOUT;
+    }
+
+    while (!(I2C.TWI_SR & AT91_I2C::TWI_SR_TXCOMP) && timeout > 0) {
+        AT91_Time_Delay(nullptr, 1);
 
         timeout--;
     }
 
-    if (g_currentI2cTransactionAction->bytesTransferred == length)
-        result = TinyCLR_I2c_TransferStatus::FullTransfer;
-    else if (g_currentI2cTransactionAction->bytesTransferred < length && g_currentI2cTransactionAction->bytesTransferred > 0)
-        result = TinyCLR_I2c_TransferStatus::PartialTransfer;
+    I2C.TWI_CR = AT91_I2C::TWI_CR_MSDIS;
 
-    length = g_currentI2cTransactionAction->bytesTransferred;
+    length = bytesTransferred;
+
+    if (timeout > 0)
+        result = TinyCLR_I2c_TransferStatus::FullTransfer;
+    else
+        result = TinyCLR_I2c_TransferStatus::ClockStretchTimeout;
 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
@@ -119,78 +120,97 @@ TinyCLR_Result AT91_I2c_ReadTransaction(const TinyCLR_I2c_Provider* self, uint8_
 TinyCLR_Result AT91_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
-    g_WriteI2cTransactionAction.isReadTransaction = false;
-    g_WriteI2cTransactionAction.buffer = (uint8_t*)buffer;
-    g_WriteI2cTransactionAction.bytesToTransfer = length;
-    g_WriteI2cTransactionAction.isDone = false;
-    g_WriteI2cTransactionAction.repeatedStart = false;
-    g_WriteI2cTransactionAction.bytesTransferred = 0;
+    uint32_t address;
+    uint32_t control = 0;
 
-    g_currentI2cTransactionAction = &g_WriteI2cTransactionAction;
+    size_t bytesToTransfer = length;
+    size_t bytesTransferred = 0;
 
-    AT91_I2c_StartTransaction();
+    AT91_I2C& I2C = AT91::I2C();
 
-    while (g_currentI2cTransactionAction->isDone == false && timeout > 0) {
-        AT91_Time_Delay(nullptr, 1000);
+    address = g_I2cConfiguration.address << AT91_I2C::TWI_MMR_DADR_SHIFT;
+
+    I2C.TWI_CWGR = g_I2cConfiguration.clockRate | (g_I2cConfiguration.clockRate << AT91_I2C::TWI_CWGR_CHDIV_SHIFT) | (g_I2cConfiguration.clockRate2 << AT91_I2C::TWI_CWGR_CKDIV_SHIFT);
+
+    control = AT91_I2C::TWI_CR_MSEN | AT91_I2C::TWI_CR_SVDIS;
+
+    control |= AT91_I2C::TWI_CR_START;
+
+    I2C.TWI_MMR = address;
+
+    I2C.TWI_CR = control;
+
+    while (bytesToTransfer > 0 && timeout > 0) {
+        while (!(I2C.TWI_SR & AT91_I2C::TWI_SR_TXRDY) && timeout > 0) {
+            AT91_Time_Delay(nullptr, 1);
+
+            timeout--;
+        }
+
+        // Reset Timeout
+        if (timeout > 0) {
+            timeout = I2C_TRANSACTION_TIMEOUT;
+        }
+
+        I2C.TWI_THR = buffer[bytesTransferred];
+
+        bytesTransferred++;
+        bytesToTransfer--;
+
+    }
+
+    // Reset Timeout
+    if (timeout > 0) {
+        timeout = I2C_TRANSACTION_TIMEOUT;
+    }
+
+    while (!(I2C.TWI_SR & AT91_I2C::TWI_SR_TXRDY) && timeout > 0) {
+        AT91_Time_Delay(nullptr, 1);
 
         timeout--;
     }
 
-    if (g_currentI2cTransactionAction->bytesTransferred == length)
-        result = TinyCLR_I2c_TransferStatus::FullTransfer;
-    else if (g_currentI2cTransactionAction->bytesTransferred < length && g_currentI2cTransactionAction->bytesTransferred > 0)
-        result = TinyCLR_I2c_TransferStatus::PartialTransfer;
+    I2C.TWI_CR = AT91_I2C::TWI_CR_STOP;
 
-    length = g_currentI2cTransactionAction->bytesTransferred;
+    // Reset Timeout
+    if (timeout > 0) {
+        timeout = I2C_TRANSACTION_TIMEOUT;
+    }
+
+    while (!(I2C.TWI_SR & AT91_I2C::TWI_SR_TXCOMP) && timeout > 0) {
+        AT91_Time_Delay(nullptr, 1);
+
+        timeout--;
+    }
+
+    I2C.TWI_CR = AT91_I2C::TWI_CR_MSDIS;
+
+    length = bytesTransferred;
+
+    if (timeout > 0)
+        result = TinyCLR_I2c_TransferStatus::FullTransfer;
+    else
+        result = TinyCLR_I2c_TransferStatus::ClockStretchTimeout;
 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
 TinyCLR_Result AT91_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
-    int32_t timeout = I2C_TRANSACTION_TIMEOUT;
+    AT91_I2c_WriteTransaction(self, writeBuffer, writeLength, result);
 
-    g_WriteI2cTransactionAction.isReadTransaction = false;
-    g_WriteI2cTransactionAction.buffer = (uint8_t*)writeBuffer;
-    g_WriteI2cTransactionAction.bytesToTransfer = writeLength;
-    g_WriteI2cTransactionAction.isDone = false;
-    g_WriteI2cTransactionAction.repeatedStart = true;
-    g_WriteI2cTransactionAction.bytesTransferred = 0;
+    if (result == TinyCLR_I2c_TransferStatus::FullTransfer)
+        AT91_I2c_ReadTransaction(self, readBuffer, readLength, result);
 
-    g_ReadI2cTransactionAction.isReadTransaction = true;
-    g_ReadI2cTransactionAction.buffer = readBuffer;
-    g_ReadI2cTransactionAction.bytesToTransfer = readLength;
-    g_ReadI2cTransactionAction.isDone = false;
-    g_ReadI2cTransactionAction.repeatedStart = false;
-    g_ReadI2cTransactionAction.bytesTransferred = 0;
-
-    g_currentI2cTransactionAction = &g_WriteI2cTransactionAction;
-
-    AT91_I2c_StartTransaction();
-
-    while (g_currentI2cTransactionAction->isDone == false && timeout > 0) {
-        AT91_Time_Delay(nullptr, 1000);
-
-        timeout--;
-    }
-
-    if (g_WriteI2cTransactionAction.bytesTransferred != writeLength) {
-        writeLength = g_WriteI2cTransactionAction.bytesTransferred;
-        result = TinyCLR_I2c_TransferStatus::PartialTransfer;
-    }
-    else {
-        readLength = g_ReadI2cTransactionAction.bytesTransferred;
-
-        if (g_currentI2cTransactionAction->bytesTransferred == readLength)
-            result = TinyCLR_I2c_TransferStatus::FullTransfer;
-        else if (g_currentI2cTransactionAction->bytesTransferred < readLength && g_currentI2cTransactionAction->bytesTransferred > 0)
-            result = TinyCLR_I2c_TransferStatus::PartialTransfer;
-    }
-
-    return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
+    return result == TinyCLR_I2c_TransferStatus::FullTransfer ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
+
+#define CLOCK_RATE_CONSTANT     4
+#define MIN_CLK_RATE    (SYSTEM_PERIPHERAL_CLOCK_HZ/1000)/(128 *255+CLOCK_RATE_CONSTANT)
+#define MAX_CLK_RATE    400   //kHz
 
 TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed) {
     uint32_t rateKhz;
+    uint8_t clockRate, clockRate2;
 
     if (busSpeed == TinyCLR_I2c_BusSpeed::FastMode)
         rateKhz = 400; // FastMode
@@ -199,29 +219,95 @@ TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int3
     else
         return TinyCLR_Result::NotSupported;
 
-    uint32_t divider = 0;
+    if (rateKhz < MIN_CLK_RATE)
+    {
+        clockRate = 255;
+        clockRate2 = 7;
+    }
+    else if (rateKhz >= MAX_CLK_RATE)
+    {
 
-    g_I2cConfiguration.clockRate = (uint8_t)divider; // low byte
-    g_I2cConfiguration.clockRate2 = (uint8_t)(divider >> 8); // high byte
+        clockRate = (SYSTEM_PERIPHERAL_CLOCK_HZ / (2 * 1000)) / MAX_CLK_RATE - CLOCK_RATE_CONSTANT;
+        clockRate2 = 0;
+    }
+    else
+    {
+
+        uint32_t power = 1;
+        uint32_t clkDiv;
+        uint32_t clkLHDiv;
+
+        clkDiv = 0;
+        clkLHDiv = (SYSTEM_PERIPHERAL_CLOCK_HZ / (2 * 1000)) / rateKhz - CLOCK_RATE_CONSTANT;
+
+        if (clkLHDiv > 255)
+        {
+            clkLHDiv += CLOCK_RATE_CONSTANT;
+            for (clkDiv = 1; clkDiv <= 7; clkDiv++)
+            {
+                clkLHDiv /= 2;
+                power *= 2; // save the calculation
+                if (clkLHDiv <= 255)
+                    break;
+            }
+
+            clkLHDiv = (((SYSTEM_PERIPHERAL_CLOCK_HZ / (2 * 1000)) / rateKhz) - CLOCK_RATE_CONSTANT) / power;
+        }
+        clockRate = clkLHDiv;
+        clockRate2 = clkDiv;
+    }
+
+    g_I2cConfiguration.clockRate = (uint8_t)clockRate; // low byte
+    g_I2cConfiguration.clockRate2 = (uint8_t)(clockRate2); // high byte
     g_I2cConfiguration.address = slaveAddress;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_I2c_Acquire(const TinyCLR_I2c_Provider* self) {    
-    if (!AT91_Gpio_OpenPin(AT91_I2C_SDA_PIN) || !AT91_Gpio_OpenPin(AT91_I2C_SCL_PIN))
-        return TinyCLR_Result::SharingViolation;
+TinyCLR_Result AT91_I2c_Acquire(const TinyCLR_I2c_Provider* self) {
+    AT91_I2C& I2C = AT91::I2C();
+    AT91_PMC &pmc = AT91::PMC();
 
-    // AT91_Gpio_ConfigurePin(AT91_I2C_SDA_PIN, AT91_Gpio_Direction::Input, AT91_I2C_SDA_ALT_MODE, AT91_Gpio_PinMode::Inactive);
-    // AT91_Gpio_ConfigurePin(AT91_I2C_SCL_PIN, AT91_Gpio_Direction::Input, AT91_I2C_SCL_ALT_MODE, AT91_Gpio_PinMode::Inactive);
+    if (!g_I2cConfiguration.initialized) {
+        if (!AT91_Gpio_OpenPin(AT91_I2C_SDA_PIN) || !AT91_Gpio_OpenPin(AT91_I2C_SCL_PIN))
+            return TinyCLR_Result::SharingViolation;
+
+        AT91_Gpio_ConfigurePin(AT91_I2C_SDA_PIN, AT91_Gpio_Direction::Input, AT91_I2C_SDA_ALT_MODE, AT91_Gpio_ResistorMode::Inactive);
+        AT91_Gpio_ConfigurePin(AT91_I2C_SCL_PIN, AT91_Gpio_Direction::Input, AT91_I2C_SCL_ALT_MODE, AT91_Gpio_ResistorMode::Inactive);
+
+        pmc.EnablePeriphClock(AT91C_ID_TWI);
+        I2C.TWI_MMR = 0x7e << AT91_I2C::TWI_MMR_DADR_SHIFT;
+
+        g_I2cConfiguration.initialized = true;
+    }
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_I2c_Release(const TinyCLR_I2c_Provider* self) {
-    
-    AT91_Gpio_ClosePin(AT91_I2C_SDA_PIN);
-    AT91_Gpio_ClosePin(AT91_I2C_SCL_PIN);
+    AT91_I2C& I2C = AT91::I2C();
+
+    I2C.TWI_CR = AT91_I2C::TWI_CR_SWRST;
+    if (g_I2cConfiguration.initialized) {
+
+
+        AT91_Interrupt_Disable(AT91C_ID_TWI);
+
+        AT91_PMC &pmc = AT91::PMC();
+        pmc.DisablePeriphClock(AT91C_ID_TWI);
+
+        // disable
+        I2C.TWI_CR = AT91_I2C::TWI_CR_MSDIS;
+
+        // disable all the interrupt
+        I2C.TWI_IDR = AT91_I2C::TWI_IDR_NACK | AT91_I2C::TWI_IDR_RXRDY | AT91_I2C::TWI_IDR_TXCOMP | AT91_I2C::TWI_IDR_TXRDY;
+
+
+        g_I2cConfiguration.initialized = false;
+
+        AT91_Gpio_ClosePin(AT91_I2C_SDA_PIN);
+        AT91_Gpio_ClosePin(AT91_I2C_SCL_PIN);
+    }
 
     return TinyCLR_Result::Success;
 }
