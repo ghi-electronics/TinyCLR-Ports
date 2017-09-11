@@ -29,49 +29,49 @@
 #define USB_DEBUGGER_VENDOR_ID 0x1B9F
 #define USB_DEBUGGER_PRODUCT_ID 0x0110
 
-#define MODE_PIN MAKE_PIN(E, 15)
+#define MODE_PIN PIN(E, 15)
 #define MODE_USB_STATE TinyCLR_Gpio_PinValue::High
 
-#define RUNAPP_PIN MAKE_PIN(E, 4)
+#define RUNAPP_PIN PIN(E, 4)
 #define RUNAPP_STATE TinyCLR_Gpio_PinValue::High
 
 #define RAM_BOOTLOADER_HOLD_ADDRESS 0x2002FFF8
 #define RAM_BOOTLOADER_HOLD_VALUE 0x37D56D4A
 
 #define INCLUDE_I2C
-#define STM32F4_I2C_SCL_PINS { { MAKE_PIN(B, 6), AF(4) } }
-#define STM32F4_I2C_SDA_PINS { { MAKE_PIN(B, 7), AF(4) } }
+#define STM32F4_I2C_SCL_PINS { { PIN(B, 6), AF(4) } }
+#define STM32F4_I2C_SDA_PINS { { PIN(B, 7), AF(4) } }
 
 #define INCLUDE_SPI
-#define STM32F4_SPI_SCLK_PINS { { MAKE_PIN(B, 3), AF(5) }, { MAKE_PIN(B, 10), AF(5) } }
-#define STM32F4_SPI_MISO_PINS { { MAKE_PIN(B, 4), AF(5) }, { MAKE_PIN(C, 2), AF(5) } }
-#define STM32F4_SPI_MOSI_PINS { { MAKE_PIN(B, 5), AF(5) }, { MAKE_PIN(C, 3), AF(5) } }
+#define STM32F4_SPI_SCLK_PINS { { PIN(B, 3), AF(5) }, { PIN(B, 10), AF(5) } }
+#define STM32F4_SPI_MISO_PINS { { PIN(B, 4), AF(5) }, { PIN(C, 2), AF(5) } }
+#define STM32F4_SPI_MOSI_PINS { { PIN(B, 5), AF(5) }, { PIN(C, 3), AF(5) } }
 
 #define INCLUDE_PWM
 #define STM32F4_PWM_PINS {\
-                             { { MAKE_PIN(E,  9), AF(1)   }, { MAKE_PIN(E, 11), AF(1)   }, { MAKE_PIN(E, 13), AF(1)   }, { MAKE_PIN(E, 14), AF(1)   } },\
-                             { { MAKE_PIN(A, 15), AF(1)   }, { MAKE_PIN(B,  3), AF(1)   }, { MAKE_PIN(B, 10), AF(1)   }, { MAKE_PIN(B, 11), AF(1)   } },\
-                             { { MAKE_PIN(B,  4), AF(2)   }, { MAKE_PIN(B,  5), AF(2)   }, { MAKE_PIN(B,  0), AF(2)   }, { MAKE_PIN(B,  1), AF(2)   } },\
-                             { { MAKE_PIN(D, 12), AF(2)   }, { MAKE_PIN(D, 13), AF(2)   }, { MAKE_PIN(D, 14), AF(2)   }, { MAKE_PIN(D, 15), AF(2)   } },\
-                             { { PIN_NONE       , AF_NONE }, { PIN_NONE       , AF_NONE }, { PIN_NONE       , AF_NONE }, { PIN_NONE       , AF_NONE } },\
-                             { { PIN_NONE       , AF_NONE }, { PIN_NONE       , AF_NONE }, { PIN_NONE       , AF_NONE }, { PIN_NONE       , AF_NONE } },\
-                             { { PIN_NONE       , AF_NONE }, { PIN_NONE       , AF_NONE }, { PIN_NONE       , AF_NONE }, { PIN_NONE       , AF_NONE } },\
-                             { { MAKE_PIN(C,  6), AF(3)   }, { MAKE_PIN(C,  7), AF(3)   }, { MAKE_PIN(C,  8), AF(3)   }, { MAKE_PIN(C,  9), AF(3)   } },\
-                             { { MAKE_PIN(A,  2), AF(3)   }, { MAKE_PIN(A,  3), AF(3)   }, { PIN_NONE       , AF(3)   }, { PIN_NONE       , AF(3)   } },\
-                             { { MAKE_PIN(B,  8), AF(3)   }, { PIN_NONE       , AF(3)   }, { PIN_NONE       , AF(3)   }, { PIN_NONE       , AF(3)   } },\
-                             { { MAKE_PIN(B,  9), AF(3)   }, { PIN_NONE       , AF(3)   }, { PIN_NONE       , AF(3)   }, { PIN_NONE       , AF(3)   } },\
-                             { { PIN_NONE       , AF_NONE }, { PIN_NONE       , AF_NONE }, { PIN_NONE       , AF_NONE }, { PIN_NONE       , AF_NONE } },\
-                             { { MAKE_PIN(A,  6), AF(9)   }, { PIN_NONE       , AF(9)   }, { PIN_NONE       , AF(9)   }, { PIN_NONE       , AF(9)   } },\
-                             { { MAKE_PIN(A,  7), AF(9)   }, { PIN_NONE       , AF(9)   }, { PIN_NONE       , AF(9)   }, { PIN_NONE       , AF(9)   } }\
+                             { { PIN(E,  9), AF(1)   }, { PIN(E, 11), AF(1)   }, { PIN(E, 13), AF(1)   }, { PIN(E, 14), AF(1)   } },\
+                             { { PIN(A, 15), AF(1)   }, { PIN(B,  3), AF(1)   }, { PIN(B, 10), AF(1)   }, { PIN(B, 11), AF(1)   } },\
+                             { { PIN(B,  4), AF(2)   }, { PIN(B,  5), AF(2)   }, { PIN(B,  0), AF(2)   }, { PIN(B,  1), AF(2)   } },\
+                             { { PIN(D, 12), AF(2)   }, { PIN(D, 13), AF(2)   }, { PIN(D, 14), AF(2)   }, { PIN(D, 15), AF(2)   } },\
+                             { { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } },\
+                             { { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } },\
+                             { { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } },\
+                             { { PIN(C,  6), AF(3)   }, { PIN(C,  7), AF(3)   }, { PIN(C,  8), AF(3)   }, { PIN(C,  9), AF(3)   } },\
+                             { { PIN(A,  2), AF(3)   }, { PIN(A,  3), AF(3)   }, { PIN_NONE  , AF(3)   }, { PIN_NONE  , AF(3)   } },\
+                             { { PIN(B,  8), AF(3)   }, { PIN_NONE  , AF(3)   }, { PIN_NONE  , AF(3)   }, { PIN_NONE  , AF(3)   } },\
+                             { { PIN(B,  9), AF(3)   }, { PIN_NONE  , AF(3)   }, { PIN_NONE  , AF(3)   }, { PIN_NONE  , AF(3)   } },\
+                             { { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } },\
+                             { { PIN(A,  6), AF(9)   }, { PIN_NONE  , AF(9)   }, { PIN_NONE  , AF(9)   }, { PIN_NONE  , AF(9)   } },\
+                             { { PIN(A,  7), AF(9)   }, { PIN_NONE  , AF(9)   }, { PIN_NONE  , AF(9)   }, { PIN_NONE  , AF(9)   } }\
                          }
 
 #define INCLUDE_UART
 #define STM32F4_UART_TX_BUFFER_SIZE 256
 #define STM32F4_UART_RX_BUFFER_SIZE 512
-#define STM32F4_UART_TX_PINS { { MAKE_PIN(A, 9), AF(7) }, { MAKE_PIN(D, 5), AF(7) }, { MAKE_PIN(D, 8), AF(7) }, { MAKE_PIN(A, 0), AF(8) } }
-#define STM32F4_UART_RX_PINS { { MAKE_PIN(A, 10), AF(7) }, { MAKE_PIN(D, 6), AF(7) }, { MAKE_PIN(D, 9), AF(7) }, { MAKE_PIN(A, 1), AF(8) } }
-#define STM32F4_UART_CTS_PINS { { PIN_NONE, AF_NONE }, { MAKE_PIN(D, 3), AF(7) }, { MAKE_PIN(D, 11), AF(7) }, { PIN_NONE, AF_NONE } }
-#define STM32F4_UART_RTS_PINS { { PIN_NONE, AF_NONE }, { MAKE_PIN(D, 4), AF(7) }, { MAKE_PIN(D, 12), AF(7) }, { PIN_NONE, AF_NONE } }
+#define STM32F4_UART_TX_PINS { { PIN(A, 9), AF(7) }, { PIN(D, 5), AF(7) }, { PIN(D, 8), AF(7) }, { PIN(A, 0), AF(8) } }
+#define STM32F4_UART_RX_PINS { { PIN(A, 10), AF(7) }, { PIN(D, 6), AF(7) }, { PIN(D, 9), AF(7) }, { PIN(A, 1), AF(8) } }
+#define STM32F4_UART_CTS_PINS { { PIN_NONE, AF_NONE }, { PIN(D, 3), AF(7) }, { PIN(D, 11), AF(7) }, { PIN_NONE, AF_NONE } }
+#define STM32F4_UART_RTS_PINS { { PIN_NONE, AF_NONE }, { PIN(D, 4), AF(7) }, { PIN(D, 12), AF(7) }, { PIN_NONE, AF_NONE } }
 
 
 

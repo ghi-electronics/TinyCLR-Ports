@@ -304,7 +304,7 @@ TinyCLR_Gpio_PinValue STM32F4_Startup_GetLModeUsbState();
 #define DISABLE_INTERRUPTS_SCOPED(name) STM32F4_SmartPtr_IRQ name
 #define INTERRUPT_STARTED_SCOPED(name) STM32F4_SmartPtr_Interrupt name
 
-#define MAKE_PIN(port, pin) CONCAT(GPIO_PORT_, port) * 16 + pin
+#define PIN(port, pin) CONCAT(GPIO_PORT_, port) * 16 + pin
 #define PIN_NONE 0xFFFFFFFF
 #define AF(num) CONCAT(STM32F4_Gpio_AlternateFunction::AF, num)
 #define AF_NONE STM32F4_Gpio_AlternateFunction::None
