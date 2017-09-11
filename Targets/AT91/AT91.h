@@ -458,7 +458,7 @@ const TinyCLR_Api_Info* AT91_Adc_GetApi();
 void AT91_Adc_Reset();
 int32_t AT91_Adc_GetControllerCount();
 int32_t AT91_Adc_GetPin(int32_t channel);
-AT91_Gpio_PeripheralSelection AT91_Adc_GetPinFunction(int32_t channel);
+AT91_Gpio_PeripheralSelection AT91_Adc_GetPeripheralSelection(int32_t channel);
 TinyCLR_Result AT91_Adc_Acquire(const TinyCLR_Adc_Provider* self);
 TinyCLR_Result AT91_Adc_Release(const TinyCLR_Adc_Provider* self);
 TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
