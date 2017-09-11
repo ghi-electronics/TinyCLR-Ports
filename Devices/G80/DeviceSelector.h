@@ -38,38 +38,22 @@
 #define RAM_BOOTLOADER_HOLD_ADDRESS 0x2002FFF8
 #define RAM_BOOTLOADER_HOLD_VALUE 0x37D56D4A
 
+#define INCLUDE_SPI
+#define STM32F4_SPI_SCLK_PINS { { MAKE_PIN(B, 3), STM32F4_Gpio_AlternateFunction::AF5 }, { MAKE_PIN(B, 10), STM32F4_Gpio_AlternateFunction::AF5 } }
+#define STM32F4_SPI_MISO_PINS { { MAKE_PIN(B, 4), STM32F4_Gpio_AlternateFunction::AF5 }, { MAKE_PIN(C, 2), STM32F4_Gpio_AlternateFunction::AF5 } }
+#define STM32F4_SPI_MOSI_PINS { { MAKE_PIN(B, 5), STM32F4_Gpio_AlternateFunction::AF5 }, { MAKE_PIN(C, 3), STM32F4_Gpio_AlternateFunction::AF5 } }
+
+
+
+
+
 #define INCLUDE_ADC
 #define INCLUDE_DAC
 #define INCLUDE_GPIO
 #define INCLUDE_I2C
 #define INCLUDE_PWM
-#define INCLUDE_SPI
 #define INCLUDE_UART
 #define INCLUDE_USBCLIENT
-
-
-
-// System clock
-#define SYSTEM_CLOCK_HZ                  180000000   // 180 MHz
-#define SYSTEM_CYCLE_CLOCK_HZ            180000000   // 18 MHz
-#define SYSTEM_APB1_CLOCK_HZ              45000000   //  45 MHz
-#define SYSTEM_APB2_CLOCK_HZ              90000000   //  90 MHz
-#define SYSTEM_CRYSTAL_CLOCK_HZ           12000000   // 12 MHz external clock
-#define SUPPLY_VOLTAGE_MV                     3300   // 3.3V supply
-#define CLOCK_COMMON_FACTOR                1000000   // GCD(SYSTEM_CLOCK_HZ, 1M)
-#define SLOW_CLOCKS_PER_SECOND           180000000   // 1 MHz
-#define SLOW_CLOCKS_TEN_MHZ_GCD            1000000   // GCD(SLOW_CLOCKS_PER_SECOND, 10M)
-#define SLOW_CLOCKS_MILLISECOND_GCD           1000   // GCD(SLOW_CLOCKS_PER_SECOND, 1k)
-
-// Memory
-#define FLASH_MEMORY_Base                   0x08000000
-#define FLASH_MEMORY_Size                   0x00100000  // 1 MB
-#define SRAM1_MEMORY_Base                   0x20000000
-#define SRAM1_MEMORY_Size                   0x00030000  // 192 KB
-#define ENABLE_CCM_RAM                      1
-
-#define FLASH_DEPLOYMENT_SECTOR_ADDRESS     {0x080C0000, 0x080E0000}
-#define FLASH_DEPLOYMENT_SECTOR_SIZE        {0x00020000, 0x00020000}
 
 // GPIO
 #define TOTAL_GPIO_PORT                 (GPIO_PORT_E + 1)
@@ -102,12 +86,6 @@
 #define STM32F4_I2C_SCL_PIN             MAKE_PIN(B, 6)
 #define STM32F4_I2C_SDA_PIN             MAKE_PIN(B, 7)
 
-// SPI
-#define TOTAL_SPI_CONTROLLERS           2
-#define STM32F4_SPI_SCLK_PINS           { MAKE_PIN(B, 3), MAKE_PIN(B,10) }
-#define STM32F4_SPI_MISO_PINS           { MAKE_PIN(B, 4), MAKE_PIN(C, 2) }
-#define STM32F4_SPI_MOSI_PINS           { MAKE_PIN(B, 5), MAKE_PIN(C, 3) }
-
 // UART
 #define TOTAL_UART_CONTROLLERS          4
 #define STM32F4_UART_TX_BUFFER_SIZE     256
@@ -121,3 +99,26 @@
 
 #define TOTAL_USB_CONTROLLER            1
 #define USB_MAX_QUEUES                  16
+
+
+// System clock
+#define SYSTEM_CLOCK_HZ                  180000000   // 180 MHz
+#define SYSTEM_CYCLE_CLOCK_HZ            180000000   // 18 MHz
+#define SYSTEM_APB1_CLOCK_HZ              45000000   //  45 MHz
+#define SYSTEM_APB2_CLOCK_HZ              90000000   //  90 MHz
+#define SYSTEM_CRYSTAL_CLOCK_HZ           12000000   // 12 MHz external clock
+#define SUPPLY_VOLTAGE_MV                     3300   // 3.3V supply
+#define CLOCK_COMMON_FACTOR                1000000   // GCD(SYSTEM_CLOCK_HZ, 1M)
+#define SLOW_CLOCKS_PER_SECOND           180000000   // 1 MHz
+#define SLOW_CLOCKS_TEN_MHZ_GCD            1000000   // GCD(SLOW_CLOCKS_PER_SECOND, 10M)
+#define SLOW_CLOCKS_MILLISECOND_GCD           1000   // GCD(SLOW_CLOCKS_PER_SECOND, 1k)
+
+// Memory
+#define FLASH_MEMORY_Base                   0x08000000
+#define FLASH_MEMORY_Size                   0x00100000  // 1 MB
+#define SRAM1_MEMORY_Base                   0x20000000
+#define SRAM1_MEMORY_Size                   0x00030000  // 192 KB
+#define ENABLE_CCM_RAM                      1
+
+#define FLASH_DEPLOYMENT_SECTOR_ADDRESS     {0x080C0000, 0x080E0000}
+#define FLASH_DEPLOYMENT_SECTOR_SIZE        {0x00020000, 0x00020000}

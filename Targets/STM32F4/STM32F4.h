@@ -306,6 +306,11 @@ TinyCLR_Gpio_PinValue STM32F4_Startup_GetLModeUsbState();
 #define GPIO_PORT_D  3
 #define GPIO_PORT_E  4
 
+struct STM32F4_Pin {
+    uint32_t number;
+    STM32F4_Gpio_AlternateFunction alternateFunction;
+};
+
 #include "inc/stm32f4xx.h"
 #include "core_cm4.h"
 
