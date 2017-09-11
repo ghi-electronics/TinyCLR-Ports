@@ -76,7 +76,7 @@
 #define USB_VENDOR_ID                   0x1B9F
 #define USB_PRODUCT_ID                  0x0110
 #define USB_MANUFACTURER_NAME           {'G', 'H', 'I', ' ', 'E', 'l', 'e', 'c', 't', 'r', 'o', 'n', 'i', 'c', 's', ',', ' ', 'L', 'L', 'C'}
-#define USB_PRODUCT_NAME                {'E', 'M', 'X'}
+#define USB_PRODUCT_NAME                {'G', '4', '0', '0'}
 #define USB_DISPLAY_NAME                USB_PRODUCT_NAME
 #define USB_FRIENDLY_NAME               USB_PRODUCT_NAME
 
@@ -117,7 +117,7 @@
 #define AT91_UART_TX_BUFFER_SIZE          (16*1024)
 #define AT91_UART_RX_BUFFER_SIZE          (16*1024)
 #define AT91_UART_TX_PINS                 {_P(A, 9), _P(A, 0), _P(A, 5), _P(A, 7), _P(C, 8), _P(C,16) }
-#define AT91_UART_RX_PINS                 {_P(A,10), _P(A, 1), _P(A, 6), _P(A, 8), _P(C, 9), _P(C,17)  }
+#define AT91_UART_RX_PINS                 {_P(A,10), _P(A, 1), _P(A, 6), _P(A, 8), _P(C, 9), _P(C,17) }
 #define AT91_UART_RTS_PINS                {_P_NONE_, _P(A, 2), _P_NONE_, _P_NONE_, _P_NONE_, _P_NONE_ }
 #define AT91_UART_CTS_PINS                {_P_NONE_, _P(A, 3), _P_NONE_, _P_NONE_, _P_NONE_, _P_NONE_ }
 #define AT91_UART_TX_ALT_MODE             {AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA,AT91_Gpio_PeripheralSelection::PeripheralA ,AT91_Gpio_PeripheralSelection::PeripheralC ,AT91_Gpio_PeripheralSelection::PeripheralC}
