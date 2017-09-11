@@ -47,6 +47,24 @@
 #define STM32F4_SPI_MISO_PINS { { MAKE_PIN(B, 4), STM32F4_Gpio_AlternateFunction::AF5 }, { MAKE_PIN(C, 2), STM32F4_Gpio_AlternateFunction::AF5 } }
 #define STM32F4_SPI_MOSI_PINS { { MAKE_PIN(B, 5), STM32F4_Gpio_AlternateFunction::AF5 }, { MAKE_PIN(C, 3), STM32F4_Gpio_AlternateFunction::AF5 } }
 
+#define INCLUDE_PWM
+#define STM32F4_PWM_PINS {\
+                             { { MAKE_PIN(E,  9), STM32F4_Gpio_AlternateFunction::AF1 }, { MAKE_PIN(E, 11), STM32F4_Gpio_AlternateFunction::AF1 }, { MAKE_PIN(E, 13), STM32F4_Gpio_AlternateFunction::AF1 }, { MAKE_PIN(E, 14), STM32F4_Gpio_AlternateFunction::AF1 } },\
+                             { { MAKE_PIN(A, 15), STM32F4_Gpio_AlternateFunction::AF1 }, { MAKE_PIN(B,  3), STM32F4_Gpio_AlternateFunction::AF1 }, { MAKE_PIN(B, 10), STM32F4_Gpio_AlternateFunction::AF1 }, { MAKE_PIN(B, 11), STM32F4_Gpio_AlternateFunction::AF1 } },\
+                             { { MAKE_PIN(B,  4), STM32F4_Gpio_AlternateFunction::AF2 }, { MAKE_PIN(B,  5), STM32F4_Gpio_AlternateFunction::AF2 }, { MAKE_PIN(B,  0), STM32F4_Gpio_AlternateFunction::AF2 }, { MAKE_PIN(B,  1), STM32F4_Gpio_AlternateFunction::AF2 } },\
+                             { { MAKE_PIN(D, 12), STM32F4_Gpio_AlternateFunction::AF2 }, { MAKE_PIN(D, 13), STM32F4_Gpio_AlternateFunction::AF2 }, { MAKE_PIN(D, 14), STM32F4_Gpio_AlternateFunction::AF2 }, { MAKE_PIN(D, 15), STM32F4_Gpio_AlternateFunction::AF2 } },\
+                             { { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF0 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF0 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF0 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF0 } },\
+                             { { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF0 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF0 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF0 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF0 } },\
+                             { { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF0 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF0 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF0 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF0 } },\
+                             { { MAKE_PIN(C,  6), STM32F4_Gpio_AlternateFunction::AF3 }, { MAKE_PIN(C,  7), STM32F4_Gpio_AlternateFunction::AF3 }, { MAKE_PIN(C,  8), STM32F4_Gpio_AlternateFunction::AF3 }, { MAKE_PIN(C,  9), STM32F4_Gpio_AlternateFunction::AF3 } },\
+                             { { MAKE_PIN(A,  2), STM32F4_Gpio_AlternateFunction::AF3 }, { MAKE_PIN(A,  3), STM32F4_Gpio_AlternateFunction::AF3 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF3 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF3 } },\
+                             { { MAKE_PIN(B,  8), STM32F4_Gpio_AlternateFunction::AF3 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF3 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF3 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF3 } },\
+                             { { MAKE_PIN(B,  9), STM32F4_Gpio_AlternateFunction::AF3 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF3 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF3 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF3 } },\
+                             { { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF0 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF0 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF0 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF0 } },\
+                             { { MAKE_PIN(A,  6), STM32F4_Gpio_AlternateFunction::AF9 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF9 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF9 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF9 } },\
+                             { { MAKE_PIN(A,  7), STM32F4_Gpio_AlternateFunction::AF9 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF9 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF9 }, { PIN_NONE       , STM32F4_Gpio_AlternateFunction::AF9 } }\
+                         }
+
 #define INCLUDE_UART
 #define STM32F4_UART_TX_BUFFER_SIZE 256
 #define STM32F4_UART_RX_BUFFER_SIZE 512
@@ -61,37 +79,17 @@
 #define INCLUDE_ADC
 #define INCLUDE_DAC
 #define INCLUDE_GPIO
-#define INCLUDE_PWM
 #define INCLUDE_USBCLIENT
 
 // GPIO
 #define TOTAL_GPIO_PORT                 (GPIO_PORT_E + 1)
 #define TOTAL_GPIO_PINS                 (TOTAL_GPIO_PORT*16)
 
-// I2C
+// ADC
 #define STM32F4_ADC                     1
 #define STM32F4_AD_CHANNELS             { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
 
-// PWM
-#define MAX_PWM_PER_CONTROLLER           4
-#define TOTAL_PWM_CONTROLLER            14
-#define STM32F4_PWM                     {   { TIM1  ,  STM32F4_Gpio_AlternateFunction::AF1,     { MAKE_PIN(E, 9) , MAKE_PIN(E,11) , MAKE_PIN(E,13) , MAKE_PIN(E,14)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 1 },\
-                                            { TIM2  ,  STM32F4_Gpio_AlternateFunction::AF1,     { MAKE_PIN(A,15) , MAKE_PIN(B, 3) , MAKE_PIN(B,10) , MAKE_PIN(B,11)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 2 },\
-                                            { TIM3  ,  STM32F4_Gpio_AlternateFunction::AF2,     { MAKE_PIN(B, 4) , MAKE_PIN(B, 5) , MAKE_PIN(B, 0) , MAKE_PIN(B, 1)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 3 },\
-                                            { TIM4  ,  STM32F4_Gpio_AlternateFunction::AF2,     { MAKE_PIN(D,12) , MAKE_PIN(D,13) , MAKE_PIN(D,14) , MAKE_PIN(D,15)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 4 },\
-                                            { TIM5  ,  STM32F4_Gpio_AlternateFunction::AF0,     { PIN_NONE , PIN_NONE , PIN_NONE , PIN_NONE} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 5 },\
-                                            { TIM6  ,  STM32F4_Gpio_AlternateFunction::AF0,     { PIN_NONE , PIN_NONE , PIN_NONE , PIN_NONE} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 6 },\
-                                            { TIM7  ,  STM32F4_Gpio_AlternateFunction::AF0,     { PIN_NONE , PIN_NONE , PIN_NONE , PIN_NONE} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 7 },\
-                                            { TIM8  ,  STM32F4_Gpio_AlternateFunction::AF3,     { MAKE_PIN(C, 6) , MAKE_PIN(C, 7) , MAKE_PIN(C, 8) , MAKE_PIN(C, 9)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 8 },\
-                                            { TIM9  ,  STM32F4_Gpio_AlternateFunction::AF3,     { MAKE_PIN(A, 2) , MAKE_PIN(A, 3) , PIN_NONE , PIN_NONE} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 9 },\
-                                            { TIM10 ,  STM32F4_Gpio_AlternateFunction::AF3,     { MAKE_PIN(B, 8) , PIN_NONE , PIN_NONE , PIN_NONE} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 10 },\
-                                            { TIM11 ,  STM32F4_Gpio_AlternateFunction::AF3,     { MAKE_PIN(B, 9) , PIN_NONE , PIN_NONE , PIN_NONE} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 11 },\
-                                            { TIM12 ,  STM32F4_Gpio_AlternateFunction::AF0,     { PIN_NONE , PIN_NONE , PIN_NONE , PIN_NONE} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 12 },\
-                                            { TIM13 ,  STM32F4_Gpio_AlternateFunction::AF9,     { MAKE_PIN(A, 6) , PIN_NONE , PIN_NONE , PIN_NONE} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 13 },\
-                                            { TIM14 ,  STM32F4_Gpio_AlternateFunction::AF9,     { MAKE_PIN(A, 7) , PIN_NONE , PIN_NONE , PIN_NONE} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 14 }}
-
-//  USBC
-
+// USBC
 #define TOTAL_USB_CONTROLLER            1
 #define USB_MAX_QUEUES                  16
 

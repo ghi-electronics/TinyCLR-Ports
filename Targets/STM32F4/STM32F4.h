@@ -95,6 +95,11 @@ enum class STM32F4_Gpio_OutputType : uint8_t {
     OpenDrain = 1,
 };
 
+struct STM32F4_Pin {
+    uint32_t number;
+    STM32F4_Gpio_AlternateFunction alternateFunction;
+};
+
 void STM32F4_Gpio_Reset();
 const TinyCLR_Api_Info* STM32F4_Gpio_GetApi();
 TinyCLR_Result STM32F4_Gpio_Acquire(const TinyCLR_Gpio_Provider* self);
@@ -123,7 +128,7 @@ void STM32F4_Pwm_Reset();
 void STM32F4_Pwm_ResetController(int32_t controller);
 TinyCLR_Result STM32F4_Pwm_Acquire(const TinyCLR_Pwm_Provider* self);
 TinyCLR_Result STM32F4_Pwm_Release(const TinyCLR_Pwm_Provider* self);
-int32_t STM32F4_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t pin);
+STM32F4_Pin* STM32F4_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t pin);
 TinyCLR_Result STM32F4_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self, double& frequency);
 TinyCLR_Result STM32F4_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t pin);
 TinyCLR_Result STM32F4_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t pin);
@@ -305,11 +310,6 @@ TinyCLR_Gpio_PinValue STM32F4_Startup_GetLModeUsbState();
 #define GPIO_PORT_C  2
 #define GPIO_PORT_D  3
 #define GPIO_PORT_E  4
-
-struct STM32F4_Pin {
-    uint32_t number;
-    STM32F4_Gpio_AlternateFunction alternateFunction;
-};
 
 #include "inc/stm32f4xx.h"
 #include "core_cm4.h"
