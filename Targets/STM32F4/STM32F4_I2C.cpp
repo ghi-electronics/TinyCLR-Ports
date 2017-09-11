@@ -16,8 +16,10 @@
 
 #include "STM32F4.h"
 
+#define STM32F4_I2C_PORT 1
+
 #if STM32F4_I2C_PORT == 2
-#define I2Cx                   I2C2
+#error Not supported
 #define I2Cx_EV_IRQn           I2C2_EV_IRQn
 #define I2Cx_ER_IRQn           I2C2_ER_IRQn
 #define RCC_APB1ENR_I2CxEN     RCC_APB1ENR_I2C2EN
@@ -29,7 +31,7 @@
 #define STM32F4_I2C_SDA_PIN  27 // PB11
 #endif
 #elif STM32F4_I2C_PORT == 3
-#define I2Cx                   I2C3
+#error Not supported
 #define I2Cx_EV_IRQn           I2C3_EV_IRQn
 #define I2Cx_ER_IRQn           I2C3_ER_IRQn
 #define RCC_APB1ENR_I2CxEN     RCC_APB1ENR_I2C3EN
@@ -41,18 +43,18 @@
 #define STM32F4_I2C_SDA_PIN  41 // PC9
 #endif
 #else // use I2C1 by default
-#define I2Cx                   I2C1
 #define I2Cx_EV_IRQn           I2C1_EV_IRQn
 #define I2Cx_ER_IRQn           I2C1_ER_IRQn
 #define RCC_APB1ENR_I2CxEN     RCC_APB1ENR_I2C1EN
 #define RCC_APB1RSTR_I2CxRST   RCC_APB1RSTR_I2C1RST
-#if !defined(STM32F4_I2C_SCL_PIN)
-#define STM32F4_I2C_SCL_PIN  22 // PB6
 #endif
-#if !defined(STM32F4_I2C_SDA_PIN)
-#define STM32F4_I2C_SDA_PIN  23 // PB7
-#endif
-#endif
+
+static const STM32F4_Pin g_STM32F4_I2c_Scl_Pins[] = STM32F4_I2C_SCL_PINS;
+static const STM32F4_Pin g_STM32F4_I2c_Sda_Pins[] = STM32F4_I2C_SDA_PINS;
+
+static const int TOTAL_I2C_CONTROLLERS = SIZEOF_CONST_ARRAY(g_STM32F4_I2c_Scl_Pins);
+
+static I2C_TypeDef* g_STM32_I2c_Port[TOTAL_I2C_CONTROLLERS];
 
 #define I2C_TRANSACTION_TIMEOUT 2000 // 2 seconds
 
@@ -106,7 +108,7 @@ const TinyCLR_Api_Info* STM32F4_I2c_GetApi() {
 void STM32F4_I2C_ER_Interrupt(void* param) {// Error Interrupt Handler
     INTERRUPT_STARTED_SCOPED(isr);
 
-        I2Cx->SR1 = 0; // reset errors
+    g_STM32_I2c_Port[0]->SR1 = 0; // reset errors
 
     if (g_currentI2cTransactionAction != nullptr)
         g_currentI2cTransactionAction->result = TinyCLR_I2c_TransferStatus::SlaveAddressNotAcknowledged;
@@ -116,6 +118,8 @@ void STM32F4_I2C_ER_Interrupt(void* param) {// Error Interrupt Handler
 
 void STM32F4_I2C_EV_Interrupt(void* param) {// Event Interrupt Handler
     INTERRUPT_STARTED_SCOPED(isr);
+
+    auto& I2Cx = g_STM32_I2c_Port[0];
 
         STM32F4_I2c_Transaction *transaction = g_currentI2cTransactionAction;
 
@@ -195,6 +199,8 @@ void STM32F4_I2C_EV_Interrupt(void* param) {// Event Interrupt Handler
 }
 
 void STM32F4_I2c_StartTransaction() {
+    auto& I2Cx = g_STM32_I2c_Port[0];
+
     uint32_t ccr = g_I2cConfiguration.clockRate + (g_I2cConfiguration.clockRate2 << 8);
     if (I2Cx->CCR != ccr) { // set clock rate and rise time
         uint32_t trise;
@@ -216,6 +222,8 @@ void STM32F4_I2c_StartTransaction() {
 }
 
 void STM32F4_I2c_StopTransaction() {
+    auto& I2Cx = g_STM32_I2c_Port[0];
+
     if (I2Cx->SR2 & I2C_SR2_BUSY && !(I2Cx->CR1 & I2C_CR1_STOP)) {
         I2Cx->CR1 |= I2C_CR1_STOP; // send stop
     }
@@ -356,16 +364,19 @@ TinyCLR_Result STM32F4_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, i
 }
 
 TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Provider* self) {
-    STM32F4_Gpio_AlternateFunction altMode = (STM32F4_I2C_PORT == 2 && STM32F4_I2C_SDA_PIN == 25) ? STM32F4_Gpio_AlternateFunction::AF9 : STM32F4_Gpio_AlternateFunction::AF4;
+    auto& I2Cx = g_STM32_I2c_Port[0];
 
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    if (!STM32F4_Gpio_OpenPin(STM32F4_I2C_SDA_PIN) || !STM32F4_Gpio_OpenPin(STM32F4_I2C_SCL_PIN))
+    auto& scl = g_STM32F4_I2c_Scl_Pins[0];
+    auto& sda = g_STM32F4_I2c_Sda_Pins[0];
+
+    if (!STM32F4_Gpio_OpenPin(sda.number) || !STM32F4_Gpio_OpenPin(scl.number))
         return TinyCLR_Result::SharingViolation;
 
-    STM32F4_Gpio_ConfigurePin(STM32F4_I2C_SDA_PIN, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::OpenDrain, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, altMode);
-    STM32F4_Gpio_ConfigurePin(STM32F4_I2C_SCL_PIN, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::OpenDrain, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, altMode);
+    STM32F4_Gpio_ConfigurePin(sda.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::OpenDrain, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, sda.alternateFunction);
+    STM32F4_Gpio_ConfigurePin(scl.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::OpenDrain, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, scl.alternateFunction);
 
     RCC->APB1ENR |= RCC_APB1ENR_I2CxEN; // enable I2C clock
     RCC->APB1RSTR = RCC_APB1RSTR_I2CxRST; // reset I2C peripheral
@@ -388,19 +399,25 @@ TinyCLR_Result STM32F4_I2c_Release(const TinyCLR_I2c_Provider* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
+    auto& I2Cx = g_STM32_I2c_Port[0];
+    auto& scl = g_STM32F4_I2c_Scl_Pins[0];
+    auto& sda = g_STM32F4_I2c_Sda_Pins[0];
+
     STM32F4_Interrupt_Deactivate(I2Cx_EV_IRQn);
     STM32F4_Interrupt_Deactivate(I2Cx_ER_IRQn);
 
     I2Cx->CR1 = 0; // disable peripheral
     RCC->APB1ENR &= ~RCC_APB1ENR_I2CxEN; // disable I2C clock
 
-    STM32F4_Gpio_ClosePin(STM32F4_I2C_SDA_PIN);
-    STM32F4_Gpio_ClosePin(STM32F4_I2C_SCL_PIN);
+    STM32F4_Gpio_ClosePin(sda.number);
+    STM32F4_Gpio_ClosePin(scl.number);
 
     return TinyCLR_Result::Success;
 }
 
 void STM32F4_I2c_Reset() {
+    g_STM32_I2c_Port[0] = I2C1;
+
     STM32F4_I2c_Release(&i2cProvider);
 
     g_I2cConfiguration.address = 0;

@@ -38,6 +38,10 @@
 #define RAM_BOOTLOADER_HOLD_ADDRESS 0x2002FFF8
 #define RAM_BOOTLOADER_HOLD_VALUE 0x37D56D4A
 
+#define INCLUDE_I2C
+#define STM32F4_I2C_SCL_PINS { { MAKE_PIN(B, 6), STM32F4_Gpio_AlternateFunction::AF4 } }
+#define STM32F4_I2C_SDA_PINS { { MAKE_PIN(B, 7), STM32F4_Gpio_AlternateFunction::AF4 } }
+
 #define INCLUDE_SPI
 #define STM32F4_SPI_SCLK_PINS { { MAKE_PIN(B, 3), STM32F4_Gpio_AlternateFunction::AF5 }, { MAKE_PIN(B, 10), STM32F4_Gpio_AlternateFunction::AF5 } }
 #define STM32F4_SPI_MISO_PINS { { MAKE_PIN(B, 4), STM32F4_Gpio_AlternateFunction::AF5 }, { MAKE_PIN(C, 2), STM32F4_Gpio_AlternateFunction::AF5 } }
@@ -50,7 +54,6 @@
 #define INCLUDE_ADC
 #define INCLUDE_DAC
 #define INCLUDE_GPIO
-#define INCLUDE_I2C
 #define INCLUDE_PWM
 #define INCLUDE_UART
 #define INCLUDE_USBCLIENT
@@ -80,11 +83,6 @@
                                             { TIM12 ,  STM32F4_Gpio_AlternateFunction::AF0,     { PIN_NONE , PIN_NONE , PIN_NONE , PIN_NONE} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 12 },\
                                             { TIM13 ,  STM32F4_Gpio_AlternateFunction::AF9,     { MAKE_PIN(A, 6) , PIN_NONE , PIN_NONE , PIN_NONE} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 13 },\
                                             { TIM14 ,  STM32F4_Gpio_AlternateFunction::AF9,     { MAKE_PIN(A, 7) , PIN_NONE , PIN_NONE , PIN_NONE} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 14 }}
-
-// I2C
-#define STM32F4_I2C_PORT                1
-#define STM32F4_I2C_SCL_PIN             MAKE_PIN(B, 6)
-#define STM32F4_I2C_SDA_PIN             MAKE_PIN(B, 7)
 
 // UART
 #define TOTAL_UART_CONTROLLERS          4
