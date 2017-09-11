@@ -416,7 +416,7 @@ TinyCLR_Result STM32F4_I2c_Release(const TinyCLR_I2c_Provider* self) {
 }
 
 void STM32F4_I2c_Reset() {
-    g_STM32_I2c_Port[0] = I2C1;
+    if (TOTAL_I2C_CONTROLLERS > 0) g_STM32_I2c_Port[0] = I2C1;
 
     STM32F4_I2c_Release(&i2cProvider);
 
