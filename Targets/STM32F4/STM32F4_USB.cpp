@@ -823,7 +823,6 @@ void STM32F4_UsbClient_ResetEvent(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State)
  * Data Endpoint Rx Interrupt Handler
  */
 void STM32F4_UsbClient_EndpointRxInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State, uint32_t ep, uint32_t count) {
-    ASSERT_IRQ_MUST_BE_OFF();
     uint32_t* pd;
 
     if (ep == 0) { // control endpoint
@@ -855,8 +854,6 @@ void STM32F4_UsbClient_EndpointRxInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STAT
  * Data In (Tx) Endpoint Interrupt Handler
  */
 void STM32F4_UsbClient_EndpointInInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State, uint32_t ep) {
-    ASSERT_IRQ_MUST_BE_OFF();
-
     uint32_t bits = OTG->DIEP[ep].INT;
     if (bits & OTG_DIEPINT_XFRC) { // transfer completed
 
@@ -976,7 +973,6 @@ void STM32F4_UsbClient_HandleSetup(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State
  * Data Out (Rx) Endpoint Interrupt Handler
  */
 void STM32F4_UsbClient_EndpointOutInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State, uint32_t ep) {
-    ASSERT_IRQ_MUST_BE_OFF();
     uint32_t bits = OTG->DOEP[ep].INT;
     if (bits & OTG_DOEPINT_XFRC) { // transfer completed
 
@@ -1016,7 +1012,7 @@ void STM32F4_UsbClient_EndpointOutInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STA
 void STM32F4_UsbClient_Interrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State) {
     INTERRUPT_START;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t intPend = OTG->GINTSTS; // get pending bits
 
@@ -1103,7 +1099,7 @@ bool STM32F4_UsbClient_Initialize(int controller) {
 
     OTG_TypeDef* OTG = OTG_FS;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     // Detach usb port for a while to enforce re-initialization
     OTG->DCTL = OTG_DCTL_SDIS; // soft disconnect
@@ -1163,7 +1159,7 @@ bool STM32F4_UsbClient_StartOutput(USB_CONTROLLER_STATE* State, int ep) {
 
     OTG_TypeDef* OTG = OTG_FS;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     // If endpoint is not an output
     if (State->Queues[ep] == 0 || !State->IsTxQueue[ep])
@@ -1195,7 +1191,7 @@ bool STM32F4_UsbClient_RxEnable(USB_CONTROLLER_STATE* State, int ep) {
 
     OTG_TypeDef* OTG = OTG_FS;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     // enable Rx
     if (!(OTG->DOEP[ep].CTL & OTG_DOEPCTL_EPENA)) {
@@ -1214,7 +1210,7 @@ bool STM32F4_UsbClient_ProtectPins(int controller, bool On) {
 
     OTG_TypeDef* OTG = OTG_FS;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (On) {
 
@@ -1418,7 +1414,7 @@ bool UsbClient_Driver::Initialize(int controller) {
 
     USB_CONTROLLER_STATE *State = &STM32F4_UsbClient_ControllerState[controller].state;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (State == nullptr)
         return false;
@@ -1469,7 +1465,7 @@ bool UsbClient_Driver::Uninitialize(int controller) {
     if (State == nullptr)
         return false;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     STM32F4_UsbClient_Uninitialize(controller);
 
@@ -1604,7 +1600,7 @@ bool UsbClient_Driver::CloseStream(int controller, int usbStream) {
         return false;
 
     int endpoint;
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     // Close the Rx stream
     endpoint = State->streams[usbStream].RxEP;
@@ -1658,7 +1654,7 @@ int UsbClient_Driver::Write(int controller, int usbStream, const char* Data, siz
         return -1;
     }
     else {
-        GLOBAL_LOCK(irq);
+        DISABLE_INTERRUPTS_SCOPED(irq);
 
         const char*   ptr = Data;
         uint32_t        count = size;
@@ -1782,7 +1778,7 @@ int UsbClient_Driver::Read(int controller, int usbStream, char* Data, size_t siz
     }
 
     {
-        GLOBAL_LOCK(irq);
+        DISABLE_INTERRUPTS_SCOPED(irq);
 
         USB_PACKET64* Packet64 = nullptr;
         uint8_t*        ptr = (uint8_t*)Data;
@@ -1872,7 +1868,7 @@ bool UsbClient_Driver::Flush(int controller, int usbStream) {
 }
 
 uint32_t UsbClient_Driver::SetEvent(int controller, uint32_t Event) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     USB_CONTROLLER_STATE *State = &STM32F4_UsbClient_ControllerState[controller].state;
 
@@ -1892,7 +1888,7 @@ uint32_t UsbClient_Driver::SetEvent(int controller, uint32_t Event) {
 }
 
 uint32_t UsbClient_Driver::ClearEvent(int controller, uint32_t Event) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     USB_CONTROLLER_STATE *State = &STM32F4_UsbClient_ControllerState[controller].state;
 
@@ -1907,7 +1903,7 @@ uint32_t UsbClient_Driver::ClearEvent(int controller, uint32_t Event) {
 }
 
 void USB_ClearQueues(USB_CONTROLLER_STATE *State, bool ClrRxQueue, bool ClrTxQueue) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (ClrRxQueue) {
         for (int endpoint = 0; endpoint < USB_MAX_QUEUES; endpoint++) {
@@ -2466,7 +2462,6 @@ uint8_t STM32F4_UsbClient_ControlCallback(USB_CONTROLLER_STATE* State) {
 }
 
 USB_PACKET64* STM32F4_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* State, int endpoint, bool& DisableRx) {
-    ASSERT_IRQ_MUST_BE_OFF();
     USB_DEBUG_ASSERT(State && (endpoint < USB_MAX_QUEUES));
     USB_DEBUG_ASSERT(State->Queues[endpoint] && !State->IsTxQueue[endpoint]);
 
@@ -2497,7 +2492,6 @@ USB_PACKET64* STM32F4_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* State, int endpo
 }
 
 USB_PACKET64* STM32F4_UsbClient_TxDequeue(USB_CONTROLLER_STATE* State, int endpoint, bool Done) {
-    ASSERT_IRQ_MUST_BE_OFF();
     USB_DEBUG_ASSERT(State && (endpoint < USB_MAX_QUEUES));
     USB_DEBUG_ASSERT(State->Queues[endpoint] && State->IsTxQueue[endpoint]);
 

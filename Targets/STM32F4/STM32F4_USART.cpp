@@ -219,7 +219,7 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
     if (portNum >= TOTAL_UART_CONTROLLERS)
         return TinyCLR_Result::ArgumentInvalid;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     g_UartController[portNum].txBufferCount = 0;
     g_UartController[portNum].txBufferIn = 0;
@@ -381,7 +381,7 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
 }
 
 TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     int32_t portNum = self->Index;
 
@@ -507,7 +507,7 @@ TinyCLR_Result STM32F4_Uart_Read(const TinyCLR_Uart_Provider* self, uint8_t* buf
     int32_t portNum = self->Index;
     size_t i = 0;;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (g_UartController[portNum].isOpened == false)
         return TinyCLR_Result::NotAvailable;
@@ -532,7 +532,7 @@ TinyCLR_Result STM32F4_Uart_Write(const TinyCLR_Uart_Provider* self, const uint8
     int32_t portNum = self->Index;
     int32_t i = 0;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (g_UartController[portNum].isOpened == false)
         return TinyCLR_Result::NotAvailable;

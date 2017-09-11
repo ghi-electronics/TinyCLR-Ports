@@ -110,7 +110,7 @@ uint64_t STM32F4_Time_MicrosecondsToTicks(const TinyCLR_Time_Provider* self, uin
 }
 
 uint64_t STM32F4_Time_GetCurrentTicks(const TinyCLR_Time_Provider* self) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t tick_spent;
     uint32_t reg = SysTick->CTRL;
@@ -138,7 +138,7 @@ uint64_t STM32F4_Time_GetCurrentTicks(const TinyCLR_Time_Provider* self) {
 TinyCLR_Result STM32F4_Time_SetCompare(const TinyCLR_Time_Provider* self, uint64_t processorTicks) {
     uint64_t ticks;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     ticks = STM32F4_Time_GetCurrentTicks(self);
 
@@ -211,7 +211,7 @@ TinyCLR_Result STM32F4_Time_SetCompareCallback(const TinyCLR_Time_Provider* self
 }
 
 void STM32F4_Time_DelayNoInterrupt(const TinyCLR_Time_Provider* self, uint64_t microseconds) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint64_t current = STM32F4_Time_GetCurrentTicks(self);
     uint64_t maxDiff = STM32F4_Time_MicrosecondsToTicks(self, microseconds);

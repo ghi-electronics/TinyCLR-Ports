@@ -88,7 +88,7 @@ void STM32F4_Gpio_ISR(int num)  // 0 <= num <= 15
 {
     INTERRUPT_START
 
-        GLOBAL_LOCK(x);
+        DISABLE_INTERRUPTS_SCOPED(irq);
 
     bool executeIsr = true;
 
@@ -173,7 +173,7 @@ TinyCLR_Result STM32F4_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* 
 
     STM32F4_Int_State* state = &g_int_state[num];
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (ISR) {
         if ((SYSCFG->EXTICR[idx] & mask) != config) {
@@ -269,7 +269,7 @@ bool STM32F4_Gpio_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode portMode, STM3
     speed <<= shift;
 
     // Write to register
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     port->MODER = port->MODER & ~mask | mode;
     port->PUPDR = port->PUPDR & ~mask | pullDir;
@@ -323,7 +323,7 @@ TinyCLR_Result STM32F4_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t pin
 }
 
 TinyCLR_Result STM32F4_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t pin) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
         return TinyCLR_Result::ArgumentOutOfRange;
@@ -340,7 +340,7 @@ TinyCLR_Result STM32F4_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_
 
 TinyCLR_Result STM32F4_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t pin) {
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
         return TinyCLR_Result::ArgumentOutOfRange;

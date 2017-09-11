@@ -12,29 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef _DEVICE_G80_H_
-#define _DEVICE_G80_H_
-
-#define PLATFORM_ARM_DEFINED
-
-// Macro
-#define GLOBAL_LOCK(x)             STM32F4_SmartPtr_IRQ x
-#define DISABLE_INTERRUPTS()       STM32F4_SmartPtr_IRQ::ForceDisabled()
-#define ENABLE_INTERRUPTS()        STM32F4_SmartPtr_IRQ::ForceEnabled()
-#define INTERRUPTS_ENABLED_STATE() STM32F4_SmartPtr_IRQ::GetState()
-#define GLOBAL_LOCK_SOCKETS(x)     STM32F4_SmartPtr_IRQ x
-
-#if defined(_DEBUG)
-#define ASSERT(x)                  while (!x)
-#define ASSERT_IRQ_MUST_BE_OFF()   ASSERT(!STM32F4_SmartPtr_IRQ::GetState())
-#define ASSERT_IRQ_MUST_BE_ON()    ASSERT( STM32F4_SmartPtr_IRQ::GetState())
-#else
-#define ASSERT_IRQ_MUST_BE_OFF()
-#define ASSERT_IRQ_MUST_BE_ON()
-#endif
-
-#define INTERRUPT_START         STM32F4_Interrupt_Started();
-#define INTERRUPT_END           STM32F4_Interrupt_Ended();
+#pragma once
 
 // Device
 #define HAL_SYSTEM_NAME "G80"
@@ -171,5 +149,3 @@
 #define TARGET STM32F4
 
 #include <STM32F4.h>
-
-#endif
