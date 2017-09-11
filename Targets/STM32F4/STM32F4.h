@@ -87,7 +87,8 @@ enum class STM32F4_Gpio_AlternateFunction : uint8_t {
     AF12 = 12,
     AF13 = 12,
     AF14 = 14,
-    AF15 = 15
+    AF15 = 15,
+    None = 0xFF
 };
 
 enum class STM32F4_Gpio_OutputType : uint8_t {
@@ -305,6 +306,7 @@ TinyCLR_Gpio_PinValue STM32F4_Startup_GetLModeUsbState();
 
 #define MAKE_PIN(port, pin) CONCAT(GPIO_PORT_, port) * 16 + pin
 #define PIN_NONE 0xFFFFFFFF
+#define AF_NONE STM32F4_Gpio_AlternateFunction::None
 #define GPIO_PORT_A  0
 #define GPIO_PORT_B  1
 #define GPIO_PORT_C  2
