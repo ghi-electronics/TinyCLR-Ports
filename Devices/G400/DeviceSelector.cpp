@@ -90,14 +90,14 @@ int32_t AT91_Adc_GetPin(int32_t channel) {
     return  g_AT91_Adc_Pins[channel];
 }
 
-AT91_Gpio_PeripheralSelection AT91_Adc_GetPinFunction(int32_t channel) {
+AT91_Gpio_PeripheralSelection AT91_Adc_GetPeripheralSelection(int32_t channel) {
     return  g_AT91_ADC_ALT_MODE[channel];
 }
 
 //PWM
-static PwmController g_AT91_PWM[TOTAL_PWM_CONTROLLER];
+static PwmController g_AT91_PWM[] = AT91_PWM;
 
 PwmController* AT91_Pwm_GetControllers() {
-    return (PwmController*)nullptr;
+    return (PwmController*)&g_AT91_PWM;
 }
 

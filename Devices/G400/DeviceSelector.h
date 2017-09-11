@@ -81,9 +81,9 @@
 #define USB_FRIENDLY_NAME               USB_PRODUCT_NAME
 
 // ADC
-#define TOTAL_ADC_CONTROLLERS               8
-#define AT91_ADC_PINS                     {_P(A,23),_P(A,24),_P(A,25),_P(A,26),_P_NONE_,_P(B,31),_P(A,12),_P(A,13)}
-#define AT91_ADC_ALT_MODE                 {AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA}
+#define TOTAL_ADC_CONTROLLERS             12
+#define AT91_ADC_PINS                     {_P(B,11),_P(B,12),_P(B,13),_P(B,14),_P(B,15),_P(B,16),_P(A,17),_P(B,6),_P(B,7),_P(B,8),_P(B,9),_P(B,10)}
+#define AT91_ADC_ALT_MODE                 {AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD}
 
 // DAC
 #define TOTAL_DAC_CONTROLLERS                1
@@ -91,18 +91,18 @@
 #define AT91_DAC_ALT_MODE                 {AT91_Gpio_PeripheralSelection::PeripheralA}
 
 // I2C
-#define AT91_I2C_PCLK_KHZ                 SYSTEM_CLOCK_HZ/1000
-#define AT91_I2C_SCL_PIN                  _P(A,28)
-#define AT91_I2C_SDA_PIN                  _P(A,27)
+#define AT91_I2C_SCL_PIN                  _P(A,31)
+#define AT91_I2C_SDA_PIN                  _P(A,30)
 #define AT91_I2C_SCL_ALT_MODE             AT91_Gpio_PeripheralSelection::PeripheralA
 #define AT91_I2C_SDA_ALT_MODE             AT91_Gpio_PeripheralSelection::PeripheralA
 
 // PWM
-#define AT91_PWM_PCLK                     (SYSTEM_CLOCK_HZ)
-#define MAX_PWM_PER_CONTROLLER              6
-#define TOTAL_PWM_CONTROLLER                2
-#define AT91_PWM                           {   { 0 ,  {0x0, 0x0, 0x0, 0x0, 0x0, 0x0} , {0x0, 0x1, 0x2, 0x3, 0x4, 0x5 } , { _P(D, 16), _P(D, 17), _P_NONE_ , _P_NONE_ , _P_NONE_ , _P_NONE_},   {AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA},  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {PWM0MR1, PWM0MR2, PWM0MR3, PWM0MR4, PWM0MR5, PWM0MR6 }, { false, false, false, false, false, false }, 0.0, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}  } ,\
-                                               { 1 ,  {0x1, 0x1, 0x1, 0x1, 0x1, 0x1} , {0x0, 0x1, 0x2, 0x3, 0x4, 0x5 } , { _P(D, 24), _P_NONE_ , _P(D, 26), _P(D, 27), _P_NONE_ , _P(D, 29)},  {AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA},  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {PWM1MR1, PWM1MR2, PWM1MR3, PWM1MR4, PWM1MR5, PWM1MR6 }, { false, false, false, false, false, false }, 0.0, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}  } }
+#define MAX_PWM_PER_CONTROLLER            1
+#define TOTAL_PWM_CONTROLLER              4
+#define AT91_PWM                          { {PWM_CHANNEL_MODE_REGISTER(0), PWM_DUTY_REGISTER(0), PWM_CHANNEL_UPDATE_REGISTER(0), {_P(C,18)}, {AT91_Gpio_PeripheralSelection::PeripheralC}, { false }, 0.0, {0.0} } ,\
+                                            {PWM_CHANNEL_MODE_REGISTER(1), PWM_DUTY_REGISTER(1), PWM_CHANNEL_UPDATE_REGISTER(1), {_P(C,19)}, {AT91_Gpio_PeripheralSelection::PeripheralC}, { false }, 0.0, {0.0} } ,\
+                                            {PWM_CHANNEL_MODE_REGISTER(2), PWM_DUTY_REGISTER(2), PWM_CHANNEL_UPDATE_REGISTER(2), {_P(C,20)}, {AT91_Gpio_PeripheralSelection::PeripheralC}, { false }, 0.0, {0.0} } ,\
+                                            {PWM_CHANNEL_MODE_REGISTER(3), PWM_DUTY_REGISTER(3), PWM_CHANNEL_UPDATE_REGISTER(3), {_P(C,21)}, {AT91_Gpio_PeripheralSelection::PeripheralC}, { false }, 0.0, {0.0} } }
 // SPI
 #define TOTAL_SPI_CONTROLLERS              2
 #define AT91_SPI_MISO_PINS                {_P(A,11),_P(A,21)}
@@ -153,7 +153,7 @@
 //#define INCLUDE_ADC
 //#define INCLUDE_DAC
 #define INCLUDE_GPIO
-//#define INCLUDE_I2C
+#define INCLUDE_I2C
 #define INCLUDE_PWM
 #define INCLUDE_SPI
 #define INCLUDE_UART
