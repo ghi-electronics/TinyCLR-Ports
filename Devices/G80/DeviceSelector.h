@@ -44,8 +44,8 @@
 
 #define INCLUDE_SPI
 #define STM32F4_SPI_SCLK_PINS { { PIN(B, 3), AF(5) }, { PIN(B, 10), AF(5) } }
-#define STM32F4_SPI_MISO_PINS { { PIN(B, 4), AF(5) }, { PIN(C, 2), AF(5) } }
-#define STM32F4_SPI_MOSI_PINS { { PIN(B, 5), AF(5) }, { PIN(C, 3), AF(5) } }
+#define STM32F4_SPI_MISO_PINS { { PIN(B, 4), AF(5) }, { PIN(C,  2), AF(5) } }
+#define STM32F4_SPI_MOSI_PINS { { PIN(B, 5), AF(5) }, { PIN(C,  3), AF(5) } }
 
 #define INCLUDE_PWM
 #define STM32F4_PWM_PINS {\
@@ -57,21 +57,21 @@
                              { { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } },\
                              { { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } },\
                              { { PIN(C,  6), AF(3)   }, { PIN(C,  7), AF(3)   }, { PIN(C,  8), AF(3)   }, { PIN(C,  9), AF(3)   } },\
-                             { { PIN(A,  2), AF(3)   }, { PIN(A,  3), AF(3)   }, { PIN_NONE  , AF(3)   }, { PIN_NONE  , AF(3)   } },\
-                             { { PIN(B,  8), AF(3)   }, { PIN_NONE  , AF(3)   }, { PIN_NONE  , AF(3)   }, { PIN_NONE  , AF(3)   } },\
-                             { { PIN(B,  9), AF(3)   }, { PIN_NONE  , AF(3)   }, { PIN_NONE  , AF(3)   }, { PIN_NONE  , AF(3)   } },\
+                             { { PIN(A,  2), AF(3)   }, { PIN(A,  3), AF(3)   }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } },\
+                             { { PIN(B,  8), AF(3)   }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } },\
+                             { { PIN(B,  9), AF(3)   }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } },\
                              { { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } },\
-                             { { PIN(A,  6), AF(9)   }, { PIN_NONE  , AF(9)   }, { PIN_NONE  , AF(9)   }, { PIN_NONE  , AF(9)   } },\
-                             { { PIN(A,  7), AF(9)   }, { PIN_NONE  , AF(9)   }, { PIN_NONE  , AF(9)   }, { PIN_NONE  , AF(9)   } }\
+                             { { PIN(A,  6), AF(9)   }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } },\
+                             { { PIN(A,  7), AF(9)   }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } }\
                          }
 
 #define INCLUDE_UART
 #define STM32F4_UART_TX_BUFFER_SIZE 256
 #define STM32F4_UART_RX_BUFFER_SIZE 512
-#define STM32F4_UART_TX_PINS { { PIN(A, 9), AF(7) }, { PIN(D, 5), AF(7) }, { PIN(D, 8), AF(7) }, { PIN(A, 0), AF(8) } }
-#define STM32F4_UART_RX_PINS { { PIN(A, 10), AF(7) }, { PIN(D, 6), AF(7) }, { PIN(D, 9), AF(7) }, { PIN(A, 1), AF(8) } }
-#define STM32F4_UART_CTS_PINS { { PIN_NONE, AF_NONE }, { PIN(D, 3), AF(7) }, { PIN(D, 11), AF(7) }, { PIN_NONE, AF_NONE } }
-#define STM32F4_UART_RTS_PINS { { PIN_NONE, AF_NONE }, { PIN(D, 4), AF(7) }, { PIN(D, 12), AF(7) }, { PIN_NONE, AF_NONE } }
+#define STM32F4_UART_TX_PINS  { { PIN(A,  9), AF(7)   }, { PIN(D, 5), AF(7) }, { PIN(D,  8), AF(7) }, { PIN(A, 0), AF(8)   } }
+#define STM32F4_UART_RX_PINS  { { PIN(A, 10), AF(7)   }, { PIN(D, 6), AF(7) }, { PIN(D,  9), AF(7) }, { PIN(A, 1), AF(8)   } }
+#define STM32F4_UART_CTS_PINS { { PIN_NONE  , AF_NONE }, { PIN(D, 3), AF(7) }, { PIN(D, 11), AF(7) }, { PIN_NONE , AF_NONE } }
+#define STM32F4_UART_RTS_PINS { { PIN_NONE  , AF_NONE }, { PIN(D, 4), AF(7) }, { PIN(D, 12), AF(7) }, { PIN_NONE , AF_NONE } }
 
 
 
