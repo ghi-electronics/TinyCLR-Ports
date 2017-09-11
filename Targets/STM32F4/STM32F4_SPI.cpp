@@ -449,7 +449,7 @@ TinyCLR_Result STM32F4_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, i
     g_SpiController[controller].DataBitLength = dataBitLength;
     g_SpiController[controller].Mode = mode;
 
-    if (g_SpiController[controller].ChipSelectLine == GPIO_PIN_NONE) // For case no need CS. CS always high
+    if (g_SpiController[controller].ChipSelectLine == PIN_NONE) // For case no need CS. CS always high
         return TinyCLR_Result::Success;
 
     if (STM32F4_Gpio_OpenPin(g_SpiController[controller].ChipSelectLine))
@@ -468,7 +468,7 @@ TinyCLR_Result STM32F4_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
     int32_t misoPin = g_STM32F4_Spi_Miso_Pins[controller];
     int32_t mosiPin = g_STM32F4_Spi_Mosi_Pins[controller];
 
-    g_SpiController[controller].ChipSelectLine = GPIO_PIN_NONE;
+    g_SpiController[controller].ChipSelectLine = PIN_NONE;
 
     // Check each pin single time make sure once fail not effect to other pins
     if (STM32F4_Gpio_OpenPin(clkPin) && STM32F4_Gpio_OpenPin(misoPin) && STM32F4_Gpio_OpenPin(mosiPin))
@@ -572,7 +572,7 @@ void STM32F4_Spi_Reset() {
 
         STM32F4_Spi_Release(spiProviders[controller]);
 
-        if (g_SpiController[controller].ChipSelectLine != GPIO_PIN_NONE)
+        if (g_SpiController[controller].ChipSelectLine != PIN_NONE)
             STM32F4_Gpio_ClosePin(g_SpiController[controller].ChipSelectLine);
     }
 }

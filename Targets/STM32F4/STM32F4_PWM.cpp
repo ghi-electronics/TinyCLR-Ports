@@ -297,7 +297,7 @@ int32_t STM32F4_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self) {
     int chnlCnt = 0;
 
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-        if (pwmController(self->Index).gpioPin[p] != GPIO_PIN_NONE) {
+        if (pwmController(self->Index).gpioPin[p] != PIN_NONE) {
             chnlCnt++;
         }
     }
@@ -380,7 +380,7 @@ TinyCLR_Result STM32F4_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self,
 
     // Update channel if frequency had different
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++)
-        if (pwmController(self->Index).gpioPin[p] != GPIO_PIN_NONE)
+        if (pwmController(self->Index).gpioPin[p] != PIN_NONE)
             if (STM32F4_Pwm_SetPulseParameters(self, p, pwmController(self->Index).dutyCycle[p], pwmController(self->Index).invert[p]) != TinyCLR_Result::Success)
                 return TinyCLR_Result::InvalidOperation;
 
@@ -410,7 +410,7 @@ void STM32F4_Pwm_Reset() {
         STM32F4_Pwm_ResetController(controller);
 
         for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-            if (pwmController(controller).gpioPin[p] != GPIO_PIN_NONE) {
+            if (pwmController(controller).gpioPin[p] != PIN_NONE) {
                 STM32F4_Pwm_DisablePin(pwmProviders[controller], p);
                 STM32F4_Pwm_ReleasePin(pwmProviders[controller], p);
             }
@@ -420,7 +420,7 @@ void STM32F4_Pwm_Reset() {
 
 void STM32F4_Pwm_ResetController(int32_t controller) {
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-        if (pwmController(controller).gpioPin[p] != GPIO_PIN_NONE) {
+        if (pwmController(controller).gpioPin[p] != PIN_NONE) {
             pwmController(controller).dutyCycle[p] = 0;
             pwmController(controller).invert[p] = false;
         }

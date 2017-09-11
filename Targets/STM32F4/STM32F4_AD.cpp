@@ -87,11 +87,11 @@ TinyCLR_Result STM32F4_Adc_Release(const TinyCLR_Adc_Provider* self) {
 
 int32_t STM32F4_Adc_GetPinForChannel(int32_t channel) {
     // return GPIO pin
-    // for internally connected channels this is GPIO_PIN_NONE as these don't take any GPIO pins
+    // for internally connected channels this is PIN_NONE as these don't take any GPIO pins
     int chNum = g_STM32F4_AD_Channel[channel];
 
     if (chNum >= STM32F4_AD_NUM)
-        return GPIO_PIN_NONE;
+        return PIN_NONE;
 
     for (int i = 0; i < STM32F4_AD_NUM; i++) {
         if (g_STM32F4_AD_Channel[i] == chNum) {
@@ -100,7 +100,7 @@ int32_t STM32F4_Adc_GetPinForChannel(int32_t channel) {
     }
 
     // channel not available
-    return GPIO_PIN_NONE;
+    return PIN_NONE;
 }
 
 TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t channel) {

@@ -221,7 +221,7 @@ bool STM32F4_Gpio_DisableInterrupt(uint32_t pin) {
 }
 
 bool STM32F4_Gpio_OpenPin(int32_t pin) {
-    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
+    if (pin >= STM32F4_Gpio_MaxPins || pin == PIN_NONE)
         return false;
 
     if (g_pinReserved[pin])
@@ -233,7 +233,7 @@ bool STM32F4_Gpio_OpenPin(int32_t pin) {
 }
 
 bool STM32F4_Gpio_ClosePin(int32_t pin) {
-    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
+    if (pin >= STM32F4_Gpio_MaxPins || pin == PIN_NONE)
         return false;
 
     g_pinReserved[pin] = false;
@@ -243,7 +243,7 @@ bool STM32F4_Gpio_ClosePin(int32_t pin) {
 }
 
 bool STM32F4_Gpio_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode portMode, STM32F4_Gpio_OutputType outputType, STM32F4_Gpio_OutputSpeed outputSpeed, STM32F4_Gpio_PullDirection pullDirection, STM32F4_Gpio_AlternateFunction alternateFunction) {
-    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
+    if (pin >= STM32F4_Gpio_MaxPins || pin == PIN_NONE)
         return false;
 
     GPIO_TypeDef* port = Port(pin >> 4);
@@ -303,7 +303,7 @@ void STM32F4_Gpio_WritePin(int32_t pin, bool value) {
 }
 
 TinyCLR_Result STM32F4_Gpio_Read(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue& value) {
-    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
+    if (pin >= STM32F4_Gpio_MaxPins || pin == PIN_NONE)
         return TinyCLR_Result::ArgumentOutOfRange;
 
     value = STM32F4_Gpio_ReadPin(pin) ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low;
@@ -312,7 +312,7 @@ TinyCLR_Result STM32F4_Gpio_Read(const TinyCLR_Gpio_Provider* self, int32_t pin,
 }
 
 TinyCLR_Result STM32F4_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue value) {
-    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
+    if (pin >= STM32F4_Gpio_MaxPins || pin == PIN_NONE)
         return TinyCLR_Result::ArgumentOutOfRange;
 
     STM32F4_Gpio_WritePin(pin, value == TinyCLR_Gpio_PinValue::High ? true : false);
@@ -323,7 +323,7 @@ TinyCLR_Result STM32F4_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t pin
 TinyCLR_Result STM32F4_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t pin) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
+    if (pin >= STM32F4_Gpio_MaxPins || pin == PIN_NONE)
         return TinyCLR_Result::ArgumentOutOfRange;
 
     if (g_pinReserved[pin] == STM32F4_Gpio_PinReserved) {
@@ -340,7 +340,7 @@ TinyCLR_Result STM32F4_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
+    if (pin >= STM32F4_Gpio_MaxPins || pin == PIN_NONE)
         return TinyCLR_Result::ArgumentOutOfRange;
 
     STM32F4_Gpio_ClosePin(pin);
@@ -350,7 +350,7 @@ TinyCLR_Result STM32F4_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_
 }
 
 bool STM32F4_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode) {
-    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
+    if (pin >= STM32F4_Gpio_MaxPins || pin == PIN_NONE)
         return false;
 
     switch (mode) {
@@ -369,7 +369,7 @@ TinyCLR_Gpio_PinDriveMode STM32F4_Gpio_GetDriveMode(const TinyCLR_Gpio_Provider*
 }
 
 TinyCLR_Result STM32F4_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode driveMode) {
-    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
+    if (pin >= STM32F4_Gpio_MaxPins || pin == PIN_NONE)
         return TinyCLR_Result::ArgumentOutOfRange;
 
     switch (driveMode) {
@@ -413,7 +413,7 @@ int32_t STM32F4_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32
 }
 
 TinyCLR_Result STM32F4_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, int32_t debounceTime) {
-    if (pin >= STM32F4_Gpio_MaxPins || pin == GPIO_PIN_NONE)
+    if (pin >= STM32F4_Gpio_MaxPins || pin == PIN_NONE)
         return TinyCLR_Result::ArgumentOutOfRange;
 
     if (debounceTime > 0 && debounceTime < 10000) {
