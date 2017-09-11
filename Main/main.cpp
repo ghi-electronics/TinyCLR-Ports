@@ -17,7 +17,7 @@
 
 #define EXPAND3(a, b) a##b
 #define EXPAND2(a, b) EXPAND3(a, b)
-#define EXPAND(a) EXPAND2(TARGET, a)
+#define EXPAND(a) EXPAND2(DEVICE_TARGET, a)
 
 void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 #ifdef INCLUDE_ADC
@@ -89,9 +89,9 @@ int main() {
 
     TinyCLR_Startup_AddHeapRegion(heapStart, heapLength);
 
-    TinyCLR_Startup_SetDeviceInformation(HAL_SYSTEM_NAME, OEM_STRING, (OEM_VERSION_MAJOR << 16) | (OEM_VERSION_MINOR << 8) | (OEM_VERSION_PATCH << 0));
+    TinyCLR_Startup_SetDeviceInformation(DEVICE_NAME, DEVICE_MANUFACTURER, DEVICE_VERSION);
 
-#if defined(INCLUDE_UART) && defined (INCLUDE_USBCLIENT) && defined (LMODE_PIN)
+#if defined(INCLUDE_UART) && defined (INCLUDE_USBCLIENT) && defined (MODE_PIN)
     {
         TinyCLR_Gpio_PinValue value;
         auto gpio = static_cast<const TinyCLR_Gpio_Provider*>(EXPAND(_Gpio_GetApi)()->Implementation);

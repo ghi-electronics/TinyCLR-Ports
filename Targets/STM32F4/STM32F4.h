@@ -298,6 +298,16 @@ TinyCLR_Gpio_PinValue STM32F4_Startup_GetLModeUsbState();
 #define DISABLE_INTERRUPTS_SCOPED(name) STM32F4_SmartPtr_IRQ name
 #define INTERRUPT_STARTED_SCOPED(name) STM32F4_SmartPtr_Interrupt name
 
+#define GPIO_PIN_NONE 0xFFFFFFFF
+#define PORT_PIN(port,pin) (((int)port)*16 + (pin))
+#define MAKE_PIN(port, pin) PORT_PIN(GPIO_PORT##port, pin)
+#define PIN_NONE GPIO_PIN_NONE
+#define GPIO_PORTA  0
+#define GPIO_PORTB  1
+#define GPIO_PORTC  2
+#define GPIO_PORTD  3
+#define GPIO_PORTE  4
+
 #include "inc/stm32f4xx.h"
 #include "core_cm4.h"
 

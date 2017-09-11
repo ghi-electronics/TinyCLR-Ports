@@ -210,10 +210,8 @@
 
 extern "C" {
     void __section("SectionForBootstrapOperations") SystemInit() {
-#ifdef STM32F4XX
         // enable FPU coprocessors (CP10, CP11)
         SCB->CPACR |= 0x3 << 2 * 10 | 0x3 << 2 * 11; // full access
-#endif
 
 #if DEBUG || _DEBUG
     // configure jtag debug support
@@ -237,7 +235,6 @@ extern "C" {
 #endif
 
         // Set flash access time and enable caches & prefetch buffer
-#ifdef STM32F4XX
     // The prefetch buffer must not be enabled on rev A devices.
     // Rev A cannot be read from revision field (another rev A error!).
     // The wrong device field (411=F2) must be used instead!
@@ -247,9 +244,6 @@ extern "C" {
         else {
             FLASH->ACR = FLASH_ACR_PRFTEN | FLASH_ACR_ICEN | FLASH_ACR_DCEN | FLASH_ACR_LATENCY_BITS;
         }
-#else
-        FLASH->ACR = FLASH_ACR_PRFTEN | FLASH_ACR_ICEN | FLASH_ACR_DCEN | FLASH_ACR_LATENCY_BITS;
-#endif
 
         // setup PLL
         RCC->PLLCFGR = RCC_PLLCFGR_PLL_BITS; // pll multipliers
@@ -402,10 +396,10 @@ void STM32F4_Startup_InitializeRegions() {
 }
 
 int32_t STM32F4_Startup_GetLModePin() {
-    return LMODE_PIN;
+    return MODE_PIN;
 }
 
 TinyCLR_Gpio_PinValue STM32F4_Startup_GetLModeUsbState() {
-    return LMODE_USB_STATE;
+    return MODE_USB_STATE;
 }
 

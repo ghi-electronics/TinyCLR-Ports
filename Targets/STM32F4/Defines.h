@@ -24,8 +24,8 @@
 #define ONE_MHZ                             1000000
 #define TEN_MHZ                             (10 * ONE_MHZ)
 
-#define GPIO_PIN_NONE                       0xFFFFFFFF
-#define GPIO_ALT_MODE(x)                    x
+#define CONCAT2(a, b) a##b
+#define CONCAT(a, b) CONCAT2(a, b)
 
 #ifndef __max
 #define __max(a,b)  (((a) > (b)) ? (a) : (b))

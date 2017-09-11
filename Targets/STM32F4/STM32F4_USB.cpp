@@ -1280,9 +1280,9 @@ TinyCLR_UsbClient_DeviceDescriptor deviceDescriptor = {
     0,                                  // Device class (none)
     0,                                  // Device subclass (none)
     0,                                  // Device protocol (none)
-    MAX_EP0_SIZE,                        // Endpoint 0 size
-    USB_VENDOR_ID,                          // Vendor ID
-    USB_PRODUCT_ID,                         // Product ID
+    MAX_EP0_SIZE,                       // Endpoint 0 size
+    USB_DEBUGGER_VENDOR_ID,             // Vendor ID
+    USB_DEBUGGER_PRODUCT_ID,            // Product ID
     DEVICE_RELEASE_VERSION,             // Product version 1.00 (BCD)
     MANUFACTURER_NAME_INDEX,            // Manufacturer name string index
     PRODUCT_NAME_INDEX,                 // Product name string index
@@ -1347,7 +1347,7 @@ TinyCLR_UsbClient_StringDescriptorHeader stringManufacturerDescriptorHeader = {
         },
         USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
         USB_STRING_DESCRIPTOR_TYPE,
-        USB_MANUFACTURER_NAME
+        CONCAT(L, DEVICE_MANUFACTURER)
 };
 
 // Product name string descriptor header
@@ -1359,7 +1359,7 @@ TinyCLR_UsbClient_StringDescriptorHeader stringProductNameDescriptorHeader = {
     },
     USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
     USB_STRING_DESCRIPTOR_TYPE,
-    USB_PRODUCT_NAME
+    CONCAT(L, DEVICE_NAME)
 };
 
 // String 4 descriptor header (display name)
@@ -1371,7 +1371,7 @@ TinyCLR_UsbClient_StringDescriptorHeader stringDisplayNameDescriptorHeader = {
     },
     USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
     USB_STRING_DESCRIPTOR_TYPE,
-    USB_DISPLAY_NAME
+    CONCAT(L, DEVICE_NAME)
 };
 
 // String 5 descriptor header (friendly name)
@@ -1383,7 +1383,7 @@ TinyCLR_UsbClient_StringDescriptorHeader stringFriendlyNameDescriptorHeader = {
     },
     USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
     USB_STRING_DESCRIPTOR_TYPE,
-    USB_FRIENDLY_NAME
+    CONCAT(L, DEVICE_NAME)
 };
 
 // OS Descriptor string for Extended OS Compat ID
