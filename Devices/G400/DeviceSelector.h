@@ -158,7 +158,7 @@
 #define INCLUDE_SPI
 #define INCLUDE_UART
 #define INCLUDE_USBCLIENT
-//#define INCLUDE_DISPLAY
+#define INCLUDE_DISPLAY
 
 #define TARGET AT91
 
