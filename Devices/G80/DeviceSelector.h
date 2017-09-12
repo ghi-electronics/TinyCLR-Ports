@@ -38,14 +38,13 @@
 #define RAM_BOOTLOADER_HOLD_ADDRESS 0x2002FFF8
 #define RAM_BOOTLOADER_HOLD_VALUE 0x37D56D4A
 
+#define INCLUDE_ADC
+#define INCLUDE_DAC
+#define INCLUDE_GPIO
+
 #define INCLUDE_I2C
 #define STM32F4_I2C_SCL_PINS { { PIN(B, 6), AF(4) } }
 #define STM32F4_I2C_SDA_PINS { { PIN(B, 7), AF(4) } }
-
-#define INCLUDE_SPI
-#define STM32F4_SPI_SCLK_PINS { { PIN(B, 3), AF(5) }, { PIN(B, 10), AF(5) } }
-#define STM32F4_SPI_MISO_PINS { { PIN(B, 4), AF(5) }, { PIN(C,  2), AF(5) } }
-#define STM32F4_SPI_MOSI_PINS { { PIN(B, 5), AF(5) }, { PIN(C,  3), AF(5) } }
 
 #define INCLUDE_PWM
 #define STM32F4_PWM_PINS {\
@@ -65,6 +64,11 @@
                              { { PIN(A,  7), AF(9)   }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } }\
                          }
 
+#define INCLUDE_SPI
+#define STM32F4_SPI_SCLK_PINS { { PIN(B, 3), AF(5) }, { PIN(B, 10), AF(5) } }
+#define STM32F4_SPI_MISO_PINS { { PIN(B, 4), AF(5) }, { PIN(C,  2), AF(5) } }
+#define STM32F4_SPI_MOSI_PINS { { PIN(B, 5), AF(5) }, { PIN(C,  3), AF(5) } }
+
 #define INCLUDE_UART
 #define STM32F4_UART_TX_BUFFER_SIZE 256
 #define STM32F4_UART_RX_BUFFER_SIZE 512
@@ -82,17 +86,11 @@
 
 
 
-#define INCLUDE_ADC
-#define INCLUDE_DAC
-#define INCLUDE_GPIO
 
 // GPIO
 #define TOTAL_GPIO_PORT                 (GPIO_PORT_E + 1)
 #define TOTAL_GPIO_PINS                 (TOTAL_GPIO_PORT*16)
 
-// ADC
-#define STM32F4_ADC                     1
-#define STM32F4_AD_CHANNELS             { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
 
 
 

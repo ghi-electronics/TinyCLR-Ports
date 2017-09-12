@@ -18,6 +18,8 @@
 
 #define STM32F4_AD_SAMPLE_TIME 2   // sample time = 28 cycles
 
+#define STM32F4_ADC 1
+
 #if STM32F4_ADC == 1
 #define ADCx ADC1
 #define RCC_APB2ENR_ADCxEN RCC_APB2ENR_ADC1EN
@@ -29,7 +31,7 @@
 #elif STM32F4_ADC == 3
 #define ADCx ADC3
 #define RCC_APB2ENR_ADCxEN RCC_APB2ENR_ADC3EN
-#define STM32F4_ADC_PINS {0,1,2,3,86,87,88,89,90,83,32,33,34,35,84,85} // ADC3 pins
+#define STM32F4_ADC_PINS {0,1,2,3,86,87,88,89,90,83,32,33,34,35,84,85,0,0} // ADC3 pins
 #else
 #error wrong STM32F4_ADC value (1 or 3)
 #endif
@@ -37,8 +39,8 @@
 // Channels
 #define STM32F4_ADC_CHANNEL_NONE    0xFF
 
-static const uint8_t g_STM32F4_AD_Channel[] = STM32F4_AD_CHANNELS;
-static const uint8_t g_STM32F4_AD_Pins[] = STM32F4_ADC_PINS;
+static const uint8_t g_STM32F4_AD_Channel[18] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
+static const uint8_t g_STM32F4_AD_Pins[18] = STM32F4_ADC_PINS;
 
 #define STM32F4_AD_NUM SIZEOF_CONST_ARRAY(g_STM32F4_AD_Channel)  // number of channels
 
