@@ -412,7 +412,7 @@ TinyCLR_Result STM32F4_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int3
 }
 
 int32_t STM32F4_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin) {
-    return (int32_t)(g_debounceTicksPin[pin] / (SLOW_CLOCKS_PER_SECOND / 1000)); // ticks -> ms
+    return STM32F4_Time_TicksToTime(nullptr, (uint64_t)(g_debounceTicksPin[pin])) / 10;
 }
 
 TinyCLR_Result STM32F4_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, int32_t debounceTime) {

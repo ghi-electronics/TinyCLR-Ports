@@ -684,7 +684,7 @@ OTG_TypeDef;
 
 // PHY turnaround time
 // (4 AHB clocks + 1 Phy clock in Phy clocks)
-#define STM32F4_USB_TRDT ((4 * 48000000 - 1) / SYSTEM_CYCLE_CLOCK_HZ + 2)
+#define STM32F4_USB_TRDT ((4 * 48000000 - 1) / STM32F4_AHB_CLOCK_HZ + 2)
 
 #define ENDPOINT_INUSED_MASK        0x01
 #define ENDPOINT_DIR_IN_MASK        0x02

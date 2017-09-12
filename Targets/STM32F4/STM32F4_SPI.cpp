@@ -136,12 +136,12 @@ bool STM32F4_Spi_Transaction_Start(int32_t controller) {
     }
 
     // set clock prescaler
-    uint32_t clock = SYSTEM_APB2_CLOCK_HZ / 2000; // SPI1 on APB2
+    uint32_t clock = STM32F4_APB2_CLOCK_HZ / 2000; // SPI1 on APB2
 
     uint32_t clockKhz = g_SpiController[controller].ClockFrequency / 1000;
 
     if (controller > 0 && controller < 3) {
-        clock = SYSTEM_APB1_CLOCK_HZ / 2000; // SPI2/3 on APB1
+        clock = STM32F4_APB1_CLOCK_HZ / 2000; // SPI2/3 on APB1
     }
 
     if (clock > clockKhz << 3) {

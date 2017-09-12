@@ -18,9 +18,10 @@
 
 #define TIMER_IDLE_VALUE  0x0000FFFFFFFFFFFFull
 
+#define SLOW_CLOCKS_PER_SECOND STM32F4_AHB_CLOCK_HZ
 #define SLOW_CLOCKS_TEN_MHZ_GCD           1000000   // GCD(SLOW_CLOCKS_PER_SECOND, 10M)
 #define SLOW_CLOCKS_MILLISECOND_GCD          1000   // GCD(SLOW_CLOCKS_PER_SECOND, 1k)
-#define CLOCK_COMMON_FACTOR               1000000   // GCD(SYSTEM_CLOCK_HZ, 1M)
+#define CLOCK_COMMON_FACTOR               1000000   // GCD(STM32F4_SYSTEM_CLOCK_HZ, 1M)
 #define CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS 3
 
 struct STM32F4_Timer_Driver {
@@ -72,7 +73,7 @@ TinyCLR_Result STM32F4_Time_GetInitialTime(const TinyCLR_Time_Provider* self, in
 }
 
 uint32_t STM32F4_Time_GetSystemClock(const TinyCLR_Time_Provider* self) {
-    return SYSTEM_CLOCK_HZ;
+    return STM32F4_SYSTEM_CLOCK_HZ;
 }
 
 uint32_t STM32F4_Time_GetTicksPerSecond(const TinyCLR_Time_Provider* self) {
@@ -80,7 +81,7 @@ uint32_t STM32F4_Time_GetTicksPerSecond(const TinyCLR_Time_Provider* self) {
 }
 
 uint32_t STM32F4_Time_GetSystemCycleClock(const TinyCLR_Time_Provider* self) {
-    return SYSTEM_CYCLE_CLOCK_HZ;
+    return STM32F4_AHB_CLOCK_HZ;
 }
 
 uint64_t STM32F4_Time_TicksToTime(const TinyCLR_Time_Provider* self, uint64_t ticks) {
@@ -227,7 +228,7 @@ void STM32F4_Time_Delay(const TinyCLR_Time_Provider* self, uint64_t microseconds
 
     // iterations must be signed so that negative iterations will result in the minimum delay
 
-    microseconds *= (SYSTEM_CYCLE_CLOCK_HZ / CLOCK_COMMON_FACTOR);
+    microseconds *= (STM32F4_AHB_CLOCK_HZ / CLOCK_COMMON_FACTOR);
     microseconds /= (ONE_MHZ / CLOCK_COMMON_FACTOR);
 
     // iterations is equal to the number of CPU instruction cycles in the required time minus

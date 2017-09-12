@@ -41,6 +41,13 @@
 #define DEPLOYMENT_SECTOR_ADDRESSES { 0x080C0000, 0x080E0000 }
 #define DEPLOYMENT_SECTOR_SIZES { 0x00020000, 0x00020000 }
 
+#define STM32F4_SYSTEM_CLOCK_HZ 180000000
+#define STM32F4_AHB_CLOCK_HZ 180000000
+#define STM32F4_APB1_CLOCK_HZ 45000000
+#define STM32F4_APB2_CLOCK_HZ 90000000
+#define STM32F4_CRYSTAL_CLOCK_HZ 12000000
+#define STM32F4_SUPPLY_VOLTAGE_MV 3300
+
 #define INCLUDE_ADC
 
 #define INCLUDE_DAC
@@ -95,25 +102,3 @@
 #define STM32F4_USB_DP_PINS { { PIN(A, 12), AF(10) } }
 #define STM32F4_USB_VB_PINS { { PIN(A,  9), AF(10) } }
 #define STM32F4_USB_ID_PINS { { PIN(A, 10), AF(10) } }
-
-
-
-
-// System clock
-#define SYSTEM_CLOCK_HZ                  180000000   // 180 MHz
-#define SYSTEM_CYCLE_CLOCK_HZ            180000000   // 18 MHz
-#define SYSTEM_APB1_CLOCK_HZ              45000000   //  45 MHz
-#define SYSTEM_APB2_CLOCK_HZ              90000000   //  90 MHz
-#define SYSTEM_CRYSTAL_CLOCK_HZ           12000000   // 12 MHz external clock
-#define SUPPLY_VOLTAGE_MV                     3300   // 3.3V supply
-#define CLOCK_COMMON_FACTOR                1000000   // GCD(SYSTEM_CLOCK_HZ, 1M)
-#define SLOW_CLOCKS_PER_SECOND           180000000   // 1 MHz
-#define SLOW_CLOCKS_TEN_MHZ_GCD            1000000   // GCD(SLOW_CLOCKS_PER_SECOND, 10M)
-#define SLOW_CLOCKS_MILLISECOND_GCD           1000   // GCD(SLOW_CLOCKS_PER_SECOND, 1k)
-
-// Memory
-#define FLASH_MEMORY_Base                   0x08000000
-#define FLASH_MEMORY_Size                   0x00100000  // 1 MB
-#define SRAM1_MEMORY_Base                   0x20000000
-#define SRAM1_MEMORY_Size                   0x00030000  // 192 KB
-#define ENABLE_CCM_RAM                      1

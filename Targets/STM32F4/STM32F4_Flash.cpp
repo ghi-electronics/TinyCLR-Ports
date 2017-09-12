@@ -24,10 +24,10 @@ typedef uint16_t CHIP_WORD;
 
 #define FLASH_CR_PSIZE_BITS FLASH_CR_PSIZE_0 // 16 bit programming
 
-#if SUPPLY_VOLTAGE_MV < 2100
+#if STM32F4_SUPPLY_VOLTAGE_MV < 2100
 #error 16 bit Flash programming not allowed for voltages below 2.1V
 #endif
-#if SYSTEM_CYCLE_CLOCK_HZ < ONE_MHZ
+#if STM32F4_AHB_CLOCK_HZ < ONE_MHZ
 #error Flash programming not allowed for HCLK below 1MHz
 #endif
 

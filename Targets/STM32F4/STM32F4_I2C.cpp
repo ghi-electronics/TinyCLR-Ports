@@ -205,10 +205,10 @@ void STM32F4_I2c_StartTransaction() {
     if (I2Cx->CCR != ccr) { // set clock rate and rise time
         uint32_t trise;
         if (ccr & I2C_CCR_FS) { // fast => 0.3ns rise time
-            trise = SYSTEM_APB1_CLOCK_HZ / (1000 * 3333) + 1; // PCLK1 / 3333kHz
+            trise = STM32F4_APB1_CLOCK_HZ / (1000 * 3333) + 1; // PCLK1 / 3333kHz
         }
         else { // slow => 1.0ns rise time
-            trise = SYSTEM_APB1_CLOCK_HZ / (1000 * 1000) + 1; // PCLK1 / 1000kHz
+            trise = STM32F4_APB1_CLOCK_HZ / (1000 * 1000) + 1; // PCLK1 / 1000kHz
         }
         I2Cx->CR1 = 0; // disable peripheral
         I2Cx->CCR = ccr;
@@ -348,11 +348,11 @@ TinyCLR_Result STM32F4_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, i
         return TinyCLR_Result::NotSupported;
 
     if (rateKhz <= 100) { // slow clock
-        ccr = (SYSTEM_APB1_CLOCK_HZ / 1000 / 2 - 1) / rateKhz + 1; // round up
+        ccr = (STM32F4_APB1_CLOCK_HZ / 1000 / 2 - 1) / rateKhz + 1; // round up
         if (ccr > 0xFFF) ccr = 0xFFF; // max divider
     }
     else { // fast clock
-        ccr = (SYSTEM_APB1_CLOCK_HZ / 1000 / 3 - 1) / rateKhz + 1; // round up
+        ccr = (STM32F4_APB1_CLOCK_HZ / 1000 / 3 - 1) / rateKhz + 1; // round up
         ccr |= 0x8000; // set fast mode (duty cycle 1:2)
     }
 
@@ -382,9 +382,9 @@ TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Provider* self) {
     RCC->APB1RSTR = RCC_APB1RSTR_I2CxRST; // reset I2C peripheral
     RCC->APB1RSTR = 0;
 
-    I2Cx->CR2 = SYSTEM_APB1_CLOCK_HZ / 1000000; // APB1 clock in MHz
-    I2Cx->CCR = (SYSTEM_APB1_CLOCK_HZ / 1000 / 2 - 1) / 100 + 1; // 100KHz
-    I2Cx->TRISE = SYSTEM_APB1_CLOCK_HZ / (1000 * 1000) + 1; // 1ns;
+    I2Cx->CR2 = STM32F4_APB1_CLOCK_HZ / 1000000; // APB1 clock in MHz
+    I2Cx->CCR = (STM32F4_APB1_CLOCK_HZ / 1000 / 2 - 1) / 100 + 1; // 100KHz
+    I2Cx->TRISE = STM32F4_APB1_CLOCK_HZ / (1000 * 1000) + 1; // 1ns;
     I2Cx->OAR1 = 0x4000; // init address register
 
     I2Cx->CR1 = I2C_CR1_PE; // enable peripheral

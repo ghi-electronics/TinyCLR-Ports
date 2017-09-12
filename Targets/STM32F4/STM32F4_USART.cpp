@@ -237,20 +237,20 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
     // enable UART clock
     if (portNum == 5) { // COM6 on APB2
         RCC->APB2ENR |= RCC_APB2ENR_USART6EN;
-        clk = SYSTEM_APB2_CLOCK_HZ;
+        clk = STM32F4_APB2_CLOCK_HZ;
     }
     else if (portNum == 0) { // COM1 on APB2
         RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
-        clk = SYSTEM_APB2_CLOCK_HZ;
+        clk = STM32F4_APB2_CLOCK_HZ;
     }
     else if (portNum < 5) { // COM2-5 on APB1
         RCC->APB1ENR |= RCC_APB1ENR_USART2EN >> 1 << portNum;
-        clk = SYSTEM_APB1_CLOCK_HZ;
+        clk = STM32F4_APB1_CLOCK_HZ;
     }
 #if TOTAL_UART_CONTROLLERS > 2
     else { // COM7-8 on APB1
         RCC->APB1ENR |= RCC_APB1ENR_UART7EN >> 6 << portNum;
-        clk = SYSTEM_APB1_CLOCK_HZ;
+        clk = STM32F4_APB1_CLOCK_HZ;
     }
 #endif
     //  baudrate

@@ -17,17 +17,17 @@
 #include "STM32F4.h"
 
 
-#if SYSTEM_APB1_CLOCK_HZ == SYSTEM_CYCLE_CLOCK_HZ
-#define PWM1_CLK_HZ (SYSTEM_APB1_CLOCK_HZ)
+#if STM32F4_APB1_CLOCK_HZ == STM32F4_AHB_CLOCK_HZ
+#define PWM1_CLK_HZ (STM32F4_APB1_CLOCK_HZ)
 #else
-#define PWM1_CLK_HZ (SYSTEM_APB1_CLOCK_HZ * 2)
+#define PWM1_CLK_HZ (STM32F4_APB1_CLOCK_HZ * 2)
 #endif
 #define PWM1_CLK_MHZ (PWM1_CLK_HZ / ONE_MHZ)
 
-#if SYSTEM_APB2_CLOCK_HZ == SYSTEM_CYCLE_CLOCK_HZ
-#define PWM2_CLK_HZ (SYSTEM_APB2_CLOCK_HZ)
+#if STM32F4_APB2_CLOCK_HZ == STM32F4_AHB_CLOCK_HZ
+#define PWM2_CLK_HZ (STM32F4_APB2_CLOCK_HZ)
 #else
-#define PWM2_CLK_HZ (SYSTEM_APB2_CLOCK_HZ * 2)
+#define PWM2_CLK_HZ (STM32F4_APB2_CLOCK_HZ * 2)
 #endif
 #define PWM2_CLK_MHZ (PWM2_CLK_HZ / ONE_MHZ)
 
@@ -317,9 +317,9 @@ double STM32F4_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self) {
     ptr_TIM_TypeDef treg = pwmController(self->Index).timerdef;
 
     if ((uint32_t)treg & 0x10000)
-        return SYSTEM_APB2_CLOCK_HZ; // max can be Systemclock / 2 MHz on some PWM
+        return STM32F4_APB2_CLOCK_HZ; // max can be Systemclock / 2 MHz on some PWM
 
-    return SYSTEM_APB1_CLOCK_HZ; //max can be Systemclock / 4 MHz on some PWM
+    return STM32F4_APB1_CLOCK_HZ; //max can be Systemclock / 4 MHz on some PWM
 }
 
 double STM32F4_Pwm_GetMinFrequency(const TinyCLR_Pwm_Provider* self) {
