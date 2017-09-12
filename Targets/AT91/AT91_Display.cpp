@@ -25,8 +25,7 @@ typedef struct _PALETTEENTRY_LCD {
 } PALETTEENTRY_LCD, *PPALETTEENTRY_LCD;
 
 
-struct AT91SAM9X35_LCDC
-{
+struct AT91SAM9X35_LCDC {
     volatile uint32_t LCDC_LCDCFG0;
     volatile uint32_t LCDC_LCDCFG1;
     volatile uint32_t LCDC_LCDCFG2;
@@ -732,23 +731,20 @@ const PALETTEENTRY_LCD c_rgbPalette[256] =
 #define SIDSAFB_DMA_BURST_LEN	16
 #define SIDSAFB_CRST_VAL        0xc8   // 0xda
 
-typedef struct _LCDCDescriptor
-{
+typedef struct _LCDCDescriptor {
     uint32_t addr;
     uint32_t ctrl;
     uint32_t next;
 } LCDCDescriptor;
 
 /** CULT information */
-typedef struct _CLUTInfo
-{
+typedef struct _CLUTInfo {
     uint8_t bpp;
     uint8_t nbColors;
 } CLUTInfo;
 
 /** LCDC General Layer information */
-typedef struct _Layer
-{
+typedef struct _Layer {
     void* pBuffer;
     CLUTInfo clut;
     uint16_t  reserved;

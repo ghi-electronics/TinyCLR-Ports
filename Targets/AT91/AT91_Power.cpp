@@ -47,32 +47,32 @@ void AT91_Power_SetHandlers(void(*stop)(), void(*restart)()) {
 void AT91_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep_Level level) {
     switch (level) {
 
-        case TinyCLR_Power_Sleep_Level::Hibernate: // stop
-            if (g_AT91_stopHandler != 0)
-                g_AT91_stopHandler();
+    case TinyCLR_Power_Sleep_Level::Hibernate: // stop
+        if (g_AT91_stopHandler != 0)
+            g_AT91_stopHandler();
 
-            return;
+        return;
 
-        case TinyCLR_Power_Sleep_Level::Off: // standby
-            // stop peripherals if needed
-            if (g_AT91_stopHandler != 0)
-                g_AT91_stopHandler();
+    case TinyCLR_Power_Sleep_Level::Off: // standby
+        // stop peripherals if needed
+        if (g_AT91_stopHandler != 0)
+            g_AT91_stopHandler();
 
-            return;
+        return;
 
-        default: // sleep
-        
-            uint32_t reg = 0;
+    default: // sleep
 
-            // ARM926EJ-S Wait For Interrupt
-            #ifdef __GNUC__
-                asm("MCR p15, 0, %0, c7, c0, 4" :: "r" (reg));
-            #else
-                __asm
-                {
-                    mcr     p15, 0, reg, c7, c0, 4       
-                }
-            #endif
+        uint32_t reg = 0;
+
+        // ARM926EJ-S Wait For Interrupt
+#ifdef __GNUC__
+        asm("MCR p15, 0, %0, c7, c0, 4" :: "r" (reg));
+#else
+        __asm
+        {
+            mcr     p15, 0, reg, c7, c0, 4
+        }
+#endif
 
         return;
     }
@@ -87,11 +87,11 @@ void AT91_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) {
     }
 #endif
 
-    volatile uint32_t *pReset     = (volatile uint32_t*)AT91C_BASE_RSTC;
+    volatile uint32_t *pReset = (volatile uint32_t*)AT91C_BASE_RSTC;
     volatile uint32_t *pResetMode = (volatile uint32_t*)AT91C_BASE_RSTC_MR;
 
     *pResetMode = (AT91C_RSTC__RESET_KEY | 4ul << 8);
-    *pReset     = (AT91C_RSTC__RESET_KEY | AT91C_RTSC__PROCRST | AT91C_RTSC__PERRST | AT91C_RTSC__EXTRST);
+    *pReset = (AT91C_RSTC__RESET_KEY | AT91C_RTSC__PROCRST | AT91C_RTSC__PERRST | AT91C_RTSC__EXTRST);
 
     while (1); // wait for reset
 }

@@ -2127,8 +2127,7 @@ struct AT91_UDPHS_EPTFIFO {
 // USB driver
 //
 
-struct AT91_USBHS_Driver
-{
+struct AT91_USBHS_Driver {
     static const uint32_t c_Used_Endpoints = 6;
     static const uint32_t c_default_ctrl_packet_size = 64;
 
@@ -2160,8 +2159,7 @@ struct AT91_USBHS_Driver
 
     //--//
 
-    struct UDP_EPATTRIBUTE
-    {
+    struct UDP_EPATTRIBUTE {
         uint16_t		Dir_Type;
         uint16_t		Payload;
         bool		DualBank;
@@ -2233,8 +2231,7 @@ uint32_t USB_ReadEP(uint32_t EPNum, uint8_t *pData, uint32_t len);
 
 void ConfigEndPoint();
 
-__inline void AT91_PMC_EnableUSBClock(void)
-{
+__inline void AT91_PMC_EnableUSBClock(void) {
     (*(volatile uint32_t *)0xFFFFFC10) = 1 << AT91C_ID_UDPHS;
     (*(volatile uint32_t *)0xFFFFFC1C) |= AT91C_CKGR_UPLLEN_ENABLED;
     (*(volatile uint32_t *)0xF803C0E0) |= 3; // Full Speed
@@ -2243,14 +2240,12 @@ __inline void AT91_PMC_EnableUSBClock(void)
 __inline void AT91_PMC_EnableUTMIBIAS(void) {
     // TO DO
 }
-__inline void AT91_PMC_DisableUSBClock(void)
-{
+__inline void AT91_PMC_DisableUSBClock(void) {
     (*(volatile uint32_t *)0xFFFFFC14) = 1 << AT91C_ID_UDPHS;
     (*(volatile uint32_t *)0xFFFFFC1C) &= ~AT91C_CKGR_UPLLEN_ENABLED;
 }
 
-__inline void AT91_PMC_DisableUTMIBIAS(void)
-{
+__inline void AT91_PMC_DisableUTMIBIAS(void) {
     (*(volatile uint32_t *)0xFFFFFC1C) &= ~AT91C_CKGR_BIASEN_ENABLED;
 }
 
@@ -2267,8 +2262,7 @@ uint32_t AT91_USBHS_Driver::MAX_EP = sizeof(AT91_USBHS_Driver::s_EpAttr)  \
 / sizeof(AT91_USBHS_Driver::UDP_EPATTRIBUTE);
 ///////////////////////////////////////////////////////////////////////////////
 
-USB_CONTROLLER_STATE * AT91_USBHS_Driver::GetState(int Controller)
-{
+USB_CONTROLLER_STATE * AT91_USBHS_Driver::GetState(int Controller) {
     if (Controller != 0)       // There is only one USB device controller for this device
         return NULL;
     return &UsbControllerState[0];
@@ -2277,8 +2271,7 @@ USB_CONTROLLER_STATE * AT91_USBHS_Driver::GetState(int Controller)
 
 //--//
 
-void AT91_USBHS_Driver::SuspendEvent()
-{
+void AT91_USBHS_Driver::SuspendEvent() {
     USB_CONTROLLER_STATE *State = g_AT91_USBHS_Driver.pUsbControllerState;
     struct AT91_UDPHS *pUdp = (struct AT91_UDPHS *) (AT91C_BASE_UDP);
 
@@ -2303,8 +2296,7 @@ void AT91_USBHS_Driver::SuspendEvent()
 }
 
 
-void AT91_USBHS_Driver::ResetEvent()
-{
+void AT91_USBHS_Driver::ResetEvent() {
     USB_CONTROLLER_STATE *State = g_AT91_USBHS_Driver.pUsbControllerState;
     struct AT91_UDPHS *pUdp = (struct AT91_UDPHS *) (AT91C_BASE_UDP);
 
@@ -2314,8 +2306,7 @@ void AT91_USBHS_Driver::ResetEvent()
     // Endpoint 0 must be enabled
 
     // program Endpoint Status/control
-    for (int i = 0; i < MAX_EP; i++)
-    {
+    for (int i = 0; i < MAX_EP; i++) {
         uint32_t dwEptcfg = 0;
         // Reset endpoint fifos
         pUdp->UDPHS_EPTRST = 1 << i;
@@ -2323,8 +2314,7 @@ void AT91_USBHS_Driver::ResetEvent()
         pUdp->UDPHS_IEN |= (1 << SHIFT_INTERUPT << i);
         // Set endpoint configration
         dwEptcfg = AT91_USBHS_Driver::s_EpAttr[i].Dir_Type | AT91_USBHS_Driver::s_EpAttr[i].dFlag;
-        switch (AT91_USBHS_Driver::s_EpAttr[i].Payload)
-        {
+        switch (AT91_USBHS_Driver::s_EpAttr[i].Payload) {
         case 8:
             dwEptcfg |= AT91C_UDPHS_EPT_SIZE_8;
             break;
@@ -2364,8 +2354,7 @@ void AT91_USBHS_Driver::ResetEvent()
     /* clear all flags */
     UsbClient_Driver::ClearEvent(0, 0xFFFFFFFF); // clear all events on all endpoints
 
-    for (int ep = 0; ep < c_Used_Endpoints; ep++)
-    {
+    for (int ep = 0; ep < c_Used_Endpoints; ep++) {
         g_AT91_USBHS_Driver.TxRunning[ep] = false;
         g_AT91_USBHS_Driver.TxNeedZLPS[ep] = false;
     }
@@ -2377,8 +2366,7 @@ void AT91_USBHS_Driver::ResetEvent()
 
 //--//
 
-bool AT91_USBHS_Driver::RxEnable(USB_CONTROLLER_STATE *State, int endpoint)
-{
+bool AT91_USBHS_Driver::RxEnable(USB_CONTROLLER_STATE *State, int endpoint) {
     struct AT91_UDPHS *pUdp = (struct AT91_UDPHS *) AT91C_BASE_UDP;
 
     pUdp->UDPHS_IEN |= 1 << SHIFT_INTERUPT << endpoint;
@@ -2388,8 +2376,7 @@ bool AT91_USBHS_Driver::RxEnable(USB_CONTROLLER_STATE *State, int endpoint)
 }
 
 
-void AT91_USBHS_Driver::ResumeEvent()
-{
+void AT91_USBHS_Driver::ResumeEvent() {
     USB_CONTROLLER_STATE *State = g_AT91_USBHS_Driver.pUsbControllerState;
 
     struct AT91_UDPHS *pUdp = (struct AT91_UDPHS *) (AT91C_BASE_UDP);
@@ -2423,11 +2410,9 @@ void AT91_USBHS_Driver::AT91_UsbClent_InterruptHandler(void *param) {
     uint32_t endpoint = 0;
 
     // Handle all UDP interrupts
-    while (USB_INTR != 0)
-    {
+    while (USB_INTR != 0) {
         // Start Of Frame (SOF)
-        if (USB_INTR & AT91C_UDPHS_IEN_SOF)
-        {
+        if (USB_INTR & AT91C_UDPHS_IEN_SOF) {
             // Acknowledge interrupt
             pUdp->UDPHS_CLRINT = AT91C_UDPHS_IEN_SOF;
             USB_INTR &= ~AT91C_UDPHS_IEN_SOF;
@@ -2435,16 +2420,14 @@ void AT91_USBHS_Driver::AT91_UsbClent_InterruptHandler(void *param) {
         }
 
         // Suspend
-        if (USB_INTR & AT91C_UDPHS_DET_SUSPD)
-        {
+        if (USB_INTR & AT91C_UDPHS_DET_SUSPD) {
             // Acknowledge interrupt
             pUdp->UDPHS_CLRINT = AT91C_UDPHS_DET_SUSPD | AT91C_UDPHS_WAKE_UP;
             USB_INTR &= ~AT91C_UDPHS_DET_SUSPD;
         }
 
         // Resume or Wakeup
-        if ((USB_INTR & AT91C_UDPHS_WAKE_UP) || (USB_INTR & AT91C_UDPHS_ENDOFRSM))
-        {
+        if ((USB_INTR & AT91C_UDPHS_WAKE_UP) || (USB_INTR & AT91C_UDPHS_ENDOFRSM)) {
             ResumeEvent();
 
             // Acknowledge interrupt
@@ -2462,8 +2445,7 @@ void AT91_USBHS_Driver::AT91_UsbClent_InterruptHandler(void *param) {
             USB_INTR &= ~AT91C_UDPHS_ENDRESET;
         }
 
-        if (USB_INTR & AT91C_UDPHS_UPSTR_RES)
-        {
+        if (USB_INTR & AT91C_UDPHS_UPSTR_RES) {
             pUdp->UDPHS_CLRINT = AT91C_UDPHS_UPSTR_RES;
             USB_INTR &= ~AT91C_UDPHS_UPSTR_RES;
         }
@@ -2471,8 +2453,7 @@ void AT91_USBHS_Driver::AT91_UsbClent_InterruptHandler(void *param) {
         {
             uint32_t i = 0;
             USB_INTR >>= 8;
-            while (USB_INTR != 0)
-            {
+            while (USB_INTR != 0) {
                 if (USB_INTR & 1) {
                     endpoint = i;
                     Endpoint_ISR(endpoint);
@@ -2486,14 +2467,12 @@ void AT91_USBHS_Driver::AT91_UsbClent_InterruptHandler(void *param) {
     }
 }
 
-void AT91_USBHS_Driver::AT91_UsbClient_VbusInterruptHandler(int32_t Pin, bool PinState, void* Param)
-{
+void AT91_USBHS_Driver::AT91_UsbClient_VbusInterruptHandler(int32_t Pin, bool PinState, void* Param) {
     USB_CONTROLLER_STATE *State = g_AT91_USBHS_Driver.pUsbControllerState;
     struct AT91_UDPHS *pUdp = (struct AT91_UDPHS *) (AT91C_BASE_UDP);
 
     // VBus High
-    if (PinState)
-    {
+    if (PinState) {
         // Enable USB clock
         AT91_PMC_EnableUSBClock();
 
@@ -2540,8 +2519,7 @@ void AT91_USBHS_Driver::AT91_UsbClient_VbusInterruptHandler(int32_t Pin, bool Pi
     else // VBus Low
     {
         // clear USB Txbuffer
-        for (int ep = 0; ep < AT91_USBHS_Driver::c_Used_Endpoints; ep++)
-        {
+        for (int ep = 0; ep < AT91_USBHS_Driver::c_Used_Endpoints; ep++) {
             if (State->IsTxQueue[ep] && State->Queues[ep] != NULL)
                 State->Queues[ep]->clear();
         }
@@ -2557,16 +2535,13 @@ void AT91_USBHS_Driver::AT91_UsbClient_VbusInterruptHandler(int32_t Pin, bool Pi
     }
 }
 
-bool AT91_USBHS_Driver::ProtectPins(int Controller, bool On)
-{
+bool AT91_USBHS_Driver::ProtectPins(int Controller, bool On) {
     USB_CONTROLLER_STATE *State = g_AT91_USBHS_Driver.pUsbControllerState;
 
     GLOBAL_LOCK(irq);
 
-    if (On)
-    {
-        if (!g_AT91_USBHS_Driver.PinsProtected)
-        {
+    if (On) {
+        if (!g_AT91_USBHS_Driver.PinsProtected) {
             // Disable the USB com, state change from Not protected to Protected
             g_AT91_USBHS_Driver.PinsProtected = true;
 
@@ -2586,10 +2561,8 @@ bool AT91_USBHS_Driver::ProtectPins(int Controller, bool On)
             AT91_UsbClient_StateCallback(State);
         }
     }
-    else
-    {
-        if (g_AT91_USBHS_Driver.PinsProtected)
-        {
+    else {
+        if (g_AT91_USBHS_Driver.PinsProtected) {
             // Ready for USB to enable, state change from Protected to Not protected
             g_AT91_USBHS_Driver.PinsProtected = false;
             AT91_UsbClient_VbusInterruptHandler(0, true, nullptr);
@@ -2602,8 +2575,7 @@ bool AT91_USBHS_Driver::ProtectPins(int Controller, bool On)
     return true;
 
 }
-bool AT91_USBHS_Driver::Initialize(int Controller)
-{
+bool AT91_USBHS_Driver::Initialize(int Controller) {
 
     USB_CONTROLLER_STATE     &State = UsbControllerState[Controller];
 
@@ -2658,8 +2630,7 @@ bool AT91_USBHS_Driver::Initialize(int Controller)
     return true;
 }
 
-bool AT91_USBHS_Driver::Uninitialize(int Controller)
-{
+bool AT91_USBHS_Driver::Uninitialize(int Controller) {
     GLOBAL_LOCK(irq);
 
     AT91_PMC_DisableUTMIBIAS();
@@ -2675,8 +2646,7 @@ bool AT91_USBHS_Driver::Uninitialize(int Controller)
     return true;
 }
 
-bool AT91_USBHS_Driver::StartOutput(USB_CONTROLLER_STATE* State, int endpoint)
-{
+bool AT91_USBHS_Driver::StartOutput(USB_CONTROLLER_STATE* State, int endpoint) {
 
 
     GLOBAL_LOCK(irq);
@@ -2693,15 +2663,13 @@ bool AT91_USBHS_Driver::StartOutput(USB_CONTROLLER_STATE* State, int endpoint)
 
     /* if the halt feature for this endpoint is set, then just
             clear all the characters */
-    if (g_AT91_USBHS_Driver.EndpointStatus[endpoint] & USB_STATUS_ENDPOINT_HALT)
-    {
+    if (g_AT91_USBHS_Driver.EndpointStatus[endpoint] & USB_STATUS_ENDPOINT_HALT) {
         ClearTxQueue(State, endpoint);
         return true;
     }
 
     //If TxRunning, interrupts will drain the queue
-    if (!(bool)((uint8_t)g_AT91_USBHS_Driver.TxRunning[endpoint]))
-    {
+    if (!(bool)((uint8_t)g_AT91_USBHS_Driver.TxRunning[endpoint])) {
 
         g_AT91_USBHS_Driver.TxRunning[endpoint] = true;
 
@@ -2715,26 +2683,22 @@ bool AT91_USBHS_Driver::StartOutput(USB_CONTROLLER_STATE* State, int endpoint)
     return true;
 }
 
-bool AT91_USBHS_Driver::GetInterruptState()
-{
+bool AT91_USBHS_Driver::GetInterruptState() {
     struct AT91_UDPHS *pUdp = (struct AT91_UDPHS *) (AT91C_BASE_UDP);
 
     GLOBAL_LOCK(irq);
 
-    if ((pUdp->UDPHS_IEN & pUdp->UDPHS_INTSTA) || (pUdp->UDPHS_INTSTA & AT91C_UDPHS_ENDRESET))
-    {
+    if ((pUdp->UDPHS_IEN & pUdp->UDPHS_INTSTA) || (pUdp->UDPHS_INTSTA & AT91C_UDPHS_ENDRESET)) {
         return true;
     }
 
     return false;
 }
 
-void AT91_USBHS_Driver::ClearTxQueue(USB_CONTROLLER_STATE* State, int endpoint)
-{
+void AT91_USBHS_Driver::ClearTxQueue(USB_CONTROLLER_STATE* State, int endpoint) {
     ASSERT_IRQ_MUST_BE_OFF();
     // it is much faster to just re-initialize the queue and it does the same thing
-    if (State->Queues[endpoint] != NULL)
-    {
+    if (State->Queues[endpoint] != NULL) {
         State->Queues[endpoint]->clear();
     }
 }
@@ -2742,8 +2706,7 @@ void AT91_USBHS_Driver::ClearTxQueue(USB_CONTROLLER_STATE* State, int endpoint)
 
 //--//
 #define USBH_TRANSFER_PACKET_TIMEOUT 4000
-void AT91_USBHS_Driver::TxPacket(USB_CONTROLLER_STATE* State, int endpoint)
-{
+void AT91_USBHS_Driver::TxPacket(USB_CONTROLLER_STATE* State, int endpoint) {
     int timeout;
 
     struct AT91_UDPHS *pUdp = (struct AT91_UDPHS *) (AT91C_BASE_UDP);
@@ -2754,28 +2717,23 @@ void AT91_USBHS_Driver::TxPacket(USB_CONTROLLER_STATE* State, int endpoint)
     // transmit a packet on UsbPortNum, if there are no more packets to transmit, then die
 
     timeout = 0;
-    while (!pUdp->UDPHS_EPT[endpoint].UDPHS_EPTSTA & AT91C_UDPHS_TX_COMPLT)
-    {
+    while (!pUdp->UDPHS_EPT[endpoint].UDPHS_EPTSTA & AT91C_UDPHS_TX_COMPLT) {
         timeout++;
-        if (timeout > USBH_TRANSFER_PACKET_TIMEOUT)
-        {
+        if (timeout > USBH_TRANSFER_PACKET_TIMEOUT) {
             return;
         }
     }
     timeout = 0;
-    while (pUdp->UDPHS_EPT[endpoint].UDPHS_EPTSTA & AT91C_UDPHS_TX_PK_RDY)
-    {
+    while (pUdp->UDPHS_EPT[endpoint].UDPHS_EPTSTA & AT91C_UDPHS_TX_PK_RDY) {
         timeout++;
-        if (timeout > USBH_TRANSFER_PACKET_TIMEOUT)
-        {
+        if (timeout > USBH_TRANSFER_PACKET_TIMEOUT) {
             return;
         }
     }
     USB_PACKET64* Packet64;
     bool done = false;
 
-    for (;;)
-    {
+    for (;;) {
         done = true;
 
         Packet64 = AT91_UsbClient_TxDequeue(State, endpoint, done);
@@ -2790,8 +2748,7 @@ void AT91_USBHS_Driver::TxPacket(USB_CONTROLLER_STATE* State, int endpoint)
         }
     }
 
-    if (Packet64)
-    {
+    if (Packet64) {
         int i;
 
         USB_WriteEP(endpoint, Packet64->Buffer, Packet64->Size);
@@ -2801,12 +2758,10 @@ void AT91_USBHS_Driver::TxPacket(USB_CONTROLLER_STATE* State, int endpoint)
             State->Queues[endpoint]->erase(State->Queues[endpoint]->begin());
         }
     }
-    else
-    {
+    else {
         // send the zero leght packet since we landed on the FIFO boundary before
         // (and we queued a zero length packet to transmit)
-        if (g_AT91_USBHS_Driver.TxNeedZLPS[endpoint])
-        {
+        if (g_AT91_USBHS_Driver.TxNeedZLPS[endpoint]) {
             pUdp->UDPHS_EPT[endpoint].UDPHS_EPTSETSTA = AT91C_UDPHS_TX_PK_RDY;
             g_AT91_USBHS_Driver.TxNeedZLPS[endpoint] = false;
         }
@@ -2820,15 +2775,13 @@ void AT91_USBHS_Driver::TxPacket(USB_CONTROLLER_STATE* State, int endpoint)
 
 }
 
-void AT91_USBHS_Driver::ControlNext()
-{
+void AT91_USBHS_Driver::ControlNext() {
     USB_CONTROLLER_STATE *State = g_AT91_USBHS_Driver.pUsbControllerState;
 
     struct AT91_UDPHS *pUdp = (struct AT91_UDPHS *) (AT91C_BASE_UDP);
     uint8_t *pFifo = (uint8_t *)&(((struct AT91_UDPHS_EPTFIFO *)AT91C_BASE_UDP_DMA)->UDPHS_READEPT0[0]);
 
-    if (State->DataCallback)
-    {
+    if (State->DataCallback) {
         /* this call can't fail */
         State->DataCallback(State);
 
@@ -2839,14 +2792,12 @@ void AT91_USBHS_Driver::ControlNext()
             USB_WriteEP(0, State->Data, State->DataSize);
 
             // special handling the USB driver set address test, cannot use the first descriptor as the ADDRESS state is handle in the hardware
-            if (g_AT91_USBHS_Driver.FirstDescriptorPacket)
-            {
+            if (g_AT91_USBHS_Driver.FirstDescriptorPacket) {
                 State->DataCallback = NULL;
             }
         }
     }
-    else
-    {
+    else {
         pUdp->UDPHS_EPT[0].UDPHS_EPTCLRSTA = AT91C_UDPHS_TX_COMPLT;
         pUdp->UDPHS_EPT[0].UDPHS_EPTCTLDIS = AT91C_UDPHS_TX_PK_RDY;
     }
@@ -2876,8 +2827,7 @@ uint32_t USB_ReadEP(uint32_t EPNum, uint8_t *pData, uint32_t len) {
     return len;
 }
 
-void ConfigEndPoint()
-{
+void ConfigEndPoint() {
     struct AT91_UDPHS *pUdp = (struct AT91_UDPHS *) (AT91C_BASE_UDP);
     int i;
 
@@ -2893,8 +2843,7 @@ void ConfigEndPoint()
 }
 
 
-void AT91_USBHS_Driver::Endpoint_ISR(uint32_t endpoint)
-{
+void AT91_USBHS_Driver::Endpoint_ISR(uint32_t endpoint) {
     USB_CONTROLLER_STATE *State = g_AT91_USBHS_Driver.pUsbControllerState;
     uint32_t Status;
 
@@ -2904,11 +2853,9 @@ void AT91_USBHS_Driver::Endpoint_ISR(uint32_t endpoint)
     Status = pUdp->UDPHS_EPT[endpoint].UDPHS_EPTSTA;
 
     // Control Endpoint
-    if (endpoint == 0)
-    {
+    if (endpoint == 0) {
         // ugly
-        if (Status & AT91C_UDPHS_RX_BK_RDY)
-        {
+        if (Status & AT91C_UDPHS_RX_BK_RDY) {
             while (pUdp->UDPHS_EPT[0].UDPHS_EPTSTA & AT91C_UDPHS_RX_BK_RDY)
                 pUdp->UDPHS_EPT[0].UDPHS_EPTCLRSTA = AT91C_UDPHS_RX_BK_RDY;
         }
@@ -2945,8 +2892,7 @@ void AT91_USBHS_Driver::Endpoint_ISR(uint32_t endpoint)
 
             uint8_t result = AT91_UsbClient_ControlCallback(State);
 
-            switch (result)
-            {
+            switch (result) {
             case USB_STATE_DATA:
                 /* setup packet was handled and the upper layer has data to send */
                 break;
@@ -2992,13 +2938,11 @@ void AT91_USBHS_Driver::Endpoint_ISR(uint32_t endpoint)
                 // the status change is only seen and taken care in hardware
             }
 
-            if (result != USB_STATE_STALL)
-            {
+            if (result != USB_STATE_STALL) {
                 ControlNext();
                 // If port is now configured, output any queued data
                 if (result == USB_STATE_CONFIGURATION) {
-                    for (int ep = 1; ep < c_Used_Endpoints; ep++)
-                    {
+                    for (int ep = 1; ep < c_Used_Endpoints; ep++) {
                         if (State->Queues[ep] && State->IsTxQueue[ep])
                             StartOutput(State, ep);
                     }
@@ -3053,8 +2997,7 @@ void AT91_USBHS_Driver::Endpoint_ISR(uint32_t endpoint)
 
             pUdp->UDPHS_EPT[endpoint].UDPHS_EPTCLRSTA = AT91C_UDPHS_RX_BK_RDY;
 
-            if (DisableRx)
-            {
+            if (DisableRx) {
                 pUdp->UDPHS_IEN &= ~(1 << SHIFT_INTERUPT << endpoint);
                 pUdp->UDPHS_EPT[endpoint].UDPHS_EPTCTLDIS = AT91C_UDPHS_RX_BK_RDY;
             }

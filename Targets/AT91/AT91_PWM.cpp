@@ -120,8 +120,7 @@ double AT91_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self) {
 
     AT91_Pwm_GetScaleFactor(frequency, period, scale);
 
-    switch (scale)
-    {
+    switch (scale) {
     case PWM_MILLISECONDS:
         convertedPeriod = (period * 1000000);
 
@@ -143,8 +142,7 @@ double AT91_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self) {
     else if (convertedPeriod < 40)
         convertedPeriod = 40; // min period
 
-    switch (scale)
-    {
+    switch (scale) {
     case PWM_MILLISECONDS:
         period = (convertedPeriod / 1000000);
 
@@ -217,8 +215,7 @@ TinyCLR_Result AT91_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int
 
     duration = (uint32_t)(dutyCycle * period);
 
-    switch (scale)
-    {
+    switch (scale) {
     case PWM_MILLISECONDS:
         convertedPeriod = (period * 1000000);
         convertedDuration = (duration * 1000000);
@@ -235,57 +232,46 @@ TinyCLR_Result AT91_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int
         break;
     }
 
-    if (convertedPeriod > 503308801)
-    {
+    if (convertedPeriod > 503308801) {
         return TinyCLR_Result::InvalidOperation;
     }
-    else if (convertedPeriod > 251654401)
-    {
+    else if (convertedPeriod > 251654401) {
         divider = 1024;
         registerDividerFlag = 0xA;
     }
-    else if (convertedPeriod > 125827200)
-    {
+    else if (convertedPeriod > 125827200) {
         divider = 512;
         registerDividerFlag = 0x9;
     }
-    else if (convertedPeriod > 62913600)
-    {
+    else if (convertedPeriod > 62913600) {
         divider = 256;
         registerDividerFlag = 0x8;
     }
-    else if (convertedPeriod > 31456800)
-    {
+    else if (convertedPeriod > 31456800) {
         divider = 128;
         registerDividerFlag = 0x7;
     }
-    else if (convertedPeriod > 15728400)
-    {
+    else if (convertedPeriod > 15728400) {
         divider = 64;
         registerDividerFlag = 0x6;
     }
-    else if (convertedPeriod > 7864200)
-    {
+    else if (convertedPeriod > 7864200) {
         divider = 32;
         registerDividerFlag = 0x5;
     }
-    else if (convertedPeriod > 3932100)
-    {
+    else if (convertedPeriod > 3932100) {
         divider = 16;
         registerDividerFlag = 0x4;
     }
-    else if (convertedPeriod > 1966050)
-    {
+    else if (convertedPeriod > 1966050) {
         divider = 8;
         registerDividerFlag = 0x3;
     }
-    else if (convertedPeriod > 983025)
-    {
+    else if (convertedPeriod > 983025) {
         divider = 4;
         registerDividerFlag = 0x2;
     }
-    else if (convertedPeriod > 491513)
-    {
+    else if (convertedPeriod > 491513) {
         divider = 2;
         registerDividerFlag = 0x1;
     }
@@ -294,8 +280,7 @@ TinyCLR_Result AT91_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int
         divider = 1;
         registerDividerFlag = 0x0;
     }
-    else
-    {
+    else {
         return TinyCLR_Result::InvalidOperation;
     }
 

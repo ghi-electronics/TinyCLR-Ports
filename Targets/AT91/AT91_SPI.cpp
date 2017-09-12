@@ -94,12 +94,10 @@ bool AT91_Spi_Transaction_Start(int32_t controller) {
 
     uint32_t CSR = 0;
 
-    if (g_SpiController[controller].DataBitLength == DATA_BIT_LENGTH_16)
-    {
+    if (g_SpiController[controller].DataBitLength == DATA_BIT_LENGTH_16) {
         CSR |= AT91_SPI::SPI_CSR_16BITS;
     }
-    else
-    {
+    else {
         CSR |= AT91_SPI::SPI_CSR_8BITS;
     }
 
@@ -168,8 +166,7 @@ bool AT91_Spi_Transaction_nWrite8_nRead8(int32_t controller) {
     int32_t ReadStartOffset = g_SpiController[controller].readOffset;
     int32_t ReadTotal = 0;
 
-    if (ReadCount)
-    {
+    if (ReadCount) {
         ReadTotal = ReadCount + ReadStartOffset;    // we need to read as many bytes as the buffer is long, plus the offset at which we start
     }
 
@@ -187,8 +184,7 @@ bool AT91_Spi_Transaction_nWrite8_nRead8(int32_t controller) {
     WriteCount -= 1;
 
     // Start transmission
-    while (loopCnt--)
-    {
+    while (loopCnt--) {
         spi.SPI_TDR = Write8[0];
 
         // wait while the transmit buffer is empty
@@ -198,16 +194,14 @@ bool AT91_Spi_Transaction_nWrite8_nRead8(int32_t controller) {
         Data8 = spi.SPI_RDR;
 
         // repeat last write word for all subsequent reads
-        if (WriteCount)
-        {
+        if (WriteCount) {
             WriteCount--;
             Write8++;
         }
 
         // only save data once we have reached ReadCount-1 portion of words
         ReadTotal--;
-        if ((ReadTotal >= 0) && (ReadTotal < ReadCount))
-        {
+        if ((ReadTotal >= 0) && (ReadTotal < ReadCount)) {
             Read8[0] = Data8;
             Read8++;
         }

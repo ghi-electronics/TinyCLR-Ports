@@ -1,31 +1,29 @@
 #include "AT91.h"
 
-void AT91_Cache_FlushCaches()
-{
+void AT91_Cache_FlushCaches() {
     uint32_t reg = 0;
 #ifdef __GNUC__
-	asm("MCR p15, 0, %0, c7,  c6, 0" :: "r" (reg));
-	asm("MCR p15, 0, %0, c7, c10, 4" :: "r" (reg));
-	asm("MCR p15, 0, %0, c7,  c5, 0" :: "r" (reg));
+    asm("MCR p15, 0, %0, c7,  c6, 0" :: "r" (reg));
+    asm("MCR p15, 0, %0, c7, c10, 4" :: "r" (reg));
+    asm("MCR p15, 0, %0, c7,  c5, 0" :: "r" (reg));
 #else
     __asm
     {
-        mcr p15, 0, reg, c7,  c6, 0 // invalidate DCache (Write through)
+        mcr p15, 0, reg, c7, c6, 0 // invalidate DCache (Write through)
         mcr p15, 0, reg, c7, c10, 4 // Drain write buffer
-        mcr p15, 0, reg, c7,  c5, 0 // invalidate Icache
+        mcr p15, 0, reg, c7, c5, 0 // invalidate Icache
     }
 #endif
-//  tci_loop:
-//  mrc p15, 0, pc, c7, c14, 3 // test clean & invalidate DCache
-//  bne tci_loop
+    //  tci_loop:
+    //  mrc p15, 0, pc, c7, c14, 3 // test clean & invalidate DCache
+    //  bne tci_loop
 }
 
-void AT91_Cache_DrainWriteBuffers()
-{
-    uint32_t  reg = 0;        
+void AT91_Cache_DrainWriteBuffers() {
+    uint32_t  reg = 0;
 
 #ifdef __GNUC__
-	asm("MCR p15, 0, %0, c7, c10, 4" :: "r" (reg));
+    asm("MCR p15, 0, %0, c7, c10, 4" :: "r" (reg));
 #else
     __asm
     {
@@ -34,31 +32,29 @@ void AT91_Cache_DrainWriteBuffers()
 #endif
 }
 
-void AT91_Cache_InvalidateCaches()
-{
+void AT91_Cache_InvalidateCaches() {
     uint32_t reg = 0;
 
 #ifdef __GNUC__
-	asm("MCR p15, 0, %0, c7, c7, 0" :: "r" (reg));
+    asm("MCR p15, 0, %0, c7, c7, 0" :: "r" (reg));
 #else
     __asm
     {
-        mcr     p15, 0, reg, c7, c7 , 0 // Invalidate caches.
+        mcr     p15, 0, reg, c7, c7, 0 // Invalidate caches.
     }
 #endif
 }
 
-void AT91_Cache_EnableCaches()
-{
+void AT91_Cache_EnableCaches() {
     uint32_t reg;
 
     AT91_Cache_InvalidateCaches();
 
 #ifdef __GNUC__
-	asm("MRC p15, 0, %0, c1, c0, 0" : "=r" (reg));
-	asm("ORR %0, %0, #0x1000"       : "=r" (reg) : "r" (reg));
-	asm("ORR %0, %0, #0x0004"       : "=r" (reg) : "r" (reg));
-	asm("MCR p15, 0, %0, c1, c0, 0" :            : "r" (reg));
+    asm("MRC p15, 0, %0, c1, c0, 0" : "=r" (reg));
+    asm("ORR %0, %0, #0x1000"       : "=r" (reg) : "r" (reg));
+    asm("ORR %0, %0, #0x0004"       : "=r" (reg) : "r" (reg));
+    asm("MCR p15, 0, %0, c1, c0, 0" : : "r" (reg));
 #else
     __asm
     {
@@ -70,15 +66,14 @@ void AT91_Cache_EnableCaches()
 #endif
 }
 
-void AT91_Cache_DisableCaches()
-{
+void AT91_Cache_DisableCaches() {
     uint32_t reg;
 
 #ifdef __GNUC__
-	asm("MRC p15, 0, %0, c1, c0, 0" : "=r" (reg));
-	asm("BIC %0, %0, #0x1000"       : "=r" (reg) : "r" (reg));
-	asm("BIC %0, %0, #0x0004"       : "=r" (reg) : "r" (reg));
-	asm("MCR p15, 0, %0, c1, c0, 0" :            : "r" (reg));
+    asm("MRC p15, 0, %0, c1, c0, 0" : "=r" (reg));
+    asm("BIC %0, %0, #0x1000"       : "=r" (reg) : "r" (reg));
+    asm("BIC %0, %0, #0x0004"       : "=r" (reg) : "r" (reg));
+    asm("MCR p15, 0, %0, c1, c0, 0" : : "r" (reg));
 #else
     __asm
     {
@@ -94,35 +89,32 @@ void AT91_Cache_DisableCaches()
 
 //--//
 
-template <typename T> void AT91_Cache_InvalidateAddress( T* address )
-{
+template <typename T> void AT91_Cache_InvalidateAddress(T* address) {
     uint32_t reg = 0;
 
 #ifdef __GNUC__
-	asm("MCR p15, 0, %0, c7, c10, 4" :: "r" (reg));
-	asm("MCR p15, 0, %0, c7,  c5, 1" :: "r" (address));
-	asm("MCR p15, 0, %0, c7,  c6, 1" :: "r" (address));
+    asm("MCR p15, 0, %0, c7, c10, 4" :: "r" (reg));
+    asm("MCR p15, 0, %0, c7,  c5, 1" :: "r" (address));
+    asm("MCR p15, 0, %0, c7,  c6, 1" :: "r" (address));
 #else
-	__asm
+    __asm
     {
-        mcr     p15, 0, reg    , c7, c10, 4        // Drain Write Buffers.
-        mcr     p15, 0, address, c7,  c5, 1        // Invalidate ICache.
-        mcr     p15, 0, address, c7,  c6, 1        // Invalidate DCache.
+        mcr     p15, 0, reg, c7, c10, 4        // Drain Write Buffers.
+        mcr     p15, 0, address, c7, c5, 1        // Invalidate ICache.
+        mcr     p15, 0, address, c7, c6, 1        // Invalidate DCache.
     }
 #endif
 }
 
 //--//
 
-size_t AT91_Cache_GetCachableAddress( size_t address )
-{
+size_t AT91_Cache_GetCachableAddress(size_t address) {
     return address;
 }
 
 //--//
 
-size_t AT91_Cache_GetUncachableAddress( size_t address )
-{
+size_t AT91_Cache_GetUncachableAddress(size_t address) {
     return address;
 }
 

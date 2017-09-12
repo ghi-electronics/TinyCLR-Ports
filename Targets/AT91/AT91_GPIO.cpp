@@ -101,8 +101,7 @@ void AT91_Gpio_InterruptHandler(void* param) {
         interruptsActive &= pioX.PIO_IMR;
 
         while (interruptsActive) {
-            while ((interruptsActive & bitMask) == 0)
-            {
+            while ((interruptsActive & bitMask) == 0) {
                 bitMask <<= 1;
                 bitIndex++;
             }

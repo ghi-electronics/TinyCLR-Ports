@@ -15,24 +15,20 @@
 
 #pragma arm section code = "SectionForBootstrapOperations"
 
-uint32_t* __section("SectionForBootstrapOperations") ARM9_MMU::GetL1Entry(uint32_t* base, uint32_t address)
-{
+uint32_t* __section("SectionForBootstrapOperations") ARM9_MMU::GetL1Entry(uint32_t* base, uint32_t address) {
     return &base[address >> 20];
 }
 
-void __section("SectionForBootstrapOperations") ARM9_MMU::InitializeL1(uint32_t* baseOfTTBs)
-{
+void __section("SectionForBootstrapOperations") ARM9_MMU::InitializeL1(uint32_t* baseOfTTBs) {
     uint32_t* dst = baseOfTTBs;
     uint32_t* end = (uint32_t*)((uint32_t)baseOfTTBs + ARM9_MMU::c_TTB_size);
 
-    do
-    {
+    do {
         *dst++ = 0;
     } while (dst < end);
 }
 
-uint32_t __section("SectionForBootstrapOperations") ARM9_MMU::GenerateL1_Section(uint32_t address, uint32_t AP, uint32_t domain, bool Cachable, bool Buffered, bool Xtended)
-{
+uint32_t __section("SectionForBootstrapOperations") ARM9_MMU::GenerateL1_Section(uint32_t address, uint32_t AP, uint32_t domain, bool Cachable, bool Buffered, bool Xtended) {
     uint32_t ret;
 
     ret = (address & 0xFFF00000);
@@ -46,12 +42,10 @@ uint32_t __section("SectionForBootstrapOperations") ARM9_MMU::GenerateL1_Section
     return ret;
 }
 
-void __section("SectionForBootstrapOperations") ARM9_MMU::GenerateL1_Sections(uint32_t* baseOfTTBs, uint32_t mappedAddress, uint32_t physAddress, int32_t size, uint32_t AP, uint32_t domain, bool Cachable, bool Buffered, bool Xtended)
-{
+void __section("SectionForBootstrapOperations") ARM9_MMU::GenerateL1_Sections(uint32_t* baseOfTTBs, uint32_t mappedAddress, uint32_t physAddress, int32_t size, uint32_t AP, uint32_t domain, bool Cachable, bool Buffered, bool Xtended) {
     uint32_t* dst = ARM9_MMU::GetL1Entry(baseOfTTBs, mappedAddress);
 
-    do
-    {
+    do {
         *dst++ = ARM9_MMU::GenerateL1_Section(physAddress, AP, domain, Cachable, Buffered, Xtended);
 
         physAddress += ARM9_MMU::c_MMU_L1_size;
@@ -69,24 +63,20 @@ extern "C"
     bool	AT91_CPU_IsMMUEnabled_asm();
 }
 
-void __section("SectionForBootstrapOperations") AT91_CPU_InvalidateTLBs()
-{
+void __section("SectionForBootstrapOperations") AT91_CPU_InvalidateTLBs() {
     AT91_CPU_InvalidateTLBs_asm();
 }
 
-void __section("SectionForBootstrapOperations") AT91_CPU_EnableMMU(void* TTB)
-{
+void __section("SectionForBootstrapOperations") AT91_CPU_EnableMMU(void* TTB) {
     AT91_CPU_EnableMMU_asm(TTB);
     AT91_CPU_InvalidateTLBs_asm();
 }
 
-void __section("SectionForBootstrapOperations") AT91_CPU_DisableMMU()
-{
+void __section("SectionForBootstrapOperations") AT91_CPU_DisableMMU() {
     AT91_CPU_DisableMMU_asm();
 }
 
-bool __section("SectionForBootstrapOperations") AT91_CPU_IsMMUEnabled()
-{
+bool __section("SectionForBootstrapOperations") AT91_CPU_IsMMUEnabled() {
     return AT91_CPU_IsMMUEnabled_asm();
 }
 
@@ -99,8 +89,7 @@ bool __section("SectionForBootstrapOperations") AT91_CPU_IsMMUEnabled()
         mrc     p15, 0, regTmp, c2, c0, 0; \
         nop \
 
-void CPU_InvalidateTLBs()
-{
+void CPU_InvalidateTLBs() {
     ARM9_MMU_ASM_START();
     uint32_t reg = 0;
 
@@ -113,8 +102,7 @@ void CPU_InvalidateTLBs()
     }
 }
 
-void CPU_EnableMMU(void* TTB)
-{
+void CPU_EnableMMU(void* TTB) {
     ARM9_MMU_ASM_START();
     uint32_t reg;
 
@@ -137,8 +125,7 @@ void CPU_EnableMMU(void* TTB)
     CPU_InvalidateTLBs();
 }
 
-void CPU_DisableMMU()
-{
+void CPU_DisableMMU() {
     ARM9_MMU_ASM_START();
     uint32_t reg;
 
@@ -155,8 +142,7 @@ void CPU_DisableMMU()
     }
 }
 
-bool CPU_IsMMUEnabled()
-{
+bool CPU_IsMMUEnabled() {
     ARM9_MMU_ASM_START();
     uint32_t reg;
 
@@ -178,20 +164,16 @@ bool CPU_IsMMUEnabled()
 
 #elif defined(COMPILE_THUMB2)
 
-void CPU_InvalidateTLBs()
-{
+void CPU_InvalidateTLBs() {
 }
 
-void CPU_EnableMMU(void* TTB)
-{
+void CPU_EnableMMU(void* TTB) {
 }
 
-void CPU_DisableMMU()
-{
+void CPU_DisableMMU() {
 }
 
-bool CPU_IsMMUEnabled()
-{
+bool CPU_IsMMUEnabled() {
 }
 
 #endif // #if defined(COMPILE_ARM) || defined(COMPILE_THUMB)
@@ -218,8 +200,7 @@ static const uint32_t c_RLP_Virtual_Address_Cached = 0xA0000000; // Added for RL
 static const uint32_t c_RLP_Virtual_Address_Uncached = 0xB0000000; // Added for RLP Support of Memory MMU
 
 
-void AT91_MMU_Initialize()
-{
+void AT91_MMU_Initialize() {
     // Fill Translation table with faults.
     ARM9_MMU::InitializeL1(c_Bootstrap_BaseOfTTBs);
 
@@ -271,18 +252,6 @@ void AT91_MMU_Initialize()
         true,                                                   // Cacheable
         false,                                                  // Buffered
         false);                                                 // Extended
-
-         // Direct map for the USB Host registers(0x00600000~0x006FFFFF)
-        // ARM9_MMU::GenerateL1_Sections(
-        // c_Bootstrap_BaseOfTTBs,                                 // base of TTBs
-        // UNCACHE_USBH_OHCI_REG_PHYSICAL_ADDR,                                        // mapped address
-        // UNCACHE_USBH_OHCI_REG_PHYSICAL_ADDR,                                        // physical address
-        // ARM9_MMU::c_MMU_L1_size,                                // length to be mapped
-        // ARM9_MMU::c_AP__Manager,                                // AP
-        // 0,                                                      // Domain
-        // false,                                                  // Cacheable
-        // false,                                                  // Buffered
-        // false);
 
     // Direct map for the LCD registers(0xF8038000)
     ARM9_MMU::GenerateL1_Sections(
@@ -337,17 +306,6 @@ void AT91_MMU_Initialize()
         false,                                                  // Cacheable
         false,                                                  // Buffered
         false);                                                 // Extended
-
-    // ARM9_MMU::GenerateL1_Sections(
-        // c_Bootstrap_BaseOfTTBs,                                 // base of TTBs
-        // UNCACHE_DMA_BUFFERS_PHYSICAL_ADDR,                		// mapped address
-        // UNCACHE_DMA_BUFFERS_PHYSICAL_ADDR,                		// physical address
-        // UNCACHE_DMA_BUFFERS_SIZE + UNCACHE_EMAC_BUFFERS_SIZE,	// length to be mapped
-        // ARM9_MMU::c_AP__Manager,                                // AP
-        // 0,                                                      // Domain
-        // false,                                                  // Cacheable
-        // false,                                                  // Buffered
-        // false);
 
     AT91_Cache_FlushCaches();
     AT91_CPU_EnableMMU(c_Bootstrap_BaseOfTTBs);

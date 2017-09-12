@@ -267,8 +267,7 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, ui
     // Enable Transmitter
     uint32_t USMR = (AT91_USART::US_USMODE_NORMAL);
 
-    switch (parity)
-    {
+    switch (parity) {
     case TinyCLR_Uart_Parity::Odd:
         USMR |= AT91_USART::US_PAR_ODD;
         break;
@@ -289,8 +288,7 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, ui
         return TinyCLR_Result::NotSupported;
     }
 
-    switch (dataBits)
-    {
+    switch (dataBits) {
     case 5:
         USMR |= AT91_USART::US_CHRL_5_BITS;
         break;
@@ -307,8 +305,7 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, ui
         return TinyCLR_Result::NotSupported;
     }
 
-    switch (stopBits)
-    {
+    switch (stopBits) {
     case TinyCLR_Uart_StopBitCount::One:
         // this board doesn't appear to work with 1 stop bits set
         USMR |= AT91_USART::US_NBSTOP_1_BIT;

@@ -29,8 +29,7 @@
     nop \
 
 
-void __section("SectionForBootstrapOperations") AT91_CPU_BootstrapCode()
-{
+void __section("SectionForBootstrapOperations") AT91_CPU_BootstrapCode() {
     uint32_t reg;
 
     //--//
@@ -126,8 +125,7 @@ void __section("SectionForBootstrapOperations") AT91_CPU_BootstrapCode()
 #endif
 
 #elif defined(COMPILE_THUMB2)
-void AT91_CPU_ARM9_BootstrapCode()
-{
+void AT91_CPU_ARM9_BootstrapCode() {
 }
 
 #endif

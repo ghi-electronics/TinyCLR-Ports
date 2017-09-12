@@ -219,19 +219,16 @@ TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int3
     else
         return TinyCLR_Result::NotSupported;
 
-    if (rateKhz < MIN_CLK_RATE)
-    {
+    if (rateKhz < MIN_CLK_RATE) {
         clockRate = 255;
         clockRate2 = 7;
     }
-    else if (rateKhz >= MAX_CLK_RATE)
-    {
+    else if (rateKhz >= MAX_CLK_RATE) {
 
         clockRate = (SYSTEM_PERIPHERAL_CLOCK_HZ / (2 * 1000)) / MAX_CLK_RATE - CLOCK_RATE_CONSTANT;
         clockRate2 = 0;
     }
-    else
-    {
+    else {
 
         uint32_t power = 1;
         uint32_t clkDiv;
@@ -240,11 +237,9 @@ TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int3
         clkDiv = 0;
         clkLHDiv = (SYSTEM_PERIPHERAL_CLOCK_HZ / (2 * 1000)) / rateKhz - CLOCK_RATE_CONSTANT;
 
-        if (clkLHDiv > 255)
-        {
+        if (clkLHDiv > 255) {
             clkLHDiv += CLOCK_RATE_CONSTANT;
-            for (clkDiv = 1; clkDiv <= 7; clkDiv++)
-            {
+            for (clkDiv = 1; clkDiv <= 7; clkDiv++) {
                 clkLHDiv /= 2;
                 power *= 2; // save the calculation
                 if (clkLHDiv <= 255)

@@ -106,23 +106,20 @@ const TinyCLR_Api_Info* AT91_Interrupt_GetApi() {
 AT91_Interrupt_Vectors* AT91_Interrupt_IrqToVector(uint32_t Irq) {
     AT91_Interrupt_Vectors* IsrVector = s_IsrTable;
 
-    if (Irq < c_VECTORING_GUARD)
-    {
+    if (Irq < c_VECTORING_GUARD) {
         return &IsrVector[Irq];
     }
 
     return nullptr;
 }
 
-void AT91_Interrupt_ForceInterrupt(uint32_t Irq_Index)
-{
+void AT91_Interrupt_ForceInterrupt(uint32_t Irq_Index) {
     AT91_AIC &AIC = AT91::AIC();
 
     AIC.AIC_ISCR = (1 << Irq_Index);
 }
 
-void AT91_Interrupt_RemoveForcedInterrupt(uint32_t Irq_Index)
-{
+void AT91_Interrupt_RemoveForcedInterrupt(uint32_t Irq_Index) {
     AT91_AIC &AIC = AT91::AIC();
     AIC.AIC_ICCR = (1 << Irq_Index);
 }
@@ -139,8 +136,7 @@ TinyCLR_Result AT91_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInter
     aic.AIC_IDCR = AT91_AIC::AIC_IDCR_DIABLE_ALL;           // Disable the interrupt on the interrupt controller
     aic.AIC_ICCR = AT91_AIC::AIC_ICCR_CLEAR_ALL;            // Clear the interrupt on the Interrupt Controller ( if one is pending )
 
-    for (int32_t i = 0; i < c_VECTORING_GUARD; ++i)
-    {
+    for (int32_t i = 0; i < c_VECTORING_GUARD; ++i) {
         (void)aic.AIC_IVR;
         aic.AIC_EOICR = (uint32_t)i;
     }
@@ -149,12 +145,10 @@ TinyCLR_Result AT91_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInter
     AT91_Interrupt_Vectors* IsrVector = s_IsrTable;
 
     // set the priority level for each IRQ and stub the IRQ callback
-    for (int32_t i = 0; i < c_VECTORING_GUARD; i++)
-    {
+    for (int32_t i = 0; i < c_VECTORING_GUARD; i++) {
         aic.AIC_SVR[i] = (uint32_t)i;
 
-        if (i == AT91C_ID_TC0_TC1)
-        {
+        if (i == AT91C_ID_TC0_TC1) {
             aic.AIC_SMR[i] = AT91_AIC::AIC_SRCTYPE_INT_POSITIVE_EDGE;
         }
 
@@ -389,8 +383,7 @@ extern "C" {
 
         AT91_AIC &aic = AT91::AIC();
 
-        while ((index = aic.AIC_IVR) < c_VECTORING_GUARD)
-        {
+        while ((index = aic.AIC_IVR) < c_VECTORING_GUARD) {
             // Read IVR register (de-assert NIRQ) & check if we a spurous IRQ
             AT91_Interrupt_Vectors* IsrVector = &s_IsrTable[index];
 
