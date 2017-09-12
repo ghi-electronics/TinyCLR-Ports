@@ -133,10 +133,8 @@ AT91_CPU_IsMMUEnabled_asm:
 
 IDelayLoop:
 
-IDelayLoop__Fi_b:
-
-    subs    r0, r0, #4          @@ 1 cycle
-    bgt     IDelayLoop__Fi_b    @@ 3 cycles, expect the last round, which is 1 cycle.
+    subs    r0, r0, #2          @@ 1 cycle
+    bgt     IDelayLoop    @@ 3 cycles, expect the last round, which is 1 cycle.
 
     mov     pc, lr              @@ 3 cycles, expect the last round, which is 1 cycle.
 
