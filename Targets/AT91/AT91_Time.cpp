@@ -291,16 +291,8 @@ TinyCLR_Result AT91_Time_GetInitialTime(const TinyCLR_Time_Provider* self, int64
     return TinyCLR_Result::NotSupported;
 }
 
-uint32_t AT91_Time_GetSystemClock(const TinyCLR_Time_Provider* self) {
-    return SYSTEM_CLOCK_HZ;
-}
-
 uint32_t AT91_Time_GetTicksPerSecond(const TinyCLR_Time_Provider* self) {
     return SLOW_CLOCKS_PER_SECOND;
-}
-
-uint32_t AT91_Time_GetSystemCycleClock(const TinyCLR_Time_Provider* self) {
-    return SYSTEM_CYCLE_CLOCK_HZ;
 }
 
 uint64_t AT91_Time_TicksToTime(const TinyCLR_Time_Provider* self, uint64_t ticks) {

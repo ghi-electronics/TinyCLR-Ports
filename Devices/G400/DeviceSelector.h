@@ -39,11 +39,11 @@
 
 // System clock
 #define SYSTEM_CYCLE_CLOCK_HZ               (400*1000*1000) // 400 MHz
-#define SYSTEM_PERIPHERAL_CLOCK_HZ          (SYSTEM_CYCLE_CLOCK_HZ / 3) // 133MHz
-#define SYSTEM_CLOCK_HZ                     (SYSTEM_PERIPHERAL_CLOCK_HZ/32) // 4MHz
-#define CLOCK_COMMON_FACTOR                 5000 // 333333 //5000
-#define SLOW_CLOCKS_PER_SECOND              (SYSTEM_CLOCK_HZ - ((SYSTEM_CLOCK_HZ/45))) //in 4.3.7.8, we use Div = 3 = 133MHz / 3 for slow lock
-#define SLOW_CLOCKS_TEN_MHZ_GCD             1000 // 33333 //1000
+#define SYSTEM_PERIPHERAL_CLOCK_HZ          (SYSTEM_CYCLE_CLOCK_HZ / 3) // 133MHz (Peripheral Clock - MCK)
+#define SYSTEM_CLOCK_HZ                     (SYSTEM_PERIPHERAL_CLOCK_HZ / 32) // (Div3 = MCK / 32 ~ 4,166,666)
+#define SLOW_CLOCKS_PER_SECOND              SYSTEM_CLOCK_HZ
+#define CLOCK_COMMON_FACTOR                 10
+#define SLOW_CLOCKS_TEN_MHZ_GCD             10
 #define SLOW_CLOCKS_MILLISECOND_GCD         10
 
 // Memory
