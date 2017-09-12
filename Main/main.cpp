@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include <TinyCLR.h>
-#include <DeviceSelector.h>
+#include <Device.h>
 
 #define EXPAND(a) CONCAT(DEVICE_TARGET, a)
 

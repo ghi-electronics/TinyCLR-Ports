@@ -19,7 +19,7 @@
 
 #include <defines.h>
 #include <TinyCLR.h>
-#include <DeviceSelector.h>
+#include <Device.h>
 
 // ADC
 const TinyCLR_Api_Info* STM32F4_Adc_GetApi();
