@@ -13,6 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if defined(__GNUC__)
+// GCC ARM linker does not link to some variable below if optimize mode.
+#pragma GCC optimize 0
+#endif
+
 #include "AT91.h"
 
 #define MEM_MAP_REG 0xE01FC040 // memory maping register
