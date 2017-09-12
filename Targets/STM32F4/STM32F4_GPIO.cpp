@@ -16,8 +16,11 @@
 
 #include "STM32F4.h"
 
+static const STM32F4_Gpio_Init pins[] = STM32F4_GPIO_PINS;
+
+static const int STM32F4_Gpio_MaxPins = SIZEOF_CONST_ARRAY(pins);
+
 #define STM32F4_Gpio_DebounceDefaultMilisecond     20
-#define STM32F4_Gpio_MaxPins                     (TOTAL_GPIO_PORT * 16)
 #define STM32F4_Gpio_MaxInt                     16
 #define STM32F4_Gpio_PinReserved                 1
 

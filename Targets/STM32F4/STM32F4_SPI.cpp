@@ -542,7 +542,7 @@ int32_t STM32F4_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self) {
     // pins as possible so that the selected Chip select
     // line coresponds to a GPIO pin number directly
     // without needing any additional translation/mapping.
-    return TOTAL_GPIO_PINS;
+    return STM32F4_Gpio_GetPinCount(nullptr);
 }
 
 static const int32_t dataBitsCount = 2;

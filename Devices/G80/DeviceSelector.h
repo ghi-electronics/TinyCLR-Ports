@@ -39,8 +39,17 @@
 #define RAM_BOOTLOADER_HOLD_VALUE 0x37D56D4A
 
 #define INCLUDE_ADC
+
 #define INCLUDE_DAC
+
 #define INCLUDE_GPIO
+#define STM32F4_GPIO_PINS {/*      0                              1                              2                              3                              4                              5                              6                              7                              8                              9                              10                             11                             12                             13                             14                             15                          */\
+                           /*PAx*/ INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp),\
+                           /*PBx*/ INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp),\
+                           /*PCx*/ INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp),\
+                           /*PDx*/ INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp),\
+                           /*PEx*/ INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp), INPUT(PushPull, Fast, PullUp),\
+                          }
 
 #define INCLUDE_I2C
 #define STM32F4_I2C_SCL_PINS { { PIN(B, 6), AF(4) } }
@@ -61,7 +70,7 @@
                              { { PIN(B,  9), AF(3)   }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } },\
                              { { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } },\
                              { { PIN(A,  6), AF(9)   }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } },\
-                             { { PIN(A,  7), AF(9)   }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } }\
+                             { { PIN(A,  7), AF(9)   }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } },\
                          }
 
 #define INCLUDE_SPI
@@ -83,13 +92,6 @@
 #define STM32F4_USB_DP_PINS { { PIN(A, 12), AF(10) } }
 #define STM32F4_USB_VB_PINS { { PIN(A,  9), AF(10) } }
 #define STM32F4_USB_ID_PINS { { PIN(A, 10), AF(10) } }
-
-
-
-
-// GPIO
-#define TOTAL_GPIO_PORT                 (GPIO_PORT_E + 1)
-#define TOTAL_GPIO_PINS                 (TOTAL_GPIO_PORT*16)
 
 
 

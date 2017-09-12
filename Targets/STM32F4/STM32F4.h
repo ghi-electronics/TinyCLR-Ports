@@ -87,8 +87,7 @@ enum class STM32F4_Gpio_AlternateFunction : uint8_t {
     AF12 = 12,
     AF13 = 12,
     AF14 = 14,
-    AF15 = 15,
-    None = 0xFF
+    AF15 = 15
 };
 
 enum class STM32F4_Gpio_OutputType : uint8_t {
@@ -307,12 +306,26 @@ TinyCLR_Gpio_PinValue STM32F4_Startup_GetLModeUsbState();
 #define PIN(port, pin) CONCAT(GPIO_PORT_, port) * 16 + pin
 #define PIN_NONE 0xFFFFFFFF
 #define AF(num) CONCAT(STM32F4_Gpio_AlternateFunction::AF, num)
-#define AF_NONE STM32F4_Gpio_AlternateFunction::None
+#define AF_NONE STM32F4_Gpio_AlternateFunction::AF0
 #define GPIO_PORT_A  0
 #define GPIO_PORT_B  1
 #define GPIO_PORT_C  2
 #define GPIO_PORT_D  3
 #define GPIO_PORT_E  4
+
+struct STM32F4_Gpio_Init {
+    STM32F4_Gpio_PortMode portMode;
+    STM32F4_Gpio_OutputType outputType;
+    STM32F4_Gpio_OutputSpeed outputSpeed;
+    STM32F4_Gpio_PullDirection pullDirection;
+    STM32F4_Gpio_AlternateFunction alternateFunction;
+};
+
+#define INIT(portMode, outputType, outputSpeed, pullDirection, alternateFunction) { STM32F4_Gpio_PortMode::portMode, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::pullDirection, STM32F4_Gpio_AlternateFunction::alternateFunction }
+#define ALTFUN(outputType, outputSpeed, pullDirection, alternateFunction) { STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::pullDirection, STM32F4_Gpio_AlternateFunction::alternateFunction }
+#define ANALOG() { STM32F4_Gpio_PortMode::Analog, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0 }
+#define OUTPUT(outputType, outputSpeed) { STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0 }
+#define INPUT(outputType, outputSpeed, pullDirection) { STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::pullDirection, STM32F4_Gpio_AlternateFunction::AF0 }
 
 #include "inc/stm32f4xx.h"
 #include "core_cm4.h"
