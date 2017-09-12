@@ -89,7 +89,7 @@ int main() {
 
     TinyCLR_Startup_SetDeviceInformation(DEVICE_NAME, DEVICE_MANUFACTURER, DEVICE_VERSION);
 
-#if defined(INCLUDE_UART) && defined (INCLUDE_USBCLIENT) && defined (MODE_PIN)
+#if defined(INCLUDE_UART) && defined (INCLUDE_USBCLIENT) && defined (DEBUGGER_SELECTOR_PIN)
     {
         TinyCLR_Gpio_PinValue value;
         auto gpio = static_cast<const TinyCLR_Gpio_Provider*>(EXPAND(_Gpio_GetApi)()->Implementation);
@@ -112,16 +112,16 @@ int main() {
 
     auto runApp = true;
 
-#if defined(RUNAPP_PIN)
+#if defined(RUN_APP_PIN)
     {
         TinyCLR_Gpio_PinValue value;
         auto gpio = static_cast<const TinyCLR_Gpio_Provider*>(EXPAND(_Gpio_GetApi)()->Implementation);
-        gpio->AcquirePin(gpio, RUNAPP_PIN);
-        gpio->SetDriveMode(gpio, RUNAPP_PIN, TinyCLR_Gpio_PinDriveMode::InputPullUp);
-        gpio->Read(gpio, RUNAPP_PIN, value);
-        gpio->ReleasePin(gpio, RUNAPP_PIN);
+        gpio->AcquirePin(gpio, RUN_APP_PIN);
+        gpio->SetDriveMode(gpio, RUN_APP_PIN, TinyCLR_Gpio_PinDriveMode::InputPullUp);
+        gpio->Read(gpio, RUN_APP_PIN, value);
+        gpio->ReleasePin(gpio, RUN_APP_PIN);
 
-        runApp = value == RUNAPP_STATE;
+        runApp = value == RUN_APP_STATE;
     }
 #endif
 
