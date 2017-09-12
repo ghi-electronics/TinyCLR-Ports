@@ -117,8 +117,8 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Write(const 
     return TinyCLR_Result::Success;
 }
 
-const uint32_t sectorAddress[] = FLASH_DEPLOYMENT_SECTOR_ADDRESS;
-const uint32_t sectorSize[] = FLASH_DEPLOYMENT_SECTOR_SIZE; // Sector size can be diffirent if different sector.
+const uint32_t sectorAddress[] = DEPLOYMENT_SECTOR_ADDRESSES;
+const uint32_t sectorSize[] = DEPLOYMENT_SECTOR_SIZES; // Sector size can be diffirent if different sector.
 
 TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
     if (sector >= SIZEOF_CONST_ARRAY(sectorAddress)) return TinyCLR_Result::IndexOutOfRange;
