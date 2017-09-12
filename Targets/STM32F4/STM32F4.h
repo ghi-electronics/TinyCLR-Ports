@@ -323,7 +323,7 @@ struct STM32F4_Gpio_Init {
 
 #define INIT(portMode, outputType, outputSpeed, pullDirection, alternateFunction) { STM32F4_Gpio_PortMode::portMode, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::pullDirection, STM32F4_Gpio_AlternateFunction::alternateFunction }
 #define ALTFUN(outputType, outputSpeed, pullDirection, alternateFunction) { STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::pullDirection, STM32F4_Gpio_AlternateFunction::alternateFunction }
-#define ANALOG() { STM32F4_Gpio_PortMode::Analog, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0 }
+#define ANALOG() { STM32F4_Gpio_PortMode::Analog, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0 }
 #define OUTPUT(outputType, outputSpeed) { STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0 }
 #define INPUT(outputType, outputSpeed, pullDirection) { STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::pullDirection, STM32F4_Gpio_AlternateFunction::AF0 }
 
