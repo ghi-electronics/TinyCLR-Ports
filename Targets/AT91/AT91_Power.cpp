@@ -87,6 +87,12 @@ void AT91_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) {
     }
 #endif
 
+    volatile uint32_t *pReset     = (volatile uint32_t*)AT91C_BASE_RSTC;
+    volatile uint32_t *pResetMode = (volatile uint32_t*)AT91C_BASE_RSTC_MR;
+
+    *pResetMode = (AT91C_RSTC__RESET_KEY | 4ul << 8);
+    *pReset     = (AT91C_RSTC__RESET_KEY | AT91C_RTSC__PROCRST | AT91C_RTSC__PERRST | AT91C_RTSC__EXTRST);
+
     while (1); // wait for reset
 }
 
