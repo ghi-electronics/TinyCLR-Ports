@@ -137,8 +137,11 @@ void LPC17_Gpio_InterruptHandler(void* param) {
                 }
             }
 
-            if (executeIsr)
+            if (executeIsr) {
+                LPC17_Gpio_Read(&gpioProvider, state->pin, state->currentValue); // read value as soon as possible
+                
                 state->ISR(state->controller, state->pin, state->currentValue);
+            }
         }
     }
 
