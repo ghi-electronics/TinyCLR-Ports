@@ -121,7 +121,7 @@ void AT91_Gpio_InterruptHandler(void* param) {
 
             if (executeIsr) {
                 AT91_Gpio_Read(&gpioProvider, state->pin, state->currentValue); // read value as soon as possible
-                
+
                 state->ISR(state->controller, state->pin, state->currentValue);
             }
 
@@ -240,6 +240,13 @@ bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_P
         case AT91_Gpio_Direction::Input:
             pioX.PIO_ODR = bitmask; // Disable Output
 
+            if (filter == AT91_Gpio_Filter::Enable) {
+                pioX.PIO_IFER = bitmask;
+            }
+            else {
+                pioX.PIO_IFDR = bitmask;
+            }
+
             switch (resistorMode) {
             case AT91_Gpio_ResistorMode::Inactive:
                 pioX.PIO_PPUDR = bitmask;	// Disable the pull up resistor
@@ -299,7 +306,7 @@ bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_P
 
 
 bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PeripheralSelection peripheralSelection, AT91_Gpio_ResistorMode resistorMode) {
-    return AT91_Gpio_ConfigurePin(pin, pinDir, peripheralSelection, resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable, AT91_Gpio_DriveSpeed::Reserved);
+    return AT91_Gpio_ConfigurePin(pin, pinDir, peripheralSelection, resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Enable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable, AT91_Gpio_DriveSpeed::Reserved);
 }
 
 void AT91_Gpio_EnableOutputPin(int32_t pin, bool initialState) {
