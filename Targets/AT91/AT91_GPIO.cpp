@@ -241,11 +241,19 @@ bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_P
             pioX.PIO_ODR = bitmask; // Disable Output
 
             if (filter == AT91_Gpio_Filter::Enable) {
-                pioX.PIO_IFER = bitmask;
+                // TODO    
             }
             else {
-                pioX.PIO_IFDR = bitmask;
+                // TODO
             }
+            
+            if (filterSlowClock == AT91_Gpio_FilterSlowClock::Enable) {
+                // TO DO    
+            }
+            else {
+                // TO DO
+            }
+
 
             switch (resistorMode) {
             case AT91_Gpio_ResistorMode::Inactive:
