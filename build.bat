@@ -138,7 +138,13 @@ IF "%DoBuild%" == "1" (
         GOTO :EOF
     )
 
-    FOR %%A IN ("%ScriptRoot%\Targets\%TargetName%", "%ScriptRoot%\Devices\%DeviceName%", "%ScriptRoot%\Main") DO (
+    SET CompilePaths="%ScriptRoot%\Targets\%TargetName%", "%ScriptRoot%\Devices\%DeviceName%", "%ScriptRoot%\Main"
+
+    IF NOT "%AdditionalDrivers%" == "" (
+        FOR %%A IN (!AdditionalDrivers!) DO SET CompilePaths=!CompilePaths!, "%ScriptRoot%\Drivers\%%A"
+    )
+
+    FOR %%A IN (!CompilePaths!) DO (
         PUSHD "%%A"
 
         FOR /R %%B IN ("*.gcc.s") DO (
