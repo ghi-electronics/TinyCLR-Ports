@@ -1136,6 +1136,10 @@ bool STM32F4_UsbClient_Initialize(int controller) {
     OTG->DIEPEMPMSK = 0;                 // disable Tx FIFO empty interrupts
     OTG->GAHBCFG |= OTG_GAHBCFG_GINTMSK; // gloabl interrupt enable
 
+#if defined(STM32F413xx)
+    OTG->GOTGCTL |= USB_OTG_GOTGCTL_BVALOEN | USB_OTG_GOTGCTL_BVALOVAL;
+#endif
+
     // rest of initializations done in reset interrupt handler
     return true;
 }
