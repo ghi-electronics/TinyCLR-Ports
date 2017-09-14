@@ -16,7 +16,7 @@
 
 #include "STM32F4.h"
 
-#ifdef STM32F427xx
+#if defined(STM32F427xx) || defined(STM32F413xx)
 ///////////////////////////////////////////////////////////////////////////////
 
 #define STM32F4_DAC_CHANNELS             2       // number of channels
