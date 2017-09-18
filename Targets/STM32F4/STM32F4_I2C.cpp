@@ -49,8 +49,8 @@
 #define RCC_APB1RSTR_I2CxRST   RCC_APB1RSTR_I2C1RST
 #endif
 
-static const STM32F4_Pin g_STM32F4_I2c_Scl_Pins[] = STM32F4_I2C_SCL_PINS;
-static const STM32F4_Pin g_STM32F4_I2c_Sda_Pins[] = STM32F4_I2C_SDA_PINS;
+static const STM32F4_Gpio_Pin g_STM32F4_I2c_Scl_Pins[] = STM32F4_I2C_SCL_PINS;
+static const STM32F4_Gpio_Pin g_STM32F4_I2c_Sda_Pins[] = STM32F4_I2C_SDA_PINS;
 
 static const int TOTAL_I2C_CONTROLLERS = SIZEOF_ARRAY(g_STM32F4_I2c_Scl_Pins);
 

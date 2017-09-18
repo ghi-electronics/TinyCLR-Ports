@@ -93,14 +93,14 @@ int main() {
     {
         TinyCLR_Gpio_PinValue value;
         auto gpio = static_cast<const TinyCLR_Gpio_Provider*>(EXPAND(_Gpio_GetApi)()->Implementation);
-        auto lmodePin = EXPAND(_Startup_GetLModePin)();
+        auto lmodePin = EXPAND(_Startup_GetModePin)();
 
         gpio->AcquirePin(gpio, lmodePin);
         gpio->SetDriveMode(gpio, lmodePin, TinyCLR_Gpio_PinDriveMode::InputPullUp);
         gpio->Read(gpio, lmodePin, value);
         gpio->ReleasePin(gpio, lmodePin);
 
-        value ==  EXPAND(_Startup_GetLModeUsbState)() ? TinyCLR_Startup_SetDebugger(EXPAND(_UsbClient_GetApi)(), USB_DEBUGGER_INDEX) : TinyCLR_Startup_SetDebugger(EXPAND(_Uart_GetApi)(), UART_DEBUGGER_INDEX);
+        value ==  EXPAND(_Startup_GetModeUsbState)() ? TinyCLR_Startup_SetDebugger(EXPAND(_UsbClient_GetApi)(), USB_DEBUGGER_INDEX) : TinyCLR_Startup_SetDebugger(EXPAND(_Uart_GetApi)(), UART_DEBUGGER_INDEX);
     }
 #elif defined(INCLUDE_UART)
     TinyCLR_Startup_SetDebugger(EXPAND(_Uart_GetApi)(), UART_DEBUGGER_INDEX);

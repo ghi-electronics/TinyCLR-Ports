@@ -15,6 +15,7 @@
 // limitations under the License.
 
 #include "STM32F4.h"
+#include <stdio.h>
 
 #ifndef STM32F4_FLASH
 #define STM32F4_FLASH               ((FLASH_TypeDef *) FLASH_R_BASE)

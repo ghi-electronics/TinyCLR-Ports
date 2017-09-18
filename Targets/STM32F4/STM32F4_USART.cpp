@@ -52,10 +52,10 @@ struct UartController {
 
 };
 
-static const STM32F4_Pin g_STM32F4_Uart_Tx_Pins[] = STM32F4_UART_TX_PINS;
-static const STM32F4_Pin g_STM32F4_Uart_Rx_Pins[] = STM32F4_UART_RX_PINS;
-static const STM32F4_Pin g_STM32F4_Uart_Cts_Pins[] = STM32F4_UART_CTS_PINS;
-static const STM32F4_Pin g_STM32F4_Uart_Rts_Pins[] = STM32F4_UART_RTS_PINS;
+static const STM32F4_Gpio_Pin g_STM32F4_Uart_Tx_Pins[] = STM32F4_UART_TX_PINS;
+static const STM32F4_Gpio_Pin g_STM32F4_Uart_Rx_Pins[] = STM32F4_UART_RX_PINS;
+static const STM32F4_Gpio_Pin g_STM32F4_Uart_Cts_Pins[] = STM32F4_UART_CTS_PINS;
+static const STM32F4_Gpio_Pin g_STM32F4_Uart_Rts_Pins[] = STM32F4_UART_RTS_PINS;
 
 static const int TOTAL_UART_CONTROLLERS = SIZEOF_ARRAY(g_STM32F4_Uart_Tx_Pins);
 

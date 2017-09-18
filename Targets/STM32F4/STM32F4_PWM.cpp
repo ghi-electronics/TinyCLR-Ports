@@ -51,7 +51,7 @@ typedef  TIM_TypeDef* ptr_TIM_TypeDef;
 
 struct PwmController {
     ptr_TIM_TypeDef     timerdef;
-    STM32F4_Pin         gpioPin[PWM_PER_CONTROLLER];
+    STM32F4_Gpio_Pin         gpioPin[PWM_PER_CONTROLLER];
 
     bool                invert[PWM_PER_CONTROLLER];
     double              actualFreq;
@@ -64,7 +64,7 @@ struct PwmController {
 
 };
 
-static STM32F4_Pin pwmPins[][PWM_PER_CONTROLLER] = STM32F4_PWM_PINS;
+static STM32F4_Gpio_Pin pwmPins[][PWM_PER_CONTROLLER] = STM32F4_PWM_PINS;
 
 static const int TOTAL_PWM_CONTROLLER = SIZEOF_ARRAY(pwmPins);
 
@@ -309,7 +309,7 @@ int32_t STM32F4_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self) {
     return chnlCnt;
 }
 
-STM32F4_Pin* STM32F4_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t pin) {
+STM32F4_Gpio_Pin* STM32F4_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t pin) {
     return &(pwmController(self->Index).gpioPin[pin]);
 }
 

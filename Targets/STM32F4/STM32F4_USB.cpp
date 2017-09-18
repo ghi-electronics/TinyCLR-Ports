@@ -15,6 +15,7 @@
 // limitations under the License.
 
 #include <vector>
+#include <string.h>
 #include "STM32F4.h"
 
 #define __min(a,b)  (((a) < (b)) ? (a) : (b))
@@ -699,10 +700,10 @@ OTG_TypeDef;
 #define ENDPOINT_DIR_IN_MASK        0x02
 #define ENDPOINT_DIR_OUT_MASK       0x04
 
-static const STM32F4_Pin g_STM32F4_Usb_Dm_Pins[] = STM32F4_USB_DM_PINS;
-static const STM32F4_Pin g_STM32F4_Usb_Dp_Pins[] = STM32F4_USB_DP_PINS;
-static const STM32F4_Pin g_STM32F4_Usb_Vb_Pins[] = STM32F4_USB_VB_PINS;
-static const STM32F4_Pin g_STM32F4_Usb_Id_Pins[] = STM32F4_USB_ID_PINS;
+static const STM32F4_Gpio_Pin g_STM32F4_Usb_Dm_Pins[] = STM32F4_USB_DM_PINS;
+static const STM32F4_Gpio_Pin g_STM32F4_Usb_Dp_Pins[] = STM32F4_USB_DP_PINS;
+static const STM32F4_Gpio_Pin g_STM32F4_Usb_Vb_Pins[] = STM32F4_USB_VB_PINS;
+static const STM32F4_Gpio_Pin g_STM32F4_Usb_Id_Pins[] = STM32F4_USB_ID_PINS;
 
 static const int TOTAL_USB_CONTROLLERS = SIZEOF_ARRAY(g_STM32F4_Usb_Dm_Pins);
 

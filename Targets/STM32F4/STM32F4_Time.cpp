@@ -92,21 +92,12 @@ uint64_t STM32F4_Time_TicksToTime(const TinyCLR_Time_Provider* self, uint64_t ti
 }
 
 uint64_t STM32F4_Time_TimeToTicks(const TinyCLR_Time_Provider* self, uint64_t time) {
-    return STM32F4_Time_MicrosecondsToTicks(self, time / 10);
-}
+    time /= 10;
 
-uint64_t STM32F4_Time_MillisecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t ticks) {
-    ticks *= (SLOW_CLOCKS_PER_SECOND / SLOW_CLOCKS_MILLISECOND_GCD);
-    ticks /= (1000 / SLOW_CLOCKS_MILLISECOND_GCD);
-
-    return ticks;
-}
-
-uint64_t STM32F4_Time_MicrosecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t microseconds) {
 #if 1000000 <= SLOW_CLOCKS_PER_SECOND
-    return microseconds * (SLOW_CLOCKS_PER_SECOND / 1000000);
+    return time * (SLOW_CLOCKS_PER_SECOND / 1000000);
 #else
-    return microseconds / (1000000 / SLOW_CLOCKS_PER_SECOND);
+    return time / (1000000 / SLOW_CLOCKS_PER_SECOND);
 #endif
 }
 
@@ -213,7 +204,7 @@ void STM32F4_Time_DelayNoInterrupt(const TinyCLR_Time_Provider* self, uint64_t m
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint64_t current = STM32F4_Time_GetCurrentTicks(self);
-    uint64_t maxDiff = STM32F4_Time_MicrosecondsToTicks(self, microseconds);
+    uint64_t maxDiff = STM32F4_Time_TimeToTicks(self, microseconds * 10);
 
     if (maxDiff <= CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS) maxDiff = 0;
     else maxDiff -= CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS;

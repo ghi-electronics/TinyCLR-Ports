@@ -16,9 +16,6 @@
 
 #include "STM32F4.h"
 
-static void(*g_STM32F4_stopHandler)();
-static void(*g_STM32F4_restartHandler)();
-
 static TinyCLR_Power_Provider powerProvider;
 static TinyCLR_Api_Info powerApi;
 
@@ -40,19 +37,10 @@ const TinyCLR_Api_Info* STM32F4_Power_GetApi() {
     return &powerApi;
 }
 
-void STM32F4_Power_SetHandlers(void(*stop)(), void(*restart)()) {
-    g_STM32F4_stopHandler = stop;
-    g_STM32F4_restartHandler = restart;
-}
-
 void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep_Level level) {
     switch (level) {
 
         case TinyCLR_Power_Sleep_Level::Hibernate: // stop
-        // stop peripherals if needed
-            if (g_STM32F4_stopHandler != 0)
-                g_STM32F4_stopHandler();
-
             SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
             PWR->CR |= PWR_CR_CWUF | PWR_CR_FPDS | PWR_CR_LPDS; // low power deepsleep
 
@@ -73,16 +61,9 @@ void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep
             RCC->CR &= ~RCC_CR_HSION;            // HSI off
 #endif
 
-// restart peripherals if needed
-            if (g_STM32F4_restartHandler != 0)
-                g_STM32F4_restartHandler();
             return;
 
         case TinyCLR_Power_Sleep_Level::Off: // standby
-            // stop peripherals if needed
-            if (g_STM32F4_stopHandler != 0)
-                g_STM32F4_stopHandler();
-
             SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
             PWR->CR |= PWR_CR_CWUF | PWR_CR_PDDS; // power down deepsleep
 

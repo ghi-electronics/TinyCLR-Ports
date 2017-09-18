@@ -102,35 +102,11 @@ bool STM32F4_Interrupt_Deactivate(uint32_t Irq_Index) {
 
     return true;
 }
+STM32F4_SmartPtr_Interrupt::STM32F4_SmartPtr_Interrupt() { STM32F4_Interrupt_Started(); };
+STM32F4_SmartPtr_Interrupt::~STM32F4_SmartPtr_Interrupt() { STM32F4_Interrupt_Ended(); };
 
-bool STM32F4_Interrupt_Enable(uint32_t Irq_Index) {
-    int id = (int)Irq_Index;
-    uint32_t ier = NVIC->ISER[id >> 5]; // old state
-    NVIC->ISER[id >> 5] = 1 << (id & 0x1F); // set enable bit
-
-    return (ier >> (id & 0x1F)) & 1; // old enable bit
-}
-
-bool STM32F4_Interrupt_Disable(uint32_t Irq_Index) {
-    int id = (int)Irq_Index;
-    uint32_t ier = NVIC->ISER[id >> 5]; // old state
-
-    NVIC->ICER[id >> 5] = 1 << (id & 0x1F); // clear enable bit
-
-    return (ier >> (id & 0x1F)) & 1; // old enable bit
-}
-
-bool STM32F4_Interrupt_EnableState(uint32_t Irq_Index) {
-    int id = (int)Irq_Index;
-    // return enabled bit
-    return (NVIC->ISER[id >> 5] >> (id & 0x1F)) & 1;
-}
-
-bool STM32F4_Interrupt_InterruptState(uint32_t Irq_Index) {
-    int id = (int)Irq_Index;
-    // return pending bit
-    return (NVIC->ISPR[id >> 5] >> (id & 0x1F)) & 1;
-}
+STM32F4_SmartPtr_IRQ::STM32F4_SmartPtr_IRQ() { Disable(); }
+STM32F4_SmartPtr_IRQ::~STM32F4_SmartPtr_IRQ() { Restore(); }
 
 bool STM32F4_SmartPtr_IRQ::WasDisabled() {
     return (m_state & DISABLED_MASK) == DISABLED_MASK;

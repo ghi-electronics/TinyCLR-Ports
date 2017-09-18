@@ -15,6 +15,7 @@
 // limitations under the License.
 
 #include "STM32F4.h"
+#include <stdio.h>
 
 
 #ifndef FLASH
@@ -396,11 +397,11 @@ void STM32F4_Startup_InitializeRegions() {
 
 }
 
-int32_t STM32F4_Startup_GetLModePin() {
+int32_t STM32F4_Startup_GetModePin() {
     return DEBUGGER_SELECTOR_PIN;
 }
 
-TinyCLR_Gpio_PinValue STM32F4_Startup_GetLModeUsbState() {
+TinyCLR_Gpio_PinValue STM32F4_Startup_GetModeUsbState() {
     return DEBUGGER_SELECTOR_USB_STATE;
 }
 
