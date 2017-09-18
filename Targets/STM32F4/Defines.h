@@ -21,14 +21,5 @@
 
 #define SIZEOF_CONST_ARRAY(x)               (sizeof(x)/sizeof(x[0]))
 
-
 #define CONCAT2(a, b) a##b
 #define CONCAT(a, b) CONCAT2(a, b)
-
-#ifndef __max
-#define __max(a,b)  (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef __min
-#define __min(a,b)  (((a) < (b)) ? (a) : (b))
-#endif

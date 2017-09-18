@@ -16,6 +16,9 @@
 
 #include <vector>
 #include "STM32F4.h"
+
+#define __min(a,b)  (((a) < (b)) ? (a) : (b))
+
 //--//
 // USB 2.0 host requests
 #define USB_GET_STATUS           0
