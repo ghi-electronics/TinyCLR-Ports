@@ -110,10 +110,10 @@ void STM32F4_Time_Delay(const TinyCLR_Time_Provider* self, uint64_t microseconds
 ////////////////////////////////////////////////////////////////////////////////
 //Startup
 ////////////////////////////////////////////////////////////////////////////////
-void STM32F4_Startup_InitializeRegions();
+void STM32F4_Startup_Initialize();
 void STM32F4_Startup_GetHeap(uint8_t*& start, size_t& length);
-int32_t STM32F4_Startup_GetModePin();
-TinyCLR_Gpio_PinValue STM32F4_Startup_GetModeUsbState();
+void STM32F4_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index);
+void STM32F4_Startup_GetRunApp(bool& runApp);
 
 ////////////////////////////////////////////////////////////////////////////////
 //ADC

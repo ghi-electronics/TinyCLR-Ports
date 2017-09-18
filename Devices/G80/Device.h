@@ -16,24 +16,25 @@
 
 #define STM32F427xx 1
 
-//TODO Remove
 #include <STM32F4.h>
 
 #define DEVICE_TARGET STM32F4
 #define DEVICE_NAME "G80"
 #define DEVICE_MANUFACTURER "GHI Electronics, LLC"
-#define DEVICE_VERSION ((0x0000 << 32) | (0x0006 << 16) | (0x0000 << 0))
-
-#define UART_DEBUGGER_INDEX 0
-#define USB_DEBUGGER_INDEX 0
+#define DEVICE_VERSION ((0x0000ULL << 32) | (0x0006ULL << 16) | (0x0000ULL << 0))
 
 #define USB_DEBUGGER_VENDOR_ID 0x1B9F
 #define USB_DEBUGGER_PRODUCT_ID 0x0110
 
+#define UART_DEBUGGER_INDEX 0
+#define USB_DEBUGGER_INDEX 0
+
 #define DEBUGGER_SELECTOR_PIN PIN(E, 15)
+#define DEBUGGER_SELECTOR_PULL TinyCLR_Gpio_PinDriveMode::InputPullUp
 #define DEBUGGER_SELECTOR_USB_STATE TinyCLR_Gpio_PinValue::High
 
 #define RUN_APP_PIN PIN(E, 4)
+#define RUN_APP_PULL TinyCLR_Gpio_PinDriveMode::InputPullUp
 #define RUN_APP_STATE TinyCLR_Gpio_PinValue::High
 
 #define BOOTLOADER_HOLD_ADDRESS 0x2002FFF8

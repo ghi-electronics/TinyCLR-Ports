@@ -32,6 +32,13 @@ void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
     EXPAND(_Dac_Reset)();
 #endif
 
+#ifdef INCLUDE_DISPLAY
+    apiProvider->Add(apiProvider, EXPAND(_Display_GetApi)());
+    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::DisplayProvider, EXPAND(_Display_GetApi)()->Name);
+
+    EXPAND(_Display_Reset)();
+#endif
+
 #ifdef INCLUDE_GPIO
     apiProvider->Add(apiProvider, EXPAND(_Gpio_GetApi)());
     apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::GpioProvider, EXPAND(_Gpio_GetApi)()->Name);
@@ -68,63 +75,34 @@ void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 
     EXPAND(_UsbClient_Reset)();
 #endif
-
-#ifdef INCLUDE_DISPLAY
-    apiProvider->Add(apiProvider, EXPAND(_Display_GetApi)());
-    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::DisplayProvider, EXPAND(_Display_GetApi)()->Name);
-
-    EXPAND(_Display_Reset)();
-#endif
 }
 
 int main() {
-    EXPAND(_Startup_InitializeRegions)();
+    EXPAND(_Startup_Initialize)();
+
 
     uint8_t* heapStart;
     size_t heapLength;
 
     EXPAND(_Startup_GetHeap)(heapStart, heapLength);
-
     TinyCLR_Startup_AddHeapRegion(heapStart, heapLength);
+
+
+    const TinyCLR_Api_Info* debuggerApi;
+    size_t debuggerIndex;
+
+    EXPAND(_Startup_GetDebugger)(debuggerApi, debuggerIndex);
+    TinyCLR_Startup_SetDebugger(debuggerApi, debuggerIndex);
+
 
     TinyCLR_Startup_SetDeviceInformation(DEVICE_NAME, DEVICE_MANUFACTURER, DEVICE_VERSION);
 
-#if defined(INCLUDE_UART) && defined (INCLUDE_USBCLIENT) && defined (DEBUGGER_SELECTOR_PIN)
-    {
-        TinyCLR_Gpio_PinValue value;
-        auto gpio = static_cast<const TinyCLR_Gpio_Provider*>(EXPAND(_Gpio_GetApi)()->Implementation);
-        auto lmodePin = EXPAND(_Startup_GetModePin)();
-
-        gpio->AcquirePin(gpio, lmodePin);
-        gpio->SetDriveMode(gpio, lmodePin, TinyCLR_Gpio_PinDriveMode::InputPullUp);
-        gpio->Read(gpio, lmodePin, value);
-        gpio->ReleasePin(gpio, lmodePin);
-
-        value ==  EXPAND(_Startup_GetModeUsbState)() ? TinyCLR_Startup_SetDebugger(EXPAND(_UsbClient_GetApi)(), USB_DEBUGGER_INDEX) : TinyCLR_Startup_SetDebugger(EXPAND(_Uart_GetApi)(), UART_DEBUGGER_INDEX);
-    }
-#elif defined(INCLUDE_UART)
-    TinyCLR_Startup_SetDebugger(EXPAND(_Uart_GetApi)(), UART_DEBUGGER_INDEX);
-#elif defined(INCLUDE_USBCLIENT)
-    TinyCLR_Startup_SetDebugger(EXPAND(_UsbClient_GetApi)(), USB_DEBUGGER_INDEX);
-#endif
-
     TinyCLR_Startup_SetRequiredProviders(EXPAND(_Deployment_GetApi)(), EXPAND(_Interrupt_GetApi)(), EXPAND(_Power_GetApi)(), EXPAND(_Time_GetApi)());
+
 
     auto runApp = true;
 
-#if defined(RUN_APP_PIN)
-    {
-        TinyCLR_Gpio_PinValue value;
-        auto gpio = static_cast<const TinyCLR_Gpio_Provider*>(EXPAND(_Gpio_GetApi)()->Implementation);
-        gpio->AcquirePin(gpio, RUN_APP_PIN);
-        gpio->SetDriveMode(gpio, RUN_APP_PIN, TinyCLR_Gpio_PinDriveMode::InputPullUp);
-        gpio->Read(gpio, RUN_APP_PIN, value);
-        gpio->ReleasePin(gpio, RUN_APP_PIN);
-
-        runApp = value == RUN_APP_STATE;
-    }
-#endif
-
+    EXPAND(_Startup_GetRunApp)(runApp);
     TinyCLR_Startup_Start(&OnSoftReset, runApp);
 
     return 0;
