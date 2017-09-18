@@ -19,8 +19,6 @@
 
 #include "inc/stm32f4xx.h"
 
-#include <core_cm4.h>
-
 #undef STM32F4
 
 #define SIZEOF_ARRAY(arr) (sizeof(arr) / sizeof(arr[0]))
