@@ -22,14 +22,14 @@
 #else
 #define PWM1_CLK_HZ (STM32F4_APB1_CLOCK_HZ * 2)
 #endif
-#define PWM1_CLK_MHZ (PWM1_CLK_HZ / ONE_MHZ)
+#define PWM1_CLK_MHZ (PWM1_CLK_HZ / 1000000)
 
 #if STM32F4_APB2_CLOCK_HZ == STM32F4_AHB_CLOCK_HZ
 #define PWM2_CLK_HZ (STM32F4_APB2_CLOCK_HZ)
 #else
 #define PWM2_CLK_HZ (STM32F4_APB2_CLOCK_HZ * 2)
 #endif
-#define PWM2_CLK_MHZ (PWM2_CLK_HZ / ONE_MHZ)
+#define PWM2_CLK_MHZ (PWM2_CLK_HZ / 1000000)
 
 #if PWM2_CLK_MHZ > PWM1_CLK_MHZ
 #define PWM_MAX_CLK_MHZ PWM2_CLK_MHZ
@@ -200,7 +200,7 @@ double STM32F4_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self) {
     uint32_t pre = clk / s; // prescaler
 
     if (pre == 0) { // s > PWM_CLK
-        uint32_t sm = s / ONE_MHZ; // scale in MHz
+        uint32_t sm = s / 1000000; // scale in MHz
         clk = PWM1_CLK_MHZ;      // clock in MHz
         if ((uint32_t)treg & 0x10000) clk = PWM2_CLK_MHZ; // APB2
         if (p > 0xFFFFFFFF / PWM_MAX_CLK_MHZ) { // avoid overflow

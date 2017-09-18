@@ -21,8 +21,6 @@
 
 #define SIZEOF_CONST_ARRAY(x)               (sizeof(x)/sizeof(x[0]))
 
-#define ONE_MHZ                             1000000
-#define TEN_MHZ                             (10 * ONE_MHZ)
 
 #define CONCAT2(a, b) a##b
 #define CONCAT(a, b) CONCAT2(a, b)

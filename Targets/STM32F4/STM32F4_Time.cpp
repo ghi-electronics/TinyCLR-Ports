@@ -85,7 +85,7 @@ uint32_t STM32F4_Time_GetSystemCycleClock(const TinyCLR_Time_Provider* self) {
 }
 
 uint64_t STM32F4_Time_TicksToTime(const TinyCLR_Time_Provider* self, uint64_t ticks) {
-    ticks *= (TEN_MHZ / SLOW_CLOCKS_TEN_MHZ_GCD);
+    ticks *= (10000000 / SLOW_CLOCKS_TEN_MHZ_GCD);
     ticks /= (SLOW_CLOCKS_PER_SECOND / SLOW_CLOCKS_TEN_MHZ_GCD);
 
     return ticks;
@@ -103,10 +103,10 @@ uint64_t STM32F4_Time_MillisecondsToTicks(const TinyCLR_Time_Provider* self, uin
 }
 
 uint64_t STM32F4_Time_MicrosecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t microseconds) {
-#if ONE_MHZ <= SLOW_CLOCKS_PER_SECOND
-    return microseconds * (SLOW_CLOCKS_PER_SECOND / ONE_MHZ);
+#if 1000000 <= SLOW_CLOCKS_PER_SECOND
+    return microseconds * (SLOW_CLOCKS_PER_SECOND / 1000000);
 #else
-    return microseconds / (ONE_MHZ / SLOW_CLOCKS_PER_SECOND);
+    return microseconds / (1000000 / SLOW_CLOCKS_PER_SECOND);
 #endif
 }
 
@@ -229,7 +229,7 @@ void STM32F4_Time_Delay(const TinyCLR_Time_Provider* self, uint64_t microseconds
     // iterations must be signed so that negative iterations will result in the minimum delay
 
     microseconds *= (STM32F4_AHB_CLOCK_HZ / CLOCK_COMMON_FACTOR);
-    microseconds /= (ONE_MHZ / CLOCK_COMMON_FACTOR);
+    microseconds /= (1000000 / CLOCK_COMMON_FACTOR);
 
     // iterations is equal to the number of CPU instruction cycles in the required time minus
     // overhead cycles required to call this subroutine.

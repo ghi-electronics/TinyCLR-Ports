@@ -27,7 +27,7 @@ typedef uint16_t CHIP_WORD;
 #if STM32F4_SUPPLY_VOLTAGE_MV < 2100
 #error 16 bit Flash programming not allowed for voltages below 2.1V
 #endif
-#if STM32F4_AHB_CLOCK_HZ < ONE_MHZ
+#if STM32F4_AHB_CLOCK_HZ < 1000000
 #error Flash programming not allowed for HCLK below 1MHz
 #endif
 
