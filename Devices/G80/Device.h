@@ -66,7 +66,7 @@
 #define STM32F4_I2C_SDA_PINS { { PIN(B, 7), AF(4) } }
 
 #define INCLUDE_PWM
-#define STM32F4_PWM_PINS {/*          0                        1                        2                        3                       */\
+#define STM32F4_PWM_PINS {/*          0                          1                        2                        3                       */\
                           /* TIM1  */ { { PIN(E,  9), AF(1)   }, { PIN(E, 11), AF(1)   }, { PIN(E, 13), AF(1)   }, { PIN(E, 14), AF(1)   } },\
                           /* TIM2  */ { { PIN(A, 15), AF(1)   }, { PIN(B,  3), AF(1)   }, { PIN(B, 10), AF(1)   }, { PIN(B, 11), AF(1)   } },\
                           /* TIM3  */ { { PIN(B,  4), AF(2)   }, { PIN(B,  5), AF(2)   }, { PIN(B,  0), AF(2)   }, { PIN(B,  1), AF(2)   } },\
