@@ -19,6 +19,12 @@
 
 #define __min(a,b)  (((a) < (b)) ? (a) : (b))
 
+#if defined(__GNUC__)
+#define PACKED(x) x __attribute__((packed))
+#elif defined(arm) || defined(__arm)
+#define PACKED(x) __packed x
+#endif
+
 //--//
 // USB 2.0 host requests
 #define USB_GET_STATUS           0

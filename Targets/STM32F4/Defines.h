@@ -12,13 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if defined(__GNUC__)
-#define PACKED(x)       x __attribute__((packed))
-#elif defined(arm) || defined(__arm)
-#define __section(x)
-#define PACKED(x)       __packed x
-#endif
-
 #define SIZEOF_CONST_ARRAY(x)               (sizeof(x)/sizeof(x[0]))
 
 #define CONCAT2(a, b) a##b
