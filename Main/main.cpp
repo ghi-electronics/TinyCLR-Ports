@@ -15,94 +15,94 @@
 #include <TinyCLR.h>
 #include <Device.h>
 
-#define EXPAND(a) CONCAT(DEVICE_TARGET, a)
+#define TARGET(a) CONCAT(DEVICE_TARGET, a)
 
 void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 #ifdef INCLUDE_ADC
-    apiProvider->Add(apiProvider, EXPAND(_Adc_GetApi)());
-    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::AdcProvider, EXPAND(_Adc_GetApi)()->Name);
+    apiProvider->Add(apiProvider, TARGET(_Adc_GetApi)());
+    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::AdcProvider, TARGET(_Adc_GetApi)()->Name);
 
-    EXPAND(_Adc_Reset)();
+    TARGET(_Adc_Reset)();
 #endif
 
 #ifdef INCLUDE_DAC
-    apiProvider->Add(apiProvider, EXPAND(_Dac_GetApi)());
-    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::DacProvider, EXPAND(_Dac_GetApi)()->Name);
+    apiProvider->Add(apiProvider, TARGET(_Dac_GetApi)());
+    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::DacProvider, TARGET(_Dac_GetApi)()->Name);
 
-    EXPAND(_Dac_Reset)();
+    TARGET(_Dac_Reset)();
 #endif
 
 #ifdef INCLUDE_DISPLAY
-    apiProvider->Add(apiProvider, EXPAND(_Display_GetApi)());
-    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::DisplayProvider, EXPAND(_Display_GetApi)()->Name);
+    apiProvider->Add(apiProvider, TARGET(_Display_GetApi)());
+    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::DisplayProvider, TARGET(_Display_GetApi)()->Name);
 
-    EXPAND(_Display_Reset)();
+    TARGET(_Display_Reset)();
 #endif
 
 #ifdef INCLUDE_GPIO
-    apiProvider->Add(apiProvider, EXPAND(_Gpio_GetApi)());
-    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::GpioProvider, EXPAND(_Gpio_GetApi)()->Name);
+    apiProvider->Add(apiProvider, TARGET(_Gpio_GetApi)());
+    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::GpioProvider, TARGET(_Gpio_GetApi)()->Name);
 
-    EXPAND(_Gpio_Reset)();
+    TARGET(_Gpio_Reset)();
 #endif
 
 #ifdef INCLUDE_I2C
-    apiProvider->Add(apiProvider, EXPAND(_I2c_GetApi)());
+    apiProvider->Add(apiProvider, TARGET(_I2c_GetApi)());
 
-    EXPAND(_I2c_Reset)();
+    TARGET(_I2c_Reset)();
 #endif
 
 #ifdef INCLUDE_PWM
-    apiProvider->Add(apiProvider, EXPAND(_Pwm_GetApi)());
+    apiProvider->Add(apiProvider, TARGET(_Pwm_GetApi)());
 
-    EXPAND(_Pwm_Reset)();
+    TARGET(_Pwm_Reset)();
 #endif
 
 #ifdef INCLUDE_SPI
-    apiProvider->Add(apiProvider, EXPAND(_Spi_GetApi)());
+    apiProvider->Add(apiProvider, TARGET(_Spi_GetApi)());
 
-    EXPAND(_Spi_Reset)();
+    TARGET(_Spi_Reset)();
 #endif
 
 #ifdef INCLUDE_UART
-    apiProvider->Add(apiProvider, EXPAND(_Uart_GetApi)());
+    apiProvider->Add(apiProvider, TARGET(_Uart_GetApi)());
 
-    EXPAND(_Uart_Reset)();
+    TARGET(_Uart_Reset)();
 #endif
 
 #ifdef INCLUDE_USBCLIENT
-    apiProvider->Add(apiProvider, EXPAND(_UsbClient_GetApi)());
+    apiProvider->Add(apiProvider, TARGET(_UsbClient_GetApi)());
 
-    EXPAND(_UsbClient_Reset)();
+    TARGET(_UsbClient_Reset)();
 #endif
 }
 
 int main() {
-    EXPAND(_Startup_Initialize)();
+    TARGET(_Startup_Initialize)();
 
 
     uint8_t* heapStart;
     size_t heapLength;
 
-    EXPAND(_Startup_GetHeap)(heapStart, heapLength);
+    TARGET(_Startup_GetHeap)(heapStart, heapLength);
     TinyCLR_Startup_AddHeapRegion(heapStart, heapLength);
 
 
     const TinyCLR_Api_Info* debuggerApi;
     size_t debuggerIndex;
 
-    EXPAND(_Startup_GetDebugger)(debuggerApi, debuggerIndex);
+    TARGET(_Startup_GetDebugger)(debuggerApi, debuggerIndex);
     TinyCLR_Startup_SetDebugger(debuggerApi, debuggerIndex);
 
 
     TinyCLR_Startup_SetDeviceInformation(DEVICE_NAME, DEVICE_MANUFACTURER, DEVICE_VERSION);
 
-    TinyCLR_Startup_SetRequiredProviders(EXPAND(_Deployment_GetApi)(), EXPAND(_Interrupt_GetApi)(), EXPAND(_Power_GetApi)(), EXPAND(_Time_GetApi)());
+    TinyCLR_Startup_SetRequiredProviders(TARGET(_Deployment_GetApi)(), TARGET(_Interrupt_GetApi)(), TARGET(_Power_GetApi)(), TARGET(_Time_GetApi)());
 
 
     auto runApp = true;
 
-    EXPAND(_Startup_GetRunApp)(runApp);
+    TARGET(_Startup_GetRunApp)(runApp);
     TinyCLR_Startup_Start(&OnSoftReset, runApp);
 
     return 0;
