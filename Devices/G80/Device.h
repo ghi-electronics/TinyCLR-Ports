@@ -16,12 +16,13 @@
 
 #define STM32F427xx 1
 
+//TODO Remove
 #include <STM32F4.h>
 
 #define DEVICE_TARGET STM32F4
 #define DEVICE_NAME "G80"
 #define DEVICE_MANUFACTURER "GHI Electronics, LLC"
-#define DEVICE_VERSION 0x000600
+#define DEVICE_VERSION ((0x0000 << 32) | (0x0006 << 16) | (0x0000 << 0))
 
 #define UART_DEBUGGER_INDEX 0
 #define USB_DEBUGGER_INDEX 0
