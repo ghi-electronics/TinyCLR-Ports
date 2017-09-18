@@ -17,9 +17,13 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <defines.h>
 #include <TinyCLR.h>
 #include <Device.h>
+
+#define SIZEOF_ARRAY(arr) (sizeof(arr) / sizeof(arr[0]))
+
+#define CONCAT2(a, b) a##b
+#define CONCAT(a, b) CONCAT2(a, b)
 
 // ADC
 const TinyCLR_Api_Info* STM32F4_Adc_GetApi();
