@@ -25,7 +25,7 @@ static const STM32F4_Pin g_STM32F4_Spi_Sclk_Pins[] = STM32F4_SPI_SCLK_PINS;
 static const STM32F4_Pin g_STM32F4_Spi_Miso_Pins[] = STM32F4_SPI_MISO_PINS;
 static const STM32F4_Pin g_STM32F4_Spi_Mosi_Pins[] = STM32F4_SPI_MOSI_PINS;
 
-static const int TOTAL_SPI_CONTROLLERS = SIZEOF_CONST_ARRAY(g_STM32F4_Spi_Sclk_Pins);
+static const int TOTAL_SPI_CONTROLLERS = SIZEOF_ARRAY(g_STM32F4_Spi_Sclk_Pins);
 
 static ptr_SPI_TypeDef g_STM32_Spi_Port[TOTAL_SPI_CONTROLLERS];
 

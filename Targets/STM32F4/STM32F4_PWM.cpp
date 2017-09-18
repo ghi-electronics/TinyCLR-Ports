@@ -66,7 +66,7 @@ struct PwmController {
 
 static STM32F4_Pin pwmPins[][PWM_PER_CONTROLLER] = STM32F4_PWM_PINS;
 
-static const int TOTAL_PWM_CONTROLLER = SIZEOF_CONST_ARRAY(pwmPins);
+static const int TOTAL_PWM_CONTROLLER = SIZEOF_ARRAY(pwmPins);
 
 static PwmController g_PwmController[TOTAL_PWM_CONTROLLER];
 

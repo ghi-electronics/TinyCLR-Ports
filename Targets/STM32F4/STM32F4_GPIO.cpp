@@ -18,7 +18,7 @@
 
 static const STM32F4_Gpio_Init pins[] = STM32F4_GPIO_PINS;
 
-static const int STM32F4_Gpio_MaxPins = SIZEOF_CONST_ARRAY(pins);
+static const int STM32F4_Gpio_MaxPins = SIZEOF_ARRAY(pins);
 
 #define STM32F4_Gpio_DebounceDefaultMilisecond     20
 #define STM32F4_Gpio_MaxInt                     16

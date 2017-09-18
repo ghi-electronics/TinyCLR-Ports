@@ -42,7 +42,7 @@
 static const uint8_t g_STM32F4_AD_Channel[18] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
 static const uint8_t g_STM32F4_AD_Pins[18] = STM32F4_ADC_PINS;
 
-#define STM32F4_AD_NUM SIZEOF_CONST_ARRAY(g_STM32F4_AD_Channel)  // number of channels
+#define STM32F4_AD_NUM SIZEOF_ARRAY(g_STM32F4_AD_Channel)  // number of channels
 
 static TinyCLR_Adc_Provider adcProvider;
 static TinyCLR_Api_Info adcApi;

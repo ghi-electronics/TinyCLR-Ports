@@ -704,7 +704,7 @@ static const STM32F4_Pin g_STM32F4_Usb_Dp_Pins[] = STM32F4_USB_DP_PINS;
 static const STM32F4_Pin g_STM32F4_Usb_Vb_Pins[] = STM32F4_USB_VB_PINS;
 static const STM32F4_Pin g_STM32F4_Usb_Id_Pins[] = STM32F4_USB_ID_PINS;
 
-static const int TOTAL_USB_CONTROLLERS = SIZEOF_CONST_ARRAY(g_STM32F4_Usb_Dm_Pins);
+static const int TOTAL_USB_CONTROLLERS = SIZEOF_ARRAY(g_STM32F4_Usb_Dm_Pins);
 
 int8_t STM32F4_UsbClient_EndpointMap[] = { ENDPOINT_INUSED_MASK,                          // Endpoint 0
                                                 ENDPOINT_DIR_IN_MASK | ENDPOINT_DIR_OUT_MASK,  // Endpoint 1
@@ -1515,7 +1515,7 @@ bool UsbClient_Driver::OpenStream(int controller, int32_t& usbStream, TinyCLR_Us
 
     case TinyCLR_UsbClient_StreamMode::InOut:
 
-        for (auto i = 0; i < SIZEOF_CONST_ARRAY(STM32F4_UsbClient_EndpointMap); i++) {
+        for (auto i = 0; i < SIZEOF_ARRAY(STM32F4_UsbClient_EndpointMap); i++) {
             if ((STM32F4_UsbClient_EndpointMap[i] & ENDPOINT_INUSED_MASK)) // in used
                 continue;
 
@@ -2619,19 +2619,19 @@ TinyCLR_Result STM32F4_UsbClient_SetConfigDescriptor(const TinyCLR_UsbClient_Pro
 TinyCLR_Result STM32F4_UsbClient_SetStringDescriptor(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_StringDescriptorType type, const wchar_t* value) {
     switch (type) {
     case TinyCLR_UsbClient_StringDescriptorType::ManufacturerName:
-        memcpy(&stringManufacturerDescriptorHeader.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_CONST_ARRAY(stringManufacturerDescriptorHeader.stringDescriptor));
+        memcpy(&stringManufacturerDescriptorHeader.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_ARRAY(stringManufacturerDescriptorHeader.stringDescriptor));
         break;
 
     case TinyCLR_UsbClient_StringDescriptorType::ProductName:
-        memcpy(&stringProductNameDescriptorHeader.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_CONST_ARRAY(stringManufacturerDescriptorHeader.stringDescriptor));
+        memcpy(&stringProductNameDescriptorHeader.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_ARRAY(stringManufacturerDescriptorHeader.stringDescriptor));
         break;
 
     case TinyCLR_UsbClient_StringDescriptorType::DisplayName:
-        memcpy(&stringDisplayNameDescriptorHeader.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_CONST_ARRAY(stringManufacturerDescriptorHeader.stringDescriptor));
+        memcpy(&stringDisplayNameDescriptorHeader.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_ARRAY(stringManufacturerDescriptorHeader.stringDescriptor));
         break;
 
     case TinyCLR_UsbClient_StringDescriptorType::FriendlyName:
-        memcpy(&stringFriendlyNameDescriptorHeader.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_CONST_ARRAY(stringManufacturerDescriptorHeader.stringDescriptor));
+        memcpy(&stringFriendlyNameDescriptorHeader.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_ARRAY(stringManufacturerDescriptorHeader.stringDescriptor));
         break;
     }
 

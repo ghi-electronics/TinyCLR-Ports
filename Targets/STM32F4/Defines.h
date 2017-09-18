@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#define SIZEOF_CONST_ARRAY(x)               (sizeof(x)/sizeof(x[0]))
+#define SIZEOF_ARRAY(arr) (sizeof(arr) / sizeof(arr[0]))
 
 #define CONCAT2(a, b) a##b
 #define CONCAT(a, b) CONCAT2(a, b)
