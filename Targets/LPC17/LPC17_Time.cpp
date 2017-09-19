@@ -17,6 +17,7 @@
 
 #define TIMER_IDLE_VALUE  0x0000FFFFFFFFFFFFull
 
+#define SLOW_CLOCKS_PER_SECOND LPC17_AHB_CLOCK_HZ
 #define SLOW_CLOCKS_TEN_MHZ_GCD           1000000   // GCD(SLOW_CLOCKS_PER_SECOND, 10M)
 #define SLOW_CLOCKS_MILLISECOND_GCD          1000   // GCD(SLOW_CLOCKS_PER_SECOND, 1k)
 #define CLOCK_COMMON_FACTOR               1000000   // GCD(SYSTEM_CLOCK_HZ, 1M)
@@ -42,7 +43,7 @@ const TinyCLR_Api_Info* LPC17_Time_GetApi() {
     timeProvider.Parent = &timeApi;
     timeProvider.Index = 0;
     timeProvider.GetInitialTime = &LPC17_Time_GetInitialTime;
-    timeProvider.GetTimeForProcessorTicks = &LPC17_Time_TicksToTime;
+    timeProvider.GetTimeForProcessorTicks = &LPC17_Time_GetTimeForProcessorTicks;
     timeProvider.GetProcessorTicksForTime = &LPC17_Time_TimeToTicks;
     timeProvider.GetCurrentProcessorTicks = &LPC17_Time_GetCurrentTicks;
     timeProvider.SetTickCallback = &LPC17_Time_SetCompareCallback;
@@ -71,7 +72,7 @@ TinyCLR_Result LPC17_Time_GetInitialTime(const TinyCLR_Time_Provider* self, int6
 }
 
 uint32_t LPC17_Time_GetSystemClock(const TinyCLR_Time_Provider* self) {
-    return SYSTEM_CLOCK_HZ;
+    return LPC17_SYSTEM_CLOCK_HZ;
 }
 
 uint32_t LPC17_Time_GetTicksPerSecond(const TinyCLR_Time_Provider* self) {
@@ -79,11 +80,11 @@ uint32_t LPC17_Time_GetTicksPerSecond(const TinyCLR_Time_Provider* self) {
 }
 
 uint32_t LPC17_Time_GetSystemCycleClock(const TinyCLR_Time_Provider* self) {
-    return SYSTEM_CYCLE_CLOCK_HZ;
+    return LPC17_AHB_CLOCK_HZ;
 }
 
-uint64_t LPC17_Time_TicksToTime(const TinyCLR_Time_Provider* self, uint64_t ticks) {
-    ticks *= (TEN_MHZ / SLOW_CLOCKS_TEN_MHZ_GCD);
+uint64_t LPC17_Time_GetTimeForProcessorTicks(const TinyCLR_Time_Provider* self, uint64_t ticks) {
+    ticks *= (10000000 / SLOW_CLOCKS_TEN_MHZ_GCD);
     ticks /= (SLOW_CLOCKS_PER_SECOND / SLOW_CLOCKS_TEN_MHZ_GCD);
 
     return ticks;
@@ -101,10 +102,10 @@ uint64_t LPC17_Time_MillisecondsToTicks(const TinyCLR_Time_Provider* self, uint6
 }
 
 uint64_t LPC17_Time_MicrosecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t microseconds) {
-#if ONE_MHZ <= SLOW_CLOCKS_PER_SECOND
-    return microseconds * (SLOW_CLOCKS_PER_SECOND / ONE_MHZ);
+#if 1000000 <= SLOW_CLOCKS_PER_SECOND
+    return microseconds * (SLOW_CLOCKS_PER_SECOND / 1000000);
 #else
-    return microseconds / (ONE_MHZ / SLOW_CLOCKS_PER_SECOND);
+    return microseconds / (1000000 / SLOW_CLOCKS_PER_SECOND);
 #endif
 }
 
@@ -226,8 +227,8 @@ void LPC17_Time_Delay(const TinyCLR_Time_Provider* self, uint64_t microseconds) 
 
     // iterations must be signed so that negative iterations will result in the minimum delay
 
-    microseconds *= (SYSTEM_CYCLE_CLOCK_HZ / CLOCK_COMMON_FACTOR);
-    microseconds /= (ONE_MHZ / CLOCK_COMMON_FACTOR);
+    microseconds *= (LPC17_AHB_CLOCK_HZ / CLOCK_COMMON_FACTOR);
+    microseconds /= (1000000 / CLOCK_COMMON_FACTOR);
 
     // iterations is equal to the number of CPU instruction cycles in the required time minus
     // overhead cycles required to call this subroutine.

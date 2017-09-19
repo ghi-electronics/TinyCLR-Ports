@@ -42,9 +42,11 @@ const char IOCON_Type[] = { 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'W', 'W', 'W', 'D
                             'D', 'D', 'I', 'I', 'D' };
 
 
+static const LPC17_Gpio_PinConfiguration pins[] = LPC17_GPIO_PINS;
+                            
 #define LPC17_Gpio_PinReserved                 1
 #define LPC17_Gpio_DebounceDefaultMilisecond   20
-#define LPC17_Gpio_MaxPins                     TOTAL_GPIO_PINS
+#define LPC17_Gpio_MaxPins                     SIZEOF_ARRAY(pins)
 
 struct LPC17_Int_State {
     uint8_t                                     pin;      // pin number
@@ -413,7 +415,7 @@ int32_t LPC17_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t
     if (pin >= LPC17_Gpio_MaxPins || pin < 0)
         return 0;
 
-    return (int32_t)(g_debounceTicksPin[pin] / (SLOW_CLOCKS_PER_SECOND / 1000)); // ticks -> ms
+    return LPC17_Time_GetTimeForProcessorTicks(nullptr, (uint64_t)(g_debounceTicksPin[pin])) / 10;            
 }
 
 TinyCLR_Result LPC17_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, int32_t debounceTime) {

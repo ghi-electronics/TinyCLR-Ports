@@ -436,12 +436,12 @@ bool LPC17_Display_Initialize() {
         divider = 0xFF;
     }
     else {
-        newFreq = (uint32_t)((SYSTEM_CYCLE_CLOCK_HZ / 1000) % m_LPC17_DisplayPixelClockRateKHz);
+        newFreq = (uint32_t)((LPC17_AHB_CLOCK_HZ / 1000) % m_LPC17_DisplayPixelClockRateKHz);
 
         if (newFreq != 0)
-            divider = ((SYSTEM_CYCLE_CLOCK_HZ / 1000) / m_LPC17_DisplayPixelClockRateKHz) + 1;
+            divider = ((LPC17_AHB_CLOCK_HZ / 1000) / m_LPC17_DisplayPixelClockRateKHz) + 1;
         else
-            divider = ((SYSTEM_CYCLE_CLOCK_HZ / 1000) / m_LPC17_DisplayPixelClockRateKHz);
+            divider = ((LPC17_AHB_CLOCK_HZ / 1000) / m_LPC17_DisplayPixelClockRateKHz);
     }
 
     LPC_SC->LCD_CFG = (divider - 1);

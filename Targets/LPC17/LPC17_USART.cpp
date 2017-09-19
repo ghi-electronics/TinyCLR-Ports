@@ -32,7 +32,7 @@ struct LPC17xx_USART {
 
 
 
-    static const uint32_t c_ClockRate = LPC17xx_UART_PCLK;
+    static const uint32_t c_ClockRate = LPC17_SYSTEM_CLOCK_HZ/2;
 
     static const uint32_t c_MAX_BAUDRATE = c_ClockRate / 16;
     static const uint32_t c_MIN_BAUDRATE = 0;
@@ -360,9 +360,7 @@ void LPC17_Uart_ReceiveData(int portNum, uint32_t LSR_Value, uint32_t IIR_Value)
                 }
             } while (LSR_Value & LPC17xx_USART::UART_LSR_RFDR);
         }
-    }
-
-    INTERRUPT_END
+    }    
 }
 void LPC17_Uart_TransmitData(int portNum, uint32_t LSR_Value, uint32_t IIR_Value) {
     INTERRUPT_STARTED_SCOPED(isr);
@@ -390,9 +388,7 @@ void LPC17_Uart_TransmitData(int portNum, uint32_t LSR_Value, uint32_t IIR_Value
                 LPC17_Uart_TxBufferEmptyInterruptEnable(portNum, false); // Disable interrupt when no more data to send.
             }
         }
-    }
-
-    INTERRUPT_END
+    }    
 }
 
 void UART_IntHandler(int portNum) {
@@ -417,9 +413,7 @@ void UART_IntHandler(int portNum) {
 
     LPC17_Uart_ReceiveData(portNum, LSR_Value, IIR_Value);
 
-    LPC17_Uart_TransmitData(portNum, LSR_Value, IIR_Value);
-
-    INTERRUPT_END
+    LPC17_Uart_TransmitData(portNum, LSR_Value, IIR_Value);    
 }
 //--//
 void UART0_IntHandler(void *param) {

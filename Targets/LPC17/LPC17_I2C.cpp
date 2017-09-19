@@ -13,11 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "LPC17.h"
+#include <LPC17.h>
 
 struct LPC17xx_I2C {
     static const uint32_t c_I2C_Base = 0x4001C000;
-    static const uint32_t c_I2C_Clk_KHz = LPC17_I2C_PCLK_KHZ;
+    static const uint32_t c_I2C_Clk_KHz = LPC17_SYSTEM_CLOCK_HZ/2/1000;
 
     /****/ volatile uint32_t I2CONSET;
     static const    uint32_t I2EN = 0x00000040;
@@ -65,6 +65,9 @@ static LPC17_I2c_Configuration g_I2cConfiguration;
 static LPC17_I2c_Transaction   *g_currentI2cTransactionAction;
 static LPC17_I2c_Transaction   g_ReadI2cTransactionAction;
 static LPC17_I2c_Transaction   g_WriteI2cTransactionAction;
+
+static const LPC17_Gpio_Pin g_i2c_scl_pins[] = LPC17_I2C_SCL_PINS;
+static const LPC17_Gpio_Pin g_i2c_sda_pins[] = LPC17_I2C_SDA_PINS;
 
 static TinyCLR_I2c_Provider i2cProvider;
 static TinyCLR_Api_Info i2cApi;
@@ -342,11 +345,11 @@ TinyCLR_Result LPC17_I2c_Acquire(const TinyCLR_I2c_Provider* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    if (!LPC17_Gpio_OpenPin(LPC17_I2C_SDA_PIN) || !LPC17_Gpio_OpenPin(LPC17_I2C_SCL_PIN))
+    if (!LPC17_Gpio_OpenPin(g_i2c_sda_pins[self->Index].number) || !LPC17_Gpio_OpenPin(g_i2c_scl_pins[self->Index].number))
         return TinyCLR_Result::SharingViolation;
 
-    LPC17_Gpio_ConfigurePin(LPC17_I2C_SDA_PIN, LPC17_Gpio_Direction::Input, LPC17_I2C_SDA_ALT_MODE, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(LPC17_I2C_SCL_PIN, LPC17_Gpio_Direction::Input, LPC17_I2C_SCL_ALT_MODE, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+    LPC17_Gpio_ConfigurePin(g_i2c_sda_pins[self->Index].number, LPC17_Gpio_Direction::Input, g_i2c_sda_pins[self->Index].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+    LPC17_Gpio_ConfigurePin(g_i2c_scl_pins[self->Index].number, LPC17_Gpio_Direction::Input, g_i2c_scl_pins[self->Index].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
     LPC17_Interrupt_Activate(I2C0_IRQn, (uint32_t*)&LPC17_I2c_InterruptHandler, 0);
 
@@ -370,8 +373,8 @@ TinyCLR_Result LPC17_I2c_Release(const TinyCLR_I2c_Provider* self) {
 
     I2C.I2CONCLR = (LPC17xx_I2C::AA | LPC17xx_I2C::SI | LPC17xx_I2C::STO | LPC17xx_I2C::STA | LPC17xx_I2C::I2EN);
 
-    LPC17_Gpio_ClosePin(LPC17_I2C_SDA_PIN);
-    LPC17_Gpio_ClosePin(LPC17_I2C_SCL_PIN);
+    LPC17_Gpio_ClosePin(g_i2c_sda_pins[self->Index].number);
+    LPC17_Gpio_ClosePin(g_i2c_scl_pins[self->Index].number);
 
     return TinyCLR_Result::Success;
 }

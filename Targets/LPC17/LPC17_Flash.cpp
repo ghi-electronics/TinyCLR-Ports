@@ -50,7 +50,7 @@
 #define DEPLOYMENT_SECTOR_NUM   (DEPLOYMENT_SECTOR_END - DEPLOYMENT_SECTOR_START + 1)
 
 //SPI config
-#define SPI_CS                    _P(4,27)
+#define SPI_CS                    PIN(4,27)
 #define SPI_CLOCK_RATE_HZ         20000000
 #define SPI_MODULE                1 // SPI1
 
