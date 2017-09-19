@@ -12,149 +12,79 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef _DEVICE_G30_H_
-#define _DEVICE_G30_H_
+#pragma once
 
-#define PLATFORM_ARM_DEFINED
+#define STM32F401xE 1
 
-// Macro
-#define GLOBAL_LOCK(x)             STM32F4_SmartPtr_IRQ x
-#define DISABLE_INTERRUPTS()       STM32F4_SmartPtr_IRQ::ForceDisabled()
-#define ENABLE_INTERRUPTS()        STM32F4_SmartPtr_IRQ::ForceEnabled()
-#define INTERRUPTS_ENABLED_STATE() STM32F4_SmartPtr_IRQ::GetState()
-#define GLOBAL_LOCK_SOCKETS(x)     STM32F4_SmartPtr_IRQ x
+#include <STM32F4.h>
 
-#if defined(_DEBUG)
-#define ASSERT(x)                  while (!x)
-#define ASSERT_IRQ_MUST_BE_OFF()   ASSERT(!STM32F4_SmartPtr_IRQ::GetState())
-#define ASSERT_IRQ_MUST_BE_ON()    ASSERT( STM32F4_SmartPtr_IRQ::GetState())
-#else
-#define ASSERT_IRQ_MUST_BE_OFF()
-#define ASSERT_IRQ_MUST_BE_ON()
-#endif
+#define DEVICE_TARGET STM32F4
+#define DEVICE_NAME "Clicker"
+#define DEVICE_MANUFACTURER "GHI Electronics, LLC"
+#define DEVICE_VERSION ((0x0000ULL << 32) | (0x0006ULL << 16) | (0x0000ULL << 0))
 
-#define INTERRUPT_START         STM32F4_Interrupt_Started();
-#define INTERRUPT_END           STM32F4_Interrupt_Ended();
-
-// Device
-#define HAL_SYSTEM_NAME "clicker"
-
-// System clock
-#define SYSTEM_CLOCK_HZ                  84000000   // 84 MHz
-#define SYSTEM_CYCLE_CLOCK_HZ            84000000   // 84 MHz
-#define SYSTEM_APB1_CLOCK_HZ             42000000   // 42 MHz
-#define SYSTEM_APB2_CLOCK_HZ             84000000   // 84 MHz
-#define SYSTEM_CRYSTAL_CLOCK_HZ          16000000   // 16 MHz external clock
-#define SUPPLY_VOLTAGE_MV                    3300   // 3.3V supply
-#define CLOCK_COMMON_FACTOR               1000000   // GCD(SYSTEM_CLOCK_HZ, 1M)
-#define SLOW_CLOCKS_PER_SECOND           84000000   // 84 MHz
-#define SLOW_CLOCKS_TEN_MHZ_GCD           1000000   // GCD(SLOW_CLOCKS_PER_SECOND, 10M)
-#define SLOW_CLOCKS_MILLISECOND_GCD          1000   // GCD(SLOW_CLOCKS_PER_SECOND, 1k)
-
-// Memory
-#define FLASH_MEMORY_Base                   0x08000000
-#define FLASH_MEMORY_Size                   0x00080000  // 512KB
-#define SRAM1_MEMORY_Base                   0x20000000
-#define SRAM1_MEMORY_Size                   0x00018000  // 98KB
-
-#define FLASH_DEPLOYMENT_SECTOR_ADDRESS     {0x08040000, 0x08060000}
-#define FLASH_DEPLOYMENT_SECTOR_SIZE        {0x00020000, 0x00020000}
-
-
-// Macro
-#define PORT_PIN(port,pin)              (((int)port)*16 + (pin))
-#define _P(port, pin)                   PORT_PIN(GPIO_PORT##port, pin)
-#define _P_NONE_                        GPIO_PIN_NONE
-#define GPIO_PORTA  0
-#define GPIO_PORTB  1
-#define GPIO_PORTC  2
-#define GPIO_PORTD  3
-
-
-// GPIO
-#define TOTAL_GPIO_PORT                 (GPIO_PORTD + 1)
-#define TOTAL_GPIO_PINS                 (TOTAL_GPIO_PORT*16)
-
-// I2C
-#define STM32F4_ADC 					1
-#define STM32F4_AD_CHANNELS 			{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }
-
-// PWM
-#define MAX_PWM_PER_CONTROLLER               4
-#define TOTAL_PWM_CONTROLLER                 4
-#define STM32F4_PWM                     {   {TIM1  ,  STM32F4_Gpio_AlternateFunction::AF1,     { _P(A, 8) , _P(A, 9) , _P(A,10) , _P_NONE_} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 1} ,\
-                                            {TIM2  ,  STM32F4_Gpio_AlternateFunction::AF1,     { _P(A, 0) , _P(A, 1) , _P(A, 2) , _P(A, 3)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 2} ,\
-                                            {TIM3  ,  STM32F4_Gpio_AlternateFunction::AF2,     { _P(C, 6) , _P(C, 7) , _P(C, 8) , _P(C, 9)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 3} ,\
-                                            {TIM4  ,  STM32F4_Gpio_AlternateFunction::AF2,     { _P(B, 6) , _P(B, 7) , _P(B, 8) , _P(B, 9)} ,  { false, false, false, false }, 0.0, 0.0, {0.0, 0.0, 0.0, 0.0}, 0, 0, 4} }
-
-// I2C
-#define STM32F4_I2C_PORT                1
-#define STM32F4_I2C_SCL_PIN             _P(B, 6)
-#define STM32F4_I2C_SDA_PIN             _P(B, 7)
-
-// SPI
-#define TOTAL_SPI_CONTROLLERS           2
-#define STM32F4_SPI_SCLK_PINS           { _P(B, 3), _P(B,13) }
-#define STM32F4_SPI_MISO_PINS           { _P(B, 4), _P(B,14) }
-#define STM32F4_SPI_MOSI_PINS           { _P(B, 5), _P(B,15) }
-
-// UART
-#define TOTAL_UART_CONTROLLERS          2
-#define STM32F4_UART_TX_BUFFER_SIZE     256
-#define STM32F4_UART_RX_BUFFER_SIZE     512
-#define STM32F4_UART_RXD_PINS           { _P(A,10), _P(A, 3) }
-#define STM32F4_UART_TXD_PINS           { _P(A, 9), _P(A, 2) }
-#define STM32F4_UART_CTS_PINS           { GPIO_PIN_NONE, _P(A, 0) }
-#define STM32F4_UART_RTS_PINS           { GPIO_PIN_NONE, _P(A, 1) }
-
-//  USBC
-#define TOTAL_USB_CONTROLLER            1
-#define USB_MAX_QUEUES                  16
-#define USB_VENDOR_ID                   0x1B9F
-#define USB_PRODUCT_ID                  0x0110
-#define USB_MANUFACTURER_NAME           {'c', 'l', 'i', 'c', 'k', 'e', 'r'}
-#define USB_PRODUCT_NAME                {'c', 'l', 'i', 'c', 'k', 'e', 'r'}
-#define USB_DISPLAY_NAME                USB_PRODUCT_NAME
-#define USB_FRIENDLY_NAME               USB_PRODUCT_NAME
-
-
-// Debug
-#define DEBUG_TEXT_PORT                 USB1
-#define STDIO                           USB1
-#define DEBUGGER_PORT                   USB1
-#define MESSAGING_PORT                  USB1
-
-#define LMODE_PIN                       _P(B,10)
-#define LMODE_USB_STATE                 TinyCLR_Gpio_PinValue::High
-
-// Loader
-#define RUNAPP_PIN						_P(C,13)
-#define RUNAPP_STATE 				    TinyCLR_Gpio_PinValue::High
+#define USB_DEBUGGER_VENDOR_ID 0x1B9F
+#define USB_DEBUGGER_PRODUCT_ID 0x0110
 
 #define UART_DEBUGGER_INDEX 0
 #define USB_DEBUGGER_INDEX 0
 
-// OEM information
-#define OEM_STRING                      "GHI Electronics, LLC\0"
-#define OEM_VERSION_MAJOR               0
-#define OEM_VERSION_MINOR               6
-#define OEM_VERSION_PATCH               0
+#define DEBUGGER_SELECTOR_PIN PIN(B, 10)
+#define DEBUGGER_SELECTOR_PULL TinyCLR_Gpio_PinDriveMode::InputPullUp
+#define DEBUGGER_SELECTOR_USB_STATE TinyCLR_Gpio_PinValue::High
 
+#define RUN_APP_PIN PIN(C, 13)
+#define RUN_APP_PULL TinyCLR_Gpio_PinDriveMode::InputPullUp
+#define RUN_APP_STATE TinyCLR_Gpio_PinValue::High
 
-// STM32F4 requires to define specific
-#define STM32F4XX						1
-#define STM32F401xE                     1
+#define DEPLOYMENT_SECTOR_ADDRESSES { 0x08040000, 0x08060000 }
+#define DEPLOYMENT_SECTOR_SIZES { 0x00020000, 0x00020000 }
+
+#define STM32F4_SYSTEM_CLOCK_HZ 84000000
+#define STM32F4_AHB_CLOCK_HZ 84000000
+#define STM32F4_APB1_CLOCK_HZ 42000000
+#define STM32F4_APB2_CLOCK_HZ 84000000
+#define STM32F4_CRYSTAL_CLOCK_HZ 16000000
+#define STM32F4_SUPPLY_VOLTAGE_MV 3300
 
 #define INCLUDE_ADC
+
 #define INCLUDE_GPIO
+#define STM32F4_GPIO_PINS {/*      0                              1                              2                              3                              4                              5                              6                              7                              8                              9                              10                             11                             12                             13                             14                             15                          */\
+                           /*PAx*/ INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp),\
+                           /*PBx*/ INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp),\
+                           /*PCx*/ INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp),\
+                           /*PDx*/ INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp),\
+                          }
+
 #define INCLUDE_I2C
+#define STM32F4_I2C_SCL_PINS { { PIN(B, 6), AF(4) } }
+#define STM32F4_I2C_SDA_PINS { { PIN(B, 7), AF(4) } }
+
 #define INCLUDE_PWM
+#define STM32F4_PWM_PINS {/*          0                          1                        2                        3                       */\
+                          /* TIM1  */ { { PIN(A,  8), AF(1)   }, { PIN(A,  9), AF(1)   }, { PIN(A, 10), AF(1)   }, { PIN_NONE ,  AF_NONE } },\
+                          /* TIM2  */ { { PIN(A,  0), AF(1)   }, { PIN(A,  1), AF(1)   }, { PIN(A,  2), AF(1)   }, { PIN(A,  3), AF(1)   } },\
+                          /* TIM3  */ { { PIN(C,  6), AF(2)   }, { PIN(C,  7), AF(2)   }, { PIN(C,  8), AF(2)   }, { PIN(C,  9), AF(2)   } },\
+                          /* TIM4  */ { { PIN(B,  7), AF(2)   }, { PIN(B,  7), AF(2)   }, { PIN(B,  8), AF(2)   }, { PIN(B,  9), AF(2)   } },\
+                         }
+
 #define INCLUDE_SPI
+#define STM32F4_SPI_SCLK_PINS { { PIN(B, 3), AF(5) }, { PIN(B, 13), AF(5) } }
+#define STM32F4_SPI_MISO_PINS { { PIN(B, 4), AF(5) }, { PIN(B, 14), AF(5) } }
+#define STM32F4_SPI_MOSI_PINS { { PIN(B, 5), AF(5) }, { PIN(B, 15), AF(5) } }
+
 #define INCLUDE_UART
+#define STM32F4_UART_TX_BUFFER_SIZE 256
+#define STM32F4_UART_RX_BUFFER_SIZE 512
+#define STM32F4_UART_TX_PINS  { { PIN(A,  9), AF(7)   }, { PIN(A, 2), AF(7) } }
+#define STM32F4_UART_RX_PINS  { { PIN(A, 10), AF(7)   }, { PIN(A, 3), AF(7) } }
+#define STM32F4_UART_CTS_PINS { { PIN_NONE  , AF_NONE }, { PIN(A, 0), AF(7) } }
+#define STM32F4_UART_RTS_PINS { { PIN_NONE  , AF_NONE }, { PIN(A, 1), AF(7) } }
+
 #define INCLUDE_USBCLIENT
-
-#define TARGET STM32F4
-
-#include <STM32F4.h>
-
-#endif
+#define STM32F4_USB_QUEUE_SIZE 16
+#define STM32F4_USB_DM_PINS { { PIN(A, 11), AF(10) } }
+#define STM32F4_USB_DP_PINS { { PIN(A, 12), AF(10) } }
+#define STM32F4_USB_VB_PINS { { PIN(A,  9), AF(10) } }
+#define STM32F4_USB_ID_PINS { { PIN(A, 10), AF(10) } }
