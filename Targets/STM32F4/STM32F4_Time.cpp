@@ -43,16 +43,16 @@ static TinyCLR_Api_Info timeApi;
 const TinyCLR_Api_Info* STM32F4_Time_GetApi() {
     timeProvider.Parent = &timeApi;
     timeProvider.Index = 0;
-    timeProvider.GetInitialTime = &STM32F4_Time_GetInitialTime;
-    timeProvider.GetTimeForProcessorTicks = &STM32F4_Time_TicksToTime;
-    timeProvider.GetProcessorTicksForTime = &STM32F4_Time_TimeToTicks;
-    timeProvider.GetCurrentProcessorTicks = &STM32F4_Time_GetCurrentTicks;
-    timeProvider.SetTickCallback = &STM32F4_Time_SetCompareCallback;
-    timeProvider.SetNextTickCallbackTime = &STM32F4_Time_SetCompare;
     timeProvider.Acquire = &STM32F4_Time_Acquire;
     timeProvider.Release = &STM32F4_Time_Release;
-    timeProvider.DelayNoInterrupt = &STM32F4_Time_DelayNoInterrupt;
+    timeProvider.GetInitialTime = &STM32F4_Time_GetInitialTime;
+    timeProvider.GetCurrentProcessorTicks = &STM32F4_Time_GetCurrentProcessorTicks;
+    timeProvider.GetTimeForProcessorTicks = &STM32F4_Time_GetTimeForProcessorTicks;
+    timeProvider.GetProcessorTicksForTime = &STM32F4_Time_GetProcessorTicksForTime;
+    timeProvider.SetTickCallback = &STM32F4_Time_SetTickCallback;
+    timeProvider.SetNextTickCallbackTime = &STM32F4_Time_SetNextTickCallbackTime;
     timeProvider.Delay = &STM32F4_Time_Delay;
+    timeProvider.DelayNoInterrupt = &STM32F4_Time_DelayNoInterrupt;
 
     timeApi.Author = "GHI Electronics, LLC";
     timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.TimeProvider";
@@ -84,14 +84,14 @@ uint32_t STM32F4_Time_GetSystemCycleClock(const TinyCLR_Time_Provider* self) {
     return STM32F4_AHB_CLOCK_HZ;
 }
 
-uint64_t STM32F4_Time_TicksToTime(const TinyCLR_Time_Provider* self, uint64_t ticks) {
+uint64_t STM32F4_Time_GetTimeForProcessorTicks(const TinyCLR_Time_Provider* self, uint64_t ticks) {
     ticks *= (10000000 / SLOW_CLOCKS_TEN_MHZ_GCD);
     ticks /= (SLOW_CLOCKS_PER_SECOND / SLOW_CLOCKS_TEN_MHZ_GCD);
 
     return ticks;
 }
 
-uint64_t STM32F4_Time_TimeToTicks(const TinyCLR_Time_Provider* self, uint64_t time) {
+uint64_t STM32F4_Time_GetProcessorTicksForTime(const TinyCLR_Time_Provider* self, uint64_t time) {
     time /= 10;
 
 #if 1000000 <= SLOW_CLOCKS_PER_SECOND
@@ -101,7 +101,7 @@ uint64_t STM32F4_Time_TimeToTicks(const TinyCLR_Time_Provider* self, uint64_t ti
 #endif
 }
 
-uint64_t STM32F4_Time_GetCurrentTicks(const TinyCLR_Time_Provider* self) {
+uint64_t STM32F4_Time_GetCurrentProcessorTicks(const TinyCLR_Time_Provider* self) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t tick_spent;
@@ -127,12 +127,12 @@ uint64_t STM32F4_Time_GetCurrentTicks(const TinyCLR_Time_Provider* self) {
     return (uint64_t)(g_STM32F4_Timer_Driver.m_lastRead & TIMER_IDLE_VALUE);
 }
 
-TinyCLR_Result STM32F4_Time_SetCompare(const TinyCLR_Time_Provider* self, uint64_t processorTicks) {
+TinyCLR_Result STM32F4_Time_SetNextTickCallbackTime(const TinyCLR_Time_Provider* self, uint64_t processorTicks) {
     uint64_t ticks;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    ticks = STM32F4_Time_GetCurrentTicks(self);
+    ticks = STM32F4_Time_GetCurrentProcessorTicks(self);
 
     g_nextEvent = processorTicks;
 
@@ -164,11 +164,11 @@ extern "C" {
     void SysTick_Handler(void *param) {
         INTERRUPT_STARTED_SCOPED(isr);
 
-            if (STM32F4_Time_GetCurrentTicks(nullptr) >= g_nextEvent) { // handle event
+            if (STM32F4_Time_GetCurrentProcessorTicks(nullptr) >= g_nextEvent) { // handle event
                 g_STM32F4_Timer_Driver.m_DequeuAndExecute();
             }
             else {
-                STM32F4_Time_SetCompare(nullptr, g_nextEvent);
+                STM32F4_Time_SetNextTickCallbackTime(nullptr, g_nextEvent);
             }
     }
 
@@ -184,7 +184,7 @@ TinyCLR_Result STM32F4_Time_Release(const TinyCLR_Time_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Time_SetCompareCallback(const TinyCLR_Time_Provider* self, TinyCLR_Time_TickCallback callback) {
+TinyCLR_Result STM32F4_Time_SetTickCallback(const TinyCLR_Time_Provider* self, TinyCLR_Time_TickCallback callback) {
     if (g_STM32F4_Timer_Driver.m_DequeuAndExecute != nullptr) return TinyCLR_Result::InvalidOperation;
 
     g_nextEvent = TIMER_IDLE_VALUE;
@@ -203,13 +203,13 @@ TinyCLR_Result STM32F4_Time_SetCompareCallback(const TinyCLR_Time_Provider* self
 void STM32F4_Time_DelayNoInterrupt(const TinyCLR_Time_Provider* self, uint64_t microseconds) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    uint64_t current = STM32F4_Time_GetCurrentTicks(self);
-    uint64_t maxDiff = STM32F4_Time_TimeToTicks(self, microseconds * 10);
+    uint64_t current = STM32F4_Time_GetCurrentProcessorTicks(self);
+    uint64_t maxDiff = STM32F4_Time_GetProcessorTicksForTime(self, microseconds * 10);
 
     if (maxDiff <= CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS) maxDiff = 0;
     else maxDiff -= CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS;
 
-    while (((int32_t)(STM32F4_Time_GetCurrentTicks(self) - current)) <= maxDiff);
+    while (((int32_t)(STM32F4_Time_GetCurrentProcessorTicks(self) - current)) <= maxDiff);
 
 }
 

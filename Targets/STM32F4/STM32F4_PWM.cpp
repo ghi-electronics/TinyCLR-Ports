@@ -64,6 +64,9 @@ struct PwmController {
 
 };
 
+void STM32F4_Pwm_ResetController(int32_t controller);
+STM32F4_Gpio_Pin* STM32F4_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t pin);
+
 static STM32F4_Gpio_Pin pwmPins[][PWM_PER_CONTROLLER] = STM32F4_PWM_PINS;
 
 static const int TOTAL_PWM_CONTROLLER = SIZEOF_ARRAY(pwmPins);
@@ -81,12 +84,12 @@ const TinyCLR_Api_Info* STM32F4_Pwm_GetApi() {
         pwmProviders[i]->Index = i;
         pwmProviders[i]->Acquire = &STM32F4_Pwm_Acquire;
         pwmProviders[i]->Release = &STM32F4_Pwm_Release;
-        pwmProviders[i]->SetDesiredFrequency = &STM32F4_Pwm_SetDesiredFrequency;
         pwmProviders[i]->AcquirePin = &STM32F4_Pwm_AcquirePin;
         pwmProviders[i]->ReleasePin = &STM32F4_Pwm_ReleasePin;
         pwmProviders[i]->EnablePin = &STM32F4_Pwm_EnablePin;
         pwmProviders[i]->DisablePin = &STM32F4_Pwm_DisablePin;
         pwmProviders[i]->SetPulseParameters = &STM32F4_Pwm_SetPulseParameters;
+        pwmProviders[i]->SetDesiredFrequency = &STM32F4_Pwm_SetDesiredFrequency;
         pwmProviders[i]->GetMinFrequency = &STM32F4_Pwm_GetMinFrequency;
         pwmProviders[i]->GetMaxFrequency = &STM32F4_Pwm_GetMaxFrequency;
         pwmProviders[i]->GetActualFrequency = &STM32F4_Pwm_GetActualFrequency;

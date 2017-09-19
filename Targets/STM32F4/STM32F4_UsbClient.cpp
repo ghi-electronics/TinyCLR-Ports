@@ -2597,7 +2597,7 @@ TinyCLR_Result STM32F4_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_UsbClient_SetOsExtendedProperty(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_OsExtendedPropertyHandler handler) {
+TinyCLR_Result STM32F4_UsbClient_SetOsExtendedPropertyHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_OsExtendedPropertyHandler handler) {
     int32_t controller = self->Index;
 
     UsbClient_Driver::OsExtendedPropertyHandler = handler;
@@ -2664,11 +2664,11 @@ const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi() {
     usbClientProvider.Write = &STM32F4_UsbClient_Write;
     usbClientProvider.Read = &STM32F4_UsbClient_Read;
     usbClientProvider.Flush = &STM32F4_UsbClient_Flush;
-    usbClientProvider.SetDataReceivedHandler = &STM32F4_UsbClient_SetDataReceivedHandler;
-    usbClientProvider.SetOsExtendedPropertyHandler = &STM32F4_UsbClient_SetOsExtendedProperty;
     usbClientProvider.SetDeviceDescriptor = &STM32F4_UsbClient_SetDeviceDescriptor;
     usbClientProvider.SetConfigDescriptor = &STM32F4_UsbClient_SetConfigDescriptor;
     usbClientProvider.SetStringDescriptor = &STM32F4_UsbClient_SetStringDescriptor;
+    usbClientProvider.SetDataReceivedHandler = &STM32F4_UsbClient_SetDataReceivedHandler;
+    usbClientProvider.SetOsExtendedPropertyHandler = &STM32F4_UsbClient_SetOsExtendedPropertyHandler;
 
     usbClientApi.Author = "GHI Electronics, LLC";
     usbClientApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.UsbClientProvider";

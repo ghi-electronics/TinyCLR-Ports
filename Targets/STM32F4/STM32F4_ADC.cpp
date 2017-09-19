@@ -54,14 +54,14 @@ const TinyCLR_Api_Info* STM32F4_Adc_GetApi() {
     adcProvider.Release = &STM32F4_Adc_Release;
     adcProvider.AcquireChannel = &STM32F4_Adc_AcquireChannel;
     adcProvider.ReleaseChannel = &STM32F4_Adc_ReleaseChannel;
-    adcProvider.IsChannelModeSupported = &STM32F4_Adc_IsChannelModeSupported;
     adcProvider.ReadValue = &STM32F4_Adc_ReadValue;
+    adcProvider.SetChannelMode = &STM32F4_Adc_SetChannelMode;
+    adcProvider.GetChannelMode = &STM32F4_Adc_GetChannelMode;
+    adcProvider.IsChannelModeSupported = &STM32F4_Adc_IsChannelModeSupported;
     adcProvider.GetMinValue = &STM32F4_Adc_GetMinValue;
     adcProvider.GetMaxValue = &STM32F4_Adc_GetMaxValue;
     adcProvider.GetResolutionInBits = &STM32F4_Adc_GetResolutionInBits;
     adcProvider.GetChannelCount = &STM32F4_Adc_GetChannelCount;
-    adcProvider.GetChannelMode = &STM32F4_Adc_GetChannelMode;
-    adcProvider.SetChannelMode = &STM32F4_Adc_SetChannelMode;
 
     adcApi.Author = "GHI Electronics, LLC";
     adcApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.AdcProvider";

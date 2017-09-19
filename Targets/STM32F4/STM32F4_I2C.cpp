@@ -49,6 +49,9 @@
 #define RCC_APB1RSTR_I2CxRST   RCC_APB1RSTR_I2C1RST
 #endif
 
+void STM32F4_I2c_StartTransaction();
+void STM32F4_I2c_StopTransaction();
+
 static const STM32F4_Gpio_Pin g_STM32F4_I2c_Scl_Pins[] = STM32F4_I2C_SCL_PINS;
 static const STM32F4_Gpio_Pin g_STM32F4_I2c_Sda_Pins[] = STM32F4_I2C_SDA_PINS;
 
@@ -91,9 +94,9 @@ const TinyCLR_Api_Info* STM32F4_I2c_GetApi() {
     i2cProvider.Acquire = &STM32F4_I2c_Acquire;
     i2cProvider.Release = &STM32F4_I2c_Release;
     i2cProvider.SetActiveSettings = &STM32F4_I2c_SetActiveSettings;
-    i2cProvider.Read = &STM32F4_I2c_ReadTransaction;
-    i2cProvider.Write = &STM32F4_I2c_WriteTransaction;
-    i2cProvider.WriteRead = &STM32F4_I2c_WriteReadTransaction;
+    i2cProvider.Read = &STM32F4_I2c_Read;
+    i2cProvider.Write = &STM32F4_I2c_Write;
+    i2cProvider.WriteRead = &STM32F4_I2c_WriteRead;
 
     i2cApi.Author = "GHI Electronics, LLC";
     i2cApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.I2cProvider";
@@ -233,7 +236,7 @@ void STM32F4_I2c_StopTransaction() {
     g_currentI2cTransactionAction->isDone = true;
 }
 
-TinyCLR_Result STM32F4_I2c_ReadTransaction(const TinyCLR_I2c_Provider* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result STM32F4_I2c_Read(const TinyCLR_I2c_Provider* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
     g_ReadI2cTransactionAction.isReadTransaction = true;
@@ -263,7 +266,7 @@ TinyCLR_Result STM32F4_I2c_ReadTransaction(const TinyCLR_I2c_Provider* self, uin
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result STM32F4_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result STM32F4_I2c_Write(const TinyCLR_I2c_Provider* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
     g_WriteI2cTransactionAction.isReadTransaction = false;
@@ -293,7 +296,7 @@ TinyCLR_Result STM32F4_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, co
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result STM32F4_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result STM32F4_I2c_WriteRead(const TinyCLR_I2c_Provider* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
     g_WriteI2cTransactionAction.isReadTransaction = false;

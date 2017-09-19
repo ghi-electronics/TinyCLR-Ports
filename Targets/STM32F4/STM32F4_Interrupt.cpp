@@ -27,14 +27,13 @@ static TinyCLR_Api_Info interruptApi;
 const TinyCLR_Api_Info* STM32F4_Interrupt_GetApi() {
     interruptProvider.Parent = &interruptApi;
     interruptProvider.Index = 0;
-    interruptProvider.Parent = &interruptApi;
     interruptProvider.Acquire = &STM32F4_Interrupt_Acquire;
     interruptProvider.Release = &STM32F4_Interrupt_Release;
-    interruptProvider.Enable = &STM32F4_Interrupt_GlobalEnabled;
-    interruptProvider.Disable = &STM32F4_Interrupt_GlobalDisabled;
-    interruptProvider.WaitForInterrupt = &STM32F4_Interrupt_GlobalWaitForInterrupt;
-    interruptProvider.IsDisabled = &STM32F4_Interrupt_GlobalIsDisabled;
-    interruptProvider.Restore = &STM32F4_Interrupt_GlobalRestore;
+    interruptProvider.Enable = &STM32F4_Interrupt_Enable;
+    interruptProvider.Disable = &STM32F4_Interrupt_Disable;
+    interruptProvider.WaitForInterrupt = &STM32F4_Interrupt_WaitForInterrupt;
+    interruptProvider.IsDisabled = &STM32F4_Interrupt_IsDisabled;
+    interruptProvider.Restore = &STM32F4_Interrupt_Restore;
 
     interruptApi.Author = "GHI Electronics, LLC";
     interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.InterruptProvider";
@@ -83,20 +82,20 @@ TinyCLR_Result STM32F4_Interrupt_Release() {
     return TinyCLR_Result::Success;
 }
 
-bool STM32F4_Interrupt_Activate(uint32_t Irq_Index, uint32_t *ISR, void* ISR_Param) {
-    int id = (int)Irq_Index;
+bool STM32F4_Interrupt_Activate(uint32_t index, uint32_t *isr, void* isrParam) {
+    int id = (int)index;
 
     uint32_t *irq_vectors = (uint32_t*)&__Vectors;
 
-    irq_vectors[id + 16] = (uint32_t)ISR; // exception = irq + 16
+    irq_vectors[id + 16] = (uint32_t)isr; // exception = irq + 16
     NVIC->ICPR[id >> 5] = 1 << (id & 0x1F); // clear pending bit
     NVIC->ISER[id >> 5] = 1 << (id & 0x1F); // set enable bit
 
     return true;
 }
 
-bool STM32F4_Interrupt_Deactivate(uint32_t Irq_Index) {
-    int id = (int)Irq_Index;
+bool STM32F4_Interrupt_Deactivate(uint32_t index) {
+    int id = (int)index;
 
     NVIC->ICER[id >> 5] = 1 << (id & 0x1F); // clear enable bit */
 
@@ -132,7 +131,7 @@ void STM32F4_SmartPtr_IRQ::Probe() {
     uint32_t Cp = m_state;
 
     if ((Cp & DISABLED_MASK) == 0) {
-        STM32F4_Interrupt_GlobalWaitForInterrupt();
+        STM32F4_Interrupt_WaitForInterrupt();
     }
 }
 
@@ -159,18 +158,18 @@ void STM32F4_SmartPtr_IRQ::Restore() {
 //////////////////////////////////////////////////////////////////////////////
 //Global Interrupt - Use in System Cote
 //////////////////////////////////////////////////////////////////////////////
-bool STM32F4_Interrupt_GlobalIsDisabled() {
+bool STM32F4_Interrupt_IsDisabled() {
     return (__get_PRIMASK() & DISABLED_MASK) == DISABLED_MASK;
 }
 
-bool STM32F4_Interrupt_GlobalEnabled(bool force) {
+bool STM32F4_Interrupt_Enable(bool force) {
     __enable_irq();
 
     return true;
 }
 
-bool STM32F4_Interrupt_GlobalDisabled(bool force) {
-    bool wasDisable = STM32F4_Interrupt_GlobalIsDisabled();
+bool STM32F4_Interrupt_Disable(bool force) {
+    bool wasDisable = STM32F4_Interrupt_IsDisabled();
 
     __disable_irq();
 
@@ -178,7 +177,7 @@ bool STM32F4_Interrupt_GlobalDisabled(bool force) {
 }
 
 
-void STM32F4_Interrupt_GlobalWaitForInterrupt() {
+void STM32F4_Interrupt_WaitForInterrupt() {
     register uint32_t state = __get_PRIMASK();
 
     __enable_irq();
@@ -190,6 +189,6 @@ void STM32F4_Interrupt_GlobalWaitForInterrupt() {
     __set_PRIMASK(state);
 }
 
-void STM32F4_Interrupt_GlobalRestore() {
+void STM32F4_Interrupt_Restore() {
     __enable_irq();
 }

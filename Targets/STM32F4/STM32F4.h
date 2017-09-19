@@ -31,14 +31,13 @@
 //Deployment
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F4_Deployment_GetApi();
-TinyCLR_Result STM32F4_Flash_Acquire(const TinyCLR_Deployment_Provider* self, bool& supportXIP);
+TinyCLR_Result STM32F4_Flash_Acquire(const TinyCLR_Deployment_Provider* self, bool& supportsXip);
 TinyCLR_Result STM32F4_Flash_Release(const TinyCLR_Deployment_Provider* self);
 TinyCLR_Result STM32F4_Flash_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer);
 TinyCLR_Result STM32F4_Flash_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer);
-TinyCLR_Result STM32F4_Flash_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector);
-TinyCLR_Result STM32F4_Flash_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool& erased);
+TinyCLR_Result STM32F4_Flash_EraseSector(const TinyCLR_Deployment_Provider* self, uint32_t sector);
+TinyCLR_Result STM32F4_Flash_IsSectorErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool& erased);
 TinyCLR_Result STM32F4_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count);
-TinyCLR_Result STM32F4_Flash_GetBytesPerSector(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size);
 
 ////////////////////////////////////////////////////////////////////////////////
 //Interrupt
@@ -73,13 +72,14 @@ public:
 const TinyCLR_Api_Info* STM32F4_Interrupt_GetApi();
 TinyCLR_Result STM32F4_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
 TinyCLR_Result STM32F4_Interrupt_Release();
-bool STM32F4_Interrupt_GlobalEnabled(bool force);
-bool STM32F4_Interrupt_GlobalDisabled(bool force);
-void STM32F4_Interrupt_GlobalWaitForInterrupt();
-bool STM32F4_Interrupt_GlobalIsDisabled();
-void STM32F4_Interrupt_GlobalRestore();
-bool STM32F4_Interrupt_Activate(uint32_t Irq_Index, uint32_t* ISR, void* ISR_Param);
-bool STM32F4_Interrupt_Deactivate(uint32_t Irq_Index);
+bool STM32F4_Interrupt_Enable(bool force);
+bool STM32F4_Interrupt_Disable(bool force);
+void STM32F4_Interrupt_WaitForInterrupt();
+bool STM32F4_Interrupt_IsDisabled();
+void STM32F4_Interrupt_Restore();
+
+bool STM32F4_Interrupt_Activate(uint32_t index, uint32_t* isr, void* isrParam);
+bool STM32F4_Interrupt_Deactivate(uint32_t index);
 
 ////////////////////////////////////////////////////////////////////////////////
 //Power
@@ -87,8 +87,8 @@ bool STM32F4_Interrupt_Deactivate(uint32_t Irq_Index);
 const TinyCLR_Api_Info* STM32F4_Power_GetApi();
 TinyCLR_Result STM32F4_Power_Acquire(const TinyCLR_Power_Provider* self);
 TinyCLR_Result STM32F4_Power_Release(const TinyCLR_Power_Provider* self);
-void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep_Level level);
 void STM32F4_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter);
+void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep_Level level);
 
 ////////////////////////////////////////////////////////////////////////////////
 //Time
@@ -97,13 +97,13 @@ const TinyCLR_Api_Info* STM32F4_Time_GetApi();
 TinyCLR_Result STM32F4_Time_Acquire(const TinyCLR_Time_Provider* self);
 TinyCLR_Result STM32F4_Time_Release(const TinyCLR_Time_Provider* self);
 TinyCLR_Result STM32F4_Time_GetInitialTime(const TinyCLR_Time_Provider* self, int64_t& utcTime, int32_t& timeZoneOffsetMinutes);
-uint64_t STM32F4_Time_TicksToTime(const TinyCLR_Time_Provider* self, uint64_t ticks);
-uint64_t STM32F4_Time_TimeToTicks(const TinyCLR_Time_Provider* self, uint64_t time);
-uint64_t STM32F4_Time_GetCurrentTicks(const TinyCLR_Time_Provider* self);
-TinyCLR_Result STM32F4_Time_SetCompare(const TinyCLR_Time_Provider* self, uint64_t processorTicks);
-TinyCLR_Result STM32F4_Time_SetCompareCallback(const TinyCLR_Time_Provider* self, TinyCLR_Time_TickCallback callback);
-void STM32F4_Time_DelayNoInterrupt(const TinyCLR_Time_Provider* self, uint64_t microseconds);
+uint64_t STM32F4_Time_GetCurrentProcessorTicks(const TinyCLR_Time_Provider* self);
+uint64_t STM32F4_Time_GetTimeForProcessorTicks(const TinyCLR_Time_Provider* self, uint64_t ticks);
+uint64_t STM32F4_Time_GetProcessorTicksForTime(const TinyCLR_Time_Provider* self, uint64_t time);
+TinyCLR_Result STM32F4_Time_SetTickCallback(const TinyCLR_Time_Provider* self, TinyCLR_Time_TickCallback callback);
+TinyCLR_Result STM32F4_Time_SetNextTickCallbackTime(const TinyCLR_Time_Provider* self, uint64_t processorTicks);
 void STM32F4_Time_Delay(const TinyCLR_Time_Provider* self, uint64_t microseconds);
+void STM32F4_Time_DelayNoInterrupt(const TinyCLR_Time_Provider* self, uint64_t microseconds);
 
 ////////////////////////////////////////////////////////////////////////////////
 //Startup
@@ -123,13 +123,13 @@ TinyCLR_Result STM32F4_Adc_Release(const TinyCLR_Adc_Provider* self);
 TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
 TinyCLR_Result STM32F4_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
 TinyCLR_Result STM32F4_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t channel, int32_t& value);
-int32_t STM32F4_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self);
-int32_t STM32F4_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider* self);
+TinyCLR_Result STM32F4_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
+TinyCLR_Adc_ChannelMode STM32F4_Adc_GetChannelMode(const TinyCLR_Adc_Provider* self);
+bool STM32F4_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
 int32_t STM32F4_Adc_GetMinValue(const TinyCLR_Adc_Provider* self);
 int32_t STM32F4_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self);
-TinyCLR_Adc_ChannelMode STM32F4_Adc_GetChannelMode(const TinyCLR_Adc_Provider* self);
-TinyCLR_Result STM32F4_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
-bool STM32F4_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
+int32_t STM32F4_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider* self);
+int32_t STM32F4_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self);
 
 ////////////////////////////////////////////////////////////////////////////////
 //DAC
@@ -141,10 +141,10 @@ TinyCLR_Result STM32F4_Dac_Release(const TinyCLR_Dac_Provider* self);
 TinyCLR_Result STM32F4_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t channel);
 TinyCLR_Result STM32F4_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t channel);
 TinyCLR_Result STM32F4_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t channel, int32_t value);
-int32_t STM32F4_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self);
-int32_t STM32F4_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self);
 int32_t STM32F4_Dac_GetMinValue(const TinyCLR_Dac_Provider* self);
 int32_t STM32F4_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self);
+int32_t STM32F4_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self);
+int32_t STM32F4_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self);
 
 ////////////////////////////////////////////////////////////////////////////////
 //GPIO
@@ -222,17 +222,18 @@ const TinyCLR_Api_Info* STM32F4_Gpio_GetApi();
 void STM32F4_Gpio_Reset();
 TinyCLR_Result STM32F4_Gpio_Acquire(const TinyCLR_Gpio_Provider* self);
 TinyCLR_Result STM32F4_Gpio_Release(const TinyCLR_Gpio_Provider* self);
+TinyCLR_Result STM32F4_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t pin);
+TinyCLR_Result STM32F4_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t pin);
 TinyCLR_Result STM32F4_Gpio_Read(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue& value);
 TinyCLR_Result STM32F4_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue value);
-TinyCLR_Result STM32F4_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, int32_t debounceTime);
-TinyCLR_Result STM32F4_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
-TinyCLR_Result STM32F4_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t pin);
 bool STM32F4_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
 TinyCLR_Gpio_PinDriveMode STM32F4_Gpio_GetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t pin);
+TinyCLR_Result STM32F4_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
 int32_t STM32F4_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin);
+TinyCLR_Result STM32F4_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, int32_t debounceTime);
+TinyCLR_Result STM32F4_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler handler);
 int32_t STM32F4_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self);
-TinyCLR_Result STM32F4_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR);
-TinyCLR_Result STM32F4_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t pin);
+
 bool STM32F4_Gpio_OpenPin(int32_t pin);
 bool STM32F4_Gpio_ClosePin(int32_t pin);
 bool STM32F4_Gpio_ReadPin(int32_t pin);
@@ -247,27 +248,23 @@ void STM32F4_I2c_Reset();
 TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Provider* self);
 TinyCLR_Result STM32F4_I2c_Release(const TinyCLR_I2c_Provider* self);
 TinyCLR_Result STM32F4_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed);
-TinyCLR_Result STM32F4_I2c_ReadTransaction(const TinyCLR_I2c_Provider* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
-TinyCLR_Result STM32F4_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
-TinyCLR_Result STM32F4_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result);
-void STM32F4_I2c_StartTransaction();
-void STM32F4_I2c_StopTransaction();
+TinyCLR_Result STM32F4_I2c_Read(const TinyCLR_I2c_Provider* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
+TinyCLR_Result STM32F4_I2c_Write(const TinyCLR_I2c_Provider* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
+TinyCLR_Result STM32F4_I2c_WriteRead(const TinyCLR_I2c_Provider* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result);
 
 ////////////////////////////////////////////////////////////////////////////////
 //PWM
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F4_Pwm_GetApi();
 void STM32F4_Pwm_Reset();
-void STM32F4_Pwm_ResetController(int32_t controller);
 TinyCLR_Result STM32F4_Pwm_Acquire(const TinyCLR_Pwm_Provider* self);
 TinyCLR_Result STM32F4_Pwm_Release(const TinyCLR_Pwm_Provider* self);
-STM32F4_Gpio_Pin* STM32F4_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t pin);
-TinyCLR_Result STM32F4_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self, double& frequency);
 TinyCLR_Result STM32F4_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t pin);
 TinyCLR_Result STM32F4_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t pin);
 TinyCLR_Result STM32F4_Pwm_EnablePin(const TinyCLR_Pwm_Provider* self, int32_t pin);
 TinyCLR_Result STM32F4_Pwm_DisablePin(const TinyCLR_Pwm_Provider* self, int32_t pin);
 TinyCLR_Result STM32F4_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int32_t pin, double dutyCycle, bool invertPolarity);
+TinyCLR_Result STM32F4_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self, double& frequency);
 double STM32F4_Pwm_GetMinFrequency(const TinyCLR_Pwm_Provider* self);
 double STM32F4_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self);
 double STM32F4_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self);
@@ -278,9 +275,6 @@ int32_t STM32F4_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self);
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F4_Spi_GetApi();
 void STM32F4_Spi_Reset();
-bool STM32F4_Spi_Transaction_Start(int32_t controller);
-bool STM32F4_Spi_Transaction_Stop(int32_t controller);
-bool STM32F4_Spi_Transaction_nWrite8_nRead8(int32_t controller);
 TinyCLR_Result STM32F4_Spi_Acquire(const TinyCLR_Spi_Provider* self);
 TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Provider* self);
 TinyCLR_Result STM32F4_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode);
@@ -298,9 +292,6 @@ TinyCLR_Result STM32F4_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F4_Uart_GetApi();
 void STM32F4_Uart_Reset();
-bool STM32F4_Uart_TxHandshakeEnabledState(int portNum);
-void STM32F4_Uart_TxBufferEmptyInterruptEnable(int portNum, bool enable);
-void STM32F4_Uart_RxBufferFullInterruptEnable(int portNum, bool enable);
 TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Provider* self);
 TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self);
 TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, uint32_t baudRate, uint32_t dataBits, TinyCLR_Uart_Parity parity, TinyCLR_Uart_StopBitCount stopBits, TinyCLR_Uart_Handshake handshaking);
@@ -332,7 +323,8 @@ TinyCLR_Result STM32F4_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, i
 TinyCLR_Result STM32F4_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int32_t stream, const uint8_t* data, size_t& length);
 TinyCLR_Result STM32F4_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int32_t stream, uint8_t* data, size_t& length);
 TinyCLR_Result STM32F4_UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, int32_t stream);
-TinyCLR_Result STM32F4_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_DataReceivedHandler handler);
 TinyCLR_Result STM32F4_UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Provider* self, const void* descriptor, int32_t length);
 TinyCLR_Result STM32F4_UsbClient_SetConfigDescriptor(const TinyCLR_UsbClient_Provider* self, const void* descriptor, int32_t length);
 TinyCLR_Result STM32F4_UsbClient_SetStringDescriptor(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_StringDescriptorType type, const wchar_t* value);
+TinyCLR_Result STM32F4_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_DataReceivedHandler handler);
+TinyCLR_Result STM32F4_UsbClient_SetOsExtendedPropertyHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_OsExtendedPropertyHandler handler);

@@ -27,6 +27,10 @@
 #define STM32F4_UART_DATA_BIT_LENGTH_8    8
 #define STM32F4_UART_DATA_BIT_LENGTH_9    9
 
+bool STM32F4_Uart_TxHandshakeEnabledState(int portNum);
+void STM32F4_Uart_TxBufferEmptyInterruptEnable(int portNum, bool enable);
+void STM32F4_Uart_RxBufferFullInterruptEnable(int portNum, bool enable);
+
 typedef  USART_TypeDef* USART_TypeDef_Ptr;
 
 struct UartController {

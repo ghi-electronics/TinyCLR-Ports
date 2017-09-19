@@ -17,6 +17,10 @@
 #include "STM32F4.h"
 #include <string.h>
 
+bool STM32F4_Spi_Transaction_Start(int32_t controller);
+bool STM32F4_Spi_Transaction_Stop(int32_t controller);
+bool STM32F4_Spi_Transaction_nWrite8_nRead8(int32_t controller);
+
 typedef  SPI_TypeDef* ptr_SPI_TypeDef;
 
 #define DATA_BIT_LENGTH_16  16

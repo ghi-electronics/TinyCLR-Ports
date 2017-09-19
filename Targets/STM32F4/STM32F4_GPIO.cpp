@@ -52,9 +52,9 @@ const TinyCLR_Api_Info* STM32F4_Gpio_GetApi() {
     gpioProvider.Release = &STM32F4_Gpio_Release;
     gpioProvider.AcquirePin = &STM32F4_Gpio_AcquirePin;
     gpioProvider.ReleasePin = &STM32F4_Gpio_ReleasePin;
-    gpioProvider.IsDriveModeSupported = &STM32F4_Gpio_IsDriveModeSupported;
     gpioProvider.Read = &STM32F4_Gpio_Read;
     gpioProvider.Write = &STM32F4_Gpio_Write;
+    gpioProvider.IsDriveModeSupported = &STM32F4_Gpio_IsDriveModeSupported;
     gpioProvider.GetDriveMode = &STM32F4_Gpio_GetDriveMode;
     gpioProvider.SetDriveMode = &STM32F4_Gpio_SetDriveMode;
     gpioProvider.GetDebounceTimeout = &STM32F4_Gpio_GetDebounceTimeout;
@@ -105,8 +105,8 @@ void STM32F4_Gpio_ISR(int num)  // 0 <= num <= 15
 
     if (state->ISR) {
         if (state->debounce) {   // debounce enabled
-            if ((STM32F4_Time_GetCurrentTicks(nullptr) - state->lastDebounceTicks) >= g_debounceTicksPin[state->pin]) {
-                state->lastDebounceTicks = STM32F4_Time_GetCurrentTicks(nullptr);
+            if ((STM32F4_Time_GetCurrentProcessorTicks(nullptr) - state->lastDebounceTicks) >= g_debounceTicksPin[state->pin]) {
+                state->lastDebounceTicks = STM32F4_Time_GetCurrentProcessorTicks(nullptr);
             }
             else {
                 executeIsr = false;
@@ -164,7 +164,7 @@ void STM32F4_Gpio_Interrupt10(void* param) // EXTI10 - EXTI15
     } while (pending);
 }
 
-TinyCLR_Result STM32F4_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR) {
+TinyCLR_Result STM32F4_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler isr) {
     uint32_t num = pin & 0x0F;
     uint32_t bit = 1 << num;
     uint32_t shift = (num & 0x3) << 2; // 4 bit fields
@@ -176,7 +176,7 @@ TinyCLR_Result STM32F4_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* 
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (ISR) {
+    if (isr) {
         if ((SYSCFG->EXTICR[idx] & mask) != config) {
             if (EXTI->IMR & bit)
                 return TinyCLR_Result::SharingViolation; // interrupt in use
@@ -186,8 +186,8 @@ TinyCLR_Result STM32F4_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* 
         state->controller = &gpioProvider;
         state->pin = (uint8_t)pin;
         state->debounce = STM32F4_Gpio_GetDebounceTimeout(self, pin);
-        state->ISR = ISR;
-        state->lastDebounceTicks = STM32F4_Time_GetCurrentTicks(nullptr);
+        state->ISR = isr;
+        state->lastDebounceTicks = STM32F4_Time_GetCurrentProcessorTicks(nullptr);
 
         EXTI->RTSR &= ~bit;
         EXTI->FTSR &= ~bit;
@@ -412,7 +412,7 @@ TinyCLR_Result STM32F4_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int3
 }
 
 int32_t STM32F4_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin) {
-    return STM32F4_Time_TicksToTime(nullptr, (uint64_t)(g_debounceTicksPin[pin])) / 10;
+    return STM32F4_Time_GetTimeForProcessorTicks(nullptr, (uint64_t)(g_debounceTicksPin[pin])) / 10;
 }
 
 TinyCLR_Result STM32F4_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, int32_t debounceTime) {
@@ -420,7 +420,7 @@ TinyCLR_Result STM32F4_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self
         return TinyCLR_Result::ArgumentOutOfRange;
 
     if (debounceTime > 0 && debounceTime < 10000) {
-        g_debounceTicksPin[pin] = (uint32_t)STM32F4_Time_TimeToTicks(nullptr, (uint64_t)debounceTime * 1000 * 10);
+        g_debounceTicksPin[pin] = (uint32_t)STM32F4_Time_GetProcessorTicksForTime(nullptr, (uint64_t)debounceTime * 1000 * 10);
         return TinyCLR_Result::Success;
     }
 
