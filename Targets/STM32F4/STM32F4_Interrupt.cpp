@@ -82,7 +82,7 @@ TinyCLR_Result STM32F4_Interrupt_Release() {
     return TinyCLR_Result::Success;
 }
 
-bool STM32F4_Interrupt_Activate(uint32_t index, uint32_t *isr, void* isrParam) {
+bool STM32F4_InterruptInternal_Activate(uint32_t index, uint32_t *isr, void* isrParam) {
     int id = (int)index;
 
     uint32_t *irq_vectors = (uint32_t*)&__Vectors;
@@ -94,7 +94,7 @@ bool STM32F4_Interrupt_Activate(uint32_t index, uint32_t *isr, void* isrParam) {
     return true;
 }
 
-bool STM32F4_Interrupt_Deactivate(uint32_t index) {
+bool STM32F4_InterruptInternal_Deactivate(uint32_t index) {
     int id = (int)index;
 
     NVIC->ICER[id >> 5] = 1 << (id & 0x1F); // clear enable bit */

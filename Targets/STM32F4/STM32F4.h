@@ -42,27 +42,6 @@ TinyCLR_Result STM32F4_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* sel
 ////////////////////////////////////////////////////////////////////////////////
 //Interrupt
 ////////////////////////////////////////////////////////////////////////////////
-class STM32F4_DisableInterrupts_RaiiHelper {
-    uint32_t state;
-
-public:
-    STM32F4_DisableInterrupts_RaiiHelper();
-    ~STM32F4_DisableInterrupts_RaiiHelper();
-
-    bool IsDisabled();
-    void Acquire();
-    void Release();
-};
-
-class STM32F4_InterruptStarted_RaiiHelper {
-public:
-    STM32F4_InterruptStarted_RaiiHelper();
-    ~STM32F4_InterruptStarted_RaiiHelper();
-};
-
-#define DISABLE_INTERRUPTS_SCOPED(name) STM32F4_DisableInterrupts_RaiiHelper name
-#define INTERRUPT_STARTED_SCOPED(name) STM32F4_InterruptStarted_RaiiHelper name
-
 const TinyCLR_Api_Info* STM32F4_Interrupt_GetApi();
 TinyCLR_Result STM32F4_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
 TinyCLR_Result STM32F4_Interrupt_Release();
@@ -71,9 +50,6 @@ bool STM32F4_Interrupt_Disable(bool force);
 void STM32F4_Interrupt_WaitForInterrupt();
 bool STM32F4_Interrupt_IsDisabled();
 void STM32F4_Interrupt_Restore();
-
-bool STM32F4_Interrupt_Activate(uint32_t index, uint32_t* isr, void* isrParam);
-bool STM32F4_Interrupt_Deactivate(uint32_t index);
 
 ////////////////////////////////////////////////////////////////////////////////
 //Power
@@ -143,75 +119,6 @@ int32_t STM32F4_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self);
 ////////////////////////////////////////////////////////////////////////////////
 //GPIO
 ////////////////////////////////////////////////////////////////////////////////
-enum class STM32F4_Gpio_PullDirection : uint8_t {
-    None = 0,
-    PullUp = 1,
-    PullDown = 2,
-    Reserved = 3
-};
-
-enum class STM32F4_Gpio_PortMode : uint8_t {
-    Input = 0,
-    GeneralPurposeOutput = 1,
-    AlternateFunction = 2,
-    Analog = 3
-};
-
-enum class STM32F4_Gpio_OutputSpeed : uint8_t {
-    Low = 0,
-    Medium = 1,
-    Fast = 2,
-    High = 3
-};
-
-enum class STM32F4_Gpio_AlternateFunction : uint8_t {
-    AF0 = 0,
-    AF1 = 1,
-    AF2 = 2,
-    AF3 = 3,
-    AF4 = 4,
-    AF5 = 5,
-    AF6 = 6,
-    AF7 = 7,
-    AF8 = 8,
-    AF9 = 9,
-    AF10 = 10,
-    AF11 = 11,
-    AF12 = 12,
-    AF13 = 12,
-    AF14 = 14,
-    AF15 = 15
-};
-
-enum class STM32F4_Gpio_OutputType : uint8_t {
-    PushPull = 0,
-    OpenDrain = 1,
-};
-
-struct STM32F4_Gpio_Pin {
-    uint32_t number;
-    STM32F4_Gpio_AlternateFunction alternateFunction;
-};
-
-struct STM32F4_Gpio_PinConfiguration {
-    STM32F4_Gpio_PortMode portMode;
-    STM32F4_Gpio_OutputType outputType;
-    STM32F4_Gpio_OutputSpeed outputSpeed;
-    STM32F4_Gpio_PullDirection pullDirection;
-    STM32F4_Gpio_AlternateFunction alternateFunction;
-};
-
-#define PIN(port, pin) ((CHARIZE(port) - 'A') * 16 + pin)
-#define PIN_NONE 0xFFFFFFFF
-#define AF(num) (CONCAT(STM32F4_Gpio_AlternateFunction::AF, num))
-#define AF_NONE STM32F4_Gpio_AlternateFunction::AF0
-
-#define INIT(portMode, outputType, outputSpeed, pullDirection, alternateFunction) { STM32F4_Gpio_PortMode::portMode, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::pullDirection, STM32F4_Gpio_AlternateFunction::alternateFunction }
-#define ALTFUN(outputType, outputSpeed, pullDirection, alternateFunction) { STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::pullDirection, STM32F4_Gpio_AlternateFunction::alternateFunction }
-#define ANALOG() { STM32F4_Gpio_PortMode::Analog, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0 }
-#define OUTPUT(outputType, outputSpeed) { STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0 }
-#define INPUT(outputType, outputSpeed, pullDirection) { STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::pullDirection, STM32F4_Gpio_AlternateFunction::AF0 }
-
 const TinyCLR_Api_Info* STM32F4_Gpio_GetApi();
 void STM32F4_Gpio_Reset();
 TinyCLR_Result STM32F4_Gpio_Acquire(const TinyCLR_Gpio_Provider* self);
@@ -227,12 +134,6 @@ int32_t STM32F4_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32
 TinyCLR_Result STM32F4_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, int32_t debounceTime);
 TinyCLR_Result STM32F4_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler handler);
 int32_t STM32F4_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self);
-
-bool STM32F4_Gpio_OpenPin(int32_t pin);
-bool STM32F4_Gpio_ClosePin(int32_t pin);
-bool STM32F4_Gpio_ReadPin(int32_t pin);
-void STM32F4_Gpio_WritePin(int32_t pin, bool value);
-bool STM32F4_Gpio_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode portMode, STM32F4_Gpio_OutputType outputType, STM32F4_Gpio_OutputSpeed outputSpeed, STM32F4_Gpio_PullDirection pullDirection, STM32F4_Gpio_AlternateFunction alternateFunction);
 
 ////////////////////////////////////////////////////////////////////////////////
 //I2C
@@ -322,3 +223,108 @@ TinyCLR_Result STM32F4_UsbClient_SetConfigDescriptor(const TinyCLR_UsbClient_Pro
 TinyCLR_Result STM32F4_UsbClient_SetStringDescriptor(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_StringDescriptorType type, const wchar_t* value);
 TinyCLR_Result STM32F4_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_DataReceivedHandler handler);
 TinyCLR_Result STM32F4_UsbClient_SetOsExtendedPropertyHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_OsExtendedPropertyHandler handler);
+
+////////////////////////////////////////////////////////////////////////////////
+//Interrupt Internal
+////////////////////////////////////////////////////////////////////////////////
+class STM32F4_DisableInterrupts_RaiiHelper {
+    uint32_t state;
+
+public:
+    STM32F4_DisableInterrupts_RaiiHelper();
+    ~STM32F4_DisableInterrupts_RaiiHelper();
+
+    bool IsDisabled();
+    void Acquire();
+    void Release();
+};
+
+class STM32F4_InterruptStarted_RaiiHelper {
+public:
+    STM32F4_InterruptStarted_RaiiHelper();
+    ~STM32F4_InterruptStarted_RaiiHelper();
+};
+
+#define DISABLE_INTERRUPTS_SCOPED(name) STM32F4_DisableInterrupts_RaiiHelper name
+#define INTERRUPT_STARTED_SCOPED(name) STM32F4_InterruptStarted_RaiiHelper name
+
+bool STM32F4_InterruptInternal_Activate(uint32_t index, uint32_t* isr, void* isrParam);
+bool STM32F4_InterruptInternal_Deactivate(uint32_t index);
+
+////////////////////////////////////////////////////////////////////////////////
+//GPIO Internal
+////////////////////////////////////////////////////////////////////////////////
+enum class STM32F4_Gpio_PullDirection : uint8_t {
+    None = 0,
+    PullUp = 1,
+    PullDown = 2,
+    Reserved = 3
+};
+
+enum class STM32F4_Gpio_PortMode : uint8_t {
+    Input = 0,
+    GeneralPurposeOutput = 1,
+    AlternateFunction = 2,
+    Analog = 3
+};
+
+enum class STM32F4_Gpio_OutputSpeed : uint8_t {
+    Low = 0,
+    Medium = 1,
+    Fast = 2,
+    High = 3
+};
+
+enum class STM32F4_Gpio_AlternateFunction : uint8_t {
+    AF0 = 0,
+    AF1 = 1,
+    AF2 = 2,
+    AF3 = 3,
+    AF4 = 4,
+    AF5 = 5,
+    AF6 = 6,
+    AF7 = 7,
+    AF8 = 8,
+    AF9 = 9,
+    AF10 = 10,
+    AF11 = 11,
+    AF12 = 12,
+    AF13 = 12,
+    AF14 = 14,
+    AF15 = 15
+};
+
+enum class STM32F4_Gpio_OutputType : uint8_t {
+    PushPull = 0,
+    OpenDrain = 1,
+};
+
+struct STM32F4_Gpio_Pin {
+    uint32_t number;
+    STM32F4_Gpio_AlternateFunction alternateFunction;
+};
+
+struct STM32F4_Gpio_PinConfiguration {
+    STM32F4_Gpio_PortMode portMode;
+    STM32F4_Gpio_OutputType outputType;
+    STM32F4_Gpio_OutputSpeed outputSpeed;
+    STM32F4_Gpio_PullDirection pullDirection;
+    STM32F4_Gpio_AlternateFunction alternateFunction;
+};
+
+#define PIN(port, pin) ((CHARIZE(port) - 'A') * 16 + pin)
+#define PIN_NONE 0xFFFFFFFF
+#define AF(num) (CONCAT(STM32F4_Gpio_AlternateFunction::AF, num))
+#define AF_NONE STM32F4_Gpio_AlternateFunction::AF0
+
+#define INIT(portMode, outputType, outputSpeed, pullDirection, alternateFunction) { STM32F4_Gpio_PortMode::portMode, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::pullDirection, STM32F4_Gpio_AlternateFunction::alternateFunction }
+#define ALTFUN(outputType, outputSpeed, pullDirection, alternateFunction) { STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::pullDirection, STM32F4_Gpio_AlternateFunction::alternateFunction }
+#define ANALOG() { STM32F4_Gpio_PortMode::Analog, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0 }
+#define OUTPUT(outputType, outputSpeed) { STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0 }
+#define INPUT(outputType, outputSpeed, pullDirection) { STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::pullDirection, STM32F4_Gpio_AlternateFunction::AF0 }
+
+bool STM32F4_GpioInternal_OpenPin(int32_t pin);
+bool STM32F4_GpioInternal_ClosePin(int32_t pin);
+bool STM32F4_GpioInternal_ReadPin(int32_t pin);
+void STM32F4_GpioInternal_WritePin(int32_t pin, bool value);
+bool STM32F4_GpioInternal_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode portMode, STM32F4_Gpio_OutputType outputType, STM32F4_Gpio_OutputSpeed outputSpeed, STM32F4_Gpio_PullDirection pullDirection, STM32F4_Gpio_AlternateFunction alternateFunction);

@@ -1097,10 +1097,10 @@ bool STM32F4_UsbClient_Initialize(int controller) {
     auto& dm = g_STM32F4_Usb_Dm_Pins[controller];
     auto& id = g_STM32F4_Usb_Id_Pins[controller];
 
-    if (!STM32F4_Gpio_OpenPin(dp.number) || !STM32F4_Gpio_OpenPin(dm.number))
+    if (!STM32F4_GpioInternal_OpenPin(dp.number) || !STM32F4_GpioInternal_OpenPin(dm.number))
         return false;
 
-    if (STM32F4_USB_USE_ID_PIN(controller) && !STM32F4_Gpio_OpenPin(id.number))
+    if (STM32F4_USB_USE_ID_PIN(controller) && !STM32F4_GpioInternal_OpenPin(id.number))
         return false;
 
     // enable USB clock
@@ -1135,8 +1135,8 @@ bool STM32F4_UsbClient_Initialize(int controller) {
     // setup hardware
     STM32F4_UsbClient_ProtectPins(controller, true);
 
-    STM32F4_Interrupt_Activate(OTG_FS_IRQn, (uint32_t*)&STM32F4_UsbClient_FullspeedInterrupt, 0);
-    STM32F4_Interrupt_Activate(OTG_FS_WKUP_IRQn, (uint32_t*)&STM32F4_UsbClient_FullspeedInterrupt, 0);
+    STM32F4_InterruptInternal_Activate(OTG_FS_IRQn, (uint32_t*)&STM32F4_UsbClient_FullspeedInterrupt, 0);
+    STM32F4_InterruptInternal_Activate(OTG_FS_WKUP_IRQn, (uint32_t*)&STM32F4_UsbClient_FullspeedInterrupt, 0);
 
     // allow interrupts
     OTG->GINTSTS = 0xFFFFFFFF;           // clear all interrupts
@@ -1149,8 +1149,8 @@ bool STM32F4_UsbClient_Initialize(int controller) {
 }
 
 bool STM32F4_UsbClient_Uninitialize(int controller) {
-    STM32F4_Interrupt_Deactivate(OTG_FS_WKUP_IRQn);
-    STM32F4_Interrupt_Deactivate(OTG_FS_IRQn);
+    STM32F4_InterruptInternal_Deactivate(OTG_FS_WKUP_IRQn);
+    STM32F4_InterruptInternal_Deactivate(OTG_FS_IRQn);
 
     STM32F4_UsbClient_ProtectPins(controller, false);
 
@@ -1160,11 +1160,11 @@ bool STM32F4_UsbClient_Uninitialize(int controller) {
     auto& dm = g_STM32F4_Usb_Dm_Pins[controller];
     auto& id = g_STM32F4_Usb_Id_Pins[controller];
 
-    STM32F4_Gpio_ClosePin(dp.number);
-    STM32F4_Gpio_ClosePin(dm.number);
+    STM32F4_GpioInternal_ClosePin(dp.number);
+    STM32F4_GpioInternal_ClosePin(dm.number);
 
     if (STM32F4_USB_USE_ID_PIN(controller))
-        STM32F4_Gpio_ClosePin(id.number);
+        STM32F4_GpioInternal_ClosePin(id.number);
 
     return true;
 }
@@ -1233,11 +1233,11 @@ bool STM32F4_UsbClient_ProtectPins(int controller, bool On) {
         auto& dm = g_STM32F4_Usb_Dm_Pins[controller];
         auto& id = g_STM32F4_Usb_Id_Pins[controller];
 
-        STM32F4_Gpio_ConfigurePin(dp.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, dp.alternateFunction);
-        STM32F4_Gpio_ConfigurePin(dm.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, dm.alternateFunction);
+        STM32F4_GpioInternal_ConfigurePin(dp.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, dp.alternateFunction);
+        STM32F4_GpioInternal_ConfigurePin(dm.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, dm.alternateFunction);
 
         if (STM32F4_USB_USE_ID_PIN(controller)) {
-            STM32F4_Gpio_ConfigurePin(id.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, id.alternateFunction);
+            STM32F4_GpioInternal_ConfigurePin(id.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, id.alternateFunction);
         }
 
         // attach usb port
