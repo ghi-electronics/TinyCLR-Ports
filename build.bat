@@ -162,10 +162,10 @@ IF "%DoBuild%" == "1" (
         POPD
     )
 
-    "%GccDirectory%\bin\arm-none-eabi-g++.exe" -mcpu=%MCpu% -mlittle-endian -nostartfiles %FloatCompileArguments% -Xlinker %AdditionalCompilerArguments% -L "%GccLibrary%" -Wl,-static,--gc-sections,--no-wchar-size-warning,-Map="%OutputDirectory%\tinyclr.map" -specs="%GccLibrary%\nano.specs" -T"%ScriptRoot%\Devices\%DeviceName%\tinyclr_scatterfile_gcc.ldf" "%OutputDirectory%\*.obj" "%CoreLibraryFile%" -o "%OutputDirectory%\tinyclr.axf"
+    "%GccDirectory%\bin\arm-none-eabi-g++.exe" -mcpu=%MCpu% -mlittle-endian -nostartfiles %FloatCompileArguments% -Xlinker %AdditionalCompilerArguments% -L "%GccLibrary%" -Wl,-static,--gc-sections,--no-wchar-size-warning,-Map="%OutputDirectory%\%DeviceName% Firmware.map" -specs="%GccLibrary%\nano.specs" -T"%ScriptRoot%\Devices\%DeviceName%\Scatterfile.gcc.ldf" "%OutputDirectory%\*.obj" "%CoreLibraryFile%" -o "%OutputDirectory%\%DeviceName% Firmware.axf"
 
-    "%GccDirectory%\bin\arm-none-eabi-objcopy.exe" -S -j ER_FLASH -j ER_RAM_RO -j ER_RAM_RW -O binary "%OutputDirectory%\tinyclr.axf" "%OutputDirectory%\%DeviceName% Firmware.bin"
-    "%GccDirectory%\bin\arm-none-eabi-objcopy.exe" -S -R ER_DAT -R ER_CONFIG -O ihex "%OutputDirectory%\tinyclr.axf" "%OutputDirectory%\%DeviceName% Firmware.hex"
+    "%GccDirectory%\bin\arm-none-eabi-objcopy.exe" -S -j ER_FLASH -j ER_RAM_RO -j ER_RAM_RW -O binary "%OutputDirectory%\%DeviceName% Firmware.axf" "%OutputDirectory%\%DeviceName% Firmware.bin"
+    "%GccDirectory%\bin\arm-none-eabi-objcopy.exe" -S -R ER_DAT -R ER_CONFIG -O ihex "%OutputDirectory%\%DeviceName% Firmware.axf" "%OutputDirectory%\%DeviceName% Firmware.hex"
 
     IF NOT "%ImageGenParameters%" == ""  "%ScriptRoot%\imagegen.exe" %ImageGenParameters% "%OutputDirectory%\%DeviceName% Firmware.bin"
 )

@@ -16,7 +16,7 @@
 
 #include "STM32F4.h"
 
-#if defined(STM32F427xx) || defined(STM32F413xx)
+#ifdef INCLUDE_DAC
 ///////////////////////////////////////////////////////////////////////////////
 
 #define STM32F4_DAC_CHANNELS             2       // number of channels
@@ -34,10 +34,10 @@ const TinyCLR_Api_Info* STM32F4_Dac_GetApi() {
     dacProvider.AcquireChannel = &STM32F4_Dac_AcquireChannel;
     dacProvider.ReleaseChannel = &STM32F4_Dac_ReleaseChannel;
     dacProvider.WriteValue = &STM32F4_Dac_WriteValue;
-    dacProvider.GetChannelCount = &STM32F4_Dac_GetChannelCount;
-    dacProvider.GetResolutionInBits = &STM32F4_Dac_GetResolutionInBits;
     dacProvider.GetMinValue = &STM32F4_Dac_GetMinValue;
     dacProvider.GetMaxValue = &STM32F4_Dac_GetMaxValue;
+    dacProvider.GetResolutionInBits = &STM32F4_Dac_GetResolutionInBits;
+    dacProvider.GetChannelCount = &STM32F4_Dac_GetChannelCount;
 
     dacApi.Author = "GHI Electronics, LLC";
     dacApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.DacProvider";
@@ -45,6 +45,10 @@ const TinyCLR_Api_Info* STM32F4_Dac_GetApi() {
     dacApi.Version = 0;
     dacApi.Count = 1;
     dacApi.Implementation = &dacProvider;
+
+    for (auto i = 0; i < STM32F4_Dac_GetChannelCount(&dacProvider); i++) {
+        STM32F4_Dac_ReleaseChannel(&dacProvider, i);
+    }
 
     return &dacApi;
 }
@@ -64,14 +68,14 @@ TinyCLR_Result STM32F4_Dac_Release(const TinyCLR_Dac_Provider* self) {
 }
 
 TinyCLR_Result STM32F4_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t channel) {
-    if (!STM32F4_Gpio_OpenPin(STM32F4_DAC_FIRST_PIN + channel))
+    if (!STM32F4_GpioInternal_OpenPin(STM32F4_DAC_FIRST_PIN + channel))
         return TinyCLR_Result::SharingViolation;
 
     // enable DA clock
     RCC->APB1ENR |= RCC_APB1ENR_DACEN;
 
     // set pin as analog
-    STM32F4_Gpio_ConfigurePin(STM32F4_DAC_FIRST_PIN + channel, STM32F4_Gpio_PortMode::Analog, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
+    STM32F4_GpioInternal_ConfigurePin(STM32F4_DAC_FIRST_PIN + channel, STM32F4_Gpio_PortMode::Analog, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
 
     if (channel) {
         DAC->CR |= DAC_CR_EN2; // enable channel 2
@@ -97,7 +101,7 @@ TinyCLR_Result STM32F4_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int3
     }
 
     // free pin
-    STM32F4_Gpio_ClosePin(STM32F4_DAC_FIRST_PIN + channel);
+    STM32F4_GpioInternal_ClosePin(STM32F4_DAC_FIRST_PIN + channel);
 
     if ((DAC->CR & (DAC_CR_EN1 | DAC_CR_EN2)) == 0) { // all channels off
         // disable DA clock
@@ -132,12 +136,6 @@ int32_t STM32F4_Dac_GetMinValue(const TinyCLR_Dac_Provider* self) {
 
 int32_t STM32F4_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self) {
     return ((1 << STM32F4_DAC_RESOLUTION_INT_BIT) - 1);
-}
-
-void STM32F4_Dac_Reset() {
-    for (auto i = 0; i < STM32F4_Dac_GetChannelCount(&dacProvider); i++) {
-        STM32F4_Dac_ReleaseChannel(&dacProvider, i);
-    }
 }
 
 #endif

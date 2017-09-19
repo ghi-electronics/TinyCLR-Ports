@@ -27,6 +27,10 @@
 #define STM32F4_UART_DATA_BIT_LENGTH_8    8
 #define STM32F4_UART_DATA_BIT_LENGTH_9    9
 
+bool STM32F4_Uart_TxHandshakeEnabledState(int portNum);
+void STM32F4_Uart_TxBufferEmptyInterruptEnable(int portNum, bool enable);
+void STM32F4_Uart_RxBufferFullInterruptEnable(int portNum, bool enable);
+
 typedef  USART_TypeDef* USART_TypeDef_Ptr;
 
 struct UartController {
@@ -52,20 +56,16 @@ struct UartController {
 
 };
 
+static const STM32F4_Gpio_Pin g_STM32F4_Uart_Tx_Pins[] = STM32F4_UART_TX_PINS;
+static const STM32F4_Gpio_Pin g_STM32F4_Uart_Rx_Pins[] = STM32F4_UART_RX_PINS;
+static const STM32F4_Gpio_Pin g_STM32F4_Uart_Cts_Pins[] = STM32F4_UART_CTS_PINS;
+static const STM32F4_Gpio_Pin g_STM32F4_Uart_Rts_Pins[] = STM32F4_UART_RTS_PINS;
+
+static const int TOTAL_UART_CONTROLLERS = SIZEOF_ARRAY(g_STM32F4_Uart_Tx_Pins);
+
 static UartController g_UartController[TOTAL_UART_CONTROLLERS];
 
-// IO addresses
-#if TOTAL_UART_CONTROLLERS > 2
-static const USART_TypeDef_Ptr g_STM32F4_Uart_Ports[] = { USART1, USART2, USART3, UART4, UART5, USART6, UART7, UART8 };
-#else
-static const USART_TypeDef_Ptr g_STM32F4_Uart_Ports[] = { USART1, USART2 };
-#endif
-
-// Pins
-static const uint32_t g_STM32F4_Uart_Rx_Pins[] = STM32F4_UART_RXD_PINS;
-static const uint32_t g_STM32F4_Uart_Tx_Pins[] = STM32F4_UART_TXD_PINS;
-static const uint32_t g_STM32F4_Uart_Cts_Pins[] = STM32F4_UART_CTS_PINS;
-static const uint32_t g_STM32F4_Uart_Rts_Pins[] = STM32F4_UART_RTS_PINS;
+static USART_TypeDef_Ptr g_STM32F4_Uart_Ports[TOTAL_UART_CONTROLLERS];
 
 static uint8_t uartProviderDefs[TOTAL_UART_CONTROLLERS * sizeof(TinyCLR_Uart_Provider)];
 static TinyCLR_Uart_Provider* uartProviders[TOTAL_UART_CONTROLLERS];
@@ -103,11 +103,29 @@ const TinyCLR_Api_Info* STM32F4_Uart_GetApi() {
     uartApi.Count = TOTAL_UART_CONTROLLERS;
     uartApi.Implementation = uartProviders;
 
+    if (TOTAL_UART_CONTROLLERS > 0) g_STM32F4_Uart_Ports[0] = USART1;
+    if (TOTAL_UART_CONTROLLERS > 1) g_STM32F4_Uart_Ports[1] = USART2;
+#ifndef STM32F401xE
+    if (TOTAL_UART_CONTROLLERS > 2) g_STM32F4_Uart_Ports[2] = USART3;
+    if (TOTAL_UART_CONTROLLERS > 3) g_STM32F4_Uart_Ports[3] = UART4;
+    if (TOTAL_UART_CONTROLLERS > 4) g_STM32F4_Uart_Ports[4] = UART5;
+    if (TOTAL_UART_CONTROLLERS > 5) g_STM32F4_Uart_Ports[5] = USART6;
+#ifdef UART7
+    if (TOTAL_UART_CONTROLLERS > 6) g_STM32F4_Uart_Ports[6] = UART7;
+#ifdef UART8
+    if (TOTAL_UART_CONTROLLERS > 7) g_STM32F4_Uart_Ports[7] = UART8;
+#endif
+#endif
+#endif
+    for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        STM32F4_Uart_Release(uartProviders[i]);
+    }
+
     return &uartApi;
 }
 
 void STM32F4_Uart_IrqRx(int portNum) {
-    INTERRUPT_START;
+    INTERRUPT_STARTED_SCOPED(isr);
 
     uint8_t data = (uint8_t)(g_UartController[portNum].portPtr->DR); // read RX data
 
@@ -127,12 +145,10 @@ void STM32F4_Uart_IrqRx(int portNum) {
 
     if (g_UartController[portNum].dataReceivedEventHandler != nullptr)
         g_UartController[portNum].dataReceivedEventHandler(g_UartController[portNum].provider, 1);
-
-    INTERRUPT_END;
 }
 
 void STM32F4_Uart_IrqTx(int portNum) {
-    INTERRUPT_START;
+    INTERRUPT_STARTED_SCOPED(isr);
 
     if (STM32F4_Uart_TxHandshakeEnabledState(portNum)) {
         if (g_UartController[portNum].txBufferCount > 0) {
@@ -150,8 +166,6 @@ void STM32F4_Uart_IrqTx(int portNum) {
             STM32F4_Uart_TxBufferEmptyInterruptEnable(portNum, false); // Disable interrupt when no more data to send.
         }
     }
-
-    INTERRUPT_END;
 }
 
 void STM32F4_Uart_Interrupt0(void* param) {
@@ -174,7 +188,7 @@ void STM32F4_Uart_Interrupt1(void* param) {
         STM32F4_Uart_IrqTx(1);
 }
 
-#if TOTAL_UART_CONTROLLERS > 2
+#ifndef STM32F401xE
 void STM32F4_Uart_Interrupt2(void* param) {
     uint16_t sr = USART3->SR;
 
@@ -219,7 +233,7 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
     if (portNum >= TOTAL_UART_CONTROLLERS)
         return TinyCLR_Result::ArgumentInvalid;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     g_UartController[portNum].txBufferCount = 0;
     g_UartController[portNum].txBufferIn = 0;
@@ -232,7 +246,7 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
     g_UartController[portNum].portPtr = g_STM32F4_Uart_Ports[portNum];
     g_UartController[portNum].provider = self;
 
-    if (STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Rx_Pins[portNum]) && STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Tx_Pins[portNum]))
+    if (STM32F4_GpioInternal_OpenPin(g_STM32F4_Uart_Rx_Pins[portNum].number) && STM32F4_GpioInternal_OpenPin(g_STM32F4_Uart_Tx_Pins[portNum].number))
         return TinyCLR_Result::Success;
 
     return TinyCLR_Result::SharingViolation;
@@ -245,21 +259,29 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
     // enable UART clock
     if (portNum == 5) { // COM6 on APB2
         RCC->APB2ENR |= RCC_APB2ENR_USART6EN;
-        clk = SYSTEM_APB2_CLOCK_HZ;
+        clk = STM32F4_APB2_CLOCK_HZ;
     }
     else if (portNum == 0) { // COM1 on APB2
         RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
-        clk = SYSTEM_APB2_CLOCK_HZ;
+        clk = STM32F4_APB2_CLOCK_HZ;
     }
     else if (portNum < 5) { // COM2-5 on APB1
         RCC->APB1ENR |= RCC_APB1ENR_USART2EN >> 1 << portNum;
-        clk = SYSTEM_APB1_CLOCK_HZ;
+        clk = STM32F4_APB1_CLOCK_HZ;
     }
-#if TOTAL_UART_CONTROLLERS > 2
-    else { // COM7-8 on APB1
-        RCC->APB1ENR |= RCC_APB1ENR_UART7EN >> 6 << portNum;
-        clk = SYSTEM_APB1_CLOCK_HZ;
+#ifndef STM32F401xE
+#ifdef UART7
+    else if (portNum == 6) {
+        RCC->APB1ENR |= RCC_APB1ENR_UART7EN;
+        clk = STM32F4_APB1_CLOCK_HZ;
     }
+#endif
+#ifdef UART8
+    else if (portNum == 7) {
+        RCC->APB1ENR |= RCC_APB1ENR_UART8EN;
+        clk = STM32F4_APB1_CLOCK_HZ;
+    }
+#endif
 #endif
     //  baudrate
     uint16_t div = (uint16_t)((clk + (baudRate >> 1)) / baudRate); // rounded
@@ -318,54 +340,59 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
 
     g_UartController[portNum].portPtr->CR3 = ctrl_cr3;
 
-    STM32F4_Gpio_AlternateFunction alternate = STM32F4_Gpio_AlternateFunction::AF7; // AF7 = USART1-3
+    auto& tx = g_STM32F4_Uart_Tx_Pins[portNum];
+    auto& rx = g_STM32F4_Uart_Rx_Pins[portNum];
+    auto& cts = g_STM32F4_Uart_Cts_Pins[portNum];
+    auto& rts = g_STM32F4_Uart_Rts_Pins[portNum];
 
-    if (portNum >= 3)
-        alternate = STM32F4_Gpio_AlternateFunction::AF8; // AF8 = UART4-8
-
-    STM32F4_Gpio_ConfigurePin(g_STM32F4_Uart_Rx_Pins[portNum], STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, alternate);
-    STM32F4_Gpio_ConfigurePin(g_STM32F4_Uart_Tx_Pins[portNum], STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, alternate);
+    STM32F4_GpioInternal_ConfigurePin(rx.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, rx.alternateFunction);
+    STM32F4_GpioInternal_ConfigurePin(tx.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, tx.alternateFunction);
 
     if (handshaking == TinyCLR_Uart_Handshake::RequestToSend) {
-        if (!STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Cts_Pins[portNum]) || !STM32F4_Gpio_OpenPin(g_STM32F4_Uart_Rts_Pins[portNum]))
+        if (!STM32F4_GpioInternal_OpenPin(cts.number) || !STM32F4_GpioInternal_OpenPin(rts.number))
             return TinyCLR_Result::SharingViolation;
 
-        STM32F4_Gpio_ConfigurePin(g_STM32F4_Uart_Cts_Pins[portNum], STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, alternate);
-        STM32F4_Gpio_ConfigurePin(g_STM32F4_Uart_Rts_Pins[portNum], STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, alternate);
+        STM32F4_GpioInternal_ConfigurePin(cts.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, cts.alternateFunction);
+        STM32F4_GpioInternal_ConfigurePin(rts.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, rts.alternateFunction);
     }
 
     switch (portNum) {
     case 0:
-        STM32F4_Interrupt_Activate(USART1_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt0, 0);
+        STM32F4_InterruptInternal_Activate(USART1_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt0, 0);
         break;
 
     case 1:
-        STM32F4_Interrupt_Activate(USART2_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt1, 0);
+        STM32F4_InterruptInternal_Activate(USART2_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt1, 0);
         break;
-#if TOTAL_UART_CONTROLLERS > 2
+#ifndef STM32F401xE
     case 2:
-        STM32F4_Interrupt_Activate(USART3_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt2, 0);
+        STM32F4_InterruptInternal_Activate(USART3_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt2, 0);
         break;
 
     case 3:
-        STM32F4_Interrupt_Activate(UART4_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt3, 0);
+        STM32F4_InterruptInternal_Activate(UART4_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt3, 0);
         break;
 
     case 4:
-        STM32F4_Interrupt_Activate(UART5_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt4, 0);
+        STM32F4_InterruptInternal_Activate(UART5_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt4, 0);
         break;
 
     case 5:
-        STM32F4_Interrupt_Activate(USART6_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt5, 0);
+        STM32F4_InterruptInternal_Activate(USART6_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt5, 0);
         break;
 
+#ifdef UART7
     case 6:
-        STM32F4_Interrupt_Activate(UART7_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt4, 0);
+        STM32F4_InterruptInternal_Activate(UART7_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt4, 0);
         break;
+#endif
 
+#ifdef UART8
     case 7:
-        STM32F4_Interrupt_Activate(UART8_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt5, 0);
+        STM32F4_InterruptInternal_Activate(UART8_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt5, 0);
         break;
+#endif
+
 #endif
     }
 
@@ -381,7 +408,7 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
 }
 
 TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     int32_t portNum = self->Index;
 
@@ -389,36 +416,41 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
 
     switch (portNum) {
     case 0:
-        STM32F4_Interrupt_Deactivate(USART1_IRQn);
+        STM32F4_InterruptInternal_Deactivate(USART1_IRQn);
         break;
 
     case 1:
-        STM32F4_Interrupt_Deactivate(USART2_IRQn);
+        STM32F4_InterruptInternal_Deactivate(USART2_IRQn);
         break;
-#if TOTAL_UART_CONTROLLERS > 2
+#ifndef STM32F401xE
     case 2:
-        STM32F4_Interrupt_Deactivate(USART3_IRQn);
+        STM32F4_InterruptInternal_Deactivate(USART3_IRQn);
         break;
 
     case 3:
-        STM32F4_Interrupt_Deactivate(UART4_IRQn);
+        STM32F4_InterruptInternal_Deactivate(UART4_IRQn);
         break;
 
     case 4:
-        STM32F4_Interrupt_Deactivate(UART5_IRQn);
+        STM32F4_InterruptInternal_Deactivate(UART5_IRQn);
         break;
 
     case 5:
-        STM32F4_Interrupt_Deactivate(USART6_IRQn);
+        STM32F4_InterruptInternal_Deactivate(USART6_IRQn);
         break;
 
+#ifdef UART7
     case 6:
-        STM32F4_Interrupt_Deactivate(UART7_IRQn);
+        STM32F4_InterruptInternal_Deactivate(UART7_IRQn);
         break;
+#endif
 
+#ifdef UART7
     case 7:
-        STM32F4_Interrupt_Deactivate(UART8_IRQn);
+        STM32F4_InterruptInternal_Deactivate(UART8_IRQn);
         break;
+#endif
+
 #endif
     }
 
@@ -435,10 +467,17 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
     else if (portNum < 5) { // COM2-5 on APB1
         RCC->APB1ENR &= ~(RCC_APB1ENR_USART2EN >> 1 << portNum);
     }
-#if TOTAL_UART_CONTROLLERS > 2
-    else { // COM7-8 on APB1
-        RCC->APB1ENR &= ~(RCC_APB1ENR_UART7EN >> 6 << portNum);
+#ifndef STM32F401xE
+#ifdef UART7
+    else if (portNum == 6) {
+        RCC->APB1ENR &= ~RCC_APB1ENR_UART7EN;
     }
+#endif
+#ifdef UART8
+    else if (portNum == 7) {
+        RCC->APB1ENR &= ~RCC_APB1ENR_UART8EN;
+    }
+#endif
 #endif
 
     g_UartController[portNum].txBufferCount = 0;
@@ -451,10 +490,10 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
 
     g_UartController[portNum].isOpened = false;
 
-    STM32F4_Gpio_ClosePin(g_STM32F4_Uart_Rx_Pins[portNum]);
-    STM32F4_Gpio_ClosePin(g_STM32F4_Uart_Tx_Pins[portNum]);
-    STM32F4_Gpio_ClosePin(g_STM32F4_Uart_Cts_Pins[portNum]);
-    STM32F4_Gpio_ClosePin(g_STM32F4_Uart_Rts_Pins[portNum]);
+    STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Rx_Pins[portNum].number);
+    STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Tx_Pins[portNum].number);
+    STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Cts_Pins[portNum].number);
+    STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Rts_Pins[portNum].number);
 
     return TinyCLR_Result::Success;
 }
@@ -482,7 +521,7 @@ bool STM32F4_Uart_TxHandshakeEnabledState(int portNum) {
     if (g_UartController[portNum].portPtr->CR3 & USART_CR3_CTSE) {
         TinyCLR_Gpio_PinValue value;
 
-        STM32F4_Gpio_Read(nullptr, g_STM32F4_Uart_Cts_Pins[portNum], value);
+        STM32F4_Gpio_Read(nullptr, g_STM32F4_Uart_Cts_Pins[portNum].number, value);
 
         return !(value == TinyCLR_Gpio_PinValue::High);
     }
@@ -507,7 +546,7 @@ TinyCLR_Result STM32F4_Uart_Read(const TinyCLR_Uart_Provider* self, uint8_t* buf
     int32_t portNum = self->Index;
     size_t i = 0;;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (g_UartController[portNum].isOpened == false)
         return TinyCLR_Result::NotAvailable;
@@ -532,7 +571,7 @@ TinyCLR_Result STM32F4_Uart_Write(const TinyCLR_Uart_Provider* self, const uint8
     int32_t portNum = self->Index;
     int32_t i = 0;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (g_UartController[portNum].isOpened == false)
         return TinyCLR_Result::NotAvailable;
@@ -620,10 +659,3 @@ TinyCLR_Result STM32F4_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Provide
 TinyCLR_Result STM32F4_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Provider* self, bool state) {
     return TinyCLR_Result::NotImplemented;
 }
-
-void STM32F4_Uart_Reset() {
-    for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
-        STM32F4_Uart_Release(uartProviders[i]);
-    }
-}
-

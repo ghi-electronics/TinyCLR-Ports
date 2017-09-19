@@ -15,7 +15,18 @@
 // limitations under the License.
 
 #include <vector>
+#include <string.h>
 #include "STM32F4.h"
+
+#define __min(a,b)  (((a) < (b)) ? (a) : (b))
+void STM32F4_UsbClient_Reset();
+
+#if defined(__GNUC__)
+#define PACKED(x) x __attribute__((packed))
+#elif defined(arm) || defined(__arm)
+#define PACKED(x) __packed x
+#endif
+
 //--//
 // USB 2.0 host requests
 #define USB_GET_STATUS           0
@@ -224,14 +235,14 @@ struct USB_CONTROLLER_STATE {
     const USB_DYNAMIC_CONFIGURATION*                            Configuration;
 
     /* Queues & MaxPacketSize must be initialized by the HAL */
-    std::vector<USB_PACKET64>                                   *Queues[USB_MAX_QUEUES];
-    uint8_t                                                     CurrentPacketOffset[USB_MAX_QUEUES];
-    uint8_t                                                     MaxPacketSize[USB_MAX_QUEUES];
-    bool                                                        IsTxQueue[USB_MAX_QUEUES];
+    std::vector<USB_PACKET64>                                   *Queues[STM32F4_USB_QUEUE_SIZE];
+    uint8_t                                                     CurrentPacketOffset[STM32F4_USB_QUEUE_SIZE];
+    uint8_t                                                     MaxPacketSize[STM32F4_USB_QUEUE_SIZE];
+    bool                                                        IsTxQueue[STM32F4_USB_QUEUE_SIZE];
 
     /* Arbitrarily as many streams as endpoints since that is the maximum number of streams
        necessary to represent the maximum number of endpoints */
-    USB_STREAM_MAP                                              streams[USB_MAX_QUEUES];
+    USB_STREAM_MAP                                              streams[STM32F4_USB_QUEUE_SIZE];
 
     //--//
 
@@ -672,14 +683,8 @@ OTG_TypeDef;
 
 #define STM32F4_USB_FS_ID 0
 
-#define STM32F4_USB_DM_PIN(c) 11 // A11
-#define STM32F4_USB_DP_PIN(c) 12 // A12
-#define STM32F4_USB_VB_PIN(c)  9 // A9
-#define STM32F4_USB_ID_PIN(c) 10 // A10
-
 #define STM32F4_USB_USE_ID_PIN(c) STM32F4_USB_FS_USE_ID_PIN
 #define STM32F4_USB_USE_VB_PIN(c) STM32F4_USB_FS_USE_VB_PIN
-#define STM32F4_USB_ALT_MODE(c) (uint32_t)0x2A2; // AF10, 50MHz
 
 #define USB_MAX_BUFFERS (STM32F4_USB_FS_MAX_EP - 1)
 
@@ -690,12 +695,18 @@ OTG_TypeDef;
 
 // PHY turnaround time
 // (4 AHB clocks + 1 Phy clock in Phy clocks)
-#define STM32F4_USB_TRDT ((4 * 48000000 - 1) / SYSTEM_CYCLE_CLOCK_HZ + 2)
+#define STM32F4_USB_TRDT ((4 * 48000000 - 1) / STM32F4_AHB_CLOCK_HZ + 2)
 
 #define ENDPOINT_INUSED_MASK        0x01
 #define ENDPOINT_DIR_IN_MASK        0x02
 #define ENDPOINT_DIR_OUT_MASK       0x04
 
+static const STM32F4_Gpio_Pin g_STM32F4_Usb_Dm_Pins[] = STM32F4_USB_DM_PINS;
+static const STM32F4_Gpio_Pin g_STM32F4_Usb_Dp_Pins[] = STM32F4_USB_DP_PINS;
+static const STM32F4_Gpio_Pin g_STM32F4_Usb_Vb_Pins[] = STM32F4_USB_VB_PINS;
+static const STM32F4_Gpio_Pin g_STM32F4_Usb_Id_Pins[] = STM32F4_USB_ID_PINS;
+
+static const int TOTAL_USB_CONTROLLERS = SIZEOF_ARRAY(g_STM32F4_Usb_Dm_Pins);
 
 int8_t STM32F4_UsbClient_EndpointMap[] = { ENDPOINT_INUSED_MASK,                          // Endpoint 0
                                                 ENDPOINT_DIR_IN_MASK | ENDPOINT_DIR_OUT_MASK,  // Endpoint 1
@@ -708,14 +719,14 @@ typedef struct {
     USB_CONTROLLER_STATE state;
 
     uint8_t     ep0Buffer[MAX_EP_SIZE];
-    uint16_t    endpointStatus[USB_MAX_QUEUES];
+    uint16_t    endpointStatus[STM32F4_USB_QUEUE_SIZE];
     uint16_t    endpointType;
     uint8_t     previousDeviceState;
 
 } STM32F4_UsbClient_State;
 
 /* State variables for the controllers */
-static STM32F4_UsbClient_State STM32F4_UsbClient_ControllerState[TOTAL_USB_CONTROLLER];
+static STM32F4_UsbClient_State STM32F4_UsbClient_ControllerState[TOTAL_USB_CONTROLLERS];
 
 /* Queues for all data endpoints */
 static std::vector<USB_PACKET64> QueueBuffers[USB_MAX_BUFFERS];
@@ -823,7 +834,6 @@ void STM32F4_UsbClient_ResetEvent(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State)
  * Data Endpoint Rx Interrupt Handler
  */
 void STM32F4_UsbClient_EndpointRxInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State, uint32_t ep, uint32_t count) {
-    ASSERT_IRQ_MUST_BE_OFF();
     uint32_t* pd;
 
     if (ep == 0) { // control endpoint
@@ -855,8 +865,6 @@ void STM32F4_UsbClient_EndpointRxInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STAT
  * Data In (Tx) Endpoint Interrupt Handler
  */
 void STM32F4_UsbClient_EndpointInInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State, uint32_t ep) {
-    ASSERT_IRQ_MUST_BE_OFF();
-
     uint32_t bits = OTG->DIEP[ep].INT;
     if (bits & OTG_DIEPINT_XFRC) { // transfer completed
 
@@ -976,7 +984,6 @@ void STM32F4_UsbClient_HandleSetup(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State
  * Data Out (Rx) Endpoint Interrupt Handler
  */
 void STM32F4_UsbClient_EndpointOutInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State, uint32_t ep) {
-    ASSERT_IRQ_MUST_BE_OFF();
     uint32_t bits = OTG->DOEP[ep].INT;
     if (bits & OTG_DOEPINT_XFRC) { // transfer completed
 
@@ -1014,9 +1021,9 @@ void STM32F4_UsbClient_EndpointOutInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STA
  * Main Interrupt Handler
  */
 void STM32F4_UsbClient_Interrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State) {
-    INTERRUPT_START;
+    INTERRUPT_STARTED_SCOPED(isr);
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t intPend = OTG->GINTSTS; // get pending bits
 
@@ -1074,8 +1081,6 @@ void STM32F4_UsbClient_Interrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State) 
             OTG->GINTSTS = OTG_GINTSTS_WKUPINT; // clear interrupt
         }
     }
-
-    INTERRUPT_END;
 }
 
 /*
@@ -1086,13 +1091,17 @@ void STM32F4_UsbClient_FullspeedInterrupt(void* param) {
 }
 
 bool STM32F4_UsbClient_Initialize(int controller) {
-    if ((uint32_t)controller >= TOTAL_USB_CONTROLLER)
+    if ((uint32_t)controller >= TOTAL_USB_CONTROLLERS)
         return false;
 
-    if (!STM32F4_Gpio_OpenPin(STM32F4_USB_DM_PIN(controller)) || !STM32F4_Gpio_OpenPin(STM32F4_USB_DP_PIN(controller)))
+    auto& dp = g_STM32F4_Usb_Dp_Pins[controller];
+    auto& dm = g_STM32F4_Usb_Dm_Pins[controller];
+    auto& id = g_STM32F4_Usb_Id_Pins[controller];
+
+    if (!STM32F4_GpioInternal_OpenPin(dp.number) || !STM32F4_GpioInternal_OpenPin(dm.number))
         return false;
 
-    if (STM32F4_USB_USE_ID_PIN(controller) && !STM32F4_Gpio_OpenPin(STM32F4_USB_ID_PIN(controller)))
+    if (STM32F4_USB_USE_ID_PIN(controller) && !STM32F4_GpioInternal_OpenPin(id.number))
         return false;
 
     // enable USB clock
@@ -1103,7 +1112,7 @@ bool STM32F4_UsbClient_Initialize(int controller) {
 
     OTG_TypeDef* OTG = OTG_FS;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     // Detach usb port for a while to enforce re-initialization
     OTG->DCTL = OTG_DCTL_SDIS; // soft disconnect
@@ -1127,8 +1136,8 @@ bool STM32F4_UsbClient_Initialize(int controller) {
     // setup hardware
     STM32F4_UsbClient_ProtectPins(controller, true);
 
-    STM32F4_Interrupt_Activate(OTG_FS_IRQn, (uint32_t*)&STM32F4_UsbClient_FullspeedInterrupt, 0);
-    STM32F4_Interrupt_Activate(OTG_FS_WKUP_IRQn, (uint32_t*)&STM32F4_UsbClient_FullspeedInterrupt, 0);
+    STM32F4_InterruptInternal_Activate(OTG_FS_IRQn, (uint32_t*)&STM32F4_UsbClient_FullspeedInterrupt, 0);
+    STM32F4_InterruptInternal_Activate(OTG_FS_WKUP_IRQn, (uint32_t*)&STM32F4_UsbClient_FullspeedInterrupt, 0);
 
     // allow interrupts
     OTG->GINTSTS = 0xFFFFFFFF;           // clear all interrupts
@@ -1145,18 +1154,22 @@ bool STM32F4_UsbClient_Initialize(int controller) {
 }
 
 bool STM32F4_UsbClient_Uninitialize(int controller) {
-    STM32F4_Interrupt_Deactivate(OTG_FS_WKUP_IRQn);
-    STM32F4_Interrupt_Deactivate(OTG_FS_IRQn);
+    STM32F4_InterruptInternal_Deactivate(OTG_FS_WKUP_IRQn);
+    STM32F4_InterruptInternal_Deactivate(OTG_FS_IRQn);
 
     STM32F4_UsbClient_ProtectPins(controller, false);
 
     RCC->AHB2ENR &= ~RCC_AHB2ENR_OTGFSEN;
 
-    STM32F4_Gpio_ClosePin(STM32F4_USB_DM_PIN(controller));
-    STM32F4_Gpio_ClosePin(STM32F4_USB_DP_PIN(controller));
+    auto& dp = g_STM32F4_Usb_Dp_Pins[controller];
+    auto& dm = g_STM32F4_Usb_Dm_Pins[controller];
+    auto& id = g_STM32F4_Usb_Id_Pins[controller];
+
+    STM32F4_GpioInternal_ClosePin(dp.number);
+    STM32F4_GpioInternal_ClosePin(dm.number);
 
     if (STM32F4_USB_USE_ID_PIN(controller))
-        STM32F4_Gpio_ClosePin(STM32F4_USB_ID_PIN(controller));
+        STM32F4_GpioInternal_ClosePin(id.number);
 
     return true;
 }
@@ -1167,7 +1180,7 @@ bool STM32F4_UsbClient_StartOutput(USB_CONTROLLER_STATE* State, int ep) {
 
     OTG_TypeDef* OTG = OTG_FS;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     // If endpoint is not an output
     if (State->Queues[ep] == 0 || !State->IsTxQueue[ep])
@@ -1183,7 +1196,7 @@ bool STM32F4_UsbClient_StartOutput(USB_CONTROLLER_STATE* State, int ep) {
         return true;
     }
 
-    if (irq.WasDisabled()) { // check all endpoints for pending actions
+    if (irq.IsDisabled()) { // check all endpoints for pending actions
         STM32F4_UsbClient_Interrupt(OTG, State);
     }
     // write first packet if not done yet
@@ -1199,7 +1212,7 @@ bool STM32F4_UsbClient_RxEnable(USB_CONTROLLER_STATE* State, int ep) {
 
     OTG_TypeDef* OTG = OTG_FS;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     // enable Rx
     if (!(OTG->DOEP[ep].CTL & OTG_DOEPCTL_EPENA)) {
@@ -1218,15 +1231,18 @@ bool STM32F4_UsbClient_ProtectPins(int controller, bool On) {
 
     OTG_TypeDef* OTG = OTG_FS;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (On) {
+        auto& dp = g_STM32F4_Usb_Dp_Pins[controller];
+        auto& dm = g_STM32F4_Usb_Dm_Pins[controller];
+        auto& id = g_STM32F4_Usb_Id_Pins[controller];
 
-        STM32F4_Gpio_ConfigurePin(STM32F4_USB_DM_PIN(controller), STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF10);
-        STM32F4_Gpio_ConfigurePin(STM32F4_USB_DP_PIN(controller), STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF10);
+        STM32F4_GpioInternal_ConfigurePin(dp.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, dp.alternateFunction);
+        STM32F4_GpioInternal_ConfigurePin(dm.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, dm.alternateFunction);
 
         if (STM32F4_USB_USE_ID_PIN(controller)) {
-            STM32F4_Gpio_ConfigurePin(STM32F4_USB_ID_PIN(controller), STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF10);
+            STM32F4_GpioInternal_ConfigurePin(id.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, id.alternateFunction);
         }
 
         // attach usb port
@@ -1290,9 +1306,9 @@ TinyCLR_UsbClient_DeviceDescriptor deviceDescriptor = {
     0,                                  // Device class (none)
     0,                                  // Device subclass (none)
     0,                                  // Device protocol (none)
-    MAX_EP0_SIZE,                        // Endpoint 0 size
-    USB_VENDOR_ID,                          // Vendor ID
-    USB_PRODUCT_ID,                         // Product ID
+    MAX_EP0_SIZE,                       // Endpoint 0 size
+    USB_DEBUGGER_VENDOR_ID,             // Vendor ID
+    USB_DEBUGGER_PRODUCT_ID,            // Product ID
     DEVICE_RELEASE_VERSION,             // Product version 1.00 (BCD)
     MANUFACTURER_NAME_INDEX,            // Manufacturer name string index
     PRODUCT_NAME_INDEX,                 // Product name string index
@@ -1357,7 +1373,7 @@ TinyCLR_UsbClient_StringDescriptorHeader stringManufacturerDescriptorHeader = {
         },
         USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
         USB_STRING_DESCRIPTOR_TYPE,
-        USB_MANUFACTURER_NAME
+        CONCAT(L, DEVICE_MANUFACTURER)
 };
 
 // Product name string descriptor header
@@ -1369,7 +1385,7 @@ TinyCLR_UsbClient_StringDescriptorHeader stringProductNameDescriptorHeader = {
     },
     USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
     USB_STRING_DESCRIPTOR_TYPE,
-    USB_PRODUCT_NAME
+    CONCAT(L, DEVICE_NAME)
 };
 
 // String 4 descriptor header (display name)
@@ -1381,7 +1397,7 @@ TinyCLR_UsbClient_StringDescriptorHeader stringDisplayNameDescriptorHeader = {
     },
     USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
     USB_STRING_DESCRIPTOR_TYPE,
-    USB_DISPLAY_NAME
+    CONCAT(L, DEVICE_NAME)
 };
 
 // String 5 descriptor header (friendly name)
@@ -1393,7 +1409,7 @@ TinyCLR_UsbClient_StringDescriptorHeader stringFriendlyNameDescriptorHeader = {
     },
     USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
     USB_STRING_DESCRIPTOR_TYPE,
-    USB_FRIENDLY_NAME
+    CONCAT(L, DEVICE_NAME)
 };
 
 // OS Descriptor string for Extended OS Compat ID
@@ -1422,7 +1438,7 @@ bool UsbClient_Driver::Initialize(int controller) {
 
     USB_CONTROLLER_STATE *State = &STM32F4_UsbClient_ControllerState[controller].state;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (State == nullptr)
         return false;
@@ -1458,7 +1474,7 @@ bool UsbClient_Driver::Initialize(int controller) {
     State->PacketSize = MAX_EP0_SIZE;
     State->Initialized = true;
 
-    for (auto i = 0; i < USB_MAX_QUEUES; i++) {
+    for (auto i = 0; i < STM32F4_USB_QUEUE_SIZE; i++) {
         State->streams[i].RxEP = USB_NULL_ENDPOINT;
         State->streams[i].TxEP = USB_NULL_ENDPOINT;
         State->MaxPacketSize[i] = MAX_EP_SIZE;
@@ -1473,7 +1489,7 @@ bool UsbClient_Driver::Uninitialize(int controller) {
     if (State == nullptr)
         return false;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     STM32F4_UsbClient_Uninitialize(controller);
 
@@ -1505,7 +1521,7 @@ bool UsbClient_Driver::OpenStream(int controller, int32_t& usbStream, TinyCLR_Us
 
     case TinyCLR_UsbClient_StreamMode::InOut:
 
-        for (auto i = 0; i < SIZEOF_CONST_ARRAY(STM32F4_UsbClient_EndpointMap); i++) {
+        for (auto i = 0; i < SIZEOF_ARRAY(STM32F4_UsbClient_EndpointMap); i++) {
             if ((STM32F4_UsbClient_EndpointMap[i] & ENDPOINT_INUSED_MASK)) // in used
                 continue;
 
@@ -1529,25 +1545,25 @@ bool UsbClient_Driver::OpenStream(int controller, int32_t& usbStream, TinyCLR_Us
         }
         // Check the usbStream and the two endpoint numbers for validity (both endpoints cannot be zero)
         if ((readEp == USB_NULL_ENDPOINT && writeEp == USB_NULL_ENDPOINT)
-            || (readEp != USB_NULL_ENDPOINT && (readEp < 1 || readEp >= USB_MAX_QUEUES))
-            || (writeEp != USB_NULL_ENDPOINT && (writeEp < 1 || writeEp >= USB_MAX_QUEUES)))
+            || (readEp != USB_NULL_ENDPOINT && (readEp < 1 || readEp >= STM32F4_USB_QUEUE_SIZE))
+            || (writeEp != USB_NULL_ENDPOINT && (writeEp < 1 || writeEp >= STM32F4_USB_QUEUE_SIZE)))
             return false;
 
         // The specified endpoints must not be in use by another stream
-        for (int stream = 0; stream < USB_MAX_QUEUES; stream++) {
+        for (int stream = 0; stream < STM32F4_USB_QUEUE_SIZE; stream++) {
             if (readEp != USB_NULL_ENDPOINT && (State->streams[stream].RxEP == readEp || State->streams[stream].TxEP == readEp))
                 return false;
             if (writeEp != USB_NULL_ENDPOINT && (State->streams[stream].RxEP == writeEp || State->streams[stream].TxEP == writeEp))
                 return false;
         }
 
-        for (usbStream = 0; usbStream < USB_MAX_QUEUES; usbStream++) {
+        for (usbStream = 0; usbStream < STM32F4_USB_QUEUE_SIZE; usbStream++) {
             // The Stream must be currently closed
             if (State->streams[usbStream].RxEP == USB_NULL_ENDPOINT && State->streams[usbStream].TxEP == USB_NULL_ENDPOINT)
                 break;
         }
 
-        if (usbStream == USB_MAX_QUEUES)
+        if (usbStream == STM32F4_USB_QUEUE_SIZE)
             return false; // full endpoint
 
         // All tests pass, assign the endpoints to the stream
@@ -1604,11 +1620,11 @@ bool UsbClient_Driver::OpenStream(int controller, int32_t& usbStream, TinyCLR_Us
 bool UsbClient_Driver::CloseStream(int controller, int usbStream) {
     USB_CONTROLLER_STATE * State = &STM32F4_UsbClient_ControllerState[controller].state;
 
-    if (nullptr == State || !State->Initialized || usbStream >= USB_MAX_QUEUES)
+    if (nullptr == State || !State->Initialized || usbStream >= STM32F4_USB_QUEUE_SIZE)
         return false;
 
     int endpoint;
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     // Close the Rx stream
     endpoint = State->streams[usbStream].RxEP;
@@ -1641,7 +1657,7 @@ int UsbClient_Driver::Write(int controller, int usbStream, const char* Data, siz
     int totWrite = 0;
     USB_CONTROLLER_STATE * State = &STM32F4_UsbClient_ControllerState[controller].state;
 
-    if (nullptr == State || usbStream >= USB_MAX_QUEUES) {
+    if (nullptr == State || usbStream >= STM32F4_USB_QUEUE_SIZE) {
         return -1;
     }
 
@@ -1662,7 +1678,7 @@ int UsbClient_Driver::Write(int controller, int usbStream, const char* Data, siz
         return -1;
     }
     else {
-        GLOBAL_LOCK(irq);
+        DISABLE_INTERRUPTS_SCOPED(irq);
 
         const char*   ptr = Data;
         uint32_t        count = size;
@@ -1736,7 +1752,7 @@ int UsbClient_Driver::Write(int controller, int usbStream, const char* Data, siz
                     return totWrite;
                 }
 
-                if (irq.WasDisabled()) // @todo - this really needs more checks to be totally valid
+                if (irq.IsDisabled()) // @todo - this really needs more checks to be totally valid
                 {
                     return totWrite;
                 }
@@ -1770,7 +1786,7 @@ int UsbClient_Driver::Read(int controller, int usbStream, char* Data, size_t siz
     int endpoint;
     USB_CONTROLLER_STATE * State = &STM32F4_UsbClient_ControllerState[controller].state;
 
-    if (nullptr == State || usbStream >= USB_MAX_QUEUES) {
+    if (nullptr == State || usbStream >= STM32F4_USB_QUEUE_SIZE) {
         return 0;
     }
 
@@ -1786,7 +1802,7 @@ int UsbClient_Driver::Read(int controller, int usbStream, char* Data, size_t siz
     }
 
     {
-        GLOBAL_LOCK(irq);
+        DISABLE_INTERRUPTS_SCOPED(irq);
 
         USB_PACKET64* Packet64 = nullptr;
         uint8_t*        ptr = (uint8_t*)Data;
@@ -1838,7 +1854,7 @@ bool UsbClient_Driver::Flush(int controller, int usbStream) {
     int queueCnt;
     USB_CONTROLLER_STATE * State = &STM32F4_UsbClient_ControllerState[controller].state;
 
-    if (nullptr == State || usbStream >= USB_MAX_QUEUES) {
+    if (nullptr == State || usbStream >= STM32F4_USB_QUEUE_SIZE) {
         return false;
     }
 
@@ -1876,7 +1892,7 @@ bool UsbClient_Driver::Flush(int controller, int usbStream) {
 }
 
 uint32_t UsbClient_Driver::SetEvent(int controller, uint32_t Event) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     USB_CONTROLLER_STATE *State = &STM32F4_UsbClient_ControllerState[controller].state;
 
@@ -1896,7 +1912,7 @@ uint32_t UsbClient_Driver::SetEvent(int controller, uint32_t Event) {
 }
 
 uint32_t UsbClient_Driver::ClearEvent(int controller, uint32_t Event) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     USB_CONTROLLER_STATE *State = &STM32F4_UsbClient_ControllerState[controller].state;
 
@@ -1911,10 +1927,10 @@ uint32_t UsbClient_Driver::ClearEvent(int controller, uint32_t Event) {
 }
 
 void USB_ClearQueues(USB_CONTROLLER_STATE *State, bool ClrRxQueue, bool ClrTxQueue) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (ClrRxQueue) {
-        for (int endpoint = 0; endpoint < USB_MAX_QUEUES; endpoint++) {
+        for (int endpoint = 0; endpoint < STM32F4_USB_QUEUE_SIZE; endpoint++) {
             if (State->Queues[endpoint] == nullptr || State->IsTxQueue[endpoint])
                 continue;
             State->Queues[endpoint]->clear();
@@ -1925,7 +1941,7 @@ void USB_ClearQueues(USB_CONTROLLER_STATE *State, bool ClrRxQueue, bool ClrTxQue
     }
 
     if (ClrTxQueue) {
-        for (int endpoint = 0; endpoint < USB_MAX_QUEUES; endpoint++) {
+        for (int endpoint = 0; endpoint < STM32F4_USB_QUEUE_SIZE; endpoint++) {
             if (State->Queues[endpoint] && State->IsTxQueue[endpoint])
                 State->Queues[endpoint]->clear();
         }
@@ -2470,8 +2486,7 @@ uint8_t STM32F4_UsbClient_ControlCallback(USB_CONTROLLER_STATE* State) {
 }
 
 USB_PACKET64* STM32F4_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* State, int endpoint, bool& DisableRx) {
-    ASSERT_IRQ_MUST_BE_OFF();
-    USB_DEBUG_ASSERT(State && (endpoint < USB_MAX_QUEUES));
+    USB_DEBUG_ASSERT(State && (endpoint < STM32F4_USB_QUEUE_SIZE));
     USB_DEBUG_ASSERT(State->Queues[endpoint] && !State->IsTxQueue[endpoint]);
 
     std::vector<USB_PACKET64>::iterator  packet;
@@ -2501,8 +2516,7 @@ USB_PACKET64* STM32F4_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* State, int endpo
 }
 
 USB_PACKET64* STM32F4_UsbClient_TxDequeue(USB_CONTROLLER_STATE* State, int endpoint, bool Done) {
-    ASSERT_IRQ_MUST_BE_OFF();
-    USB_DEBUG_ASSERT(State && (endpoint < USB_MAX_QUEUES));
+    USB_DEBUG_ASSERT(State && (endpoint < STM32F4_USB_QUEUE_SIZE));
     USB_DEBUG_ASSERT(State->Queues[endpoint] && State->IsTxQueue[endpoint]);
 
     std::vector<USB_PACKET64>::iterator  packet;
@@ -2588,7 +2602,7 @@ TinyCLR_Result STM32F4_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_UsbClient_SetOsExtendedProperty(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_OsExtendedPropertyHandler handler) {
+TinyCLR_Result STM32F4_UsbClient_SetOsExtendedPropertyHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_OsExtendedPropertyHandler handler) {
     int32_t controller = self->Index;
 
     UsbClient_Driver::OsExtendedPropertyHandler = handler;
@@ -2611,19 +2625,19 @@ TinyCLR_Result STM32F4_UsbClient_SetConfigDescriptor(const TinyCLR_UsbClient_Pro
 TinyCLR_Result STM32F4_UsbClient_SetStringDescriptor(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_StringDescriptorType type, const wchar_t* value) {
     switch (type) {
     case TinyCLR_UsbClient_StringDescriptorType::ManufacturerName:
-        memcpy(&stringManufacturerDescriptorHeader.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_CONST_ARRAY(stringManufacturerDescriptorHeader.stringDescriptor));
+        memcpy(&stringManufacturerDescriptorHeader.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_ARRAY(stringManufacturerDescriptorHeader.stringDescriptor));
         break;
 
     case TinyCLR_UsbClient_StringDescriptorType::ProductName:
-        memcpy(&stringProductNameDescriptorHeader.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_CONST_ARRAY(stringManufacturerDescriptorHeader.stringDescriptor));
+        memcpy(&stringProductNameDescriptorHeader.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_ARRAY(stringManufacturerDescriptorHeader.stringDescriptor));
         break;
 
     case TinyCLR_UsbClient_StringDescriptorType::DisplayName:
-        memcpy(&stringDisplayNameDescriptorHeader.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_CONST_ARRAY(stringManufacturerDescriptorHeader.stringDescriptor));
+        memcpy(&stringDisplayNameDescriptorHeader.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_ARRAY(stringManufacturerDescriptorHeader.stringDescriptor));
         break;
 
     case TinyCLR_UsbClient_StringDescriptorType::FriendlyName:
-        memcpy(&stringFriendlyNameDescriptorHeader.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_CONST_ARRAY(stringManufacturerDescriptorHeader.stringDescriptor));
+        memcpy(&stringFriendlyNameDescriptorHeader.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_ARRAY(stringManufacturerDescriptorHeader.stringDescriptor));
         break;
     }
 
@@ -2636,7 +2650,7 @@ static TinyCLR_Api_Info usbClientApi;
 void STM32F4_UsbClient_Reset() {
     for (auto controller = 0; controller < usbClientApi.Count; controller++) {
         // Close all stream if any opened
-        for (auto stream = 0; stream < USB_MAX_QUEUES; stream++) {
+        for (auto stream = 0; stream < STM32F4_USB_QUEUE_SIZE; stream++) {
             UsbClient_Driver::CloseStream(controller, stream);
         }
 
@@ -2655,11 +2669,11 @@ const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi() {
     usbClientProvider.Write = &STM32F4_UsbClient_Write;
     usbClientProvider.Read = &STM32F4_UsbClient_Read;
     usbClientProvider.Flush = &STM32F4_UsbClient_Flush;
-    usbClientProvider.SetDataReceivedHandler = &STM32F4_UsbClient_SetDataReceivedHandler;
-    usbClientProvider.SetOsExtendedPropertyHandler = &STM32F4_UsbClient_SetOsExtendedProperty;
     usbClientProvider.SetDeviceDescriptor = &STM32F4_UsbClient_SetDeviceDescriptor;
     usbClientProvider.SetConfigDescriptor = &STM32F4_UsbClient_SetConfigDescriptor;
     usbClientProvider.SetStringDescriptor = &STM32F4_UsbClient_SetStringDescriptor;
+    usbClientProvider.SetDataReceivedHandler = &STM32F4_UsbClient_SetDataReceivedHandler;
+    usbClientProvider.SetOsExtendedPropertyHandler = &STM32F4_UsbClient_SetOsExtendedPropertyHandler;
 
     usbClientApi.Author = "GHI Electronics, LLC";
     usbClientApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.UsbClientProvider";
@@ -2667,6 +2681,9 @@ const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi() {
     usbClientApi.Version = 0;
     usbClientApi.Count = 1;
     usbClientApi.Implementation = &usbClientProvider;
+
+    //With this uncommented USB fails to start and the program doesn't run
+    //STM32F4_UsbClient_Reset();
 
     return &usbClientApi;
 }

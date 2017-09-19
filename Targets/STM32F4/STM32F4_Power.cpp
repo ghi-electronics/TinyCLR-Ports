@@ -16,9 +16,6 @@
 
 #include "STM32F4.h"
 
-static void(*g_STM32F4_stopHandler)();
-static void(*g_STM32F4_restartHandler)();
-
 static TinyCLR_Power_Provider powerProvider;
 static TinyCLR_Api_Info powerApi;
 
@@ -40,24 +37,15 @@ const TinyCLR_Api_Info* STM32F4_Power_GetApi() {
     return &powerApi;
 }
 
-void STM32F4_Power_SetHandlers(void(*stop)(), void(*restart)()) {
-    g_STM32F4_stopHandler = stop;
-    g_STM32F4_restartHandler = restart;
-}
-
 void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep_Level level) {
     switch (level) {
 
         case TinyCLR_Power_Sleep_Level::Hibernate: // stop
-        // stop peripherals if needed
-            if (g_STM32F4_stopHandler != 0)
-                g_STM32F4_stopHandler();
-
             SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
             PWR->CR |= PWR_CR_CWUF | PWR_CR_FPDS | PWR_CR_LPDS; // low power deepsleep
 
             __WFI(); // stop clocks and wait for external interrupt
-#if SYSTEM_CRYSTAL_CLOCK_HZ != 0
+#if STM32F4_CRYSTAL_CLOCK_HZ != 0
             RCC->CR |= RCC_CR_HSEON;             // HSE on
 #endif
             SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;  // reset deepsleep
@@ -69,20 +57,13 @@ void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep
             while (!(RCC->CR & RCC_CR_PLLRDY));
 
             RCC->CFGR |= RCC_CFGR_SW_PLL;        // sysclk = pll out
-#if SYSTEM_CRYSTAL_CLOCK_HZ != 0
+#if STM32F4_CRYSTAL_CLOCK_HZ != 0
             RCC->CR &= ~RCC_CR_HSION;            // HSI off
 #endif
 
-// restart peripherals if needed
-            if (g_STM32F4_restartHandler != 0)
-                g_STM32F4_restartHandler();
             return;
 
         case TinyCLR_Power_Sleep_Level::Off: // standby
-            // stop peripherals if needed
-            if (g_STM32F4_stopHandler != 0)
-                g_STM32F4_stopHandler();
-
             SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
             PWR->CR |= PWR_CR_CWUF | PWR_CR_PDDS; // power down deepsleep
 
@@ -98,9 +79,9 @@ void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep
 }
 
 void STM32F4_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) {
-#if defined RAM_BOOTLOADER_HOLD_VALUE && defined RAM_BOOTLOADER_HOLD_ADDRESS && RAM_BOOTLOADER_HOLD_ADDRESS > 0
+#if defined BOOTLOADER_HOLD_VALUE && defined BOOTLOADER_HOLD_ADDRESS && BOOTLOADER_HOLD_ADDRESS > 0
     if (!runCoreAfter)
-        *((uint32_t*)RAM_BOOTLOADER_HOLD_ADDRESS) = RAM_BOOTLOADER_HOLD_VALUE;
+        *((uint32_t*)BOOTLOADER_HOLD_ADDRESS) = BOOTLOADER_HOLD_VALUE;
 #endif
 
     SCB->AIRCR = (0x5FA << SCB_AIRCR_VECTKEY_Pos)  // unlock key

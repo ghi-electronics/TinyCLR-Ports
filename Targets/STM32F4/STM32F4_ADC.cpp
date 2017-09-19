@@ -18,6 +18,8 @@
 
 #define STM32F4_AD_SAMPLE_TIME 2   // sample time = 28 cycles
 
+#define STM32F4_ADC 1
+
 #if STM32F4_ADC == 1
 #define ADCx ADC1
 #define RCC_APB2ENR_ADCxEN RCC_APB2ENR_ADC1EN
@@ -29,7 +31,7 @@
 #elif STM32F4_ADC == 3
 #define ADCx ADC3
 #define RCC_APB2ENR_ADCxEN RCC_APB2ENR_ADC3EN
-#define STM32F4_ADC_PINS {0,1,2,3,86,87,88,89,90,83,32,33,34,35,84,85} // ADC3 pins
+#define STM32F4_ADC_PINS {0,1,2,3,86,87,88,89,90,83,32,33,34,35,84,85,0,0} // ADC3 pins
 #else
 #error wrong STM32F4_ADC value (1 or 3)
 #endif
@@ -37,10 +39,10 @@
 // Channels
 #define STM32F4_ADC_CHANNEL_NONE    0xFF
 
-static const uint8_t g_STM32F4_AD_Channel[] = STM32F4_AD_CHANNELS;
-static const uint8_t g_STM32F4_AD_Pins[] = STM32F4_ADC_PINS;
+static const uint8_t g_STM32F4_AD_Channel[18] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
+static const uint8_t g_STM32F4_AD_Pins[18] = STM32F4_ADC_PINS;
 
-#define STM32F4_AD_NUM SIZEOF_CONST_ARRAY(g_STM32F4_AD_Channel)  // number of channels
+#define STM32F4_AD_NUM SIZEOF_ARRAY(g_STM32F4_AD_Channel)  // number of channels
 
 static TinyCLR_Adc_Provider adcProvider;
 static TinyCLR_Api_Info adcApi;
@@ -52,14 +54,14 @@ const TinyCLR_Api_Info* STM32F4_Adc_GetApi() {
     adcProvider.Release = &STM32F4_Adc_Release;
     adcProvider.AcquireChannel = &STM32F4_Adc_AcquireChannel;
     adcProvider.ReleaseChannel = &STM32F4_Adc_ReleaseChannel;
-    adcProvider.IsChannelModeSupported = &STM32F4_Adc_IsChannelModeSupported;
     adcProvider.ReadValue = &STM32F4_Adc_ReadValue;
+    adcProvider.SetChannelMode = &STM32F4_Adc_SetChannelMode;
+    adcProvider.GetChannelMode = &STM32F4_Adc_GetChannelMode;
+    adcProvider.IsChannelModeSupported = &STM32F4_Adc_IsChannelModeSupported;
     adcProvider.GetMinValue = &STM32F4_Adc_GetMinValue;
     adcProvider.GetMaxValue = &STM32F4_Adc_GetMaxValue;
     adcProvider.GetResolutionInBits = &STM32F4_Adc_GetResolutionInBits;
     adcProvider.GetChannelCount = &STM32F4_Adc_GetChannelCount;
-    adcProvider.GetChannelMode = &STM32F4_Adc_GetChannelMode;
-    adcProvider.SetChannelMode = &STM32F4_Adc_SetChannelMode;
 
     adcApi.Author = "GHI Electronics, LLC";
     adcApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.AdcProvider";
@@ -67,6 +69,10 @@ const TinyCLR_Api_Info* STM32F4_Adc_GetApi() {
     adcApi.Version = 0;
     adcApi.Count = 1;
     adcApi.Implementation = &adcProvider;
+
+    for (auto i = 0; i < STM32F4_AD_NUM; i++) {
+        STM32F4_Adc_ReleaseChannel(&adcProvider, i);
+    }
 
     return &adcApi;
 }
@@ -87,11 +93,11 @@ TinyCLR_Result STM32F4_Adc_Release(const TinyCLR_Adc_Provider* self) {
 
 int32_t STM32F4_Adc_GetPinForChannel(int32_t channel) {
     // return GPIO pin
-    // for internally connected channels this is GPIO_PIN_NONE as these don't take any GPIO pins
+    // for internally connected channels this is PIN_NONE as these don't take any GPIO pins
     int chNum = g_STM32F4_AD_Channel[channel];
 
     if (chNum >= STM32F4_AD_NUM)
-        return GPIO_PIN_NONE;
+        return PIN_NONE;
 
     for (int i = 0; i < STM32F4_AD_NUM; i++) {
         if (g_STM32F4_AD_Channel[i] == chNum) {
@@ -100,7 +106,7 @@ int32_t STM32F4_Adc_GetPinForChannel(int32_t channel) {
     }
 
     // channel not available
-    return GPIO_PIN_NONE;
+    return PIN_NONE;
 }
 
 TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t channel) {
@@ -109,7 +115,7 @@ TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int3
     if (chNum >= STM32F4_AD_NUM)
         return TinyCLR_Result::NotAvailable;
 
-    if (!STM32F4_Gpio_OpenPin(STM32F4_Adc_GetPinForChannel(channel)))
+    if (!STM32F4_GpioInternal_OpenPin(STM32F4_Adc_GetPinForChannel(channel)))
         return TinyCLR_Result::SharingViolation;
 
     // init this channel if it's listed in the STM32F4_AD_CHANNELS array
@@ -128,7 +134,7 @@ TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int3
 
             // set pin as analog input if channel is not one of the internally connected
             if (chNum <= 15) {
-                STM32F4_Gpio_ConfigurePin(STM32F4_Adc_GetPinForChannel(channel), STM32F4_Gpio_PortMode::Analog, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
+                STM32F4_GpioInternal_ConfigurePin(STM32F4_Adc_GetPinForChannel(channel), STM32F4_Gpio_PortMode::Analog, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
                 return TinyCLR_Result::Success;
             }
         }
@@ -144,7 +150,7 @@ TinyCLR_Result STM32F4_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int3
     // free GPIO pin if this channel is listed in the STM32F4_AD_CHANNELS array
     // and if it's not one of the internally connected ones as these channels don't take any GPIO pins
     if (chNum < STM32F4_AD_NUM)
-        STM32F4_Gpio_ClosePin(STM32F4_Adc_GetPinForChannel(channel));
+        STM32F4_GpioInternal_ClosePin(STM32F4_Adc_GetPinForChannel(channel));
 
     return TinyCLR_Result::Success;
 }
@@ -209,10 +215,4 @@ TinyCLR_Result STM32F4_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, Tiny
 
 bool STM32F4_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode) {
     return mode == TinyCLR_Adc_ChannelMode::SingleEnded;
-}
-
-void STM32F4_Adc_Reset() {
-    for (auto i = 0; i < STM32F4_AD_NUM; i++) {
-        STM32F4_Adc_ReleaseChannel(&adcProvider, i);
-    }
 }

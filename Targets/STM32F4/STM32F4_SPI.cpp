@@ -15,23 +15,26 @@
 // limitations under the License.
 
 #include "STM32F4.h"
+#include <string.h>
+
+bool STM32F4_Spi_Transaction_Start(int32_t controller);
+bool STM32F4_Spi_Transaction_Stop(int32_t controller);
+bool STM32F4_Spi_Transaction_nWrite8_nRead8(int32_t controller);
 
 typedef  SPI_TypeDef* ptr_SPI_TypeDef;
 
 #define DATA_BIT_LENGTH_16  16
 #define DATA_BIT_LENGTH_8   8
 
-// IO addresses
-#if TOTAL_SPI_CONTROLLERS > 2
-static const ptr_SPI_TypeDef g_STM32_Spi_Port[] = { SPI1, SPI2, SPI3, SPI4, SPI5, SPI6 };
-#else
-static const ptr_SPI_TypeDef g_STM32_Spi_Port[] = { SPI1, SPI2 };
-#endif
+static const STM32F4_Gpio_Pin g_STM32F4_Spi_Sclk_Pins[] = STM32F4_SPI_SCLK_PINS;
+static const STM32F4_Gpio_Pin g_STM32F4_Spi_Miso_Pins[] = STM32F4_SPI_MISO_PINS;
+static const STM32F4_Gpio_Pin g_STM32F4_Spi_Mosi_Pins[] = STM32F4_SPI_MOSI_PINS;
+
+static const int TOTAL_SPI_CONTROLLERS = SIZEOF_ARRAY(g_STM32F4_Spi_Sclk_Pins);
+
+static ptr_SPI_TypeDef g_STM32_Spi_Port[TOTAL_SPI_CONTROLLERS];
 
 // Pins
-static const uint8_t g_STM32F4_Spi_Sclk_Pins[] = STM32F4_SPI_SCLK_PINS;
-static const uint8_t g_STM32F4_Spi_Miso_Pins[] = STM32F4_SPI_MISO_PINS;
-static const uint8_t g_STM32F4_Spi_Mosi_Pins[] = STM32F4_SPI_MOSI_PINS;
 
 struct SpiController {
     uint8_t *readBuffer;
@@ -68,7 +71,6 @@ const TinyCLR_Api_Info* STM32F4_Spi_GetApi() {
         spiProviders[i]->GetMinClockFrequency = &STM32F4_Spi_GetMinClockFrequency;
         spiProviders[i]->GetMaxClockFrequency = &STM32F4_Spi_GetMaxClockFrequency;
         spiProviders[i]->GetSupportedDataBitLengths = &STM32F4_Spi_GetSupportedDataBitLengths;
-
     }
 
     spiApi.Author = "GHI Electronics, LLC";
@@ -78,34 +80,73 @@ const TinyCLR_Api_Info* STM32F4_Spi_GetApi() {
     spiApi.Count = TOTAL_SPI_CONTROLLERS;
     spiApi.Implementation = (spiApi.Count > 1) ? spiProviders : (TinyCLR_Spi_Provider**)&spiProviderDefs;
 
+#ifdef SPI1
+    if (TOTAL_SPI_CONTROLLERS > 0) g_STM32_Spi_Port[0] = SPI1;
+#ifdef SPI2
+    if (TOTAL_SPI_CONTROLLERS > 1) g_STM32_Spi_Port[1] = SPI2;
+#ifdef SPI3
+    if (TOTAL_SPI_CONTROLLERS > 2) g_STM32_Spi_Port[2] = SPI3;
+#ifdef SPI4
+    if (TOTAL_SPI_CONTROLLERS > 3) g_STM32_Spi_Port[3] = SPI4;
+#ifdef SPI5
+    if (TOTAL_SPI_CONTROLLERS > 4) g_STM32_Spi_Port[4] = SPI5;
+#ifdef SPI6
+    if (TOTAL_SPI_CONTROLLERS > 5) g_STM32_Spi_Port[5] = SPI6;
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+
+    for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
+        int32_t controller = i;
+
+        STM32F4_Spi_Release(spiProviders[controller]);
+
+        if (g_SpiController[controller].ChipSelectLine != PIN_NONE)
+            STM32F4_GpioInternal_ClosePin(g_SpiController[controller].ChipSelectLine);
+    }
+
     return &spiApi;
 }
 
 bool STM32F4_Spi_Transaction_Start(int32_t controller) {
     switch (controller) {
+#ifdef SPI1
     case 0:
         RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
         break; // enable SPI1 clock
 
+#ifdef SPI2
     case 1:
         RCC->APB1ENR |= RCC_APB1ENR_SPI2EN;
         break; // enable SPI2 clock
-#if TOTAL_SPI_CONTROLLERS > 2
+
+#ifdef SPI3
     case 2:
         RCC->APB1ENR |= RCC_APB1ENR_SPI3EN;
         break; // enable SPI3 clock
 
+#ifdef SPI4
     case 3:
         RCC->APB2ENR |= RCC_APB2ENR_SPI4EN;
         break; // enable SPI4 clock
 
+#ifdef SPI5
     case 4:
         RCC->APB2ENR |= RCC_APB2ENR_SPI5EN;
         break; // enable SPI5 clock
 
+#ifdef SPI6
     case 5:
         RCC->APB2ENR |= RCC_APB2ENR_SPI6EN;
         break; // enable SPI6 clock
+#endif
+#endif
+#endif
+#endif
+#endif
 #endif
     }
 
@@ -138,12 +179,12 @@ bool STM32F4_Spi_Transaction_Start(int32_t controller) {
     }
 
     // set clock prescaler
-    uint32_t clock = SYSTEM_APB2_CLOCK_HZ / 2000; // SPI1 on APB2
+    uint32_t clock = STM32F4_APB2_CLOCK_HZ / 2000; // SPI1 on APB2
 
     uint32_t clockKhz = g_SpiController[controller].ClockFrequency / 1000;
 
     if (controller > 0 && controller < 3) {
-        clock = SYSTEM_APB1_CLOCK_HZ / 2000; // SPI2/3 on APB1
+        clock = STM32F4_APB1_CLOCK_HZ / 2000; // SPI2/3 on APB1
     }
 
     if (clock > clockKhz << 3) {
@@ -161,24 +202,17 @@ bool STM32F4_Spi_Transaction_Start(int32_t controller) {
     }
     spi->CR1 = cr1;
 
-    // I/O setup
-    STM32F4_Gpio_AlternateFunction alternate = STM32F4_Gpio_AlternateFunction::AF5;
+    auto& sclk = g_STM32F4_Spi_Sclk_Pins[controller];
+    auto& miso = g_STM32F4_Spi_Miso_Pins[controller];
+    auto& mosi = g_STM32F4_Spi_Mosi_Pins[controller];
 
-    int32_t clkPin = g_STM32F4_Spi_Sclk_Pins[controller];
-    int32_t misoPin = g_STM32F4_Spi_Miso_Pins[controller];
-    int32_t mosiPin = g_STM32F4_Spi_Mosi_Pins[controller];
-
-    if (controller == 2 && mosiPin != 54) {
-        alternate = STM32F4_Gpio_AlternateFunction::AF6;
-    }
-
-    STM32F4_Gpio_ConfigurePin(clkPin, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::None, alternate);
-    STM32F4_Gpio_ConfigurePin(misoPin, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::None, alternate);
-    STM32F4_Gpio_ConfigurePin(mosiPin, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::None, alternate);
+    STM32F4_GpioInternal_ConfigurePin(sclk.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, sclk.alternateFunction);
+    STM32F4_GpioInternal_ConfigurePin(miso.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, miso.alternateFunction);
+    STM32F4_GpioInternal_ConfigurePin(mosi.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, mosi.alternateFunction);
 
     // CS setup
-    STM32F4_Gpio_ConfigurePin(g_SpiController[controller].ChipSelectLine, STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
-    STM32F4_Gpio_WritePin(g_SpiController[controller].ChipSelectLine, false);
+    STM32F4_GpioInternal_ConfigurePin(g_SpiController[controller].ChipSelectLine, STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
+    STM32F4_GpioInternal_WritePin(g_SpiController[controller].ChipSelectLine, false);
 
     return true;
 }
@@ -190,46 +224,57 @@ bool STM32F4_Spi_Transaction_Stop(int32_t controller) {
 
     spi->CR1 = 0; // disable SPI
 
-    STM32F4_Gpio_WritePin(g_SpiController[controller].ChipSelectLine, true);
+    STM32F4_GpioInternal_WritePin(g_SpiController[controller].ChipSelectLine, true);
 
-    int32_t clkPin = g_STM32F4_Spi_Sclk_Pins[controller];
-    int32_t misoPin = g_STM32F4_Spi_Miso_Pins[controller];
-    int32_t mosiPin = g_STM32F4_Spi_Mosi_Pins[controller];
+    auto& sclk = g_STM32F4_Spi_Sclk_Pins[controller];
+    auto& miso = g_STM32F4_Spi_Miso_Pins[controller];
+    auto& mosi = g_STM32F4_Spi_Mosi_Pins[controller];
 
     TinyCLR_Gpio_PinDriveMode res = TinyCLR_Gpio_PinDriveMode::InputPullDown;
 
     if (g_SpiController[controller].Mode == TinyCLR_Spi_Mode::Mode3)
-        STM32F4_Gpio_ConfigurePin(clkPin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::PullUp, STM32F4_Gpio_AlternateFunction::AF0);
+        STM32F4_GpioInternal_ConfigurePin(sclk.number, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, STM32F4_Gpio_AlternateFunction::AF0);
     else
-        STM32F4_Gpio_ConfigurePin(clkPin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::PullDown, STM32F4_Gpio_AlternateFunction::AF0);
+        STM32F4_GpioInternal_ConfigurePin(sclk.number, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullDown, STM32F4_Gpio_AlternateFunction::AF0);
 
-    STM32F4_Gpio_ConfigurePin(misoPin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::PullDown, STM32F4_Gpio_AlternateFunction::AF0);
-    STM32F4_Gpio_ConfigurePin(mosiPin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::Fast, STM32F4_Gpio_PullDirection::PullDown, STM32F4_Gpio_AlternateFunction::AF0);
+    STM32F4_GpioInternal_ConfigurePin(miso.number, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullDown, STM32F4_Gpio_AlternateFunction::AF0);
+    STM32F4_GpioInternal_ConfigurePin(mosi.number, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullDown, STM32F4_Gpio_AlternateFunction::AF0);
 
     switch (controller) {
+#ifdef SPI1
     case 0:
         RCC->APB2ENR &= ~RCC_APB2ENR_SPI1EN;
         break; // disable SPI1 clock
 
+#ifdef SPI2
     case 1:
         RCC->APB1ENR &= ~RCC_APB1ENR_SPI2EN;
         break; // disable SPI2 clock
-#if TOTAL_SPI_CONTROLLERS > 2
+
+#ifdef SPI3
     case 2:
         RCC->APB1ENR &= ~RCC_APB1ENR_SPI3EN;
         break; // disable SPI3 clock
 
+#ifdef SPI4
     case 3:
         RCC->APB2ENR &= ~RCC_APB2ENR_SPI4EN;
         break; // disable SPI4 clock
 
+#ifdef SPI5
     case 4:
         RCC->APB2ENR &= ~RCC_APB2ENR_SPI5EN;
         break; // disable SPI5 clock
 
+#ifdef SPI6
     case 5:
         RCC->APB2ENR &= ~RCC_APB2ENR_SPI6EN;
         break; // disable SPI6 clock
+#endif
+#endif
+#endif
+#endif
+#endif
 #endif
     }
 
@@ -449,10 +494,10 @@ TinyCLR_Result STM32F4_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, i
     g_SpiController[controller].DataBitLength = dataBitLength;
     g_SpiController[controller].Mode = mode;
 
-    if (g_SpiController[controller].ChipSelectLine == GPIO_PIN_NONE) // For case no need CS. CS always high
+    if (g_SpiController[controller].ChipSelectLine == PIN_NONE) // For case no need CS. CS always high
         return TinyCLR_Result::Success;
 
-    if (STM32F4_Gpio_OpenPin(g_SpiController[controller].ChipSelectLine))
+    if (STM32F4_GpioInternal_OpenPin(g_SpiController[controller].ChipSelectLine))
         return TinyCLR_Result::Success;
 
     return TinyCLR_Result::NotAvailable;
@@ -464,14 +509,14 @@ TinyCLR_Result STM32F4_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
 
     int32_t controller = (self->Index);
 
-    int32_t clkPin = g_STM32F4_Spi_Sclk_Pins[controller];
-    int32_t misoPin = g_STM32F4_Spi_Miso_Pins[controller];
-    int32_t mosiPin = g_STM32F4_Spi_Mosi_Pins[controller];
+    auto& sclk = g_STM32F4_Spi_Sclk_Pins[controller];
+    auto& miso = g_STM32F4_Spi_Miso_Pins[controller];
+    auto& mosi = g_STM32F4_Spi_Mosi_Pins[controller];
 
-    g_SpiController[controller].ChipSelectLine = GPIO_PIN_NONE;
+    g_SpiController[controller].ChipSelectLine = PIN_NONE;
 
     // Check each pin single time make sure once fail not effect to other pins
-    if (STM32F4_Gpio_OpenPin(clkPin) && STM32F4_Gpio_OpenPin(misoPin) && STM32F4_Gpio_OpenPin(mosiPin))
+    if (STM32F4_GpioInternal_OpenPin(sclk.number) && STM32F4_GpioInternal_OpenPin(miso.number) && STM32F4_GpioInternal_OpenPin(mosi.number))
         return TinyCLR_Result::Success;
 
     return TinyCLR_Result::SharingViolation;
@@ -483,40 +528,51 @@ TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Provider* self) {
 
     int32_t controller = (self->Index);
 
-    int32_t clkPin = g_STM32F4_Spi_Sclk_Pins[controller];
-    int32_t misoPin = g_STM32F4_Spi_Miso_Pins[controller];
-    int32_t mosiPin = g_STM32F4_Spi_Mosi_Pins[controller];
+    auto& sclk = g_STM32F4_Spi_Sclk_Pins[controller];
+    auto& miso = g_STM32F4_Spi_Miso_Pins[controller];
+    auto& mosi = g_STM32F4_Spi_Mosi_Pins[controller];
 
     switch (controller) {
+#ifdef SPI1
     case 0:
         RCC->APB2ENR &= ~RCC_APB2ENR_SPI1EN;
         break; // disable SPI1 clock
 
+#ifdef SPI2
     case 1:
         RCC->APB1ENR &= ~RCC_APB1ENR_SPI2EN;
         break; // disable SPI2 clock
-#if TOTAL_SPI_CONTROLLERS > 2
+
+#ifdef SPI3
     case 2:
         RCC->APB1ENR &= ~RCC_APB1ENR_SPI3EN;
         break; // disable SPI3 clock
 
+#ifdef SPI4
     case 3:
         RCC->APB2ENR &= ~RCC_APB2ENR_SPI4EN;
         break; // disable SPI4 clock
 
+#ifdef SPI5
     case 4:
         RCC->APB2ENR &= ~RCC_APB2ENR_SPI5EN;
         break; // disable SPI5 clock
 
+#ifdef SPI6
     case 5:
         RCC->APB2ENR &= ~RCC_APB2ENR_SPI6EN;
         break; // disable SPI6 clock
 #endif
+#endif
+#endif
+#endif
+#endif
+#endif
     }
 
-    STM32F4_Gpio_ClosePin(clkPin);
-    STM32F4_Gpio_ClosePin(misoPin);
-    STM32F4_Gpio_ClosePin(mosiPin);
+    STM32F4_GpioInternal_ClosePin(sclk.number);
+    STM32F4_GpioInternal_ClosePin(miso.number);
+    STM32F4_GpioInternal_ClosePin(mosi.number);
 
     return TinyCLR_Result::Success;
 }
@@ -551,7 +607,7 @@ int32_t STM32F4_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self) {
     // pins as possible so that the selected Chip select
     // line coresponds to a GPIO pin number directly
     // without needing any additional translation/mapping.
-    return TOTAL_GPIO_PINS;
+    return STM32F4_Gpio_GetPinCount(nullptr);
 }
 
 static const int32_t dataBitsCount = 2;
@@ -564,15 +620,4 @@ TinyCLR_Result STM32F4_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider
     dataBitLengthsCount = dataBitsCount;
 
     return TinyCLR_Result::Success;
-}
-
-void STM32F4_Spi_Reset() {
-    for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        int32_t controller = i;
-
-        STM32F4_Spi_Release(spiProviders[controller]);
-
-        if (g_SpiController[controller].ChipSelectLine != GPIO_PIN_NONE)
-            STM32F4_Gpio_ClosePin(g_SpiController[controller].ChipSelectLine);
-    }
 }

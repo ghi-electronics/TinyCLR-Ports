@@ -15,6 +15,7 @@
 // limitations under the License.
 
 #include "STM32F4.h"
+#include <stdio.h>
 
 #ifndef STM32F4_FLASH
 #define STM32F4_FLASH               ((FLASH_TypeDef *) FLASH_R_BASE)
@@ -24,12 +25,14 @@ typedef uint16_t CHIP_WORD;
 
 #define FLASH_CR_PSIZE_BITS FLASH_CR_PSIZE_0 // 16 bit programming
 
-#if SUPPLY_VOLTAGE_MV < 2100
+#if STM32F4_SUPPLY_VOLTAGE_MV < 2100
 #error 16 bit Flash programming not allowed for voltages below 2.1V
 #endif
-#if SYSTEM_CYCLE_CLOCK_HZ < ONE_MHZ
+#if STM32F4_AHB_CLOCK_HZ < 1000000
 #error Flash programming not allowed for HCLK below 1MHz
 #endif
+
+TinyCLR_Result STM32F4_Flash_GetSectorSizeForAddress(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size);
 
 static const uint32_t STM32F4_FLASH_KEY1 = 0x45670123;
 static const uint32_t STM32F4_FLASH_KEY2 = 0xcdef89ab;
@@ -44,10 +47,9 @@ const TinyCLR_Api_Info* STM32F4_Deployment_GetApi() {
     deploymentProvider.Release = &STM32F4_Flash_Release;
     deploymentProvider.Read = &STM32F4_Flash_Read;
     deploymentProvider.Write = &STM32F4_Flash_Write;
-    deploymentProvider.EraseSector = &STM32F4_Flash_EraseBlock;
-    deploymentProvider.IsSectorErased = &STM32F4_Flash_IsBlockErased;
+    deploymentProvider.EraseSector = &STM32F4_Flash_EraseSector;
+    deploymentProvider.IsSectorErased = &STM32F4_Flash_IsSectorErased;
     deploymentProvider.GetSectorMap = &STM32F4_Flash_GetSectorMap;
-
 
     deploymentApi.Author = "GHI Electronics, LLC";
     deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.DeploymentProvider";
@@ -63,7 +65,7 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Read(const T
     int32_t bytePerSector = 0;
 
     if (buffer == nullptr) return TinyCLR_Result::ArgumentNull;
-    if (STM32F4_Flash_GetBytesPerSector(self, address, bytePerSector) != TinyCLR_Result::Success)
+    if (STM32F4_Flash_GetSectorSizeForAddress(self, address, bytePerSector) != TinyCLR_Result::Success)
         return TinyCLR_Result::IndexOutOfRange;
 
     CHIP_WORD* ChipAddress = (CHIP_WORD *)address;
@@ -81,7 +83,7 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Write(const 
     int32_t bytePerSector = 0;
 
     if (buffer == nullptr) return TinyCLR_Result::ArgumentNull;
-    if (STM32F4_Flash_GetBytesPerSector(self, address, bytePerSector) != TinyCLR_Result::Success)
+    if (STM32F4_Flash_GetSectorSizeForAddress(self, address, bytePerSector) != TinyCLR_Result::Success)
         return TinyCLR_Result::IndexOutOfRange;
 
     if (STM32F4_FLASH->CR & FLASH_CR_LOCK) { // unlock
@@ -117,11 +119,11 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Write(const 
     return TinyCLR_Result::Success;
 }
 
-const uint32_t sectorAddress[] = FLASH_DEPLOYMENT_SECTOR_ADDRESS;
-const uint32_t sectorSize[] = FLASH_DEPLOYMENT_SECTOR_SIZE; // Sector size can be diffirent if different sector.
+const uint32_t sectorAddress[] = DEPLOYMENT_SECTOR_ADDRESSES;
+const uint32_t sectorSize[] = DEPLOYMENT_SECTOR_SIZES; // Sector size can be diffirent if different sector.
 
-TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
-    if (sector >= SIZEOF_CONST_ARRAY(sectorAddress)) return TinyCLR_Result::IndexOutOfRange;
+TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_IsSectorErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
+    if (sector >= SIZEOF_ARRAY(sectorAddress)) return TinyCLR_Result::IndexOutOfRange;
 
     uint32_t address = sectorAddress[sector];
     size_t length = sectorSize[sector];
@@ -144,8 +146,8 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_IsBlockErase
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
-    if (sector >= SIZEOF_CONST_ARRAY(sectorAddress)) return TinyCLR_Result::IndexOutOfRange;
+TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_EraseSector(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
+    if (sector >= SIZEOF_ARRAY(sectorAddress)) return TinyCLR_Result::IndexOutOfRange;
 
     uint32_t address = sectorAddress[sector];
     uint32_t num = (address - FLASH_BASE) >> 14;
@@ -174,8 +176,8 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_EraseBlock(c
     TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Flash_Acquire(const TinyCLR_Deployment_Provider* self, bool& supportXIP) {
-    supportXIP = true;
+TinyCLR_Result STM32F4_Flash_Acquire(const TinyCLR_Deployment_Provider* self, bool& supportsXip) {
+    supportsXip = true;
 
     return TinyCLR_Result::Success;
 }
@@ -186,8 +188,8 @@ TinyCLR_Result STM32F4_Flash_Release(const TinyCLR_Deployment_Provider* self) {
 }
 
 
-TinyCLR_Result STM32F4_Flash_GetBytesPerSector(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size) {
-    int32_t sectors = SIZEOF_CONST_ARRAY(sectorAddress);
+TinyCLR_Result STM32F4_Flash_GetSectorSizeForAddress(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size) {
+    int32_t sectors = SIZEOF_ARRAY(sectorAddress);
 
     size = 0;
 
@@ -205,7 +207,7 @@ TinyCLR_Result STM32F4_Flash_GetBytesPerSector(const TinyCLR_Deployment_Provider
 TinyCLR_Result STM32F4_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
     addresses = sectorAddress;
     sizes = sectorSize;
-    count = SIZEOF_CONST_ARRAY(sectorAddress);
+    count = SIZEOF_ARRAY(sectorAddress);
 
     return TinyCLR_Result::Success;
 }
