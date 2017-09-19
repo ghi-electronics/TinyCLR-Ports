@@ -11,11 +11,7 @@ Some targets and devices are maintained by GHI Electronics while others are main
 - G120
 - G30
 - G80
-- Quail
 - USBizi
-- clicker
-- clicker2
-- netduino3
 
 ## Targets
 - LPC17
