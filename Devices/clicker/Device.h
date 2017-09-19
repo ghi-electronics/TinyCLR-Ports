@@ -19,7 +19,7 @@
 #include <STM32F4.h>
 
 #define DEVICE_TARGET STM32F4
-#define DEVICE_NAME "Clicker"
+#define DEVICE_NAME "clicker"
 #define DEVICE_MANUFACTURER "GHI Electronics, LLC"
 #define DEVICE_VERSION ((0x0000ULL << 32) | (0x0006ULL << 16) | (0x0000ULL << 0))
 
