@@ -91,4 +91,3 @@
 #define INCLUDE_USBCLIENT
 #define LPC17_USB_QUEUE_SIZE 16
 
-#include <LPC177x_8x.h>
