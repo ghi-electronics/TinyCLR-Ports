@@ -259,7 +259,7 @@ extern "C" {
             | RCC_CFGR_PPRE2_DIV_BITS; // APB2 clock
 
   // minimal peripheral clocks
-#ifdef DISABLE_CCM_RAM
+#ifdef STM32F401xE
         RCC->AHB1ENR = 0;
 #else
         RCC->AHB1ENR = RCC_AHB1ENR_CCMDATARAMEN; // 64k RAM (CCM)
