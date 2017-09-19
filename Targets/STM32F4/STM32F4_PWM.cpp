@@ -414,6 +414,7 @@ void STM32F4_Pwm_Reset() {
     if (TOTAL_PWM_CONTROLLER > 1) g_PwmController[1].timerdef = TIM2;
     if (TOTAL_PWM_CONTROLLER > 2) g_PwmController[2].timerdef = TIM3;
     if (TOTAL_PWM_CONTROLLER > 3) g_PwmController[3].timerdef = TIM4;
+#ifndef STM32F401xE
     if (TOTAL_PWM_CONTROLLER > 4) g_PwmController[4].timerdef = TIM5;
     if (TOTAL_PWM_CONTROLLER > 5) g_PwmController[5].timerdef = TIM6;
     if (TOTAL_PWM_CONTROLLER > 6) g_PwmController[6].timerdef = TIM7;
@@ -424,6 +425,7 @@ void STM32F4_Pwm_Reset() {
     if (TOTAL_PWM_CONTROLLER > 11) g_PwmController[11].timerdef = TIM12;
     if (TOTAL_PWM_CONTROLLER > 12) g_PwmController[12].timerdef = TIM13;
     if (TOTAL_PWM_CONTROLLER > 13) g_PwmController[13].timerdef = TIM14;
+#endif
 
     for (auto controller = 0u; controller < TOTAL_PWM_CONTROLLER; controller++) {
         auto& c = g_PwmController[controller];
