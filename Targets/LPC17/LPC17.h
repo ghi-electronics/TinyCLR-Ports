@@ -14,10 +14,8 @@
 
 #pragma once
 
-// #include <stdio.h>
-// #include <string.h>
 
-// #include <defines.h>
+#include <inc\LPC177x_8x.h>
 #include <TinyCLR.h>
 #include <Device.h>
 
@@ -563,5 +561,3 @@ struct LPC17xx_SYSCON {
     //LCD clock Divider
     /****/ volatile uint32_t LCD_CFG;       // Filler to align next register address
 };
-
-#include "LPC177x_8x.h"
