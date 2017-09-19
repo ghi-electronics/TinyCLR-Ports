@@ -252,10 +252,18 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
         clk = STM32F4_APB1_CLOCK_HZ;
     }
 #ifndef STM32F401xE
-    else { // COM7-8 on APB1
-        RCC->APB1ENR |= RCC_APB1ENR_UART7EN >> 6 << portNum;
+#ifdef UART7
+    else if (portNum == 6) {
+        RCC->APB1ENR |= RCC_APB1ENR_UART7EN;
         clk = STM32F4_APB1_CLOCK_HZ;
     }
+#endif
+#ifdef UART8
+    else if (portNum == 7) {
+        RCC->APB1ENR |= RCC_APB1ENR_UART8EN;
+        clk = STM32F4_APB1_CLOCK_HZ;
+    }
+#endif
 #endif
     //  baudrate
     uint16_t div = (uint16_t)((clk + (baudRate >> 1)) / baudRate); // rounded
@@ -355,13 +363,18 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
         STM32F4_Interrupt_Activate(USART6_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt5, 0);
         break;
 
+#ifdef UART7
     case 6:
         STM32F4_Interrupt_Activate(UART7_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt4, 0);
         break;
+#endif
 
+#ifdef UART8
     case 7:
         STM32F4_Interrupt_Activate(UART8_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt5, 0);
         break;
+#endif
+
 #endif
     }
 
@@ -408,13 +421,18 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
         STM32F4_Interrupt_Deactivate(USART6_IRQn);
         break;
 
+#ifdef UART7
     case 6:
         STM32F4_Interrupt_Deactivate(UART7_IRQn);
         break;
+#endif
 
+#ifdef UART7
     case 7:
         STM32F4_Interrupt_Deactivate(UART8_IRQn);
         break;
+#endif
+
 #endif
     }
 
@@ -432,9 +450,16 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
         RCC->APB1ENR &= ~(RCC_APB1ENR_USART2EN >> 1 << portNum);
     }
 #ifndef STM32F401xE
-    else { // COM7-8 on APB1
-        RCC->APB1ENR &= ~(RCC_APB1ENR_UART7EN >> 6 << portNum);
+#ifdef UART7
+    else if (portNum == 6) {
+        RCC->APB1ENR &= ~RCC_APB1ENR_UART7EN;
     }
+#endif
+#ifdef UART8
+    else if (portNum == 7) {
+        RCC->APB1ENR &= ~RCC_APB1ENR_UART8EN;
+    }
+#endif
 #endif
 
     g_UartController[portNum].txBufferCount = 0;
@@ -625,8 +650,12 @@ void STM32F4_Uart_Reset() {
     if (TOTAL_UART_CONTROLLERS > 3) g_STM32F4_Uart_Ports[3] = UART4;
     if (TOTAL_UART_CONTROLLERS > 4) g_STM32F4_Uart_Ports[4] = UART5;
     if (TOTAL_UART_CONTROLLERS > 5) g_STM32F4_Uart_Ports[5] = USART6;
+#ifdef UART7
     if (TOTAL_UART_CONTROLLERS > 6) g_STM32F4_Uart_Ports[6] = UART7;
+#ifdef UART8
     if (TOTAL_UART_CONTROLLERS > 7) g_STM32F4_Uart_Ports[7] = UART8;
+#endif
+#endif
 #endif
     for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
         STM32F4_Uart_Release(uartProviders[i]);

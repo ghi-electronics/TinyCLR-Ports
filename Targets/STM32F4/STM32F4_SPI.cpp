@@ -86,29 +86,40 @@ const TinyCLR_Api_Info* STM32F4_Spi_GetApi() {
 
 bool STM32F4_Spi_Transaction_Start(int32_t controller) {
     switch (controller) {
+#ifdef SPI1
     case 0:
         RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
         break; // enable SPI1 clock
 
+#ifdef SPI2
     case 1:
         RCC->APB1ENR |= RCC_APB1ENR_SPI2EN;
         break; // enable SPI2 clock
-#ifndef STM32F401xE
+
+#ifdef SPI3
     case 2:
         RCC->APB1ENR |= RCC_APB1ENR_SPI3EN;
         break; // enable SPI3 clock
 
+#ifdef SPI4
     case 3:
         RCC->APB2ENR |= RCC_APB2ENR_SPI4EN;
         break; // enable SPI4 clock
 
+#ifdef SPI5
     case 4:
         RCC->APB2ENR |= RCC_APB2ENR_SPI5EN;
         break; // enable SPI5 clock
 
+#ifdef SPI6
     case 5:
         RCC->APB2ENR |= RCC_APB2ENR_SPI6EN;
         break; // enable SPI6 clock
+#endif
+#endif
+#endif
+#endif
+#endif
 #endif
     }
 
@@ -203,29 +214,40 @@ bool STM32F4_Spi_Transaction_Stop(int32_t controller) {
     STM32F4_Gpio_ConfigurePin(mosi.number, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullDown, STM32F4_Gpio_AlternateFunction::AF0);
 
     switch (controller) {
+#ifdef SPI1
     case 0:
         RCC->APB2ENR &= ~RCC_APB2ENR_SPI1EN;
         break; // disable SPI1 clock
 
+#ifdef SPI2
     case 1:
         RCC->APB1ENR &= ~RCC_APB1ENR_SPI2EN;
         break; // disable SPI2 clock
-#ifndef STM32F401xE
+
+#ifdef SPI3
     case 2:
         RCC->APB1ENR &= ~RCC_APB1ENR_SPI3EN;
         break; // disable SPI3 clock
 
+#ifdef SPI4
     case 3:
         RCC->APB2ENR &= ~RCC_APB2ENR_SPI4EN;
         break; // disable SPI4 clock
 
+#ifdef SPI5
     case 4:
         RCC->APB2ENR &= ~RCC_APB2ENR_SPI5EN;
         break; // disable SPI5 clock
 
+#ifdef SPI6
     case 5:
         RCC->APB2ENR &= ~RCC_APB2ENR_SPI6EN;
         break; // disable SPI6 clock
+#endif
+#endif
+#endif
+#endif
+#endif
 #endif
     }
 
@@ -484,29 +506,40 @@ TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Provider* self) {
     auto& mosi = g_STM32F4_Spi_Mosi_Pins[controller];
 
     switch (controller) {
+#ifdef SPI1
     case 0:
         RCC->APB2ENR &= ~RCC_APB2ENR_SPI1EN;
         break; // disable SPI1 clock
 
+#ifdef SPI2
     case 1:
         RCC->APB1ENR &= ~RCC_APB1ENR_SPI2EN;
         break; // disable SPI2 clock
-#ifndef STM32F401xE
+
+#ifdef SPI3
     case 2:
         RCC->APB1ENR &= ~RCC_APB1ENR_SPI3EN;
         break; // disable SPI3 clock
 
+#ifdef SPI4
     case 3:
         RCC->APB2ENR &= ~RCC_APB2ENR_SPI4EN;
         break; // disable SPI4 clock
 
+#ifdef SPI5
     case 4:
         RCC->APB2ENR &= ~RCC_APB2ENR_SPI5EN;
         break; // disable SPI5 clock
 
+#ifdef SPI6
     case 5:
         RCC->APB2ENR &= ~RCC_APB2ENR_SPI6EN;
         break; // disable SPI6 clock
+#endif
+#endif
+#endif
+#endif
+#endif
 #endif
     }
 
@@ -563,14 +596,25 @@ TinyCLR_Result STM32F4_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider
 }
 
 void STM32F4_Spi_Reset() {
+#ifdef SPI1
     if (TOTAL_SPI_CONTROLLERS > 0) g_STM32_Spi_Port[0] = SPI1;
+#ifdef SPI2
     if (TOTAL_SPI_CONTROLLERS > 1) g_STM32_Spi_Port[1] = SPI2;
+#ifdef SPI3
     if (TOTAL_SPI_CONTROLLERS > 2) g_STM32_Spi_Port[2] = SPI3;
+#ifdef SPI4
     if (TOTAL_SPI_CONTROLLERS > 3) g_STM32_Spi_Port[3] = SPI4;
-#ifndef STM32F401xE
+#ifdef SPI5
     if (TOTAL_SPI_CONTROLLERS > 4) g_STM32_Spi_Port[4] = SPI5;
+#ifdef SPI6
     if (TOTAL_SPI_CONTROLLERS > 5) g_STM32_Spi_Port[5] = SPI6;
 #endif
+#endif
+#endif
+#endif
+#endif
+#endif
+
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         int32_t controller = i;
 
