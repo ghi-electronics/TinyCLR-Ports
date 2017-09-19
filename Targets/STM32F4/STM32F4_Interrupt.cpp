@@ -101,15 +101,15 @@ bool STM32F4_Interrupt_Deactivate(uint32_t index) {
 
     return true;
 }
-STM32F4_SmartPtr_Interrupt::STM32F4_SmartPtr_Interrupt() { STM32F4_Interrupt_Started(); };
-STM32F4_SmartPtr_Interrupt::~STM32F4_SmartPtr_Interrupt() { STM32F4_Interrupt_Ended(); };
+STM32F4_InterruptStarted_RaiiHelper::STM32F4_InterruptStarted_RaiiHelper() { STM32F4_Interrupt_Started(); };
+STM32F4_InterruptStarted_RaiiHelper::~STM32F4_InterruptStarted_RaiiHelper() { STM32F4_Interrupt_Ended(); };
 
-STM32F4_SmartPtr_IRQ::STM32F4_SmartPtr_IRQ() {
+STM32F4_DisableInterrupts_RaiiHelper::STM32F4_DisableInterrupts_RaiiHelper() {
     state = __get_PRIMASK();
 
     __disable_irq();
 }
-STM32F4_SmartPtr_IRQ::~STM32F4_SmartPtr_IRQ() {
+STM32F4_DisableInterrupts_RaiiHelper::~STM32F4_DisableInterrupts_RaiiHelper() {
     uint32_t Cp = state;
 
     if ((Cp & DISABLED_MASK) == 0) {
@@ -117,11 +117,11 @@ STM32F4_SmartPtr_IRQ::~STM32F4_SmartPtr_IRQ() {
     }
 }
 
-bool STM32F4_SmartPtr_IRQ::IsDisabled() {
+bool STM32F4_DisableInterrupts_RaiiHelper::IsDisabled() {
     return (state & DISABLED_MASK) == DISABLED_MASK;
 }
 
-void STM32F4_SmartPtr_IRQ::Acquire() {
+void STM32F4_DisableInterrupts_RaiiHelper::Acquire() {
     uint32_t Cp = state;
 
     if ((Cp & DISABLED_MASK) == DISABLED_MASK) {
@@ -131,7 +131,7 @@ void STM32F4_SmartPtr_IRQ::Acquire() {
     }
 }
 
-void STM32F4_SmartPtr_IRQ::Release() {
+void STM32F4_DisableInterrupts_RaiiHelper::Release() {
     uint32_t Cp = state;
 
     if ((Cp & DISABLED_MASK) == 0) {
