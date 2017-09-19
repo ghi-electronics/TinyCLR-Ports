@@ -43,10 +43,7 @@ TinyCLR_Result STM32F4_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* sel
 //Interrupt
 ////////////////////////////////////////////////////////////////////////////////
 class STM32F4_SmartPtr_IRQ {
-    uint32_t m_state;
-
-    void Disable();
-    void Restore();
+    uint32_t state;
 
 public:
     STM32F4_SmartPtr_IRQ();
@@ -55,9 +52,6 @@ public:
     bool WasDisabled();
     void Acquire();
     void Release();
-    void Probe();
-
-    static bool GetState();
 };
 
 class STM32F4_SmartPtr_Interrupt {

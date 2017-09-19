@@ -104,53 +104,38 @@ bool STM32F4_Interrupt_Deactivate(uint32_t index) {
 STM32F4_SmartPtr_Interrupt::STM32F4_SmartPtr_Interrupt() { STM32F4_Interrupt_Started(); };
 STM32F4_SmartPtr_Interrupt::~STM32F4_SmartPtr_Interrupt() { STM32F4_Interrupt_Ended(); };
 
-STM32F4_SmartPtr_IRQ::STM32F4_SmartPtr_IRQ() { Disable(); }
-STM32F4_SmartPtr_IRQ::~STM32F4_SmartPtr_IRQ() { Restore(); }
+STM32F4_SmartPtr_IRQ::STM32F4_SmartPtr_IRQ() {
+    state = __get_PRIMASK();
 
-bool STM32F4_SmartPtr_IRQ::WasDisabled() {
-    return (m_state & DISABLED_MASK) == DISABLED_MASK;
+    __disable_irq();
 }
-
-void STM32F4_SmartPtr_IRQ::Acquire() {
-    uint32_t Cp = m_state;
-
-    if ((Cp & DISABLED_MASK) == DISABLED_MASK)
-        Disable();
-}
-
-void STM32F4_SmartPtr_IRQ::Release() {
-    uint32_t Cp = m_state;
+STM32F4_SmartPtr_IRQ::~STM32F4_SmartPtr_IRQ() {
+    uint32_t Cp = state;
 
     if ((Cp & DISABLED_MASK) == 0) {
-        m_state = __get_PRIMASK();
         __enable_irq();
     }
 }
 
-void STM32F4_SmartPtr_IRQ::Probe() {
-    uint32_t Cp = m_state;
+bool STM32F4_SmartPtr_IRQ::WasDisabled() {
+    return (state & DISABLED_MASK) == DISABLED_MASK;
+}
 
-    if ((Cp & DISABLED_MASK) == 0) {
-        STM32F4_Interrupt_WaitForInterrupt();
+void STM32F4_SmartPtr_IRQ::Acquire() {
+    uint32_t Cp = state;
+
+    if ((Cp & DISABLED_MASK) == DISABLED_MASK) {
+        state = __get_PRIMASK();
+
+        __disable_irq();
     }
 }
 
-bool STM32F4_SmartPtr_IRQ::GetState() {
-    register uint32_t Cp = __get_PRIMASK();
-
-    return (0 == (Cp & 1));
-}
-
-void STM32F4_SmartPtr_IRQ::Disable() {
-    m_state = __get_PRIMASK();
-
-    __disable_irq();
-}
-
-void STM32F4_SmartPtr_IRQ::Restore() {
-    uint32_t Cp = m_state;
+void STM32F4_SmartPtr_IRQ::Release() {
+    uint32_t Cp = state;
 
     if ((Cp & DISABLED_MASK) == 0) {
+        state = __get_PRIMASK();
         __enable_irq();
     }
 }
