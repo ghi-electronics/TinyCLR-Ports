@@ -117,7 +117,7 @@ STM32F4_SmartPtr_IRQ::~STM32F4_SmartPtr_IRQ() {
     }
 }
 
-bool STM32F4_SmartPtr_IRQ::WasDisabled() {
+bool STM32F4_SmartPtr_IRQ::IsDisabled() {
     return (state & DISABLED_MASK) == DISABLED_MASK;
 }
 

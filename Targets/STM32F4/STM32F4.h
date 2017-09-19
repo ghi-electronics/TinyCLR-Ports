@@ -49,7 +49,7 @@ public:
     STM32F4_SmartPtr_IRQ();
     ~STM32F4_SmartPtr_IRQ();
 
-    bool WasDisabled();
+    bool IsDisabled();
     void Acquire();
     void Release();
 };

@@ -1191,7 +1191,7 @@ bool STM32F4_UsbClient_StartOutput(USB_CONTROLLER_STATE* State, int ep) {
         return true;
     }
 
-    if (irq.WasDisabled()) { // check all endpoints for pending actions
+    if (irq.IsDisabled()) { // check all endpoints for pending actions
         STM32F4_UsbClient_Interrupt(OTG, State);
     }
     // write first packet if not done yet
@@ -1747,7 +1747,7 @@ int UsbClient_Driver::Write(int controller, int usbStream, const char* Data, siz
                     return totWrite;
                 }
 
-                if (irq.WasDisabled()) // @todo - this really needs more checks to be totally valid
+                if (irq.IsDisabled()) // @todo - this really needs more checks to be totally valid
                 {
                     return totWrite;
                 }
