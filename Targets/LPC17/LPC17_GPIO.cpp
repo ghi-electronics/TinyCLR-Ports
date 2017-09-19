@@ -104,9 +104,9 @@ TinyCLR_Result LPC17_Gpio_Release(const TinyCLR_Gpio_Provider* self) {
 }
 
 void LPC17_Gpio_InterruptHandler(void* param) {
-    INTERRUPT_START
+    INTERRUPT_STARTED_SCOPED(isr);
 
-        GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t* GPIO_INT_Overall_IO_Status_Register = GPIO_INT_Overall_IO_Status;
 
@@ -140,15 +140,13 @@ void LPC17_Gpio_InterruptHandler(void* param) {
             if (executeIsr)
                 state->ISR(state->controller, state->pin, state->currentValue);
         }
-    }
-
-    INTERRUPT_END
+    }    
 }
 
 TinyCLR_Result LPC17_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR) {
     LPC17_Int_State* state = &g_int_state[pin];
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t port = GET_PORT(pin);
     uint32_t pinMask = GET_PIN_MASK(pin);

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include <TinyCLR.h>
-#include <DeviceSelector.h>
+#include <Device.h>
 
 static int32_t lpc178_deviceId = -1;
 

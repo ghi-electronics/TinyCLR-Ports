@@ -216,7 +216,7 @@ int32_t LPC17_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self) {
     uint32_t chnlCnt = 0;
 
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-        if (g_PwmController[self->Index].gpioPin[p] != GPIO_PIN_NONE) {
+        if (g_PwmController[self->Index].gpioPin[p] != PIN_NONE) {
             chnlCnt++;
         }
     }
@@ -358,7 +358,7 @@ TinyCLR_Result LPC17_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self, d
     frequency = LPC17_Pwm_GetActualFrequency(self);
 
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++)
-        if (g_PwmController[self->Index].gpioPin[p] != GPIO_PIN_NONE)
+        if (g_PwmController[self->Index].gpioPin[p] != PIN_NONE)
             if (LPC17_Pwm_SetPulseParameters(self, p, g_PwmController[self->Index].dutyCycle[p], g_PwmController[self->Index].invert[p]) != TinyCLR_Result::Success)
                 return TinyCLR_Result::InvalidOperation;
 
@@ -388,7 +388,7 @@ void LPC17_Pwm_Reset() {
         LPC17_Pwm_ResetController(controller);
 
         for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-            if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p] != GPIO_PIN_NONE) {
+            if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p] != PIN_NONE) {
                 // Reset PWM and close pin
                 LPC17_Pwm_DisablePin(pwmProviders[controller], p);
                 LPC17_Pwm_ReleasePin(pwmProviders[controller], p);
@@ -399,7 +399,7 @@ void LPC17_Pwm_Reset() {
 
 void LPC17_Pwm_ResetController(int32_t controller) {
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-        if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p] != GPIO_PIN_NONE) {
+        if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p] != PIN_NONE) {
             // Reset values
             g_PwmController[pwmProviders[controller]->Index].outputEnabled[p] = false;
             g_PwmController[pwmProviders[controller]->Index].invert[p] = false;

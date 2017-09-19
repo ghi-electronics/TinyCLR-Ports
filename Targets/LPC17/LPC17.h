@@ -14,12 +14,20 @@
 
 #pragma once
 
-#include <stdio.h>
-#include <string.h>
+// #include <stdio.h>
+// #include <string.h>
 
-#include <defines.h>
+// #include <defines.h>
 #include <TinyCLR.h>
-#include <DeviceSelector.h>
+#include <Device.h>
+
+#undef STM32F4
+
+#define SIZEOF_ARRAY(arr) (sizeof(arr) / sizeof(arr[0]))
+#define CONCAT2(a, b) a##b
+#define CONCAT(a, b) CONCAT2(a, b)
+#define CHARIZE2(c) #c
+#define CHARIZE(c) (CHARIZE2(c)[0])
 
 // ADC
 const TinyCLR_Api_Info* LPC17_Adc_GetApi();
@@ -94,6 +102,25 @@ enum class LPC17_Gpio_OutputType : uint8_t {
     OpenDrain = 1,
 };
 
+struct LPC17_Gpio_PinConfiguration {
+    LPC17_Gpio_Direction direction;
+    LPC17_Gpio_ResistorMode resistorMode;
+    LPC17_Gpio_Hysteresis hysteresis;
+    LPC17_Gpio_InputPolarity inputPolarity;
+    LPC17_Gpio_SlewRate slewRate;
+    LPC17_Gpio_OutputType outputType;
+    LPC17_Gpio_PinFunction pinFunction;
+};
+
+#define PIN(port, pin) (port * 32 + pin)
+#define PIN_NONE 0xFFFFFFFF
+#define PF(num) (CONCAT(LPC17_Gpio_PinFunction::PF, num))
+#define PF_NONE LPC17_Gpio_PinFunction::PF0
+
+#define INIT(direction, resistorMode, hysteresis, inputPolarity, slewRate, outputType, pinFunction) { LPC17_Gpio_Direction::direction, LPC17_Gpio_ResistorMode::resistorMode, LPC17_Gpio_Hysteresis::hysteresis, LPC17_Gpio_InputPolarity::inputPolarity, LPC17_Gpio_SlewRate::slewRate, LPC17_Gpio_OutputType::outputType,LPC17_Gpio_PinFunction::pinFunction }
+#define ALTFUN(direction, resistorMode, outputType, pinFunction) { LPC17_Gpio_Direction::direction, LPC17_Gpio_ResistorMode::resistorMode, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::outputType,LPC17_Gpio_PinFunction::pinFunction }
+#define INPUT(outputType, resistorMode) { LPC17_Gpio_Direction::Input, LPC17_Gpio_ResistorMode::resistorMode, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::outputType,LPC17_Gpio_PinFunction::PinFunction0 }
+
 void LPC17_Gpio_Reset();
 const TinyCLR_Api_Info* LPC17_Gpio_GetApi();
 TinyCLR_Result LPC17_Gpio_Acquire(const TinyCLR_Gpio_Provider* self);
@@ -113,7 +140,7 @@ TinyCLR_Result LPC17_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t 
 
 bool LPC17_Gpio_OpenPin(int32_t pin);
 bool LPC17_Gpio_ClosePin(int32_t pin);
-bool LPC17_Gpio_ConfigurePin(int32_t pin, LPC17_Gpio_Direction pinDir, LPC17_Gpio_PinFunction alternateFunction, LPC17_Gpio_ResistorMode pullResistor, LPC17_Gpio_Hysteresis hysteresis, LPC17_Gpio_InputPolarity inputPolarity, LPC17_Gpio_SlewRate slewRate, LPC17_Gpio_OutputType outputType);
+bool LPC17_Gpio_ConfigurePin(int32_t pin, LPC17_Gpio_Direction pinDir, LPC17_Gpio_PinFunction pinFunction, LPC17_Gpio_ResistorMode pullResistor, LPC17_Gpio_Hysteresis hysteresis, LPC17_Gpio_InputPolarity inputPolarity, LPC17_Gpio_SlewRate slewRate, LPC17_Gpio_OutputType outputType);
 void LPC17_Gpio_EnableOutputPin(int32_t pin, bool initialState);
 void LPC17_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
 
@@ -233,9 +260,12 @@ bool LPC17_Flash_IsSupportsXIP(const TinyCLR_Deployment_Provider* self);
 class LPC17_SmartPtr_IRQ {
     uint32_t m_state;
 
+    void Disable();
+    void Restore();
+
 public:
-    LPC17_SmartPtr_IRQ() { Disable(); };
-    ~LPC17_SmartPtr_IRQ() { Restore(); };
+    LPC17_SmartPtr_IRQ();
+    ~LPC17_SmartPtr_IRQ();
 
     bool WasDisabled();
     void Acquire();
@@ -243,11 +273,16 @@ public:
     void Probe();
 
     static bool GetState();
-
-private:
-    void Disable();
-    void Restore();
 };
+
+class LPC17_SmartPtr_Interrupt {
+public:
+    LPC17_SmartPtr_Interrupt();
+    ~LPC17_SmartPtr_Interrupt();
+};
+
+#define DISABLE_INTERRUPTS_SCOPED(name) LPC17_SmartPtr_IRQ name
+#define INTERRUPT_STARTED_SCOPED(name) LPC17_SmartPtr_Interrupt name
 
 const TinyCLR_Api_Info* LPC17_Interrupt_GetApi();
 TinyCLR_Result LPC17_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);

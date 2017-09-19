@@ -15,14 +15,84 @@
 #ifndef _DEVICE_G120_H_
 #define _DEVICE_G120_H_
 
-#define PLATFORM_ARM_DEFINED
+#include <LPC17.h>
+
+#define DEVICE_TARGET LPC17
+#define DEVICE_NAME "G120"
+#define DEVICE_MANUFACTURER "GHI Electronics, LLC"
+#define DEVICE_VERSION ((0x0000ULL << 32) | (0x0006ULL << 16) | (0x0000ULL << 0))
+
+#define USB_DEBUGGER_VENDOR_ID 0x1B9F
+#define USB_DEBUGGER_PRODUCT_ID 0x0110
+
+#define UART_DEBUGGER_INDEX 0
+#define USB_DEBUGGER_INDEX 0
+
+#define DEBUGGER_SELECTOR_PIN PIN(2, 1)
+#define G120_DEBUGGER_SELECTOR_PULL TinyCLR_Gpio_PinDriveMode::InputPullUp
+#define G120_DEBUGGER_SELECTOR_USB_STATE TinyCLR_Gpio_PinValue::High
+
+#define G120E_DEBUGGER_SELECTOR_PULL TinyCLR_Gpio_PinDriveMode::InputPullDown
+#define G120E_DEBUGGER_SELECTOR_USB_STATE TinyCLR_Gpio_PinValue::Low
+
+
+#define RUN_APP_PIN PIN(0, 22)
+#define RUN_APP_PULL TinyCLR_Gpio_PinDriveMode::InputPullUp
+#define RUN_APP_STATE TinyCLR_Gpio_PinValue::High
+
+#define RAM_BOOTLOADER_HOLD_ADDRESS 0x1000FFF8
+#define RAM_BOOTLOADER_HOLD_VALUE 0x37D56D4A
+
+#define DEPLOYMENT_SECTOR_ADDRESSES { 0x080C0000, 0x080E0000 }
+#define DEPLOYMENT_SECTOR_SIZES { 0x00020000, 0x00020000 }
+
+#define LPC17_SYSTEM_CLOCK_HZ 120000000
+#define LPC17_AHB_CLOCK_HZ 120000000
+
+#define INCLUDE_ADC 
+#define LPC17_ADC_PINS { { PIN(0, 23), PF(1) } , { PIN(0, 24), PF(1) } , { PIN(0, 25), PF(1) } , { PIN(0, 26), PF(1) } , { PIN(1, 30), PF(3) } , { PIN(1, 31, PF(3) } , { PIN(0, 12), PF(3) } , { PIN(0, 13), PF(3) } }
+
+#define INCLUDE_DAC
+#define LPC17_DAC_PINS { { PIN(0, 26), PF(2) } }
+
+#define INCLUDE_GPIO
+#define LPC17_GPIO_PINS {/*     0                        1                        2                        3                        4                        5                        6                        7                        8                        9                        10                       11                       12                       13                       14                       15                       16                       17                       18                       19                       20                       21                       22                       23                       24                       25                       26                       27                       28                       29                       30                       31                    */\
+                        /*P0x*/ INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp),\
+                        /*P1x*/ INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp),\
+                        /*P2x*/ INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp),\
+                        /*P3x*/ INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp),\
+                        /*P4x*/ INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp), INPUT(PushPull, PullUp),\
+                        }
+
+#define INCLUDE_I2C
+#define STM32F4_I2C_SCL_PINS { { PIN(0, 28), PF(1) } }
+#define STM32F4_I2C_SDA_PINS { { PIN(0, 27), PF(1) } }
+
+#define INCLUDE_SPI
+
+#define LPC17_SPI_PCLK_KHZ                 (SYSTEM_CLOCK_HZ/2/1000)
+#define LPC17_SPI_MISO_PINS                {_P(0,17),_P(0,8),_P(1,4)}
+#define LPC17_SPI_MOSI_PINS                {_P(0,18),_P(0,9),_P(1,1)}
+#define LPC17_SPI_CLK_PINS                 {_P(0,15),_P(0,7),_P(1,0)}
+#define LPC17_SPI_MISO_ALT_MODE            {LPC17_Gpio_PinFunction::PinFunction2, LPC17_Gpio_PinFunction::PinFunction2, LPC17_Gpio_PinFunction::PinFunction4}
+#define LPC17_SPI_MOSI_ALT_MODE            {LPC17_Gpio_PinFunction::PinFunction2, LPC17_Gpio_PinFunction::PinFunction2, LPC17_Gpio_PinFunction::PinFunction4}
+#define LPC17_SPI_CLK_ALT_MODE             {LPC17_Gpio_PinFunction::PinFunction2, LPC17_Gpio_PinFunction::PinFunction2, LPC17_Gpio_PinFunction::PinFunction4}
+
+
+#define STM32F4_SPI_SCLK_PINS { { PIN(0, 15), PF(2) }, { PIN(B, 10), AF(5) } }
+#define STM32F4_SPI_MISO_PINS { { PIN(0, 17), PF(2) }, { PIN(C,  2), AF(5) } }
+#define STM32F4_SPI_MOSI_PINS { { PIN(0, 18), PF(2) }, { PIN(C,  3), AF(5) } }                        
+
+
+
+//#define PLATFORM_ARM_DEFINED
 
 // Macro
-#define GLOBAL_LOCK(x)             LPC17_SmartPtr_IRQ x
-#define DISABLE_INTERRUPTS()       LPC17_SmartPtr_IRQ::ForceDisabled()
-#define ENABLE_INTERRUPTS()        LPC17_SmartPtr_IRQ::ForceEnabled()
-#define INTERRUPTS_ENABLED_STATE() LPC17_SmartPtr_IRQ::GetState()
-#define GLOBAL_LOCK_SOCKETS(x)     LPC17_SmartPtr_IRQ x
+// #define GLOBAL_LOCK(x)             LPC17_SmartPtr_IRQ x
+// #define DISABLE_INTERRUPTS()       LPC17_SmartPtr_IRQ::ForceDisabled()
+// #define ENABLE_INTERRUPTS()        LPC17_SmartPtr_IRQ::ForceEnabled()
+// #define INTERRUPTS_ENABLED_STATE() LPC17_SmartPtr_IRQ::GetState()
+// #define GLOBAL_LOCK_SOCKETS(x)     LPC17_SmartPtr_IRQ x
 
 #if defined(_DEBUG)
 #define ASSERT(x)                  while (!x)

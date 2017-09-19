@@ -262,7 +262,7 @@ const TinyCLR_Api_Info* LPC17_Uart_GetApi() {
 
 
 void LPC17_Uart_PinConfiguration(int portNum, bool enable) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     int32_t txPin = LPC17_Uart_GetTxPin(portNum);
     int32_t rxPin = LPC17_Uart_GetRxPin(portNum);
@@ -317,9 +317,9 @@ void UART_SetErrorEvent(int32_t portNum, TinyCLR_Uart_Error error) {
 }
 
 void LPC17_Uart_ReceiveData(int portNum, uint32_t LSR_Value, uint32_t IIR_Value) {
-    INTERRUPT_START
+    INTERRUPT_STARTED_SCOPED(isr);
 
-        GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     LPC17xx_USART& USARTC = LPC17xx_USART::UART(portNum);
 
@@ -365,9 +365,9 @@ void LPC17_Uart_ReceiveData(int portNum, uint32_t LSR_Value, uint32_t IIR_Value)
     INTERRUPT_END
 }
 void LPC17_Uart_TransmitData(int portNum, uint32_t LSR_Value, uint32_t IIR_Value) {
-    INTERRUPT_START
+    INTERRUPT_STARTED_SCOPED(isr);
 
-        GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     LPC17xx_USART& USARTC = LPC17xx_USART::UART(portNum);
 
@@ -396,9 +396,9 @@ void LPC17_Uart_TransmitData(int portNum, uint32_t LSR_Value, uint32_t IIR_Value
 }
 
 void UART_IntHandler(int portNum) {
-    INTERRUPT_START
+    INTERRUPT_STARTED_SCOPED(isr);
 
-        GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     LPC17xx_USART& USARTC = LPC17xx_USART::UART(portNum);
 
@@ -454,7 +454,7 @@ TinyCLR_Result LPC17_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
     if (portNum >= TOTAL_UART_CONTROLLERS)
         return TinyCLR_Result::ArgumentInvalid;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     g_UartController[portNum].txBufferCount = 0;
     g_UartController[portNum].txBufferIn = 0;
@@ -507,7 +507,7 @@ void LPC17_Uart_SetClock(int32_t portNum, int32_t pclkSel) {
 }
 TinyCLR_Result LPC17_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, uint32_t baudRate, uint32_t dataBits, TinyCLR_Uart_Parity parity, TinyCLR_Uart_StopBitCount stopBits, TinyCLR_Uart_Handshake handshaking) {
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     int32_t portNum = self->Index;
 
@@ -699,7 +699,7 @@ TinyCLR_Result LPC17_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
 }
 
 TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Provider* self) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
@@ -753,7 +753,7 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Provider* self) {
 }
 
 void LPC17_Uart_TxBufferEmptyInterruptEnable(int portNum, bool enable) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     LPC17xx_USART& USARTC = LPC17xx_USART::UART(portNum);
 
@@ -774,7 +774,7 @@ void LPC17_Uart_TxBufferEmptyInterruptEnable(int portNum, bool enable) {
 }
 
 void LPC17_Uart_RxBufferFullInterruptEnable(int portNum, bool enable) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     LPC17xx_USART& USARTC = LPC17xx_USART::UART(portNum);
 
@@ -808,7 +808,7 @@ TinyCLR_Result LPC17_Uart_Read(const TinyCLR_Uart_Provider* self, uint8_t* buffe
     int32_t portNum = self->Index;
     size_t i = 0;;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (g_UartController[portNum].isOpened == false)
         return TinyCLR_Result::NotAvailable;
@@ -833,7 +833,7 @@ TinyCLR_Result LPC17_Uart_Write(const TinyCLR_Uart_Provider* self, const uint8_t
     int32_t portNum = self->Index;
     int32_t i = 0;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (g_UartController[portNum].isOpened == false)
         return TinyCLR_Result::NotAvailable;

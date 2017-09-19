@@ -109,7 +109,7 @@ uint64_t LPC17_Time_MicrosecondsToTicks(const TinyCLR_Time_Provider* self, uint6
 }
 
 uint64_t LPC17_Time_GetCurrentTicks(const TinyCLR_Time_Provider* self) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t tick_spent;
     uint32_t reg = SysTick->CTRL;
@@ -137,7 +137,7 @@ uint64_t LPC17_Time_GetCurrentTicks(const TinyCLR_Time_Provider* self) {
 TinyCLR_Result LPC17_Time_SetCompare(const TinyCLR_Time_Provider* self, uint64_t processorTicks) {
     uint64_t ticks;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     ticks = LPC17_Time_GetCurrentTicks(self);
 
@@ -169,16 +169,14 @@ TinyCLR_Result LPC17_Time_SetCompare(const TinyCLR_Time_Provider* self, uint64_t
 extern "C" {
 
     void SysTick_Handler(void *param) {
-        INTERRUPT_START
+        INTERRUPT_STARTED_SCOPED(isr);
 
             if (LPC17_Time_GetCurrentTicks(nullptr) >= g_nextEvent) { // handle event
                 g_LPC17_Timer_Driver.m_DequeuAndExecute();
             }
             else {
                 LPC17_Time_SetCompare(nullptr, g_nextEvent);
-            }
-
-            INTERRUPT_END
+            }            
     }
 
 }
@@ -210,7 +208,7 @@ TinyCLR_Result LPC17_Time_SetCompareCallback(const TinyCLR_Time_Provider* self, 
 }
 
 void LPC17_Time_DelayNoInterrupt(const TinyCLR_Time_Provider* self, uint64_t microseconds) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint64_t current = LPC17_Time_GetCurrentTicks(self);
     uint64_t maxDiff = LPC17_Time_MicrosecondsToTicks(self, microseconds);
