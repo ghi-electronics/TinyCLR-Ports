@@ -19,6 +19,7 @@
 #include "STM32F4.h"
 
 #define __min(a,b)  (((a) < (b)) ? (a) : (b))
+void STM32F4_UsbClient_Reset();
 
 #if defined(__GNUC__)
 #define PACKED(x) x __attribute__((packed))
@@ -2676,6 +2677,9 @@ const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi() {
     usbClientApi.Version = 0;
     usbClientApi.Count = 1;
     usbClientApi.Implementation = &usbClientProvider;
+
+    //With this uncommented USB fails to start and the program doesn't run
+    //STM32F4_UsbClient_Reset();
 
     return &usbClientApi;
 }

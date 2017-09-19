@@ -70,6 +70,10 @@ const TinyCLR_Api_Info* STM32F4_Adc_GetApi() {
     adcApi.Count = 1;
     adcApi.Implementation = &adcProvider;
 
+    for (auto i = 0; i < STM32F4_AD_NUM; i++) {
+        STM32F4_Adc_ReleaseChannel(&adcProvider, i);
+    }
+
     return &adcApi;
 }
 
@@ -211,10 +215,4 @@ TinyCLR_Result STM32F4_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, Tiny
 
 bool STM32F4_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode) {
     return mode == TinyCLR_Adc_ChannelMode::SingleEnded;
-}
-
-void STM32F4_Adc_Reset() {
-    for (auto i = 0; i < STM32F4_AD_NUM; i++) {
-        STM32F4_Adc_ReleaseChannel(&adcProvider, i);
-    }
 }

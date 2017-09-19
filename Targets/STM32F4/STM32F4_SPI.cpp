@@ -71,7 +71,6 @@ const TinyCLR_Api_Info* STM32F4_Spi_GetApi() {
         spiProviders[i]->GetMinClockFrequency = &STM32F4_Spi_GetMinClockFrequency;
         spiProviders[i]->GetMaxClockFrequency = &STM32F4_Spi_GetMaxClockFrequency;
         spiProviders[i]->GetSupportedDataBitLengths = &STM32F4_Spi_GetSupportedDataBitLengths;
-
     }
 
     spiApi.Author = "GHI Electronics, LLC";
@@ -80,6 +79,34 @@ const TinyCLR_Api_Info* STM32F4_Spi_GetApi() {
     spiApi.Version = 0;
     spiApi.Count = TOTAL_SPI_CONTROLLERS;
     spiApi.Implementation = (spiApi.Count > 1) ? spiProviders : (TinyCLR_Spi_Provider**)&spiProviderDefs;
+
+#ifdef SPI1
+    if (TOTAL_SPI_CONTROLLERS > 0) g_STM32_Spi_Port[0] = SPI1;
+#ifdef SPI2
+    if (TOTAL_SPI_CONTROLLERS > 1) g_STM32_Spi_Port[1] = SPI2;
+#ifdef SPI3
+    if (TOTAL_SPI_CONTROLLERS > 2) g_STM32_Spi_Port[2] = SPI3;
+#ifdef SPI4
+    if (TOTAL_SPI_CONTROLLERS > 3) g_STM32_Spi_Port[3] = SPI4;
+#ifdef SPI5
+    if (TOTAL_SPI_CONTROLLERS > 4) g_STM32_Spi_Port[4] = SPI5;
+#ifdef SPI6
+    if (TOTAL_SPI_CONTROLLERS > 5) g_STM32_Spi_Port[5] = SPI6;
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+
+    for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
+        int32_t controller = i;
+
+        STM32F4_Spi_Release(spiProviders[controller]);
+
+        if (g_SpiController[controller].ChipSelectLine != PIN_NONE)
+            STM32F4_GpioInternal_ClosePin(g_SpiController[controller].ChipSelectLine);
+    }
 
     return &spiApi;
 }
@@ -593,34 +620,4 @@ TinyCLR_Result STM32F4_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider
     dataBitLengthsCount = dataBitsCount;
 
     return TinyCLR_Result::Success;
-}
-
-void STM32F4_Spi_Reset() {
-#ifdef SPI1
-    if (TOTAL_SPI_CONTROLLERS > 0) g_STM32_Spi_Port[0] = SPI1;
-#ifdef SPI2
-    if (TOTAL_SPI_CONTROLLERS > 1) g_STM32_Spi_Port[1] = SPI2;
-#ifdef SPI3
-    if (TOTAL_SPI_CONTROLLERS > 2) g_STM32_Spi_Port[2] = SPI3;
-#ifdef SPI4
-    if (TOTAL_SPI_CONTROLLERS > 3) g_STM32_Spi_Port[3] = SPI4;
-#ifdef SPI5
-    if (TOTAL_SPI_CONTROLLERS > 4) g_STM32_Spi_Port[4] = SPI5;
-#ifdef SPI6
-    if (TOTAL_SPI_CONTROLLERS > 5) g_STM32_Spi_Port[5] = SPI6;
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-
-    for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        int32_t controller = i;
-
-        STM32F4_Spi_Release(spiProviders[controller]);
-
-        if (g_SpiController[controller].ChipSelectLine != PIN_NONE)
-            STM32F4_GpioInternal_ClosePin(g_SpiController[controller].ChipSelectLine);
-    }
 }

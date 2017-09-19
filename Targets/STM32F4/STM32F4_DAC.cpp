@@ -46,6 +46,10 @@ const TinyCLR_Api_Info* STM32F4_Dac_GetApi() {
     dacApi.Count = 1;
     dacApi.Implementation = &dacProvider;
 
+    for (auto i = 0; i < STM32F4_Dac_GetChannelCount(&dacProvider); i++) {
+        STM32F4_Dac_ReleaseChannel(&dacProvider, i);
+    }
+
     return &dacApi;
 }
 
@@ -132,12 +136,6 @@ int32_t STM32F4_Dac_GetMinValue(const TinyCLR_Dac_Provider* self) {
 
 int32_t STM32F4_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self) {
     return ((1 << STM32F4_DAC_RESOLUTION_INT_BIT) - 1);
-}
-
-void STM32F4_Dac_Reset() {
-    for (auto i = 0; i < STM32F4_Dac_GetChannelCount(&dacProvider); i++) {
-        STM32F4_Dac_ReleaseChannel(&dacProvider, i);
-    }
 }
 
 #endif

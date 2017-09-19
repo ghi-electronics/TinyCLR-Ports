@@ -16,6 +16,7 @@
 
 #include "STM32F4.h"
 
+void STM32F4_Pwm_Reset();
 
 #if STM32F4_APB1_CLOCK_HZ == STM32F4_AHB_CLOCK_HZ
 #define PWM1_CLK_HZ (STM32F4_APB1_CLOCK_HZ)
@@ -95,6 +96,8 @@ const TinyCLR_Api_Info* STM32F4_Pwm_GetApi() {
         pwmProviders[i]->GetActualFrequency = &STM32F4_Pwm_GetActualFrequency;
         pwmProviders[i]->GetPinCount = &STM32F4_Pwm_GetPinCount;
     }
+
+    STM32F4_Pwm_Reset();
 
     pwmApi.Author = "GHI Electronics, LLC";
     pwmApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmProvider";

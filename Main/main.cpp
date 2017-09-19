@@ -21,59 +21,41 @@ void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 #ifdef INCLUDE_ADC
     apiProvider->Add(apiProvider, TARGET(_Adc_GetApi)());
     apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::AdcProvider, TARGET(_Adc_GetApi)()->Name);
-
-    TARGET(_Adc_Reset)();
 #endif
 
 #ifdef INCLUDE_DAC
     apiProvider->Add(apiProvider, TARGET(_Dac_GetApi)());
     apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::DacProvider, TARGET(_Dac_GetApi)()->Name);
-
-    TARGET(_Dac_Reset)();
 #endif
 
 #ifdef INCLUDE_DISPLAY
     apiProvider->Add(apiProvider, TARGET(_Display_GetApi)());
     apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::DisplayProvider, TARGET(_Display_GetApi)()->Name);
-
-    TARGET(_Display_Reset)();
 #endif
 
 #ifdef INCLUDE_GPIO
     apiProvider->Add(apiProvider, TARGET(_Gpio_GetApi)());
     apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::GpioProvider, TARGET(_Gpio_GetApi)()->Name);
-
-    TARGET(_Gpio_Reset)();
 #endif
 
 #ifdef INCLUDE_I2C
     apiProvider->Add(apiProvider, TARGET(_I2c_GetApi)());
-
-    TARGET(_I2c_Reset)();
 #endif
 
 #ifdef INCLUDE_PWM
     apiProvider->Add(apiProvider, TARGET(_Pwm_GetApi)());
-
-    TARGET(_Pwm_Reset)();
 #endif
 
 #ifdef INCLUDE_SPI
     apiProvider->Add(apiProvider, TARGET(_Spi_GetApi)());
-
-    TARGET(_Spi_Reset)();
 #endif
 
 #ifdef INCLUDE_UART
     apiProvider->Add(apiProvider, TARGET(_Uart_GetApi)());
-
-    TARGET(_Uart_Reset)();
 #endif
 
 #ifdef INCLUDE_USBCLIENT
     apiProvider->Add(apiProvider, TARGET(_UsbClient_GetApi)());
-
-    TARGET(_UsbClient_Reset)();
 #endif
 }
 

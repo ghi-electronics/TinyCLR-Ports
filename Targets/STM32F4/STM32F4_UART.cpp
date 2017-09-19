@@ -103,6 +103,24 @@ const TinyCLR_Api_Info* STM32F4_Uart_GetApi() {
     uartApi.Count = TOTAL_UART_CONTROLLERS;
     uartApi.Implementation = uartProviders;
 
+    if (TOTAL_UART_CONTROLLERS > 0) g_STM32F4_Uart_Ports[0] = USART1;
+    if (TOTAL_UART_CONTROLLERS > 1) g_STM32F4_Uart_Ports[1] = USART2;
+#ifndef STM32F401xE
+    if (TOTAL_UART_CONTROLLERS > 2) g_STM32F4_Uart_Ports[2] = USART3;
+    if (TOTAL_UART_CONTROLLERS > 3) g_STM32F4_Uart_Ports[3] = UART4;
+    if (TOTAL_UART_CONTROLLERS > 4) g_STM32F4_Uart_Ports[4] = UART5;
+    if (TOTAL_UART_CONTROLLERS > 5) g_STM32F4_Uart_Ports[5] = USART6;
+#ifdef UART7
+    if (TOTAL_UART_CONTROLLERS > 6) g_STM32F4_Uart_Ports[6] = UART7;
+#ifdef UART8
+    if (TOTAL_UART_CONTROLLERS > 7) g_STM32F4_Uart_Ports[7] = UART8;
+#endif
+#endif
+#endif
+    for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        STM32F4_Uart_Release(uartProviders[i]);
+    }
+
     return &uartApi;
 }
 
@@ -641,24 +659,3 @@ TinyCLR_Result STM32F4_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Provide
 TinyCLR_Result STM32F4_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Provider* self, bool state) {
     return TinyCLR_Result::NotImplemented;
 }
-
-void STM32F4_Uart_Reset() {
-    if (TOTAL_UART_CONTROLLERS > 0) g_STM32F4_Uart_Ports[0] = USART1;
-    if (TOTAL_UART_CONTROLLERS > 1) g_STM32F4_Uart_Ports[1] = USART2;
-#ifndef STM32F401xE
-    if (TOTAL_UART_CONTROLLERS > 2) g_STM32F4_Uart_Ports[2] = USART3;
-    if (TOTAL_UART_CONTROLLERS > 3) g_STM32F4_Uart_Ports[3] = UART4;
-    if (TOTAL_UART_CONTROLLERS > 4) g_STM32F4_Uart_Ports[4] = UART5;
-    if (TOTAL_UART_CONTROLLERS > 5) g_STM32F4_Uart_Ports[5] = USART6;
-#ifdef UART7
-    if (TOTAL_UART_CONTROLLERS > 6) g_STM32F4_Uart_Ports[6] = UART7;
-#ifdef UART8
-    if (TOTAL_UART_CONTROLLERS > 7) g_STM32F4_Uart_Ports[7] = UART8;
-#endif
-#endif
-#endif
-    for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
-        STM32F4_Uart_Release(uartProviders[i]);
-    }
-}
-

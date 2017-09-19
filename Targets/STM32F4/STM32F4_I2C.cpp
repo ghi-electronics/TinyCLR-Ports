@@ -105,6 +105,20 @@ const TinyCLR_Api_Info* STM32F4_I2c_GetApi() {
     i2cApi.Count = 1;
     i2cApi.Implementation = &i2cProvider;
 
+    if (TOTAL_I2C_CONTROLLERS > 0) g_STM32_I2c_Port[0] = I2C1;
+
+    STM32F4_I2c_Release(&i2cProvider);
+
+    g_I2cConfiguration.address = 0;
+    g_I2cConfiguration.clockRate = 0;
+    g_I2cConfiguration.clockRate2 = 0;
+
+    g_ReadI2cTransactionAction.bytesToTransfer = 0;
+    g_ReadI2cTransactionAction.bytesTransferred = 0;
+
+    g_WriteI2cTransactionAction.bytesToTransfer = 0;
+    g_WriteI2cTransactionAction.bytesTransferred = 0;
+
     return &i2cApi;
 }
 
@@ -417,20 +431,3 @@ TinyCLR_Result STM32F4_I2c_Release(const TinyCLR_I2c_Provider* self) {
 
     return TinyCLR_Result::Success;
 }
-
-void STM32F4_I2c_Reset() {
-    if (TOTAL_I2C_CONTROLLERS > 0) g_STM32_I2c_Port[0] = I2C1;
-
-    STM32F4_I2c_Release(&i2cProvider);
-
-    g_I2cConfiguration.address = 0;
-    g_I2cConfiguration.clockRate = 0;
-    g_I2cConfiguration.clockRate2 = 0;
-
-    g_ReadI2cTransactionAction.bytesToTransfer = 0;
-    g_ReadI2cTransactionAction.bytesTransferred = 0;
-
-    g_WriteI2cTransactionAction.bytesToTransfer = 0;
-    g_WriteI2cTransactionAction.bytesTransferred = 0;
-}
-
