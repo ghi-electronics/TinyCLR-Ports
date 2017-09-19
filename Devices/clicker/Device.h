@@ -14,7 +14,7 @@
 
 #pragma once
 
-#define STM32F401xE 1
+#define STM32F415xx 1
 
 #include <STM32F4.h>
 
