@@ -1,6 +1,7 @@
 # Build
 Build/
 Core/TinyCLR*
+Core/License.txt
 CMSIS/
 
 # Visual Studio
