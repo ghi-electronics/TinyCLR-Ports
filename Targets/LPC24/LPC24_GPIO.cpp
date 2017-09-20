@@ -153,9 +153,9 @@ TinyCLR_Result LPC24_Gpio_Release(const TinyCLR_Gpio_Provider* self) {
 }
 
 void LPC24_Gpio_InterruptHandler(void* param) {
-    INTERRUPT_START
+    INTERRUPT_STARTED_SCOPED(isr);
 
-        GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     bool executeIsr = true;
 
@@ -186,15 +186,13 @@ void LPC24_Gpio_InterruptHandler(void* param) {
                 state->ISR(state->controller, state->pin, state->currentValue);
             }
         }
-    }
-
-    INTERRUPT_END
+    }    
 }
 
 TinyCLR_Result LPC24_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR) {
     LPC24_Int_State* state = &g_int_state[pin];
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t port = GET_PORT(pin);
     uint32_t pinMask = GET_PIN_MASK(pin);
@@ -367,7 +365,7 @@ TinyCLR_Result LPC24_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t pin, 
 
 TinyCLR_Result LPC24_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t pin) {
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (pin >= LPC24_Gpio_MaxPins || pin < 0)
         return TinyCLR_Result::ArgumentOutOfRange;
@@ -380,7 +378,7 @@ TinyCLR_Result LPC24_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t 
 
 TinyCLR_Result LPC24_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t pin) {
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (pin >= LPC24_Gpio_MaxPins || pin < 0)
         return TinyCLR_Result::ArgumentOutOfRange;
@@ -442,7 +440,7 @@ TinyCLR_Result LPC24_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_
 }
 
 int32_t LPC24_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin) {
-    return (int32_t)(g_debounceTicksPin[pin] / (SLOW_CLOCKS_PER_SECOND / 1000)); // ticks -> ms
+    return  LPC24_Time_GetTimeForProcessorTicks(nullptr, (uint64_t)(g_debounceTicksPin[pin])) / 10;    
 }
 
 TinyCLR_Result LPC24_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, int32_t debounceTime) {

@@ -471,12 +471,12 @@ bool LPC24_Display_Initialize() {
         divider = 0xFF;
     }
     else {
-        newFreq = (uint32_t)((SYSTEM_CYCLE_CLOCK_HZ / 1000) % m_LPC24_DisplayPixelClockRateKHz);
+        newFreq = (uint32_t)((LPC24_AHB_CLOCK_HZ / 1000) % m_LPC24_DisplayPixelClockRateKHz);
 
         if (newFreq != 0)
-            divider = ((SYSTEM_CYCLE_CLOCK_HZ / 1000) / m_LPC24_DisplayPixelClockRateKHz) + 1;
+            divider = ((LPC24_AHB_CLOCK_HZ / 1000) / m_LPC24_DisplayPixelClockRateKHz) + 1;
         else
-            divider = ((SYSTEM_CYCLE_CLOCK_HZ / 1000) / m_LPC24_DisplayPixelClockRateKHz);
+            divider = ((LPC24_AHB_CLOCK_HZ / 1000) / m_LPC24_DisplayPixelClockRateKHz);
     }
 
     LPC24XX::SYSCON().LCD_CFG = (divider - 1); //config.PixelClockDivider - 1;

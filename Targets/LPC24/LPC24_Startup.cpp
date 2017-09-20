@@ -160,7 +160,7 @@ void LPC24_Startup_GetHeap(uint8_t*& start, size_t& length) {
     length = (size_t)(((int)&HeapEnd) - ((int)&HeapBegin));
 }
 
-void LPC24_Startup_InitializeRegions() {
+void LPC24_Startup_Initialize() {
     //
     // Copy RAM RO regions into proper location.
     //

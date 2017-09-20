@@ -81,7 +81,7 @@ void LPC24_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) {
     LPC24XX_WATCHDOG& WTDG = LPC24XX::WTDG();
 
     // disable interrupts
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
     // set the smallest value
     WTDG.WDTC = 0xFF;
 

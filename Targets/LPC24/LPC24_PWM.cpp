@@ -355,7 +355,7 @@ TinyCLR_Result LPC24_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self, d
 
 
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++)
-        if (g_PwmController[self->Index].gpioPin[p] != GPIO_PIN_NONE)
+        if (g_PwmController[self->Index].gpioPin[p] != PIN_NONE)
             if (LPC24_Pwm_SetPulseParameters(self, p, g_PwmController[self->Index].dutyCycle[p], g_PwmController[self->Index].invert[p]) != TinyCLR_Result::Success)
                 return TinyCLR_Result::InvalidOperation;
 
@@ -386,7 +386,7 @@ void LPC24_Pwm_Reset() {
         LPC24_Pwm_ResetController(controller);
 
         for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-            if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p] != GPIO_PIN_NONE) {
+            if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p] != PIN_NONE) {
                 // Reset PWM and close pin
                 LPC24_Pwm_DisablePin(pwmProviders[controller], p);
                 LPC24_Pwm_ReleasePin(pwmProviders[controller], p);
@@ -397,7 +397,7 @@ void LPC24_Pwm_Reset() {
 
 void LPC24_Pwm_ResetController(int32_t controller) {
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-        if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p] != GPIO_PIN_NONE) {
+        if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p] != PIN_NONE) {
             // Reset values
             g_PwmController[pwmProviders[controller]->Index].outputEnabled[p] = false;
             g_PwmController[pwmProviders[controller]->Index].invert[p] = false;

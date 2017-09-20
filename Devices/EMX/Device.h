@@ -15,6 +15,37 @@
 #ifndef _DEVICE_EMX_H_
 #define _DEVICE_EMX_H_
 
+
+#define DEVICE_TARGET LPC24
+#define DEVICE_NAME "EMX"
+#define DEVICE_MANUFACTURER "GHI Electronics, LLC"
+#define DEVICE_VERSION ((0x0000ULL << 32) | (0x0006ULL << 16) | (0x0000ULL << 0))
+
+#define USB_DEBUGGER_VENDOR_ID 0x1B9F
+#define USB_DEBUGGER_PRODUCT_ID 0x0110
+
+#define UART_DEBUGGER_INDEX 0
+#define USB_DEBUGGER_INDEX 0
+
+#define DEBUGGER_SELECTOR_PIN PIN(3, 23)
+#define DEBUGGER_SELECTOR_PULL TinyCLR_Gpio_PinDriveMode::InputPullDown
+#define DEBUGGER_SELECTOR_USB_STATE TinyCLR_Gpio_PinValue::Low
+
+#define RUN_APP_PIN PIN(0, 4)
+#define RUN_APP_PULL TinyCLR_Gpio_PinDriveMode::InputPullUp
+#define RUN_APP_STATE TinyCLR_Gpio_PinValue::High
+
+#define RAM_BOOTLOADER_HOLD_ADDRESS 0xA0FFFFF8
+#define RAM_BOOTLOADER_HOLD_VALUE 0xB53D0238
+
+#define SYSTEM_CLOCK_HZ 18000000
+#define LPC24_AHB_CLOCK_HZ 72000000
+
+
+
+
+
+#if 0
 #define PLATFORM_ARM_DEFINED
 
 // Macro
@@ -37,13 +68,9 @@
 // Device
 #define HAL_SYSTEM_NAME "EMX"
 
-// System clock
-#define SYSTEM_CLOCK_HZ                      18000000 // 18 MHz
-#define SYSTEM_CYCLE_CLOCK_HZ                72000000 // 72 MHz
-#define CLOCK_COMMON_FACTOR                  1000000 // GCD(SYSTEM_CLOCK_HZ, 1M)
-#define SLOW_CLOCKS_PER_SECOND               18000000 // SYSTEM_CLOCK_HZ MHz
-#define SLOW_CLOCKS_TEN_MHZ_GCD              1000000 // GCD(SLOW_CLOCKS_PER_SECOND, 10M)
-#define SLOW_CLOCKS_MILLISECOND_GCD          1000 // GCD(SLOW_CLOCKS_PER_SECOND, 1k)
+
+
+
 
 // external Memory - Flash
 #define EXT_FLASH_MEMORY_Base                0x80000000
@@ -51,10 +78,12 @@
 #define EXT_SDRAM_MEMORY_Base                0xA0000000
 #define EXT_SDRAM_MEMORY_Size                0x01000000 // 16MB ext ram
 
+#endif
+
 // Macro
 #define PORT_PIN(port,pin)                   (((int)port)*32 + (pin))
 #define _P(port, pin)                        PORT_PIN(GPIO_PORT##port, pin)
-#define _P_NONE_                             GPIO_PIN_NONE
+#define _P_NONE_                             PIN_NONE
 #define GPIO_PORT0                           0
 #define GPIO_PORT1                           1
 #define GPIO_PORT2                           2
@@ -105,7 +134,7 @@
                                                 { 1 ,  {0x1, 0x1, 0x1, 0x1, 0x1, 0x1} , {0x0, 0x1, 0x2, 0x3, 0x4, 0x5 } , { _P(3, 24), _P_NONE_ , _P(3, 26), _P(3, 27), _P_NONE_ , _P(3, 29)},  {LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3},  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {PWM1MR1, PWM1MR2, PWM1MR3, PWM1MR4, PWM1MR5, PWM1MR6 }, { false, false, false, false, false, false }, 0.0, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}  } }
 // SPI
 #define TOTAL_SPI_CONTROLLERS               2
-#define LPC24_SPI_PCLK_KHZ                 (SYSTEM_CYCLE_CLOCK_HZ/1000)
+#define LPC24_SPI_PCLK_KHZ                 (LPC24_AHB_CLOCK_HZ/1000)
 #define LPC24_SPI_MISO_PINS                {_P(0,17),_P(0,8)}
 #define LPC24_SPI_MOSI_PINS                {_P(0,18),_P(0,9)}
 #define LPC24_SPI_CLK_PINS                 {_P(0,15),_P(0,7)}
@@ -114,7 +143,7 @@
 #define LPC24_SPI_CLK_ALT_MODE             {LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2}
 
 // UARTs
-#define LPC24_UART_PCLK                   SYSTEM_CYCLE_CLOCK_HZ
+#define LPC24_UART_PCLK                   LPC24_AHB_CLOCK_HZ
 //UART EMX
 #define LPC24_UART_TX_PINS              {_P(0,2) , _P(2,0) , _P(4,22), _P(0,25) }
 #define LPC24_UART_RX_PINS              {_P(0,3) , _P(2,1) , _P(4,23), _P(0,26)  }
@@ -141,8 +170,8 @@
 #define UART_DEBUGGER_INDEX                 0
 #define USB_DEBUGGER_INDEX                  0
 
-#define RAM_BOOTLOADER_HOLD_ADDRESS         (EXT_SDRAM_MEMORY_Base + EXT_SDRAM_MEMORY_Size - 8)
-#define RAM_BOOTLOADER_HOLD_VALUE           0xB53D0238
+// #define RAM_BOOTLOADER_HOLD_ADDRESS         (EXT_SDRAM_MEMORY_Base + EXT_SDRAM_MEMORY_Size - 8)
+// #define RAM_BOOTLOADER_HOLD_VALUE           0xB53D0238
 
 // OEM information
 #define OEM_STRING                          "GHI Electronics, LLC\0"
@@ -160,7 +189,7 @@
 #define INCLUDE_USBCLIENT
 #define INCLUDE_DISPLAY
 
-#define TARGET LPC24
+//#define TARGET LPC24
 
 #include <LPC24.h>
 

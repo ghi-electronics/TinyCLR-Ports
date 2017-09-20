@@ -34,6 +34,38 @@ int32_t LPC24_Startup_GetDeviceId() {
     return lpc24_deviceId;
 }
 
+void LPC24_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index) {
+    TinyCLR_Gpio_PinValue value, valueUsbActive;
+    auto controller = static_cast<const TinyCLR_Gpio_Provider*>(LPC24_Gpio_GetApi()->Implementation);
+
+    controller->AcquirePin(controller, DEBUGGER_SELECTOR_PIN);
+    controller->SetDriveMode(controller, DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
+    controller->Read(controller, DEBUGGER_SELECTOR_PIN, value);
+    controller->ReleasePin(controller, DEBUGGER_SELECTOR_PIN);
+
+    valueUsbActive = DEBUGGER_SELECTOR_USB_STATE;
+
+    if (value == valueUsbActive) {
+        api = LPC24_UsbClient_GetApi();
+        index = USB_DEBUGGER_INDEX;
+    }
+    else {
+        api = LPC24_Uart_GetApi();
+        index = UART_DEBUGGER_INDEX;
+    }
+}
+
+void LPC24_Startup_GetRunApp(bool& runApp) {
+    TinyCLR_Gpio_PinValue value;
+    auto controller = static_cast<const TinyCLR_Gpio_Provider*>(LPC24_Gpio_GetApi()->Implementation);
+    controller->AcquirePin(controller, RUN_APP_PIN);
+    controller->SetDriveMode(controller, RUN_APP_PIN, RUN_APP_PULL);
+    controller->Read(controller, RUN_APP_PIN, value);
+    controller->ReleasePin(controller, RUN_APP_PIN);
+
+    runApp = value == RUN_APP_STATE;
+}
+
 // UsbClient
 void LPC24_UsbClient_PinConfiguration() {
     OTGClkCtrl = 0x1F;

@@ -68,7 +68,7 @@ TinyCLR_Result LPC24_Adc_Release(const TinyCLR_Adc_Provider* self) {
 
 int32_t LPC24_Adc_GetPinForChannel(int32_t channel) {
     if ((uint32_t)channel >= LPC24_Adc_GetControllerCount())
-        return GPIO_PIN_NONE;
+        return PIN_NONE;
 
     return LPC24_Adc_GetPin(channel);
 }
