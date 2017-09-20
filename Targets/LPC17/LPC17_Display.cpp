@@ -622,59 +622,30 @@ void LPC17_Display_Clear() {
     memset((uint32_t*)m_LPC17_Display_VituralRam, 0, VIDEO_RAM_SIZE);
 }
 
+const LPC17_Gpio_Pin g_Display_ControllerPins[] = LPC17_DISPLAY_CONTROLLER_PINS;
+const LPC17_Gpio_Pin g_Display_BacklightPin = LPC17_DISPLAY_BACKLIGHT_PINS;
+const LPC17_Gpio_Pin g_Display_OutputPolarityPin = LPC17_DISPLAY_OUTPUTPOLARITY;
+
 bool  LPC17_Display_SetPinConfiguration() {
 
     if (m_LPC17_DisplayWidth == 0) {
-        LPC17_Gpio_EnableInputPin(20 + 32, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(21 + 32, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(22 + 32, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(23 + 32, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(24 + 32, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(25 + 32, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(26 + 32, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(27 + 32, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(8 + 32 * 2, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(29 + 32, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(2 + 32 * 2, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(3 + 32 * 2, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(4 + 32 * 2, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(5 + 32 * 2, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(6 + 32 * 2, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(7 + 32 * 2, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(28 + 32, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(9 + 32 * 2, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(12 + 32 * 2, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(13 + 32 * 2, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        LPC17_Gpio_EnableInputPin(19 + 32 * 1, TinyCLR_Gpio_PinDriveMode::InputPullDown); //backlight
+        for (auto i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins); i++)
+            LPC17_Gpio_EnableInputPin(g_Display_ControllerPins[i].number, TinyCLR_Gpio_PinDriveMode::InputPullDown);
+
+        LPC17_Gpio_EnableInputPin(g_Display_OutputPolarityPin.number, TinyCLR_Gpio_PinDriveMode::InputPullDown);
+        LPC17_Gpio_EnableInputPin(g_Display_BacklightPin.number, TinyCLR_Gpio_PinDriveMode::InputPullDown);
 
         return false;
     }
 
-    LPC17_Gpio_ConfigurePin(20 + 32, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(21 + 32, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(22 + 32, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(23 + 32, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(24 + 32, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(25 + 32, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(26 + 32, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(27 + 32, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(8 + 32 * 2, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(29 + 32, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(2 + 32 * 2, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(3 + 32 * 2, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+    for (auto i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins); i++)
+        LPC17_Gpio_ConfigurePin(g_Display_ControllerPins[i].number, LPC17_Gpio_Direction::Input, g_Display_ControllerPins[i].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+
 
     if (m_LPC17_DisplayOutputEnableIsFixed)
-        LPC17_Gpio_EnableOutputPin(4 + 32 * 2, m_LPC17_DisplayOutputEnablePolarity);
+        LPC17_Gpio_EnableOutputPin(g_Display_OutputPolarityPin.number, m_LPC17_DisplayOutputEnablePolarity);
     else
-        LPC17_Gpio_ConfigurePin(4 + 32 * 2, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-
-    LPC17_Gpio_ConfigurePin(5 + 32 * 2, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(6 + 32 * 2, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(7 + 32 * 2, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(28 + 32, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(9 + 32 * 2, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(12 + 32 * 2, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction5, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(13 + 32 * 2, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        LPC17_Gpio_ConfigurePin(g_Display_OutputPolarityPin.number, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
     return true;
 }
@@ -750,88 +721,88 @@ void LPC17_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height,
         return;
 
     switch (m_LPC17_Display_CurrentRotation) {
-        case LPC17xx_LCD_Rotation::rotateNormal_0:
+    case LPC17xx_LCD_Rotation::rotateNormal_0:
 
-            if (xOffset == 0 && yOffset == 0 &&
-                width == screenWidth &&    height == screenHeight) {
-                LPC17_Display_MemCopy(to, from, (screenWidth*screenHeight * 2));
+        if (xOffset == 0 && yOffset == 0 &&
+            width == screenWidth &&    height == screenHeight) {
+            LPC17_Display_MemCopy(to, from, (screenWidth*screenHeight * 2));
+        }
+        else {
+            for (yTo = yOffset; yTo < (yOffset + height); yTo++) {
+                LPC17_Display_MemCopy((void*)(to + yTo * screenWidth + xOffset), (void*)(from + yTo * screenWidth + xOffset), (width * 2));
             }
-            else {
-                for (yTo = yOffset; yTo < (yOffset + height); yTo++) {
-                    LPC17_Display_MemCopy((void*)(to + yTo * screenWidth + xOffset), (void*)(from + yTo * screenWidth + xOffset), (width * 2));
-                }
+        }
+
+        break;
+
+    case LPC17xx_LCD_Rotation::rotateCCW_90:
+
+        startPx = yOffset * screenHeight;
+        xFrom = xOffset + width;
+        yTo = screenHeight - xOffset - width;
+        xTo = yOffset;
+        to += yTo * screenWidth + xTo;
+        toAddition = screenWidth - height;
+
+        for (; yTo < (screenHeight - xOffset); yTo++) {
+            xFrom--;
+            yFrom = startPx + xFrom;
+
+            for (xTo = yOffset; xTo < (yOffset + height); xTo++) {
+                *to++ = from[yFrom];
+                yFrom += screenHeight;
             }
 
-            break;
+            to += toAddition;
+        }
 
-        case LPC17xx_LCD_Rotation::rotateCCW_90:
+        break;
 
-            startPx = yOffset * screenHeight;
-            xFrom = xOffset + width;
-            yTo = screenHeight - xOffset - width;
-            xTo = yOffset;
-            to += yTo * screenWidth + xTo;
-            toAddition = screenWidth - height;
+    case LPC17xx_LCD_Rotation::rotateCW_90:
 
-            for (; yTo < (screenHeight - xOffset); yTo++) {
+        startPx = (yOffset + height - 1) * screenHeight;
+        xFrom = xOffset;
+
+        yTo = xOffset;
+        xTo = screenWidth - yOffset - height;
+        to += yTo * screenWidth + xTo;
+        toAddition = screenWidth - height;
+
+        for (; yTo < (xOffset + width); yTo++) {
+            yFrom = startPx + xFrom;
+
+            for (xTo = screenWidth - yOffset - height; xTo < (screenWidth - yOffset); xTo++) {
+                *to++ = from[yFrom];
+                yFrom -= screenHeight;
+            }
+
+            to += toAddition;
+            xFrom++;
+        }
+
+        break;
+
+    case LPC17xx_LCD_Rotation::rotate_180:
+
+        xFrom = (yOffset + height - 1) * screenWidth + xOffset + width;
+
+        yTo = screenHeight - yOffset - height;
+        xTo = screenWidth - xOffset - width;
+        to += yTo * screenWidth + xTo;
+        toAddition = screenWidth - width;
+
+        for (; yTo < (screenHeight - yOffset); yTo++) {
+
+            for (xTo = screenWidth - xOffset - width; xTo < (screenWidth - xOffset); xTo++) {
                 xFrom--;
-                yFrom = startPx + xFrom;
-
-                for (xTo = yOffset; xTo < (yOffset + height); xTo++) {
-                    *to++ = from[yFrom];
-                    yFrom += screenHeight;
-                }
-
-                to += toAddition;
+                *to++ = from[xFrom];
             }
 
-            break;
+            to += toAddition;
+            xFrom -= toAddition;
+        }
 
-        case LPC17xx_LCD_Rotation::rotateCW_90:
-
-            startPx = (yOffset + height - 1) * screenHeight;
-            xFrom = xOffset;
-
-            yTo = xOffset;
-            xTo = screenWidth - yOffset - height;
-            to += yTo * screenWidth + xTo;
-            toAddition = screenWidth - height;
-
-            for (; yTo < (xOffset + width); yTo++) {
-                yFrom = startPx + xFrom;
-
-                for (xTo = screenWidth - yOffset - height; xTo < (screenWidth - yOffset); xTo++) {
-                    *to++ = from[yFrom];
-                    yFrom -= screenHeight;
-                }
-
-                to += toAddition;
-                xFrom++;
-            }
-
-            break;
-
-        case LPC17xx_LCD_Rotation::rotate_180:
-
-            xFrom = (yOffset + height - 1) * screenWidth + xOffset + width;
-
-            yTo = screenHeight - yOffset - height;
-            xTo = screenWidth - xOffset - width;
-            to += yTo * screenWidth + xTo;
-            toAddition = screenWidth - width;
-
-            for (; yTo < (screenHeight - yOffset); yTo++) {
-
-                for (xTo = screenWidth - xOffset - width; xTo < (screenWidth - xOffset); xTo++) {
-                    xFrom--;
-                    *to++ = from[xFrom];
-                }
-
-                to += toAddition;
-                xFrom -= toAddition;
-            }
-
-            break;
+        break;
     }
 
 }
@@ -844,17 +815,17 @@ void LPC17_Display_WriteChar(uint8_t c, int32_t row, int32_t col) {
 }
 void LPC17_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenHeight) {
     switch (m_LPC17_Display_CurrentRotation) {
-        case LPC17xx_LCD_Rotation::rotateNormal_0:
-        case LPC17xx_LCD_Rotation::rotate_180:
-            *screenWidth = m_LPC17_DisplayWidth;
-            *screenHeight = m_LPC17_DisplayHeight;
-            break;
+    case LPC17xx_LCD_Rotation::rotateNormal_0:
+    case LPC17xx_LCD_Rotation::rotate_180:
+        *screenWidth = m_LPC17_DisplayWidth;
+        *screenHeight = m_LPC17_DisplayHeight;
+        break;
 
-        case LPC17xx_LCD_Rotation::rotateCCW_90:
-        case LPC17xx_LCD_Rotation::rotateCW_90:
-            *screenWidth = m_LPC17_DisplayHeight;
-            *screenHeight = m_LPC17_DisplayWidth;
-            break;
+    case LPC17xx_LCD_Rotation::rotateCCW_90:
+    case LPC17xx_LCD_Rotation::rotateCW_90:
+        *screenWidth = m_LPC17_DisplayHeight;
+        *screenHeight = m_LPC17_DisplayWidth;
+        break;
     }
 }
 
@@ -906,9 +877,9 @@ TinyCLR_Result LPC17_Display_SetLcdConfiguration(const TinyCLR_Display_Provider*
 
 TinyCLR_Result LPC17_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data, TinyCLR_Display_Format dataFormat) {
     switch (dataFormat) {
-        case TinyCLR_Display_Format::Rgb565:
-            LPC17_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
-            return TinyCLR_Result::Success;
+    case TinyCLR_Display_Format::Rgb565:
+        LPC17_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
+        return TinyCLR_Result::Success;
     }
 
     return  TinyCLR_Result::InvalidOperation;
