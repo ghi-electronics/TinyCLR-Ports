@@ -68,6 +68,10 @@
 #define LPC24_UART_RTS_PINS             { { PIN_NONE , PF(0) }, { PIN(3, 30), PF(3) }, { PIN_NONE  , PF(0) }, { PIN_NONE  , PF(0) } }
 #define LPC24_UART_CTS_PINS             { { PIN_NONE , PF(0) }, { PIN(3, 18), PF(3) }, { PIN_NONE  , PF(0) }, { PIN_NONE  , PF(0) } }
 
+#define INCLUDE_USBCLIENT
+#define LPC24_USB_QUEUE_SIZE 16
+
+
 
 #if 0
 #define PLATFORM_ARM_DEFINED
