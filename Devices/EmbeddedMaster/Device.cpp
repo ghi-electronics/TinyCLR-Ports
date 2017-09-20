@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include <TinyCLR.h>
-#include <DeviceSelector.h>
+#include <Device.h>
 
 int32_t LPC24_Startup_GetLModePin() {
     return LMODE_PIN;
