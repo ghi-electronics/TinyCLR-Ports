@@ -44,7 +44,8 @@
 #define INCLUDE_ADC
 #define LPC24_ADC_PINS                     { { PIN(0,23), PF(1) }, { PIN(0,24), PF(1) }, { PIN(0,25), PF(1) }, { PIN(0,26), PF(1) }, { _P_NONE_, PF(0) }, { PIN(1,31), PF(3) }, { PIN(0,12), PF(3) }, { PIN(0,13), PF(3) } }
 
-
+#define INCLUDE_DAC
+#define LPC24_DAC_PINS                     { { PIN(0,26), PF(2)} }
 
 
 
@@ -113,14 +114,14 @@
 #define LPC24_UART_RX_BUFFER_SIZE           (16*1024)
 
 // ADC
-#define TOTAL_ADC_CONTROLLERS               8
+//#define TOTAL_ADC_CONTROLLERS               8
 //#define LPC24_ADC_PINS                     {_P(0,23),_P(0,24),_P(0,25),_P(0,26),_P_NONE_,_P(1,31),_P(0,12),_P(0,13)}
 //#define LPC24_ADC_ALT_MODE                 {LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3}
 
 // DAC
-#define TOTAL_DAC_CONTROLLERS                1
-#define LPC24_DAC_PINS                     {_P(0,26)}
-#define LPC24_DAC_ALT_MODE                 {LPC24_Gpio_PinFunction::PinFunction2}
+// #define TOTAL_DAC_CONTROLLERS                1
+// #define LPC24_DAC_PINS                     {_P(0,26)}
+// #define LPC24_DAC_ALT_MODE                 {LPC24_Gpio_PinFunction::PinFunction2}
 
 // I2C
 #define LPC24_I2C_PCLK_KHZ                 SYSTEM_CLOCK_HZ/1000
