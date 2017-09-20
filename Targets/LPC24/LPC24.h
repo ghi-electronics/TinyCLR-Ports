@@ -989,7 +989,7 @@ struct LPC24XX_SPI {
     static const uint32_t c_SPI0_Base = 0xE0068000;
     static const uint32_t c_SPI1_Base = 0xE0030000;
 
-    static const uint32_t c_SPI_Clk_KHz = LPC24_SPI_PCLK_KHZ;
+    static const uint32_t c_SPI_Clk_KHz = (LPC24_AHB_CLOCK_HZ/1000);
     static const uint32_t c_SPI0 = 0;
     static const uint32_t c_SPI1 = 1;
 

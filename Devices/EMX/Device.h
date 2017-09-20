@@ -54,6 +54,12 @@
 #define INCLUDE_PWM
 #define LPC24_PWM_PINS  { { { PIN(3, 16), PF(2) }, { PIN(3, 17), PF(2) }, { PIN_NONE, PF(0) }, { PIN_NONE, PF(0) }, { PIN_NONE, PF(0) }, { PIN_NONE  , PF(0) } }, { { PIN(3, 24), PF(3) }, { PIN_NONE  , PF(0) }, { PIN(3, 26), PF(3) }, { PIN(3, 27), PF(3) }, { PIN_NONE, PF(0) }, { PIN(3, 29), PF(3) } } }
 
+#define INCLUDE_SPI
+#define LPC24_SPI_SCLK_PINS { { PIN(0, 15), PF(2) }, { PIN(0,  7), PF(2) } }
+#define LPC24_SPI_MISO_PINS { { PIN(0, 17), PF(2) }, { PIN(0,  8), PF(2) } }
+#define LPC24_SPI_MOSI_PINS { { PIN(0, 18), PF(2) }, { PIN(0,  9), PF(2) } }
+
+
 #if 0
 #define PLATFORM_ARM_DEFINED
 
@@ -140,14 +146,14 @@
 // #define LPC24_PWM                           {   { 0 ,  {0x0, 0x0, 0x0, 0x0, 0x0, 0x0} , {0x0, 0x1, 0x2, 0x3, 0x4, 0x5 } , { _P(3, 16), _P(3, 17), _P_NONE_ , _P_NONE_ , _P_NONE_ , _P_NONE_},   {LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3},  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {PWM0MR1, PWM0MR2, PWM0MR3, PWM0MR4, PWM0MR5, PWM0MR6 }, { false, false, false, false, false, false }, 0.0, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}  } ,\
                                                 // { 1 ,  {0x1, 0x1, 0x1, 0x1, 0x1, 0x1} , {0x0, 0x1, 0x2, 0x3, 0x4, 0x5 } , { _P(3, 24), _P_NONE_ , _P(3, 26), _P(3, 27), _P_NONE_ , _P(3, 29)},  {LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3},  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {PWM1MR1, PWM1MR2, PWM1MR3, PWM1MR4, PWM1MR5, PWM1MR6 }, { false, false, false, false, false, false }, 0.0, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}  } }
 // SPI
-#define TOTAL_SPI_CONTROLLERS               2
-#define LPC24_SPI_PCLK_KHZ                 (LPC24_AHB_CLOCK_HZ/1000)
-#define LPC24_SPI_MISO_PINS                {_P(0,17),_P(0,8)}
-#define LPC24_SPI_MOSI_PINS                {_P(0,18),_P(0,9)}
-#define LPC24_SPI_CLK_PINS                 {_P(0,15),_P(0,7)}
-#define LPC24_SPI_MISO_ALT_MODE            {LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2}
-#define LPC24_SPI_MOSI_ALT_MODE            {LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2}
-#define LPC24_SPI_CLK_ALT_MODE             {LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2}
+// #define TOTAL_SPI_CONTROLLERS               2
+// #define LPC24_SPI_PCLK_KHZ                 (LPC24_AHB_CLOCK_HZ/1000)
+// #define LPC24_SPI_MISO_PINS                {_P(0,17),_P(0,8)}
+// #define LPC24_SPI_MOSI_PINS                {_P(0,18),_P(0,9)}
+// #define LPC24_SPI_CLK_PINS                 {_P(0,15),_P(0,7)}
+// #define LPC24_SPI_MISO_ALT_MODE            {LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2}
+// #define LPC24_SPI_MOSI_ALT_MODE            {LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2}
+// #define LPC24_SPI_CLK_ALT_MODE             {LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2}
 
 // UARTs
 #define LPC24_UART_PCLK                   LPC24_AHB_CLOCK_HZ
