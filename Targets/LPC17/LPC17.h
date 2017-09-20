@@ -14,12 +14,12 @@
 
 #pragma once
 
-
-#include <inc\LPC177x_8x.h>
 #include <TinyCLR.h>
 #include <Device.h>
 
-#undef LPC17
+#if defined(LPC177x_8x)
+#include <inc\LPC177x_8x.h>
+#endif
 
 #define SIZEOF_ARRAY(arr) (sizeof(arr) / sizeof(arr[0]))
 #define CONCAT2(a, b) a##b
@@ -163,6 +163,8 @@ void LPC17_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
 #define PWM1MR4 ((uint32_t *)0x40018040)
 #define PWM1MR5 ((uint32_t *)0x40018044)
 #define PWM1MR6 ((uint32_t *)0x40018048)
+
+#define TOTAL_PWM_CONTROLLER                2
 #define MAX_PWM_PER_CONTROLLER              6
 
 struct PwmController {
@@ -214,6 +216,7 @@ int32_t LPC17_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self);
 TinyCLR_Result LPC17_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* self, int32_t* dataBitLengths, size_t& dataBitLengthsCount);
 
 //Uart
+#define TOTAL_UART_CONTROLLERS 5
 const TinyCLR_Api_Info* LPC17_Uart_GetApi();
 void LPC17_Uart_Reset();
 int32_t LPC17_Uart_GetTxPin(int32_t portNum);
