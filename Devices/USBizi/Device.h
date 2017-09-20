@@ -93,4 +93,6 @@
 #define LPC2388
 #define LPC2387
 
+#define USE_INTERNAL_FLASH_DEPLOYMENT
+
 #include <LPC24.h>
