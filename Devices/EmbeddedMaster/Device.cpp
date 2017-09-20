@@ -163,3 +163,4 @@ LPC24_Gpio_Pin LPC24_Pwm_GetPins(int32_t controller, int32_t channel) {
     else
         return g_lpc2478_pwm_pins[controller][channel];
 }
+

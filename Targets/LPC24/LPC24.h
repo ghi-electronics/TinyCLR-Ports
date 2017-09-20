@@ -204,8 +204,6 @@ int32_t LPC24_Dac_GetMinValue(const TinyCLR_Dac_Provider* self);
 int32_t LPC24_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self);
 
 #define MAX_PWM_PER_CONTROLLER              6
-#define TOTAL_PWM_CONTROLLER                2
-
 struct PwmController {   
     int32_t                     channel[MAX_PWM_PER_CONTROLLER];
     int32_t                     match[MAX_PWM_PER_CONTROLLER];
