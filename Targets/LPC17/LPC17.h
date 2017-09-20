@@ -171,7 +171,7 @@ struct PwmController {
     int32_t                         id;
     int32_t                         channel[MAX_PWM_PER_CONTROLLER];
     int32_t                         subChannel[MAX_PWM_PER_CONTROLLER];
-    LPC17_Gpio_Pin                  gpioPin[MAX_PWM_PER_CONTROLLER];    
+    LPC17_Gpio_Pin                  gpioPin[MAX_PWM_PER_CONTROLLER];
     uint32_t                        outputEnabled[MAX_PWM_PER_CONTROLLER];
     uint32_t                        *matchAddress[MAX_PWM_PER_CONTROLLER];
     bool                            invert[MAX_PWM_PER_CONTROLLER];

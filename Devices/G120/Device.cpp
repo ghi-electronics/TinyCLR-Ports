@@ -83,8 +83,8 @@ void LPC17_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index) {
     controller->Read(controller, LPC17_Startup_GetDebuggerSelectorPin(), value);
     controller->ReleasePin(controller, LPC17_Startup_GetDebuggerSelectorPin());
 
-    valueUsbActive = LPC17_Startup_GetDebuggerSelectorUsbState(); 
-    
+    valueUsbActive = LPC17_Startup_GetDebuggerSelectorUsbState();
+
     if (value == valueUsbActive) {
         api = LPC17_UsbClient_GetApi();
         index = USB_DEBUGGER_INDEX;
@@ -107,8 +107,8 @@ void LPC17_Startup_GetRunApp(bool& runApp) {
 }
 
 // PWM
-static PwmController g_g120_pwm[TOTAL_PWM_CONTROLLER] = LPC17_G120_PWM;
-static PwmController g_g120e_pwm[TOTAL_PWM_CONTROLLER] = LPC17_G120E_PWM;
+static PwmController g_g120_pwm[TOTAL_PWM_CONTROLLER] = LPC17_G120_PWM_PINS;
+static PwmController g_g120e_pwm[TOTAL_PWM_CONTROLLER] = LPC17_G120E_PWM_PINS;
 
 PwmController* LPC17_Pwm_GetControllers() {
     if (LPC17_Startup_GetDeviceId() == LPC17_G120)

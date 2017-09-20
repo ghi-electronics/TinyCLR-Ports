@@ -623,8 +623,8 @@ void LPC17_Display_Clear() {
 }
 
 const LPC17_Gpio_Pin g_Display_ControllerPins[] = LPC17_DISPLAY_CONTROLLER_PINS;
-const LPC17_Gpio_Pin g_Display_BacklightPin = LPC17_DISPLAY_BACKLIGHT_PINS;
-const LPC17_Gpio_Pin g_Display_OutputPolarityPin = LPC17_DISPLAY_OUTPUTPOLARITY;
+const LPC17_Gpio_Pin g_Display_BacklightPin = LPC17_DISPLAY_BACKLIGHT_PIN;
+const LPC17_Gpio_Pin g_Display_OutputPolarityPin = LPC17_DISPLAY_OUTPUT_POLARITY_PIN;
 
 bool  LPC17_Display_SetPinConfiguration() {
 
