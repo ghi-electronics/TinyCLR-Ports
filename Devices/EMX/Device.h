@@ -42,11 +42,14 @@
 #define LPC24_AHB_CLOCK_HZ 72000000
 
 #define INCLUDE_ADC
-#define LPC24_ADC_PINS                     { { PIN(0,23), PF(1) }, { PIN(0,24), PF(1) }, { PIN(0,25), PF(1) }, { PIN(0,26), PF(1) }, { _P_NONE_, PF(0) }, { PIN(1,31), PF(3) }, { PIN(0,12), PF(3) }, { PIN(0,13), PF(3) } }
+#define LPC24_ADC_PINS { { PIN(0,23), PF(1) }, { PIN(0,24), PF(1) }, { PIN(0,25), PF(1) }, { PIN(0,26), PF(1) }, { _P_NONE_, PF(0) }, { PIN(1,31), PF(3) }, { PIN(0,12), PF(3) }, { PIN(0,13), PF(3) } }
 
 #define INCLUDE_DAC
-#define LPC24_DAC_PINS                     { { PIN(0,26), PF(2)} }
+#define LPC24_DAC_PINS { { PIN(0,26), PF(2)} }
 
+#define INCLUDE_I2C
+#define LPC24_I2C_SCL_PINS { { PIN(0, 28), PF(1) } }
+#define LPC24_I2C_SDA_PINS { { PIN(0, 27), PF(1) } }
 
 
 #if 0
@@ -124,11 +127,11 @@
 // #define LPC24_DAC_ALT_MODE                 {LPC24_Gpio_PinFunction::PinFunction2}
 
 // I2C
-#define LPC24_I2C_PCLK_KHZ                 SYSTEM_CLOCK_HZ/1000
-#define LPC24_I2C_SCL_PIN                  _P(0,28)
-#define LPC24_I2C_SDA_PIN                  _P(0,27)
-#define LPC24_I2C_SCL_ALT_MODE             LPC24_Gpio_PinFunction::PinFunction1
-#define LPC24_I2C_SDA_ALT_MODE             LPC24_Gpio_PinFunction::PinFunction1
+// #define LPC24_I2C_PCLK_KHZ                 SYSTEM_CLOCK_HZ/1000
+// #define LPC24_I2C_SCL_PIN                  _P(0,28)
+// #define LPC24_I2C_SDA_PIN                  _P(0,27)
+// #define LPC24_I2C_SCL_ALT_MODE             LPC24_Gpio_PinFunction::PinFunction1
+// #define LPC24_I2C_SDA_ALT_MODE             LPC24_Gpio_PinFunction::PinFunction1
 
 // PWM
 #define LPC24_PWM_PCLK                     (SYSTEM_CLOCK_HZ)

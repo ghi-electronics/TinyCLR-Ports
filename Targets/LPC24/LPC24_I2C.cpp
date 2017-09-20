@@ -312,14 +312,17 @@ TinyCLR_Result LPC24_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int
     return TinyCLR_Result::Success;
 }
 
+static const LPC24_Gpio_Pin g_i2c_scl_pins[] = LPC24_I2C_SCL_PINS;
+static const LPC24_Gpio_Pin g_i2c_sda_pins[] = LPC24_I2C_SDA_PINS;
+
 TinyCLR_Result LPC24_I2c_Acquire(const TinyCLR_I2c_Provider* self) {
     LPC24XX_I2C& I2C = LPC24XX::I2C();
 
-    if (!LPC24_Gpio_OpenPin(LPC24_I2C_SDA_PIN) || !LPC24_Gpio_OpenPin(LPC24_I2C_SCL_PIN))
+    if (!LPC24_Gpio_OpenPin(g_i2c_sda_pins[self->Index].number) || !LPC24_Gpio_OpenPin(g_i2c_scl_pins[self->Index].number))
         return TinyCLR_Result::SharingViolation;
 
-    LPC24_Gpio_ConfigurePin(LPC24_I2C_SDA_PIN, LPC24_Gpio_Direction::Input, LPC24_I2C_SDA_ALT_MODE, LPC24_Gpio_PinMode::Inactive);
-    LPC24_Gpio_ConfigurePin(LPC24_I2C_SCL_PIN, LPC24_Gpio_Direction::Input, LPC24_I2C_SCL_ALT_MODE, LPC24_Gpio_PinMode::Inactive);
+    LPC24_Gpio_ConfigurePin(g_i2c_sda_pins[self->Index].number, LPC24_Gpio_Direction::Input, g_i2c_sda_pins[self->Index].pinFunction, LPC24_Gpio_PinMode::Inactive);
+    LPC24_Gpio_ConfigurePin(g_i2c_scl_pins[self->Index].number, LPC24_Gpio_Direction::Input, g_i2c_scl_pins[self->Index].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
     LPC24_Interrupt_Activate(LPC24XX_VIC::c_IRQ_INDEX_I2C0, (uint32_t*)&LPC24_I2c_InterruptHandler, 0);
 
@@ -340,8 +343,8 @@ TinyCLR_Result LPC24_I2c_Release(const TinyCLR_I2c_Provider* self) {
 
     I2C.I2CONCLR = (LPC24XX_I2C::AA | LPC24XX_I2C::SI | LPC24XX_I2C::STO | LPC24XX_I2C::STA | LPC24XX_I2C::I2EN);
 
-    LPC24_Gpio_ClosePin(LPC24_I2C_SDA_PIN);
-    LPC24_Gpio_ClosePin(LPC24_I2C_SCL_PIN);
+    LPC24_Gpio_ClosePin(LPC24_Gpio_OpenPin(g_i2c_scl_pins[self->Index].number));
+    LPC24_Gpio_ClosePin(LPC24_Gpio_OpenPin(g_i2c_sda_pins[self->Index].number));
 
     return TinyCLR_Result::Success;
 }

@@ -972,7 +972,7 @@ struct LPC24XX_WATCHDOG {
 //
 struct LPC24XX_I2C {
     static const uint32_t c_I2C_Base = 0xE001C000;
-    static const uint32_t c_I2C_Clk_KHz = LPC24_I2C_PCLK_KHZ;
+    static const uint32_t c_I2C_Clk_KHz = SYSTEM_CLOCK_HZ/1000;
 
     /****/ volatile uint32_t I2CONSET;
     static const    uint32_t I2EN = 0x00000040;
