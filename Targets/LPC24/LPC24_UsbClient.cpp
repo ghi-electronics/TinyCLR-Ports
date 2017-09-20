@@ -521,8 +521,8 @@ const TinyCLR_UsbClient_DeviceDescriptor _deviceDescriptor = {
     0,                                  // Device subclass (none)
     0,                                  // Device protocol (none)
     64,                                 // Endpoint 0 size
-    USB_VENDOR_ID,                      // Vendor ID
-    USB_PRODUCT_ID,                     // Product ID
+    USB_DEBUGGER_VENDOR_ID,                      // Vendor ID
+    USB_DEBUGGER_PRODUCT_ID,                     // Product ID
     DEVICE_RELEASE_VERSION,             // Product version 1.00 (BCD)
     MANUFACTURER_NAME_INDEX,            // Manufacturer name string index
     PRODUCT_NAME_INDEX,                 // Product name string index
@@ -587,7 +587,7 @@ const TinyCLR_UsbClient_StringDescriptorHeader _stringManufacturerDescriptorHead
         },
         USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
         USB_STRING_DESCRIPTOR_TYPE,
-        USB_MANUFACTURER_NAME
+        CONCAT(L, DEVICE_MANUFACTURER)
 };
 
 // Product name string descriptor header
@@ -599,7 +599,7 @@ const TinyCLR_UsbClient_StringDescriptorHeader _stringProductNameDescriptorHeade
     },
     USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
     USB_STRING_DESCRIPTOR_TYPE,
-    USB_PRODUCT_NAME
+    CONCAT(L, DEVICE_NAME)
 };
 
 // String 4 descriptor header (display name)
@@ -611,7 +611,7 @@ const TinyCLR_UsbClient_StringDescriptorHeader _stringDisplayNameDescriptorHeade
     },
     USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
     USB_STRING_DESCRIPTOR_TYPE,
-    USB_DISPLAY_NAME
+    CONCAT(L, DEVICE_NAME)
 };
 
 // String 5 descriptor header (friendly name)
@@ -623,7 +623,7 @@ const TinyCLR_UsbClient_StringDescriptorHeader _stringFriendlyNameDescriptorHead
     },
     USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
     USB_STRING_DESCRIPTOR_TYPE,
-    USB_FRIENDLY_NAME
+    CONCAT(L, DEVICE_NAME)
 };
 
 // OS Descriptor string for Extended OS Compat ID

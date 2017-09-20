@@ -92,9 +92,9 @@
 
 // Driver
 #define LPC24_Gpio_DebounceDefaultMilisecond   20
-#define LPC24_Gpio_MaxPins                     TOTAL_GPIO_PINS
+#define LPC24_Gpio_MaxPins                     SIZEOF_ARRAY(g_lpc24_gpio_pinConfiguration)
 
-
+static const LPC24_Gpio_PinConfiguration g_lpc24_gpio_pinConfiguration[] = LPC24_GPIO_PINS;
 struct LPC24_Int_State {
     uint8_t                                     pin;      // pin number
     uint32_t                                    debounce; // debounce

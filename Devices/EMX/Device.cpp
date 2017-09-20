@@ -15,14 +15,6 @@
 #include <TinyCLR.h>
 #include <Device.h>
 
-int32_t LPC24_Startup_GetLModePin() {
-    return LMODE_PIN;
-}
-
-TinyCLR_Gpio_PinValue LPC24_Startup_GetLModeUsbState() {
-    return LMODE_USB_STATE;
-}
-
 static int32_t lpc24_deviceId = 0;
 
 int32_t LPC24_Startup_GetDeviceId() {
@@ -71,8 +63,8 @@ void LPC24_UsbClient_PinConfiguration() {
     OTGClkCtrl = 0x1F;
     while ((OTGClkSt & 0x1F) != 0x1F);
 
-    LPC24_Gpio_ConfigurePin(_P(0, 14), LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinMode::Inactive); // connect pin
-    LPC24_Gpio_ConfigurePin(_P(0, 31), LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // D2+ pin. D2- has only USBD- function. no need to config
+    LPC24_Gpio_ConfigurePin(PIN(0, 14), LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinMode::Inactive); // connect pin
+    LPC24_Gpio_ConfigurePin(PIN(0, 31), LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // D2+ pin. D2- has only USBD- function. no need to config
 
     OTGStCtrl |= 3;
 }

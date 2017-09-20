@@ -369,7 +369,7 @@ struct LPC24XX_LCDC {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-enum LPC17xx_LCD_Rotation {
+enum LPC24xx_LCD_Rotation {
     rotateNormal_0,
     rotateCW_90,
     rotate_180,
@@ -400,7 +400,7 @@ bool m_LPC24_DisplayEnable = false;
 uint16_t* m_LPC24_Display_VituralRam;
 uint8_t m_LPC24_Display_TextBuffer[LCD_MAX_COLUMN][LCD_MAX_ROW];
 
-LPC17xx_LCD_Rotation m_LPC24_Display_CurrentRotation = LPC17xx_LCD_Rotation::rotateNormal_0;
+LPC24xx_LCD_Rotation m_LPC24_Display_CurrentRotation = LPC24xx_LCD_Rotation::rotateNormal_0;
 
 bool LPC24_Display_Initialize();
 bool LPC24_Display_Uninitialize();
@@ -660,11 +660,38 @@ void LPC24_Display_Clear() {
     memset((uint32_t*)m_LPC24_Display_VituralRam, 0, VIDEO_RAM_SIZE);
 }
 
+const LPC24_Gpio_Pin g_Display_ControllerPins[] = LPC24_DISPLAY_CONTROLLER_PINS;
+const LPC24_Gpio_Pin g_Display_BacklightPin = LPC24_DISPLAY_BACKLIGHT_PIN;
+const LPC24_Gpio_Pin g_Display_EnablePin = LPC24_DISPLAY_ENABLE_PIN;
+
 bool  LPC24_Display_SetPinConfiguration() {
+  if (m_LPC24_DisplayWidth == 0) {
+        for (auto i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins); i++) {
+            if (g_Display_ControllerPins[i].number != PIN_NONE)
+                LPC24_Gpio_EnableInputPin(g_Display_ControllerPins[i].number, TinyCLR_Gpio_PinDriveMode::InputPullDown);           
+        }
+        
+        if (g_Display_EnablePin.number != PIN_NONE)
+            LPC24_Gpio_EnableInputPin(g_Display_EnablePin.number, TinyCLR_Gpio_PinDriveMode::InputPullDown);
+
+        if (g_Display_BacklightPin.number != PIN_NONE)
+            LPC24_Gpio_EnableInputPin(g_Display_BacklightPin.number, TinyCLR_Gpio_PinDriveMode::InputPullDown);
+
+        return false;
+    }
+
+    for (auto i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins); i++)
+        if (g_Display_ControllerPins[i].number != PIN_NONE)
+            LPC24_Gpio_ConfigurePin(g_Display_ControllerPins[i].number, LPC24_Gpio_Direction::Input, g_Display_ControllerPins[i].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
 
+    if (g_Display_EnablePin.number != PIN_NONE)
+        if (m_LPC24_DisplayOutputEnableIsFixed)
+            LPC24_Gpio_EnableOutputPin(g_Display_EnablePin.number, m_LPC24_DisplayOutputEnablePolarity);
+        else
+            LPC24_Gpio_ConfigurePin(g_Display_EnablePin.number, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
 
-
+/*
     LPC24_Gpio_ConfigurePin(1 * 32 + 20, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 51
     LPC24_Gpio_ConfigurePin(1 * 32 + 21, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 52
     LPC24_Gpio_ConfigurePin(1 * 32 + 22, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 53
@@ -691,7 +718,7 @@ bool  LPC24_Display_SetPinConfiguration() {
     LPC24_Gpio_ConfigurePin(2 * 32 + 12, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive);
     LPC24_Gpio_ConfigurePin(2 * 32 + 13, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive);
 
-
+*/
 
     return true;
 }
@@ -768,7 +795,7 @@ void LPC24_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height,
         return;
 
     switch (m_LPC24_Display_CurrentRotation) {
-        case LPC17xx_LCD_Rotation::rotateNormal_0:
+        case LPC24xx_LCD_Rotation::rotateNormal_0:
 
             if (xOffset == 0 && yOffset == 0 &&
                 width == screenWidth &&    height == screenHeight) {
@@ -782,7 +809,7 @@ void LPC24_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height,
 
             break;
 
-        case LPC17xx_LCD_Rotation::rotateCCW_90:
+        case LPC24xx_LCD_Rotation::rotateCCW_90:
 
             startPx = yOffset * screenHeight;
             xFrom = xOffset + width;
@@ -805,7 +832,7 @@ void LPC24_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height,
 
             break;
 
-        case LPC17xx_LCD_Rotation::rotateCW_90:
+        case LPC24xx_LCD_Rotation::rotateCW_90:
 
             startPx = (yOffset + height - 1) * screenHeight;
             xFrom = xOffset;
@@ -829,7 +856,7 @@ void LPC24_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height,
 
             break;
 
-        case LPC17xx_LCD_Rotation::rotate_180:
+        case LPC24xx_LCD_Rotation::rotate_180:
 
             xFrom = (yOffset + height - 1) * screenWidth + xOffset + width;
 
@@ -862,14 +889,14 @@ void LPC24_Display_WriteChar(uint8_t c, int32_t row, int32_t col) {
 }
 void LPC24_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenHeight) {
     switch (m_LPC24_Display_CurrentRotation) {
-        case LPC17xx_LCD_Rotation::rotateNormal_0:
-        case LPC17xx_LCD_Rotation::rotate_180:
+        case LPC24xx_LCD_Rotation::rotateNormal_0:
+        case LPC24xx_LCD_Rotation::rotate_180:
             *screenWidth = m_LPC24_DisplayWidth;
             *screenHeight = m_LPC24_DisplayHeight;
             break;
 
-        case LPC17xx_LCD_Rotation::rotateCCW_90:
-        case LPC17xx_LCD_Rotation::rotateCW_90:
+        case LPC24xx_LCD_Rotation::rotateCCW_90:
+        case LPC24xx_LCD_Rotation::rotateCW_90:
             *screenWidth = m_LPC24_DisplayHeight;
             *screenHeight = m_LPC24_DisplayWidth;
             break;
@@ -880,7 +907,7 @@ TinyCLR_Result LPC24_Display_Acquire(const TinyCLR_Display_Provider* self, uint3
     m_LPC24_DisplayWidth = width;
     m_LPC24_DisplayHeight = height;
 
-    m_LPC24_Display_CurrentRotation = LPC17xx_LCD_Rotation::rotateNormal_0;
+    m_LPC24_Display_CurrentRotation = LPC24xx_LCD_Rotation::rotateNormal_0;
 
     m_LPC24_Display_VituralRam = (uint16_t*)m_LPC24_Display_ReservedVitualRamLocation;
 
