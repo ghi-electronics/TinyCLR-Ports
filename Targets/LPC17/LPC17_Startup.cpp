@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <stdio.h>
+
 #include "LPC17.h"
 /*
 //-------- <<< Use Configuration Wizard in Context Menu >>> ------------------
@@ -419,7 +421,7 @@ void LPC17_Startup_GetHeap(uint8_t*& start, size_t& length) {
     length = (size_t)(((int)&HeapEnd) - ((int)&HeapBegin));
 }
 
-void LPC17_Startup_InitializeRegions() {
+void LPC17_Startup_Initialize() {
     //
     // Copy RAM RO regions into proper location.
     //
@@ -455,4 +457,3 @@ void LPC17_Startup_InitializeRegions() {
     }
 
 }
-

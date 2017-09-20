@@ -102,6 +102,12 @@ bool LPC17_Interrupt_Deactivate(uint32_t Irq_Index) {
     return true;
 }
 
+LPC17_SmartPtr_Interrupt::LPC17_SmartPtr_Interrupt() { LPC17_Interrupt_Started(); };
+LPC17_SmartPtr_Interrupt::~LPC17_SmartPtr_Interrupt() { LPC17_Interrupt_Ended(); };
+
+LPC17_SmartPtr_IRQ::LPC17_SmartPtr_IRQ() { Disable(); }
+LPC17_SmartPtr_IRQ::~LPC17_SmartPtr_IRQ() { Restore(); }
+
 bool LPC17_Interrupt_Enable(uint32_t Irq_Index) {
     int id = (int)Irq_Index;
     uint32_t ier = NVIC->ISER[id >> 5]; // old state

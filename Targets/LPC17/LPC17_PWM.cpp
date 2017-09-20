@@ -44,14 +44,11 @@
 #define PWM1LER (*(volatile unsigned long *)0x40018050)
 #define PWM1CTCR (*(volatile unsigned long *)0x40018070)
 
-#define LPC17XX_MAX_PWM_FREQUENCY (SYSTEM_CLOCK_HZ/4)
-#define LPC17XX_MIN_PWM_FREQUENCY 1
-
 #define PWM_MILLISECONDS  1000
 #define PWM_MICROSECONDS  1000000
 #define PWM_NANOSECONDS   1000000000
 
-static PwmController* g_PwmController;
+static PwmController g_PwmController[TOTAL_PWM_CONTROLLER];
 
 static uint8_t pwmProviderDefs[TOTAL_PWM_CONTROLLER * sizeof(TinyCLR_Pwm_Provider)];
 static TinyCLR_Pwm_Provider* pwmProviders[TOTAL_PWM_CONTROLLER];
@@ -103,7 +100,7 @@ TinyCLR_Result LPC17_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t pi
         *g_PwmController[self->Index].matchAddress[pin] = 0;
         PWM0MCR = (1 << 1); // Reset on MAT0
         PWM0TCR = 1; // Enable
-        PWM0PCR |= (1 << (9 + g_PwmController[self->Index].subChannel[pin])); // To enable output on the proper channel
+        PWM0PCR |= (1 << (9 + g_PwmController[self->Index].match[pin])); // To enable output on the proper channel
     }
     else if (g_PwmController[self->Index].channel[pin] == 1) {
 
@@ -115,7 +112,7 @@ TinyCLR_Result LPC17_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t pi
         *g_PwmController[self->Index].matchAddress[pin] = 0;
         PWM1MCR = (1 << 1); // Reset on MAT0
         PWM1TCR = 1; // Enable
-        PWM1PCR |= (1 << (9 + (g_PwmController[self->Index].subChannel[pin]))); // To enable output on the proper channel
+        PWM1PCR |= (1 << (9 + (g_PwmController[self->Index].match[pin]))); // To enable output on the proper channel
     }
 
     return TinyCLR_Result::Success;;
@@ -155,39 +152,39 @@ double LPC17_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self) {
     LPC17_Pwm_GetScaleFactor(frequency, period, scale);
 
     switch (scale) {
-        case PWM_MILLISECONDS:
-            periodInNanoSeconds = (period * 1000000);
-            break;
+    case PWM_MILLISECONDS:
+        periodInNanoSeconds = (period * 1000000);
+        break;
 
-        case PWM_MICROSECONDS:
-            periodInNanoSeconds = (period * 1000);
-            break;
+    case PWM_MICROSECONDS:
+        periodInNanoSeconds = (period * 1000);
+        break;
 
-        case PWM_NANOSECONDS:
-            periodInNanoSeconds = period;
-            break;
+    case PWM_NANOSECONDS:
+        periodInNanoSeconds = period;
+        break;
 
-        default:
-            return 0;
+    default:
+        return 0;
     }
 
-    uint64_t periodTicks = (uint64_t)((LPC17XX_PWM_PCLK / 1000000)) * periodInNanoSeconds / 1000;
+    uint64_t periodTicks = (uint64_t)(((LPC17_SYSTEM_CLOCK_HZ / 2) / 1000000)) * periodInNanoSeconds / 1000;
 
     // update actual period and duration, after few boudary changes base on current system clock
-    periodInNanoSeconds = ((uint64_t)(periodTicks * 1000)) / ((uint64_t)((LPC17XX_PWM_PCLK / 1000000)));
+    periodInNanoSeconds = ((uint64_t)(periodTicks * 1000)) / ((uint64_t)(((LPC17_SYSTEM_CLOCK_HZ / 2) / 1000000)));
 
     switch (scale) {
-        case PWM_MILLISECONDS:
-            period = periodInNanoSeconds / 1000000;
-            break;
+    case PWM_MILLISECONDS:
+        period = periodInNanoSeconds / 1000000;
+        break;
 
-        case PWM_MICROSECONDS:
-            period = periodInNanoSeconds / 1000;
-            break;
+    case PWM_MICROSECONDS:
+        period = periodInNanoSeconds / 1000;
+        break;
 
-        case PWM_NANOSECONDS:
-            period = periodInNanoSeconds;
-            break;
+    case PWM_NANOSECONDS:
+        period = periodInNanoSeconds;
+        break;
     }
 
     frequency = (double)(scale / period);
@@ -199,7 +196,7 @@ double LPC17_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self) {
 TinyCLR_Result LPC17_Pwm_EnablePin(const TinyCLR_Pwm_Provider* self, int32_t pin) {
     int32_t actualPin = LPC17_Pwm_GetGpioPinForChannel(self, pin);
 
-    LPC17_Gpio_ConfigurePin(actualPin, LPC17_Gpio_Direction::Input, g_PwmController[self->Index].gpioAlternateFunction[pin], LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+    LPC17_Gpio_ConfigurePin(actualPin, LPC17_Gpio_Direction::Input, g_PwmController[self->Index].gpioPin[pin].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
     return TinyCLR_Result::Success;
 }
@@ -216,7 +213,7 @@ int32_t LPC17_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self) {
     uint32_t chnlCnt = 0;
 
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-        if (g_PwmController[self->Index].gpioPin[p] != GPIO_PIN_NONE) {
+        if (g_PwmController[self->Index].gpioPin[p].number != PIN_NONE) {
             chnlCnt++;
         }
     }
@@ -225,15 +222,15 @@ int32_t LPC17_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self) {
 }
 
 int32_t LPC17_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t pin) {
-    return g_PwmController[self->Index].gpioPin[pin];
+    return g_PwmController[self->Index].gpioPin[pin].number;
 }
 
 double LPC17_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self) {
-    return LPC17XX_MAX_PWM_FREQUENCY;
+    return (LPC17_SYSTEM_CLOCK_HZ / 4);
 }
 
 double LPC17_Pwm_GetMinFrequency(const TinyCLR_Pwm_Provider* self) {
-    return LPC17XX_MIN_PWM_FREQUENCY;
+    return 1;
 }
 
 TinyCLR_Result LPC17_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int32_t pin, double dutyCycle, bool invertPolarity) {
@@ -254,28 +251,28 @@ TinyCLR_Result LPC17_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, in
     // Work on actual period and duration after update.
     // Repeat calculation again to genarate periodTicks and highTicks. LPC17 convert from period and duration to ticks.
     switch (scale) {
-        case PWM_MILLISECONDS:
-            periodInNanoSeconds = (period * 1000000);
-            durationInNanoSeconds = (duration * 1000000);
-            break;
+    case PWM_MILLISECONDS:
+        periodInNanoSeconds = (period * 1000000);
+        durationInNanoSeconds = (duration * 1000000);
+        break;
 
-        case PWM_MICROSECONDS:
-            periodInNanoSeconds = (period * 1000);
-            durationInNanoSeconds = (duration * 1000);
-            break;
+    case PWM_MICROSECONDS:
+        periodInNanoSeconds = (period * 1000);
+        durationInNanoSeconds = (duration * 1000);
+        break;
 
-        case PWM_NANOSECONDS:
-            periodInNanoSeconds = period;
-            durationInNanoSeconds = duration;
-            break;
+    case PWM_NANOSECONDS:
+        periodInNanoSeconds = period;
+        durationInNanoSeconds = duration;
+        break;
 
-        default:
-            return TinyCLR_Result::InvalidOperation;
+    default:
+        return TinyCLR_Result::InvalidOperation;
     }
 
     // 18M/M = 18 * period / 1000 to get legal value.
-    uint32_t periodTicks = (uint64_t)((LPC17XX_PWM_PCLK / 1000000)) * periodInNanoSeconds / 1000;
-    uint32_t highTicks = (uint64_t)((LPC17XX_PWM_PCLK / 1000000)) * durationInNanoSeconds / 1000;
+    uint32_t periodTicks = (uint64_t)(((LPC17_SYSTEM_CLOCK_HZ / 2) / 1000000)) * periodInNanoSeconds / 1000;
+    uint32_t highTicks = (uint64_t)(((LPC17_SYSTEM_CLOCK_HZ / 2) / 1000000)) * durationInNanoSeconds / 1000;
 
     // A strange instance where if the periodInNanoSeconds would have ended in infinite 3 (calculated with float in NETMF), periodTicks are not computed correctly
     if (0 == ((periodInNanoSeconds - 3) % 10))
@@ -300,13 +297,13 @@ TinyCLR_Result LPC17_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, in
         highTicks = periodTicks - highTicks;
 
     if (period == 0 || duration == 0) {
-        LPC17_Gpio_EnableOutputPin(g_PwmController[self->Index].gpioPin[pin], false);
+        LPC17_Gpio_EnableOutputPin(g_PwmController[self->Index].gpioPin[pin].number, false);
         g_PwmController[self->Index].outputEnabled[pin] = true;
 
         return TinyCLR_Result::Success;
     }
     else if (duration >= period) {
-        LPC17_Gpio_EnableOutputPin(g_PwmController[self->Index].gpioPin[pin], true);
+        LPC17_Gpio_EnableOutputPin(g_PwmController[self->Index].gpioPin[pin].number, true);
         g_PwmController[self->Index].outputEnabled[pin] = true;
 
         return TinyCLR_Result::Success;
@@ -358,7 +355,7 @@ TinyCLR_Result LPC17_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self, d
     frequency = LPC17_Pwm_GetActualFrequency(self);
 
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++)
-        if (g_PwmController[self->Index].gpioPin[p] != GPIO_PIN_NONE)
+        if (g_PwmController[self->Index].gpioPin[p].number != PIN_NONE)
             if (LPC17_Pwm_SetPulseParameters(self, p, g_PwmController[self->Index].dutyCycle[p], g_PwmController[self->Index].invert[p]) != TinyCLR_Result::Success)
                 return TinyCLR_Result::InvalidOperation;
 
@@ -382,13 +379,12 @@ TinyCLR_Result LPC17_Pwm_Release(const TinyCLR_Pwm_Provider* self) {
 }
 
 void LPC17_Pwm_Reset() {
-    g_PwmController = LPC17_Pwm_GetControllers();
 
     for (auto controller = 0; controller < TOTAL_PWM_CONTROLLER; controller++) {
         LPC17_Pwm_ResetController(controller);
 
         for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-            if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p] != GPIO_PIN_NONE) {
+            if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p].number != PIN_NONE) {
                 // Reset PWM and close pin
                 LPC17_Pwm_DisablePin(pwmProviders[controller], p);
                 LPC17_Pwm_ReleasePin(pwmProviders[controller], p);
@@ -399,8 +395,13 @@ void LPC17_Pwm_Reset() {
 
 void LPC17_Pwm_ResetController(int32_t controller) {
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-        if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p] != GPIO_PIN_NONE) {
+        g_PwmController[pwmProviders[controller]->Index].gpioPin[p] = LPC17_Pwm_GetPins(controller, p);
+
+        if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p].number != PIN_NONE) {
             // Reset values
+            g_PwmController[pwmProviders[controller]->Index].channel[p] = controller;
+            g_PwmController[pwmProviders[controller]->Index].match[p] = p;
+            g_PwmController[pwmProviders[controller]->Index].matchAddress[p] = pwmProviders[controller]->Index == 0 ? (uint32_t*)(PWM0MR1 + (p * 4)) : (uint32_t*)(PWM1MR1 + (p * 4));
             g_PwmController[pwmProviders[controller]->Index].outputEnabled[p] = false;
             g_PwmController[pwmProviders[controller]->Index].invert[p] = false;
             g_PwmController[pwmProviders[controller]->Index].frequency = 0.0;

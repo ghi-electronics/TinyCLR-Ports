@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <stdio.h>
+#include <string.h>
+
 #include "LPC17.h"
 
 #define FLASH_BASE_ADDRESS                      0xF0000000 // This MUST be zero or you need to substract the base address before doing any process in the the flash draiver from the address.
@@ -47,7 +50,7 @@
 #define DEPLOYMENT_SECTOR_NUM   (DEPLOYMENT_SECTOR_END - DEPLOYMENT_SECTOR_START + 1)
 
 //SPI config
-#define SPI_CS                    _P(4,27)
+#define SPI_CS                    PIN(4,27)
 #define SPI_CLOCK_RATE_HZ         20000000
 #define SPI_MODULE                1 // SPI1
 
@@ -128,7 +131,7 @@ bool __section("SectionForFlashOperations") LPC17_Flash_WriteInProgress() {
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") LPC17_Flash_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     while (LPC17_Flash_WriteInProgress() == true);
 
@@ -233,7 +236,7 @@ bool __section("SectionForFlashOperations") LPC17_Flash_PageProgram(uint32_t byt
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") LPC17_Flash_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     bool result = LPC17_Flash_PageProgram(address, length, buffer);
 
@@ -253,7 +256,7 @@ bool __section("SectionForCodeReadOnlyRAM") CompareArrayValueToValue(uint32_t* p
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") LPC17_Flash_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t address = sectorAddress[sector];
 
@@ -267,7 +270,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC17_Flash_IsBlockErased(
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") LPC17_Flash_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     while (LPC17_Flash_WriteEnable() == false);
 

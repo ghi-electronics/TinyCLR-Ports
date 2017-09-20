@@ -33,10 +33,9 @@
 static TinyCLR_Dac_Provider dacProvider;
 static TinyCLR_Api_Info dacApi;
 
-static const uint32_t g_LPC17_Dac_Pins[] = LPC17_DAC_PINS;
-static const LPC17_Gpio_PinFunction g_LPC17_Dac_altMode[] = LPC17_DAC_ALT_MODE;
+static const LPC17_Gpio_Pin g_Lpc17_Dac_Pins[] = LPC17_DAC_PINS;
 
-bool g_LPC17_DacOpened = false;
+bool g_Lpc17_DacOpened = false;
 
 const TinyCLR_Api_Info* LPC17_Dac_GetApi() {
     dacProvider.Parent = &dacApi;
@@ -76,38 +75,38 @@ TinyCLR_Result LPC17_Dac_Release(const TinyCLR_Dac_Provider* self) {
 }
 
 TinyCLR_Result LPC17_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t channel) {
-    if (channel >= TOTAL_DAC_CONTROLLERS)
+    if (channel >= SIZEOF_ARRAY(g_Lpc17_Dac_Pins))
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    if (!LPC17_Gpio_OpenPin(g_LPC17_Dac_Pins[channel]))
+    if (!LPC17_Gpio_OpenPin(g_Lpc17_Dac_Pins[channel].number))
         return  TinyCLR_Result::SharingViolation;
 
-    LPC17_Gpio_ConfigurePin(g_LPC17_Dac_Pins[channel], LPC17_Gpio_Direction::Output, g_LPC17_Dac_altMode[channel], LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+    LPC17_Gpio_ConfigurePin(g_Lpc17_Dac_Pins[channel].number, LPC17_Gpio_Direction::Output, g_Lpc17_Dac_Pins[channel].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
     DACR = (0 << 6); // This sets the initial starting voltage at 0
 
-    g_LPC17_DacOpened = true;
+    g_Lpc17_DacOpened = true;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC17_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t channel) {
-    if (channel >= TOTAL_DAC_CONTROLLERS)
+    if (channel >= SIZEOF_ARRAY(g_Lpc17_Dac_Pins))
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    if (g_LPC17_DacOpened) {
+    if (g_Lpc17_DacOpened) {
         DACR = (0 << 6); // This sets the initial starting voltage at 0
 
-        LPC17_Gpio_ClosePin(g_LPC17_Dac_Pins[channel]);
+        LPC17_Gpio_ClosePin(g_Lpc17_Dac_Pins[channel].number);
 
-        g_LPC17_DacOpened = false;
+        g_Lpc17_DacOpened = false;
     }
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC17_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t channel, int32_t value) {
-    if (channel >= TOTAL_DAC_CONTROLLERS)
+    if (channel >= SIZEOF_ARRAY(g_Lpc17_Dac_Pins))
         return TinyCLR_Result::ArgumentOutOfRange;
 
     if (value > LPC17_DAC_MAX_VALUE) {
@@ -124,7 +123,7 @@ TinyCLR_Result LPC17_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t ch
 }
 
 int32_t LPC17_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self) {
-    return TOTAL_DAC_CONTROLLERS;
+    return SIZEOF_ARRAY(g_Lpc17_Dac_Pins);
 }
 
 int32_t LPC17_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self) {

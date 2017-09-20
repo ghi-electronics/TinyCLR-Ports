@@ -14,12 +14,18 @@
 
 #pragma once
 
-#include <stdio.h>
-#include <string.h>
-
-#include <defines.h>
 #include <TinyCLR.h>
-#include <DeviceSelector.h>
+#include <Device.h>
+
+#if defined(LPC177x_8x)
+#include <inc\LPC177x_8x.h>
+#endif
+
+#define SIZEOF_ARRAY(arr) (sizeof(arr) / sizeof(arr[0]))
+#define CONCAT2(a, b) a##b
+#define CONCAT(a, b) CONCAT2(a, b)
+#define CHARIZE2(c) #c
+#define CHARIZE(c) (CHARIZE2(c)[0])
 
 // ADC
 const TinyCLR_Api_Info* LPC17_Adc_GetApi();
@@ -94,6 +100,30 @@ enum class LPC17_Gpio_OutputType : uint8_t {
     OpenDrain = 1,
 };
 
+struct LPC17_Gpio_Pin {
+    uint32_t number;
+    LPC17_Gpio_PinFunction pinFunction;
+};
+
+struct LPC17_Gpio_PinConfiguration {
+    LPC17_Gpio_Direction direction;
+    LPC17_Gpio_ResistorMode resistorMode;
+    LPC17_Gpio_Hysteresis hysteresis;
+    LPC17_Gpio_InputPolarity inputPolarity;
+    LPC17_Gpio_SlewRate slewRate;
+    LPC17_Gpio_OutputType outputType;
+    LPC17_Gpio_PinFunction pinFunction;
+};
+
+#define PIN(port, pin) (port * 32 + pin)
+#define PIN_NONE 0xFFFFFFFF
+#define PF(num) (CONCAT(LPC17_Gpio_PinFunction::PinFunction, num))
+#define PF_NONE LPC17_Gpio_PinFunction::PinFunction0
+
+#define INIT(direction, resistorMode, hysteresis, inputPolarity, slewRate, outputType, pinFunction) { LPC17_Gpio_Direction::direction, LPC17_Gpio_ResistorMode::resistorMode, LPC17_Gpio_Hysteresis::hysteresis, LPC17_Gpio_InputPolarity::inputPolarity, LPC17_Gpio_SlewRate::slewRate, LPC17_Gpio_OutputType::outputType,LPC17_Gpio_PinFunction::pinFunction }
+#define ALTFUN(direction, resistorMode, outputType, pinFunction) { LPC17_Gpio_Direction::direction, LPC17_Gpio_ResistorMode::resistorMode, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::outputType,LPC17_Gpio_PinFunction::pinFunction }
+#define INPUT(outputType, resistorMode) { LPC17_Gpio_Direction::Input, LPC17_Gpio_ResistorMode::resistorMode, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::outputType,LPC17_Gpio_PinFunction::PinFunction0 }
+
 void LPC17_Gpio_Reset();
 const TinyCLR_Api_Info* LPC17_Gpio_GetApi();
 TinyCLR_Result LPC17_Gpio_Acquire(const TinyCLR_Gpio_Provider* self);
@@ -113,33 +143,34 @@ TinyCLR_Result LPC17_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t 
 
 bool LPC17_Gpio_OpenPin(int32_t pin);
 bool LPC17_Gpio_ClosePin(int32_t pin);
-bool LPC17_Gpio_ConfigurePin(int32_t pin, LPC17_Gpio_Direction pinDir, LPC17_Gpio_PinFunction alternateFunction, LPC17_Gpio_ResistorMode pullResistor, LPC17_Gpio_Hysteresis hysteresis, LPC17_Gpio_InputPolarity inputPolarity, LPC17_Gpio_SlewRate slewRate, LPC17_Gpio_OutputType outputType);
+bool LPC17_Gpio_ConfigurePin(int32_t pin, LPC17_Gpio_Direction pinDir, LPC17_Gpio_PinFunction pinFunction, LPC17_Gpio_ResistorMode pullResistor, LPC17_Gpio_Hysteresis hysteresis, LPC17_Gpio_InputPolarity inputPolarity, LPC17_Gpio_SlewRate slewRate, LPC17_Gpio_OutputType outputType);
 void LPC17_Gpio_EnableOutputPin(int32_t pin, bool initialState);
 void LPC17_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
 
 // PWM
 #define PWM0MR0 (*(volatile unsigned long *)0x40014018)
-#define PWM0MR1 ((uint32_t *)0x4001401C)
-#define PWM0MR2 ((uint32_t *)0x40014020)
-#define PWM0MR3 ((uint32_t *)0x40014024)
-#define PWM0MR4 ((uint32_t *)0x40014040)
-#define PWM0MR5 ((uint32_t *)0x40014044)
-#define PWM0MR6 ((uint32_t *)0x40014048)
+#define PWM0MR1 ((uint32_t )0x4001401C)
+#define PWM0MR2 ((uint32_t )0x40014020)
+#define PWM0MR3 ((uint32_t )0x40014024)
+#define PWM0MR4 ((uint32_t )0x40014040)
+#define PWM0MR5 ((uint32_t )0x40014044)
+#define PWM0MR6 ((uint32_t )0x40014048)
 
 #define PWM1MR0 (*(volatile unsigned long *)0x40018018)
-#define PWM1MR1 ((uint32_t *)0x4001801C)
-#define PWM1MR2 ((uint32_t *)0x40018020)
-#define PWM1MR3 ((uint32_t *)0x40018024)
-#define PWM1MR4 ((uint32_t *)0x40018040)
-#define PWM1MR5 ((uint32_t *)0x40018044)
-#define PWM1MR6 ((uint32_t *)0x40018048)
+#define PWM1MR1 ((uint32_t )0x4001801C)
+#define PWM1MR2 ((uint32_t )0x40018020)
+#define PWM1MR3 ((uint32_t )0x40018024)
+#define PWM1MR4 ((uint32_t )0x40018040)
+#define PWM1MR5 ((uint32_t )0x40018044)
+#define PWM1MR6 ((uint32_t )0x40018048)
 
-struct PwmController {
-    int32_t                         id;
+#define TOTAL_PWM_CONTROLLER                2
+#define MAX_PWM_PER_CONTROLLER              6
+
+struct PwmController {    
     int32_t                         channel[MAX_PWM_PER_CONTROLLER];
-    int32_t                         subChannel[MAX_PWM_PER_CONTROLLER];
-    uint32_t                        gpioPin[MAX_PWM_PER_CONTROLLER];
-    LPC17_Gpio_PinFunction          gpioAlternateFunction[MAX_PWM_PER_CONTROLLER];
+    int32_t                         match[MAX_PWM_PER_CONTROLLER];
+    LPC17_Gpio_Pin                  gpioPin[MAX_PWM_PER_CONTROLLER];
     uint32_t                        outputEnabled[MAX_PWM_PER_CONTROLLER];
     uint32_t                        *matchAddress[MAX_PWM_PER_CONTROLLER];
     bool                            invert[MAX_PWM_PER_CONTROLLER];
@@ -148,7 +179,6 @@ struct PwmController {
 };
 
 const TinyCLR_Api_Info* LPC17_Pwm_GetApi();
-PwmController* LPC17_Pwm_GetControllers();
 void LPC17_Pwm_Reset();
 void LPC17_Pwm_ResetController(int32_t controller);
 TinyCLR_Result LPC17_Pwm_Acquire(const TinyCLR_Pwm_Provider* self);
@@ -164,6 +194,7 @@ double LPC17_Pwm_GetMinFrequency(const TinyCLR_Pwm_Provider* self);
 double LPC17_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self);
 double LPC17_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self);
 int32_t LPC17_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self);
+LPC17_Gpio_Pin LPC17_Pwm_GetPins(int32_t controller, int32_t channel);
 
 //SPI
 const TinyCLR_Api_Info* LPC17_Spi_GetApi();
@@ -184,6 +215,7 @@ int32_t LPC17_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self);
 TinyCLR_Result LPC17_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* self, int32_t* dataBitLengths, size_t& dataBitLengthsCount);
 
 //Uart
+#define TOTAL_UART_CONTROLLERS 5
 const TinyCLR_Api_Info* LPC17_Uart_GetApi();
 void LPC17_Uart_Reset();
 int32_t LPC17_Uart_GetTxPin(int32_t portNum);
@@ -233,9 +265,12 @@ bool LPC17_Flash_IsSupportsXIP(const TinyCLR_Deployment_Provider* self);
 class LPC17_SmartPtr_IRQ {
     uint32_t m_state;
 
+    void Disable();
+    void Restore();
+
 public:
-    LPC17_SmartPtr_IRQ() { Disable(); };
-    ~LPC17_SmartPtr_IRQ() { Restore(); };
+    LPC17_SmartPtr_IRQ();
+    ~LPC17_SmartPtr_IRQ();
 
     bool WasDisabled();
     void Acquire();
@@ -243,11 +278,16 @@ public:
     void Probe();
 
     static bool GetState();
-
-private:
-    void Disable();
-    void Restore();
 };
+
+class LPC17_SmartPtr_Interrupt {
+public:
+    LPC17_SmartPtr_Interrupt();
+    ~LPC17_SmartPtr_Interrupt();
+};
+
+#define DISABLE_INTERRUPTS_SCOPED(name) LPC17_SmartPtr_IRQ name
+#define INTERRUPT_STARTED_SCOPED(name) LPC17_SmartPtr_Interrupt name
 
 const TinyCLR_Api_Info* LPC17_Interrupt_GetApi();
 TinyCLR_Result LPC17_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
@@ -285,7 +325,7 @@ const TinyCLR_Api_Info* LPC17_Time_GetApi();
 TinyCLR_Result LPC17_Time_Acquire(const TinyCLR_Time_Provider* self);
 TinyCLR_Result LPC17_Time_Release(const TinyCLR_Time_Provider* self);
 TinyCLR_Result LPC17_Time_GetInitialTime(const TinyCLR_Time_Provider* self, int64_t& utcTime, int32_t& timeZoneOffsetMinutes);
-uint64_t LPC17_Time_TicksToTime(const TinyCLR_Time_Provider* self, uint64_t ticks);
+uint64_t LPC17_Time_GetTimeForProcessorTicks(const TinyCLR_Time_Provider* self, uint64_t ticks);
 uint64_t LPC17_Time_TimeToTicks(const TinyCLR_Time_Provider* self, uint64_t time);
 uint64_t LPC17_Time_MillisecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t ticks);
 uint64_t LPC17_Time_MicrosecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t microseconds);
@@ -334,11 +374,10 @@ int32_t LPC17_Display_GetHeight(const TinyCLR_Display_Provider* self);
 TinyCLR_Display_InterfaceType LPC17_Display_GetType(const TinyCLR_Display_Provider* self);
 
 //Startup
-void LPC17_Startup_InitializeRegions();
+void LPC17_Startup_Initialize();
 void LPC17_Startup_GetHeap(uint8_t*& start, size_t& length);
-int32_t LPC17_Startup_GetLModePin();
-int32_t LPC17_Startup_GetDeviceId();
-TinyCLR_Gpio_PinValue LPC17_Startup_GetLModeUsbState();
+void LPC17_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index);
+void LPC17_Startup_GetRunApp(bool& runApp);
 
 //System Control Block
 #define PCON_OFFSET 0xC0
@@ -524,5 +563,3 @@ struct LPC17xx_SYSCON {
     //LCD clock Divider
     /****/ volatile uint32_t LCD_CFG;       // Filler to align next register address
 };
-
-#include "LPC177x_8x.h"

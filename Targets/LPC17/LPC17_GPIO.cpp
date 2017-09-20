@@ -42,9 +42,11 @@ const char IOCON_Type[] = { 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'W', 'W', 'W', 'D
                             'D', 'D', 'I', 'I', 'D' };
 
 
+static const LPC17_Gpio_PinConfiguration pins[] = LPC17_GPIO_PINS;
+                            
 #define LPC17_Gpio_PinReserved                 1
 #define LPC17_Gpio_DebounceDefaultMilisecond   20
-#define LPC17_Gpio_MaxPins                     TOTAL_GPIO_PINS
+#define LPC17_Gpio_MaxPins                     SIZEOF_ARRAY(pins)
 
 struct LPC17_Int_State {
     uint8_t                                     pin;      // pin number
@@ -104,9 +106,9 @@ TinyCLR_Result LPC17_Gpio_Release(const TinyCLR_Gpio_Provider* self) {
 }
 
 void LPC17_Gpio_InterruptHandler(void* param) {
-    INTERRUPT_START
+    INTERRUPT_STARTED_SCOPED(isr);
 
-        GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t* GPIO_INT_Overall_IO_Status_Register = GPIO_INT_Overall_IO_Status;
 
@@ -143,15 +145,13 @@ void LPC17_Gpio_InterruptHandler(void* param) {
                 state->ISR(state->controller, state->pin, state->currentValue);
             }
         }
-    }
-
-    INTERRUPT_END
+    }    
 }
 
 TinyCLR_Result LPC17_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR) {
     LPC17_Int_State* state = &g_int_state[pin];
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t port = GET_PORT(pin);
     uint32_t pinMask = GET_PIN_MASK(pin);
@@ -418,7 +418,7 @@ int32_t LPC17_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t
     if (pin >= LPC17_Gpio_MaxPins || pin < 0)
         return 0;
 
-    return (int32_t)(g_debounceTicksPin[pin] / (SLOW_CLOCKS_PER_SECOND / 1000)); // ticks -> ms
+    return LPC17_Time_GetTimeForProcessorTicks(nullptr, (uint64_t)(g_debounceTicksPin[pin])) / 10;            
 }
 
 TinyCLR_Result LPC17_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, int32_t debounceTime) {
