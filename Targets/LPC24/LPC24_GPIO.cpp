@@ -182,11 +182,11 @@ void LPC24_Gpio_InterruptHandler(void* param) {
 
             if (executeIsr) {
                 LPC24_Gpio_Read(&gpioProvider, state->pin, state->currentValue); // read value as soon as possible
-                
+
                 state->ISR(state->controller, state->pin, state->currentValue);
             }
         }
-    }    
+    }
 }
 
 TinyCLR_Result LPC24_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR) {
@@ -271,56 +271,56 @@ bool LPC24_Gpio_ConfigurePin(int32_t pin, LPC24_Gpio_Direction pinDir, LPC24_Gpi
         return false;
 
     switch (alternateFunction) {
-        case LPC24_Gpio_PinFunction::PinFunction0:
-            if (pinDir == LPC24_Gpio_Direction::Output) {
-                SET_PINDIR_OUTPUT(GET_PORT(pin), GET_PIN(pin));
+    case LPC24_Gpio_PinFunction::PinFunction0:
+        if (pinDir == LPC24_Gpio_Direction::Output) {
+            SET_PINDIR_OUTPUT(GET_PORT(pin), GET_PIN(pin));
+            SET_PINMODE_NOPULL(GET_PORT(pin), GET_PIN(pin));
+            SET_PINSEL_ALTERNATE_0(GET_PORT(pin), GET_PIN(pin));
+        }
+        else {
+            switch (pullResistor) {
+            case LPC24_Gpio_PinMode::Inactive:
+                SET_PINDIR_INPUT(GET_PORT(pin), GET_PIN(pin));
                 SET_PINMODE_NOPULL(GET_PORT(pin), GET_PIN(pin));
                 SET_PINSEL_ALTERNATE_0(GET_PORT(pin), GET_PIN(pin));
+                break;
+
+            case LPC24_Gpio_PinMode::PullUp:
+                SET_PINSEL_ALTERNATE_0(GET_PORT(pin), GET_PIN(pin));
+                SET_PINDIR_INPUT(GET_PORT(pin), GET_PIN(pin));
+                SET_PINMODE_PULLUP(GET_PORT(pin), GET_PIN(pin));
+                break;
+
+            case LPC24_Gpio_PinMode::PullDown:
+                SET_PINSEL_ALTERNATE_0(GET_PORT(pin), GET_PIN(pin));
+                SET_PINDIR_INPUT(GET_PORT(pin), GET_PIN(pin));
+                SET_PINMODE_PULLDOWN(GET_PORT(pin), GET_PIN(pin));
+                break;
+
             }
-            else {
-                switch (pullResistor) {
-                    case LPC24_Gpio_PinMode::Inactive:
-                        SET_PINDIR_INPUT(GET_PORT(pin), GET_PIN(pin));
-                        SET_PINMODE_NOPULL(GET_PORT(pin), GET_PIN(pin));
-                        SET_PINSEL_ALTERNATE_0(GET_PORT(pin), GET_PIN(pin));
-                        break;
+        }
 
-                    case LPC24_Gpio_PinMode::PullUp:
-                        SET_PINSEL_ALTERNATE_0(GET_PORT(pin), GET_PIN(pin));
-                        SET_PINDIR_INPUT(GET_PORT(pin), GET_PIN(pin));
-                        SET_PINMODE_PULLUP(GET_PORT(pin), GET_PIN(pin));
-                        break;
+        break;
 
-                    case LPC24_Gpio_PinMode::PullDown:
-                        SET_PINSEL_ALTERNATE_0(GET_PORT(pin), GET_PIN(pin));
-                        SET_PINDIR_INPUT(GET_PORT(pin), GET_PIN(pin));
-                        SET_PINMODE_PULLDOWN(GET_PORT(pin), GET_PIN(pin));
-                        break;
+    case LPC24_Gpio_PinFunction::PinFunction1:
+        SET_PINDIR_INPUT(GET_PORT(pin), GET_PIN(pin));
+        SET_PINMODE_NOPULL(GET_PORT(pin), GET_PIN(pin));
+        SET_PINSEL_ALTERNATE_1(GET_PORT(pin), GET_PIN(pin));
 
-                }
-            }
+        break;
 
-            break;
+    case LPC24_Gpio_PinFunction::PinFunction2:
+        SET_PINDIR_INPUT(GET_PORT(pin), GET_PIN(pin));
+        SET_PINMODE_NOPULL(GET_PORT(pin), GET_PIN(pin));
+        SET_PINSEL_ALTERNATE_2(GET_PORT(pin), GET_PIN(pin));
 
-        case LPC24_Gpio_PinFunction::PinFunction1:
-            SET_PINDIR_INPUT(GET_PORT(pin), GET_PIN(pin));
-            SET_PINMODE_NOPULL(GET_PORT(pin), GET_PIN(pin));
-            SET_PINSEL_ALTERNATE_1(GET_PORT(pin), GET_PIN(pin));
+        break;
 
-            break;
-
-        case LPC24_Gpio_PinFunction::PinFunction2:
-            SET_PINDIR_INPUT(GET_PORT(pin), GET_PIN(pin));
-            SET_PINMODE_NOPULL(GET_PORT(pin), GET_PIN(pin));
-            SET_PINSEL_ALTERNATE_2(GET_PORT(pin), GET_PIN(pin));
-
-            break;
-
-        case LPC24_Gpio_PinFunction::PinFunction3:
-            SET_PINDIR_INPUT(GET_PORT(pin), GET_PIN(pin));
-            SET_PINMODE_NOPULL(GET_PORT(pin), GET_PIN(pin));
-            SET_PINSEL_ALTERNATE_3(GET_PORT(pin), GET_PIN(pin));
-            break;
+    case LPC24_Gpio_PinFunction::PinFunction3:
+        SET_PINDIR_INPUT(GET_PORT(pin), GET_PIN(pin));
+        SET_PINMODE_NOPULL(GET_PORT(pin), GET_PIN(pin));
+        SET_PINSEL_ALTERNATE_3(GET_PORT(pin), GET_PIN(pin));
+        break;
     }
 
     return true;
@@ -333,15 +333,15 @@ void LPC24_Gpio_EnableOutputPin(int32_t pin, bool initialState) {
 
 void LPC24_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode mode) {
     switch (mode) {
-        case TinyCLR_Gpio_PinDriveMode::Input:
-            LPC24_Gpio_ConfigurePin(pin, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::Inactive);
-            break;
-        case TinyCLR_Gpio_PinDriveMode::InputPullUp:
-            LPC24_Gpio_ConfigurePin(pin, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::PullUp);
-            break;
-        case TinyCLR_Gpio_PinDriveMode::InputPullDown:
-            LPC24_Gpio_ConfigurePin(pin, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::PullDown);
-            break;
+    case TinyCLR_Gpio_PinDriveMode::Input:
+        LPC24_Gpio_ConfigurePin(pin, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::Inactive);
+        break;
+    case TinyCLR_Gpio_PinDriveMode::InputPullUp:
+        LPC24_Gpio_ConfigurePin(pin, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::PullUp);
+        break;
+    case TinyCLR_Gpio_PinDriveMode::InputPullDown:
+        LPC24_Gpio_ConfigurePin(pin, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::PullDown);
+        break;
     }
 }
 
@@ -391,11 +391,11 @@ TinyCLR_Result LPC24_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t 
 bool LPC24_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode) {
 
     switch (mode) {
-        case TinyCLR_Gpio_PinDriveMode::Output:
-        case TinyCLR_Gpio_PinDriveMode::Input:
-        case TinyCLR_Gpio_PinDriveMode::InputPullUp:
-        case TinyCLR_Gpio_PinDriveMode::InputPullDown:
-            return true;
+    case TinyCLR_Gpio_PinDriveMode::Output:
+    case TinyCLR_Gpio_PinDriveMode::Input:
+    case TinyCLR_Gpio_PinDriveMode::InputPullUp:
+    case TinyCLR_Gpio_PinDriveMode::InputPullDown:
+        return true;
     }
 
     return false;
@@ -410,28 +410,28 @@ TinyCLR_Result LPC24_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_
         return TinyCLR_Result::ArgumentOutOfRange;
 
     switch (driveMode) {
-        case TinyCLR_Gpio_PinDriveMode::Output:
-            LPC24_Gpio_ConfigurePin(pin, LPC24_Gpio_Direction::Output, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::Inactive);
-            break;
+    case TinyCLR_Gpio_PinDriveMode::Output:
+        LPC24_Gpio_ConfigurePin(pin, LPC24_Gpio_Direction::Output, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::Inactive);
+        break;
 
-        case TinyCLR_Gpio_PinDriveMode::Input:
-            LPC24_Gpio_ConfigurePin(pin, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::Inactive);
-            break;
+    case TinyCLR_Gpio_PinDriveMode::Input:
+        LPC24_Gpio_ConfigurePin(pin, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::Inactive);
+        break;
 
-        case TinyCLR_Gpio_PinDriveMode::InputPullUp:
-            LPC24_Gpio_ConfigurePin(pin, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::PullUp);
-            break;
+    case TinyCLR_Gpio_PinDriveMode::InputPullUp:
+        LPC24_Gpio_ConfigurePin(pin, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::PullUp);
+        break;
 
-        case TinyCLR_Gpio_PinDriveMode::InputPullDown:
-            LPC24_Gpio_ConfigurePin(pin, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::PullDown);
-            break;
+    case TinyCLR_Gpio_PinDriveMode::InputPullDown:
+        LPC24_Gpio_ConfigurePin(pin, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::PullDown);
+        break;
 
-        case TinyCLR_Gpio_PinDriveMode::OutputOpenDrain:
-        case TinyCLR_Gpio_PinDriveMode::OutputOpenDrainPullUp:
-        case TinyCLR_Gpio_PinDriveMode::OutputOpenSource:
-        case TinyCLR_Gpio_PinDriveMode::OutputOpenSourcePullDown:
-        default:
-            return  TinyCLR_Result::NotSupported;
+    case TinyCLR_Gpio_PinDriveMode::OutputOpenDrain:
+    case TinyCLR_Gpio_PinDriveMode::OutputOpenDrainPullUp:
+    case TinyCLR_Gpio_PinDriveMode::OutputOpenSource:
+    case TinyCLR_Gpio_PinDriveMode::OutputOpenSourcePullDown:
+    default:
+        return  TinyCLR_Result::NotSupported;
     }
 
     g_pinDriveMode[pin] = driveMode;
@@ -440,7 +440,7 @@ TinyCLR_Result LPC24_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_
 }
 
 int32_t LPC24_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin) {
-    return  LPC24_Time_GetTimeForProcessorTicks(nullptr, (uint64_t)(g_debounceTicksPin[pin])) / 10;    
+    return  LPC24_Time_GetTimeForProcessorTicks(nullptr, (uint64_t)(g_debounceTicksPin[pin])) / 10;
 }
 
 TinyCLR_Result LPC24_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, int32_t debounceTime) {

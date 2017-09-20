@@ -385,7 +385,7 @@ extern "C" {
         VIC.RemoveForcedInterrupt(index);
 
         IsrVector->Handler.Execute();
-        
+
         // Reset VIC priority hw logic.
         VIC.ADDRESS = 0xFF;
     }

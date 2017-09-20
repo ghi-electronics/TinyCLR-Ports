@@ -186,7 +186,7 @@ void LPC24_Uart_ReceiveData(int portNum, uint32_t LSR_Value, uint32_t IIR_Value)
                 }
             } while (LSR_Value & LPC24XX_USART::UART_LSR_RFDR);
         }
-    }    
+    }
 }
 void LPC24_Uart_TransmitData(int portNum, uint32_t LSR_Value, uint32_t IIR_Value) {
     INTERRUPT_STARTED_SCOPED(isr);
@@ -214,7 +214,7 @@ void LPC24_Uart_TransmitData(int portNum, uint32_t LSR_Value, uint32_t IIR_Value
                 LPC24_Uart_TxBufferEmptyInterruptEnable(portNum, false); // Disable interrupt when no more data to send.
             }
         }
-    }    
+    }
 }
 
 void LPC24_Uart_InterruptHandler(void *param) {
@@ -240,7 +240,7 @@ void LPC24_Uart_InterruptHandler(void *param) {
 
     LPC24_Uart_ReceiveData(portNum, LSR_Value, IIR_Value);
 
-    LPC24_Uart_TransmitData(portNum, LSR_Value, IIR_Value);    
+    LPC24_Uart_TransmitData(portNum, LSR_Value, IIR_Value);
 }
 
 
@@ -263,21 +263,21 @@ TinyCLR_Result LPC24_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
     g_LPC24_Uart_Controller[portNum].provider = self;
 
     switch (portNum) {
-        case 0:
-            LPC24XX::SYSCON().PCONP |= PCONP_PCUART0;
-            break;
+    case 0:
+        LPC24XX::SYSCON().PCONP |= PCONP_PCUART0;
+        break;
 
-        case 1:
-            LPC24XX::SYSCON().PCONP |= PCONP_PCUART1;
-            break;
+    case 1:
+        LPC24XX::SYSCON().PCONP |= PCONP_PCUART1;
+        break;
 
-        case 2:
-            LPC24XX::SYSCON().PCONP |= PCONP_PCUART2;
-            break;
+    case 2:
+        LPC24XX::SYSCON().PCONP |= PCONP_PCUART2;
+        break;
 
-        case 3:
-            LPC24XX::SYSCON().PCONP |= PCONP_PCUART3;
-            break;
+    case 3:
+        LPC24XX::SYSCON().PCONP |= PCONP_PCUART3;
+        break;
     }
 
     return TinyCLR_Result::Success;
@@ -287,29 +287,29 @@ void LPC24_Uart_SetClock(int32_t portNum, int32_t pclkSel) {
     pclkSel &= 0x03;
 
     switch (portNum) {
-        case 0:
+    case 0:
 
-            LPC24XX::SYSCON().PCLKSEL0 &= ~(0x03 << 6);
-            LPC24XX::SYSCON().PCLKSEL0 |= (pclkSel << 6);
+        LPC24XX::SYSCON().PCLKSEL0 &= ~(0x03 << 6);
+        LPC24XX::SYSCON().PCLKSEL0 |= (pclkSel << 6);
 
-            break;
+        break;
 
-        case 1:
+    case 1:
 
-            LPC24XX::SYSCON().PCLKSEL0 &= ~(0x03 << 8);
-            LPC24XX::SYSCON().PCLKSEL0 |= (pclkSel << 8);
+        LPC24XX::SYSCON().PCLKSEL0 &= ~(0x03 << 8);
+        LPC24XX::SYSCON().PCLKSEL0 |= (pclkSel << 8);
 
-            break;
+        break;
 
-        case 2:
-            LPC24XX::SYSCON().PCLKSEL1 &= ~(0x03 << 16);
-            LPC24XX::SYSCON().PCLKSEL1 |= (pclkSel << 16);
-            break;
+    case 2:
+        LPC24XX::SYSCON().PCLKSEL1 &= ~(0x03 << 16);
+        LPC24XX::SYSCON().PCLKSEL1 |= (pclkSel << 16);
+        break;
 
-        case 3:
-            LPC24XX::SYSCON().PCLKSEL1 &= ~(0x03 << 18);
-            LPC24XX::SYSCON().PCLKSEL1 |= (pclkSel << 18);
-            break;
+    case 3:
+        LPC24XX::SYSCON().PCLKSEL1 &= ~(0x03 << 18);
+        LPC24XX::SYSCON().PCLKSEL1 |= (pclkSel << 18);
+        break;
 
     }
 }
@@ -327,32 +327,32 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
 
     switch (baudRate) {
 
-        case 2400: LPC24_Uart_SetClock(portNum, 0); fdr = 0x41; divisor = 0x177; break;
+    case 2400: LPC24_Uart_SetClock(portNum, 0); fdr = 0x41; divisor = 0x177; break;
 
-        case 4800: LPC24_Uart_SetClock(portNum, 0); fdr = 0xE3; divisor = 0xC1; break;
+    case 4800: LPC24_Uart_SetClock(portNum, 0); fdr = 0xE3; divisor = 0xC1; break;
 
-        case 9600: LPC24_Uart_SetClock(portNum, 0); fdr = 0xC7; divisor = 0x4A; break;
+    case 9600: LPC24_Uart_SetClock(portNum, 0); fdr = 0xC7; divisor = 0x4A; break;
 
-        case 14400: LPC24_Uart_SetClock(portNum, 0); fdr = 0xA1; divisor = 0x47; break;
+    case 14400: LPC24_Uart_SetClock(portNum, 0); fdr = 0xA1; divisor = 0x47; break;
 
-        case 19200: LPC24_Uart_SetClock(portNum, 0); fdr = 0xC7; divisor = 0x25; break;
+    case 19200: LPC24_Uart_SetClock(portNum, 0); fdr = 0xC7; divisor = 0x25; break;
 
-        case 38400: LPC24_Uart_SetClock(portNum, 0); fdr = 0xB3; divisor = 0x17; break;
+    case 38400: LPC24_Uart_SetClock(portNum, 0); fdr = 0xB3; divisor = 0x17; break;
 
-        case 57600: LPC24_Uart_SetClock(portNum, 0); fdr = 0x92; divisor = 0x10; break;
+    case 57600: LPC24_Uart_SetClock(portNum, 0); fdr = 0x92; divisor = 0x10; break;
 
-        case 115200: LPC24_Uart_SetClock(portNum, 0); fdr = 0x92; divisor = 0x08; break;
+    case 115200: LPC24_Uart_SetClock(portNum, 0); fdr = 0x92; divisor = 0x08; break;
 
-        case 230400: LPC24_Uart_SetClock(portNum, 0); fdr = 0x92; divisor = 0x04; break;
+    case 230400: LPC24_Uart_SetClock(portNum, 0); fdr = 0x92; divisor = 0x04; break;
 
-        case 460800: LPC24_Uart_SetClock(portNum, 1); fdr = 0x92; divisor = 0x08; break;
+    case 460800: LPC24_Uart_SetClock(portNum, 1); fdr = 0x92; divisor = 0x08; break;
 
-        case 921600: LPC24_Uart_SetClock(portNum, 1); fdr = 0x92; divisor = 0x04; break;
+    case 921600: LPC24_Uart_SetClock(portNum, 1); fdr = 0x92; divisor = 0x04; break;
 
-        default:
-            LPC24_Uart_SetClock(portNum, 1);
-            divisor = ((LPC24XX_USART::c_ClockRate / (baudRate * 16)));
-            fdr = 0x10;
+    default:
+        LPC24_Uart_SetClock(portNum, 1);
+        divisor = ((LPC24XX_USART::c_ClockRate / (baudRate * 16)));
+        fdr = 0x10;
 
     }
 
@@ -371,9 +371,9 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
     // DataBit range 5-8
     if (5 <= dataBits && dataBits <= 8) {
         SET_BITS(USARTC.UART_LCR,
-                 LPC24XX_USART::UART_LCR_WLS_shift,
-                 LPC24XX_USART::UART_LCR_WLS_mask,
-                 dataBits - 5);
+            LPC24XX_USART::UART_LCR_WLS_shift,
+            LPC24XX_USART::UART_LCR_WLS_mask,
+            dataBits - 5);
     }
     else {   // not supported
      // set up 8 data bits incase return value is ignored
@@ -382,55 +382,55 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
     }
 
     switch (stopBits) {
-        case TinyCLR_Uart_StopBitCount::Two:
-            USARTC.UART_LCR |= LPC24XX_USART::UART_LCR_NSB_15_STOPBITS;
+    case TinyCLR_Uart_StopBitCount::Two:
+        USARTC.UART_LCR |= LPC24XX_USART::UART_LCR_NSB_15_STOPBITS;
 
-            if (dataBits == 5)
-                return TinyCLR_Result::NotSupported;
-
-            break;
-
-        case TinyCLR_Uart_StopBitCount::One:
-            USARTC.UART_LCR |= LPC24XX_USART::UART_LCR_NSB_1_STOPBITS;
-
-            break;
-
-        case TinyCLR_Uart_StopBitCount::OnePointFive:
-            USARTC.UART_LCR |= LPC24XX_USART::UART_LCR_NSB_15_STOPBITS;
-
-            if (dataBits != 5)
-                return TinyCLR_Result::NotSupported;
-
-            break;
-
-        default:
-
+        if (dataBits == 5)
             return TinyCLR_Result::NotSupported;
+
+        break;
+
+    case TinyCLR_Uart_StopBitCount::One:
+        USARTC.UART_LCR |= LPC24XX_USART::UART_LCR_NSB_1_STOPBITS;
+
+        break;
+
+    case TinyCLR_Uart_StopBitCount::OnePointFive:
+        USARTC.UART_LCR |= LPC24XX_USART::UART_LCR_NSB_15_STOPBITS;
+
+        if (dataBits != 5)
+            return TinyCLR_Result::NotSupported;
+
+        break;
+
+    default:
+
+        return TinyCLR_Result::NotSupported;
     }
 
     switch (parity) {
 
-        case TinyCLR_Uart_Parity::Space:
-            USARTC.UART_LCR |= LPC24XX_USART::UART_LCR_SPE;
+    case TinyCLR_Uart_Parity::Space:
+        USARTC.UART_LCR |= LPC24XX_USART::UART_LCR_SPE;
 
-        case TinyCLR_Uart_Parity::Even:
-            USARTC.UART_LCR |= (LPC24XX_USART::UART_LCR_EPE | LPC24XX_USART::UART_LCR_PBE);
-            break;
+    case TinyCLR_Uart_Parity::Even:
+        USARTC.UART_LCR |= (LPC24XX_USART::UART_LCR_EPE | LPC24XX_USART::UART_LCR_PBE);
+        break;
 
-        case TinyCLR_Uart_Parity::Mark:
-            USARTC.UART_LCR |= LPC24XX_USART::UART_LCR_SPE;
+    case TinyCLR_Uart_Parity::Mark:
+        USARTC.UART_LCR |= LPC24XX_USART::UART_LCR_SPE;
 
-        case  TinyCLR_Uart_Parity::Odd:
-            USARTC.UART_LCR |= LPC24XX_USART::UART_LCR_PBE;
-            break;
+    case  TinyCLR_Uart_Parity::Odd:
+        USARTC.UART_LCR |= LPC24XX_USART::UART_LCR_PBE;
+        break;
 
-        case TinyCLR_Uart_Parity::None:
-            USARTC.UART_LCR &= ~LPC24XX_USART::UART_LCR_PBE;
-            break;
+    case TinyCLR_Uart_Parity::None:
+        USARTC.UART_LCR &= ~LPC24XX_USART::UART_LCR_PBE;
+        break;
 
-        default:
+    default:
 
-            return TinyCLR_Result::NotSupported;
+        return TinyCLR_Result::NotSupported;
     }
 
     if (handshaking != TinyCLR_Uart_Handshake::None && portNum != 2) // Only port 2 support handshaking
@@ -438,14 +438,14 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
 
 
     switch (handshaking) {
-        case TinyCLR_Uart_Handshake::RequestToSend:
-            USARTC.UART_MCR |= (1 << 6) | (1 << 7);
-            g_LPC24_Uart_Controller[portNum].handshakeEnable = true;
-            break;
+    case TinyCLR_Uart_Handshake::RequestToSend:
+        USARTC.UART_MCR |= (1 << 6) | (1 << 7);
+        g_LPC24_Uart_Controller[portNum].handshakeEnable = true;
+        break;
 
-        case TinyCLR_Uart_Handshake::XOnXOff:
-        case TinyCLR_Uart_Handshake::RequestToSendXOnXOff:
-            return TinyCLR_Result::NotSupported;
+    case TinyCLR_Uart_Handshake::XOnXOff:
+    case TinyCLR_Uart_Handshake::RequestToSendXOnXOff:
+        return TinyCLR_Result::NotSupported;
     }
 
     // CWS: Set the RX FIFO trigger level (to 8 bytes), reset RX, TX FIFO
@@ -501,21 +501,21 @@ TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Provider* self) {
     g_LPC24_Uart_Controller[portNum].handshakeEnable = false;
 
     switch (portNum) {
-        case 0:
-            LPC24XX::SYSCON().PCONP &= ~PCONP_PCUART0;
-            break;
+    case 0:
+        LPC24XX::SYSCON().PCONP &= ~PCONP_PCUART0;
+        break;
 
-        case 1:
-            LPC24XX::SYSCON().PCONP &= ~PCONP_PCUART1;
-            break;
+    case 1:
+        LPC24XX::SYSCON().PCONP &= ~PCONP_PCUART1;
+        break;
 
-        case 2:
-            LPC24XX::SYSCON().PCONP &= ~PCONP_PCUART2;
-            break;
+    case 2:
+        LPC24XX::SYSCON().PCONP &= ~PCONP_PCUART2;
+        break;
 
-        case 3:
-            LPC24XX::SYSCON().PCONP &= ~PCONP_PCUART3;
-            break;
+    case 3:
+        LPC24XX::SYSCON().PCONP &= ~PCONP_PCUART3;
+        break;
     }
 
     return TinyCLR_Result::Success;

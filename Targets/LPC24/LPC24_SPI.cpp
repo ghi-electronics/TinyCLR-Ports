@@ -390,21 +390,21 @@ bool LPC24_Spi_Transaction_Start(int32_t controller) {
 
     switch (g_SpiController[controller].Mode) {
 
-        case TinyCLR_Spi_Mode::Mode0: // CPOL = 0, CPHA = 0.
+    case TinyCLR_Spi_Mode::Mode0: // CPOL = 0, CPHA = 0.
 
-            break;
+        break;
 
-        case TinyCLR_Spi_Mode::Mode1: // CPOL = 0, CPHA = 1.
-            SPI.SSPxCR0 |= (1 << 7);
-            break;
+    case TinyCLR_Spi_Mode::Mode1: // CPOL = 0, CPHA = 1.
+        SPI.SSPxCR0 |= (1 << 7);
+        break;
 
-        case TinyCLR_Spi_Mode::Mode2: //  CPOL = 1, CPHA = 0.
-            SPI.SSPxCR0 |= (1 << 6);
-            break;
+    case TinyCLR_Spi_Mode::Mode2: //  CPOL = 1, CPHA = 0.
+        SPI.SSPxCR0 |= (1 << 6);
+        break;
 
-        case TinyCLR_Spi_Mode::Mode3: // CPOL = 1, CPHA = 1
-            SPI.SSPxCR0 |= (1 << 6) | (1 << 7);
-            break;
+    case TinyCLR_Spi_Mode::Mode3: // CPOL = 1, CPHA = 1
+        SPI.SSPxCR0 |= (1 << 6) | (1 << 7);
+        break;
     }
 
     SPI.SSPxCR0 &= ~(0xFF << 8);
@@ -657,13 +657,13 @@ TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
         return TinyCLR_Result::SharingViolation;
 
     switch (controller) {
-        case 0:
-            LPC24XX::SYSCON().PCONP |= PCONP_PCSSP0;
-            break;
+    case 0:
+        LPC24XX::SYSCON().PCONP |= PCONP_PCSSP0;
+        break;
 
-        case 1:
-            LPC24XX::SYSCON().PCONP |= PCONP_PCSSP1;
-            break;
+    case 1:
+        LPC24XX::SYSCON().PCONP |= PCONP_PCSSP1;
+        break;
     }
 
     return TinyCLR_Result::Success;
@@ -683,13 +683,13 @@ TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Provider* self) {
 
 
     switch (controller) {
-        case 0:
-            LPC24XX::SYSCON().PCONP &= ~PCONP_PCSSP0;
-            break;
+    case 0:
+        LPC24XX::SYSCON().PCONP &= ~PCONP_PCSSP0;
+        break;
 
-        case 1:
-            LPC24XX::SYSCON().PCONP &= ~PCONP_PCSSP1;
-            break;
+    case 1:
+        LPC24XX::SYSCON().PCONP &= ~PCONP_PCSSP1;
+        break;
 
     }
 

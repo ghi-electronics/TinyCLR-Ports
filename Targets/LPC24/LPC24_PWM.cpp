@@ -175,20 +175,20 @@ double LPC24_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self) {
     LPC24_Pwm_GetScaleFactor(frequency, period, scale);
 
     switch (scale) {
-        case PWM_MILLISECONDS:
-            periodInNanoSeconds = (period * 1000000);
-            break;
+    case PWM_MILLISECONDS:
+        periodInNanoSeconds = (period * 1000000);
+        break;
 
-        case PWM_MICROSECONDS:
-            periodInNanoSeconds = (period * 1000);
-            break;
+    case PWM_MICROSECONDS:
+        periodInNanoSeconds = (period * 1000);
+        break;
 
-        case PWM_NANOSECONDS:
-            periodInNanoSeconds = period;
-            break;
+    case PWM_NANOSECONDS:
+        periodInNanoSeconds = period;
+        break;
 
-        default:
-            return 0;
+    default:
+        return 0;
     }
 
     uint64_t periodTicks = (uint64_t)((SYSTEM_CLOCK_HZ / 1000000)) * periodInNanoSeconds / 1000;
@@ -197,17 +197,17 @@ double LPC24_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self) {
     periodInNanoSeconds = ((uint64_t)(periodTicks * 1000)) / ((uint64_t)((SYSTEM_CLOCK_HZ / 1000000)));
 
     switch (scale) {
-        case PWM_MILLISECONDS:
-            period = periodInNanoSeconds / 1000000;
-            break;
+    case PWM_MILLISECONDS:
+        period = periodInNanoSeconds / 1000000;
+        break;
 
-        case PWM_MICROSECONDS:
-            period = periodInNanoSeconds / 1000;
-            break;
+    case PWM_MICROSECONDS:
+        period = periodInNanoSeconds / 1000;
+        break;
 
-        case PWM_NANOSECONDS:
-            period = periodInNanoSeconds;
-            break;
+    case PWM_NANOSECONDS:
+        period = periodInNanoSeconds;
+        break;
     }
 
     frequency = (double)(scale / period);
@@ -266,23 +266,23 @@ TinyCLR_Result LPC24_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, in
     // Work on actual period and duration after update.
     // Repeat calculation again to genarate periodTicks and highTicks. G120 convert from period and duration to ticks.
     switch (scale) {
-        case PWM_MILLISECONDS:
-            periodInNanoSeconds = (period * 1000000);
-            durationInNanoSeconds = (duration * 1000000);
-            break;
+    case PWM_MILLISECONDS:
+        periodInNanoSeconds = (period * 1000000);
+        durationInNanoSeconds = (duration * 1000000);
+        break;
 
-        case PWM_MICROSECONDS:
-            periodInNanoSeconds = (period * 1000);
-            durationInNanoSeconds = (duration * 1000);
-            break;
+    case PWM_MICROSECONDS:
+        periodInNanoSeconds = (period * 1000);
+        durationInNanoSeconds = (duration * 1000);
+        break;
 
-        case PWM_NANOSECONDS:
-            periodInNanoSeconds = period;
-            durationInNanoSeconds = duration;
-            break;
+    case PWM_NANOSECONDS:
+        periodInNanoSeconds = period;
+        durationInNanoSeconds = duration;
+        break;
 
-        default:
-            return TinyCLR_Result::InvalidOperation;
+    default:
+        return TinyCLR_Result::InvalidOperation;
     }
 
     // 18M/M = 18 * period / 1000 to get legal value.
@@ -422,7 +422,7 @@ void LPC24_Pwm_ResetController(int32_t controller) {
 #if defined(LPC2388) || defined(LPC2387)
             g_PwmController[pwmProviders[controller]->Index].matchAddress[p] = (uint32_t*)(PWM1MR1 + (p * 4));
 #else
-            g_PwmController[pwmProviders[controller]->Index].matchAddress[p] = pwmProviders[controller]->Index == 0 ? (uint32_t*)(PWM0MR1 + (p * 4)) : (uint32_t*)(PWM1MR1 + (p * 4));            
+            g_PwmController[pwmProviders[controller]->Index].matchAddress[p] = pwmProviders[controller]->Index == 0 ? (uint32_t*)(PWM0MR1 + (p * 4)) : (uint32_t*)(PWM1MR1 + (p * 4));
 #endif
             g_PwmController[pwmProviders[controller]->Index].outputEnabled[p] = false;
             g_PwmController[pwmProviders[controller]->Index].invert[p] = false;

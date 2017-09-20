@@ -61,11 +61,11 @@ void LPC24_Startup_GetRunApp(bool& runApp) {
 // UsbClient
 void LPC24_UsbClient_PinConfiguration() {
     if (LPC24_Startup_GetDeviceId() != LPC2387_PARTID_1 && LPC24_Startup_GetDeviceId() != LPC2387_PARTID_2) {
-    OTGClkCtrl = 0x1F;
-    while ((OTGClkSt & 0x1F) != 0x1F);
+        OTGClkCtrl = 0x1F;
+        while ((OTGClkSt & 0x1F) != 0x1F);
 
-    LPC24_Gpio_ConfigurePin(PIN(0, 14), LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinMode::Inactive); // connect pin
-    LPC24_Gpio_ConfigurePin(PIN(0, 31), LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // D2+ pin. D2- has only USBD- function. no need to config
+        LPC24_Gpio_ConfigurePin(PIN(0, 14), LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinMode::Inactive); // connect pin
+        LPC24_Gpio_ConfigurePin(PIN(0, 31), LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // D2+ pin. D2- has only USBD- function. no need to config
 
         OTGStCtrl |= 3;
     }
@@ -180,5 +180,5 @@ LPC24_Gpio_PinFunction LPC24_Adc_GetPinFunction(int32_t channel) {
 const LPC24_Gpio_Pin g_pwm_pins[MAX_PWM_PER_CONTROLLER] = LPC24_PWM_PINS;
 
 LPC24_Gpio_Pin LPC24_Pwm_GetPins(int32_t controller, int32_t channel) {
-   return g_pwm_pins[channel];
+    return g_pwm_pins[channel];
 }

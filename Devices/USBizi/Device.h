@@ -50,7 +50,7 @@
 
 #define INCLUDE_ADC
 #define LPC2388_ADC_PINS { { PIN(0,23), PF(1) }, { PIN(0,24), PF(1) }, { PIN(0,25), PF(1) }, { PIN(0,26), PF(1) }, { PIN(1,30), PF(3) }, { PIN(1,31), PF(3) }, { PIN(0,12), PF(3) }, { PIN(0,13), PF(3) } }
-#define LPC2387_ADC_PINS { { PIN(0,23), PF(1) }, { PIN(0,24), PF(1) }, { PIN(0,25), PF(1) }, { PIN(0,26), PF(1) }, { PIN(1,30), PF(3) }, { PIN(1,31), PF(3) } } 
+#define LPC2387_ADC_PINS { { PIN(0,23), PF(1) }, { PIN(0,24), PF(1) }, { PIN(0,25), PF(1) }, { PIN(0,26), PF(1) }, { PIN(1,30), PF(3) }, { PIN(1,31), PF(3) } }
 
 #define INCLUDE_DAC
 #define LPC24_DAC_PINS { { PIN(0,26), PF(2)} }

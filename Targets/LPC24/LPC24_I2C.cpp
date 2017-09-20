@@ -80,86 +80,86 @@ void LPC24_I2c_InterruptHandler(void *param) {
     }
 
     switch (status) {
-        case 0x08: // Start Condition transmitted
-        case 0x10: // Repeated Start Condition transmitted
-            // Write Slave address and Data direction
-            address = 0xFE & (g_I2cConfiguration.address << 1);
-            address |= transaction->isReadTransaction ? 1 : 0;
-            I2C.I2DAT = address;
-            // Clear STA bit
-            I2C.I2CONCLR = LPC24XX_I2C::STA;
-            break;
-        case 0x18: // Slave Address + W transmitted, Ack received
-        case 0x28: // Data transmitted, Ack received
-            // Write data
-            // transaction completed
-            if (transaction->bytesToTransfer == 0) {
-                if (transaction->repeatedStart == false) {
-                    LPC24_I2c_StopTransaction();
-                }
-                else {
-                    g_currentI2cTransactionAction = &g_ReadI2cTransactionAction;
-                    LPC24_I2c_StartTransaction();
-                }
+    case 0x08: // Start Condition transmitted
+    case 0x10: // Repeated Start Condition transmitted
+        // Write Slave address and Data direction
+        address = 0xFE & (g_I2cConfiguration.address << 1);
+        address |= transaction->isReadTransaction ? 1 : 0;
+        I2C.I2DAT = address;
+        // Clear STA bit
+        I2C.I2CONCLR = LPC24XX_I2C::STA;
+        break;
+    case 0x18: // Slave Address + W transmitted, Ack received
+    case 0x28: // Data transmitted, Ack received
+        // Write data
+        // transaction completed
+        if (transaction->bytesToTransfer == 0) {
+            if (transaction->repeatedStart == false) {
+                LPC24_I2c_StopTransaction();
             }
             else {
-                //WriteToSlave( unit );
-                I2C.I2DAT = transaction->buffer[transaction->bytesTransferred];
-
-                transaction->bytesTransferred++;
-                transaction->bytesToTransfer--;
-
+                g_currentI2cTransactionAction = &g_ReadI2cTransactionAction;
+                LPC24_I2c_StartTransaction();
             }
-            break;
-        case 0x20: // Write Address not acknowledged by slave
-        case 0x30: // Data not acknowledged by slave
-        case 0x48: // Read Address not acknowledged by slave
-            LPC24_I2c_StopTransaction();
-            break;
-        case 0x38: // Arbitration lost
-            LPC24_I2c_StopTransaction();
-            break;
-        case 0x40: // Slave Address + R transmitted, Ack received
-            // if the transaction is one byte only to read, then we must send NAK immediately
-            if (transaction->bytesToTransfer == 1) {
-                I2C.I2CONCLR = LPC24XX_I2C::AA;
-            }
-            else {
-                I2C.I2CONSET = LPC24XX_I2C::AA;
-            }
-            break;
-        case 0x50: // Data received, Ack Sent
-        case 0x58: // Data received, NO Ack sent
-            // read next byte
-            //ReadFromSlave( unit );
-            transaction->buffer[transaction->bytesTransferred] = I2C.I2DAT;
+        }
+        else {
+            //WriteToSlave( unit );
+            I2C.I2DAT = transaction->buffer[transaction->bytesTransferred];
 
             transaction->bytesTransferred++;
             transaction->bytesToTransfer--;
 
-            if (transaction->bytesToTransfer == 1) {
-                I2C.I2CONCLR = LPC24XX_I2C::AA;
+        }
+        break;
+    case 0x20: // Write Address not acknowledged by slave
+    case 0x30: // Data not acknowledged by slave
+    case 0x48: // Read Address not acknowledged by slave
+        LPC24_I2c_StopTransaction();
+        break;
+    case 0x38: // Arbitration lost
+        LPC24_I2c_StopTransaction();
+        break;
+    case 0x40: // Slave Address + R transmitted, Ack received
+        // if the transaction is one byte only to read, then we must send NAK immediately
+        if (transaction->bytesToTransfer == 1) {
+            I2C.I2CONCLR = LPC24XX_I2C::AA;
+        }
+        else {
+            I2C.I2CONSET = LPC24XX_I2C::AA;
+        }
+        break;
+    case 0x50: // Data received, Ack Sent
+    case 0x58: // Data received, NO Ack sent
+        // read next byte
+        //ReadFromSlave( unit );
+        transaction->buffer[transaction->bytesTransferred] = I2C.I2DAT;
+
+        transaction->bytesTransferred++;
+        transaction->bytesToTransfer--;
+
+        if (transaction->bytesToTransfer == 1) {
+            I2C.I2CONCLR = LPC24XX_I2C::AA;
+        }
+        if (transaction->bytesToTransfer == 0) {
+            if (transaction->repeatedStart == false) {
+                // send transaction stop
+                LPC24_I2c_StopTransaction();
             }
-            if (transaction->bytesToTransfer == 0) {
-                if (transaction->repeatedStart == false) {
-                    // send transaction stop
-                    LPC24_I2c_StopTransaction();
-                }
-                else {
-                    // start next
-                    g_currentI2cTransactionAction = &g_ReadI2cTransactionAction;
-                    LPC24_I2c_StartTransaction();
-                }
+            else {
+                // start next
+                g_currentI2cTransactionAction = &g_ReadI2cTransactionAction;
+                LPC24_I2c_StartTransaction();
             }
-            break;
-        case 0x00: // Bus Error
-            // Clear Bus error
-            I2C.I2CONSET = LPC24XX_I2C::STO;
-            LPC24_I2c_StopTransaction();
-            break;
-        default:
-            LPC24_I2c_StopTransaction();
-            break;
+        }
+        break;
+    case 0x00: // Bus Error
+        // Clear Bus error
+        I2C.I2CONSET = LPC24XX_I2C::STO;
+        LPC24_I2c_StopTransaction();
+        break;
+    default:
+        LPC24_I2c_StopTransaction();
+        break;
     } // switch(status)
 
     // clear the interrupt flag to start the next I2C transfer

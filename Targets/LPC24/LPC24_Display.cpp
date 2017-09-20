@@ -665,12 +665,12 @@ const LPC24_Gpio_Pin g_Display_BacklightPin = LPC24_DISPLAY_BACKLIGHT_PIN;
 const LPC24_Gpio_Pin g_Display_EnablePin = LPC24_DISPLAY_ENABLE_PIN;
 
 bool  LPC24_Display_SetPinConfiguration() {
-  if (m_LPC24_DisplayWidth == 0) {
+    if (m_LPC24_DisplayWidth == 0) {
         for (auto i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins); i++) {
             if (g_Display_ControllerPins[i].number != PIN_NONE)
-                LPC24_Gpio_EnableInputPin(g_Display_ControllerPins[i].number, TinyCLR_Gpio_PinDriveMode::InputPullDown);           
+                LPC24_Gpio_EnableInputPin(g_Display_ControllerPins[i].number, TinyCLR_Gpio_PinDriveMode::InputPullDown);
         }
-        
+
         if (g_Display_EnablePin.number != PIN_NONE)
             LPC24_Gpio_EnableInputPin(g_Display_EnablePin.number, TinyCLR_Gpio_PinDriveMode::InputPullDown);
 
@@ -691,34 +691,34 @@ bool  LPC24_Display_SetPinConfiguration() {
         else
             LPC24_Gpio_ConfigurePin(g_Display_EnablePin.number, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
 
-/*
-    LPC24_Gpio_ConfigurePin(1 * 32 + 20, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 51
-    LPC24_Gpio_ConfigurePin(1 * 32 + 21, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 52
-    LPC24_Gpio_ConfigurePin(1 * 32 + 22, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 53
-    LPC24_Gpio_ConfigurePin(1 * 32 + 23, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 54
-    LPC24_Gpio_ConfigurePin(1 * 32 + 24, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 55
-    LPC24_Gpio_ConfigurePin(1 * 32 + 25, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 56
-    LPC24_Gpio_ConfigurePin(1 * 32 + 26, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 57
-    //LPC24_Gpio_ConfigurePin(1*32 + 27, TinyCLR_Gpio_PinDriveMode::Input,  LPC24_Gpio_PinFunction::PinFunction1); // 58
-    LPC24_Gpio_ConfigurePin(1 * 32 + 28, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 59
-    LPC24_Gpio_ConfigurePin(1 * 32 + 29, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 60
-    LPC24_Gpio_ConfigurePin(2 * 32 + 2, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive); // 61
-    LPC24_Gpio_ConfigurePin(2 * 32 + 3, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive); // 62
+    /*
+        LPC24_Gpio_ConfigurePin(1 * 32 + 20, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 51
+        LPC24_Gpio_ConfigurePin(1 * 32 + 21, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 52
+        LPC24_Gpio_ConfigurePin(1 * 32 + 22, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 53
+        LPC24_Gpio_ConfigurePin(1 * 32 + 23, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 54
+        LPC24_Gpio_ConfigurePin(1 * 32 + 24, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 55
+        LPC24_Gpio_ConfigurePin(1 * 32 + 25, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 56
+        LPC24_Gpio_ConfigurePin(1 * 32 + 26, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 57
+        //LPC24_Gpio_ConfigurePin(1*32 + 27, TinyCLR_Gpio_PinDriveMode::Input,  LPC24_Gpio_PinFunction::PinFunction1); // 58
+        LPC24_Gpio_ConfigurePin(1 * 32 + 28, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 59
+        LPC24_Gpio_ConfigurePin(1 * 32 + 29, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 60
+        LPC24_Gpio_ConfigurePin(2 * 32 + 2, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive); // 61
+        LPC24_Gpio_ConfigurePin(2 * 32 + 3, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive); // 62
 
-    if (m_LPC24_DisplayOutputEnableIsFixed)
-        LPC24_Gpio_EnableOutputPin(2 * 32 + 4, m_LPC24_DisplayOutputEnablePolarity);
-    else
-        LPC24_Gpio_ConfigurePin(2 * 32 + 4, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
+        if (m_LPC24_DisplayOutputEnableIsFixed)
+            LPC24_Gpio_EnableOutputPin(2 * 32 + 4, m_LPC24_DisplayOutputEnablePolarity);
+        else
+            LPC24_Gpio_ConfigurePin(2 * 32 + 4, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
 
-    LPC24_Gpio_ConfigurePin(2 * 32 + 5, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
-    LPC24_Gpio_ConfigurePin(2 * 32 + 6, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
-    LPC24_Gpio_ConfigurePin(2 * 32 + 7, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
-    LPC24_Gpio_ConfigurePin(2 * 32 + 8, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
-    LPC24_Gpio_ConfigurePin(2 * 32 + 9, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
-    LPC24_Gpio_ConfigurePin(2 * 32 + 12, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive);
-    LPC24_Gpio_ConfigurePin(2 * 32 + 13, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive);
+        LPC24_Gpio_ConfigurePin(2 * 32 + 5, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
+        LPC24_Gpio_ConfigurePin(2 * 32 + 6, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
+        LPC24_Gpio_ConfigurePin(2 * 32 + 7, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
+        LPC24_Gpio_ConfigurePin(2 * 32 + 8, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
+        LPC24_Gpio_ConfigurePin(2 * 32 + 9, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
+        LPC24_Gpio_ConfigurePin(2 * 32 + 12, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive);
+        LPC24_Gpio_ConfigurePin(2 * 32 + 13, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive);
 
-*/
+    */
 
     return true;
 }
@@ -795,88 +795,88 @@ void LPC24_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height,
         return;
 
     switch (m_LPC24_Display_CurrentRotation) {
-        case LPC24xx_LCD_Rotation::rotateNormal_0:
+    case LPC24xx_LCD_Rotation::rotateNormal_0:
 
-            if (xOffset == 0 && yOffset == 0 &&
-                width == screenWidth &&    height == screenHeight) {
-                LPC24_Display_MemCopy(to, from, (screenWidth*screenHeight * 2));
+        if (xOffset == 0 && yOffset == 0 &&
+            width == screenWidth &&    height == screenHeight) {
+            LPC24_Display_MemCopy(to, from, (screenWidth*screenHeight * 2));
+        }
+        else {
+            for (yTo = yOffset; yTo < (yOffset + height); yTo++) {
+                LPC24_Display_MemCopy((void*)(to + yTo * screenWidth + xOffset), (void*)(from + yTo * screenWidth + xOffset), (width * 2));
             }
-            else {
-                for (yTo = yOffset; yTo < (yOffset + height); yTo++) {
-                    LPC24_Display_MemCopy((void*)(to + yTo * screenWidth + xOffset), (void*)(from + yTo * screenWidth + xOffset), (width * 2));
-                }
+        }
+
+        break;
+
+    case LPC24xx_LCD_Rotation::rotateCCW_90:
+
+        startPx = yOffset * screenHeight;
+        xFrom = xOffset + width;
+        yTo = screenHeight - xOffset - width;
+        xTo = yOffset;
+        to += yTo * screenWidth + xTo;
+        toAddition = screenWidth - height;
+
+        for (; yTo < (screenHeight - xOffset); yTo++) {
+            xFrom--;
+            yFrom = startPx + xFrom;
+
+            for (xTo = yOffset; xTo < (yOffset + height); xTo++) {
+                *to++ = from[yFrom];
+                yFrom += screenHeight;
             }
 
-            break;
+            to += toAddition;
+        }
 
-        case LPC24xx_LCD_Rotation::rotateCCW_90:
+        break;
 
-            startPx = yOffset * screenHeight;
-            xFrom = xOffset + width;
-            yTo = screenHeight - xOffset - width;
-            xTo = yOffset;
-            to += yTo * screenWidth + xTo;
-            toAddition = screenWidth - height;
+    case LPC24xx_LCD_Rotation::rotateCW_90:
 
-            for (; yTo < (screenHeight - xOffset); yTo++) {
+        startPx = (yOffset + height - 1) * screenHeight;
+        xFrom = xOffset;
+
+        yTo = xOffset;
+        xTo = screenWidth - yOffset - height;
+        to += yTo * screenWidth + xTo;
+        toAddition = screenWidth - height;
+
+        for (; yTo < (xOffset + width); yTo++) {
+            yFrom = startPx + xFrom;
+
+            for (xTo = screenWidth - yOffset - height; xTo < (screenWidth - yOffset); xTo++) {
+                *to++ = from[yFrom];
+                yFrom -= screenHeight;
+            }
+
+            to += toAddition;
+            xFrom++;
+        }
+
+        break;
+
+    case LPC24xx_LCD_Rotation::rotate_180:
+
+        xFrom = (yOffset + height - 1) * screenWidth + xOffset + width;
+
+        yTo = screenHeight - yOffset - height;
+        xTo = screenWidth - xOffset - width;
+        to += yTo * screenWidth + xTo;
+        toAddition = screenWidth - width;
+
+        for (; yTo < (screenHeight - yOffset); yTo++) {
+
+            for (xTo = screenWidth - xOffset - width; xTo < (screenWidth - xOffset); xTo++) {
                 xFrom--;
-                yFrom = startPx + xFrom;
-
-                for (xTo = yOffset; xTo < (yOffset + height); xTo++) {
-                    *to++ = from[yFrom];
-                    yFrom += screenHeight;
-                }
-
-                to += toAddition;
+                *to++ = from[xFrom];
             }
 
-            break;
+            to += toAddition;
+            xFrom -= toAddition;
+        }
 
-        case LPC24xx_LCD_Rotation::rotateCW_90:
-
-            startPx = (yOffset + height - 1) * screenHeight;
-            xFrom = xOffset;
-
-            yTo = xOffset;
-            xTo = screenWidth - yOffset - height;
-            to += yTo * screenWidth + xTo;
-            toAddition = screenWidth - height;
-
-            for (; yTo < (xOffset + width); yTo++) {
-                yFrom = startPx + xFrom;
-
-                for (xTo = screenWidth - yOffset - height; xTo < (screenWidth - yOffset); xTo++) {
-                    *to++ = from[yFrom];
-                    yFrom -= screenHeight;
-                }
-
-                to += toAddition;
-                xFrom++;
-            }
-
-            break;
-
-        case LPC24xx_LCD_Rotation::rotate_180:
-
-            xFrom = (yOffset + height - 1) * screenWidth + xOffset + width;
-
-            yTo = screenHeight - yOffset - height;
-            xTo = screenWidth - xOffset - width;
-            to += yTo * screenWidth + xTo;
-            toAddition = screenWidth - width;
-
-            for (; yTo < (screenHeight - yOffset); yTo++) {
-
-                for (xTo = screenWidth - xOffset - width; xTo < (screenWidth - xOffset); xTo++) {
-                    xFrom--;
-                    *to++ = from[xFrom];
-                }
-
-                to += toAddition;
-                xFrom -= toAddition;
-            }
-
-            break;
+        break;
     }
 
 }
@@ -889,17 +889,17 @@ void LPC24_Display_WriteChar(uint8_t c, int32_t row, int32_t col) {
 }
 void LPC24_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenHeight) {
     switch (m_LPC24_Display_CurrentRotation) {
-        case LPC24xx_LCD_Rotation::rotateNormal_0:
-        case LPC24xx_LCD_Rotation::rotate_180:
-            *screenWidth = m_LPC24_DisplayWidth;
-            *screenHeight = m_LPC24_DisplayHeight;
-            break;
+    case LPC24xx_LCD_Rotation::rotateNormal_0:
+    case LPC24xx_LCD_Rotation::rotate_180:
+        *screenWidth = m_LPC24_DisplayWidth;
+        *screenHeight = m_LPC24_DisplayHeight;
+        break;
 
-        case LPC24xx_LCD_Rotation::rotateCCW_90:
-        case LPC24xx_LCD_Rotation::rotateCW_90:
-            *screenWidth = m_LPC24_DisplayHeight;
-            *screenHeight = m_LPC24_DisplayWidth;
-            break;
+    case LPC24xx_LCD_Rotation::rotateCCW_90:
+    case LPC24xx_LCD_Rotation::rotateCW_90:
+        *screenWidth = m_LPC24_DisplayHeight;
+        *screenHeight = m_LPC24_DisplayWidth;
+        break;
     }
 }
 
@@ -951,9 +951,9 @@ TinyCLR_Result LPC24_Display_SetLcdConfiguration(const TinyCLR_Display_Provider*
 
 TinyCLR_Result LPC24_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data, TinyCLR_Display_Format dataFormat) {
     switch (dataFormat) {
-        case TinyCLR_Display_Format::Rgb565:
-            LPC24_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
-            return TinyCLR_Result::Success;
+    case TinyCLR_Display_Format::Rgb565:
+        LPC24_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
+        return TinyCLR_Result::Success;
     }
 
     return  TinyCLR_Result::InvalidOperation;

@@ -49,23 +49,23 @@ void LPC24_Power_SetHandlers(void(*stop)(), void(*restart)()) {
 void LPC24_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep_Level level) {
     switch (level) {
 
-        case TinyCLR_Power_Sleep_Level::Hibernate: // stop
-            if (g_LPC24_stopHandler != 0)
-                g_LPC24_stopHandler();
+    case TinyCLR_Power_Sleep_Level::Hibernate: // stop
+        if (g_LPC24_stopHandler != 0)
+            g_LPC24_stopHandler();
 
-            return;
+        return;
 
-        case TinyCLR_Power_Sleep_Level::Off: // standby
-            // stop peripherals if needed
-            if (g_LPC24_stopHandler != 0)
-                g_LPC24_stopHandler();
+    case TinyCLR_Power_Sleep_Level::Off: // standby
+        // stop peripherals if needed
+        if (g_LPC24_stopHandler != 0)
+            g_LPC24_stopHandler();
 
-            return;
+        return;
 
-        default: // sleep
-            PCON |= 1;
+    default: // sleep
+        PCON |= 1;
 
-            return;
+        return;
     }
 }
 
