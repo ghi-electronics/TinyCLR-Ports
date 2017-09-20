@@ -12,171 +12,85 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef _DEVICE_EMM_H_
-#define _DEVICE_EMM_H_
+#pragma once
 
-#define PLATFORM_ARM_DEFINED
+#define DEVICE_TARGET LPC24
+#define DEVICE_NAME "EmbeddedMaster"
+#define DEVICE_MANUFACTURER "GHI Electronics, LLC"
+#define DEVICE_VERSION ((0x0000ULL << 32) | (0x0006ULL << 16) | (0x0000ULL << 0))
 
-// Macro
-#define GLOBAL_LOCK(x)             LPC24_SmartPtr_IRQ x
-#define DISABLE_INTERRUPTS()       LPC24_SmartPtr_IRQ::ForceDisabled()
-#define ENABLE_INTERRUPTS()        LPC24_SmartPtr_IRQ::ForceEnabled()
+#define USB_DEBUGGER_VENDOR_ID 0x1B9F
+#define USB_DEBUGGER_PRODUCT_ID 0x0110
 
-#if defined(_DEBUG)
-#define ASSERT(x)                  while (!(x))
-#define ASSERT_IRQ_MUST_BE_OFF()   ASSERT(!LPC24_SmartPtr_IRQ::GetState())
-#define ASSERT_IRQ_MUST_BE_ON()    ASSERT( LPC24_SmartPtr_IRQ::GetState())
-#else
-#define ASSERT_IRQ_MUST_BE_OFF()
-#define ASSERT_IRQ_MUST_BE_ON()
-#endif
+#define UART_DEBUGGER_INDEX 0
+#define USB_DEBUGGER_INDEX 0
 
-#define INTERRUPT_START         LPC24_Interrupt_Started();
-#define INTERRUPT_END           LPC24_Interrupt_Ended();
+#define DEBUGGER_SELECTOR_PIN PIN(2, 11)
+#define DEBUGGER_SELECTOR_PULL TinyCLR_Gpio_PinDriveMode::InputPullDown
+#define DEBUGGER_SELECTOR_USB_STATE TinyCLR_Gpio_PinValue::High
 
-// Device
-#define HAL_SYSTEM_NAME "EmbeddedMaster"
+#define RUN_APP_PIN PIN(0, 4)
+#define RUN_APP_PULL TinyCLR_Gpio_PinDriveMode::InputPullUp
+#define RUN_APP_STATE TinyCLR_Gpio_PinValue::High
 
-// System clock
-#define SYSTEM_CLOCK_HZ                      18000000 // 18 MHz
-#define SYSTEM_CYCLE_CLOCK_HZ                72000000 // 72 MHz
-#define CLOCK_COMMON_FACTOR                  1000000 // GCD(SYSTEM_CLOCK_HZ, 1M)
-#define SLOW_CLOCKS_PER_SECOND               18000000 // SYSTEM_CLOCK_HZ MHz
-#define SLOW_CLOCKS_TEN_MHZ_GCD              1000000 // GCD(SLOW_CLOCKS_PER_SECOND, 10M)
-#define SLOW_CLOCKS_MILLISECOND_GCD          1000 // GCD(SLOW_CLOCKS_PER_SECOND, 1k)
+#define RAM_BOOTLOADER_HOLD_ADDRESS 0xA0FFFFF8
+#define RAM_BOOTLOADER_HOLD_VALUE 0xB53D0238
 
-// external Memory - Flash
-#define EXT_FLASH_MEMORY_Base                0x80000000
-#define EXT_FLASH_MEMORY_Size                0x00400000 // 4MB ext flash
-#define EXT_SDRAM_MEMORY_Base                0xA0000000
-#define EXT_SDRAM_MEMORY_Size                0x0800000 // 16MB ext ram
+#define SYSTEM_CLOCK_HZ 18000000
+#define LPC24_AHB_CLOCK_HZ 72000000
 
-// Macro
-#define PORT_PIN(port,pin)                   (((int)port)*32 + (pin))
-#define _P(port, pin)                        PORT_PIN(GPIO_PORT##port, pin)
-#define _P_NONE_                             GPIO_PIN_NONE
-#define GPIO_PORT0                           0
-#define GPIO_PORT1                           1
-#define GPIO_PORT2                           2
-#define GPIO_PORT3                           3
-#define GPIO_PORT4                           4
+#define INCLUDE_GPIO
+#define LPC24_GPIO_PINS {/*      0              1              2              3              4              5              6              7              8              9              10             11             12             13             14             15             16             17             18             19             20             21             22             23             24             25             26             27             28             29             30             31                    */\
+                         /*P0x*/ INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp),\
+                         /*P1x*/ INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp),\
+                         /*P2x*/ INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp),\
+                         /*P3x*/ INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp),\
+                         /*P4x*/ INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp),\
+                        }
 
-// GPIO
-#define TOTAL_GPIO_PORT                      (GPIO_PORT4 + 1)
-#define TOTAL_GPIO_PINS                      (TOTAL_GPIO_PORT*32)
+#define INCLUDE_ADC
+#define LPC24_ADC_PINS { { PIN(0,23), PF(1) }, { PIN(0,24), PF(1) }, { PIN(0,25), PF(1) }, { PIN(0,26), PF(1) }, { PIN_NONE, PF_NONE }, { PIN(1,31), PF(3) }, { PIN(0,12), PF(3) }, { PIN(0,13), PF(3) } }
 
-// USBC
+#define INCLUDE_DAC
+#define LPC24_DAC_PINS { { PIN(0,26), PF(2)} }
+
+#define INCLUDE_I2C
+#define LPC24_I2C_SCL_PINS { { PIN(0, 28), PF(1) } }
+#define LPC24_I2C_SDA_PINS { { PIN(0, 27), PF(1) } }
+
+#define INCLUDE_PWM
+#define LPC2478_PWM_PINS  { { { PIN(3, 16), PF(2) }, { PIN(3, 17), PF(2) }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE  , PF_NONE } }, { { PIN(3, 24), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN(3, 26), PF(3) }, { PIN(3, 27), PF(3) }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE } } }
+#define LPC2468_PWM_PINS  { { { PIN(3, 16), PF(2) }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE  , PF_NONE } }, { { PIN(3, 24), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE } } }
+
+#define INCLUDE_SPI
+#define LPC24_SPI_SCLK_PINS { { PIN(0, 15), PF(2) }, { PIN(0,  7), PF(2) } }
+#define LPC24_SPI_MISO_PINS { { PIN(0, 17), PF(2) }, { PIN(0,  8), PF(2) } }
+#define LPC24_SPI_MOSI_PINS { { PIN(0, 18), PF(2) }, { PIN(0,  9), PF(2) } }
+
+#define INCLUDE_UART
+#define TOTAL_UART_CONTROLLERS 4
+#define LPC24_UART_TX_BUFFER_SIZE (16 * 1024)
+#define LPC24_UART_RX_BUFFER_SIZE (16 * 1024)
+#define LPC2478_UART_TX_PINS              { { PIN(0, 2), PF(1)   }, { PIN(2, 0) , PF(2) }, { PIN(4, 22), PF(2)   }, { PIN(0, 25), PF(3)   } }
+#define LPC2478_UART_RX_PINS              { { PIN(0, 3), PF(1)   }, { PIN(2, 1) , PF(2) }, { PIN(4, 23), PF(2)   }, { PIN(0, 26), PF(3)   } }
+#define LPC2478_UART_RTS_PINS             { { PIN_NONE , PF_NONE }, { PIN(3, 30), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } }
+#define LPC2478_UART_CTS_PINS             { { PIN_NONE , PF_NONE }, { PIN(3, 18), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } }
+
+#define LPC2468_UART_TX_PINS              { { PIN(0, 2), PF(1)   }, { PIN(2, 0) , PF(2) }, { PIN(2,  8), PF(2)   }, { PIN(0, 25), PF(3)   } }
+#define LPC2468_UART_RX_PINS              { { PIN(0, 3), PF(1)   }, { PIN(2, 1) , PF(2) }, { PIN(2,  9), PF(2)   }, { PIN(0, 26), PF(3)   } }
+#define LPC2468_UART_RTS_PINS             { { PIN_NONE , PF_NONE }, { PIN(2, 7) , PF(2) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } }
+#define LPC2468_UART_CTS_PINS             { { PIN_NONE , PF_NONE }, { PIN(2, 2) , PF(2) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } }
+
+
+#define INCLUDE_USBCLIENT
 #define TOTAL_USB_CONTROLLER            1
-#define USB_MAX_QUEUES                  16
-#define USB_VENDOR_ID                   0x1B9F
-#define USB_PRODUCT_ID                  0x0110
-#define USB_MANUFACTURER_NAME           {'G', 'H', 'I', ' ', 'E', 'l', 'e', 'c', 't', 'r', 'o', 'n', 'i', 'c', 's', ',', ' ', 'L', 'L', 'C'}
-#define USB_PRODUCT_NAME                {'E', 'm', 'b', 'e','d','d','e','d','M','a','s','t','e','r'}
-#define USB_DISPLAY_NAME                USB_PRODUCT_NAME
-#define USB_FRIENDLY_NAME               USB_PRODUCT_NAME
+#define LPC24_USB_QUEUE_SIZE 16
 
-// UART
-#define TOTAL_UART_CONTROLLERS               4
-#define LPC24_UART_TX_BUFFER_SIZE           (16*1024)
-#define LPC24_UART_RX_BUFFER_SIZE           (16*1024)
-
-// ADC
-#define TOTAL_ADC_CONTROLLERS               8
-#define LPC24_ADC_PINS                     {_P(0,23),_P(0,24),_P(0,25),_P(0,26),_P_NONE_,_P(1,31),_P(0,12),_P(0,13)}
-#define LPC24_ADC_ALT_MODE                 {LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3}
-
-// DAC
-#define TOTAL_DAC_CONTROLLERS                1
-#define LPC24_DAC_PINS                     {_P(0,26)}
-#define LPC24_DAC_ALT_MODE                 {LPC24_Gpio_PinFunction::PinFunction2}
-
-// I2C
-#define LPC24_I2C_PCLK_KHZ                 SYSTEM_CLOCK_HZ/1000
-#define LPC24_I2C_SCL_PIN                  _P(0,28)
-#define LPC24_I2C_SDA_PIN                  _P(0,27)
-#define LPC24_I2C_SCL_ALT_MODE             LPC24_Gpio_PinFunction::PinFunction1
-#define LPC24_I2C_SDA_ALT_MODE             LPC24_Gpio_PinFunction::PinFunction1
-
-// PWM
-#define LPC24_PWM_PCLK                     (SYSTEM_CLOCK_HZ)
-#define MAX_PWM_PER_CONTROLLER              6
-#define TOTAL_PWM_CONTROLLER                2
-#define LPC2478_PWM                         {   { 0 ,  {0x0, 0x0, 0x0, 0x0, 0x0, 0x0} , {0x0, 0x1, 0x2, 0x3, 0x4, 0x5 } , { _P(3, 16), _P(3, 17), _P_NONE_ , _P_NONE_ , _P_NONE_, _P_NONE_},  {LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3},  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {PWM0MR1, PWM0MR2, PWM0MR3, PWM0MR4, PWM0MR5, PWM0MR6 }, { false, false, false, false, false, false }, 0.0, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}  } ,\
-                                                { 1 ,  {0x1, 0x1, 0x1, 0x1, 0x1, 0x1} , {0x0, 0x1, 0x2, 0x3, 0x4, 0x5 } , { _P(3, 24), _P(3, 26), _P(3, 27), _P_NONE_ , _P_NONE_, _P_NONE_},  {LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3},  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {PWM1MR1, PWM1MR2, PWM1MR3, PWM1MR4, PWM1MR5, PWM1MR6 }, { false, false, false, false, false, false }, 0.0, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}  } }
-
-#define LPC2468_PWM                         {   { 0 ,  {0x0, 0x0, 0x0, 0x0, 0x0, 0x0} , {0x0, 0x1, 0x2, 0x3, 0x4, 0x5 } , { _P(3, 16), _P_NONE_ , _P_NONE_ , _P_NONE_ , _P_NONE_ , _P_NONE_},  {LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3},  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {PWM0MR1, PWM0MR2, PWM0MR3, PWM0MR4, PWM0MR5, PWM0MR6 }, { false, false, false, false, false, false }, 0.0, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}  } ,\
-                                                { 1 ,  {0x1, 0x1, 0x1, 0x1, 0x1, 0x1} , {0x0, 0x1, 0x2, 0x3, 0x4, 0x5 } , { _P(3, 24), _P_NONE_ , _P_NONE_ , _P_NONE_ , _P_NONE_ , _P_NONE_},  {LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3},  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, {PWM1MR1, PWM1MR2, PWM1MR3, PWM1MR4, PWM1MR5, PWM1MR6 }, { false, false, false, false, false, false }, 0.0, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0}  } }
-
-// SPI
-#define TOTAL_SPI_CONTROLLERS               2
-#define LPC24_SPI_PCLK_KHZ                 (SYSTEM_CYCLE_CLOCK_HZ/1000)
-#define LPC24_SPI_MISO_PINS                {_P(0,17),_P(0,8)}
-#define LPC24_SPI_MOSI_PINS                {_P(0,18),_P(0,9)}
-#define LPC24_SPI_CLK_PINS                 {_P(0,15),_P(0,7)}
-#define LPC24_SPI_MISO_ALT_MODE            {LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2}
-#define LPC24_SPI_MOSI_ALT_MODE            {LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2}
-#define LPC24_SPI_CLK_ALT_MODE             {LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2}
-
-// UARTs
-#define LPC24_UART_PCLK                   SYSTEM_CYCLE_CLOCK_HZ
-//UART EMX
-#define LPC2478_UART_TX_PINS              {_P(0,2) , _P(2,0) , _P(4,22), _P(0,25) }
-#define LPC2478_UART_RX_PINS              {_P(0,3) , _P(2,1) , _P(4,23), _P(0,26)  }
-#define LPC2478_UART_RTS_PINS             {_P_NONE_, _P(3,30), _P_NONE_, _P_NONE_ }
-#define LPC2478_UART_CTS_PINS             {_P_NONE_, _P(3,18), _P_NONE_, _P_NONE_ }
-#define LPC2478_UART_TX_ALT_MODE          {LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2,LPC24_Gpio_PinFunction::PinFunction3}
-#define LPC2478_UART_RX_ALT_MODE          {LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2,LPC24_Gpio_PinFunction::PinFunction3}
-#define LPC2478_UART_RTS_ALT_MODE         {LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction0,LPC24_Gpio_PinFunction::PinFunction0}
-#define LPC2478_UART_CTS_ALT_MODE         {LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction0,LPC24_Gpio_PinFunction::PinFunction0}
-
-#define LPC2468_UART_TX_PINS            {_P(0,2) , _P(2,0) , _P(2,8), _P(0,25) }
-#define LPC2468_UART_RX_PINS            {_P(0,3) , _P(2,1) , _P(2,9), _P(0,26)  }
-#define LPC2468_UART_RTS_PINS           {_P_NONE_, _P(2,7), _P_NONE_, _P_NONE_ }
-#define LPC2468_UART_CTS_PINS           {_P_NONE_, _P(2,2), _P_NONE_, _P_NONE_ }
-#define LPC2468_UART_TX_ALT_MODE        {LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2,LPC24_Gpio_PinFunction::PinFunction3}
-#define LPC2468_UART_RX_ALT_MODE        {LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2,LPC24_Gpio_PinFunction::PinFunction3}
-#define LPC2468_UART_RTS_ALT_MODE       {LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction0,LPC24_Gpio_PinFunction::PinFunction0}
-#define LPC2468_UART_CTS_ALT_MODE       {LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction0,LPC24_Gpio_PinFunction::PinFunction0}
-
-// Debug
-#define DEBUG_TEXT_PORT                      USB1
-#define STDIO                                USB1
-#define DEBUGGER_PORT                        USB1
-#define MESSAGING_PORT                       USB1
-
-#define LMODE_PIN                       	_P(2,11)
-#define LMODE_USB_STATE                 	TinyCLR_Gpio_PinValue::High
+#define INCLUDE_DISPLAY
+#define LPC24_DISPLAY_CONTROLLER_PINS { { PIN(1, 20), PF(1) }, { PIN(1, 21), PF(1) }, { PIN(1, 22), PF(1) }, { PIN(1, 23), PF(1) }, { PIN(1, 24), PF(1) }, { PIN(1, 25), PF(1) }, { PIN(1, 26), PF(1) }, { /*PIN(1, 27)*/ PIN_NONE, PF(1) }, { PIN(1, 28), PF(1)}, { PIN(1, 29), PF(1) }, { PIN(2, 2), PF(3) }, { PIN(2, 3), PF(3) }, { PIN(2, 5), PF(3) }, { PIN(2, 6), PF(3) }, { PIN(2, 7), PF(3) }, { PIN(2, 8), PF(3) }, { PIN(2, 9), PF(3) }, { PIN(2, 12), PF(1) }, { PIN(2, 13), PF(1) } }
+#define LPC24_DISPLAY_BACKLIGHT_PIN  { PIN_NONE, PF_NONE }
+#define LPC24_DISPLAY_ENABLE_PIN  { PIN(2, 4), PF(3) }
 
 #define LPC2468_PARTID                      0x1600FF35
 
-// Loader
-#define RUNAPP_PIN                          _P(0,4)
-#define RUNAPP_STATE                        TinyCLR_Gpio_PinValue::High
-
-#define UART_DEBUGGER_INDEX                 0
-#define USB_DEBUGGER_INDEX                  0
-
-#define RAM_BOOTLOADER_HOLD_ADDRESS         (EXT_SDRAM_MEMORY_Base + EXT_SDRAM_MEMORY_Size - 8)
-#define RAM_BOOTLOADER_HOLD_VALUE           0xB53D0338
-
-// OEM information
-#define OEM_STRING                          "GHI Electronics, LLC\0"
-#define OEM_VERSION_MAJOR                   0
-#define OEM_VERSION_MINOR                   6
-#define OEM_VERSION_PATCH                   0
-
-#define INCLUDE_ADC
-#define INCLUDE_DAC
-#define INCLUDE_GPIO
-#define INCLUDE_I2C
-#define INCLUDE_PWM
-#define INCLUDE_SPI
-#define INCLUDE_UART
-#define INCLUDE_USBCLIENT
-#define INCLUDE_DISPLAY
-
-#define TARGET LPC24
-
 #include <LPC24.h>
-
-#endif
