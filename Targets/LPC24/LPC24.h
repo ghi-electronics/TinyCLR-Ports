@@ -762,7 +762,7 @@ struct LPC24XX_USART {
     static const uint32_t c_UartBase_2 = 0xE0078000;
     static const uint32_t c_UartBase_3 = 0xE007C000;
 
-    static const uint32_t c_ClockRate = LPC24_UART_PCLK;
+    static const uint32_t c_ClockRate = LPC24_AHB_CLOCK_HZ;
 
     static const uint32_t c_MAX_BAUDRATE = c_ClockRate / 16;
     static const uint32_t c_MIN_BAUDRATE = 0;

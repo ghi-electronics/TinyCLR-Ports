@@ -59,6 +59,15 @@
 #define LPC24_SPI_MISO_PINS { { PIN(0, 17), PF(2) }, { PIN(0,  8), PF(2) } }
 #define LPC24_SPI_MOSI_PINS { { PIN(0, 18), PF(2) }, { PIN(0,  9), PF(2) } }
 
+#define INCLUDE_UART
+#define TOTAL_UART_CONTROLLERS 4
+#define LPC24_UART_TX_BUFFER_SIZE (16 * 1024)
+#define LPC24_UART_RX_BUFFER_SIZE (16 * 1024)
+#define LPC24_UART_TX_PINS              { { PIN(0, 2), PF(1) }, { PIN(2, 0) , PF(2) }, { PIN(4, 22), PF(2) }, { PIN(0, 25), PF(3) } }
+#define LPC24_UART_RX_PINS              { { PIN(0, 3), PF(1) }, { PIN(2, 1) , PF(2) }, { PIN(4, 23), PF(2) }, { PIN(0, 26), PF(3) } }
+#define LPC24_UART_RTS_PINS             { { PIN_NONE , PF(0) }, { PIN(3, 30), PF(3) }, { PIN_NONE  , PF(0) }, { PIN_NONE  , PF(0) } }
+#define LPC24_UART_CTS_PINS             { { PIN_NONE , PF(0) }, { PIN(3, 18), PF(3) }, { PIN_NONE  , PF(0) }, { PIN_NONE  , PF(0) } }
+
 
 #if 0
 #define PLATFORM_ARM_DEFINED
@@ -120,9 +129,9 @@
 #define USB_FRIENDLY_NAME               USB_PRODUCT_NAME
 
 // UART
-#define TOTAL_UART_CONTROLLERS               4
-#define LPC24_UART_TX_BUFFER_SIZE           (16*1024)
-#define LPC24_UART_RX_BUFFER_SIZE           (16*1024)
+// #define TOTAL_UART_CONTROLLERS               4
+// #define LPC24_UART_TX_BUFFER_SIZE           (16*1024)
+// #define LPC24_UART_RX_BUFFER_SIZE           (16*1024)
 
 // ADC
 //#define TOTAL_ADC_CONTROLLERS               8
@@ -156,16 +165,16 @@
 // #define LPC24_SPI_CLK_ALT_MODE             {LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2}
 
 // UARTs
-#define LPC24_UART_PCLK                   LPC24_AHB_CLOCK_HZ
+// #define LPC24_UART_PCLK                   LPC24_AHB_CLOCK_HZ
 //UART EMX
-#define LPC24_UART_TX_PINS              {_P(0,2) , _P(2,0) , _P(4,22), _P(0,25) }
-#define LPC24_UART_RX_PINS              {_P(0,3) , _P(2,1) , _P(4,23), _P(0,26)  }
-#define LPC24_UART_RTS_PINS             {_P_NONE_, _P(3,30), _P_NONE_, _P_NONE_ }
-#define LPC24_UART_CTS_PINS             {_P_NONE_, _P(3,18), _P_NONE_, _P_NONE_ }
-#define LPC24_UART_TX_ALT_MODE          {LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2,LPC24_Gpio_PinFunction::PinFunction3}
-#define LPC24_UART_RX_ALT_MODE          {LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2,LPC24_Gpio_PinFunction::PinFunction3}
-#define LPC24_UART_RTS_ALT_MODE         {LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction0,LPC24_Gpio_PinFunction::PinFunction0}
-#define LPC24_UART_CTS_ALT_MODE         {LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction0,LPC24_Gpio_PinFunction::PinFunction0}
+// #define LPC24_UART_TX_PINS              {_P(0,2) , _P(2,0) , _P(4,22), _P(0,25) }
+// #define LPC24_UART_RX_PINS              {_P(0,3) , _P(2,1) , _P(4,23), _P(0,26)  }
+// #define LPC24_UART_RTS_PINS             {_P_NONE_, _P(3,30), _P_NONE_, _P_NONE_ }
+// #define LPC24_UART_CTS_PINS             {_P_NONE_, _P(3,18), _P_NONE_, _P_NONE_ }
+// #define LPC24_UART_TX_ALT_MODE          {LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2,LPC24_Gpio_PinFunction::PinFunction3}
+// #define LPC24_UART_RX_ALT_MODE          {LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction2, LPC24_Gpio_PinFunction::PinFunction2,LPC24_Gpio_PinFunction::PinFunction3}
+// #define LPC24_UART_RTS_ALT_MODE         {LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction0,LPC24_Gpio_PinFunction::PinFunction0}
+// #define LPC24_UART_CTS_ALT_MODE         {LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction0,LPC24_Gpio_PinFunction::PinFunction0}
 
 // Debug
 #define DEBUG_TEXT_PORT                      USB1

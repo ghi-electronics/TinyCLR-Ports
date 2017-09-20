@@ -78,46 +78,41 @@ void LPC24_UsbClient_PinConfiguration() {
 }
 
 // Uart
-static const uint32_t g_LPC24_UART_TX_PINS[] = LPC24_UART_TX_PINS;
-static const uint32_t g_LPC24_UART_RX_PINS[] = LPC24_UART_RX_PINS;
-static const uint32_t g_LPC24_UART_RTS_PINS[] = LPC24_UART_RTS_PINS;
-static const uint32_t g_LPC24_UART_CTS_PINS[] = LPC24_UART_CTS_PINS;
-
-static const LPC24_Gpio_PinFunction g_LPC24_UART_TX_ALT_MODE[] = LPC24_UART_TX_ALT_MODE;
-static const LPC24_Gpio_PinFunction g_LPC24_UART_RX_ALT_MODE[] = LPC24_UART_RX_ALT_MODE;
-static const LPC24_Gpio_PinFunction g_LPC24_UART_RTS_ALT_MODE[] = LPC24_UART_RTS_ALT_MODE;
-static const LPC24_Gpio_PinFunction g_LPC24_UART_CTS_ALT_MODE[] = LPC24_UART_CTS_ALT_MODE;
+static const LPC24_Gpio_Pin g_lpc24_uart_tx_pins[] = LPC24_UART_TX_PINS;
+static const LPC24_Gpio_Pin g_lpc24_uart_rx_pins[] = LPC24_UART_RX_PINS;
+static const LPC24_Gpio_Pin g_lpc24_uart_rts_pins[] = LPC24_UART_RTS_PINS;
+static const LPC24_Gpio_Pin g_lpc24_uart_cts_pins[] = LPC24_UART_CTS_PINS;
 
 int32_t LPC24_Uart_GetTxPin(int32_t portNum) {
-    return g_LPC24_UART_TX_PINS[portNum];
+    return g_lpc24_uart_tx_pins[portNum].number;
 }
 
 int32_t LPC24_Uart_GetRxPin(int32_t portNum) {
-    return g_LPC24_UART_RX_PINS[portNum];
+    return g_lpc24_uart_rx_pins[portNum].number;
 }
 
 int32_t LPC24_Uart_GetRtsPin(int32_t portNum) {
-    return g_LPC24_UART_RTS_PINS[portNum];
+    return g_lpc24_uart_rts_pins[portNum].number;
 }
 
 int32_t LPC24_Uart_GetCtsPin(int32_t portNum) {
-    return g_LPC24_UART_CTS_PINS[portNum];
+    return g_lpc24_uart_cts_pins[portNum].number;
 }
 
 LPC24_Gpio_PinFunction LPC24_Uart_GetTxAlternateFunction(int32_t portNum) {
-    return g_LPC24_UART_TX_ALT_MODE[portNum];
+    return g_lpc24_uart_tx_pins[portNum].pinFunction;
 }
 
 LPC24_Gpio_PinFunction LPC24_Uart_GetRxAlternateFunction(int32_t portNum) {
-    return g_LPC24_UART_RX_ALT_MODE[portNum];
+    return g_lpc24_uart_rx_pins[portNum].pinFunction;
 }
 
 LPC24_Gpio_PinFunction LPC24_Uart_GetRtsAlternateFunction(int32_t portNum) {
-    return g_LPC24_UART_RTS_ALT_MODE[portNum];
+    return g_lpc24_uart_rts_pins[portNum].pinFunction;
 }
 
 LPC24_Gpio_PinFunction LPC24_Uart_GetCtsAlternateFunction(int32_t portNum) {
-    return g_LPC24_UART_CTS_ALT_MODE[portNum];
+    return g_lpc24_uart_cts_pins[portNum].pinFunction;
 }
 
 // ADC
