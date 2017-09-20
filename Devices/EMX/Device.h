@@ -41,6 +41,9 @@
 #define SYSTEM_CLOCK_HZ 18000000
 #define LPC24_AHB_CLOCK_HZ 72000000
 
+#define INCLUDE_ADC
+#define LPC24_ADC_PINS                     { { PIN(0,23), PF(1) }, { PIN(0,24), PF(1) }, { PIN(0,25), PF(1) }, { PIN(0,26), PF(1) }, { _P_NONE_, PF(0) }, { PIN(1,31), PF(3) }, { PIN(0,12), PF(3) }, { PIN(0,13), PF(3) } }
+
 
 
 
@@ -77,7 +80,6 @@
 #define EXT_FLASH_MEMORY_Size                0x00400000 // 4MB ext flash
 #define EXT_SDRAM_MEMORY_Base                0xA0000000
 #define EXT_SDRAM_MEMORY_Size                0x01000000 // 16MB ext ram
-
 #endif
 
 // Macro
@@ -89,6 +91,7 @@
 #define GPIO_PORT2                           2
 #define GPIO_PORT3                           3
 #define GPIO_PORT4                           4
+
 
 // GPIO
 #define TOTAL_GPIO_PORT                      (GPIO_PORT4 + 1)
@@ -111,8 +114,8 @@
 
 // ADC
 #define TOTAL_ADC_CONTROLLERS               8
-#define LPC24_ADC_PINS                     {_P(0,23),_P(0,24),_P(0,25),_P(0,26),_P_NONE_,_P(1,31),_P(0,12),_P(0,13)}
-#define LPC24_ADC_ALT_MODE                 {LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3}
+//#define LPC24_ADC_PINS                     {_P(0,23),_P(0,24),_P(0,25),_P(0,26),_P_NONE_,_P(1,31),_P(0,12),_P(0,13)}
+//#define LPC24_ADC_ALT_MODE                 {LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinFunction::PinFunction3}
 
 // DAC
 #define TOTAL_DAC_CONTROLLERS                1
