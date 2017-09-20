@@ -42,7 +42,7 @@
 #define LPC24_AHB_CLOCK_HZ 72000000
 
 #define INCLUDE_ADC
-#define LPC24_ADC_PINS { { PIN(0,23), PF(1) }, { PIN(0,24), PF(1) }, { PIN(0,25), PF(1) }, { PIN(0,26), PF(1) }, { _P_NONE_, PF(0) }, { PIN(1,31), PF(3) }, { PIN(0,12), PF(3) }, { PIN(0,13), PF(3) } }
+#define LPC24_ADC_PINS { { PIN(0,23), PF(1) }, { PIN(0,24), PF(1) }, { PIN(0,25), PF(1) }, { PIN(0,26), PF(1) }, { PIN_NONE, PF(0) }, { PIN(1,31), PF(3) }, { PIN(0,12), PF(3) }, { PIN(0,13), PF(3) } }
 
 #define INCLUDE_DAC
 #define LPC24_DAC_PINS { { PIN(0,26), PF(2)} }
@@ -51,6 +51,8 @@
 #define LPC24_I2C_SCL_PINS { { PIN(0, 28), PF(1) } }
 #define LPC24_I2C_SDA_PINS { { PIN(0, 27), PF(1) } }
 
+#define INCLUDE_PWM
+#define LPC24_PWM_PINS  { { { PIN(3, 16), PF(2) }, { PIN(3, 17), PF(2) }, { PIN_NONE, PF(0) }, { PIN_NONE, PF(0) }, { PIN_NONE, PF(0) }, { PIN_NONE  , PF(0) } }, { { PIN(3, 24), PF(3) }, { PIN_NONE  , PF(0) }, { PIN(3, 26), PF(3) }, { PIN(3, 27), PF(3) }, { PIN_NONE, PF(0) }, { PIN(3, 29), PF(3) } } }
 
 #if 0
 #define PLATFORM_ARM_DEFINED

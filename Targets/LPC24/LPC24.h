@@ -203,29 +203,10 @@ int32_t LPC24_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self);
 int32_t LPC24_Dac_GetMinValue(const TinyCLR_Dac_Provider* self);
 int32_t LPC24_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self);
 
-// PWM
-#define PWM0MR0 (*(volatile unsigned long *)0xE0014018)
-#define PWM0MR1 ((uint32_t*)0xE001401C)
-#define PWM0MR2 ((uint32_t*)0xE0014020)
-#define PWM0MR3 ((uint32_t*)0xE0014024)
-#define PWM0MR4 ((uint32_t*)0xE0014040)
-#define PWM0MR5 ((uint32_t*)0xE0014044)
-#define PWM0MR6 ((uint32_t*)0xE0014048)
-
-#define PWM1MR0 (*(volatile unsigned long *)0xE0018018)
-#define PWM1MR1 ((uint32_t*)0xE001801C)
-#define PWM1MR2 ((uint32_t*)0xE0018020)
-#define PWM1MR3 ((uint32_t*)0xE0018024)
-#define PWM1MR4 ((uint32_t*)0xE0018040)
-#define PWM1MR5 ((uint32_t*)0xE0018044)
-#define PWM1MR6 ((uint32_t*)0xE0018048)
-
-struct PwmController {
-    int32_t                     id;
+struct PwmController {   
     int32_t                     channel[MAX_PWM_PER_CONTROLLER];
-    int32_t                     subChannel[MAX_PWM_PER_CONTROLLER];
-    uint32_t                    gpioPin[MAX_PWM_PER_CONTROLLER];
-    LPC24_Gpio_PinFunction      gpioAlternateFunction[MAX_PWM_PER_CONTROLLER];
+    int32_t                     match[MAX_PWM_PER_CONTROLLER];
+    LPC24_Gpio_Pin              gpioPin[MAX_PWM_PER_CONTROLLER];    
     uint32_t                    outputEnabled[MAX_PWM_PER_CONTROLLER];
     uint32_t                    *matchAddress[MAX_PWM_PER_CONTROLLER];
     bool                        invert[MAX_PWM_PER_CONTROLLER];
@@ -235,7 +216,7 @@ struct PwmController {
 const TinyCLR_Api_Info* LPC24_Pwm_GetApi();
 void LPC24_Pwm_Reset();
 void LPC24_Pwm_ResetController(int32_t controller);
-PwmController* LPC24_Pwm_GetControllers();
+LPC24_Gpio_Pin LPC24_Pwm_GetPins(int32_t controller, int32_t channel);
 TinyCLR_Result LPC24_Pwm_Acquire(const TinyCLR_Pwm_Provider* self);
 TinyCLR_Result LPC24_Pwm_Release(const TinyCLR_Pwm_Provider* self);
 int32_t LPC24_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t pin);
