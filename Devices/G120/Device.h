@@ -66,14 +66,8 @@
 #define LPC17_I2C_SDA_PINS { { PIN(0, 27), PF(1) } }
 
 #define INCLUDE_PWM
-#define LPC17_G120_PWM_PINS {\
-                           { 0, { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }, { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5 }, { { PIN(1,  2), PF(3) }, { PIN(1,  3), PF(3) }, { PIN(1,  5), PF(3) }, { PIN(1,  6), PF(3) }, { PIN(1,  7), PF(3) }, { PIN(1, 11), PF(3) } }, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, { PWM0MR1, PWM0MR2, PWM0MR3, PWM0MR4, PWM0MR5, PWM0MR6 }, { false, false, false, false, false, false }, 0.0, { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } },\
-                           { 1, { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 }, { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5 }, { { PIN(3, 24), PF(2) }, { PIN(3, 25), PF(2) }, { PIN(3, 26), PF(2) }, { PIN(2,  3), PF(1) }, { PIN(2,  4), PF(1) }, { PIN(2,  5), PF(1) } }, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, { PWM1MR1, PWM1MR2, PWM1MR3, PWM1MR4, PWM1MR5, PWM1MR6 }, { false, false, false, false, false, false }, 0.0, { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } },\
-                       }
-#define LPC17_G120E_PWM_PINS {\
-                           { 0, { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }, { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5 }, { { PIN(3, 16), PF(2) }, { PIN(3, 17), PF(2) }, { PIN(3, 18), PF(2) }, { PIN(3, 19), PF(2) }, { PIN(3, 20), PF(2) }, { PIN(3, 21), PF(2) } }, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, { PWM0MR1, PWM0MR2, PWM0MR3, PWM0MR4, PWM0MR5, PWM0MR6 }, { false, false, false, false, false, false }, 0.0, { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } },\
-                           { 1, { 0x1, 0x1, 0x1, 0x1, 0x1, 0x1 }, { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5 }, { { PIN(3, 24), PF(2) }, { PIN(3, 25), PF(2) }, { PIN(3, 26), PF(2) }, { PIN(3, 27), PF(2) }, { PIN(3, 28), PF(2) }, { PIN(3, 29), PF(2) } }, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, { PWM1MR1, PWM1MR2, PWM1MR3, PWM1MR4, PWM1MR5, PWM1MR6 }, { false, false, false, false, false, false }, 0.0, { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 } },\
-                        }
+#define LPC17_G120_PWM_PINS  { { { PIN(1,  2), PF(3) }, { PIN(1,  3), PF(3) }, { PIN(1,  5), PF(3) }, { PIN(1,  6), PF(3) }, { PIN(1,  7), PF(3) }, { PIN(1, 11), PF(3) } }, { { PIN(3, 24), PF(2) }, { PIN(3, 25), PF(2) }, { PIN(3, 26), PF(2) }, { PIN(2,  3), PF(1) }, { PIN(2,  4), PF(1) }, { PIN(2,  5), PF(1) } } }
+#define LPC17_G120E_PWM_PINS { { { PIN(3, 16), PF(2) }, { PIN(3, 17), PF(2) }, { PIN(3, 18), PF(2) }, { PIN(3, 19), PF(2) }, { PIN(3, 20), PF(2) }, { PIN(3, 21), PF(2) } }, { { PIN(3, 24), PF(2) }, { PIN(3, 25), PF(2) }, { PIN(3, 26), PF(2) }, { PIN(3, 27), PF(2) }, { PIN(3, 28), PF(2) }, { PIN(3, 29), PF(2) } } }
 
 #define INCLUDE_SPI
 #define LPC17_SPI_SCLK_PINS { { PIN(0, 15), PF(2) }, { PIN(0,  7), PF(2) }, { PIN(1,  0), PF(4) } }

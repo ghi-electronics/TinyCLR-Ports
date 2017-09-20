@@ -107,14 +107,16 @@ void LPC17_Startup_GetRunApp(bool& runApp) {
 }
 
 // PWM
-static PwmController g_g120_pwm[TOTAL_PWM_CONTROLLER] = LPC17_G120_PWM_PINS;
-static PwmController g_g120e_pwm[TOTAL_PWM_CONTROLLER] = LPC17_G120E_PWM_PINS;
+const LPC17_Gpio_Pin g_g120_pwm_pins[TOTAL_PWM_CONTROLLER][MAX_PWM_PER_CONTROLLER] = LPC17_G120_PWM_PINS;
+const LPC17_Gpio_Pin g_g120e_pwm_pins[TOTAL_PWM_CONTROLLER][MAX_PWM_PER_CONTROLLER] = LPC17_G120E_PWM_PINS;
 
-PwmController* LPC17_Pwm_GetControllers() {
-    if (LPC17_Startup_GetDeviceId() == LPC17_G120)
-        return (PwmController*)&g_g120_pwm;
-    else
-        return (PwmController*)&g_g120e_pwm;
+LPC17_Gpio_Pin LPC17_Pwm_GetPins(int32_t controller, int32_t channel) {
+    if (LPC17_Startup_GetDeviceId() == LPC17_G120) {
+        return g_g120_pwm_pins[controller][channel];
+    }
+    else {
+        return g_g120e_pwm_pins[controller][channel];
+    }
 }
 
 // Uart

@@ -149,28 +149,27 @@ void LPC17_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
 
 // PWM
 #define PWM0MR0 (*(volatile unsigned long *)0x40014018)
-#define PWM0MR1 ((uint32_t *)0x4001401C)
-#define PWM0MR2 ((uint32_t *)0x40014020)
-#define PWM0MR3 ((uint32_t *)0x40014024)
-#define PWM0MR4 ((uint32_t *)0x40014040)
-#define PWM0MR5 ((uint32_t *)0x40014044)
-#define PWM0MR6 ((uint32_t *)0x40014048)
+#define PWM0MR1 ((uint32_t )0x4001401C)
+#define PWM0MR2 ((uint32_t )0x40014020)
+#define PWM0MR3 ((uint32_t )0x40014024)
+#define PWM0MR4 ((uint32_t )0x40014040)
+#define PWM0MR5 ((uint32_t )0x40014044)
+#define PWM0MR6 ((uint32_t )0x40014048)
 
 #define PWM1MR0 (*(volatile unsigned long *)0x40018018)
-#define PWM1MR1 ((uint32_t *)0x4001801C)
-#define PWM1MR2 ((uint32_t *)0x40018020)
-#define PWM1MR3 ((uint32_t *)0x40018024)
-#define PWM1MR4 ((uint32_t *)0x40018040)
-#define PWM1MR5 ((uint32_t *)0x40018044)
-#define PWM1MR6 ((uint32_t *)0x40018048)
+#define PWM1MR1 ((uint32_t )0x4001801C)
+#define PWM1MR2 ((uint32_t )0x40018020)
+#define PWM1MR3 ((uint32_t )0x40018024)
+#define PWM1MR4 ((uint32_t )0x40018040)
+#define PWM1MR5 ((uint32_t )0x40018044)
+#define PWM1MR6 ((uint32_t )0x40018048)
 
 #define TOTAL_PWM_CONTROLLER                2
 #define MAX_PWM_PER_CONTROLLER              6
 
-struct PwmController {
-    int32_t                         id;
+struct PwmController {    
     int32_t                         channel[MAX_PWM_PER_CONTROLLER];
-    int32_t                         subChannel[MAX_PWM_PER_CONTROLLER];
+    int32_t                         match[MAX_PWM_PER_CONTROLLER];
     LPC17_Gpio_Pin                  gpioPin[MAX_PWM_PER_CONTROLLER];
     uint32_t                        outputEnabled[MAX_PWM_PER_CONTROLLER];
     uint32_t                        *matchAddress[MAX_PWM_PER_CONTROLLER];
@@ -180,7 +179,6 @@ struct PwmController {
 };
 
 const TinyCLR_Api_Info* LPC17_Pwm_GetApi();
-PwmController* LPC17_Pwm_GetControllers();
 void LPC17_Pwm_Reset();
 void LPC17_Pwm_ResetController(int32_t controller);
 TinyCLR_Result LPC17_Pwm_Acquire(const TinyCLR_Pwm_Provider* self);
@@ -196,6 +194,7 @@ double LPC17_Pwm_GetMinFrequency(const TinyCLR_Pwm_Provider* self);
 double LPC17_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self);
 double LPC17_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self);
 int32_t LPC17_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self);
+LPC17_Gpio_Pin LPC17_Pwm_GetPins(int32_t controller, int32_t channel);
 
 //SPI
 const TinyCLR_Api_Info* LPC17_Spi_GetApi();
