@@ -191,10 +191,10 @@ double LPC24_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self) {
             return 0;
     }
 
-    uint64_t periodTicks = (uint64_t)((LPC24_PWM_PCLK / 1000000)) * periodInNanoSeconds / 1000;
+    uint64_t periodTicks = (uint64_t)((SYSTEM_CLOCK_HZ / 1000000)) * periodInNanoSeconds / 1000;
 
     // update actual period and duration, after few boudary changes base on current system clock
-    periodInNanoSeconds = ((uint64_t)(periodTicks * 1000)) / ((uint64_t)((LPC24_PWM_PCLK / 1000000)));
+    periodInNanoSeconds = ((uint64_t)(periodTicks * 1000)) / ((uint64_t)((SYSTEM_CLOCK_HZ / 1000000)));
 
     switch (scale) {
         case PWM_MILLISECONDS:
@@ -286,8 +286,8 @@ TinyCLR_Result LPC24_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, in
     }
 
     // 18M/M = 18 * period / 1000 to get legal value.
-    uint32_t periodTicks = (uint64_t)((LPC24_PWM_PCLK / 1000000)) * periodInNanoSeconds / 1000;
-    uint32_t highTicks = (uint64_t)((LPC24_PWM_PCLK / 1000000)) * durationInNanoSeconds / 1000;
+    uint32_t periodTicks = (uint64_t)((SYSTEM_CLOCK_HZ / 1000000)) * periodInNanoSeconds / 1000;
+    uint32_t highTicks = (uint64_t)((SYSTEM_CLOCK_HZ / 1000000)) * durationInNanoSeconds / 1000;
 
     // A strange instance where if the periodInNanoSeconds would have ended in infinite 3 (calculated with float in NETMF), periodTicks are not computed correctly
     if (0 == ((periodInNanoSeconds - 3) % 10))
