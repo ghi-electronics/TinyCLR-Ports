@@ -20,7 +20,13 @@
 
 #include <defines.h>
 #include <TinyCLR.h>
-#include <DeviceSelector.h>
+#include <Device.h>
+
+#define SIZEOF_ARRAY(arr) (sizeof(arr) / sizeof(arr[0]))
+#define CONCAT2(a, b) a##b
+#define CONCAT(a, b) CONCAT2(a, b)
+#define CHARIZE2(c) #c
+#define CHARIZE(c) (CHARIZE2(c)[0])
 
 //
 //  PERIPHERAL ID DEFINITIONS FOR AT91SAM9X35
@@ -428,6 +434,30 @@ enum class AT91_Gpio_DriveSpeed : uint8_t {
     Reserved = 3
 };
 
+struct AT91_Gpio_Pin {
+    uint32_t number;
+    AT91_Gpio_PeripheralSelection peripheralSelection;
+};
+
+struct AT91_Gpio_PinConfiguration {
+    AT91_Gpio_Direction direction;
+    AT91_Gpio_ResistorMode resistorMode;
+    AT91_Gpio_MultiDriver multiDriver;
+    AT91_Gpio_Filter filter;
+    AT91_Gpio_FilterSlowClock filterSlowClock;
+    AT91_Gpio_Schmitt schmitt;
+    AT91_Gpio_DriveSpeed speed;
+    AT91_Gpio_PeripheralSelection peripheralSelection;
+};
+
+#define PIN(port, pin) ((CHARIZE(port) - 'A') * 32 + pin)
+#define PIN_NONE 0xFFFFFFFF
+#define PS(num) (CONCAT(AT91_Gpio_PeripheralSelection::Peripheral, num))
+#define PS_NONE AT91_Gpio_PeripheralSelection::None
+
+#define INIT(pinDirection, resistorMode, peripheralSelection) { AT91_Gpio_Direction::pinDirection, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable,  AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::peripheralSelection }
+#define ALTFUN(direction, resistorMode, peripheralSelection) { AT91_Gpio_Direction::direction, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable,  AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::peripheralSelection }
+#define INPUT(resistorMode, filter, filterSlowClock) { AT91_Gpio_Direction::Input, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::filter, AT91_Gpio_FilterSlowClock::filterSlowClock, AT91_Gpio_Schmitt::Disable, AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::None }
 
 void AT91_Gpio_Reset();
 const TinyCLR_Api_Info* AT91_Gpio_GetApi();
@@ -1311,11 +1341,10 @@ struct AT91_WATCHDOG
 //////////////////////////////////////////////////////////////////////////////
 
 //Startup
-void AT91_Startup_InitializeRegions();
+void AT91_Startup_Initialize();
 void AT91_Startup_GetHeap(uint8_t*& start, size_t& length);
-int32_t AT91_Startup_GetLModePin();
-int32_t AT91_Startup_GetDeviceId();
-TinyCLR_Gpio_PinValue AT91_Startup_GetLModeUsbState();
+void AT91_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index);
+void AT91_Startup_GetRunApp(bool& runApp);
 
 struct AT91
 {

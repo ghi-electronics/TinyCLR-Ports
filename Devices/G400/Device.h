@@ -12,8 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef _DEVICE_G400_H_
-#define _DEVICE_G400_H_
+#pragma once
+
+
+
+#define DEVICE_TARGET AT91
+#define DEVICE_NAME "G400"
+#define DEVICE_MANUFACTURER "GHI Electronics, LLC"
+#define DEVICE_VERSION ((0x0000ULL << 32) | (0x0006ULL << 16) | (0x0000ULL << 0))
+
+#define USB_DEBUGGER_VENDOR_ID 0x1B9F
+#define USB_DEBUGGER_PRODUCT_ID 0x0110
+
+#define UART_DEBUGGER_INDEX 0
+#define USB_DEBUGGER_INDEX 0
+
+#define DEBUGGER_SELECTOR_PIN PIN(A, 25)
+#define DEBUGGER_SELECTOR_PULL TinyCLR_Gpio_PinDriveMode::InputPullUp
+#define DEBUGGER_SELECTOR_USB_STATE TinyCLR_Gpio_PinValue::High
+
+#define RUN_APP_PIN PIN(A, 4)
+#define RUN_APP_PULL TinyCLR_Gpio_PinDriveMode::InputPullUp
+#define RUN_APP_STATE TinyCLR_Gpio_PinValue::High
+
+#define RAM_BOOTLOADER_HOLD_ADDRESS         0x266FFFF0
+#define RAM_BOOTLOADER_HOLD_VALUE           0x8DB4DA67
+
+
+#if 1
 
 #define PLATFORM_ARM_DEFINED
 
@@ -136,8 +162,8 @@
 #define UART_DEBUGGER_INDEX                 0
 #define USB_DEBUGGER_INDEX                  0
 
-#define RAM_BOOTLOADER_HOLD_ADDRESS         0x266FFFF0
-#define RAM_BOOTLOADER_HOLD_VALUE           0x8DB4DA67
+// #define RAM_BOOTLOADER_HOLD_ADDRESS         0x266FFFF0
+// #define RAM_BOOTLOADER_HOLD_VALUE           0x8DB4DA67
 
 // OEM information
 #define OEM_STRING                          "GHI Electronics, LLC\0"
@@ -153,8 +179,6 @@
 #define INCLUDE_UART
 #define INCLUDE_USBCLIENT
 #define INCLUDE_DISPLAY
-
-#define TARGET AT91
 
 #include <AT91.h>
 

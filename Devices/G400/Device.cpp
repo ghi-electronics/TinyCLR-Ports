@@ -13,22 +13,7 @@
 // limitations under the License.
 
 #include <TinyCLR.h>
-#include <DeviceSelector.h>
-
-int32_t AT91_Startup_GetLModePin() {
-    return LMODE_PIN;
-}
-
-TinyCLR_Gpio_PinValue AT91_Startup_GetLModeUsbState() {
-    return LMODE_USB_STATE;
-}
-
-static int32_t AT91_deviceId = 0;
-
-int32_t AT91_Startup_GetDeviceId() {
-    
-    return AT91_deviceId;
-}
+#include <Device.h>
 
 // UsbClient
 void AT91_UsbClient_PinConfiguration() {    
