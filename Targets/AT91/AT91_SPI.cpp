@@ -18,9 +18,9 @@
 #define DATA_BIT_LENGTH_16  16
 #define DATA_BIT_LENGTH_8   8
 
-static const AT91_Gpio_Pin g_AT91_Spi_Miso_Pins[] = AT91_SPI_MISO_PINS;
-static const AT91_Gpio_Pin g_AT91_Spi_Mosi_Pins[] = AT91_SPI_MOSI_PINS;
-static const AT91_Gpio_Pin g_AT91_Spi_Sclk_Pins[] = AT91_SPI_SCLK_PINS;
+static const AT91_Gpio_Pin g_at91_spi_miso_pins[] = AT91_SPI_MISO_PINS;
+static const AT91_Gpio_Pin g_at91_spi_mosi_pins[] = AT91_SPI_MOSI_PINS;
+static const AT91_Gpio_Pin g_at91_spi_sclk_pins[] = AT91_SPI_SCLK_PINS;
 
 struct SpiController {
     uint8_t *readBuffer;
@@ -76,13 +76,13 @@ bool AT91_Spi_Transaction_Start(int32_t controller) {
     uint32_t clkPin, misoPin, mosiPin;
     AT91_Gpio_PeripheralSelection clkMode, misoMode, mosiMode;
 
-    clkPin = g_AT91_Spi_Sclk_Pins[controller].number;
-    misoPin = g_AT91_Spi_Miso_Pins[controller].number;
-    mosiPin = g_AT91_Spi_Mosi_Pins[controller].number;
+    clkPin = g_at91_spi_sclk_pins[controller].number;
+    misoPin = g_at91_spi_miso_pins[controller].number;
+    mosiPin = g_at91_spi_mosi_pins[controller].number;
 
-    clkMode = g_AT91_Spi_Sclk_Pins[controller].peripheralSelection;
-    misoMode = g_AT91_Spi_Miso_Pins[controller].peripheralSelection;
-    mosiMode = g_AT91_Spi_Mosi_Pins[controller].peripheralSelection;
+    clkMode = g_at91_spi_sclk_pins[controller].peripheralSelection;
+    misoMode = g_at91_spi_miso_pins[controller].peripheralSelection;
+    mosiMode = g_at91_spi_mosi_pins[controller].peripheralSelection;
 
     AT91_Gpio_ConfigurePin(clkPin, AT91_Gpio_Direction::Input, clkMode, AT91_Gpio_ResistorMode::Inactive);
     AT91_Gpio_ConfigurePin(misoPin, AT91_Gpio_Direction::Input, misoMode, AT91_Gpio_ResistorMode::Inactive);
@@ -142,9 +142,9 @@ bool AT91_Spi_Transaction_Stop(int32_t controller) {
 
     uint32_t clkPin, misoPin, mosiPin;
 
-    clkPin = g_AT91_Spi_Sclk_Pins[controller].number;
-    misoPin = g_AT91_Spi_Miso_Pins[controller].number;
-    mosiPin = g_AT91_Spi_Mosi_Pins[controller].number;
+    clkPin = g_at91_spi_sclk_pins[controller].number;
+    misoPin = g_at91_spi_miso_pins[controller].number;
+    mosiPin = g_at91_spi_mosi_pins[controller].number;
 
     AT91_Gpio_ConfigurePin(clkPin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::PullUp);
     AT91_Gpio_ConfigurePin(misoPin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::PullUp);
@@ -323,9 +323,9 @@ TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int3
 TinyCLR_Result AT91_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
     int32_t controller = (self->Index);
 
-    int32_t clkPin = g_AT91_Spi_Sclk_Pins[controller].number;
-    int32_t misoPin = g_AT91_Spi_Miso_Pins[controller].number;
-    int32_t mosiPin = g_AT91_Spi_Mosi_Pins[controller].number;
+    int32_t clkPin = g_at91_spi_sclk_pins[controller].number;
+    int32_t misoPin = g_at91_spi_miso_pins[controller].number;
+    int32_t mosiPin = g_at91_spi_mosi_pins[controller].number;
 
     AT91_PMC &pmc = AT91::PMC();
 
@@ -353,9 +353,9 @@ TinyCLR_Result AT91_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
 TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Provider* self) {
     int32_t controller = (self->Index);
 
-    int32_t clkPin = g_AT91_Spi_Sclk_Pins[controller].number;
-    int32_t misoPin = g_AT91_Spi_Miso_Pins[controller].number;
-    int32_t mosiPin = g_AT91_Spi_Mosi_Pins[controller].number;
+    int32_t clkPin = g_at91_spi_sclk_pins[controller].number;
+    int32_t misoPin = g_at91_spi_miso_pins[controller].number;
+    int32_t mosiPin = g_at91_spi_mosi_pins[controller].number;
 
     AT91_PMC &pmc = AT91::PMC();
 

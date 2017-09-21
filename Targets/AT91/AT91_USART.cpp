@@ -82,6 +82,42 @@ const TinyCLR_Api_Info* AT91_Uart_GetApi() {
     return &uartApi;
 }
 
+static const AT91_Gpio_Pin g_at91_uart_tx_pins[] = AT91_UART_TX_PINS;
+static const AT91_Gpio_Pin g_at91_uart_rx_pins[] = AT91_UART_RX_PINS;
+static const AT91_Gpio_Pin g_at91_uart_rts_pins[] = AT91_UART_RTS_PINS;
+static const AT91_Gpio_Pin g_at91_uart_cts_pins[] = AT91_UART_CTS_PINS;
+
+int32_t AT91_Uart_GetTxPin(int32_t portNum) {
+    return g_at91_uart_tx_pins[portNum].number;
+}
+
+int32_t AT91_Uart_GetRxPin(int32_t portNum) {
+    return g_at91_uart_rx_pins[portNum].number;
+}
+
+int32_t AT91_Uart_GetRtsPin(int32_t portNum) {
+    return g_at91_uart_rts_pins[portNum].number;
+}
+
+int32_t AT91_Uart_GetCtsPin(int32_t portNum) {
+    return g_at91_uart_cts_pins[portNum].number;
+}
+
+AT91_Gpio_PeripheralSelection AT91_Uart_GetTxAlternateFunction(int32_t portNum) {
+    return g_at91_uart_tx_pins[portNum].peripheralSelection;
+}
+
+AT91_Gpio_PeripheralSelection AT91_Uart_GetRxAlternateFunction(int32_t portNum) {
+    return g_at91_uart_rx_pins[portNum].peripheralSelection;
+}
+
+AT91_Gpio_PeripheralSelection AT91_Uart_GetRtsAlternateFunction(int32_t portNum) {
+    return g_at91_uart_rts_pins[portNum].peripheralSelection;
+}
+
+AT91_Gpio_PeripheralSelection AT91_Uart_GetCtsAlternateFunction(int32_t portNum) {
+    return g_at91_uart_cts_pins[portNum].peripheralSelection;
+}
 
 void AT91_Uart_PinConfiguration(int portNum, bool enable) {
     DISABLE_INTERRUPTS_SCOPED(irq);

@@ -54,6 +54,20 @@ const TinyCLR_Api_Info *AT91_Adc_GetApi() {
     return &adcApi;
 }
 
+static const AT91_Gpio_Pin g_at91_adc_pins[] = AT91_ADC_PINS;
+
+int32_t AT91_Adc_GetControllerCount() {
+    return SIZEOF_ARRAY(g_at91_adc_pins);
+}
+
+int32_t AT91_Adc_GetPin(int32_t channel) {
+    return  g_at91_adc_pins[channel].number;
+}
+
+AT91_Gpio_PeripheralSelection AT91_Adc_GetPeripheralSelection(int32_t channel) {
+    return  g_at91_adc_pins[channel].peripheralSelection;
+}
+
 TinyCLR_Result AT91_Adc_Acquire(const TinyCLR_Adc_Provider *self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;

@@ -70,6 +70,13 @@ const TinyCLR_Api_Info* AT91_Pwm_GetApi() {
 
     return &pwmApi;
 }
+
+static const AT91_Gpio_Pin g_at91_pwm_pins[TOTAL_PWM_CONTROLLER][MAX_PWM_PER_CONTROLLER] = AT91_PWM_PINS;
+
+AT91_Gpio_Pin AT91_Pwm_GetPins(int32_t controller, int32_t channel) {
+   return g_at91_pwm_pins[controller][channel];
+}
+
 bool AT91_Pwm_SetPinState(const TinyCLR_Pwm_Provider* self, int32_t pin, bool state) {
     int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, pin);
 
