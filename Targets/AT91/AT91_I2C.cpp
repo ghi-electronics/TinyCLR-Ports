@@ -259,16 +259,19 @@ TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int3
     return TinyCLR_Result::Success;
 }
 
+static const AT91_Gpio_Pin g_at91_i2c_scl_pin[] = AT91_I2C_SCL_PINS;
+static const AT91_Gpio_Pin g_at91_i2c_sda_pin[] = AT91_I2C_SDA_PINS;
+
 TinyCLR_Result AT91_I2c_Acquire(const TinyCLR_I2c_Provider* self) {
     AT91_I2C& I2C = AT91::I2C();
     AT91_PMC &pmc = AT91::PMC();
 
     if (!g_I2cConfiguration.initialized) {
-        if (!AT91_Gpio_OpenPin(AT91_I2C_SDA_PIN) || !AT91_Gpio_OpenPin(AT91_I2C_SCL_PIN))
+        if (!AT91_Gpio_OpenPin(g_at91_i2c_sda_pin[self->Index].number) || !AT91_Gpio_OpenPin(g_at91_i2c_scl_pin[self->Index].number))
             return TinyCLR_Result::SharingViolation;
 
-        AT91_Gpio_ConfigurePin(AT91_I2C_SDA_PIN, AT91_Gpio_Direction::Input, AT91_I2C_SDA_ALT_MODE, AT91_Gpio_ResistorMode::Inactive);
-        AT91_Gpio_ConfigurePin(AT91_I2C_SCL_PIN, AT91_Gpio_Direction::Input, AT91_I2C_SCL_ALT_MODE, AT91_Gpio_ResistorMode::Inactive);
+        AT91_Gpio_ConfigurePin(g_at91_i2c_sda_pin[self->Index].number, AT91_Gpio_Direction::Input, g_at91_i2c_sda_pin[self->Index].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+        AT91_Gpio_ConfigurePin(g_at91_i2c_scl_pin[self->Index].number, AT91_Gpio_Direction::Input, g_at91_i2c_scl_pin[self->Index].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
 
         pmc.EnablePeriphClock(AT91C_ID_TWI);
         I2C.TWI_MMR = 0x7e << AT91_I2C::TWI_MMR_DADR_SHIFT;
@@ -300,8 +303,8 @@ TinyCLR_Result AT91_I2c_Release(const TinyCLR_I2c_Provider* self) {
 
         g_I2cConfiguration.initialized = false;
 
-        AT91_Gpio_ClosePin(AT91_I2C_SDA_PIN);
-        AT91_Gpio_ClosePin(AT91_I2C_SCL_PIN);
+        AT91_Gpio_ClosePin(g_at91_i2c_sda_pin[self->Index].number);
+        AT91_Gpio_ClosePin(g_at91_i2c_scl_pin[self->Index].number);
     }
 
     return TinyCLR_Result::Success;

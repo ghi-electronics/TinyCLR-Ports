@@ -49,7 +49,12 @@
 #define FLASH_MEMORY_Base                   0x00000000
 #define FLASH_MEMORY_Size                   0x00420000
 
+#define INCLUDE_ADC
 #define AT91_ADC_PINS                     { { PIN(B,11), PS(D) }, { PIN(B,12), PS(D) }, { PIN(B,13), PS(D) }, { PIN(B,14), PS(D) }, { PIN(B,15), PS(D) }, { PIN(B,16), PS(D) }, { PIN(A,17), PS(D) }, { PIN(B,6), PS(D) }, { PIN(B,7), PS(D) }, { PIN(B,8), PS(D) }, { PIN(B,9), PS(D) }, { PIN(B,10), PS(D) } }
+
+#define INCLUDE_I2C
+#define AT91_I2C_SCL_PINS                  { { PIN(A,31),  PS(A) } }
+#define AT91_I2C_SDA_PINS                  { { PIN(A,30),  PS(A) } }
 
 #if 1
 
@@ -164,9 +169,8 @@
 #define OEM_VERSION_MINOR                   6
 #define OEM_VERSION_PATCH                   0
 
-#define INCLUDE_ADC
 #define INCLUDE_GPIO
-#define INCLUDE_I2C
+
 #define INCLUDE_PWM
 #define INCLUDE_SPI
 #define INCLUDE_UART
