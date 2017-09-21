@@ -76,6 +76,13 @@
 #define AT91_UART_RTS_PINS                { { PIN_NONE , PS_NONE }, { PIN(A, 2),  PS(A) }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } }
 #define AT91_UART_CTS_PINS                { { PIN_NONE , PS_NONE }, { PIN(A, 3),  PS(A) }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } }
 
+#define INCLUDE_USBCLIENT
+#define TOTAL_USB_CONTROLLER            1
+#define AT91_USB_QUEUE_SIZE             16
+
+
+#define INCLUDE_DISPLAY
+
 
 #if 1
 
@@ -86,14 +93,14 @@
 // #define DISABLE_INTERRUPTS()       AT91_SmartPtr_IRQ::ForceDisabled()
 // #define ENABLE_INTERRUPTS()        AT91_SmartPtr_IRQ::ForceEnabled()
 
-#if defined(_DEBUG)
-#define ASSERT(x)                  while (!(x))
-#define ASSERT_IRQ_MUST_BE_OFF()   ASSERT(!AT91_SmartPtr_IRQ::GetState())
-#define ASSERT_IRQ_MUST_BE_ON()    ASSERT( AT91_SmartPtr_IRQ::GetState())
-#else
-#define ASSERT_IRQ_MUST_BE_OFF()
-#define ASSERT_IRQ_MUST_BE_ON()
-#endif
+// #if defined(_DEBUG)
+// #define ASSERT(x)                  while (!(x))
+// #define ASSERT_IRQ_MUST_BE_OFF()   ASSERT(!AT91_SmartPtr_IRQ::GetState())
+// #define ASSERT_IRQ_MUST_BE_ON()    ASSERT( AT91_SmartPtr_IRQ::GetState())
+// #else
+// #define ASSERT_IRQ_MUST_BE_OFF()
+// #define ASSERT_IRQ_MUST_BE_ON()
+// #endif
 
 // #define INTERRUPT_START         AT91_Interrupt_Started();
 // #define INTERRUPT_END           AT91_Interrupt_Ended();
@@ -115,15 +122,6 @@
 #define TOTAL_GPIO_PORT                      (GPIO_PORTD + 1)
 #define TOTAL_GPIO_PINS                      (TOTAL_GPIO_PORT*32)
 
-// USBC
-#define TOTAL_USB_CONTROLLER            1
-#define USB_MAX_QUEUES                  16
-#define USB_VENDOR_ID                   0x1B9F
-#define USB_PRODUCT_ID                  0x0110
-#define USB_MANUFACTURER_NAME           {'G', 'H', 'I', ' ', 'E', 'l', 'e', 'c', 't', 'r', 'o', 'n', 'i', 'c', 's', ',', ' ', 'L', 'L', 'C'}
-#define USB_PRODUCT_NAME                {'G', '4', '0', '0'}
-#define USB_DISPLAY_NAME                USB_PRODUCT_NAME
-#define USB_FRIENDLY_NAME               USB_PRODUCT_NAME
 
 // ADC
 //#define TOTAL_ADC_CONTROLLERS             12
@@ -176,10 +174,6 @@
 #define INCLUDE_GPIO
 
 
-
-
-#define INCLUDE_USBCLIENT
-#define INCLUDE_DISPLAY
 
 #include <AT91.h>
 
