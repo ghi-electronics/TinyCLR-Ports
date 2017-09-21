@@ -18,9 +18,14 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <defines.h>
 #include <TinyCLR.h>
-#include <DeviceSelector.h>
+#include <Device.h>
+
+#define SIZEOF_ARRAY(arr) (sizeof(arr) / sizeof(arr[0]))
+#define CONCAT2(a, b) a##b
+#define CONCAT(a, b) CONCAT2(a, b)
+#define CHARIZE2(c) #c
+#define CHARIZE(c) (CHARIZE2(c)[0])
 
 //
 //  PERIPHERAL ID DEFINITIONS FOR AT91SAM9X35
@@ -428,6 +433,30 @@ enum class AT91_Gpio_DriveSpeed : uint8_t {
     Reserved = 3
 };
 
+struct AT91_Gpio_Pin {
+    uint32_t number;
+    AT91_Gpio_PeripheralSelection peripheralSelection;
+};
+
+struct AT91_Gpio_PinConfiguration {
+    AT91_Gpio_Direction direction;
+    AT91_Gpio_ResistorMode resistorMode;
+    AT91_Gpio_MultiDriver multiDriver;
+    AT91_Gpio_Filter filter;
+    AT91_Gpio_FilterSlowClock filterSlowClock;
+    AT91_Gpio_Schmitt schmitt;
+    AT91_Gpio_DriveSpeed speed;
+    AT91_Gpio_PeripheralSelection peripheralSelection;
+};
+
+#define PIN(port, pin) ((CHARIZE(port) - 'A') * 32 + pin)
+#define PIN_NONE 0xFFFFFFFF
+#define PS(num) (CONCAT(AT91_Gpio_PeripheralSelection::Peripheral, num))
+#define PS_NONE AT91_Gpio_PeripheralSelection::None
+
+#define INIT(pinDirection, resistorMode, peripheralSelection) { AT91_Gpio_Direction::pinDirection, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable,  AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::peripheralSelection }
+#define ALTFUN(direction, resistorMode, peripheralSelection) { AT91_Gpio_Direction::direction, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable,  AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::peripheralSelection }
+#define INPUT(resistorMode) { AT91_Gpio_Direction::Input, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable, AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::None }
 
 void AT91_Gpio_Reset();
 const TinyCLR_Api_Info* AT91_Gpio_GetApi();
@@ -487,25 +516,13 @@ int32_t AT91_Dac_GetMinValue(const TinyCLR_Dac_Provider* self);
 int32_t AT91_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self);
 
 // PWM
-#define PWM_MODE_REGISTER				(*(uint32_t *)(AT91C_BASE_PWMC + 0x00))
-#define PWM_ENABLE_REGISTER				(*(uint32_t *)(AT91C_BASE_PWMC + 0x04))
-#define PWM_DISABLE_REGISTER			(*(uint32_t *)(AT91C_BASE_PWMC + 0x08))
-#define PWM_INTERUPT_ENABLE_REGISTER	(*(uint32_t *)(AT91C_BASE_PWMC + 0x10))
-#define PWM_INTERUPT_DISABLE_REGISTER	(*(uint32_t *)(AT91C_BASE_PWMC + 0x14))
-
-#define PWM_CHANNEL_MODE_REGISTER(x)	(uint32_t *)(AT91C_BASE_PWMC + (0x200 + (x * 0x20) + 0x00))
-#define PWM_DUTY_REGISTER(x)            (uint32_t *)(AT91C_BASE_PWMC + (0x200 + (x * 0x20) + 0x04))
-#define PWM_CHANNEL_UPDATE_REGISTER(x)  (uint32_t *)(AT91C_BASE_PWMC + (0x200 + (x * 0x10) + ((x + 1) * 0x10)))
-
 struct PwmController {
 
     uint32_t                        *channelModeReg;
     uint32_t                        *dutyCycleReg;
     uint32_t                        *channelUpdateReg;
 
-    int32_t                         gpioPin[MAX_PWM_PER_CONTROLLER];
-
-    AT91_Gpio_PeripheralSelection   gpioPeripheralSelection[MAX_PWM_PER_CONTROLLER];
+    AT91_Gpio_Pin                   gpioPin[MAX_PWM_PER_CONTROLLER];   
 
     bool                            invert[MAX_PWM_PER_CONTROLLER];
     double                          frequency;
@@ -514,7 +531,7 @@ struct PwmController {
 const TinyCLR_Api_Info* AT91_Pwm_GetApi();
 void AT91_Pwm_Reset();
 void AT91_Pwm_ResetController(int32_t controller);
-PwmController* AT91_Pwm_GetControllers();
+AT91_Gpio_Pin AT91_Pwm_GetPins(int32_t controller, int32_t channel);
 TinyCLR_Result AT91_Pwm_Acquire(const TinyCLR_Pwm_Provider* self);
 TinyCLR_Result AT91_Pwm_Release(const TinyCLR_Pwm_Provider* self);
 int32_t AT91_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t pin);
@@ -593,7 +610,7 @@ struct AT91_SPI
 
     __inline static uint32_t ConvertClockRateToDivisor(uint32_t clockKHz)
     {
-        uint32_t mckKHz = SYSTEM_PERIPHERAL_CLOCK_HZ / 1000;
+        uint32_t mckKHz = AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 1000;
         uint32_t divisor = mckKHz / clockKHz;
 
         if (mckKHz / divisor > clockKHz)
@@ -640,7 +657,7 @@ struct AT91_USART {
     static const uint32_t c_Base_uart = AT91C_BASE_UART0;
     static const uint32_t c_Base_offset = 0x4000;
 
-    static const uint32_t c_MAX_BAUDRATE = ((SYSTEM_PERIPHERAL_CLOCK_HZ * 10) / 16);
+    static const uint32_t c_MAX_BAUDRATE = ((AT91_SYSTEM_PERIPHERAL_CLOCK_HZ * 10) / 16);
     static const uint32_t c_MIN_BAUDRATE = 0;
 
     /****/ volatile uint32_t US_CR;          // Control Register
@@ -945,12 +962,14 @@ public:
 };
 
 class AT91_SmartPtr_IRQ {
-
     uint32_t m_state;
 
+    void Disable();
+    void Restore();
+
 public:
-    AT91_SmartPtr_IRQ() { Disable(); };
-    ~AT91_SmartPtr_IRQ() { Restore(); };
+    AT91_SmartPtr_IRQ();
+    ~AT91_SmartPtr_IRQ();
 
     bool WasDisabled();
     void Acquire();
@@ -959,10 +978,16 @@ public:
 
     static uint32_t GetState();
 
-private:
-    void Disable();
-    void Restore();
 };
+
+class AT91_SmartPtr_Interrupt {
+public:
+    AT91_SmartPtr_Interrupt();
+    ~AT91_SmartPtr_Interrupt();
+};
+
+#define DISABLE_INTERRUPTS_SCOPED(name) AT91_SmartPtr_IRQ name
+#define INTERRUPT_STARTED_SCOPED(name) AT91_SmartPtr_Interrupt name
 
 const TinyCLR_Api_Info* AT91_Interrupt_GetApi();
 TinyCLR_Result AT91_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
@@ -1225,7 +1250,7 @@ const TinyCLR_Api_Info* AT91_Time_GetApi();
 TinyCLR_Result AT91_Time_Acquire(const TinyCLR_Time_Provider* self);
 TinyCLR_Result AT91_Time_Release(const TinyCLR_Time_Provider* self);
 TinyCLR_Result AT91_Time_GetInitialTime(const TinyCLR_Time_Provider* self, int64_t& utcTime, int32_t& timeZoneOffsetMinutes);
-uint64_t AT91_Time_TicksToTime(const TinyCLR_Time_Provider* self, uint64_t ticks);
+uint64_t AT91_Time_GetTimeForProcessorTicks(const TinyCLR_Time_Provider* self, uint64_t ticks);
 uint64_t AT91_Time_TimeToTicks(const TinyCLR_Time_Provider* self, uint64_t time);
 uint64_t AT91_Time_MillisecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t ticks);
 uint64_t AT91_Time_MicrosecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t microseconds);
@@ -1311,11 +1336,10 @@ struct AT91_WATCHDOG
 //////////////////////////////////////////////////////////////////////////////
 
 //Startup
-void AT91_Startup_InitializeRegions();
+void AT91_Startup_Initialize();
 void AT91_Startup_GetHeap(uint8_t*& start, size_t& length);
-int32_t AT91_Startup_GetLModePin();
-int32_t AT91_Startup_GetDeviceId();
-TinyCLR_Gpio_PinValue AT91_Startup_GetLModeUsbState();
+void AT91_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index);
+void AT91_Startup_GetRunApp(bool& runApp);
 
 struct AT91
 {

@@ -17,6 +17,11 @@
 
 #define AT91_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS 4
 
+#define SLOW_CLOCKS_PER_SECOND              (AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 32)
+#define CLOCK_COMMON_FACTOR                 10
+#define SLOW_CLOCKS_TEN_MHZ_GCD             10
+#define SLOW_CLOCKS_MILLISECOND_GCD         10
+
 //////////////////////////////////////////////////////////////////////////////
 // TIMER driver
 //
@@ -56,8 +61,6 @@ struct AT91_TIMER_Driver {
     static void ForceInterrupt(uint32_t Timer) {
         if (!(Timer < AT91_TIMER_Driver::c_MaxTimer))
             return;
-
-        ASSERT_IRQ_MUST_BE_OFF();
 
         AT91_Interrupt_ForceInterrupt(AT91C_ID_TC0_TC1);
     }
@@ -107,7 +110,7 @@ private:
 AT91_TIMER_Driver g_AT91_TIMER_Driver;
 
 bool AT91_TIMER_Driver::Initialize(uint32_t timer, bool freeRunning, uint32_t clkSource, uint32_t* ISR, void* ISR_Param) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (!(timer < AT91_TIMER_Driver::c_MaxTimer))
         return false;
@@ -212,7 +215,7 @@ const TinyCLR_Api_Info* AT91_Time_GetApi() {
     timeProvider.Parent = &timeApi;
     timeProvider.Index = 0;
     timeProvider.GetInitialTime = &AT91_Time_GetInitialTime;
-    timeProvider.GetTimeForProcessorTicks = &AT91_Time_TicksToTime;
+    timeProvider.GetTimeForProcessorTicks = &AT91_Time_GetTimeForProcessorTicks;
     timeProvider.GetProcessorTicksForTime = &AT91_Time_TimeToTicks;
     timeProvider.GetCurrentProcessorTicks = &AT91_Time_GetCurrentTicks;
     timeProvider.SetTickCallback = &AT91_Time_SetCompareCallback;
@@ -256,8 +259,8 @@ uint32_t AT91_Time_GetTicksPerSecond(const TinyCLR_Time_Provider* self) {
     return SLOW_CLOCKS_PER_SECOND;
 }
 
-uint64_t AT91_Time_TicksToTime(const TinyCLR_Time_Provider* self, uint64_t ticks) {
-    ticks *= (TEN_MHZ / SLOW_CLOCKS_TEN_MHZ_GCD);
+uint64_t AT91_Time_GetTimeForProcessorTicks(const TinyCLR_Time_Provider* self, uint64_t ticks) {
+    ticks *= (10000000 / SLOW_CLOCKS_TEN_MHZ_GCD);
     ticks /= (SLOW_CLOCKS_PER_SECOND / SLOW_CLOCKS_TEN_MHZ_GCD);
 
     return ticks;
@@ -275,10 +278,10 @@ uint64_t AT91_Time_MillisecondsToTicks(const TinyCLR_Time_Provider* self, uint64
 }
 
 uint64_t AT91_Time_MicrosecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t microseconds) {
-#if ONE_MHZ <= SLOW_CLOCKS_PER_SECOND
-    return microseconds * (SLOW_CLOCKS_PER_SECOND / ONE_MHZ);
+#if 1000000 <= SLOW_CLOCKS_PER_SECOND
+    return microseconds * (SLOW_CLOCKS_PER_SECOND / 1000000);
 #else
-    return microseconds / (ONE_MHZ / SLOW_CLOCKS_PER_SECOND);
+    return microseconds / (1000000 / SLOW_CLOCKS_PER_SECOND);
 #endif
 
 }
@@ -289,7 +292,7 @@ uint64_t AT91_Time_GetCurrentTicks(const TinyCLR_Time_Provider* self) {
     if (self != nullptr)
         timer = self->Index;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t value = AT91_TIMER_Driver::ReadCounter(AT91_TIMER_Driver::c_SystemTimer);
 
@@ -310,7 +313,7 @@ TinyCLR_Result AT91_Time_SetCompare(const TinyCLR_Time_Provider* self, uint64_t 
     if (self != nullptr)
         timer = self->Index;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     g_AT91_TIME_Driver.m_nextCompare = processorTicks;
 
@@ -381,7 +384,7 @@ TinyCLR_Result AT91_Time_SetCompareCallback(const TinyCLR_Time_Provider* self, T
 }
 
 void AT91_Time_DelayNoInterrupt(const TinyCLR_Time_Provider* self, uint64_t microseconds) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint64_t value = AT91_TIMER_Driver::ReadCounter(AT91_TIMER_Driver::c_SystemTimer);
     uint64_t maxDiff = AT91_Time_MicrosecondsToTicks(self, microseconds);
@@ -400,8 +403,8 @@ void AT91_Time_Delay(const TinyCLR_Time_Provider* self, uint64_t microseconds) {
 
     // iterations must be signed so that negative iterations will result in the minimum delay
 
-    microseconds *= ((SYSTEM_CYCLE_CLOCK_HZ / 2) / CLOCK_COMMON_FACTOR);
-    microseconds /= (ONE_MHZ / CLOCK_COMMON_FACTOR);
+    microseconds *= ((AT91_AHB_CLOCK_HZ / 2) / CLOCK_COMMON_FACTOR);
+    microseconds /= (1000000 / CLOCK_COMMON_FACTOR);
 
     // iterations is equal to the number of CPU instruction cycles in the required time minus
     // overhead cycles required to call this subroutine.

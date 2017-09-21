@@ -54,6 +54,20 @@ const TinyCLR_Api_Info *AT91_Adc_GetApi() {
     return &adcApi;
 }
 
+static const AT91_Gpio_Pin g_at91_adc_pins[] = AT91_ADC_PINS;
+
+int32_t AT91_Adc_GetControllerCount() {
+    return SIZEOF_ARRAY(g_at91_adc_pins);
+}
+
+int32_t AT91_Adc_GetPin(int32_t channel) {
+    return  g_at91_adc_pins[channel].number;
+}
+
+AT91_Gpio_PeripheralSelection AT91_Adc_GetPeripheralSelection(int32_t channel) {
+    return  g_at91_adc_pins[channel].peripheralSelection;
+}
+
 TinyCLR_Result AT91_Adc_Acquire(const TinyCLR_Adc_Provider *self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
@@ -74,7 +88,7 @@ TinyCLR_Result AT91_Adc_Release(const TinyCLR_Adc_Provider *self) {
 
 int32_t AT91_Adc_GetPinForChannel(int32_t channel) {
     if ((uint32_t)channel >= AT91_Adc_GetControllerCount())
-        return GPIO_PIN_NONE;
+        return PIN_NONE;
 
     return AT91_Adc_GetPin(channel);
 }
@@ -83,7 +97,7 @@ TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Provider *self, int32_t
     if (channel >= AT91_Adc_GetControllerCount())
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    if (AT91_Adc_GetPin(channel) == _P_NONE_)
+    if (AT91_Adc_GetPin(channel) == PIN_NONE)
         return TinyCLR_Result::ArgumentInvalid;
 
     if (channel >= 0 && channel <= AT91_Adc_GetControllerCount() && AT91_Gpio_OpenPin(AT91_Adc_GetPin(channel))) {

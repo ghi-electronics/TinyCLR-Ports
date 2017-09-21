@@ -15,6 +15,16 @@
 
 #include "AT91.h"
 
+#define PWM_MODE_REGISTER				(*(uint32_t *)(AT91C_BASE_PWMC + 0x00))
+#define PWM_ENABLE_REGISTER				(*(uint32_t *)(AT91C_BASE_PWMC + 0x04))
+#define PWM_DISABLE_REGISTER			(*(uint32_t *)(AT91C_BASE_PWMC + 0x08))
+#define PWM_INTERUPT_ENABLE_REGISTER	(*(uint32_t *)(AT91C_BASE_PWMC + 0x10))
+#define PWM_INTERUPT_DISABLE_REGISTER	(*(uint32_t *)(AT91C_BASE_PWMC + 0x14))
+
+#define PWM_CHANNEL_MODE_REGISTER(x)	(uint32_t *)(AT91C_BASE_PWMC + (0x200 + (x * 0x20) + 0x00))
+#define PWM_DUTY_REGISTER(x)            (uint32_t *)(AT91C_BASE_PWMC + (0x200 + (x * 0x20) + 0x04))
+#define PWM_CHANNEL_UPDATE_REGISTER(x)  (uint32_t *)(AT91C_BASE_PWMC + (0x200 + (x * 0x10) + ((x + 1) * 0x10)))
+
 #define PWM_MILLISECONDS                1000
 #define PWM_MICROSECONDS                1000000
 #define PWM_NANOSECONDS                 1000000000
@@ -60,6 +70,13 @@ const TinyCLR_Api_Info* AT91_Pwm_GetApi() {
 
     return &pwmApi;
 }
+
+static const AT91_Gpio_Pin g_at91_pwm_pins[TOTAL_PWM_CONTROLLER][MAX_PWM_PER_CONTROLLER] = AT91_PWM_PINS;
+
+AT91_Gpio_Pin AT91_Pwm_GetPins(int32_t controller, int32_t channel) {
+    return g_at91_pwm_pins[controller][channel];
+}
+
 bool AT91_Pwm_SetPinState(const TinyCLR_Pwm_Provider* self, int32_t pin, bool state) {
     int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, pin);
 
@@ -168,7 +185,7 @@ double AT91_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self) {
 TinyCLR_Result AT91_Pwm_EnablePin(const TinyCLR_Pwm_Provider* self, int32_t pin) {
     int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, pin);
 
-    AT91_Gpio_ConfigurePin(actualPin, AT91_Gpio_Direction::Input, g_PwmController[self->Index].gpioPeripheralSelection[pin], AT91_Gpio_ResistorMode::Inactive);
+    AT91_Gpio_ConfigurePin(actualPin, AT91_Gpio_Direction::Input, g_PwmController[self->Index].gpioPin[pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
 
     return TinyCLR_Result::Success;
 }
@@ -186,7 +203,7 @@ int32_t AT91_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self) {
 }
 
 int32_t AT91_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t pin) {
-    return g_PwmController[self->Index].gpioPin[pin];
+    return g_PwmController[self->Index].gpioPin[pin].number;
 }
 
 double AT91_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self) {
@@ -308,7 +325,7 @@ TinyCLR_Result AT91_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self, do
     frequency = AT91_Pwm_GetActualFrequency(self);
 
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++)
-        if (g_PwmController[self->Index].gpioPin[p] != GPIO_PIN_NONE)
+        if (g_PwmController[self->Index].gpioPin[p].number != PIN_NONE)
             if (AT91_Pwm_SetPulseParameters(self, p, g_PwmController[self->Index].dutyCycle[p], g_PwmController[self->Index].invert[p]) != TinyCLR_Result::Success)
                 return TinyCLR_Result::InvalidOperation;
 
@@ -339,13 +356,11 @@ TinyCLR_Result AT91_Pwm_Release(const TinyCLR_Pwm_Provider* self) {
 }
 
 void AT91_Pwm_Reset() {
-    g_PwmController = AT91_Pwm_GetControllers();
-
     for (auto controller = 0; controller < TOTAL_PWM_CONTROLLER; controller++) {
         AT91_Pwm_ResetController(controller);
 
         for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-            if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p] != GPIO_PIN_NONE) {
+            if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p].number != PIN_NONE) {
                 // Reset PWM and close pin
                 AT91_Pwm_DisablePin(pwmProviders[controller], p);
                 AT91_Pwm_ReleasePin(pwmProviders[controller], p);
@@ -356,8 +371,13 @@ void AT91_Pwm_Reset() {
 
 void AT91_Pwm_ResetController(int32_t controller) {
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-        if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p] != GPIO_PIN_NONE) {
+        g_PwmController[pwmProviders[controller]->Index].gpioPin[p] = AT91_Pwm_GetPins(controller, p);
+
+        if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p].number != PIN_NONE) {
             // Reset values
+            g_PwmController[pwmProviders[controller]->Index].channelModeReg = PWM_CHANNEL_MODE_REGISTER(p);
+            g_PwmController[pwmProviders[controller]->Index].dutyCycleReg = PWM_DUTY_REGISTER(p);
+            g_PwmController[pwmProviders[controller]->Index].channelUpdateReg = PWM_CHANNEL_UPDATE_REGISTER(p);
             g_PwmController[pwmProviders[controller]->Index].invert[p] = false;
             g_PwmController[pwmProviders[controller]->Index].frequency = 0.0;
             g_PwmController[pwmProviders[controller]->Index].dutyCycle[p] = 0.0;

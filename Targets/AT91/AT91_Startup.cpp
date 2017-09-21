@@ -120,7 +120,7 @@ void AT91_Startup_GetHeap(uint8_t*& start, size_t& length) {
     length = (size_t)(((int)&HeapEnd) - ((int)&HeapBegin));
 }
 
-void AT91_Startup_InitializeRegions() {
+void AT91_Startup_Initialize() {
     //
     // Copy RAM RO regions into proper location.
     //
@@ -164,16 +164,44 @@ void AT91_Startup_InitializeRegions() {
         uint32_t* dst = (uint32_t*)0x0000000;
         uint32_t  len = 44;
 
-        if ((dst != src) && (*src != 0))
-        {
-            while (len)
-            {
+        if ((dst != src) && (*src != 0)) {
+            while (len) {
                 *dst++ = *src++;
                 len -= 4;
             }
         }
     }
 
+}
+
+void AT91_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index) {
+    TinyCLR_Gpio_PinValue value;
+    auto controller = static_cast<const TinyCLR_Gpio_Provider*>(AT91_Gpio_GetApi()->Implementation);
+
+    controller->AcquirePin(controller, DEBUGGER_SELECTOR_PIN);
+    controller->SetDriveMode(controller, DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
+    controller->Read(controller, DEBUGGER_SELECTOR_PIN, value);
+    controller->ReleasePin(controller, DEBUGGER_SELECTOR_PIN);
+
+    if (value == DEBUGGER_SELECTOR_USB_STATE) {
+        api = AT91_UsbClient_GetApi();
+        index = USB_DEBUGGER_INDEX;
+    }
+    else {
+        api = AT91_Uart_GetApi();
+        index = UART_DEBUGGER_INDEX;
+    }
+}
+
+void AT91_Startup_GetRunApp(bool& runApp) {
+    TinyCLR_Gpio_PinValue value;
+    auto controller = static_cast<const TinyCLR_Gpio_Provider*>(AT91_Gpio_GetApi()->Implementation);
+    controller->AcquirePin(controller, RUN_APP_PIN);
+    controller->SetDriveMode(controller, RUN_APP_PIN, RUN_APP_PULL);
+    controller->Read(controller, RUN_APP_PIN, value);
+    controller->ReleasePin(controller, RUN_APP_PIN);
+
+    runApp = value == RUN_APP_STATE;
 }
 
 
