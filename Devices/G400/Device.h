@@ -63,9 +63,19 @@
 
 #define INCLUDE_SPI
 #define TOTAL_SPI_CONTROLLERS              2
-#define AT91_SPI_MISO_PINS                { {_P(A,11),  PS(A) }, {_P(A,21),  PS(B) } }
-#define AT91_SPI_MOSI_PINS                { {_P(A,12),  PS(A) }, {_P(A,22),  PS(B) } }
-#define AT91_SPI_SCLK_PINS                { {_P(A,13),  PS(A) }, {_P(A,13),  PS(B) } }
+#define AT91_SPI_MISO_PINS                { { PIN(A,11),  PS(A) }, { PIN(A,21),  PS(B) } }
+#define AT91_SPI_MOSI_PINS                { { PIN(A,12),  PS(A) }, { PIN(A,22),  PS(B) } }
+#define AT91_SPI_SCLK_PINS                { { PIN(A,13),  PS(A) }, { PIN(A,13),  PS(B) } }
+
+#define INCLUDE_UART
+#define TOTAL_UART_CONTROLLERS            6
+#define AT91_UART_TX_BUFFER_SIZE          (16*1024)
+#define AT91_UART_RX_BUFFER_SIZE          (16*1024)
+#define AT91_UART_TX_PINS                 { { PIN(A, 9),  PS(A) } , { PIN(A, 0),  PS(A) }, { PIN(A, 5),  PS(A) } , { PIN(A, 7),  PS(A) } , { PIN(C, 8),  PS(C) } , { PIN(C,16),  PS(C) } }
+#define AT91_UART_RX_PINS                 { { PIN(A,10),  PS(A) } , { PIN(A, 1),  PS(A) }, { PIN(A, 6),  PS(A) } , { PIN(A, 8),  PS(A) } , { PIN(C, 9),  PS(C) } , { PIN(C,17),  PS(C) } }
+#define AT91_UART_RTS_PINS                { { PIN_NONE , PS_NONE }, { PIN(A, 2),  PS(A) }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } }
+#define AT91_UART_CTS_PINS                { { PIN_NONE , PS_NONE }, { PIN(A, 3),  PS(A) }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } }
+
 
 #if 1
 
@@ -137,17 +147,6 @@
 
 
 // UART
-#define TOTAL_UART_CONTROLLERS            6
-#define AT91_UART_TX_BUFFER_SIZE          (16*1024)
-#define AT91_UART_RX_BUFFER_SIZE          (16*1024)
-#define AT91_UART_TX_PINS                 {_P(A, 9), _P(A, 0), _P(A, 5), _P(A, 7), _P(C, 8), _P(C,16) }
-#define AT91_UART_RX_PINS                 {_P(A,10), _P(A, 1), _P(A, 6), _P(A, 8), _P(C, 9), _P(C,17) }
-#define AT91_UART_RTS_PINS                {_P_NONE_, _P(A, 2), _P_NONE_, _P_NONE_, _P_NONE_, _P_NONE_ }
-#define AT91_UART_CTS_PINS                {_P_NONE_, _P(A, 3), _P_NONE_, _P_NONE_, _P_NONE_, _P_NONE_ }
-#define AT91_UART_TX_ALT_MODE             {AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA,AT91_Gpio_PeripheralSelection::PeripheralA ,AT91_Gpio_PeripheralSelection::PeripheralC ,AT91_Gpio_PeripheralSelection::PeripheralC}
-#define AT91_UART_RX_ALT_MODE             {AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralA,AT91_Gpio_PeripheralSelection::PeripheralA ,AT91_Gpio_PeripheralSelection::PeripheralC ,AT91_Gpio_PeripheralSelection::PeripheralC}
-#define AT91_UART_RTS_ALT_MODE            {AT91_Gpio_PeripheralSelection::None       , AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::None       ,AT91_Gpio_PeripheralSelection::None        ,AT91_Gpio_PeripheralSelection::None        ,AT91_Gpio_PeripheralSelection::None}
-#define AT91_UART_CTS_ALT_MODE            {AT91_Gpio_PeripheralSelection::None       , AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::None       ,AT91_Gpio_PeripheralSelection::None        ,AT91_Gpio_PeripheralSelection::None        ,AT91_Gpio_PeripheralSelection::None}
 
 // Debug
 #define DEBUG_TEXT_PORT                      USB1
@@ -178,7 +177,7 @@
 
 
 
-#define INCLUDE_UART
+
 #define INCLUDE_USBCLIENT
 #define INCLUDE_DISPLAY
 
