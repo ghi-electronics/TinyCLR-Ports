@@ -123,9 +123,9 @@ LPC24_Gpio_PinFunction LPC24_Adc_GetPinFunction(int32_t channel) {
 }
 
 //PWM
-const LPC24_Gpio_Pin g_pwm_pins[TOTAL_PWM_CONTROLLER][MAX_PWM_PER_CONTROLLER] = LPC24_PWM_PINS;
+const LPC24_Gpio_Pin g_lpc24_pwm_pins[TOTAL_PWM_CONTROLLER][MAX_PWM_PER_CONTROLLER] = LPC24_PWM_PINS;
 
 LPC24_Gpio_Pin LPC24_Pwm_GetPins(int32_t controller, int32_t channel) {
-    return g_pwm_pins[controller][channel];
+    return g_lpc24_pwm_pins[controller][channel];
 }
 
