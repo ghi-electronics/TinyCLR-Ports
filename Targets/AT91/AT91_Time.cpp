@@ -60,7 +60,7 @@ struct AT91_TIMER_Driver {
 
     static void ForceInterrupt(uint32_t Timer) {
         if (!(Timer < AT91_TIMER_Driver::c_MaxTimer))
-            return;       
+            return;
 
         AT91_Interrupt_ForceInterrupt(AT91C_ID_TC0_TC1);
     }

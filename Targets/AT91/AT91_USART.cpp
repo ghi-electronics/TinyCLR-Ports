@@ -204,7 +204,7 @@ void AT91_Uart_TransmitData(int32_t portNum) {
 void AT91_Uart_InterruptHandler(void *param) {
     INTERRUPT_STARTED_SCOPED(isr);
 
-        DISABLE_INTERRUPTS_SCOPED(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t portNum = (uint32_t)param;
 
@@ -220,7 +220,6 @@ void AT91_Uart_InterruptHandler(void *param) {
         AT91_Uart_TransmitData(portNum);
     }
 
-    
 }
 int32_t AT91_Uart_GetPeripheralId(int32_t portNum) {
     int32_t usartId;

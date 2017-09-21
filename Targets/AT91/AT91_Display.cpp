@@ -851,7 +851,7 @@ bool AT91_Display_Initialize() {
         for (uint32_t pin = 0; pin < SIZEOF_ARRAY(g_at91_display_pins); pin++) {
             AT91_Gpio_EnableInputPin(g_at91_display_pins[pin].number, TinyCLR_Gpio_PinDriveMode::InputPullDown);
         }
-        
+
         AT91_Gpio_EnableInputPin(g_at91_display_enable_pin.number, TinyCLR_Gpio_PinDriveMode::InputPullDown);
 
         return false;
@@ -865,10 +865,10 @@ bool AT91_Display_Initialize() {
     pmc.EnablePeriphClock(AT91C_ID_LCDC);
 
     // Set LCD pins
-    for (uint32_t pin = 0; pin < SIZEOF_ARRAY(g_at91_display_pins); pin++) {        
-            AT91_Gpio_ConfigurePin(g_at91_display_pins[pin].number, AT91_Gpio_Direction::Input, g_at91_display_pins[pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+    for (uint32_t pin = 0; pin < SIZEOF_ARRAY(g_at91_display_pins); pin++) {
+        AT91_Gpio_ConfigurePin(g_at91_display_pins[pin].number, AT91_Gpio_Direction::Input, g_at91_display_pins[pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
     }
-    
+
     if (m_AT91_DisplayOutputEnableIsFixed) {
         AT91_Gpio_EnableOutputPin(g_at91_display_enable_pin.number, m_AT91_DisplayOutputEnablePolarity);
     }

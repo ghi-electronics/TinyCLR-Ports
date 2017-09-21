@@ -1722,7 +1722,7 @@ uint8_t AT91_UsbClient_ControlCallback(USB_CONTROLLER_STATE* State) {
     return USB_STATE_STALL;
 }
 
-USB_PACKET64* AT91_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* State, int endpoint, bool& DisableRx) {    
+USB_PACKET64* AT91_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* State, int endpoint, bool& DisableRx) {
     USB_DEBUG_ASSERT(State && (endpoint < AT91_USB_QUEUE_SIZE));
     USB_DEBUG_ASSERT(State->Queues[endpoint] && !State->IsTxQueue[endpoint]);
 
@@ -1750,7 +1750,7 @@ USB_PACKET64* AT91_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* State, int endpoint
     return nullptr;
 }
 
-USB_PACKET64* AT91_UsbClient_TxDequeue(USB_CONTROLLER_STATE* State, int endpoint, bool Done) {    
+USB_PACKET64* AT91_UsbClient_TxDequeue(USB_CONTROLLER_STATE* State, int endpoint, bool Done) {
     USB_DEBUG_ASSERT(State && (endpoint < AT91_USB_QUEUE_SIZE));
     USB_DEBUG_ASSERT(State->Queues[endpoint] && State->IsTxQueue[endpoint]);
 
@@ -2702,7 +2702,7 @@ bool AT91_USBHS_Driver::GetInterruptState() {
     return false;
 }
 
-void AT91_USBHS_Driver::ClearTxQueue(USB_CONTROLLER_STATE* State, int endpoint) {    
+void AT91_USBHS_Driver::ClearTxQueue(USB_CONTROLLER_STATE* State, int endpoint) {
     // it is much faster to just re-initialize the queue and it does the same thing
     if (State->Queues[endpoint] != NULL) {
         State->Queues[endpoint]->clear();

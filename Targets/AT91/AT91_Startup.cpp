@@ -164,10 +164,8 @@ void AT91_Startup_Initialize() {
         uint32_t* dst = (uint32_t*)0x0000000;
         uint32_t  len = 44;
 
-        if ((dst != src) && (*src != 0))
-        {
-            while (len)
-            {
+        if ((dst != src) && (*src != 0)) {
+            while (len) {
                 *dst++ = *src++;
                 len -= 4;
             }

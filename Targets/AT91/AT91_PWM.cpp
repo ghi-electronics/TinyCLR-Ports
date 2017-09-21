@@ -74,7 +74,7 @@ const TinyCLR_Api_Info* AT91_Pwm_GetApi() {
 static const AT91_Gpio_Pin g_at91_pwm_pins[TOTAL_PWM_CONTROLLER][MAX_PWM_PER_CONTROLLER] = AT91_PWM_PINS;
 
 AT91_Gpio_Pin AT91_Pwm_GetPins(int32_t controller, int32_t channel) {
-   return g_at91_pwm_pins[controller][channel];
+    return g_at91_pwm_pins[controller][channel];
 }
 
 bool AT91_Pwm_SetPinState(const TinyCLR_Pwm_Provider* self, int32_t pin, bool state) {
@@ -372,7 +372,7 @@ void AT91_Pwm_Reset() {
 void AT91_Pwm_ResetController(int32_t controller) {
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
         g_PwmController[pwmProviders[controller]->Index].gpioPin[p] = AT91_Pwm_GetPins(controller, p);
-        
+
         if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p].number != PIN_NONE) {
             // Reset values
             g_PwmController[pwmProviders[controller]->Index].channelModeReg = PWM_CHANNEL_MODE_REGISTER(p);

@@ -406,9 +406,5 @@ extern "C" {
         // Mark end of Interrupt (Last IVR read)
         aic.AIC_EOICR = 1;
 
-
-        
-
-
     }
 }
