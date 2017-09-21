@@ -375,9 +375,9 @@ void AT91_Pwm_ResetController(int32_t controller) {
 
         if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p].number != PIN_NONE) {
             // Reset values
-            g_PwmController[pwmProviders[controller]->Index].channelModeReg = PWM_CHANNEL_MODE_REGISTER(p);
-            g_PwmController[pwmProviders[controller]->Index].dutyCycleReg = PWM_DUTY_REGISTER(p);
-            g_PwmController[pwmProviders[controller]->Index].channelUpdateReg = PWM_CHANNEL_UPDATE_REGISTER(p);
+            g_PwmController[pwmProviders[controller]->Index].channelModeReg = PWM_CHANNEL_MODE_REGISTER(controller);
+            g_PwmController[pwmProviders[controller]->Index].dutyCycleReg = PWM_DUTY_REGISTER(controller);
+            g_PwmController[pwmProviders[controller]->Index].channelUpdateReg = PWM_CHANNEL_UPDATE_REGISTER(controller);
             g_PwmController[pwmProviders[controller]->Index].invert[p] = false;
             g_PwmController[pwmProviders[controller]->Index].frequency = 0.0;
             g_PwmController[pwmProviders[controller]->Index].dutyCycle[p] = 0.0;

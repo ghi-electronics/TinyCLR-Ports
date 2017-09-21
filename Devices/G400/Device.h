@@ -39,13 +39,13 @@
 #define AT91_AHB_CLOCK_HZ (400*1000*1000) // 400 MHz
 #define AT91_SYSTEM_PERIPHERAL_CLOCK_HZ (AT91_AHB_CLOCK_HZ / 3) // 133MHz (Peripheral Clock - MCK)
 
-#define SRAM_MEMORY_Base 0x00300000
-#define SRAM_MEMORY_Size (32*1024)
-#define SDRAM_MEMORY_Base 0x20000000
-#define SDRAM_MEMORY_Size (128*1024*1024)
+#define SRAM_MEMORY_BASE 0x00300000
+#define SRAM_MEMORY_SIZE (32*1024)
+#define SDRAM_MEMORY_BASE 0x20000000
+#define SDRAM_MEMORY_SIZE (128*1024*1024)
 
-#define FLASH_MEMORY_Base 0x00000000
-#define FLASH_MEMORY_Size 0x00420000
+#define FLASH_MEMORY_BASE 0x00000000
+#define FLASH_MEMORY_SIZE 0x00420000
 
 #define INCLUDE_GPIO
 #define AT91_GPIO_PINS  {/*      0              1              2              3              4              5              6              7              8              9              10             11             12             13             14             15             16             17             18             19             20             21             22             23             24             25             26             27             28             29             30             31          */\

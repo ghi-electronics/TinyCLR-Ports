@@ -60,10 +60,12 @@
 
 #define INCLUDE_PWM
 #define TOTAL_PWM_CONTROLLER 2
+#define MAX_PWM_PER_CONTROLLER 6
 #define LPC2478_PWM_PINS  { { { PIN(3, 16), PF(2) }, { PIN(3, 17), PF(2) }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE  , PF_NONE } }, { { PIN(3, 24), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN(3, 26), PF(3) }, { PIN(3, 27), PF(3) }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE } } }
 #define LPC2468_PWM_PINS  { { { PIN(3, 16), PF(2) }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE  , PF_NONE } }, { { PIN(3, 24), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE } } }
 
 #define INCLUDE_SPI
+#define TOTAL_SPI_CONTROLLERS 2
 #define LPC24_SPI_SCLK_PINS { { PIN(0, 15), PF(2) }, { PIN(0,  7), PF(2) } }
 #define LPC24_SPI_MISO_PINS { { PIN(0, 17), PF(2) }, { PIN(0,  8), PF(2) } }
 #define LPC24_SPI_MOSI_PINS { { PIN(0, 18), PF(2) }, { PIN(0,  9), PF(2) } }

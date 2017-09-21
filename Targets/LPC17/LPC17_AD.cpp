@@ -231,7 +231,7 @@ struct LPC17xx_ADC {
 
 };
 
-static const LPC17_Gpio_Pin g_Lpc17_Adc_Pins[] = LPC17_ADC_PINS;
+static const LPC17_Gpio_Pin g_lpc17_adc_pins[] = LPC17_ADC_PINS;
 
 static TinyCLR_Adc_Provider adcProvider;
 static TinyCLR_Api_Info adcApi;
@@ -277,15 +277,15 @@ TinyCLR_Result LPC17_Adc_Release(const TinyCLR_Adc_Provider* self) {
 }
 
 TinyCLR_Result LPC17_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t channel) {
-    if (channel >= SIZEOF_ARRAY(g_Lpc17_Adc_Pins))
+    if (channel >= SIZEOF_ARRAY(g_lpc17_adc_pins))
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    if (!LPC17_Gpio_OpenPin(g_Lpc17_Adc_Pins[channel].number))
+    if (!LPC17_Gpio_OpenPin(g_lpc17_adc_pins[channel].number))
         return  TinyCLR_Result::SharingViolation;
 
     LPC_SC->PCONP |= PCONP_PCAD; // To enable power on ADC  Possibly add a check to see if power is enabled before setting and for the ability to check if any ADC are active in uninitialize
 
-    LPC17_Gpio_ConfigurePin(g_Lpc17_Adc_Pins[channel].number, LPC17_Gpio_Direction::Input, g_Lpc17_Adc_Pins[channel].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+    LPC17_Gpio_ConfigurePin(g_lpc17_adc_pins[channel].number, LPC17_Gpio_Direction::Input, g_lpc17_adc_pins[channel].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
     AD0CR |= (1 << channel) | // Selects this channel in the register to initialize
         ((5 - 1) << 8) | // Divide the clock (60 MHz) by 5 (60 / (4 + 1) = 12) <-- must be < 12.5
@@ -296,7 +296,7 @@ TinyCLR_Result LPC17_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_
 }
 
 TinyCLR_Result LPC17_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t channel) {
-    LPC17_Gpio_ClosePin(g_Lpc17_Adc_Pins[channel].number);
+    LPC17_Gpio_ClosePin(g_lpc17_adc_pins[channel].number);
 
     return TinyCLR_Result::Success;
 }
@@ -304,7 +304,7 @@ TinyCLR_Result LPC17_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_
 TinyCLR_Result LPC17_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t channel, int32_t& value) {
     uint32_t result = 0;
 
-    if (channel >= SIZEOF_ARRAY(g_Lpc17_Adc_Pins))
+    if (channel >= SIZEOF_ARRAY(g_lpc17_adc_pins))
         return TinyCLR_Result::ArgumentOutOfRange;
 
     value = 0;
@@ -325,7 +325,7 @@ TinyCLR_Result LPC17_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t cha
 }
 
 int32_t LPC17_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self) {
-    return SIZEOF_ARRAY(g_Lpc17_Adc_Pins);
+    return SIZEOF_ARRAY(g_lpc17_adc_pins);
 }
 
 int32_t LPC17_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider* self) {
@@ -354,7 +354,7 @@ bool LPC17_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCLR_
 
 void LPC17_Adc_Reset() {
     LPC_SC->PCONP &= ~PCONP_PCAD;
-    for (auto ch = 0; ch < SIZEOF_ARRAY(g_Lpc17_Adc_Pins); ch++) {
+    for (auto ch = 0; ch < SIZEOF_ARRAY(g_lpc17_adc_pins); ch++) {
         LPC17_Adc_ReleaseChannel(&adcProvider, ch);
     }
 

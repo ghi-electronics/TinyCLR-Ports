@@ -16,8 +16,6 @@
 
 #define LPC177x_8x 1
 
-#include <LPC17.h>
-
 #define DEVICE_TARGET LPC17
 #define DEVICE_NAME "G120"
 #define DEVICE_MANUFACTURER "GHI Electronics, LLC"
@@ -66,15 +64,19 @@
 #define LPC17_I2C_SDA_PINS { { PIN(0, 27), PF(1) } }
 
 #define INCLUDE_PWM
+#define TOTAL_PWM_CONTROLLER 2
+#define MAX_PWM_PER_CONTROLLER 6
 #define LPC17_G120_PWM_PINS  { { { PIN(1,  2), PF(3) }, { PIN(1,  3), PF(3) }, { PIN(1,  5), PF(3) }, { PIN(1,  6), PF(3) }, { PIN(1,  7), PF(3) }, { PIN(1, 11), PF(3) } }, { { PIN(3, 24), PF(2) }, { PIN(3, 25), PF(2) }, { PIN(3, 26), PF(2) }, { PIN(2,  3), PF(1) }, { PIN(2,  4), PF(1) }, { PIN(2,  5), PF(1) } } }
 #define LPC17_G120E_PWM_PINS { { { PIN(3, 16), PF(2) }, { PIN(3, 17), PF(2) }, { PIN(3, 18), PF(2) }, { PIN(3, 19), PF(2) }, { PIN(3, 20), PF(2) }, { PIN(3, 21), PF(2) } }, { { PIN(3, 24), PF(2) }, { PIN(3, 25), PF(2) }, { PIN(3, 26), PF(2) }, { PIN(3, 27), PF(2) }, { PIN(3, 28), PF(2) }, { PIN(3, 29), PF(2) } } }
 
 #define INCLUDE_SPI
+#define TOTAL_SPI_CONTROLLERS 3
 #define LPC17_SPI_SCLK_PINS { { PIN(0, 15), PF(2) }, { PIN(0,  7), PF(2) }, { PIN(1,  0), PF(4) } }
 #define LPC17_SPI_MISO_PINS { { PIN(0, 17), PF(2) }, { PIN(0,  8), PF(2) }, { PIN(1,  4), PF(4) } }
 #define LPC17_SPI_MOSI_PINS { { PIN(0, 18), PF(2) }, { PIN(0,  9), PF(2) }, { PIN(1,  1), PF(4) } }
 
 #define INCLUDE_UART
+#define TOTAL_UART_CONTROLLERS 5
 #define LPC17_UART_TX_BUFFER_SIZE (16 * 1024)
 #define LPC17_UART_RX_BUFFER_SIZE (16 * 1024)
 #define LPC17_G120_UART_TX_PINS   { { PIN(0,  2), PF(1)   }, { PIN(2,  0), PF(2) }, { PIN(0, 10), PF(1)   }, { PIN(4, 29), PF(2)  }, { PIN(1, 29), PF(5)  } }
@@ -92,4 +94,6 @@
 #define INCLUDE_DISPLAY
 #define LPC17_DISPLAY_CONTROLLER_PINS { { PIN(1, 20), PF(7) }, { PIN(1, 21), PF(7) }, { PIN(1, 22), PF(7) }, { PIN(1, 23), PF(7) }, { PIN(1, 24), PF(7) }, { PIN(1, 25), PF(7) }, { PIN(1, 26), PF(7) }, { PIN(1, 27), PF(7) }, { PIN(1, 28), PF(7)}, { PIN(1, 29), PF(7) }, { PIN(2, 2), PF(7) }, { PIN(2, 3), PF(7) }, { PIN(2, 5), PF(7) }, { PIN(2, 6), PF(7) }, { PIN(2, 7), PF(7) }, { PIN(2, 8), PF(7) }, { PIN(2, 9), PF(7) }, { PIN(2, 12), PF(5) }, { PIN(2, 13), PF(7) } }
 #define LPC17_DISPLAY_BACKLIGHT_PIN  { PIN(1, 19), PF(7) }
-#define LPC17_DISPLAY_OUTPUT_POLARITY_PIN  { PIN(2, 4), PF(7) }
+#define LPC17_DISPLAY_ENABLE_PIN  { PIN(2, 4), PF(7) }
+
+#include <LPC17.h>

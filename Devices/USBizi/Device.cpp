@@ -84,101 +84,101 @@ void LPC24_UsbClient_PinConfiguration() {
 }
 
 // Uart
-static const LPC24_Gpio_Pin g_LPC2387_UART_TX_PINS[] = LPC2387_UART_TX_PINS;
-static const LPC24_Gpio_Pin g_LPC2387_UART_RX_PINS[] = LPC2387_UART_RX_PINS;
-static const LPC24_Gpio_Pin g_LPC2387_UART_RTS_PINS[] = LPC2387_UART_RTS_PINS;
-static const LPC24_Gpio_Pin g_LPC2387_UART_CTS_PINS[] = LPC2387_UART_CTS_PINS;
+static const LPC24_Gpio_Pin g_lpc2387_uart_tx_pins[] = LPC2387_UART_TX_PINS;
+static const LPC24_Gpio_Pin g_lpc2387_uart_rx_pins[] = LPC2387_UART_RX_PINS;
+static const LPC24_Gpio_Pin g_lpc2387_uart_rts_pins[] = LPC2387_UART_RTS_PINS;
+static const LPC24_Gpio_Pin g_lpc2387_uart_cts_pins[] = LPC2387_UART_CTS_PINS;
 
-static const LPC24_Gpio_Pin g_LPC2388_UART_TX_PINS[] = LPC2388_UART_TX_PINS;
-static const LPC24_Gpio_Pin g_LPC2388_UART_RX_PINS[] = LPC2388_UART_RX_PINS;
-static const LPC24_Gpio_Pin g_LPC2388_UART_RTS_PINS[] = LPC2388_UART_RTS_PINS;
-static const LPC24_Gpio_Pin g_LPC2388_UART_CTS_PINS[] = LPC2388_UART_CTS_PINS;
+static const LPC24_Gpio_Pin g_lpc2388_uart_tx_pins[] = LPC2388_UART_TX_PINS;
+static const LPC24_Gpio_Pin g_lpc2388_uart_rx_pins[] = LPC2388_UART_RX_PINS;
+static const LPC24_Gpio_Pin g_lpc2388_uart_rts_pins[] = LPC2388_UART_RTS_PINS;
+static const LPC24_Gpio_Pin g_lpc2388_uart_cts_pins[] = LPC2388_UART_CTS_PINS;
 
 
 int32_t LPC24_Uart_GetTxPin(int32_t portNum) {
     if (LPC24_Startup_GetDeviceId() != LPC2387_PARTID_1 && LPC24_Startup_GetDeviceId() != LPC2387_PARTID_2)
-        return g_LPC2388_UART_TX_PINS[portNum].number;
+        return g_lpc2388_uart_tx_pins[portNum].number;
     else
-        return g_LPC2387_UART_TX_PINS[portNum].number;
+        return g_lpc2387_uart_tx_pins[portNum].number;
 }
 
 int32_t LPC24_Uart_GetRxPin(int32_t portNum) {
     if (LPC24_Startup_GetDeviceId() != LPC2387_PARTID_1 && LPC24_Startup_GetDeviceId() != LPC2387_PARTID_2)
-        return g_LPC2388_UART_RX_PINS[portNum].number;
+        return g_lpc2388_uart_rx_pins[portNum].number;
     else
-        return g_LPC2387_UART_RX_PINS[portNum].number;
+        return g_lpc2387_uart_rx_pins[portNum].number;
 }
 
 int32_t LPC24_Uart_GetRtsPin(int32_t portNum) {
     if (LPC24_Startup_GetDeviceId() != LPC2387_PARTID_1 && LPC24_Startup_GetDeviceId() != LPC2387_PARTID_2)
-        return g_LPC2388_UART_RTS_PINS[portNum].number;
+        return g_lpc2388_uart_rts_pins[portNum].number;
     else
-        return g_LPC2387_UART_RTS_PINS[portNum].number;
+        return g_lpc2387_uart_rts_pins[portNum].number;
 }
 
 int32_t LPC24_Uart_GetCtsPin(int32_t portNum) {
     if (LPC24_Startup_GetDeviceId() != LPC2387_PARTID_1 && LPC24_Startup_GetDeviceId() != LPC2387_PARTID_2)
-        return g_LPC2388_UART_CTS_PINS[portNum].number;
+        return g_lpc2388_uart_cts_pins[portNum].number;
     else
-        return g_LPC2387_UART_CTS_PINS[portNum].number;
+        return g_lpc2387_uart_cts_pins[portNum].number;
 }
 
 LPC24_Gpio_PinFunction LPC24_Uart_GetTxAlternateFunction(int32_t portNum) {
     if (LPC24_Startup_GetDeviceId() != LPC2387_PARTID_1 && LPC24_Startup_GetDeviceId() != LPC2387_PARTID_2)
-        return g_LPC2388_UART_TX_PINS[portNum].pinFunction;
+        return g_lpc2388_uart_tx_pins[portNum].pinFunction;
     else
-        return g_LPC2387_UART_TX_PINS[portNum].pinFunction;
+        return g_lpc2387_uart_tx_pins[portNum].pinFunction;
 }
 
 LPC24_Gpio_PinFunction LPC24_Uart_GetRxAlternateFunction(int32_t portNum) {
     if (LPC24_Startup_GetDeviceId() != LPC2387_PARTID_1 && LPC24_Startup_GetDeviceId() != LPC2387_PARTID_2)
-        return g_LPC2388_UART_RX_PINS[portNum].pinFunction;
+        return g_lpc2388_uart_rx_pins[portNum].pinFunction;
     else
-        return g_LPC2387_UART_RX_PINS[portNum].pinFunction;
+        return g_lpc2387_uart_rx_pins[portNum].pinFunction;
 }
 
 LPC24_Gpio_PinFunction LPC24_Uart_GetRtsAlternateFunction(int32_t portNum) {
     if (LPC24_Startup_GetDeviceId() != LPC2387_PARTID_1 && LPC24_Startup_GetDeviceId() != LPC2387_PARTID_2)
-        return g_LPC2388_UART_RTS_PINS[portNum].pinFunction;
+        return g_lpc2388_uart_rts_pins[portNum].pinFunction;
     else
-        return g_LPC2387_UART_RTS_PINS[portNum].pinFunction;
+        return g_lpc2387_uart_rts_pins[portNum].pinFunction;
 }
 
 LPC24_Gpio_PinFunction LPC24_Uart_GetCtsAlternateFunction(int32_t portNum) {
     if (LPC24_Startup_GetDeviceId() != LPC2387_PARTID_1 && LPC24_Startup_GetDeviceId() != LPC2387_PARTID_2)
-        return g_LPC2388_UART_CTS_PINS[portNum].pinFunction;
+        return g_lpc2388_uart_cts_pins[portNum].pinFunction;
     else
-        return g_LPC2387_UART_CTS_PINS[portNum].pinFunction;
+        return g_lpc2387_uart_cts_pins[portNum].pinFunction;
 }
 
 // ADC
-static const LPC24_Gpio_Pin g_LPC2388_Adc_Pins[] = LPC2388_ADC_PINS;
-static const LPC24_Gpio_Pin g_LPC2387_Adc_Pins[] = LPC2387_ADC_PINS;
+static const LPC24_Gpio_Pin g_lpc2388_adc_pins[] = LPC2388_ADC_PINS;
+static const LPC24_Gpio_Pin g_lpc2387_adc_pins[] = LPC2387_ADC_PINS;
 
 int32_t LPC24_Adc_GetControllerCount() {
     if (LPC24_Startup_GetDeviceId() != LPC2387_PARTID_1 && LPC24_Startup_GetDeviceId() != LPC2387_PARTID_2)
-        return  SIZEOF_ARRAY(g_LPC2388_Adc_Pins);
+        return  SIZEOF_ARRAY(g_lpc2388_adc_pins);
     else
-        return  SIZEOF_ARRAY(g_LPC2387_Adc_Pins);
+        return  SIZEOF_ARRAY(g_lpc2387_adc_pins);
 }
 
 int32_t LPC24_Adc_GetPin(int32_t channel) {
     if (LPC24_Startup_GetDeviceId() != LPC2387_PARTID_1 && LPC24_Startup_GetDeviceId() != LPC2387_PARTID_2)
-        return  g_LPC2388_Adc_Pins[channel].number;
+        return  g_lpc2388_adc_pins[channel].number;
     else
-        return  g_LPC2387_Adc_Pins[channel].number;
+        return  g_lpc2387_adc_pins[channel].number;
 }
 
 LPC24_Gpio_PinFunction LPC24_Adc_GetPinFunction(int32_t channel) {
     if (LPC24_Startup_GetDeviceId() != LPC2387_PARTID_1 && LPC24_Startup_GetDeviceId() != LPC2387_PARTID_2)
-        return  g_LPC2388_Adc_Pins[channel].pinFunction;
+        return  g_lpc2388_adc_pins[channel].pinFunction;
     else
-        return  g_LPC2387_Adc_Pins[channel].pinFunction;
+        return  g_lpc2387_adc_pins[channel].pinFunction;
 }
 
 //PWM
-const LPC24_Gpio_Pin g_pwm_pins[MAX_PWM_PER_CONTROLLER] = LPC24_PWM_PINS;
+const LPC24_Gpio_Pin g_lpc24_pwm_pins[MAX_PWM_PER_CONTROLLER] = LPC24_PWM_PINS;
 
 LPC24_Gpio_Pin LPC24_Pwm_GetPins(int32_t controller, int32_t channel) {
-    return g_pwm_pins[channel];
+    return g_lpc24_pwm_pins[channel];
 }
