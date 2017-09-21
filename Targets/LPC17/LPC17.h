@@ -147,26 +147,6 @@ bool LPC17_Gpio_ConfigurePin(int32_t pin, LPC17_Gpio_Direction pinDir, LPC17_Gpi
 void LPC17_Gpio_EnableOutputPin(int32_t pin, bool initialState);
 void LPC17_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
 
-// PWM
-#define PWM0MR0 (*(volatile unsigned long *)0x40014018)
-#define PWM0MR1 ((uint32_t )0x4001401C)
-#define PWM0MR2 ((uint32_t )0x40014020)
-#define PWM0MR3 ((uint32_t )0x40014024)
-#define PWM0MR4 ((uint32_t )0x40014040)
-#define PWM0MR5 ((uint32_t )0x40014044)
-#define PWM0MR6 ((uint32_t )0x40014048)
-
-#define PWM1MR0 (*(volatile unsigned long *)0x40018018)
-#define PWM1MR1 ((uint32_t )0x4001801C)
-#define PWM1MR2 ((uint32_t )0x40018020)
-#define PWM1MR3 ((uint32_t )0x40018024)
-#define PWM1MR4 ((uint32_t )0x40018040)
-#define PWM1MR5 ((uint32_t )0x40018044)
-#define PWM1MR6 ((uint32_t )0x40018048)
-
-#define TOTAL_PWM_CONTROLLER                2
-#define MAX_PWM_PER_CONTROLLER              6
-
 struct PwmController {    
     int32_t                         channel[MAX_PWM_PER_CONTROLLER];
     int32_t                         match[MAX_PWM_PER_CONTROLLER];
