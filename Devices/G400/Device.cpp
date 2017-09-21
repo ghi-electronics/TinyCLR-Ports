@@ -64,19 +64,18 @@ AT91_Gpio_PeripheralSelection AT91_Uart_GetCtsAlternateFunction(int32_t portNum)
 }
 
 // ADC
-static const uint32_t g_AT91_Adc_Pins[] = AT91_ADC_PINS;
-static const AT91_Gpio_PeripheralSelection g_AT91_ADC_ALT_MODE[] = AT91_ADC_ALT_MODE ;
+static const AT91_Gpio_Pin g_AT91_Adc_Pins[] = AT91_ADC_PINS;
 
 int32_t AT91_Adc_GetControllerCount() {
-    return TOTAL_ADC_CONTROLLERS;
+    return SIZEOF_ARRAY(g_AT91_Adc_Pins);
 }
 
 int32_t AT91_Adc_GetPin(int32_t channel) {
-    return  g_AT91_Adc_Pins[channel];
+    return  g_AT91_Adc_Pins[channel].number;
 }
 
 AT91_Gpio_PeripheralSelection AT91_Adc_GetPeripheralSelection(int32_t channel) {
-    return  g_AT91_ADC_ALT_MODE[channel];
+    return  g_AT91_Adc_Pins[channel].peripheralSelection;
 }
 
 //PWM

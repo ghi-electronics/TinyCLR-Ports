@@ -41,6 +41,15 @@
 #define AT91_AHB_CLOCK_HZ               (400*1000*1000) // 400 MHz
 #define AT91_SYSTEM_PERIPHERAL_CLOCK_HZ          (AT91_AHB_CLOCK_HZ / 3) // 133MHz (Peripheral Clock - MCK)
 
+#define SRAM_MEMORY_Base                    0x00300000
+#define SRAM_MEMORY_Size                    (32*1024)
+#define SDRAM_MEMORY_Base                   0x20000000
+#define SDRAM_MEMORY_Size                   (128*1024*1024)
+
+#define FLASH_MEMORY_Base                   0x00000000
+#define FLASH_MEMORY_Size                   0x00420000
+
+#define AT91_ADC_PINS                     { { PIN(B,11), PS(D) }, { PIN(B,12), PS(D) }, { PIN(B,13), PS(D) }, { PIN(B,14), PS(D) }, { PIN(B,15), PS(D) }, { PIN(B,16), PS(D) }, { PIN(A,17), PS(D) }, { PIN(B,6), PS(D) }, { PIN(B,7), PS(D) }, { PIN(B,8), PS(D) }, { PIN(B,9), PS(D) }, { PIN(B,10), PS(D) } }
 
 #if 1
 
@@ -65,16 +74,6 @@
 
 // Device
 #define HAL_SYSTEM_NAME "G400"
-
-// Memory
-#define SRAM_MEMORY_Base                    0x00300000
-#define SRAM_MEMORY_Size                    (32*1024)
-#define SDRAM_MEMORY_Base                   0x20000000
-#define SDRAM_MEMORY_Size                   (128*1024*1024)
-
-//Flash
-#define FLASH_MEMORY_Base                   0x00000000
-#define FLASH_MEMORY_Size                   0x00420000
 
 
 // Macro
@@ -101,9 +100,9 @@
 #define USB_FRIENDLY_NAME               USB_PRODUCT_NAME
 
 // ADC
-#define TOTAL_ADC_CONTROLLERS             12
-#define AT91_ADC_PINS                     {_P(B,11),_P(B,12),_P(B,13),_P(B,14),_P(B,15),_P(B,16),_P(A,17),_P(B,6),_P(B,7),_P(B,8),_P(B,9),_P(B,10)}
-#define AT91_ADC_ALT_MODE                 {AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD}
+//#define TOTAL_ADC_CONTROLLERS             12
+//#define AT91_ADC_PINS                     {_P(B,11),_P(B,12),_P(B,13),_P(B,14),_P(B,15),_P(B,16),_P(A,17),_P(B,6),_P(B,7),_P(B,8),_P(B,9),_P(B,10)}
+//#define AT91_ADC_ALT_MODE                 {AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD}
 
 // I2C
 #define AT91_I2C_SCL_PIN                  _P(A,31)
