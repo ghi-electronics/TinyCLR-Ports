@@ -44,9 +44,9 @@
 #define PLATFORM_ARM_DEFINED
 
 // Macro
-#define GLOBAL_LOCK(x)             AT91_SmartPtr_IRQ x
-#define DISABLE_INTERRUPTS()       AT91_SmartPtr_IRQ::ForceDisabled()
-#define ENABLE_INTERRUPTS()        AT91_SmartPtr_IRQ::ForceEnabled()
+//#define GLOBAL_LOCK(x)             AT91_SmartPtr_IRQ x
+// #define DISABLE_INTERRUPTS()       AT91_SmartPtr_IRQ::ForceDisabled()
+// #define ENABLE_INTERRUPTS()        AT91_SmartPtr_IRQ::ForceEnabled()
 
 #if defined(_DEBUG)
 #define ASSERT(x)                  while (!(x))
@@ -57,8 +57,8 @@
 #define ASSERT_IRQ_MUST_BE_ON()
 #endif
 
-#define INTERRUPT_START         AT91_Interrupt_Started();
-#define INTERRUPT_END           AT91_Interrupt_Ended();
+// #define INTERRUPT_START         AT91_Interrupt_Started();
+// #define INTERRUPT_END           AT91_Interrupt_Ended();
 
 // Device
 #define HAL_SYSTEM_NAME "G400"

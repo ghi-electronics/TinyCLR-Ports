@@ -975,12 +975,14 @@ public:
 };
 
 class AT91_SmartPtr_IRQ {
-
     uint32_t m_state;
 
+    void Disable();
+    void Restore();
+
 public:
-    AT91_SmartPtr_IRQ() { Disable(); };
-    ~AT91_SmartPtr_IRQ() { Restore(); };
+    AT91_SmartPtr_IRQ();
+    ~AT91_SmartPtr_IRQ();
 
     bool WasDisabled();
     void Acquire();
@@ -989,10 +991,16 @@ public:
 
     static uint32_t GetState();
 
-private:
-    void Disable();
-    void Restore();
 };
+
+class AT91_SmartPtr_Interrupt {
+public:
+    AT91_SmartPtr_Interrupt();
+    ~AT91_SmartPtr_Interrupt();
+};
+
+#define DISABLE_INTERRUPTS_SCOPED(name) AT91_SmartPtr_IRQ name
+#define INTERRUPT_STARTED_SCOPED(name) AT91_SmartPtr_Interrupt name
 
 const TinyCLR_Api_Info* AT91_Interrupt_GetApi();
 TinyCLR_Result AT91_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);

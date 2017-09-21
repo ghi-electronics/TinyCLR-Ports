@@ -84,7 +84,7 @@ const TinyCLR_Api_Info* AT91_Uart_GetApi() {
 
 
 void AT91_Uart_PinConfiguration(int portNum, bool enable) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t txPin = AT91_Uart_GetTxPin(portNum);
     uint32_t rxPin = AT91_Uart_GetRxPin(portNum);
@@ -166,9 +166,9 @@ void AT91_Uart_TransmitData(int32_t portNum) {
 
 }
 void AT91_Uart_InterruptHandler(void *param) {
-    INTERRUPT_START
+    INTERRUPT_STARTED_SCOPED(isr);
 
-        GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t portNum = (uint32_t)param;
 
@@ -184,7 +184,6 @@ void AT91_Uart_InterruptHandler(void *param) {
         AT91_Uart_TransmitData(portNum);
     }
 
-    INTERRUPT_END
 }
 int32_t AT91_Uart_GetPeripheralId(int32_t portNum) {
     int32_t usartId;
@@ -208,7 +207,7 @@ TinyCLR_Result AT91_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
     if (portNum >= TOTAL_UART_CONTROLLERS)
         return TinyCLR_Result::ArgumentInvalid;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     g_AT91_Uart_Controller[portNum].txBufferCount = 0;
     g_AT91_Uart_Controller[portNum].txBufferIn = 0;
@@ -231,7 +230,7 @@ TinyCLR_Result AT91_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
 
 TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, uint32_t baudRate, uint32_t dataBits, TinyCLR_Uart_Parity parity, TinyCLR_Uart_StopBitCount stopBits, TinyCLR_Uart_Handshake handshaking) {
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     int32_t portNum = self->Index;
 
@@ -331,7 +330,7 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, ui
 }
 
 TinyCLR_Result AT91_Uart_Release(const TinyCLR_Uart_Provider* self) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     int32_t portNum = self->Index;
 
@@ -360,7 +359,7 @@ TinyCLR_Result AT91_Uart_Release(const TinyCLR_Uart_Provider* self) {
 }
 
 void AT91_Uart_TxBufferEmptyInterruptEnable(int portNum, bool enable) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     AT91_USART &usart = AT91::USART(portNum);
 
@@ -373,7 +372,7 @@ void AT91_Uart_TxBufferEmptyInterruptEnable(int portNum, bool enable) {
 }
 
 void AT91_Uart_RxBufferFullInterruptEnable(int portNum, bool enable) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     AT91_USART &usart = AT91::USART(portNum);
 
@@ -409,7 +408,7 @@ TinyCLR_Result AT91_Uart_Read(const TinyCLR_Uart_Provider* self, uint8_t* buffer
     int32_t portNum = self->Index;
     size_t i = 0;;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (g_AT91_Uart_Controller[portNum].isOpened == false)
         return TinyCLR_Result::NotAvailable;
@@ -434,7 +433,7 @@ TinyCLR_Result AT91_Uart_Write(const TinyCLR_Uart_Provider* self, const uint8_t*
     int32_t portNum = self->Index;
     int32_t i = 0;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (g_AT91_Uart_Controller[portNum].isOpened == false)
         return TinyCLR_Result::NotAvailable;

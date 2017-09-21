@@ -108,7 +108,7 @@ uint8_t __section("SectionForFlashOperations") AT91_Flash_GetStatus() {
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") AT91_Flash_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     int32_t block = length / FLASH_PAGE_SIZE;
     int32_t rest = length % FLASH_PAGE_SIZE;
@@ -222,7 +222,7 @@ bool AT91_Flash_WriteSector(uint32_t pageNumber, uint8_t* dataBuffer) {
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") AT91_Flash_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t pageNumber = address / FLASH_PAGE_SIZE;
     uint32_t pageOffset = address % FLASH_PAGE_SIZE;
@@ -280,7 +280,7 @@ TinyCLR_Result __section("SectionForFlashOperations") AT91_Flash_Write(const Tin
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") AT91_Flash_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
     uint32_t startAddress = deploymentAddress[sector];
 
     int32_t block = FLASH_BLOCK_SIZE / FLASH_PAGE_SIZE;
@@ -320,7 +320,7 @@ TinyCLR_Result __section("SectionForFlashOperations") AT91_Flash_IsBlockErased(c
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") AT91_Flash_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     size_t writeLength;
     size_t readLength;

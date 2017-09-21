@@ -85,9 +85,9 @@ TinyCLR_Result AT91_Gpio_Release(const TinyCLR_Gpio_Provider* self) {
 }
 
 void AT91_Gpio_InterruptHandler(void* param) {
-    INTERRUPT_START
+    INTERRUPT_STARTED_SCOPED(isr);
 
-        GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     for (auto port = 0; port < MAX_PORT; port++) {
 
@@ -129,13 +129,13 @@ void AT91_Gpio_InterruptHandler(void* param) {
         }
     }
 
-    INTERRUPT_END
+    
 }
 
 TinyCLR_Result AT91_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR) {
     AT91_Int_State* state = &g_int_state[pin];
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t port = GETPORT(pin);
     uint32_t bitmask = 1 << GETBIT(pin);
@@ -206,7 +206,7 @@ void AT91_Gpio_WritePin(int32_t pin, bool value) {
 
     AT91_PIO &pioX = AT91::PIO(port);
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (value) {
         pioX.PIO_SODR = 1 << bit;
@@ -356,7 +356,7 @@ TinyCLR_Result AT91_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t pin, T
 
 TinyCLR_Result AT91_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t pin) {
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (pin >= AT91_Gpio_MaxPins || pin < 0)
         return TinyCLR_Result::ArgumentOutOfRange;
@@ -369,7 +369,7 @@ TinyCLR_Result AT91_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t p
 
 TinyCLR_Result AT91_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t pin) {
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (pin >= AT91_Gpio_MaxPins || pin < 0)
         return TinyCLR_Result::ArgumentOutOfRange;

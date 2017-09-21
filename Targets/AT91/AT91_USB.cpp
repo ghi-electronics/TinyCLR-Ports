@@ -649,7 +649,7 @@ bool UsbClient_Driver::Initialize(int controller) {
 
     USB_CONTROLLER_STATE *State = &UsbControllerState[controller];
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (State == nullptr)
         return false;
@@ -716,7 +716,7 @@ bool UsbClient_Driver::Uninitialize(int controller) {
     if (State->Configured)
         return true;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     AT91_UsbClient_Uninitialize(controller);
 
@@ -854,7 +854,7 @@ bool UsbClient_Driver::CloseStream(int controller, int usbStream) {
         return false;
 
     int endpoint;
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     // Close the Rx stream
     endpoint = State->streams[usbStream].RxEP;
@@ -911,7 +911,7 @@ int UsbClient_Driver::Write(int controller, int usbStream, const char* Data, siz
         return -1;
     }
     else {
-        GLOBAL_LOCK(irq);
+        DISABLE_INTERRUPTS_SCOPED(irq);
 
         const char*   ptr = Data;
         uint32_t        count = size;
@@ -1035,7 +1035,7 @@ int UsbClient_Driver::Read(int controller, int usbStream, char* Data, size_t siz
     }
 
     {
-        GLOBAL_LOCK(irq);
+        DISABLE_INTERRUPTS_SCOPED(irq);
 
         USB_PACKET64* Packet64 = nullptr;
         uint8_t*        ptr = (uint8_t*)Data;
@@ -1125,7 +1125,7 @@ bool UsbClient_Driver::Flush(int controller, int usbStream) {
 }
 
 uint32_t UsbClient_Driver::SetEvent(int controller, uint32_t Event) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     USB_CONTROLLER_STATE *State = &UsbControllerState[controller];
 
@@ -1145,7 +1145,7 @@ uint32_t UsbClient_Driver::SetEvent(int controller, uint32_t Event) {
 }
 
 uint32_t UsbClient_Driver::ClearEvent(int controller, uint32_t Event) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     USB_CONTROLLER_STATE *State = &UsbControllerState[controller];
 
@@ -1160,7 +1160,7 @@ uint32_t UsbClient_Driver::ClearEvent(int controller, uint32_t Event) {
 }
 
 void USB_ClearQueues(USB_CONTROLLER_STATE *State, bool ClrRxQueue, bool ClrTxQueue) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (ClrRxQueue) {
         for (int endpoint = 0; endpoint < USB_MAX_QUEUES; endpoint++) {
@@ -2538,7 +2538,7 @@ void AT91_USBHS_Driver::AT91_UsbClient_VbusInterruptHandler(int32_t Pin, bool Pi
 bool AT91_USBHS_Driver::ProtectPins(int Controller, bool On) {
     USB_CONTROLLER_STATE *State = g_AT91_USBHS_Driver.pUsbControllerState;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (On) {
         if (!g_AT91_USBHS_Driver.PinsProtected) {
@@ -2582,7 +2582,7 @@ bool AT91_USBHS_Driver::Initialize(int Controller) {
     struct AT91_UDPHS *pUdp = (struct AT91_UDPHS *) (AT91C_BASE_UDP);
     struct AT91_UDPHS_EPT *pEp = (struct AT91_UDPHS_EPT *) (AT91C_BASE_UDP + 0x100);
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     // Enable USB device clock
     AT91_PMC_EnableUSBClock();
@@ -2631,7 +2631,7 @@ bool AT91_USBHS_Driver::Initialize(int Controller) {
 }
 
 bool AT91_USBHS_Driver::Uninitialize(int Controller) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     AT91_PMC_DisableUTMIBIAS();
     AT91_PMC_DisableUSBClock();
@@ -2649,7 +2649,7 @@ bool AT91_USBHS_Driver::Uninitialize(int Controller) {
 bool AT91_USBHS_Driver::StartOutput(USB_CONTROLLER_STATE* State, int endpoint) {
 
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     struct AT91_UDPHS *pUdp = (struct AT91_UDPHS *) AT91C_BASE_UDP;
 
@@ -2686,7 +2686,7 @@ bool AT91_USBHS_Driver::StartOutput(USB_CONTROLLER_STATE* State, int endpoint) {
 bool AT91_USBHS_Driver::GetInterruptState() {
     struct AT91_UDPHS *pUdp = (struct AT91_UDPHS *) (AT91C_BASE_UDP);
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if ((pUdp->UDPHS_IEN & pUdp->UDPHS_INTSTA) || (pUdp->UDPHS_INTSTA & AT91C_UDPHS_ENDRESET)) {
         return true;
@@ -2712,7 +2712,7 @@ void AT91_USBHS_Driver::TxPacket(USB_CONTROLLER_STATE* State, int endpoint) {
     struct AT91_UDPHS *pUdp = (struct AT91_UDPHS *) (AT91C_BASE_UDP);
     uint8_t * pDest = (uint8_t*)((((struct AT91_UDPHS_EPTFIFO *)AT91C_BASE_UDP_DMA)->UDPHS_READEPT0) + 16384 * endpoint);
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     // transmit a packet on UsbPortNum, if there are no more packets to transmit, then die
 

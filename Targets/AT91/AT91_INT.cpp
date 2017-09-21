@@ -178,7 +178,7 @@ bool AT91_Interrupt_Activate(uint32_t Irq_Index, uint32_t *ISR, void* ISR_Param)
 
     AT91_AIC &aic = AT91::AIC();
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     // disable this interrupt while we change it
     aic.AIC_IDCR = (0x01 << Irq_Index);
@@ -203,7 +203,7 @@ bool AT91_Interrupt_Deactivate(uint32_t Irq_Index) {
     if (!IsrVector)
         return false;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     AT91_AIC &aic = AT91::AIC();
 
@@ -225,7 +225,7 @@ bool AT91_Interrupt_Enable(uint32_t Irq_Index) {
 
     AT91_AIC &aic = AT91::AIC();
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     bool WasEnabled = ((aic.AIC_IMR & (1 << Irq_Index)) != 0) ? true : false;
 
@@ -240,7 +240,7 @@ bool AT91_Interrupt_Disable(uint32_t Irq_Index) {
 
     AT91_AIC &aic = AT91::AIC();
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     bool WasEnabled = ((aic.AIC_IMR & (1 << Irq_Index)) != 0) ? true : false;
 
@@ -274,6 +274,12 @@ bool AT91_Interrupt_InterruptState(uint32_t Irq_Index) {
 
     return IsPending;
 }
+
+AT91_SmartPtr_Interrupt::AT91_SmartPtr_Interrupt() { AT91_Interrupt_Started(); };
+AT91_SmartPtr_Interrupt::~AT91_SmartPtr_Interrupt() { AT91_Interrupt_Ended(); };
+
+AT91_SmartPtr_IRQ::AT91_SmartPtr_IRQ() { Disable(); }
+AT91_SmartPtr_IRQ::~AT91_SmartPtr_IRQ() { Restore(); }
 
 bool AT91_SmartPtr_IRQ::WasDisabled() {
     return (m_state & DISABLED_MASK) == DISABLED_MASK;
@@ -377,9 +383,9 @@ extern "C" {
 
     void __attribute__((interrupt("IRQ"))) IRQ_Handler(void *param) {
         // set before jumping elsewhere or allowing other interrupts
-        INTERRUPT_START
+        INTERRUPT_STARTED_SCOPED(isr);
 
-            uint32_t index;
+        uint32_t index;
 
         AT91_AIC &aic = AT91::AIC();
 
@@ -401,7 +407,7 @@ extern "C" {
         aic.AIC_EOICR = 1;
 
 
-        INTERRUPT_END
+        
 
 
     }

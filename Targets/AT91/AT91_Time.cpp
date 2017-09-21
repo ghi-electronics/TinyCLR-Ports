@@ -107,7 +107,7 @@ private:
 AT91_TIMER_Driver g_AT91_TIMER_Driver;
 
 bool AT91_TIMER_Driver::Initialize(uint32_t timer, bool freeRunning, uint32_t clkSource, uint32_t* ISR, void* ISR_Param) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (!(timer < AT91_TIMER_Driver::c_MaxTimer))
         return false;
@@ -289,7 +289,7 @@ uint64_t AT91_Time_GetCurrentTicks(const TinyCLR_Time_Provider* self) {
     if (self != nullptr)
         timer = self->Index;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t value = AT91_TIMER_Driver::ReadCounter(AT91_TIMER_Driver::c_SystemTimer);
 
@@ -310,7 +310,7 @@ TinyCLR_Result AT91_Time_SetCompare(const TinyCLR_Time_Provider* self, uint64_t 
     if (self != nullptr)
         timer = self->Index;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     g_AT91_TIME_Driver.m_nextCompare = processorTicks;
 
@@ -381,7 +381,7 @@ TinyCLR_Result AT91_Time_SetCompareCallback(const TinyCLR_Time_Provider* self, T
 }
 
 void AT91_Time_DelayNoInterrupt(const TinyCLR_Time_Provider* self, uint64_t microseconds) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint64_t value = AT91_TIMER_Driver::ReadCounter(AT91_TIMER_Driver::c_SystemTimer);
     uint64_t maxDiff = AT91_Time_MicrosecondsToTicks(self, microseconds);
