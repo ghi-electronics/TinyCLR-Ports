@@ -56,6 +56,11 @@
 #define AT91_I2C_SCL_PINS                  { { PIN(A,31),  PS(A) } }
 #define AT91_I2C_SDA_PINS                  { { PIN(A,30),  PS(A) } }
 
+#define INCLUDE_PWM
+#define MAX_PWM_PER_CONTROLLER            1
+#define TOTAL_PWM_CONTROLLER              4
+#define AT91_PWM_PINS   { { { PIN(C,18),  PS(C) } }, { { PIN(C,19),  PS(C) } }, { { PIN(C,20),  PS(C) } }, { { PIN(C,21),  PS(C) } } }
+
 #if 1
 
 // #define PLATFORM_ARM_DEFINED
@@ -110,10 +115,10 @@
 //#define AT91_ADC_ALT_MODE                 {AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD, AT91_Gpio_PeripheralSelection::PeripheralD}
 
 // I2C
-#define AT91_I2C_SCL_PIN                  _P(A,31)
-#define AT91_I2C_SDA_PIN                  _P(A,30)
-#define AT91_I2C_SCL_ALT_MODE             AT91_Gpio_PeripheralSelection::PeripheralA
-#define AT91_I2C_SDA_ALT_MODE             AT91_Gpio_PeripheralSelection::PeripheralA
+// #define AT91_I2C_SCL_PIN                  _P(A,31)
+// #define AT91_I2C_SDA_PIN                  _P(A,30)
+// #define AT91_I2C_SCL_ALT_MODE             AT91_Gpio_PeripheralSelection::PeripheralA
+// #define AT91_I2C_SDA_ALT_MODE             AT91_Gpio_PeripheralSelection::PeripheralA
 
 // PWM
 #define MAX_PWM_PER_CONTROLLER            1
@@ -171,7 +176,7 @@
 
 #define INCLUDE_GPIO
 
-#define INCLUDE_PWM
+
 #define INCLUDE_SPI
 #define INCLUDE_UART
 #define INCLUDE_USBCLIENT

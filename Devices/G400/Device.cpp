@@ -79,9 +79,9 @@ AT91_Gpio_PeripheralSelection AT91_Adc_GetPeripheralSelection(int32_t channel) {
 }
 
 //PWM
-static PwmController g_AT91_PWM[] = AT91_PWM;
+static const AT91_Gpio_Pin g_at91_pwm_pins[TOTAL_PWM_CONTROLLER][MAX_PWM_PER_CONTROLLER] = AT91_PWM_PINS;
 
-PwmController* AT91_Pwm_GetControllers() {
-    return (PwmController*)&g_AT91_PWM;
+AT91_Gpio_Pin AT91_Pwm_GetPins(int32_t controller, int32_t channel) {
+   return g_at91_pwm_pins[controller][channel];
 }
 

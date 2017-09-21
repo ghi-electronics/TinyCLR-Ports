@@ -517,25 +517,13 @@ int32_t AT91_Dac_GetMinValue(const TinyCLR_Dac_Provider* self);
 int32_t AT91_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self);
 
 // PWM
-#define PWM_MODE_REGISTER				(*(uint32_t *)(AT91C_BASE_PWMC + 0x00))
-#define PWM_ENABLE_REGISTER				(*(uint32_t *)(AT91C_BASE_PWMC + 0x04))
-#define PWM_DISABLE_REGISTER			(*(uint32_t *)(AT91C_BASE_PWMC + 0x08))
-#define PWM_INTERUPT_ENABLE_REGISTER	(*(uint32_t *)(AT91C_BASE_PWMC + 0x10))
-#define PWM_INTERUPT_DISABLE_REGISTER	(*(uint32_t *)(AT91C_BASE_PWMC + 0x14))
-
-#define PWM_CHANNEL_MODE_REGISTER(x)	(uint32_t *)(AT91C_BASE_PWMC + (0x200 + (x * 0x20) + 0x00))
-#define PWM_DUTY_REGISTER(x)            (uint32_t *)(AT91C_BASE_PWMC + (0x200 + (x * 0x20) + 0x04))
-#define PWM_CHANNEL_UPDATE_REGISTER(x)  (uint32_t *)(AT91C_BASE_PWMC + (0x200 + (x * 0x10) + ((x + 1) * 0x10)))
-
 struct PwmController {
 
     uint32_t                        *channelModeReg;
     uint32_t                        *dutyCycleReg;
     uint32_t                        *channelUpdateReg;
 
-    int32_t                         gpioPin[MAX_PWM_PER_CONTROLLER];
-
-    AT91_Gpio_PeripheralSelection   gpioPeripheralSelection[MAX_PWM_PER_CONTROLLER];
+    AT91_Gpio_Pin                   gpioPin[MAX_PWM_PER_CONTROLLER];   
 
     bool                            invert[MAX_PWM_PER_CONTROLLER];
     double                          frequency;
@@ -544,7 +532,7 @@ struct PwmController {
 const TinyCLR_Api_Info* AT91_Pwm_GetApi();
 void AT91_Pwm_Reset();
 void AT91_Pwm_ResetController(int32_t controller);
-PwmController* AT91_Pwm_GetControllers();
+AT91_Gpio_Pin AT91_Pwm_GetPins(int32_t controller, int32_t channel);
 TinyCLR_Result AT91_Pwm_Acquire(const TinyCLR_Pwm_Provider* self);
 TinyCLR_Result AT91_Pwm_Release(const TinyCLR_Pwm_Provider* self);
 int32_t AT91_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t pin);
