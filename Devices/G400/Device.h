@@ -61,6 +61,12 @@
 #define TOTAL_PWM_CONTROLLER              4
 #define AT91_PWM_PINS   { { { PIN(C,18),  PS(C) } }, { { PIN(C,19),  PS(C) } }, { { PIN(C,20),  PS(C) } }, { { PIN(C,21),  PS(C) } } }
 
+#define INCLUDE_SPI
+#define TOTAL_SPI_CONTROLLERS              2
+#define AT91_SPI_MISO_PINS                { {_P(A,11),  PS(A) }, {_P(A,21),  PS(B) } }
+#define AT91_SPI_MOSI_PINS                { {_P(A,12),  PS(A) }, {_P(A,22),  PS(B) } }
+#define AT91_SPI_SCLK_PINS                { {_P(A,13),  PS(A) }, {_P(A,13),  PS(B) } }
+
 #if 1
 
 // #define PLATFORM_ARM_DEFINED
@@ -121,20 +127,14 @@
 // #define AT91_I2C_SDA_ALT_MODE             AT91_Gpio_PeripheralSelection::PeripheralA
 
 // PWM
-#define MAX_PWM_PER_CONTROLLER            1
-#define TOTAL_PWM_CONTROLLER              4
-#define AT91_PWM                          { {PWM_CHANNEL_MODE_REGISTER(0), PWM_DUTY_REGISTER(0), PWM_CHANNEL_UPDATE_REGISTER(0), {_P(C,18)}, {AT91_Gpio_PeripheralSelection::PeripheralC}, { false }, 0.0, {0.0} } ,\
-                                            {PWM_CHANNEL_MODE_REGISTER(1), PWM_DUTY_REGISTER(1), PWM_CHANNEL_UPDATE_REGISTER(1), {_P(C,19)}, {AT91_Gpio_PeripheralSelection::PeripheralC}, { false }, 0.0, {0.0} } ,\
-                                            {PWM_CHANNEL_MODE_REGISTER(2), PWM_DUTY_REGISTER(2), PWM_CHANNEL_UPDATE_REGISTER(2), {_P(C,20)}, {AT91_Gpio_PeripheralSelection::PeripheralC}, { false }, 0.0, {0.0} } ,\
-                                            {PWM_CHANNEL_MODE_REGISTER(3), PWM_DUTY_REGISTER(3), PWM_CHANNEL_UPDATE_REGISTER(3), {_P(C,21)}, {AT91_Gpio_PeripheralSelection::PeripheralC}, { false }, 0.0, {0.0} } }
+// #define MAX_PWM_PER_CONTROLLER            1
+// #define TOTAL_PWM_CONTROLLER              4
+// #define AT91_PWM                          { {PWM_CHANNEL_MODE_REGISTER(0), PWM_DUTY_REGISTER(0), PWM_CHANNEL_UPDATE_REGISTER(0), {_P(C,18)}, {AT91_Gpio_PeripheralSelection::PeripheralC}, { false }, 0.0, {0.0} } ,\
+                                            // {PWM_CHANNEL_MODE_REGISTER(1), PWM_DUTY_REGISTER(1), PWM_CHANNEL_UPDATE_REGISTER(1), {_P(C,19)}, {AT91_Gpio_PeripheralSelection::PeripheralC}, { false }, 0.0, {0.0} } ,\
+                                            // {PWM_CHANNEL_MODE_REGISTER(2), PWM_DUTY_REGISTER(2), PWM_CHANNEL_UPDATE_REGISTER(2), {_P(C,20)}, {AT91_Gpio_PeripheralSelection::PeripheralC}, { false }, 0.0, {0.0} } ,\
+                                            // {PWM_CHANNEL_MODE_REGISTER(3), PWM_DUTY_REGISTER(3), PWM_CHANNEL_UPDATE_REGISTER(3), {_P(C,21)}, {AT91_Gpio_PeripheralSelection::PeripheralC}, { false }, 0.0, {0.0} } }
 // SPI
-#define TOTAL_SPI_CONTROLLERS              2
-#define AT91_SPI_MISO_PINS                {_P(A,11),_P(A,21)}
-#define AT91_SPI_MOSI_PINS                {_P(A,12),_P(A,22)}
-#define AT91_SPI_CLK_PINS                 {_P(A,13),_P(A,23)}
-#define AT91_SPI_MISO_ALT_MODE            {AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralB}
-#define AT91_SPI_MOSI_ALT_MODE            {AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralB}
-#define AT91_SPI_CLK_ALT_MODE             {AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_PeripheralSelection::PeripheralB}
+
 
 // UART
 #define TOTAL_UART_CONTROLLERS            6
@@ -177,7 +177,7 @@
 #define INCLUDE_GPIO
 
 
-#define INCLUDE_SPI
+
 #define INCLUDE_UART
 #define INCLUDE_USBCLIENT
 #define INCLUDE_DISPLAY
