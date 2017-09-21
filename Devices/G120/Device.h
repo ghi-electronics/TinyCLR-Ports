@@ -76,6 +76,7 @@
 #define LPC17_SPI_MOSI_PINS { { PIN(0, 18), PF(2) }, { PIN(0,  9), PF(2) }, { PIN(1,  1), PF(4) } }
 
 #define INCLUDE_UART
+#define TOTAL_UART_CONTROLLERS 5
 #define LPC17_UART_TX_BUFFER_SIZE (16 * 1024)
 #define LPC17_UART_RX_BUFFER_SIZE (16 * 1024)
 #define LPC17_G120_UART_TX_PINS   { { PIN(0,  2), PF(1)   }, { PIN(2,  0), PF(2) }, { PIN(0, 10), PF(1)   }, { PIN(4, 29), PF(2)  }, { PIN(1, 29), PF(5)  } }

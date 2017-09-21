@@ -215,7 +215,6 @@ int32_t LPC17_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self);
 TinyCLR_Result LPC17_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* self, int32_t* dataBitLengths, size_t& dataBitLengthsCount);
 
 //Uart
-#define TOTAL_UART_CONTROLLERS 5
 const TinyCLR_Api_Info* LPC17_Uart_GetApi();
 void LPC17_Uart_Reset();
 int32_t LPC17_Uart_GetTxPin(int32_t portNum);
