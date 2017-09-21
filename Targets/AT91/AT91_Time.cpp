@@ -17,6 +17,11 @@
 
 #define AT91_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS 4
 
+#define SLOW_CLOCKS_PER_SECOND              (AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 32)
+#define CLOCK_COMMON_FACTOR                 10
+#define SLOW_CLOCKS_TEN_MHZ_GCD             10
+#define SLOW_CLOCKS_MILLISECOND_GCD         10
+
 //////////////////////////////////////////////////////////////////////////////
 // TIMER driver
 //
@@ -212,7 +217,7 @@ const TinyCLR_Api_Info* AT91_Time_GetApi() {
     timeProvider.Parent = &timeApi;
     timeProvider.Index = 0;
     timeProvider.GetInitialTime = &AT91_Time_GetInitialTime;
-    timeProvider.GetTimeForProcessorTicks = &AT91_Time_TicksToTime;
+    timeProvider.GetTimeForProcessorTicks = &AT91_Time_GetTimeForProcessorTicks;
     timeProvider.GetProcessorTicksForTime = &AT91_Time_TimeToTicks;
     timeProvider.GetCurrentProcessorTicks = &AT91_Time_GetCurrentTicks;
     timeProvider.SetTickCallback = &AT91_Time_SetCompareCallback;
@@ -256,7 +261,7 @@ uint32_t AT91_Time_GetTicksPerSecond(const TinyCLR_Time_Provider* self) {
     return SLOW_CLOCKS_PER_SECOND;
 }
 
-uint64_t AT91_Time_TicksToTime(const TinyCLR_Time_Provider* self, uint64_t ticks) {
+uint64_t AT91_Time_GetTimeForProcessorTicks(const TinyCLR_Time_Provider* self, uint64_t ticks) {
     ticks *= (TEN_MHZ / SLOW_CLOCKS_TEN_MHZ_GCD);
     ticks /= (SLOW_CLOCKS_PER_SECOND / SLOW_CLOCKS_TEN_MHZ_GCD);
 
@@ -400,7 +405,7 @@ void AT91_Time_Delay(const TinyCLR_Time_Provider* self, uint64_t microseconds) {
 
     // iterations must be signed so that negative iterations will result in the minimum delay
 
-    microseconds *= ((SYSTEM_CYCLE_CLOCK_HZ / 2) / CLOCK_COMMON_FACTOR);
+    microseconds *= ((AT91_AHB_CLOCK_HZ / 2) / CLOCK_COMMON_FACTOR);
     microseconds /= (ONE_MHZ / CLOCK_COMMON_FACTOR);
 
     // iterations is equal to the number of CPU instruction cycles in the required time minus

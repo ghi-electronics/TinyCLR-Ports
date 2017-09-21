@@ -38,10 +38,13 @@
 #define RAM_BOOTLOADER_HOLD_ADDRESS         0x266FFFF0
 #define RAM_BOOTLOADER_HOLD_VALUE           0x8DB4DA67
 
+#define AT91_AHB_CLOCK_HZ               (400*1000*1000) // 400 MHz
+#define AT91_SYSTEM_PERIPHERAL_CLOCK_HZ          (AT91_AHB_CLOCK_HZ / 3) // 133MHz (Peripheral Clock - MCK)
+
 
 #if 1
 
-#define PLATFORM_ARM_DEFINED
+// #define PLATFORM_ARM_DEFINED
 
 // Macro
 //#define GLOBAL_LOCK(x)             AT91_SmartPtr_IRQ x
@@ -62,15 +65,6 @@
 
 // Device
 #define HAL_SYSTEM_NAME "G400"
-
-// System clock
-#define SYSTEM_CYCLE_CLOCK_HZ               (400*1000*1000) // 400 MHz
-#define SYSTEM_PERIPHERAL_CLOCK_HZ          (SYSTEM_CYCLE_CLOCK_HZ / 3) // 133MHz (Peripheral Clock - MCK)
-#define SYSTEM_CLOCK_HZ                     (SYSTEM_PERIPHERAL_CLOCK_HZ / 32) // (Div3 = MCK / 32 ~ 4,166,666)
-#define SLOW_CLOCKS_PER_SECOND              SYSTEM_CLOCK_HZ
-#define CLOCK_COMMON_FACTOR                 10
-#define SLOW_CLOCKS_TEN_MHZ_GCD             10
-#define SLOW_CLOCKS_MILLISECOND_GCD         10
 
 // Memory
 #define SRAM_MEMORY_Base                    0x00300000

@@ -623,7 +623,7 @@ struct AT91_SPI
 
     __inline static uint32_t ConvertClockRateToDivisor(uint32_t clockKHz)
     {
-        uint32_t mckKHz = SYSTEM_PERIPHERAL_CLOCK_HZ / 1000;
+        uint32_t mckKHz = AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 1000;
         uint32_t divisor = mckKHz / clockKHz;
 
         if (mckKHz / divisor > clockKHz)
@@ -670,7 +670,7 @@ struct AT91_USART {
     static const uint32_t c_Base_uart = AT91C_BASE_UART0;
     static const uint32_t c_Base_offset = 0x4000;
 
-    static const uint32_t c_MAX_BAUDRATE = ((SYSTEM_PERIPHERAL_CLOCK_HZ * 10) / 16);
+    static const uint32_t c_MAX_BAUDRATE = ((AT91_SYSTEM_PERIPHERAL_CLOCK_HZ * 10) / 16);
     static const uint32_t c_MIN_BAUDRATE = 0;
 
     /****/ volatile uint32_t US_CR;          // Control Register
@@ -1263,7 +1263,7 @@ const TinyCLR_Api_Info* AT91_Time_GetApi();
 TinyCLR_Result AT91_Time_Acquire(const TinyCLR_Time_Provider* self);
 TinyCLR_Result AT91_Time_Release(const TinyCLR_Time_Provider* self);
 TinyCLR_Result AT91_Time_GetInitialTime(const TinyCLR_Time_Provider* self, int64_t& utcTime, int32_t& timeZoneOffsetMinutes);
-uint64_t AT91_Time_TicksToTime(const TinyCLR_Time_Provider* self, uint64_t ticks);
+uint64_t AT91_Time_GetTimeForProcessorTicks(const TinyCLR_Time_Provider* self, uint64_t ticks);
 uint64_t AT91_Time_TimeToTicks(const TinyCLR_Time_Provider* self, uint64_t time);
 uint64_t AT91_Time_MillisecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t ticks);
 uint64_t AT91_Time_MicrosecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t microseconds);

@@ -168,7 +168,7 @@ void AT91_Uart_TransmitData(int32_t portNum) {
 void AT91_Uart_InterruptHandler(void *param) {
     INTERRUPT_STARTED_SCOPED(isr);
 
-    DISABLE_INTERRUPTS_SCOPED(irq);
+        DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t portNum = (uint32_t)param;
 
@@ -184,6 +184,7 @@ void AT91_Uart_InterruptHandler(void *param) {
         AT91_Uart_TransmitData(portNum);
     }
 
+    
 }
 int32_t AT91_Uart_GetPeripheralId(int32_t portNum) {
     int32_t usartId;
@@ -246,7 +247,7 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, ui
 
     // Define the baud rate divisor register
     {
-        uint64_t dwMasterClock = SYSTEM_PERIPHERAL_CLOCK_HZ;
+        uint64_t dwMasterClock = AT91_SYSTEM_PERIPHERAL_CLOCK_HZ;
         uint32_t baud_value = ((dwMasterClock * 10) / (baudRate * 16));
         if ((baud_value % 10) >= 5)
             baud_value = (baud_value / 10) + 1;

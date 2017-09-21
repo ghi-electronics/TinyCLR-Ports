@@ -205,7 +205,7 @@ TinyCLR_Result AT91_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, c
 }
 
 #define CLOCK_RATE_CONSTANT     4
-#define MIN_CLK_RATE    (SYSTEM_PERIPHERAL_CLOCK_HZ/1000)/(128 *255+CLOCK_RATE_CONSTANT)
+#define MIN_CLK_RATE    (AT91_SYSTEM_PERIPHERAL_CLOCK_HZ/1000)/(128 *255+CLOCK_RATE_CONSTANT)
 #define MAX_CLK_RATE    400   //kHz
 
 TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed) {
@@ -225,7 +225,7 @@ TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int3
     }
     else if (rateKhz >= MAX_CLK_RATE) {
 
-        clockRate = (SYSTEM_PERIPHERAL_CLOCK_HZ / (2 * 1000)) / MAX_CLK_RATE - CLOCK_RATE_CONSTANT;
+        clockRate = (AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / (2 * 1000)) / MAX_CLK_RATE - CLOCK_RATE_CONSTANT;
         clockRate2 = 0;
     }
     else {
@@ -235,7 +235,7 @@ TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int3
         uint32_t clkLHDiv;
 
         clkDiv = 0;
-        clkLHDiv = (SYSTEM_PERIPHERAL_CLOCK_HZ / (2 * 1000)) / rateKhz - CLOCK_RATE_CONSTANT;
+        clkLHDiv = (AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / (2 * 1000)) / rateKhz - CLOCK_RATE_CONSTANT;
 
         if (clkLHDiv > 255) {
             clkLHDiv += CLOCK_RATE_CONSTANT;
@@ -246,7 +246,7 @@ TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int3
                     break;
             }
 
-            clkLHDiv = (((SYSTEM_PERIPHERAL_CLOCK_HZ / (2 * 1000)) / rateKhz) - CLOCK_RATE_CONSTANT) / power;
+            clkLHDiv = (((AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / (2 * 1000)) / rateKhz) - CLOCK_RATE_CONSTANT) / power;
         }
         clockRate = clkLHDiv;
         clockRate2 = clkDiv;

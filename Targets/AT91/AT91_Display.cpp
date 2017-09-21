@@ -890,7 +890,7 @@ bool AT91_Display_Initialize() {
     lcd->LCDC_HEOCFG2 = (150 << 16) | 100; //(LCD_GetHeight() << 16) | LCD_GetWidth();
     lcd->LCDC_HEOCFG3 = (50 << 16) | 350; //(LCD_GetHeight() << 16) | LCD_GetWidth();
 
-    lcd->LCDC_LCDCFG0 = LCDC_LCDCFG0_CLKDIV((SYSTEM_PERIPHERAL_CLOCK_HZ * 2) / (m_AT91_DisplayPixelClockRateKHz * 1000) - 2)
+    lcd->LCDC_LCDCFG0 = LCDC_LCDCFG0_CLKDIV((AT91_SYSTEM_PERIPHERAL_CLOCK_HZ * 2) / (m_AT91_DisplayPixelClockRateKHz * 1000) - 2)
         | LCDC_LCDCFG0_CGDISHCR
         | LCDC_LCDCFG0_CGDISHEO
         | LCDC_LCDCFG0_CGDISOVR1
