@@ -387,7 +387,7 @@ int32_t AT91_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self) {
 }
 
 int32_t AT91_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self) {
-    return TOTAL_GPIO_PINS;
+    return AT91_Gpio_GetPinCount(nullptr);
 }
 
 static const int32_t dataBitsCount = 2;

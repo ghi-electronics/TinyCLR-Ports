@@ -273,54 +273,54 @@ struct AT91SAM9X35_LCDC {
                                     *BOARD_LCD_FRAMERATE)
 
 
-#define AT91_LCDD0		_P(C,0)
-#define AT91_LCDD1		_P(C,1)
-#define AT91_LCDD2		_P(C,2)
-#define AT91_LCDD3		_P(C,3)
-#define AT91_LCDD4		_P(C,4)
-#define AT91_LCDD5		_P(C,5)
-#define AT91_LCDD6		_P(C,6)
-#define AT91_LCDD7		_P(C,7)
-#define AT91_LCDD8		_P(C,8)
-#define AT91_LCDD9		_P(C,9)
-#define AT91_LCDD10		_P(C,10)
-#define AT91_LCDD11		_P(C,11)
-#define AT91_LCDD12		_P(C,12)
-#define AT91_LCDD13		_P(C,13)
-#define AT91_LCDD14		_P(C,14)
-#define AT91_LCDD15		_P(C,15)
-#define AT91_LCDDISP	_P(C,24)
-#define AT91_LCDPWM		_P(C,26)
-#define AT91_LCDVSYNC	_P(C,27)
-#define AT91_LCDHSYNC	_P(C,28)
-#define AT91_LCDDEN		_P(C,29)
-#define AT91_LCDPCK		_P(C,30)
+// #define AT91_LCDD0		_P(C,0)
+// #define AT91_LCDD1		_P(C,1)
+// #define AT91_LCDD2		_P(C,2)
+// #define AT91_LCDD3		_P(C,3)
+// #define AT91_LCDD4		_P(C,4)
+// #define AT91_LCDD5		_P(C,5)
+// #define AT91_LCDD6		_P(C,6)
+// #define AT91_LCDD7		_P(C,7)
+// #define AT91_LCDD8		_P(C,8)
+// #define AT91_LCDD9		_P(C,9)
+// #define AT91_LCDD10		_P(C,10)
+// #define AT91_LCDD11		_P(C,11)
+// #define AT91_LCDD12		_P(C,12)
+// #define AT91_LCDD13		_P(C,13)
+// #define AT91_LCDD14		_P(C,14)
+// #define AT91_LCDD15		_P(C,15)
+// #define AT91_LCDDISP	_P(C,24)
+// #define AT91_LCDPWM		_P(C,26)
+// #define AT91_LCDVSYNC	_P(C,27)
+// #define AT91_LCDHSYNC	_P(C,28)
+// #define AT91_LCDDEN		_P(C,29)
+// #define AT91_LCDPCK		_P(C,30)
 
-static const uint8_t LCDPins[] =
-{
-    AT91_LCDD0,
-    AT91_LCDD1,
-    AT91_LCDD2,
-    AT91_LCDD3,
-    AT91_LCDD4,
-    AT91_LCDD5,
-    AT91_LCDD6,
-    AT91_LCDD7,
-    AT91_LCDD8,
-    AT91_LCDD9,
-    AT91_LCDD10,
-    AT91_LCDD11,
-    AT91_LCDD12,
-    AT91_LCDD13,
-    AT91_LCDD14,
-    AT91_LCDD15,
-    AT91_LCDDISP,
-    AT91_LCDPWM,
-    AT91_LCDVSYNC,
-    AT91_LCDHSYNC,
-    AT91_LCDDEN,
-    AT91_LCDPCK,
-};
+// static const uint8_t LCDPins[] =
+// {
+    // AT91_LCDD0,
+    // AT91_LCDD1,
+    // AT91_LCDD2,
+    // AT91_LCDD3,
+    // AT91_LCDD4,
+    // AT91_LCDD5,
+    // AT91_LCDD6,
+    // AT91_LCDD7,
+    // AT91_LCDD8,
+    // AT91_LCDD9,
+    // AT91_LCDD10,
+    // AT91_LCDD11,
+    // AT91_LCDD12,
+    // AT91_LCDD13,
+    // AT91_LCDD14,
+    // AT91_LCDD15,
+    // AT91_LCDDISP,
+    // AT91_LCDPWM,
+    // AT91_LCDVSYNC,
+    // AT91_LCDHSYNC,
+    // AT91_LCDDEN,
+    // AT91_LCDPCK,
+// };
 
 const uint8_t characters[129][5] = {
 0x00,0x00,0x00,0x00,0x00,
@@ -839,15 +839,20 @@ void AT91_Display_SetBaseLayerDMA() {
     lcd->LCDC_BASECHER = 0x3;
 }
 
+static const AT91_Gpio_Pin g_at91_display_pins[] = AT91_DISPLAY_CONTROLLER_PINS;
+static const AT91_Gpio_Pin g_at91_display_enable_pin = AT91_DISPLAY_ENABLE_PIN;
+
 bool AT91_Display_Initialize() {
 
     AT91SAM9X35_LCDC *lcd = (AT91SAM9X35_LCDC*)AT91C_BASE_LCDC;
     AT91_PMC &pmc = AT91::PMC();
 
     if (m_AT91_DisplayWidth == 0) {
-        for (uint32_t pin = 0; pin < SIZEOF_CONST_ARRAY(LCDPins); pin++) {
-            AT91_Gpio_EnableInputPin(LCDPins[pin], TinyCLR_Gpio_PinDriveMode::InputPullDown);
+        for (uint32_t pin = 0; pin < SIZEOF_ARRAY(g_at91_display_pins); pin++) {
+            AT91_Gpio_EnableInputPin(g_at91_display_pins[pin].number, TinyCLR_Gpio_PinDriveMode::InputPullDown);
         }
+        
+        AT91_Gpio_EnableInputPin(g_at91_display_enable_pin.number, TinyCLR_Gpio_PinDriveMode::InputPullDown);
 
         return false;
     }
@@ -860,11 +865,15 @@ bool AT91_Display_Initialize() {
     pmc.EnablePeriphClock(AT91C_ID_LCDC);
 
     // Set LCD pins
-    for (uint32_t pin = 0; pin < SIZEOF_CONST_ARRAY(LCDPins); pin++) {
-        if ((pin == 20) && m_AT91_DisplayOutputEnableIsFixed)
-            AT91_Gpio_EnableOutputPin(LCDPins[pin], m_AT91_DisplayOutputEnablePolarity);
-        else
-            AT91_Gpio_ConfigurePin(LCDPins[pin], AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_ResistorMode::Inactive);
+    for (uint32_t pin = 0; pin < SIZEOF_ARRAY(g_at91_display_pins); pin++) {        
+            AT91_Gpio_ConfigurePin(g_at91_display_pins[pin].number, AT91_Gpio_Direction::Input, g_at91_display_pins[pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+    }
+    
+    if (m_AT91_DisplayOutputEnableIsFixed) {
+        AT91_Gpio_EnableOutputPin(g_at91_display_enable_pin.number, m_AT91_DisplayOutputEnablePolarity);
+    }
+    else {
+        AT91_Gpio_ConfigurePin(g_at91_display_enable_pin.number, AT91_Gpio_Direction::Input, g_at91_display_enable_pin.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
     }
 
     // Enable the LCD clock

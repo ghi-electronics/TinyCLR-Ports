@@ -15,9 +15,10 @@
 
 #include "AT91.h"
 
-// Driver
+static const AT91_Gpio_PinConfiguration g_at91_pins[] = AT91_GPIO_PINS;
+
 #define AT91_Gpio_DebounceDefaultMilisecond   20
-#define AT91_Gpio_MaxPins                     TOTAL_GPIO_PINS
+#define AT91_Gpio_MaxPins                     SIZEOF_ARRAY(g_at91_pins)
 
 #define PIO_PPDDR(x)	(*(volatile unsigned long *)(0xFFFFF490 + (x * 0x200))) // Pull-down Disable Resistor Register -- Write Only
 #define PIO_PPDER(x)	(*(volatile unsigned long *)(0xFFFFF494 + (x * 0x200))) // Pull-down Enable Resistor Register -- Write Only
@@ -25,7 +26,7 @@
 #define GETPORT(pin)    (pin/32)
 #define GETBIT(pin)     (pin%32)
 
-#define MAX_PORT (TOTAL_GPIO_PINS/32)
+#define MAX_PORT (AT91_Gpio_MaxPins/32)
 
 struct AT91_Int_State {
     uint8_t                                     pin;      // pin number

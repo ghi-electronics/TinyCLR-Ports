@@ -74,7 +74,7 @@ TinyCLR_Result AT91_Adc_Release(const TinyCLR_Adc_Provider *self) {
 
 int32_t AT91_Adc_GetPinForChannel(int32_t channel) {
     if ((uint32_t)channel >= AT91_Adc_GetControllerCount())
-        return GPIO_PIN_NONE;
+        return PIN_NONE;
 
     return AT91_Adc_GetPin(channel);
 }
@@ -83,7 +83,7 @@ TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Provider *self, int32_t
     if (channel >= AT91_Adc_GetControllerCount())
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    if (AT91_Adc_GetPin(channel) == _P_NONE_)
+    if (AT91_Adc_GetPin(channel) == PIN_NONE)
         return TinyCLR_Result::ArgumentInvalid;
 
     if (channel >= 0 && channel <= AT91_Adc_GetControllerCount() && AT91_Gpio_OpenPin(AT91_Adc_GetPin(channel))) {

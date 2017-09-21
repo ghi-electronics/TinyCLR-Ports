@@ -14,8 +14,6 @@
 
 #pragma once
 
-
-
 #define DEVICE_TARGET AT91
 #define DEVICE_NAME "G400"
 #define DEVICE_MANUFACTURER "GHI Electronics, LLC"
@@ -49,6 +47,15 @@
 #define FLASH_MEMORY_Base                   0x00000000
 #define FLASH_MEMORY_Size                   0x00420000
 
+#define INCLUDE_GPIO
+#define AT91_GPIO_PINS  {/*      0              1              2              3              4              5              6              7              8              9              10             11             12             13             14             15             16             17             18             19             20             21             22             23             24             25             26             27             28             29             30             31          */\
+                         /*P0x*/ INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp),\
+                         /*P1x*/ INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp),\
+                         /*P2x*/ INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp),\
+                         /*P3x*/ INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp),\
+                        }
+
+
 #define INCLUDE_ADC
 #define AT91_ADC_PINS                     { { PIN(B,11), PS(D) }, { PIN(B,12), PS(D) }, { PIN(B,13), PS(D) }, { PIN(B,14), PS(D) }, { PIN(B,15), PS(D) }, { PIN(B,16), PS(D) }, { PIN(A,17), PS(D) }, { PIN(B,6), PS(D) }, { PIN(B,7), PS(D) }, { PIN(B,8), PS(D) }, { PIN(B,9), PS(D) }, { PIN(B,10), PS(D) } }
 
@@ -80,11 +87,15 @@
 #define TOTAL_USB_CONTROLLER            1
 #define AT91_USB_QUEUE_SIZE             16
 
-
 #define INCLUDE_DISPLAY
+#define AT91_DISPLAY_CONTROLLER_PINS { { PIN(C,0), PS(A) }, { PIN(C,1), PS(A) }, { PIN(C,2), PS(A) }, { PIN(C,3), PS(A) }, { PIN(C,4), PS(A) }, { PIN(C,5), PS(A) }, { PIN(C,6), PS(A) }, { PIN(C,7), PS(A) }, { PIN(C,8), PS(A) }, { PIN(C,9), PS(A) }, { PIN(C,10), PS(A) }, { PIN(C,11), PS(A) }, { PIN(C,12), PS(A) }, { PIN(C,13), PS(A) }, { PIN(C,14), PS(A) }, { PIN(C,15), PS(A) }, { PIN(C,24), PS(A) }, { PIN(C,26), PS(A) }, { PIN(C,27), PS(A) }, { PIN(C,28), PS(A) }, { PIN(C,30), PS(A) }  }
+#define AT91_DISPLAY_BACKLIGHT_PIN  { PIN_NONE, PS_NONE }
+#define AT91_DISPLAY_ENABLE_PIN  { PIN(C, 29), PS(A) }
+
+#include <AT91.h>
 
 
-#if 1
+#if 0
 
 // #define PLATFORM_ARM_DEFINED
 
@@ -112,7 +123,7 @@
 // Macro
 #define PORT_PIN(port,pin)                   (((int)port)*32 + (pin))
 #define _P(port, pin)                        PORT_PIN(GPIO_PORT##port, pin)
-#define _P_NONE_                             GPIO_PIN_NONE
+#define _P_NONE_                             PIN_NONE
 #define GPIO_PORTA                           0
 #define GPIO_PORTB                           1
 #define GPIO_PORTC                           2
@@ -171,10 +182,9 @@
 #define OEM_VERSION_MINOR                   6
 #define OEM_VERSION_PATCH                   0
 
-#define INCLUDE_GPIO
 
 
 
-#include <AT91.h>
+
 
 #endif

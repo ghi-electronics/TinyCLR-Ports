@@ -18,7 +18,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <defines.h>
 #include <TinyCLR.h>
 #include <Device.h>
 
@@ -457,7 +456,7 @@ struct AT91_Gpio_PinConfiguration {
 
 #define INIT(pinDirection, resistorMode, peripheralSelection) { AT91_Gpio_Direction::pinDirection, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable,  AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::peripheralSelection }
 #define ALTFUN(direction, resistorMode, peripheralSelection) { AT91_Gpio_Direction::direction, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable,  AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::peripheralSelection }
-#define INPUT(resistorMode, filter, filterSlowClock) { AT91_Gpio_Direction::Input, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::filter, AT91_Gpio_FilterSlowClock::filterSlowClock, AT91_Gpio_Schmitt::Disable, AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::None }
+#define INPUT(resistorMode) { AT91_Gpio_Direction::Input, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable, AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::None }
 
 void AT91_Gpio_Reset();
 const TinyCLR_Api_Info* AT91_Gpio_GetApi();
