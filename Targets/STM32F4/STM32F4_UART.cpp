@@ -105,7 +105,7 @@ const TinyCLR_Api_Info* STM32F4_Uart_GetApi() {
 
     if (TOTAL_UART_CONTROLLERS > 0) g_STM32F4_Uart_Ports[0] = USART1;
     if (TOTAL_UART_CONTROLLERS > 1) g_STM32F4_Uart_Ports[1] = USART2;
-#ifndef STM32F401xE
+#if !defined(STM32F401xE) && !defined(STM32F411xE)
     if (TOTAL_UART_CONTROLLERS > 2) g_STM32F4_Uart_Ports[2] = USART3;
     if (TOTAL_UART_CONTROLLERS > 3) g_STM32F4_Uart_Ports[3] = UART4;
     if (TOTAL_UART_CONTROLLERS > 4) g_STM32F4_Uart_Ports[4] = UART5;
@@ -188,7 +188,7 @@ void STM32F4_Uart_Interrupt1(void* param) {
         STM32F4_Uart_IrqTx(1);
 }
 
-#ifndef STM32F401xE
+#if !defined(STM32F401xE) && !defined(STM32F411xE)
 void STM32F4_Uart_Interrupt2(void* param) {
     uint16_t sr = USART3->SR;
 
@@ -269,7 +269,7 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
         RCC->APB1ENR |= RCC_APB1ENR_USART2EN >> 1 << portNum;
         clk = STM32F4_APB1_CLOCK_HZ;
     }
-#ifndef STM32F401xE
+#if !defined(STM32F401xE) && !defined(STM32F411xE)
 #ifdef UART7
     else if (portNum == 6) {
         RCC->APB1ENR |= RCC_APB1ENR_UART7EN;
@@ -364,7 +364,7 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
     case 1:
         STM32F4_InterruptInternal_Activate(USART2_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt1, 0);
         break;
-#ifndef STM32F401xE
+#if !defined(STM32F401xE) && !defined(STM32F411xE)
     case 2:
         STM32F4_InterruptInternal_Activate(USART3_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt2, 0);
         break;
@@ -422,7 +422,7 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
     case 1:
         STM32F4_InterruptInternal_Deactivate(USART2_IRQn);
         break;
-#ifndef STM32F401xE
+#if !defined(STM32F401xE) && !defined(STM32F411xE)
     case 2:
         STM32F4_InterruptInternal_Deactivate(USART3_IRQn);
         break;
@@ -467,7 +467,7 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
     else if (portNum < 5) { // COM2-5 on APB1
         RCC->APB1ENR &= ~(RCC_APB1ENR_USART2EN >> 1 << portNum);
     }
-#ifndef STM32F401xE
+#if !defined(STM32F401xE) && !defined(STM32F411xE)
 #ifdef UART7
     else if (portNum == 6) {
         RCC->APB1ENR &= ~RCC_APB1ENR_UART7EN;

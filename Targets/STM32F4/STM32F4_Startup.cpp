@@ -259,7 +259,7 @@ extern "C" {
             | RCC_CFGR_PPRE2_DIV_BITS; // APB2 clock
 
   // minimal peripheral clocks
-#ifdef STM32F401xE
+#if defined(STM32F401xE) || defined(STM32F411xE)
         RCC->AHB1ENR = 0;
 #else
         RCC->AHB1ENR = RCC_AHB1ENR_CCMDATARAMEN; // 64k RAM (CCM)
@@ -282,7 +282,7 @@ extern "C" {
         STM32F4_RTC_Initialize(); // enable RTC
 #endif
 
-#ifdef STM32F401xE
+#if defined(STM32F401xE) || defined(STM32F411xE)
     // Enable GPIO clocks for ports A - F
         RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN | RCC_AHB1ENR_GPIOEEN;
 #else
