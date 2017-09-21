@@ -176,7 +176,7 @@ bool LPC24_Interrupt_Activate(uint32_t Irq_Index, uint32_t *ISR, void* ISR_Param
         return false;
 
     {
-        GLOBAL_LOCK(irq);
+        DISABLE_INTERRUPTS_SCOPED(irq);
 
         LPC24XX_VIC& VIC = LPC24XX::VIC();
 
@@ -204,7 +204,7 @@ bool LPC24_Interrupt_Deactivate(uint32_t Irq_Index) {
     if (!IsrVector)
         return false;
     {
-        GLOBAL_LOCK(irq);
+        DISABLE_INTERRUPTS_SCOPED(irq);
 
         LPC24XX_VIC& VIC = LPC24XX::VIC();
 
@@ -225,7 +225,7 @@ bool LPC24_Interrupt_Enable(uint32_t Irq_Index) {
 
     LPC24XX_VIC& VIC = LPC24XX::VIC();
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     bool WasEnabled = VIC.IsInterruptEnabled(Irq_Index);
 
@@ -242,7 +242,7 @@ bool LPC24_Interrupt_Disable(uint32_t Irq_Index) {
 
     LPC24XX_VIC& VIC = LPC24XX::VIC();
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     bool WasEnabled = VIC.IsInterruptEnabled(Irq_Index);
 
@@ -262,6 +262,12 @@ bool LPC24_Interrupt_InterruptState(uint32_t Irq_Index) {
 
     return VIC.GetInterruptState(Irq_Index);
 }
+
+LPC24_SmartPtr_Interrupt::LPC24_SmartPtr_Interrupt() { LPC24_Interrupt_Started(); };
+LPC24_SmartPtr_Interrupt::~LPC24_SmartPtr_Interrupt() { LPC24_Interrupt_Ended(); };
+
+LPC24_SmartPtr_IRQ::LPC24_SmartPtr_IRQ() { Disable(); }
+LPC24_SmartPtr_IRQ::~LPC24_SmartPtr_IRQ() { Restore(); }
 
 bool LPC24_SmartPtr_IRQ::WasDisabled() {
     return (m_state & DISABLED_MASK) == DISABLED_MASK;
@@ -365,9 +371,9 @@ extern "C" {
 
     void __attribute__((interrupt("IRQ"))) IRQ_Handler(void *param) {
         // set before jumping elsewhere or allowing other interrupts
-        INTERRUPT_START
+        INTERRUPT_STARTED_SCOPED(isr);
 
-            uint32_t index;
+        uint32_t index;
 
         LPC24XX_VIC& VIC = LPC24XX::VIC();
 
@@ -380,9 +386,7 @@ extern "C" {
 
         IsrVector->Handler.Execute();
 
-        INTERRUPT_END
-
-            // Reset VIC priority hw logic.
-            VIC.ADDRESS = 0xFF;
+        // Reset VIC priority hw logic.
+        VIC.ADDRESS = 0xFF;
     }
 }

@@ -260,13 +260,10 @@
 #define DATA_BIT_LENGTH_16  16
 #define DATA_BIT_LENGTH_8   8
 
-static const uint32_t g_LPC24_Spi_Miso_Pins[] = LPC24_SPI_MISO_PINS;
-static const uint32_t g_LPC24_Spi_Mosi_Pins[] = LPC24_SPI_MOSI_PINS;
-static const uint32_t g_LPC24_Spi_Sclk_Pins[] = LPC24_SPI_CLK_PINS;
+static const LPC24_Gpio_Pin g_LPC24_Spi_Miso_Pins[] = LPC24_SPI_MISO_PINS;
+static const LPC24_Gpio_Pin g_LPC24_Spi_Mosi_Pins[] = LPC24_SPI_MOSI_PINS;
+static const LPC24_Gpio_Pin g_LPC24_Spi_Sclk_Pins[] = LPC24_SPI_SCLK_PINS;
 
-static const LPC24_Gpio_PinFunction g_LPC24_Spi_Miso_AltMode[] = LPC24_SPI_MISO_ALT_MODE;
-static const LPC24_Gpio_PinFunction g_LPC24_Spi_Mosi_AltMode[] = LPC24_SPI_MOSI_ALT_MODE;
-static const LPC24_Gpio_PinFunction g_LPC24_Spi_Sclk_AltMode[] = LPC24_SPI_CLK_ALT_MODE;
 
 struct SpiController {
     uint8_t *readBuffer;
@@ -283,14 +280,14 @@ struct SpiController {
     TinyCLR_Spi_Mode Mode;
 };
 
-static SpiController g_SpiController[TOTAL_SPI_CONTROLLERS];
+static SpiController g_SpiController[SIZEOF_ARRAY(g_LPC24_Spi_Sclk_Pins)];
 
-static uint8_t spiProviderDefs[TOTAL_SPI_CONTROLLERS * sizeof(TinyCLR_Spi_Provider)];
-static TinyCLR_Spi_Provider* spiProviders[TOTAL_SPI_CONTROLLERS];
+static uint8_t spiProviderDefs[SIZEOF_ARRAY(g_LPC24_Spi_Sclk_Pins) * sizeof(TinyCLR_Spi_Provider)];
+static TinyCLR_Spi_Provider* spiProviders[SIZEOF_ARRAY(g_LPC24_Spi_Sclk_Pins)];
 static TinyCLR_Api_Info spiApi;
 
 const TinyCLR_Api_Info* LPC24_Spi_GetApi() {
-    for (int i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
+    for (int i = 0; i < SIZEOF_ARRAY(g_LPC24_Spi_Sclk_Pins); i++) {
         spiProviders[i] = (TinyCLR_Spi_Provider*)(spiProviderDefs + (i * sizeof(TinyCLR_Spi_Provider)));
         spiProviders[i]->Parent = &spiApi;
         spiProviders[i]->Index = i;
@@ -311,7 +308,7 @@ const TinyCLR_Api_Info* LPC24_Spi_GetApi() {
     spiApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.SpiProvider";
     spiApi.Type = TinyCLR_Api_Type::SpiProvider;
     spiApi.Version = 0;
-    spiApi.Count = TOTAL_SPI_CONTROLLERS;
+    spiApi.Count = SIZEOF_ARRAY(g_LPC24_Spi_Sclk_Pins);
     spiApi.Implementation = spiProviders;
     return &spiApi;
 }
@@ -323,13 +320,13 @@ bool LPC24_Spi_Transaction_Start(int32_t controller) {
 
     LPC24XX_SPI & SPI = LPC24XX::SPI(controller);
 
-    clkPin = g_LPC24_Spi_Sclk_Pins[controller];
-    misoPin = g_LPC24_Spi_Miso_Pins[controller];
-    mosiPin = g_LPC24_Spi_Mosi_Pins[controller];
+    clkPin = g_LPC24_Spi_Sclk_Pins[controller].number;
+    misoPin = g_LPC24_Spi_Miso_Pins[controller].number;
+    mosiPin = g_LPC24_Spi_Mosi_Pins[controller].number;
 
-    clkMode = g_LPC24_Spi_Sclk_AltMode[controller];
-    misoMode = g_LPC24_Spi_Miso_AltMode[controller];
-    mosiMode = g_LPC24_Spi_Mosi_AltMode[controller];
+    clkMode = g_LPC24_Spi_Sclk_Pins[controller].pinFunction;
+    misoMode = g_LPC24_Spi_Miso_Pins[controller].pinFunction;
+    mosiMode = g_LPC24_Spi_Mosi_Pins[controller].pinFunction;
 
     int SCR, CPSDVSR;
     uint32_t clockKhz = g_SpiController[controller].ClockFrequency / 1000;
@@ -393,21 +390,21 @@ bool LPC24_Spi_Transaction_Start(int32_t controller) {
 
     switch (g_SpiController[controller].Mode) {
 
-        case TinyCLR_Spi_Mode::Mode0: // CPOL = 0, CPHA = 0.
+    case TinyCLR_Spi_Mode::Mode0: // CPOL = 0, CPHA = 0.
 
-            break;
+        break;
 
-        case TinyCLR_Spi_Mode::Mode1: // CPOL = 0, CPHA = 1.
-            SPI.SSPxCR0 |= (1 << 7);
-            break;
+    case TinyCLR_Spi_Mode::Mode1: // CPOL = 0, CPHA = 1.
+        SPI.SSPxCR0 |= (1 << 7);
+        break;
 
-        case TinyCLR_Spi_Mode::Mode2: //  CPOL = 1, CPHA = 0.
-            SPI.SSPxCR0 |= (1 << 6);
-            break;
+    case TinyCLR_Spi_Mode::Mode2: //  CPOL = 1, CPHA = 0.
+        SPI.SSPxCR0 |= (1 << 6);
+        break;
 
-        case TinyCLR_Spi_Mode::Mode3: // CPOL = 1, CPHA = 1
-            SPI.SSPxCR0 |= (1 << 6) | (1 << 7);
-            break;
+    case TinyCLR_Spi_Mode::Mode3: // CPOL = 1, CPHA = 1
+        SPI.SSPxCR0 |= (1 << 6) | (1 << 7);
+        break;
     }
 
     SPI.SSPxCR0 &= ~(0xFF << 8);
@@ -428,9 +425,9 @@ bool LPC24_Spi_Transaction_Stop(int32_t controller) {
         res = TinyCLR_Gpio_PinDriveMode::InputPullUp;
     }
 
-    int32_t clkPin = g_LPC24_Spi_Sclk_Pins[controller];
-    int32_t misoPin = g_LPC24_Spi_Miso_Pins[controller];
-    int32_t mosiPin = g_LPC24_Spi_Mosi_Pins[controller];
+    int32_t clkPin = g_LPC24_Spi_Sclk_Pins[controller].number;
+    int32_t misoPin = g_LPC24_Spi_Miso_Pins[controller].number;
+    int32_t mosiPin = g_LPC24_Spi_Mosi_Pins[controller].number;
 
 
     LPC24_Gpio_EnableInputPin(clkPin, res);
@@ -546,7 +543,7 @@ TinyCLR_Result LPC24_Spi_TransferSequential(const TinyCLR_Spi_Provider* self, co
 TinyCLR_Result LPC24_Spi_TransferFullDuplex(const TinyCLR_Spi_Provider* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
     int32_t controller = self->Index;
 
-    if (controller >= TOTAL_SPI_CONTROLLERS)
+    if (controller >= SIZEOF_ARRAY(g_LPC24_Spi_Sclk_Pins))
         return TinyCLR_Result::InvalidOperation;
 
     if (!LPC24_Spi_Transaction_Start(controller))
@@ -576,7 +573,7 @@ TinyCLR_Result LPC24_Spi_TransferFullDuplex(const TinyCLR_Spi_Provider* self, co
 TinyCLR_Result LPC24_Spi_Read(const TinyCLR_Spi_Provider* self, uint8_t* buffer, size_t& length) {
     int32_t controller = self->Index;
 
-    if (controller >= TOTAL_SPI_CONTROLLERS)
+    if (controller >= SIZEOF_ARRAY(g_LPC24_Spi_Sclk_Pins))
         return TinyCLR_Result::InvalidOperation;
 
     if (!LPC24_Spi_Transaction_Start(controller))
@@ -605,7 +602,7 @@ TinyCLR_Result LPC24_Spi_Read(const TinyCLR_Spi_Provider* self, uint8_t* buffer,
 TinyCLR_Result LPC24_Spi_Write(const TinyCLR_Spi_Provider* self, const uint8_t* buffer, size_t& length) {
     int32_t controller = self->Index;
 
-    if (controller >= TOTAL_SPI_CONTROLLERS)
+    if (controller >= SIZEOF_ARRAY(g_LPC24_Spi_Sclk_Pins))
         return TinyCLR_Result::InvalidOperation;
 
     if (!LPC24_Spi_Transaction_Start(controller))
@@ -634,7 +631,7 @@ TinyCLR_Result LPC24_Spi_Write(const TinyCLR_Spi_Provider* self, const uint8_t* 
 TinyCLR_Result LPC24_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode) {
     int32_t controller = (self->Index);
 
-    if (controller >= TOTAL_SPI_CONTROLLERS)
+    if (controller >= SIZEOF_ARRAY(g_LPC24_Spi_Sclk_Pins))
         return TinyCLR_Result::InvalidOperation;
 
     g_SpiController[controller].ChipSelectLine = chipSelectLine;
@@ -647,9 +644,9 @@ TinyCLR_Result LPC24_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int
 TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
     int32_t controller = (self->Index);
 
-    int32_t clkPin = g_LPC24_Spi_Sclk_Pins[controller];
-    int32_t misoPin = g_LPC24_Spi_Miso_Pins[controller];
-    int32_t mosiPin = g_LPC24_Spi_Mosi_Pins[controller];
+    int32_t clkPin = g_LPC24_Spi_Sclk_Pins[controller].number;
+    int32_t misoPin = g_LPC24_Spi_Miso_Pins[controller].number;
+    int32_t mosiPin = g_LPC24_Spi_Mosi_Pins[controller].number;
 
     // Check each pin single time make sure once fail not effect to other pins
     if (!LPC24_Gpio_OpenPin(clkPin))
@@ -660,13 +657,13 @@ TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
         return TinyCLR_Result::SharingViolation;
 
     switch (controller) {
-        case 0:
-            LPC24XX::SYSCON().PCONP |= PCONP_PCSSP0;
-            break;
+    case 0:
+        LPC24XX::SYSCON().PCONP |= PCONP_PCSSP0;
+        break;
 
-        case 1:
-            LPC24XX::SYSCON().PCONP |= PCONP_PCSSP1;
-            break;
+    case 1:
+        LPC24XX::SYSCON().PCONP |= PCONP_PCSSP1;
+        break;
     }
 
     return TinyCLR_Result::Success;
@@ -675,9 +672,9 @@ TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
 TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Provider* self) {
     int32_t controller = (self->Index);
 
-    int32_t clkPin = g_LPC24_Spi_Sclk_Pins[controller];
-    int32_t misoPin = g_LPC24_Spi_Miso_Pins[controller];
-    int32_t mosiPin = g_LPC24_Spi_Mosi_Pins[controller];
+    int32_t clkPin = g_LPC24_Spi_Sclk_Pins[controller].number;
+    int32_t misoPin = g_LPC24_Spi_Miso_Pins[controller].number;
+    int32_t mosiPin = g_LPC24_Spi_Mosi_Pins[controller].number;
 
     // Check each pin single time make sure once fail not effect to other pins
     LPC24_Gpio_ClosePin(clkPin);
@@ -686,13 +683,13 @@ TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Provider* self) {
 
 
     switch (controller) {
-        case 0:
-            LPC24XX::SYSCON().PCONP &= ~PCONP_PCSSP0;
-            break;
+    case 0:
+        LPC24XX::SYSCON().PCONP &= ~PCONP_PCSSP0;
+        break;
 
-        case 1:
-            LPC24XX::SYSCON().PCONP &= ~PCONP_PCSSP1;
-            break;
+    case 1:
+        LPC24XX::SYSCON().PCONP &= ~PCONP_PCSSP1;
+        break;
 
     }
 
@@ -729,7 +726,7 @@ int32_t LPC24_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self) {
     // pins as possible so that the selected Chip select
     // line coresponds to a GPIO pin number directly
     // without needing any additional translation/mapping.
-    return TOTAL_GPIO_PINS;
+    return LPC24_Gpio_GetPinCount(nullptr);;
 }
 
 static const int32_t dataBitsCount = 2;
@@ -745,7 +742,7 @@ TinyCLR_Result LPC24_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* 
 }
 
 void LPC24_Spi_Reset() {
-    for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
+    for (auto i = 0; i < SIZEOF_ARRAY(g_LPC24_Spi_Sclk_Pins); i++) {
         LPC24_Spi_Release(spiProviders[i]);
     }
 }

@@ -30,7 +30,7 @@ typedef void(*IAP)(uint32_t[], uint32_t[]);
 #define INTERNAL_FLASH_SECTOR_ADDRESS 0x00000000, 0x00001000, 0x00002000, 0x00003000, 0x00004000, 0x00005000, 0x00006000, 0x00007000, 0x00008000, 0x00010000, 0x00018000, 0x00020000, 0x00028000, 0x00030000, 0x00038000, 0x00040000, 0x00048000, 0x00050000, 0x00058000, 0x00060000, 0x00068000, 0x00070000, 0x00078000,  0x00079000, 0x0007A000, 0x0007B000,  0x0007C000,  0x0007D000
 #define INTERNAL_FLASH_SECTOR_SIZE    0x00001000, 0x00001000, 0x00001000, 0x00001000, 0x00001000, 0x00001000, 0x00001000, 0x00001000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00008000, 0x00001000,  0x00001000, 0x00001000, 0x00001000,  0x00001000,  0x00001000
 
-#define SYSTEM_CYCLE_CLOCK_HZ 72000000
+#define LPC24_AHB_CLOCK_HZ 72000000
 
 const uint32_t flashAddresses[] = { INTERNAL_FLASH_SECTOR_ADDRESS };
 const uint32_t flashSize[] = { INTERNAL_FLASH_SECTOR_SIZE };
@@ -75,7 +75,7 @@ int32_t __section("SectionForFlashOperations") LPC24_Flash_PrepaireSector(int32_
 
     IAP iap_entry = (IAP)IAP_LOCATION;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     iap_entry(command, iap_result);
 
@@ -83,7 +83,7 @@ int32_t __section("SectionForFlashOperations") LPC24_Flash_PrepaireSector(int32_
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint16_t* ChipAddress = (uint16_t *)address;
     uint16_t* EndAddress = (uint16_t *)(address + length);
@@ -97,7 +97,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_Read(const Tin
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t command[5];
     uint32_t iap_result[4];
@@ -132,7 +132,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_Write(const Ti
         command[1] = (int)address;
         command[2] = (int)ptr;
         command[3] = INTERNAL_FLASH_PROGRAM_SIZE_256;
-        command[4] = SYSTEM_CYCLE_CLOCK_HZ / 1000;
+        command[4] = LPC24_AHB_CLOCK_HZ / 1000;
 
         iap_entry(command, iap_result);
 
@@ -169,7 +169,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_Write(const Ti
         command[1] = (int)address;
         command[2] = (int)ptr;
         command[3] = INTERNAL_FLASH_PROGRAM_SIZE_256;
-        command[4] = SYSTEM_CYCLE_CLOCK_HZ / 1000;
+        command[4] = LPC24_AHB_CLOCK_HZ / 1000;
 
         iap_entry(command, iap_result);
 
@@ -182,7 +182,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_Write(const Ti
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t address = deploymentAddress[sector];
     int32_t size = deploymentSize[sector];
@@ -207,7 +207,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_IsBlockErased(
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t command[5];
     uint32_t iap_result[4];
@@ -228,7 +228,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_EraseBlock(con
     command[0] = 52;
     command[1] = startRegion;
     command[2] = startRegion;
-    command[3] = SYSTEM_CYCLE_CLOCK_HZ / 1000;
+    command[3] = LPC24_AHB_CLOCK_HZ / 1000;
 
     IAP iap_entry = (IAP)IAP_LOCATION;
 
@@ -326,7 +326,7 @@ const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
 
 
 TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint16_t* ChipAddress = (uint16_t *)address;
     uint16_t* EndAddress = (uint16_t *)(address + length);
@@ -341,7 +341,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_Read(const Tin
 
 
 TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     volatile uint16_t *ip;
     uint32_t startAddress = address;
@@ -374,7 +374,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_Write(const Ti
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t address = deploymentAddress[sector];
     int32_t size = deploymentSize[sector];
@@ -399,7 +399,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_IsBlockErased(
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     volatile uint16_t *ip;
     uint32_t address = deploymentAddress[sector];
@@ -467,7 +467,7 @@ uint32_t LPC24_Flash_GetPartId() {
 
     command[0] = 54;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     iap_entry(command, iap_result);
 

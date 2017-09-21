@@ -18,6 +18,12 @@
 #define CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS 3
 #define  LPC24_TIME_OVERFLOW_FLAG 0x80000000
 
+
+#define CLOCK_COMMON_FACTOR                  1000000 // GCD(SYSTEM_CLOCK_HZ, 1M)
+#define SLOW_CLOCKS_PER_SECOND               18000000 // SYSTEM_CLOCK_HZ MHz
+#define SLOW_CLOCKS_TEN_MHZ_GCD              1000000 // GCD(SLOW_CLOCKS_PER_SECOND, 10M)
+#define SLOW_CLOCKS_MILLISECOND_GCD          1000 // GCD(SLOW_CLOCKS_PER_SECOND, 1k)
+
 //////////////////////////////////////////////////////////////////////////////
 // LPC24 TIMER driver
 //
@@ -82,7 +88,7 @@ struct LPC24_Timer_Controller {
 LPC24_Timer_Controller g_LPC24_Timer_Controller;
 
 bool LPC24_Timer_Controller::Initialize(uint32_t timer, uint32_t* ISR, void* ISR_Param) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (g_LPC24_Timer_Controller.m_configured == true) return false;
 
@@ -105,7 +111,7 @@ bool LPC24_Timer_Controller::Initialize(uint32_t timer, uint32_t* ISR, void* ISR
 
 bool LPC24_Timer_Controller::Uninitialize(uint32_t timer) {
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (g_LPC24_Timer_Controller.m_configured == false) return false;
 
@@ -173,7 +179,7 @@ const TinyCLR_Api_Info* LPC24_Time_GetApi() {
     timeProvider.Parent = &timeApi;
     timeProvider.Index = 0;
     timeProvider.GetInitialTime = &LPC24_Time_GetInitialTime;
-    timeProvider.GetTimeForProcessorTicks = &LPC24_Time_TicksToTime;
+    timeProvider.GetTimeForProcessorTicks = &LPC24_Time_GetTimeForProcessorTicks;
     timeProvider.GetProcessorTicksForTime = &LPC24_Time_TimeToTicks;
     timeProvider.GetCurrentProcessorTicks = &LPC24_Time_GetCurrentTicks;
     timeProvider.SetTickCallback = &LPC24_Time_SetCompareCallback;
@@ -206,11 +212,11 @@ uint32_t LPC24_Time_GetTicksPerSecond(const TinyCLR_Time_Provider* self) {
 }
 
 uint32_t LPC24_Time_GetSystemCycleClock(const TinyCLR_Time_Provider* self) {
-    return SYSTEM_CYCLE_CLOCK_HZ;
+    return LPC24_AHB_CLOCK_HZ;
 }
 
-uint64_t LPC24_Time_TicksToTime(const TinyCLR_Time_Provider* self, uint64_t ticks) {
-    ticks *= (TEN_MHZ / SLOW_CLOCKS_TEN_MHZ_GCD);
+uint64_t LPC24_Time_GetTimeForProcessorTicks(const TinyCLR_Time_Provider* self, uint64_t ticks) {
+    ticks *= (10000000 / SLOW_CLOCKS_TEN_MHZ_GCD);
     ticks /= (SLOW_CLOCKS_PER_SECOND / SLOW_CLOCKS_TEN_MHZ_GCD);
 
     return ticks;
@@ -228,10 +234,10 @@ uint64_t LPC24_Time_MillisecondsToTicks(const TinyCLR_Time_Provider* self, uint6
 }
 
 uint64_t LPC24_Time_MicrosecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t microseconds) {
-#if ONE_MHZ <= SLOW_CLOCKS_PER_SECOND
-    return microseconds * (SLOW_CLOCKS_PER_SECOND / ONE_MHZ);
+#if 1000000 <= SLOW_CLOCKS_PER_SECOND
+    return microseconds * (SLOW_CLOCKS_PER_SECOND / 1000000);
 #else
-    return microseconds / (ONE_MHZ / SLOW_CLOCKS_PER_SECOND);
+    return microseconds / (1000000 / SLOW_CLOCKS_PER_SECOND);
 #endif
 }
 
@@ -263,7 +269,7 @@ TinyCLR_Result LPC24_Time_SetCompare(const TinyCLR_Time_Provider* self, uint64_t
     if (self != nullptr)
         timer = self->Index;
 
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     g_LPC24_Timer_Controller.m_nextCompare = processorTicks;
 
@@ -360,7 +366,7 @@ TinyCLR_Result LPC24_Time_SetCompareCallback(const TinyCLR_Time_Provider* self, 
 }
 
 void LPC24_Time_DelayNoInterrupt(const TinyCLR_Time_Provider* self, uint64_t microseconds) {
-    GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint64_t current = LPC24_Time_GetCurrentTicks(self);
     uint64_t maxDiff = LPC24_Time_MicrosecondsToTicks(self, microseconds);
@@ -378,8 +384,8 @@ void LPC24_Time_Delay(const TinyCLR_Time_Provider* self, uint64_t microseconds) 
 
     // iterations must be signed so that negative iterations will result in the minimum delay
 
-    microseconds *= (SYSTEM_CYCLE_CLOCK_HZ / CLOCK_COMMON_FACTOR);
-    microseconds /= (ONE_MHZ / CLOCK_COMMON_FACTOR);
+    microseconds *= (LPC24_AHB_CLOCK_HZ / CLOCK_COMMON_FACTOR);
+    microseconds /= (1000000 / CLOCK_COMMON_FACTOR);
 
     // iterations is equal to the number of CPU instruction cycles in the required time minus
     // overhead cycles required to call this subroutine.

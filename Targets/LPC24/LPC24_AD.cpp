@@ -68,7 +68,7 @@ TinyCLR_Result LPC24_Adc_Release(const TinyCLR_Adc_Provider* self) {
 
 int32_t LPC24_Adc_GetPinForChannel(int32_t channel) {
     if ((uint32_t)channel >= LPC24_Adc_GetControllerCount())
-        return GPIO_PIN_NONE;
+        return PIN_NONE;
 
     return LPC24_Adc_GetPin(channel);
 }
@@ -77,7 +77,7 @@ TinyCLR_Result LPC24_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_
     if (channel >= LPC24_Adc_GetControllerCount())
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    if (LPC24_Adc_GetPin(channel) == _P_NONE_)
+    if (LPC24_Adc_GetPin(channel) == PIN_NONE)
         return TinyCLR_Result::ArgumentInvalid;
 
     LPC24XX::SYSCON().PCONP |= PCONP_PCAD;

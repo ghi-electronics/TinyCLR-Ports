@@ -26,8 +26,7 @@
 static TinyCLR_Dac_Provider dacProvider;
 static TinyCLR_Api_Info dacApi;
 
-static const uint32_t g_LPC24_Dac_Pins[] = LPC24_DAC_PINS;
-static const LPC24_Gpio_PinFunction g_LPC24_Dac_altMode[] = LPC24_DAC_ALT_MODE;
+static const LPC24_Gpio_Pin g_LPC24_Dac_Pins[] = LPC24_DAC_PINS;
 
 const TinyCLR_Api_Info* LPC24_Dac_GetApi() {
     dacProvider.Parent = &dacApi;
@@ -67,13 +66,13 @@ TinyCLR_Result LPC24_Dac_Release(const TinyCLR_Dac_Provider* self) {
 }
 
 TinyCLR_Result LPC24_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t channel) {
-    if (channel >= TOTAL_DAC_CONTROLLERS)
+    if (channel >= LPC24_Dac_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    if (!LPC24_Gpio_OpenPin(g_LPC24_Dac_Pins[channel]))
+    if (!LPC24_Gpio_OpenPin(g_LPC24_Dac_Pins[channel].number))
         return TinyCLR_Result::SharingViolation;
 
-    LPC24_Gpio_ConfigurePin(g_LPC24_Dac_Pins[channel], LPC24_Gpio_Direction::Input, g_LPC24_Dac_altMode[channel], LPC24_Gpio_PinMode::Inactive);
+    LPC24_Gpio_ConfigurePin(g_LPC24_Dac_Pins[channel].number, LPC24_Gpio_Direction::Input, g_LPC24_Dac_Pins[channel].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
     DACR = (0 << 6); // This sets the initial starting voltage at 0
 
@@ -81,16 +80,16 @@ TinyCLR_Result LPC24_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_
 }
 
 TinyCLR_Result LPC24_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t channel) {
-    if (channel >= TOTAL_DAC_CONTROLLERS)
+    if (channel >= LPC24_Dac_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    LPC24_Gpio_ClosePin(g_LPC24_Dac_Pins[channel]);
+    LPC24_Gpio_ClosePin(g_LPC24_Dac_Pins[channel].number);
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t channel, int32_t value) {
-    if (channel >= TOTAL_DAC_CONTROLLERS)
+    if (channel >= LPC24_Dac_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 
     if (value > LPC24_DAC_MAX_VALUE) {
@@ -107,7 +106,7 @@ TinyCLR_Result LPC24_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t ch
 }
 
 int32_t LPC24_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self) {
-    return TOTAL_DAC_CONTROLLERS;
+    return SIZEOF_ARRAY(g_LPC24_Dac_Pins);
 }
 
 int32_t LPC24_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self) {

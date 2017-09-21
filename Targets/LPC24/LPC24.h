@@ -17,9 +17,14 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <defines.h>
 #include <TinyCLR.h>
-#include <DeviceSelector.h>
+#include <Device.h>
+
+#define SIZEOF_ARRAY(arr) (sizeof(arr) / sizeof(arr[0]))
+#define CONCAT2(a, b) a##b
+#define CONCAT(a, b) CONCAT2(a, b)
+#define CHARIZE2(c) #c
+#define CHARIZE(c) (CHARIZE2(c)[0])
 
 #define PCONP_OFFSET 0xC4
 #define PCONP_PCTIM0_MASK 0x2
@@ -121,6 +126,26 @@ enum class LPC24_Gpio_PinMode : uint8_t {
     PullDown = 3
 };
 
+struct LPC24_Gpio_Pin {
+    uint32_t number;
+    LPC24_Gpio_PinFunction pinFunction;
+};
+
+struct LPC24_Gpio_PinConfiguration {
+    LPC24_Gpio_Direction pinDirection;
+    LPC24_Gpio_PinMode pinMode;
+    LPC24_Gpio_PinFunction pinFunction;    
+};
+
+#define PIN(port, pin) (port * 32 + pin)
+#define PIN_NONE 0xFFFFFFFF
+#define PF(num) (CONCAT(LPC24_Gpio_PinFunction::PinFunction, num))
+#define PF_NONE LPC24_Gpio_PinFunction::PinFunction0
+
+#define INIT(direction, pinMode) { LPC24_Gpio_Direction::direction, LPC24_Gpio_PinMode::pinMode, LPC24_Gpio_PinFunction::PinFunction0 }
+#define ALTFUN(direction, pinMode, pinFunction) { LPC24_Gpio_Direction::direction, LPC24_Gpio_PinMode::pinMode, LPC24_Gpio_PinFunction::pinFunction }
+#define INPUT(pinMode) { LPC24_Gpio_Direction::Input, LPC24_Gpio_PinMode::pinMode, LPC24_Gpio_PinFunction::PinFunction0 }
+
 void LPC24_Gpio_Reset();
 const TinyCLR_Api_Info* LPC24_Gpio_GetApi();
 TinyCLR_Result LPC24_Gpio_Acquire(const TinyCLR_Gpio_Provider* self);
@@ -178,29 +203,11 @@ int32_t LPC24_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self);
 int32_t LPC24_Dac_GetMinValue(const TinyCLR_Dac_Provider* self);
 int32_t LPC24_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self);
 
-// PWM
-#define PWM0MR0 (*(volatile unsigned long *)0xE0014018)
-#define PWM0MR1 ((uint32_t*)0xE001401C)
-#define PWM0MR2 ((uint32_t*)0xE0014020)
-#define PWM0MR3 ((uint32_t*)0xE0014024)
-#define PWM0MR4 ((uint32_t*)0xE0014040)
-#define PWM0MR5 ((uint32_t*)0xE0014044)
-#define PWM0MR6 ((uint32_t*)0xE0014048)
-
-#define PWM1MR0 (*(volatile unsigned long *)0xE0018018)
-#define PWM1MR1 ((uint32_t*)0xE001801C)
-#define PWM1MR2 ((uint32_t*)0xE0018020)
-#define PWM1MR3 ((uint32_t*)0xE0018024)
-#define PWM1MR4 ((uint32_t*)0xE0018040)
-#define PWM1MR5 ((uint32_t*)0xE0018044)
-#define PWM1MR6 ((uint32_t*)0xE0018048)
-
-struct PwmController {
-    int32_t                     id;
+#define MAX_PWM_PER_CONTROLLER              6
+struct PwmController {   
     int32_t                     channel[MAX_PWM_PER_CONTROLLER];
-    int32_t                     subChannel[MAX_PWM_PER_CONTROLLER];
-    uint32_t                    gpioPin[MAX_PWM_PER_CONTROLLER];
-    LPC24_Gpio_PinFunction      gpioAlternateFunction[MAX_PWM_PER_CONTROLLER];
+    int32_t                     match[MAX_PWM_PER_CONTROLLER];
+    LPC24_Gpio_Pin              gpioPin[MAX_PWM_PER_CONTROLLER];    
     uint32_t                    outputEnabled[MAX_PWM_PER_CONTROLLER];
     uint32_t                    *matchAddress[MAX_PWM_PER_CONTROLLER];
     bool                        invert[MAX_PWM_PER_CONTROLLER];
@@ -210,7 +217,7 @@ struct PwmController {
 const TinyCLR_Api_Info* LPC24_Pwm_GetApi();
 void LPC24_Pwm_Reset();
 void LPC24_Pwm_ResetController(int32_t controller);
-PwmController* LPC24_Pwm_GetControllers();
+LPC24_Gpio_Pin LPC24_Pwm_GetPins(int32_t controller, int32_t channel);
 TinyCLR_Result LPC24_Pwm_Acquire(const TinyCLR_Pwm_Provider* self);
 TinyCLR_Result LPC24_Pwm_Release(const TinyCLR_Pwm_Provider* self);
 int32_t LPC24_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t pin);
@@ -294,10 +301,13 @@ uint32_t LPC24_Flash_GetPartId();
 class LPC24_SmartPtr_IRQ {
 
     uint32_t m_state;
+    
+    void Disable();
+    void Restore();
 
 public:
-    LPC24_SmartPtr_IRQ() { Disable(); };
-    ~LPC24_SmartPtr_IRQ() { Restore(); };
+    LPC24_SmartPtr_IRQ();
+    ~LPC24_SmartPtr_IRQ();
 
     bool WasDisabled();
     void Acquire();
@@ -305,11 +315,16 @@ public:
     void Probe();
 
     static uint32_t GetState();
-
-private:
-    void Disable();
-    void Restore();
 };
+
+class LPC24_SmartPtr_Interrupt {
+public:
+    LPC24_SmartPtr_Interrupt();
+    ~LPC24_SmartPtr_Interrupt();
+};
+
+#define DISABLE_INTERRUPTS_SCOPED(name) LPC24_SmartPtr_IRQ name
+#define INTERRUPT_STARTED_SCOPED(name) LPC24_SmartPtr_Interrupt name
 
 const TinyCLR_Api_Info* LPC24_Interrupt_GetApi();
 TinyCLR_Result LPC24_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
@@ -349,7 +364,7 @@ const TinyCLR_Api_Info* LPC24_Time_GetApi();
 TinyCLR_Result LPC24_Time_Acquire(const TinyCLR_Time_Provider* self);
 TinyCLR_Result LPC24_Time_Release(const TinyCLR_Time_Provider* self);
 TinyCLR_Result LPC24_Time_GetInitialTime(const TinyCLR_Time_Provider* self, int64_t& utcTime, int32_t& timeZoneOffsetMinutes);
-uint64_t LPC24_Time_TicksToTime(const TinyCLR_Time_Provider* self, uint64_t ticks);
+uint64_t LPC24_Time_GetTimeForProcessorTicks(const TinyCLR_Time_Provider* self, uint64_t ticks);
 uint64_t LPC24_Time_TimeToTicks(const TinyCLR_Time_Provider* self, uint64_t time);
 uint64_t LPC24_Time_MillisecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t ticks);
 uint64_t LPC24_Time_MicrosecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t microseconds);
@@ -450,11 +465,12 @@ int32_t LPC24_Display_GetHeight(const TinyCLR_Display_Provider* self);
 TinyCLR_Display_InterfaceType LPC24_Display_GetType(const TinyCLR_Display_Provider* self);
 
 //Startup
-void LPC24_Startup_InitializeRegions();
+void LPC24_Startup_Initialize();
 void LPC24_Startup_GetHeap(uint8_t*& start, size_t& length);
-int32_t LPC24_Startup_GetLModePin();
 int32_t LPC24_Startup_GetDeviceId();
-TinyCLR_Gpio_PinValue LPC24_Startup_GetLModeUsbState();
+void LPC24_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index);
+void LPC24_Startup_GetRunApp(bool& runApp);
+
 
 //////////////////////////////////////////////////////////////////////////////
 // System Control Block
@@ -744,7 +760,7 @@ struct LPC24XX_USART {
     static const uint32_t c_UartBase_2 = 0xE0078000;
     static const uint32_t c_UartBase_3 = 0xE007C000;
 
-    static const uint32_t c_ClockRate = LPC24_UART_PCLK;
+    static const uint32_t c_ClockRate = LPC24_AHB_CLOCK_HZ;
 
     static const uint32_t c_MAX_BAUDRATE = c_ClockRate / 16;
     static const uint32_t c_MIN_BAUDRATE = 0;
@@ -938,7 +954,7 @@ struct LPC24XX_WATCHDOG {
 //
 struct LPC24XX_I2C {
     static const uint32_t c_I2C_Base = 0xE001C000;
-    static const uint32_t c_I2C_Clk_KHz = LPC24_I2C_PCLK_KHZ;
+    static const uint32_t c_I2C_Clk_KHz = SYSTEM_CLOCK_HZ/1000;
 
     /****/ volatile uint32_t I2CONSET;
     static const    uint32_t I2EN = 0x00000040;
@@ -971,7 +987,7 @@ struct LPC24XX_SPI {
     static const uint32_t c_SPI0_Base = 0xE0068000;
     static const uint32_t c_SPI1_Base = 0xE0030000;
 
-    static const uint32_t c_SPI_Clk_KHz = LPC24_SPI_PCLK_KHZ;
+    static const uint32_t c_SPI_Clk_KHz = (LPC24_AHB_CLOCK_HZ/1000);
     static const uint32_t c_SPI0 = 0;
     static const uint32_t c_SPI1 = 1;
 
