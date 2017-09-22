@@ -26,17 +26,17 @@
 
 #define ONE_MHZ                             1000000
 
-
 /* STM32F4 clock configuration */
+#if !defined(STM32F4_CRYSTAL_CLOCK_HZ)
+ #define STM32F4_INTERNAL_OSCILATOR_CLOCK_HZ 16000000
+ #define STM32F4_CRYSTAL_CLOCK_HZ STM32F4_INTERNAL_OSCILATOR_CLOCK_HZ
+ #define RCC_PLLCFGR_PLLS_BITS (RCC_PLLCFGR_PLLSRC_HSI)
+#else
+ #define RCC_PLLCFGR_PLLS_BITS (RCC_PLLCFGR_PLLSRC_HSE)
+#endif
 
 #if STM32F4_CRYSTAL_CLOCK_HZ % ONE_MHZ != 0
 #error STM32F4_CRYSTAL_CLOCK_HZ must be a multiple of 1MHz
-#endif
-#if STM32F4_CRYSTAL_CLOCK_HZ != 0
-#define RCC_PLLCFGR_PLLS_BITS (RCC_PLLCFGR_PLLSRC_HSE)
-#else // 16MHz internal oscillator
-#define RCC_PLLCFGR_PLLM_BITS (16 * RCC_PLLCFGR_PLLM_0)
-#define RCC_PLLCFGR_PLLS_BITS (RCC_PLLCFGR_PLLSRC_HSI)
 #endif
 
 #if (STM32F4_SYSTEM_CLOCK_HZ * 2 >= 192000000)\
@@ -230,7 +230,7 @@ extern "C" {
         RCC->CFGR = RCC_CFGR_SW_HSI;         // sysclk = AHB = APB1 = APB2 = HSI (16MHz)
         RCC->CR &= ~(RCC_CR_PLLON | RCC_CR_PLLI2SON); // pll off
 
-#if STM32F4_CRYSTAL_CLOCK_HZ != 0
+#if RCC_PLLCFGR_PLLS_BITS == RCC_PLLCFGR_PLLSRC_HSE
     // turn HSE on
         RCC->CR |= RCC_CR_HSEON;
         while (!(RCC->CR & RCC_CR_HSERDY));
@@ -270,7 +270,7 @@ extern "C" {
         RCC->APB2ENR = RCC_APB2ENR_SYSCFGEN; // SYSCFG clock used for IO;
 
         // stop HSI clock
-#if STM32F4_CRYSTAL_CLOCK_HZ != 0
+#if RCC_PLLCFGR_PLLS_BITS == RCC_PLLCFGR_PLLSRC_HSE
         RCC->CR &= ~RCC_CR_HSION;
 #endif
 

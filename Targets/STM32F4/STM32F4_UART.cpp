@@ -171,7 +171,7 @@ void STM32F4_Uart_IrqTx(int portNum) {
 void STM32F4_Uart_Interrupt0(void* param) {
     uint16_t sr = USART1->SR;
 
-    if (sr & USART_SR_RXNE)
+    if (sr & (USART_SR_RXNE | USART_SR_ORE))
         STM32F4_Uart_IrqRx(0);
 
     if (sr & USART_SR_TXE)
@@ -181,7 +181,7 @@ void STM32F4_Uart_Interrupt0(void* param) {
 void STM32F4_Uart_Interrupt1(void* param) {
     uint16_t sr = USART2->SR;
 
-    if (sr & USART_SR_RXNE)
+    if (sr & (USART_SR_RXNE | USART_SR_ORE))
         STM32F4_Uart_IrqRx(1);
 
     if (sr & USART_SR_TXE)
@@ -192,7 +192,7 @@ void STM32F4_Uart_Interrupt1(void* param) {
 void STM32F4_Uart_Interrupt2(void* param) {
     uint16_t sr = USART3->SR;
 
-    if (sr & USART_SR_RXNE)
+    if (sr & (USART_SR_RXNE | USART_SR_ORE))
         STM32F4_Uart_IrqRx(2);
 
     if (sr & USART_SR_TXE)
@@ -202,7 +202,7 @@ void STM32F4_Uart_Interrupt2(void* param) {
 void STM32F4_Uart_Interrupt3(void* param) {
     uint16_t sr = UART4->SR;
 
-    if (sr & USART_SR_RXNE)
+    if (sr & (USART_SR_RXNE | USART_SR_ORE))
         STM32F4_Uart_IrqRx(3);
     if (sr & USART_SR_TXE)
         STM32F4_Uart_IrqTx(3);
@@ -211,7 +211,7 @@ void STM32F4_Uart_Interrupt3(void* param) {
 void STM32F4_Uart_Interrupt4(void* param) {
     uint16_t sr = UART5->SR;
 
-    if (sr & USART_SR_RXNE)
+    if (sr & (USART_SR_RXNE | USART_SR_ORE))
         STM32F4_Uart_IrqRx(4);
     if (sr & USART_SR_TXE)
         STM32F4_Uart_IrqTx(4);
@@ -219,7 +219,8 @@ void STM32F4_Uart_Interrupt4(void* param) {
 
 void STM32F4_Uart_Interrupt5(void* param) {
     uint16_t sr = USART6->SR;
-    if (sr & USART_SR_RXNE)
+
+    if (sr & (USART_SR_RXNE | USART_SR_ORE))
         STM32F4_Uart_IrqRx(5);
 
     if (sr & USART_SR_TXE)

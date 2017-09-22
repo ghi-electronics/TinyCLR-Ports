@@ -2,8 +2,7 @@ ENTRY(EntryPoint)
 MEMORY
 {    
     IRAM : ORIGIN = 0x20000000, LENGTH = 0x00020000
-    LR_FLASH : ORIGIN = 0x08000000, LENGTH = 0x00080000
-	LR_CONFIG : ORIGIN = 0x08004000, LENGTH = 0x00004000
+    LR_FLASH : ORIGIN = 0x08000000, LENGTH = 0x00080000	
 }
 SECTIONS
 {
@@ -96,11 +95,6 @@ SECTIONS
     {
         * (SectionForStackTop +LAST)
     }>IRAM
-    
-    ER_CONFIG 0x08004000 :
-    {
-        * (SectionForConfig)
-    }>LR_CONFIG
 }
 Load$$ER_FLASH$$Base = LOADADDR(ER_FLASH);
 Image$$ER_FLASH$$Length = SIZEOF(ER_FLASH);
