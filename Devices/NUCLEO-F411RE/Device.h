@@ -30,8 +30,8 @@
 #define USB_DEBUGGER_INDEX 0
 
 #define DEBUGGER_SELECTOR_PIN PIN(B, 1)
-#define DEBUGGER_SELECTOR_PULL TinyCLR_Gpio_PinDriveMode::InputPullUp
-#define DEBUGGER_SELECTOR_USB_STATE TinyCLR_Gpio_PinValue::High
+#define DEBUGGER_SELECTOR_PULL TinyCLR_Gpio_PinDriveMode::InputPullDown
+#define DEBUGGER_SELECTOR_USB_STATE TinyCLR_Gpio_PinValue::Low
 
 #define RUN_APP_PIN PIN(B, 2)
 #define RUN_APP_PULL TinyCLR_Gpio_PinDriveMode::InputPullUp
