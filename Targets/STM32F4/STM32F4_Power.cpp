@@ -45,7 +45,7 @@ void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep
             PWR->CR |= PWR_CR_CWUF | PWR_CR_FPDS | PWR_CR_LPDS; // low power deepsleep
 
             __WFI(); // stop clocks and wait for external interrupt
-#if STM32F4_CRYSTAL_CLOCK_HZ != 0
+#if STM32F4_EXT_CRYSTAL_CLOCK_HZ != 0
             RCC->CR |= RCC_CR_HSEON;             // HSE on
 #endif
             SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;  // reset deepsleep
@@ -57,7 +57,7 @@ void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep
             while (!(RCC->CR & RCC_CR_PLLRDY));
 
             RCC->CFGR |= RCC_CFGR_SW_PLL;        // sysclk = pll out
-#if STM32F4_CRYSTAL_CLOCK_HZ != 0
+#if STM32F4_EXT_CRYSTAL_CLOCK_HZ != 0
             RCC->CR &= ~RCC_CR_HSION;            // HSI off
 #endif
 
