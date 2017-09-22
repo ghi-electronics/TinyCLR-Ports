@@ -26,7 +26,7 @@
 #define USB_DEBUGGER_VENDOR_ID 0x1B9F
 #define USB_DEBUGGER_PRODUCT_ID 0x0110
 
-#define UART_DEBUGGER_INDEX 1
+#define UART_DEBUGGER_INDEX 0
 #define USB_DEBUGGER_INDEX 0
 
 #define DEBUGGER_SELECTOR_PIN PIN(B, 1)
@@ -44,7 +44,6 @@
 #define STM32F4_AHB_CLOCK_HZ 96000000
 #define STM32F4_APB1_CLOCK_HZ 48000000
 #define STM32F4_APB2_CLOCK_HZ 96000000
-#define STM32F4_CRYSTAL_CLOCK_HZ 8000000
 #define STM32F4_SUPPLY_VOLTAGE_MV 3300
 
 #define INCLUDE_ADC
@@ -70,9 +69,9 @@
                          }
 
 #define INCLUDE_SPI
-#define STM32F4_SPI_SCLK_PINS { { PIN(A, 5), AF(5) }, { PIN_NONE , AF_NONE }, { PIN(B, 3), AF(5) } }
-#define STM32F4_SPI_MISO_PINS { { PIN(A, 6), AF(5) }, { PIN_NONE , AF_NONE }, { PIN(B, 4), AF(5) } }
-#define STM32F4_SPI_MOSI_PINS { { PIN(A, 7), AF(5) }, { PIN_NONE , AF_NONE }, { PIN(B, 5), AF(5) } }
+#define STM32F4_SPI_SCLK_PINS { { PIN(A, 5), AF(5) }, { PIN(B, 3), AF(5) } }
+#define STM32F4_SPI_MISO_PINS { { PIN(A, 6), AF(5) }, { PIN(B, 4), AF(5) } }
+#define STM32F4_SPI_MOSI_PINS { { PIN(A, 7), AF(5) }, { PIN(B, 5), AF(5) } }
 
 #define INCLUDE_UART
 #define STM32F4_UART_TX_BUFFER_SIZE 256
