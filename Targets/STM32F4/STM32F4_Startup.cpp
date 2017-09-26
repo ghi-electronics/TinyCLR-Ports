@@ -398,6 +398,7 @@ void STM32F4_Startup_Initialize() {
 }
 
 void STM32F4_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index) {
+#if defined(DEBUGGER_SELECTOR_PIN) && defined(DEBUGGER_SELECTOR_PULL) && defined(DEBUGGER_SELECTOR_USB_STATE)
     TinyCLR_Gpio_PinValue value;
     auto controller = static_cast<const TinyCLR_Gpio_Provider*>(STM32F4_Gpio_GetApi()->Implementation);
 
@@ -414,9 +415,16 @@ void STM32F4_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index) {
         api = STM32F4_Uart_GetApi();
         index = UART_DEBUGGER_INDEX;
     }
+#elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
+    api = DEBUGGER_FORCE_API;
+    index = DEBUGGER_FORCE_INDEX;
+#else
+    #error You must specify a debugger mode pin or specify the API explicitly.
+#endif
 }
 
 void STM32F4_Startup_GetRunApp(bool& runApp) {
+#if defined(RUN_APP_PIN) && defined(RUN_APP_PULL) && defined(RUN_APP_STATE)
     TinyCLR_Gpio_PinValue value;
     auto controller = static_cast<const TinyCLR_Gpio_Provider*>(STM32F4_Gpio_GetApi()->Implementation);
     controller->AcquirePin(controller, RUN_APP_PIN);
@@ -425,5 +433,10 @@ void STM32F4_Startup_GetRunApp(bool& runApp) {
     controller->ReleasePin(controller, RUN_APP_PIN);
 
     runApp = value == RUN_APP_STATE;
+#elif defined(RUN_APP_FORCE_STATE)
+    runApp = RUN_APP_FORCE_STATE;
+#else
+    runApp = true;
+#endif
 }
 
