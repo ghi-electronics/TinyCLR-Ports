@@ -302,6 +302,7 @@ struct STM32F4_Gpio_PinConfiguration {
     STM32F4_Gpio_OutputSpeed outputSpeed;
     STM32F4_Gpio_PullDirection pullDirection;
     STM32F4_Gpio_AlternateFunction alternateFunction;
+    bool outputDirection;
 };
 
 #define PIN(port, pin) ((CHARIZE(port) - 'A') * 16 + pin)
@@ -309,11 +310,11 @@ struct STM32F4_Gpio_PinConfiguration {
 #define AF(num) (CONCAT(STM32F4_Gpio_AlternateFunction::AF, num))
 #define AF_NONE STM32F4_Gpio_AlternateFunction::AF0
 
-#define INIT(portMode, outputType, outputSpeed, pullDirection, alternateFunction) { STM32F4_Gpio_PortMode::portMode, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::pullDirection, STM32F4_Gpio_AlternateFunction::alternateFunction }
-#define ALTFUN(outputType, outputSpeed, pullDirection, alternateFunction) INIT(AlternateFunction, outputType, outputSpeed, pullDirection, alternateFunction)
-#define ANALOG() INIT(Analog, PushPull, High, None, AF0)
-#define OUTPUT(outputType, outputSpeed) INIT(GeneralPurposeOutput, outputType, outputSpeed, None, AF0)
-#define INPUT(outputType, outputSpeed, pullDirection) INIT(Input, outputType, outputSpeed, pullDirection, AF0)
+#define INIT(portMode, outputType, outputSpeed, pullDirection, alternateFunction, outputDirection) { STM32F4_Gpio_PortMode::portMode, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::pullDirection, STM32F4_Gpio_AlternateFunction::alternateFunction, outputDirection }
+#define ALTFUN(outputType, outputSpeed, pullDirection, alternateFunction) INIT(AlternateFunction, outputType, outputSpeed, pullDirection, alternateFunction, false)
+#define ANALOG() INIT(Analog, PushPull, High, None, AF0, false)
+#define OUTPUT(outputType, outputSpeed, outputDirection) INIT(GeneralPurposeOutput, outputType, outputSpeed, None, AF0, outputDirection)
+#define INPUT(outputType, outputSpeed, pullDirection) INIT(Input, outputType, outputSpeed, pullDirection, AF0, false)
 
 bool STM32F4_GpioInternal_OpenPin(int32_t pin);
 bool STM32F4_GpioInternal_ClosePin(int32_t pin);
