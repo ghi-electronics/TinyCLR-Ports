@@ -2,9 +2,8 @@ ENTRY(EntryPoint)
 MEMORY
 {
     IRAM : ORIGIN = 0x300000, LENGTH = 0x00008000
-    ERAM : ORIGIN = 0x20000000, LENGTH = 0x08000000
-    LR_FLASH : ORIGIN = 0x20000000, LENGTH = 0x08000000
-    LR_CONFIG : ORIGIN = 0x20AC0000, LENGTH = 0x00002100
+    ERAM : ORIGIN = 0x20000000, LENGTH = 0x01000000
+    LR_FLASH : ORIGIN = 0x20000000, LENGTH = 0x01000000    
 }
 SECTIONS
 {
@@ -38,14 +37,14 @@ SECTIONS
         LONG(0xE12FFF1E); 
     }>LR_FLASH
 
-    ER_RAM_RO 0x20500000 : ALIGN(0x8)
+    ER_RAM_RO 0x20100000 : ALIGN(0x8)
     {        
         *(VectorsTrampolines)
         *(SectionForCodeReadOnlyRAM)       
         *(SectionForBootstrapInRam)
     }>ERAM AT>LR_FLASH
     
-    ER_RAM_RW 0x20600000: ALIGN(0x8)
+    ER_RAM_RW 0x20200000: ALIGN(0x8)
     {
         * (rwdata)
         * (.data*)
@@ -66,22 +65,22 @@ SECTIONS
         * (.ARM.extab*)
     }    
     
-    ER_HEAP_BEGIN 0x22700000 : ALIGN(0x8)
+    ER_HEAP_BEGIN 0x20400000 : ALIGN(0x8)
     {
         * (SectionForHeapBegin)
     }
     
-    ER_HEAP_END 0x26700000 - 0x8 : ALIGN(0x8)
+    ER_HEAP_END 0x20E00000 - 0x8 : ALIGN(0x8)
     {
         * (SectionForHeapEnd)
     }
     
-    ER_RLP_BEGIN 0x26700000 : ALIGN(0x8)
+    ER_RLP_BEGIN 0x20E00000 : ALIGN(0x8)
     {
         * (SectionForRlpBegin)
     }>IRAM
     
-    ER_RLP_END 0x27E00000 - 0x08: 
+    ER_RLP_END 0x20F00000 - 0x08: 
     {
         * (SectionForRlpEnd)
     }>IRAM
@@ -95,11 +94,6 @@ SECTIONS
     {
         * (SectionForStackTop +LAST)
     }
-    
-    ER_CONFIG 0x20AC0000 :
-    {
-        * (SectionForConfig)
-    }>LR_CONFIG
 }
 Load$$ER_FLASH$$Base = LOADADDR(ER_FLASH);
 Image$$ER_FLASH$$Length = SIZEOF(ER_FLASH);
