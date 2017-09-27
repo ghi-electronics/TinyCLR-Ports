@@ -20,7 +20,7 @@
 
 #define DEVICE_TARGET STM32F4
 #define DEVICE_NAME "clicker2"
-#define DEVICE_MANUFACTURER "GHI Electronics, LLC"
+#define DEVICE_MANUFACTURER "MikroElektronika"
 #define DEVICE_VERSION ((0x0000ULL << 32) | (0x0006ULL << 16) | (0x0000ULL << 0))
 
 #define USB_DEBUGGER_VENDOR_ID 0x1B9F
