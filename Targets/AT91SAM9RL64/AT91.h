@@ -28,49 +28,45 @@
 #define CHARIZE(c) (CHARIZE2(c)[0])
 
 //
-//  PERIPHERAL ID DEFINITIONS FOR AT91SAM9X35
+//  PERIPHERAL ID DEFINITIONS FOR AT91SAM9RL64
 //
-#define AT91C_ID_FIQ		((unsigned int)  0) // Advanced Interrupt Controller (FIQ)
-#define AT91C_ID_SYS		((unsigned int)  1) // System Interrupt
-#define AT91C_ID_PIOA_PIOB	((unsigned int)  2) // Parallel IO Controller A and B
-#define AT91C_ID_PIOC_PIOD	((unsigned int)  3) // Parallel IO Controller C and D
-#define AT91C_ID_SMD		((unsigned int)  4) // SMD Soft Modem - not yet supported
-#define AT91C_ID_USART0		((unsigned int)  5) // USART 0
-#define AT91C_ID_USART1		((unsigned int)  6) // USART 1
-#define AT91C_ID_USART2		((unsigned int)  7) // USART 2
-#define AT91C_ID_TWI		AT91C_ID_TWI0       // only support one I2C
-#define AT91C_ID_TWI0		((unsigned int)  9) // Two-Wire Interface 0
-#define AT91C_ID_TWI1		((unsigned int) 10) // Two-Wire Interface 1
-#define AT91C_ID_TWI2		((unsigned int) 11) // Two-Wire Interface 2
-#define AT91C_ID_HSMCI0		((unsigned int) 12) // High Speed Multimedia Card Interface 0
-#define AT91C_ID_SPI0		((unsigned int) 13) // Serial Peripheral Interface
-#define AT91C_ID_SPI1		((unsigned int) 14) // Serial Peripheral Interface
-#define AT91C_ID_UART0		((unsigned int) 15) // UART 0
-#define AT91C_ID_UART1		((unsigned int) 16) // UART 1
-#define AT91C_ID_TC0_TC1	((unsigned int) 17) // Timer Counter 0, 1, 2, 3, 4, 5
-#define AT91C_ID_PWM		((unsigned int) 18) // Pulse Width Modulation Controller
-#define AT91C_ID_ADC		((unsigned int) 19) // ADC Controller
-#define AT91C_ID_DMAC0		((unsigned int) 20) // DMA Controller 0
-#define AT91C_ID_DMAC1		((unsigned int) 21) // DMA Controller 1
-#define AT91C_ID_UHPHS		((unsigned int) 22) // USB Host High Speed
-#define AT91C_ID_UDPHS		((unsigned int) 23) // USB Device High Speed
-#define AT91C_ID_EMAC		((unsigned int) 24) // Ethernet MAC
-#define AT91C_ID_LCDC		((unsigned int) 25) // LCD Controller
-#define AT91C_ID_HSMCI1		((unsigned int) 26) // High Speed Multimedia Card Interface 1
-#define AT91C_ID_SSC		((unsigned int) 28) // Synchronous Serial Controller
-#define AT91C_ID_CAN0		((unsigned int) 29) // CAN Controller 0
-#define AT91C_ID_CAN1		((unsigned int) 30) // CAN Controller 1
-#define AT91C_ID_IRQ0		((unsigned int) 31) // Advanced Interrupt Controller (IRQ0)
+#define AT91C_ID_FIQ    ((unsigned int)  0) // Advanced Interrupt Controller (FIQ)
+#define AT91C_ID_SYS    ((unsigned int)  1) // System Interrupt
+#define AT91C_ID_PIOA   ((unsigned int)  2) // Parallel IO Controller A
+#define AT91C_ID_PIOB   ((unsigned int)  3) // Parallel IO Controller B
+#define AT91C_ID_PIOC   ((unsigned int)  4) // Parallel IO Controller C
+#define AT91C_ID_PIOD   ((unsigned int)  5) // Parallel IO Controller D
+#define AT91C_ID_US0    ((unsigned int)  6) // USART 0
+#define AT91C_ID_US1    ((unsigned int)  7) // USART 1
+#define AT91C_ID_US2    ((unsigned int)  8) // USART 2
+#define AT91C_ID_US3    ((unsigned int)  9) // USART 3
+#define AT91C_ID_MCI    ((unsigned int) 10) // Multimedia Card Interface
+#define AT91C_ID_TWI0   ((unsigned int) 11) // Two-Wire Interface 0 
+#define AT91C_ID_TWI1   ((unsigned int) 12) // Two-Wire Interface 1
+#define AT91C_ID_TWI    AT91C_ID_TWI0       // only support one I2C
+#define AT91C_ID_SPI0    ((unsigned int) 13) // Serial Peripheral Interface 
+#define AT91C_ID_SSC0   ((unsigned int) 14) // Serial Synchronous Controller 0
+#define AT91C_ID_SSC1   ((unsigned int) 15) // Serial Synchronous Controller 1
+#define AT91C_ID_TC0    ((unsigned int) 16) // Timer Counter 0
+#define AT91C_ID_TC1    ((unsigned int) 17) // Timer Counter 1
+#define AT91C_ID_TC2    ((unsigned int) 18) // Timer Counter 2
+#define AT91C_ID_PWMC   ((unsigned int) 19) // Pulse Width Modulation Controller
+#define AT91C_ID_TSADCC ((unsigned int) 20) // Touch Panel ADC
+#define AT91C_ID_DMAC   ((unsigned int) 21) // DMA Controller
+#define AT91C_ID_UDP    ((unsigned int) 22) // USB High speed Device Port
+#define AT91C_ID_LCDC   ((unsigned int) 23) // LCD Controller
+#define AT91C_ID_AC97   ((unsigned int) 24) // AC97 Audio
+#define AT91C_ID_IRQ0   ((unsigned int) 31) // Advanced Interrupt Controller (IRQ0)
 
 //
 // BASE ADDRESS DEFINITIONS FOR AT91SAM9RL64
 //
 #define AT91C_BASE_SYS          0xFFFFE600 // (SYS) Base Address
-#define AT91C_BASE_DMAC0        0xFFFFEC00 // Hydra original address 0xFFFFE600 // (DMAC)Address						- Not same Memory Address
-#define AT91C_BASE_DDRS         0xFFFFE800 // (DDRS) Address
+#define AT91C_BASE_DMAC         0xFFFFE600 // (DMAC)Address
+#define AT91C_BASE_ECC          0xFFFFE800 // (ECC) Address
 #define AT91C_BASE_SDRAMC       0xFFFFEA00 // (SDRAMC) Base Address
 #define AT91C_BASE_SMC          0xFFFFEC00 // (SMC) Base Address
-#define AT91C_BASE_MATRIX       0xFFFFEE00 // (MATRIX) Base Address				- Not same Memory Address
+#define AT91C_BASE_MATRIX       0xFFFFEE00 // (MATRIX) Base Address
 #define AT91C_BASE_AIC          0xFFFFF000 // (AIC) Base Address
 #define AT91C_BASE_PDC_DBGU     0xFFFFF300 // (PDC_DBGU) Base Address
 #define AT91C_BASE_DBGU         0xFFFFF200 // (DBGU) Base Address
@@ -80,59 +76,68 @@
 #define AT91C_BASE_PIOD         0xFFFFFA00 // (PIOD) Base Address
 #define AT91C_BASE_CKGR         0xFFFFFC20 // (CKGR) Base Address
 #define AT91C_BASE_PMC          0xFFFFFC00 // (PMC) Base Address
-#define AT91C_BASE_RSTC         0xFFFFFE00 // (RSTC) Base Address				- Not same Memory Address
-#define AT91C_BASE_RSTC_SR      0xFFFFFD04
-#define AT91C_BASE_RSTC_MR      0xFFFFFD08
-#define AT91C_BASE_SHDWC        0xFFFFFD10 // (SHDWC) Base Address
-#define AT91C_BASE_RTTC         	0xFFFFFD20 // (RTTC) Base Address
-#define AT91C_BASE_PITC         	0xFFFFFE30 // (PITC) Base Address
-#define AT91C_BASE_WDTC         	0xFFFFFE40 // (WDTC) Base Address
-#define AT91C_BASE_SCKCR        	0xFFFFFE50 // (SCKCR) Base Address
-#define AT91C_BASE_GPBR         	0xFFFFFD60 // (GPBR) Base Address
-#define AT91C_BASE_TC0         		0xF8008000 // Hydra original address 0xFFFA0000 // (TC0) Base Address
-#define AT91C_BASE_TC1          	0xFFFA0040 // (TC1) Base Address
-#define AT91C_BASE_TC2          	0xFFFA0080 // (TC2) Base Address
-#define AT91C_BASE_TCB0         	0xFFFA0000 // (TCB0) Base Address
-#define AT91C_BASE_PDC_MCI      	0xFFFA4100 // (PDC_MCI) Base Address
-#define AT91C_BASE_MCI          	0xF0008000 // Hydra original address 0xFFFA4000 // (MCI) Base Address
-#define AT91C_BASE_TWI0         	0xF8010000 // Hydra original address 0xFFFA8000 // (TWI1) Base Address
-#define AT91C_BASE_TWI1         	0xF8014000 // Hydra original address 0xFFFAC000 // (TWI2) Base Address
-#define AT91C_BASE_TWI2         	0xF8018000 // (TWI3) Base Address
-#define AT91C_BASE_TWI          	AT91C_BASE_TWI0 // Support one I2C controller only
-#define AT91C_BASE_USART0          	0xF801C000 // Hydra original address 0xFFFB0000 // (US0) Base Address				- Not same Memory Address
-#define AT91C_BASE_USART1          	0xF8020000 // Hydra original address 0xFFFB4000 // (US1) Base Address				- Not same Memory Address
-#define AT91C_BASE_USART2          	0xF8024000 // Hydra original address 0xFFFB8000 // (US2) Base Address				- Not same Memory Address
-#define AT91C_BASE_UART0			0xF8040000
-#define AT91C_BASE_UART1			0xF8044000
-#define AT91C_BASE_PDC_US3      	0xFFFBC100 // (PDC_US3) Base Address
-#define AT91C_BASE_US3          	0xF8008000 // Hydra original address 0xFFFBC000 // (US3) Base Address				- Not same Memory Address
-#define AT91C_BASE_PDC_SSC0     	0xFFFC0100 // (PDC_SSC0) Base Address
-#define AT91C_BASE_SSC0         	0xFFFC0000 // (SSC0) Base Address
-#define AT91C_BASE_PDC_SSC1     	0xFFFC4100 // (PDC_SSC1) Base Address
-#define AT91C_BASE_SSC1         	0xFFFC4000 // (SSC1) Base Address
-#define AT91C_BASE_PWMC         	0xF8034000 // Hydra original address 0xFFFC8000 // (PWMC) Base Address				- Not same Memory Address
-#define AT91C_BASE_PDC_SPI0     	0xFFFCC100 // (PDC_SPI0) Base Address
-#define AT91C_BASE_SPI0         	0xF0000000 // (SPI0) Base Address // Hydra original address 0xFFFCC000
-#define AT91C_BASE_SPI1         	0xF0004000 // (SPI1) Base Address
-#define AT91C_BASE_TSADCC       	0xFFFD0000 // (ADC touch screen) Base Address
-#define AT91C_BASE_UDP          	0xF803C000 // 0xFFFD4000 // (UDP) Base Address - Changed on G400
-#define AT91C_BASE_AC97         	0xFFFD8000 // (UDP) Base Address
-#define AT91C_BASE_ITCM         	0x00100000 // (ITCM) Base Address
-#define AT91C_BASE_DTCM         	0x00200000 // (DTCM) Base Address
-#define AT91C_BASE_LCDC         	0xF8038000 // Hydra original address 0x00500000 // (LCDC) Base Address
-#define AT91C_BASE_UDP_DMA			0x00500000 // Hydra original address 0x00600000 // (UDP DMA) Base Address
-#define AT91C_BASE_EMAC				0xF802C000
-
-// RTSC bit defines
+#define AT91C_BASE_RSTC         0xFFFFFD00 // (RSTC) Base Address
 #define AT91C_RTSC__PROCRST     0x01         // processor reset bit
 #define AT91C_RTSC__PERRST      0x04         // Peripheral reset bit
 #define AT91C_RTSC__EXTRST      0x08         // asserts NRST pin
 #define AT91C_RSTC__RESET_KEY   0xA5000000   // reset key
-#define AT91C_RTSC_SR__SRCMP    (1ul < 17)   // Software Reset Command in progress
-#define AT91C_RTSC_SR__NRSTL    (1ul < 16)   // Registers the NRST Pin Level at Master Clock (MCK)
-#define AT91C_RTSC_SR__RSTTYP   (7ul <  8)   // Reset Type mask
-#define AT91C_RTSC_SR__BODSTS   (1ul <  1)   // Brownout Detection Status
-#define AT91C_RTSC_SR__URSTS    (1ul <  0)   // User Reset Status
+
+#define AT91C_BASE_SHDWC        0xFFFFFD10 // (SHDWC) Base Address
+#define AT91C_SHDWC__SHUTDOWN_KEY   0xA5000000   // reset key
+#define AT91C_SHDWC__SHDW           0x01         // processor reset bit
+
+#define AT91C_BASE_RTTC         0xFFFFFD20 // (RTTC) Base Address
+#define AT91C_BASE_PITC         0xFFFFFD30 // (PITC) Base Address
+#define AT91C_BASE_WDTC         0xFFFFFD40 // (WDTC) Base Address
+#define AT91C_BASE_SCKCR         0xFFFFFD50 // (SCKCR) Base Address
+#define AT91C_BASE_GPBR         0xFFFFFD60 // (GPBR) Base Address
+#define AT91C_BASE_RTCC         0xFFFFFE00 // (RTCC) Base Address
+
+#define AT91C_BASE_TC0          0xFFFA0000 // (TC0) Base Address
+#define AT91C_BASE_TC1          0xFFFA0040 // (TC1) Base Address
+#define AT91C_BASE_TC2          0xFFFA0080 // (TC2) Base Address
+#define AT91C_BASE_TCB0         0xFFFA0000 // (TCB0) Base Address
+#define AT91C_BASE_PDC_MCI      0xFFFA4100 // (PDC_MCI) Base Address
+#define AT91C_BASE_MCI          0xFFFA4000 // (MCI) Base Address
+#define AT91C_BASE_TWI0         0xFFFA8000 // (TWI1) Base Address
+#define AT91C_BASE_TWI1         0xFFFAC000 // (TWI2) Base Address
+#define AT91C_BASE_TWI          AT91C_BASE_TWI0 // Support one I2C controller only
+#define AT91C_BASE_PDC_US0      0xFFFB0100 // (PDC_US0) Base Address
+#define AT91C_BASE_US0          0xFFFB0000 // (US0) Base Address
+#define AT91C_BASE_PDC_US1      0xFFFB4100 // (PDC_US1) Base Address
+#define AT91C_BASE_US1          0xFFFB4000 // (US1) Base Address
+#define AT91C_BASE_PDC_US2      0xFFFB8100 // (PDC_US2) Base Address
+#define AT91C_BASE_US2          0xFFFB8000 // (US2) Base Address
+#define AT91C_BASE_PDC_US3      0xFFFBC100 // (PDC_US3) Base Address
+#define AT91C_BASE_US3          0xFFFBC000 // (US3) Base Address
+#define AT91C_BASE_PDC_SSC0     0xFFFC0100 // (PDC_SSC0) Base Address
+#define AT91C_BASE_SSC0         0xFFFC0000 // (SSC0) Base Address
+#define AT91C_BASE_PDC_SSC1     0xFFFC4100 // (PDC_SSC1) Base Address
+#define AT91C_BASE_SSC1         0xFFFC4000 // (SSC1) Base Address
+#define AT91C_BASE_PWMC         0xFFFC8000 // (PWMC) Base Address
+#define AT91C_BASE_PDC_SPI0     0xFFFCC100 // (PDC_SPI0) Base Address
+#define AT91C_BASE_SPI0         0xFFFCC000 // (SPI0) Base Address
+#define AT91C_BASE_TSADCC       0xFFFD0000 // (ADC touch screen) Base Address
+#define AT91C_BASE_UDP          0xFFFD4000 // (UDP) Base Address
+#define AT91C_BASE_AC97         0xFFFD8000 // (UDP) Base Address
+
+#define AT91C_BASE_ITCM         0x00100000 // (ITCM) Base Address
+#define AT91C_BASE_DTCM         0x00200000 // (DTCM) Base Address
+#define AT91C_BASE_LCDC         0x00500000 // (LCDC) Base Address
+#define AT91C_BASE_LCDC_16B_TFT 0x00500000 // (LCDC_16B_TFT) Base Address
+#define AT91C_BASE_UDP_DMA        0x00600000 // (UDP DMA) Base Address
+
+#define AT91C_BASE_SPI1         0xFFFFFFFF //Dummy SPI
+
+#define     AT91C_MATRIX_CS3A_SM            (0x1 <<  3) // (MATRIX) Chip Select 3 is assigned to the Static Memory Controller and the SmartMedia Logic is activated.
+// Timer number - See AT91_TIMER.H
+#define AT91_MAX_TIMER      3
+
+// Max GPIO number 
+#define AT91_MAX_GPIO       128 
+
+// Max USART Number
+#define AT91_MAX_USART   3 
 
 // SHDWC bit defines
 #define AT91C_SHDWC__SHUTDOWN_KEY   0xA5000000   // reset key
@@ -147,7 +152,7 @@ struct AT91_PMC {
 
     /****/ volatile uint32_t PMC_SCSR;                // System Clock Status Register
 
-    /****/ volatile uint32_t Reserved0[1];            //
+    /****/ volatile uint32_t Reserved0[1];            // 
 
     /****/ volatile uint32_t PMC_PCER;                // Peripheral Clock Enable Register
 
@@ -158,83 +163,83 @@ struct AT91_PMC {
     /****/ volatile uint32_t PMC_CKGR_UCKR;            // UTMI Clock Register
 
     /****/ volatile uint32_t PMC_CKGR_MOR;            // Main Oscillator Register
-    static const    uint32_t CKGR_MOSCEN = (0x1 << 0);       // (CKGR) Main Oscillator Enable
-    static const    uint32_t CKGR_OSCBYPASS = (0x1 << 1);       // (CKGR) Main Oscillator Bypass
-    static const    uint32_t CKGR_OSCOUNT = (0xFF << 8);      // (CKGR) Main Oscillator Start-up Time
+    static const    uint32_t CKGR_MOSCEN     = (0x1 << 0);       // (CKGR) Main Oscillator Enable
+    static const    uint32_t CKGR_OSCBYPASS  = (0x1 << 1);       // (CKGR) Main Oscillator Bypass
+    static const    uint32_t CKGR_OSCOUNT    = (0xFF << 8);      // (CKGR) Main Oscillator Start-up Time
 
 
     /****/ volatile uint32_t PMC_CKGR_MCFR;  // Main Clock  Frequency Register
-    static const    uint32_t CKGR_MAINF = (0xFFFF << 0);     // (CKGR) Main Clock Frequency
-    static const    uint32_t CKGR_MAINRDY = (0x1 << 16);       // (CKGR) Main Clock Ready
-
+    static const    uint32_t CKGR_MAINF      = (0xFFFF << 0);     // (CKGR) Main Clock Frequency
+    static const    uint32_t CKGR_MAINRDY    = (0x1UL << 16);       // (CKGR) Main Clock Ready
+    
 
     /****/ volatile uint32_t PMC_CKGR_PLLAR;  // PLL Register
 
-
-    static const    uint32_t CKGR_DIV = (0xFF << 0);     // (CKGR) Divider Selected
-    static const    uint32_t CKGR_DIV_0 = (0x0);           // (CKGR) Divider output is 0
+       
+    static const    uint32_t CKGR_DIV        = (0xFF << 0);     // (CKGR) Divider Selected
+    static const    uint32_t CKGR_DIV_0      = (0x0);           // (CKGR) Divider output is 0
     static const    uint32_t CKGR_DIV_BYPASS = (0x1);           // (CKGR) Divider is bypassed
-    static const    uint32_t CKGR_PLLCOUNT = (0x3F << 8);     // (CKGR) PLL Counter
-    static const    uint32_t CKGR_OUT = (0x3 << 14);     // (CKGR) PLL Output Frequency Range
-    static const    uint32_t CKGR_OUT_0 = (0x0 << 14);     // (CKGR) Please refer to the PLL datasheet
-    static const    uint32_t CKGR_OUT_1 = (0x1 << 14);     // (CKGR) Please refer to the PLL datasheet
-    static const    uint32_t CKGR_OUT_2 = (0x2 << 14);     // (CKGR) Please refer to the PLL datasheet
-    static const    uint32_t CKGR_OUT_3 = (0x3 << 14);     // (CKGR) Please refer to the PLL datasheet
-    static const    uint32_t CKGR_MUL = (0x7FF << 16);   // (CKGR) PLL Multiplier
-    static const    uint32_t CKGR_USBDIV = (0x3 << 28);     // (CKGR) Divider for USB Clocks
-    static const    uint32_t CKGR_USBDIV_0 = (0x0 << 28);     // (CKGR) Divider output is PLL clock output
-    static const    uint32_t CKGR_USBDIV_1 = (0x1 << 28);     // (CKGR) Divider output is PLL clock output divided by 2
-    static const    uint32_t CKGR_USBDIV_2 = (0x2 << 28);     // (CKGR) Divider output is PLL clock output divided by 4
+    static const    uint32_t CKGR_PLLCOUNT   = (0x3F << 8);     // (CKGR) PLL Counter
+    static const    uint32_t CKGR_OUT        = (0x3 << 14);     // (CKGR) PLL Output Frequency Range
+    static const    uint32_t CKGR_OUT_0      = (0x0 << 14);     // (CKGR) Please refer to the PLL datasheet
+    static const    uint32_t CKGR_OUT_1      = (0x1 << 14);     // (CKGR) Please refer to the PLL datasheet
+    static const    uint32_t CKGR_OUT_2      = (0x2 << 14);     // (CKGR) Please refer to the PLL datasheet
+    static const    uint32_t CKGR_OUT_3      = (0x3 << 14);     // (CKGR) Please refer to the PLL datasheet
+    static const    uint32_t CKGR_MUL        = (0x7FFUL << 16);   // (CKGR) PLL Multiplier
+    static const    uint32_t CKGR_USBDIV     = (0x3UL << 28);     // (CKGR) Divider for USB Clocks
+    static const    uint32_t CKGR_USBDIV_0   = (0x0UL << 28);     // (CKGR) Divider output is PLL clock output
+    static const    uint32_t CKGR_USBDIV_1   = (0x1UL << 28);     // (CKGR) Divider output is PLL clock output divided by 2
+    static const    uint32_t CKGR_USBDIV_2   = (0x2UL << 28);     // (CKGR) Divider output is PLL clock output divided by 4
 
-    /****/ volatile uint32_t Reserved1[1];            //
-
+    /****/ volatile uint32_t Reserved1[1];            // 
+    
     /****/ volatile uint32_t PMC_MCKR;  // Master Clock Register
-    static const    uint32_t PMC_CSS = (0x3 << 0);   //  (PMC) Programmable Clock Selection
-    static const    uint32_t PMC_CSS_SLOW_CLK = (0x0);         //  (PMC) Slow Clock is selected
-    static const    uint32_t PMC_CSS_MAIN_CLK = (0x1);         //  (PMC) Main Clock is selected
-    static const    uint32_t PMC_CSS_PLLA_CLK = (0x2);         //  (PMC) Clock from PLL1 is selected = (SAM9 only);
-    static const    uint32_t PMC_CSS_PLL_CLK = (0x3);         //  (PMC) Clock from PLL is selected
-    static const    uint32_t PMC_PRES = (0x7 << 2);   //  (PMC) Programmable Clock Prescaler
-    static const    uint32_t PMC_PRES_CLK = (0x0 << 2);   //  (PMC) Selected clock
-    static const    uint32_t PMC_PRES_CLK_2 = (0x1 << 2);   //  (PMC) Selected clock divided by 2
-    static const    uint32_t PMC_PRES_CLK_4 = (0x2 << 2);   //  (PMC) Selected clock divided by 4
-    static const    uint32_t PMC_PRES_CLK_8 = (0x3 << 2);   //  (PMC) Selected clock divided by 8
-    static const    uint32_t PMC_PRES_CLK_16 = (0x4 << 2);   //  (PMC) Selected clock divided by 16
-    static const    uint32_t PMC_PRES_CLK_32 = (0x5 << 2);   //  (PMC) Selected clock divided by 32
-    static const    uint32_t PMC_PRES_CLK_64 = (0x6 << 2);   //  (PMC) Selected clock divided by 64
-    static const    uint32_t PMC_MDIV = (0x3 << 8);   //  (PMC) Master Clock Division
-    static const    uint32_t PMC_MDIV_1 = (0x0 << 8);   //  (PMC) The master clock and the processor clock are the same
-    static const    uint32_t PMC_MDIV_2 = (0x1 << 8);   //  (PMC) The processor clock is twice as fast as the master clock
-    static const    uint32_t PMC_MDIV_3 = (0x2 << 8);   //  (PMC) The processor clock is four times faster than the master clock
+    static const    uint32_t PMC_CSS           = (0x3 <<  0);   //  (PMC) Programmable Clock Selection
+    static const    uint32_t PMC_CSS_SLOW_CLK  = (0x0);         //  (PMC) Slow Clock is selected
+    static const    uint32_t PMC_CSS_MAIN_CLK  = (0x1);         //  (PMC) Main Clock is selected
+    static const    uint32_t PMC_CSS_PLLA_CLK  = (0x2);         //  (PMC) Clock from PLL1 is selected = (SAM9 only);
+    static const    uint32_t PMC_CSS_PLL_CLK   = (0x3);         //  (PMC) Clock from PLL is selected
+    static const    uint32_t PMC_PRES          = (0x7 <<  2);   //  (PMC) Programmable Clock Prescaler
+    static const    uint32_t PMC_PRES_CLK      = (0x0 <<  2);   //  (PMC) Selected clock
+    static const    uint32_t PMC_PRES_CLK_2    = (0x1 <<  2);   //  (PMC) Selected clock divided by 2
+    static const    uint32_t PMC_PRES_CLK_4    = (0x2 <<  2);   //  (PMC) Selected clock divided by 4
+    static const    uint32_t PMC_PRES_CLK_8    = (0x3 <<  2);   //  (PMC) Selected clock divided by 8
+    static const    uint32_t PMC_PRES_CLK_16   = (0x4 <<  2);   //  (PMC) Selected clock divided by 16
+    static const    uint32_t PMC_PRES_CLK_32   = (0x5 <<  2);   //  (PMC) Selected clock divided by 32
+    static const    uint32_t PMC_PRES_CLK_64   = (0x6 <<  2);   //  (PMC) Selected clock divided by 64
+    static const    uint32_t PMC_MDIV          = (0x3 <<  8);   //  (PMC) Master Clock Division
+    static const    uint32_t PMC_MDIV_1        = (0x0 <<  8);   //  (PMC) The master clock and the processor clock are the same
+    static const    uint32_t PMC_MDIV_2        = (0x1 <<  8);   //  (PMC) The processor clock is twice as fast as the master clock
+    static const    uint32_t PMC_MDIV_3        = (0x2 <<  8);   //  (PMC) The processor clock is four times faster than the master clock
 
-    /****/ volatile uint32_t Reserved3[3];  // TQD: Just a note PMC_USB and PMC_SMD are in here
+    /****/ volatile uint32_t Reserved3[3];  // 
 
     /****/ volatile uint32_t PMC_PCKR[2];   // Programmable Clock Register
 
-    /****/ volatile uint32_t Reserved4[6];  //
+    /****/ volatile uint32_t Reserved4[6];  // 
 
     /****/ volatile uint32_t PMC_IER;   // Interrupt Enable Register
-    static const    uint32_t PMC_MOSCS = (0x1 << 0);       // (PMC) MOSC Status/Enable/Disable/Mask
-    static const    uint32_t PMC_LOCKA = (0x1 << 1);       // (PMC) PLL Status/Enable/Disable/Mask =(SAM9 Only);
-    static const    uint32_t PMC_LOCK = (0x1 << 2);       // (PMC) PLL Status/Enable/Disable/Mask
-    static const    uint32_t PMC_MCKRDY = (0x1 << 3);       // (PMC) MCK_RDY Status/Enable/Disable/Mask
-    static const    uint32_t PMC_PCK0RDY = (0x1 << 8);       // (PMC) PCK0_RDY Status/Enable/Disable/Mask
-    static const    uint32_t PMC_PCK1RDY = (0x1 << 9);       // (PMC) PCK1_RDY Status/Enable/Disable/Mask
-    static const    uint32_t PMC_PCK2RDY = (0x1 << 10);       // (PMC) PCK2_RDY Status/Enable/Disable/Mask
-    static const    uint32_t PMC_PCK3RDY = (0x1 << 11);       // (PMC) PCK3_RDY Status/Enable/Disable/Mask
-    static const    uint32_t PMC_LOCKU = (0x1 << 6);           //(PMC) USB clock locked
+    static const    uint32_t PMC_MOSCS     = (0x1 <<  0);       // (PMC) MOSC Status/Enable/Disable/Mask
+    static const    uint32_t PMC_LOCKA     = (0x1 <<  1);       // (PMC) PLL Status/Enable/Disable/Mask =(SAM9 Only);
+    static const    uint32_t PMC_LOCK      = (0x1 <<  2);       // (PMC) PLL Status/Enable/Disable/Mask
+    static const    uint32_t PMC_MCKRDY    = (0x1 <<  3);       // (PMC) MCK_RDY Status/Enable/Disable/Mask
+    static const    uint32_t PMC_PCK0RDY   = (0x1 <<  8);       // (PMC) PCK0_RDY Status/Enable/Disable/Mask
+    static const    uint32_t PMC_PCK1RDY   = (0x1 <<  9);       // (PMC) PCK1_RDY Status/Enable/Disable/Mask
+    static const    uint32_t PMC_PCK2RDY   = (0x1 << 10);       // (PMC) PCK2_RDY Status/Enable/Disable/Mask
+    static const    uint32_t PMC_PCK3RDY   = (0x1 << 11);       // (PMC) PCK3_RDY Status/Enable/Disable/Mask
+    static const    uint32_t PMC_LOCKU      = (0x1 << 6);           //(PMC) USB clock locked
     /****/ volatile uint32_t PMC_IDR;   // Interrupt Disable Register
 
     /****/ volatile uint32_t PMC_SR;    // Status Register
 
     /****/ volatile uint32_t PMC_IMR;   // Interrupt Mask Register
 
-    /****/ volatile uint32_t Reserved5[3]; // Reserved
+    /****/ volatile uint32_t Reserved5[4]; // Reserved
 
-    /****/ volatile uint32_t PMC_PLLICPR; // Charge Pump Current Register
-    static const    uint32_t PMC_PLLICPR__PLLA = (0x1 << 0);
+
+    static const    uint32_t PMC_PLLICPR__PLLA = (0x1 <<  0);
     static const    uint32_t PMC_PLLICPR__PLLB = (0x1 << 16);
-
+    
     __inline void EnableSystemClock(uint32_t clkIds)
     {
         PMC_SCER = clkIds;
@@ -254,8 +259,6 @@ struct AT91_PMC {
     {
         PMC_PCDR = (1 << periphIds);
     }
-
-
 };
 
 
@@ -652,111 +655,110 @@ TinyCLR_Result AT91_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* s
 //
 struct AT91_USART {
 
-    static const uint32_t c_Base_dbg = AT91C_BASE_DBGU;
-    static const uint32_t c_Base_usart = AT91C_BASE_USART0;
-    static const uint32_t c_Base_uart = AT91C_BASE_UART0;
-    static const uint32_t c_Base_offset = 0x4000;
+    static const uint32_t c_Base_dbg      = AT91C_BASE_DBGU;
+    static const uint32_t c_Base          = AT91C_BASE_US0;
+    static const uint32_t c_Base_offset   = 0x4000;
 
-    static const uint32_t c_MAX_BAUDRATE = ((AT91_SYSTEM_PERIPHERAL_CLOCK_HZ * 10) / 16);
-    static const uint32_t c_MIN_BAUDRATE = 0;
-
+    static const uint32_t c_MAX_BAUDRATE  = ((AT91_SYSTEM_PERIPHERAL_CLOCK_HZ*10)/ 16); 
+    static const uint32_t c_MIN_BAUDRATE  = 0;
+    
     /****/ volatile uint32_t US_CR;          // Control Register
-    static const    uint32_t US_RSTRX = ((unsigned int)0x1 << 2); // (DBGU) Reset Receiver
-    static const    uint32_t US_RSTTX = ((unsigned int)0x1 << 3); //  (DBGU) Reset Transmitter
-    static const    uint32_t US_RXEN = ((unsigned int)0x1 << 4); //  (DBGU) Receiver Enable
-    static const    uint32_t US_RXDIS = ((unsigned int)0x1 << 5); //  (DBGU) Receiver Disable
-    static const    uint32_t US_TXEN = ((unsigned int)0x1 << 6); //  (DBGU) Transmitter Enable
-    static const    uint32_t US_TXDIS = ((unsigned int)0x1 << 7); //  (DBGU) Transmitter Disable
-    static const    uint32_t US_RSTSTA = ((unsigned int)0x1 << 8); //  (DBGU) Reset Status Bits
-    static const    uint32_t US_STTBRK = ((unsigned int)0x1 << 9); //  (USART) Start Break
-    static const    uint32_t US_STPBRK = ((unsigned int)0x1 << 10); //  (USART) Stop Break
-    static const    uint32_t US_STTTO = ((unsigned int)0x1 << 11); //  (USART) Start Time-out
-    static const    uint32_t US_SENDA = ((unsigned int)0x1 << 12); //  (USART) Send Address
-    static const    uint32_t US_RSTIT = ((unsigned int)0x1 << 13); //  (USART) Reset Iterations
-    static const    uint32_t US_RSTNACK = ((unsigned int)0x1 << 14); //  (USART) Reset Non Acknowledge
-    static const    uint32_t US_RETTO = ((unsigned int)0x1 << 15); //  (USART) Rearm Time-out
-    static const    uint32_t US_DTREN = ((unsigned int)0x1 << 16); //  (USART) Data Terminal ready Enable
-    static const    uint32_t US_DTRDIS = ((unsigned int)0x1 << 17); //  (USART) Data Terminal ready Disable
-    static const    uint32_t US_RTSEN = ((unsigned int)0x1 << 18); //  (USART) Request to Send enable
-    static const    uint32_t US_RTSDIS = ((unsigned int)0x1 << 19); //  (USART) Request to Send Disable
+    static const    uint32_t US_RSTRX        = ((unsigned int) 0x1 <<  2); // (DBGU) Reset Receiver
+    static const    uint32_t US_RSTTX        = ((unsigned int) 0x1 <<  3); //  (DBGU) Reset Transmitter
+    static const    uint32_t US_RXEN         = ((unsigned int) 0x1 <<  4); //  (DBGU) Receiver Enable
+    static const    uint32_t US_RXDIS        = ((unsigned int) 0x1 <<  5); //  (DBGU) Receiver Disable
+    static const    uint32_t US_TXEN         = ((unsigned int) 0x1 <<  6); //  (DBGU) Transmitter Enable
+    static const    uint32_t US_TXDIS        = ((unsigned int) 0x1 <<  7); //  (DBGU) Transmitter Disable
+    static const    uint32_t US_RSTSTA       = ((unsigned int) 0x1 <<  8); //  (DBGU) Reset Status Bits
+    static const    uint32_t US_STTBRK       = ((unsigned int) 0x1 <<  9); //  (USART) Start Break
+    static const    uint32_t US_STPBRK       = ((unsigned int) 0x1 << 10); //  (USART) Stop Break
+    static const    uint32_t US_STTTO        = ((unsigned int) 0x1 << 11); //  (USART) Start Time-out
+    static const    uint32_t US_SENDA        = ((unsigned int) 0x1 << 12); //  (USART) Send Address
+    static const    uint32_t US_RSTIT        = ((unsigned int) 0x1 << 13); //  (USART) Reset Iterations
+    static const    uint32_t US_RSTNACK      = ((unsigned int) 0x1 << 14); //  (USART) Reset Non Acknowledge
+    static const    uint32_t US_RETTO        = ((unsigned int) 0x1 << 15); //  (USART) Rearm Time-out
+    static const    uint32_t US_DTREN        = ((unsigned int) 0x1UL << 16); //  (USART) Data Terminal ready Enable
+    static const    uint32_t US_DTRDIS       = ((unsigned int) 0x1UL << 17); //  (USART) Data Terminal ready Disable
+    static const    uint32_t US_RTSEN        = ((unsigned int) 0x1UL << 18); //  (USART) Request to Send enable
+    static const    uint32_t US_RTSDIS       = ((unsigned int) 0x1UL << 19); //  (USART) Request to Send Disable
 
     /****/ volatile uint32_t US_MR;          // Mode Register
-    static const    uint32_t US_USMODE = ((unsigned int)0xF << 0); //  (USART) Usart mode
-    static const    uint32_t     US_USMODE_NORMAL = ((unsigned int)0x0); //  (USART) Normal
-    static const    uint32_t     US_USMODE_RS485 = ((unsigned int)0x1); //  (USART) RS485
-    static const    uint32_t     US_USMODE_HWHSH = ((unsigned int)0x2); //  (USART) Hardware Handshaking
-    static const    uint32_t     US_USMODE_MODEM = ((unsigned int)0x3); //  (USART) Modem
-    static const    uint32_t     US_USMODE_ISO7816_0 = ((unsigned int)0x4); //  (USART) ISO7816 protocol: T = 0
-    static const    uint32_t     US_USMODE_ISO7816_1 = ((unsigned int)0x6); //  (USART) ISO7816 protocol: T = 1
-    static const    uint32_t     US_USMODE_IRDA = ((unsigned int)0x8); //  (USART) IrDA
-    static const    uint32_t     US_USMODE_SWHSH = ((unsigned int)0xC); //  (USART) Software Handshaking
-    static const    uint32_t US_CLKS = ((unsigned int)0x3 << 4); //  (USART) Clock Selection = (Baud Rate generator Input Clock
-    static const    uint32_t     US_CLKS_CLOCK = ((unsigned int)0x0 << 4); //  (USART) Clock
-    static const    uint32_t     US_CLKS_FDIV1 = ((unsigned int)0x1 << 4); //  (USART) fdiv1
-    static const    uint32_t     US_CLKS_SLOW = ((unsigned int)0x2 << 4); //  (USART) slow_clock = (ARM);
-    static const    uint32_t     US_CLKS_EXT = ((unsigned int)0x3 << 4); //  (USART) External = (SCK);
-    static const    uint32_t US_CHRL = ((unsigned int)0x3 << 6); //  (USART) Clock Selection = (Baud Rate generator Input Clock
-    static const    uint32_t     US_CHRL_5_BITS = ((unsigned int)0x0 << 6); //  (USART) Character Length: 5 bits
-    static const    uint32_t     US_CHRL_6_BITS = ((unsigned int)0x1 << 6); //  (USART) Character Length: 6 bits
-    static const    uint32_t     US_CHRL_7_BITS = ((unsigned int)0x2 << 6); //  (USART) Character Length: 7 bits
-    static const    uint32_t     US_CHRL_8_BITS = ((unsigned int)0x3 << 6); //  (USART) Character Length: 8 bits
-    static const    uint32_t US_SYNC = ((unsigned int)0x1 << 8); //  (USART) Synchronous Mode Select
-    static const    uint32_t US_NBSTOP = ((unsigned int)0x3 << 12); //  (USART) Number of Stop bits
-    static const    uint32_t     US_NBSTOP_1_BIT = ((unsigned int)0x0 << 12); //  (USART) 1 stop bit
-    static const    uint32_t     US_NBSTOP_15_BIT = ((unsigned int)0x1 << 12); //  (USART) Asynchronous = (SYNC=0); 2 stop bits Synchronous = (SYNC=1); 2 stop bits
-    static const    uint32_t     US_NBSTOP_2_BIT = ((unsigned int)0x2 << 12); //  (USART) 2 stop bits
-    static const    uint32_t US_MSBF = ((unsigned int)0x1 << 16); //  (USART) Bit Order
-    static const    uint32_t US_MODE9 = ((unsigned int)0x1 << 17); //  (USART) 9-bit Character length
-    static const    uint32_t US_CKLO = ((unsigned int)0x1 << 18); //  (USART) Clock Output Select
-    static const    uint32_t US_OVER = ((unsigned int)0x1 << 19); //  (USART) Over Sampling Mode
-    static const    uint32_t US_INACK = ((unsigned int)0x1 << 20); //  (USART) Inhibit Non Acknowledge
-    static const    uint32_t US_DSNACK = ((unsigned int)0x1 << 21); //  (USART) Disable Successive NACK
-    static const    uint32_t US_MAX_ITER = ((unsigned int)0x1 << 24); //  (USART) Number of Repetitions
-    static const    uint32_t US_FILTER = ((unsigned int)0x1 << 28); //  (USART) Receive Line Filter
-    static const    uint32_t US_PAR = (0x7 << 9); // = (DBGU); Parity type
-    static const    uint32_t     US_PAR_EVEN = (0x0 << 9); // = (DBGU); Even Parity
-    static const    uint32_t     US_PAR_ODD = (0x1 << 9); // = (DBGU); Odd Parity
-    static const    uint32_t     US_PAR_SPACE = (0x2 << 9); // = (DBGU); Parity forced to 0 = (Space);
-    static const    uint32_t     US_PAR_MARK = (0x3 << 9); // = (DBGU); Parity forced to 1 = (Mark);
-    static const    uint32_t     US_PAR_NONE = (0x4 << 9); // = (DBGU); No Parity
-    static const    uint32_t     US_PAR_MULTI_DROP = (0x6 << 9); // = (DBGU); Multi-drop mode
-    static const    uint32_t US_CHMODE = (0x3 << 14); // = (DBGU); Channel Mode
-    static const    uint32_t     US_CHMODE_NORMAL = (0x0 << 14); // = (DBGU); Normal Mode: The USART channel operates as an RX/TX USART.
-    static const    uint32_t     US_CHMODE_AUTO = (0x1 << 14); // = (DBGU); Automatic Echo: Receiver Data Input is connected to the TXD pin.
-    static const    uint32_t     US_CHMODE_LOCAL = (0x2 << 14); // = (DBGU); Local Loopback: Transmitter Output Signal is connected to Receiver Input Signal.
-    static const    uint32_t     US_CHMODE_REMOTE = (0x3 << 14); // = (DBGU); Remote Loopback: RXD pin is internally connected to TXD pin.
+    static const    uint32_t US_USMODE       = ((unsigned int) 0xF <<  0); //  (USART) Usart mode
+    static const    uint32_t     US_USMODE_NORMAL               = ((unsigned int) 0x0); //  (USART) Normal
+    static const    uint32_t     US_USMODE_RS485                = ((unsigned int) 0x1); //  (USART) RS485
+    static const    uint32_t     US_USMODE_HWHSH                = ((unsigned int) 0x2); //  (USART) Hardware Handshaking
+    static const    uint32_t     US_USMODE_MODEM                = ((unsigned int) 0x3); //  (USART) Modem
+    static const    uint32_t     US_USMODE_ISO7816_0            = ((unsigned int) 0x4); //  (USART) ISO7816 protocol: T = 0
+    static const    uint32_t     US_USMODE_ISO7816_1            = ((unsigned int) 0x6); //  (USART) ISO7816 protocol: T = 1
+    static const    uint32_t     US_USMODE_IRDA                 = ((unsigned int) 0x8); //  (USART) IrDA
+    static const    uint32_t     US_USMODE_SWHSH                = ((unsigned int) 0xC); //  (USART) Software Handshaking
+    static const    uint32_t US_CLKS         = ((unsigned int) 0x3 <<  4); //  (USART) Clock Selection = (Baud Rate generator Input Clock
+    static const    uint32_t     US_CLKS_CLOCK                = ((unsigned int) 0x0 <<  4); //  (USART) Clock
+    static const    uint32_t     US_CLKS_FDIV1                = ((unsigned int) 0x1 <<  4); //  (USART) fdiv1
+    static const    uint32_t     US_CLKS_SLOW                 = ((unsigned int) 0x2 <<  4); //  (USART) slow_clock = (ARM);
+    static const    uint32_t     US_CLKS_EXT                  = ((unsigned int) 0x3 <<  4); //  (USART) External = (SCK);
+    static const    uint32_t US_CHRL         = ((unsigned int) 0x3 <<  6); //  (USART) Clock Selection = (Baud Rate generator Input Clock
+    static const    uint32_t     US_CHRL_5_BITS               = ((unsigned int) 0x0 <<  6); //  (USART) Character Length: 5 bits
+    static const    uint32_t     US_CHRL_6_BITS               = ((unsigned int) 0x1 <<  6); //  (USART) Character Length: 6 bits
+    static const    uint32_t     US_CHRL_7_BITS               = ((unsigned int) 0x2 <<  6); //  (USART) Character Length: 7 bits
+    static const    uint32_t     US_CHRL_8_BITS               = ((unsigned int) 0x3 <<  6); //  (USART) Character Length: 8 bits
+    static const    uint32_t US_SYNC         = ((unsigned int) 0x1 <<  8); //  (USART) Synchronous Mode Select
+    static const    uint32_t US_NBSTOP       = ((unsigned int) 0x3 << 12); //  (USART) Number of Stop bits
+    static const    uint32_t     US_NBSTOP_1_BIT                = ((unsigned int) 0x0 << 12); //  (USART) 1 stop bit
+    static const    uint32_t     US_NBSTOP_15_BIT               = ((unsigned int) 0x1 << 12); //  (USART) Asynchronous = (SYNC=0); 2 stop bits Synchronous = (SYNC=1); 2 stop bits
+    static const    uint32_t     US_NBSTOP_2_BIT                = ((unsigned int) 0x2 << 12); //  (USART) 2 stop bits
+    static const    uint32_t US_MSBF         = ((unsigned int) 0x1 << 16); //  (USART) Bit Order
+    static const    uint32_t US_MODE9        = ((unsigned int) 0x1 << 17); //  (USART) 9-bit Character length
+    static const    uint32_t US_CKLO         = ((unsigned int) 0x1 << 18); //  (USART) Clock Output Select
+    static const    uint32_t US_OVER         = ((unsigned int) 0x1 << 19); //  (USART) Over Sampling Mode
+    static const    uint32_t US_INACK        = ((unsigned int) 0x1 << 20); //  (USART) Inhibit Non Acknowledge
+    static const    uint32_t US_DSNACK       = ((unsigned int) 0x1 << 21); //  (USART) Disable Successive NACK
+    static const    uint32_t US_MAX_ITER     = ((unsigned int) 0x1 << 24); //  (USART) Number of Repetitions
+    static const    uint32_t US_FILTER       = ((unsigned int) 0x1 << 28); //  (USART) Receive Line Filter
+    static const    uint32_t US_PAR          = (0x7 <<  9); // = (DBGU); Parity type
+    static const    uint32_t     US_PAR_EVEN                 = (0x0 <<  9); // = (DBGU); Even Parity
+    static const    uint32_t     US_PAR_ODD                  = (0x1 <<  9); // = (DBGU); Odd Parity
+    static const    uint32_t     US_PAR_SPACE                = (0x2 <<  9); // = (DBGU); Parity forced to 0 = (Space);
+    static const    uint32_t     US_PAR_MARK                 = (0x3 <<  9); // = (DBGU); Parity forced to 1 = (Mark);
+    static const    uint32_t     US_PAR_NONE                 = (0x4 <<  9); // = (DBGU); No Parity
+    static const    uint32_t     US_PAR_MULTI_DROP           = (0x6 <<  9); // = (DBGU); Multi-drop mode
+    static const    uint32_t US_CHMODE       = (0x3 << 14); // = (DBGU); Channel Mode
+    static const    uint32_t     US_CHMODE_NORMAL               = (0x0UL << 14); // = (DBGU); Normal Mode: The USART channel operates as an RX/TX USART.
+    static const    uint32_t     US_CHMODE_AUTO                 = (0x1UL << 14); // = (DBGU); Automatic Echo: Receiver Data Input is connected to the TXD pin.
+    static const    uint32_t     US_CHMODE_LOCAL                = (0x2UL << 14); // = (DBGU); Local Loopback: Transmitter Output Signal is connected to Receiver Input Signal.
+    static const    uint32_t     US_CHMODE_REMOTE               = (0x3UL << 14); // = (DBGU); Remote Loopback: RXD pin is internally connected to TXD pin.
 
     /****/ volatile uint32_t US_IER;         // Interrupt Enable Register
-    static const    uint32_t US_RXBRK = ((unsigned int)0x1 << 2); //  (USART) Break Received/End of Break
-    static const    uint32_t US_TIMEOUT = ((unsigned int)0x1 << 8); //  (USART) Receiver Time-out
-    static const    uint32_t US_ITERATION = ((unsigned int)0x1 << 10); //  (USART) Max number of Repetitions Reached
-    static const    uint32_t US_NACK = ((unsigned int)0x1 << 13); //  (USART) Non Acknowledge
-    static const    uint32_t US_RIIC = ((unsigned int)0x1 << 16); //  (USART) Ring INdicator Input Change Flag
-    static const    uint32_t US_DSRIC = ((unsigned int)0x1 << 17); //  (USART) Data Set Ready Input Change Flag
-    static const    uint32_t US_DCDIC = ((unsigned int)0x1 << 18); //  (USART) Data Carrier Flag
-    static const    uint32_t US_CTSIC = ((unsigned int)0x1 << 19); //  (USART) Clear To Send Input Change Flag
-    static const    uint32_t US_RXRDY = (0x1 << 0); // = (DBGU); RXRDY Interrupt
-    static const    uint32_t US_TXRDY = (0x1 << 1); // = (DBGU); TXRDY Interrupt
-    static const    uint32_t US_ENDRX = (0x1 << 3); // = (DBGU); End of Receive Transfer Interrupt
-    static const    uint32_t US_ENDTX = (0x1 << 4); // = (DBGU); End of Transmit Interrupt
-    static const    uint32_t US_OVRE = (0x1 << 5); // = (DBGU); Overrun Interrupt
-    static const    uint32_t US_FRAME = (0x1 << 6); // = (DBGU); Framing Error Interrupt
-    static const    uint32_t US_PARE = (0x1 << 7); // = (DBGU); Parity Error Interrupt
-    static const    uint32_t US_TXEMPTY = (0x1 << 9); // = (DBGU); TXEMPTY Interrupt
-    static const    uint32_t US_TXBUFE = (0x1 << 11); // = (DBGU); TXBUFE Interrupt
-    static const    uint32_t US_RXBUFF = (0x1 << 12); // = (DBGU); RXBUFF Interrupt
-    static const    uint32_t US_COMM_TX = (0x1 << 30); // = (DBGU); COMM_TX Interrupt
-    static const    uint32_t US_COMM_RX = ((uint32_t)0x1 << 31); // = (DBGU); COMM_RX Interrupt
+    static const    uint32_t US_RXBRK        = ((unsigned int) 0x1 <<  2); //  (USART) Break Received/End of Break
+    static const    uint32_t US_TIMEOUT      = ((unsigned int) 0x1 <<  8); //  (USART) Receiver Time-out
+    static const    uint32_t US_ITERATION    = ((unsigned int) 0x1 << 10); //  (USART) Max number of Repetitions Reached
+    static const    uint32_t US_NACK         = ((unsigned int) 0x1 << 13); //  (USART) Non Acknowledge
+    static const    uint32_t US_RIIC         = ((unsigned int) 0x1 << 16); //  (USART) Ring INdicator Input Change Flag
+    static const    uint32_t US_DSRIC        = ((unsigned int) 0x1 << 17); //  (USART) Data Set Ready Input Change Flag
+    static const    uint32_t US_DCDIC        = ((unsigned int) 0x1 << 18); //  (USART) Data Carrier Flag
+    static const    uint32_t US_CTSIC        = ((unsigned int) 0x1 << 19); //  (USART) Clear To Send Input Change Flag
+    static const    uint32_t US_RXRDY        = (0x1UL <<  0); // = (DBGU); RXRDY Interrupt
+    static const    uint32_t US_TXRDY        = (0x1UL <<  1); // = (DBGU); TXRDY Interrupt
+    static const    uint32_t US_ENDRX        = (0x1UL <<  3); // = (DBGU); End of Receive Transfer Interrupt
+    static const    uint32_t US_ENDTX        = (0x1UL <<  4); // = (DBGU); End of Transmit Interrupt
+    static const    uint32_t US_OVRE         = (0x1UL <<  5); // = (DBGU); Overrun Interrupt
+    static const    uint32_t US_FRAME        = (0x1UL <<  6); // = (DBGU); Framing Error Interrupt
+    static const    uint32_t US_PARE         = (0x1UL <<  7); // = (DBGU); Parity Error Interrupt
+    static const    uint32_t US_TXEMPTY      = (0x1UL <<  9); // = (DBGU); TXEMPTY Interrupt
+    static const    uint32_t US_TXBUFE       = (0x1UL << 11); // = (DBGU); TXBUFE Interrupt
+    static const    uint32_t US_RXBUFF       = (0x1UL << 12); // = (DBGU); RXBUFF Interrupt
+    static const    uint32_t US_COMM_TX      = (0x1UL << 30); // = (DBGU); COMM_TX Interrupt
+    static const    uint32_t US_COMM_RX      = (0x1UL << 31); // = (DBGU); COMM_RX Interrupt
 
     /****/ volatile uint32_t US_IDR;         // Interrupt Disable Register
 
     /****/ volatile uint32_t US_IMR;         // Interrupt Mask Register
 
     /****/ volatile uint32_t US_CSR;         // Channel Status Register
-    static const    uint32_t US_RI = ((unsigned int)0x1 << 20); //  (USART) Image of RI Input
-    static const    uint32_t US_DSR = ((unsigned int)0x1 << 21); //  (USART) Image of DSR Input
-    static const    uint32_t US_DCD = ((unsigned int)0x1 << 22); //  (USART) Image of DCD Input
-    static const    uint32_t US_CTS = ((unsigned int)0x1 << 23); //  (USART) Image of CTS Input
+    static const    uint32_t US_RI           = ((unsigned int) 0x1 << 20); //  (USART) Image of RI Input
+    static const    uint32_t US_DSR          = ((unsigned int) 0x1 << 21); //  (USART) Image of DSR Input
+    static const    uint32_t US_DCD          = ((unsigned int) 0x1 << 22); //  (USART) Image of DCD Input
+    static const    uint32_t US_CTS          = ((unsigned int) 0x1 << 23); //  (USART) Image of CTS Input
 
     /****/ volatile uint32_t US_RHR;         // Receiver Holding Register
 
@@ -768,16 +770,16 @@ struct AT91_USART {
 
     /****/ volatile uint32_t US_TTGR;        // Transmitter Time-guard Register
 
-    /****/ volatile uint32_t Reserved0[5];   //
+    /****/ volatile uint32_t Reserved0[5];   // 
 
     /****/ volatile uint32_t US_FIDI;        // FI_DI_Ratio Register
 
     /****/ volatile uint32_t US_NER;         // Nb Errors Register
 
-    /****/ volatile uint32_t Reserved1[1];   //
+    /****/ volatile uint32_t Reserved1[1];   // 
 
     /****/ volatile uint32_t US_IF;          // IRDA_FILTER Register
-
+    
 #if defined(PLATFORM_ARM_SAM9RL64_ANY)
 
     /****/ volatile uint32_t US_MAN;          // Manchester Encoder Decoder Register
@@ -1364,15 +1366,8 @@ struct AT91
     static AT91_TC      & TIMER(int sel) { return *(AT91_TC*)(size_t)(AT91_TC::c_Base + (sel * 0x40)); }
     static AT91_WATCHDOG& WTDG() { return *(AT91_WATCHDOG*)(size_t)(AT91_WATCHDOG::c_Base); }
     //***************************************************************************************************************************************************************************************************************
-    static AT91_USART   & USART(int sel)
-    {
-        if (sel == 0)
-            return *(AT91_USART*)(size_t)(AT91_USART::c_Base_dbg);
-        else if ((sel > 0) && (sel < 4))
-            return *(AT91_USART   *)(size_t)(AT91_USART::c_Base_usart + ((sel - 1) * 0x4000));
-        else
-            return *(AT91_USART   *)(size_t)(AT91_USART::c_Base_uart + ((sel - 4) * 0x4000));
-    }
+     static AT91_USART   & USART( int sel )  { if( sel == 0) return *(AT91_USART   *)(size_t)(AT91_USART::c_Base_dbg);
+                                                  else      return *(AT91_USART   *)(size_t)(AT91_USART::c_Base + ((sel - 1) * 0x4000));                        }
     //***************************************************************************************************************************************************************************************************************
     // static AT91_UDP     & UDP()             { return *(AT91_UDP     *)(size_t)(AT91_UDP     ::c_Base                                      ); }
 

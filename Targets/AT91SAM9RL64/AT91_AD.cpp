@@ -73,8 +73,9 @@ TinyCLR_Result AT91_Adc_Acquire(const TinyCLR_Adc_Provider *self) {
         return TinyCLR_Result::ArgumentNull;
 
     AT91_PMC &pmc = AT91::PMC();
-    pmc.EnablePeriphClock(AT91C_ID_ADC);
-    pmc.EnablePeriphClock(AT91C_ID_PIOA_PIOB);
+    pmc.EnablePeriphClock(AT91C_ID_TSADCC);
+    pmc.EnablePeriphClock(AT91C_ID_PIOA);
+    pmc.EnablePeriphClock(AT91C_ID_PIOB);
 
     return TinyCLR_Result::Success;
 }

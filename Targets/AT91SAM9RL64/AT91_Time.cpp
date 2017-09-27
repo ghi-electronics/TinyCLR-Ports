@@ -62,7 +62,7 @@ struct AT91_TIMER_Driver {
         if (!(Timer < AT91_TIMER_Driver::c_MaxTimer))
             return;
 
-        AT91_Interrupt_ForceInterrupt(AT91C_ID_TC0_TC1);
+        AT91_Interrupt_ForceInterrupt(AT91C_ID_TC0);
     }
 
     static void SetCompare(uint32_t Timer, uint32_t Compare)  // Change to 32 bit TC
@@ -122,7 +122,7 @@ bool AT91_TIMER_Driver::Initialize(uint32_t timer, bool freeRunning, uint32_t cl
     //--//
 
     if (ISR) {
-        if (!AT91_Interrupt_Activate(AT91C_ID_TC0_TC1, (uint32_t*)&ISR_TIMER, (void*)timer))
+        if (!AT91_Interrupt_Activate(AT91C_ID_TC0, (uint32_t*)&ISR_TIMER, (void*)timer))
             return false;
     }
 
@@ -176,7 +176,7 @@ bool AT91_TIMER_Driver::Uninitialize(uint32_t timer) {
 
     // First, enable the clock of the TIMER
     // Todo clock API - PMC
-    *((volatile int*)(AT91C_BASE_PMC + 0x014)) = (1 << AT91C_ID_TC0_TC1);
+    *((volatile int*)(AT91C_BASE_PMC + 0x014)) = (1 << AT91C_ID_TC0);
 
     g_AT91_TIMER_Driver.m_descriptors[timer].configured = false;
 

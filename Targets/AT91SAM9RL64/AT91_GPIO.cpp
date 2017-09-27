@@ -469,6 +469,8 @@ void AT91_Gpio_Reset() {
         AT91_Gpio_SetDebounceTimeout(&gpioProvider, pin, AT91_Gpio_DebounceDefaultMilisecond);
     }
 
-    AT91_Interrupt_Activate(AT91C_ID_PIOA_PIOB, (uint32_t*)&AT91_Gpio_InterruptHandler, nullptr);
-    AT91_Interrupt_Activate(AT91C_ID_PIOC_PIOD, (uint32_t*)&AT91_Gpio_InterruptHandler, nullptr);
+    AT91_Interrupt_Activate(AT91C_ID_PIOA, (uint32_t*)&AT91_Gpio_InterruptHandler, nullptr);
+	AT91_Interrupt_Activate(AT91C_ID_PIOB, (uint32_t*)&AT91_Gpio_InterruptHandler, nullptr);
+	AT91_Interrupt_Activate(AT91C_ID_PIOC, (uint32_t*)&AT91_Gpio_InterruptHandler, nullptr);
+    AT91_Interrupt_Activate(AT91C_ID_PIOD, (uint32_t*)&AT91_Gpio_InterruptHandler, nullptr);
 }

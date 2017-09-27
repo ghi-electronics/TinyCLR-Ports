@@ -2239,16 +2239,16 @@ uint32_t USB_ReadEP(uint32_t EPNum, uint8_t *pData, uint32_t len);
 void ConfigEndPoint();
 
 __inline void AT91_PMC_EnableUSBClock(void) {
-    (*(volatile uint32_t *)0xFFFFFC10) = 1 << AT91C_ID_UDPHS;
+    (*(volatile uint32_t *)0xFFFFFC10) = 1 << AT91C_ID_UDP;
     (*(volatile uint32_t *)0xFFFFFC1C) |= AT91C_CKGR_UPLLEN_ENABLED;
-    (*(volatile uint32_t *)0xF803C0E0) |= 3; // Full Speed
+    (*(volatile uint32_t *)(AT91C_BASE_UDP + 0xE0)) |= 3; // Full Speed
 }
 
 __inline void AT91_PMC_EnableUTMIBIAS(void) {
     // TO DO
 }
 __inline void AT91_PMC_DisableUSBClock(void) {
-    (*(volatile uint32_t *)0xFFFFFC14) = 1 << AT91C_ID_UDPHS;
+    (*(volatile uint32_t *)0xFFFFFC14) = 1 << AT91C_ID_UDP;
     (*(volatile uint32_t *)0xFFFFFC1C) &= ~AT91C_CKGR_UPLLEN_ENABLED;
 }
 
@@ -2596,7 +2596,7 @@ bool AT91_USBHS_Driver::Initialize(int Controller) {
     AT91_PMC_EnableUTMIBIAS();
 
     // Enable the interrupt for  UDP
-    AT91_Interrupt_Activate(AT91C_ID_UDPHS, (uint32_t*)&AT91_UsbClent_InterruptHandler, nullptr);
+    AT91_Interrupt_Activate(AT91C_ID_UDP, (uint32_t*)&AT91_UsbClent_InterruptHandler, nullptr);
 
     pUdp->UDPHS_IEN |= AT91C_UDPHS_EPT_INT_0;
     pEp->UDPHS_EPTCFG |= 0x00000043; //configuration info for control ep
@@ -2645,7 +2645,7 @@ bool AT91_USBHS_Driver::Uninitialize(int Controller) {
 
     ProtectPins(Controller, true);
 
-    AT91_Interrupt_Deactivate(AT91C_ID_UDPHS);
+    AT91_Interrupt_Deactivate(AT91C_ID_UDP);
 
     g_AT91_USBHS_Driver.pUsbControllerState = nullptr;
 
@@ -3024,7 +3024,7 @@ bool AT91_UsbClient_Uninitialize(int controller) {
 }
 
 bool AT91_UsbClient_SoftReset(int controller) {
-    return AT91_Interrupt_Activate(AT91C_ID_UDPHS, (uint32_t*)&AT91_USBHS_Driver::AT91_UsbClent_InterruptHandler, nullptr);;
+    return AT91_Interrupt_Activate(AT91C_ID_UDP, (uint32_t*)&AT91_USBHS_Driver::AT91_UsbClent_InterruptHandler, nullptr);;
 }
 bool AT91_UsbClient_StartOutput(USB_CONTROLLER_STATE* State, int ep) {
     return AT91_USBHS_Driver::StartOutput(State, ep);

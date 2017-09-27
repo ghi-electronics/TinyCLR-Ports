@@ -341,10 +341,6 @@ TinyCLR_Result AT91_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
     case 0:
         pmc.EnablePeriphClock(AT91C_ID_SPI0);
         break;
-
-    case 1:
-        pmc.EnablePeriphClock(AT91C_ID_SPI1);
-        break;
     }
 
     return TinyCLR_Result::Success;
@@ -368,11 +364,6 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Provider* self) {
     case 0:
 
         break;
-
-    case 1:
-        pmc.DisablePeriphClock(AT91C_ID_SPI1);
-        break;
-
     }
 
     return TinyCLR_Result::Success;

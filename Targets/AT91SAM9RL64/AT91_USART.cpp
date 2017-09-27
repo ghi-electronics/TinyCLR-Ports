@@ -228,10 +228,10 @@ int32_t AT91_Uart_GetPeripheralId(int32_t portNum) {
         usartId = (AT91C_ID_SYS);
     }
     else if ((portNum > 0) && (portNum < 4)) {
-        usartId = (AT91C_ID_USART0 + (portNum - 1));
+        usartId = (AT91C_ID_US0 + (portNum - 1));
     }
     else {
-        usartId = (AT91C_ID_UART0 + (portNum - 4));
+        usartId = (AT91C_ID_US0 + (portNum - 4));
     }
 
     return usartId;

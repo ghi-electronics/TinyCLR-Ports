@@ -339,7 +339,7 @@ TinyCLR_Result AT91_Pwm_Acquire(const TinyCLR_Pwm_Provider* self) {
     AT91_Pwm_ResetController(self->Index);
 
     AT91_PMC &pmc = AT91::PMC();
-    pmc.EnablePeriphClock(AT91C_ID_PWM);
+    pmc.EnablePeriphClock(AT91C_ID_PWMC);
 
     if (PWM_MODE_REGISTER != PWM_MODE_REGISTER & 0x100) // Checks if clock has been set
         PWM_MODE_REGISTER = (1 << 16);
