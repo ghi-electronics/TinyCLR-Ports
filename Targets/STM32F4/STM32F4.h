@@ -263,8 +263,8 @@ enum class STM32F4_Gpio_PortMode : uint8_t {
 enum class STM32F4_Gpio_OutputSpeed : uint8_t {
     Low = 0,
     Medium = 1,
-    Fast = 2,
-    High = 3
+    High = 2,
+    VeryHigh = 3
 };
 
 enum class STM32F4_Gpio_AlternateFunction : uint8_t {
@@ -312,9 +312,9 @@ struct STM32F4_Gpio_PinConfiguration {
 
 #define INIT(portMode, outputType, outputSpeed, outputDirection, pullDirection, alternateFunction) { STM32F4_Gpio_PortMode::portMode, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::pullDirection, STM32F4_Gpio_AlternateFunction::alternateFunction, outputDirection }
 #define ALTFUN(outputType, outputSpeed, pullDirection, alternateFunction) INIT(AlternateFunction, outputType, outputSpeed, false, pullDirection, alternateFunction)
-#define ANALOG() INIT(Analog, PushPull, High, false, None, AF0)
+#define ANALOG() INIT(Analog, PushPull, VeryHigh, false, None, AF0)
 #define OUTPUT(outputType, outputSpeed, outputDirection, pullDirection) INIT(GeneralPurposeOutput, outputType, outputSpeed, outputDirection, pullDirection, AF0)
-#define INPUT(pullDirection) INIT(Input, PushPull, High, false, pullDirection, AF0)
+#define INPUT(pullDirection) INIT(Input, PushPull, VeryHigh, false, pullDirection, AF0)
 
 bool STM32F4_GpioInternal_OpenPin(int32_t pin);
 bool STM32F4_GpioInternal_ClosePin(int32_t pin);

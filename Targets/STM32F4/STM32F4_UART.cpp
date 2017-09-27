@@ -346,15 +346,15 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
     auto& cts = g_STM32F4_Uart_Cts_Pins[portNum];
     auto& rts = g_STM32F4_Uart_Rts_Pins[portNum];
 
-    STM32F4_GpioInternal_ConfigurePin(rx.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, rx.alternateFunction);
-    STM32F4_GpioInternal_ConfigurePin(tx.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, tx.alternateFunction);
+    STM32F4_GpioInternal_ConfigurePin(rx.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::PullUp, rx.alternateFunction);
+    STM32F4_GpioInternal_ConfigurePin(tx.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, tx.alternateFunction);
 
     if (handshaking == TinyCLR_Uart_Handshake::RequestToSend) {
         if (!STM32F4_GpioInternal_OpenPin(cts.number) || !STM32F4_GpioInternal_OpenPin(rts.number))
             return TinyCLR_Result::SharingViolation;
 
-        STM32F4_GpioInternal_ConfigurePin(cts.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, cts.alternateFunction);
-        STM32F4_GpioInternal_ConfigurePin(rts.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, rts.alternateFunction);
+        STM32F4_GpioInternal_ConfigurePin(cts.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, cts.alternateFunction);
+        STM32F4_GpioInternal_ConfigurePin(rts.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, rts.alternateFunction);
     }
 
     switch (portNum) {

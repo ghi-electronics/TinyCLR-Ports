@@ -75,7 +75,7 @@ TinyCLR_Result STM32F4_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int3
     RCC->APB1ENR |= RCC_APB1ENR_DACEN;
 
     // set pin as analog
-    STM32F4_GpioInternal_ConfigurePin(STM32F4_DAC_FIRST_PIN + channel, STM32F4_Gpio_PortMode::Analog, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
+    STM32F4_GpioInternal_ConfigurePin(STM32F4_DAC_FIRST_PIN + channel, STM32F4_Gpio_PortMode::Analog, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
 
     if (channel) {
         DAC->CR |= DAC_CR_EN2; // enable channel 2
