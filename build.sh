@@ -168,11 +168,14 @@ if [ $DoBuild = "1" ]; then
 		popd > /dev/null 
 	done
 	"$GccDirectory/bin/arm-none-eabi-g++" -mcpu=$MCpu -mlittle-endian -nostartfiles $FloatCompileArguments -Xlinker $AdditionalCompilerArguments -L "$GccLibrary" -Wl,-static,--gc-sections,--no-wchar-size-warning,-Map="$OutputDirectory/$DeviceName Firmware.map" -specs="$GccLibrary/nano.specs" -T"$ScriptRoot/Devices/$DeviceName/Scatterfile.gcc.ldf" "$OutputDirectory/"*.obj "$CoreLibraryFile" -o "$OutputDirectory/$DeviceName Firmware.axf"
-    "$GccDirectory/bin/arm-none-eabi-objcopy" -S -j ER_FLASH -j ER_RAM_RO -j ER_RAM_RW -O binary "$OutputDirectory/$DeviceName Firmware.axf" "$OutputDirectory/$DeviceName Firmware.bin"
-    "$GccDirectory/bin/arm-none-eabi-objcopy" -S -R ER_DAT -R ER_CONFIG -O ihex "$OutputDirectory/$DeviceName Firmware.axf" "$OutputDirectory/$DeviceName Firmware.hex"
+	"$GccDirectory/bin/arm-none-eabi-objcopy" -S -j ER_FLASH -j ER_RAM_RO -j ER_RAM_RW -O binary "$OutputDirectory/$DeviceName Firmware.axf" "$OutputDirectory/$DeviceName Firmware.bin"
+	"$GccDirectory/bin/arm-none-eabi-objcopy" -S -R ER_DAT -R ER_CONFIG -O ihex "$OutputDirectory/$DeviceName Firmware.axf" "$OutputDirectory/$DeviceName Firmware.hex"
 	
-	# TODO : include tools to make .ghi or .glb files
-	if [ ! -z $ImageGenParameters ]; then $ScriptRoot/imagen; fi
+	if [ ! -z "$ImageGenParameters" ]; then
+		FullPath="$OutputDirectory/$DeviceName Firmware.bin"
+		RelativePath=".${FullPath/$ScriptRoot}"
+		"$ScriptRoot/imagegen.exe" $ImageGenParameters "$RelativePath"
+	fi
 fi
 
 echo "Done"
