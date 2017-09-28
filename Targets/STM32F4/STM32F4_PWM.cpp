@@ -268,7 +268,7 @@ TinyCLR_Result STM32F4_Pwm_EnablePin(const TinyCLR_Pwm_Provider* self, int32_t p
 
     auto actualPin = STM32F4_Pwm_GetGpioPinForChannel(self, pin);
 
-    STM32F4_GpioInternal_ConfigurePin(actualPin->number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, actualPin->alternateFunction);
+    STM32F4_GpioInternal_ConfigurePin(actualPin->number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, actualPin->alternateFunction);
 
     uint16_t enBit = TIM_CCER_CC1E << (4 * pin);
 
@@ -294,7 +294,7 @@ TinyCLR_Result STM32F4_Pwm_DisablePin(const TinyCLR_Pwm_Provider* self, int32_t 
     ccer &= ~(TIM_CCER_CC1E << (4 * pin));
     treg->CCER = ccer; // disable output
 
-    STM32F4_GpioInternal_ConfigurePin(actualPin->number, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
+    STM32F4_GpioInternal_ConfigurePin(actualPin->number, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
 
     if ((ccer & (TIM_CCER_CC1E | TIM_CCER_CC2E | TIM_CCER_CC3E | TIM_CCER_CC4E)) == 0) { // idle
         treg->CR1 &= ~TIM_CR1_CEN; // stop timer

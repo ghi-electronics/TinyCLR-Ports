@@ -447,6 +447,7 @@ struct AT91_Gpio_PinConfiguration {
     AT91_Gpio_Schmitt schmitt;
     AT91_Gpio_DriveSpeed speed;
     AT91_Gpio_PeripheralSelection peripheralSelection;
+    bool apply;
 };
 
 #define PIN(port, pin) ((CHARIZE(port) - 'A') * 32 + pin)
@@ -454,9 +455,10 @@ struct AT91_Gpio_PinConfiguration {
 #define PS(num) (CONCAT(AT91_Gpio_PeripheralSelection::Peripheral, num))
 #define PS_NONE AT91_Gpio_PeripheralSelection::None
 
-#define INIT(pinDirection, resistorMode, peripheralSelection) { AT91_Gpio_Direction::pinDirection, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable,  AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::peripheralSelection }
-#define ALTFUN(direction, resistorMode, peripheralSelection) { AT91_Gpio_Direction::direction, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable,  AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::peripheralSelection }
-#define INPUT(resistorMode) { AT91_Gpio_Direction::Input, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable, AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::None }
+#define INIT(pinDirection, resistorMode, peripheralSelection, apply) { AT91_Gpio_Direction::pinDirection, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable,  AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::peripheralSelection, apply }
+#define ALTFUN(direction, resistorMode, peripheralSelection) { AT91_Gpio_Direction::direction, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable,  AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::peripheralSelection, true }
+#define INPUT(resistorMode) { AT91_Gpio_Direction::Input, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable, AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::None, true }
+#define DEFAULT() { AT91_Gpio_Direction::Input, AT91_Gpio_ResistorMode::Inactive, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable, AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::None, false }
 
 void AT91_Gpio_Reset();
 const TinyCLR_Api_Info* AT91_Gpio_GetApi();
@@ -522,7 +524,7 @@ struct PwmController {
     uint32_t                        *dutyCycleReg;
     uint32_t                        *channelUpdateReg;
 
-    AT91_Gpio_Pin                   gpioPin[MAX_PWM_PER_CONTROLLER];   
+    AT91_Gpio_Pin                   gpioPin[MAX_PWM_PER_CONTROLLER];
 
     bool                            invert[MAX_PWM_PER_CONTROLLER];
     double                          frequency;

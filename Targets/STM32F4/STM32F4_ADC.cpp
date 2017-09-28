@@ -134,7 +134,7 @@ TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int3
 
             // set pin as analog input if channel is not one of the internally connected
             if (chNum <= 15) {
-                STM32F4_GpioInternal_ConfigurePin(STM32F4_Adc_GetPinForChannel(channel), STM32F4_Gpio_PortMode::Analog, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
+                STM32F4_GpioInternal_ConfigurePin(STM32F4_Adc_GetPinForChannel(channel), STM32F4_Gpio_PortMode::Analog, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
                 return TinyCLR_Result::Success;
             }
         }

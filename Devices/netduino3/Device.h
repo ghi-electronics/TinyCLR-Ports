@@ -52,12 +52,12 @@
 #define INCLUDE_DAC
 
 #define INCLUDE_GPIO
-#define STM32F4_GPIO_PINS {/*      0                              1                              2                              3                              4                              5                              6                              7                              8                              9                              10                             11                             12                             13                             14                             15                          */\
-                           /*PAx*/ INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp),\
-                           /*PBx*/ INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp),\
-                           /*PCx*/ INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp),\
-                           /*PDx*/ INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp),\
-                           /*PEx*/ INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp), INPUT(PushPull, High, PullUp),\
+#define STM32F4_GPIO_PINS {/*      0          1          2          3          4          5          6          7          8          9          10         11         12         13         14         15      */\
+                           /*PAx*/ DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(),\
+                           /*PBx*/ DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(),\
+                           /*PCx*/ DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(),\
+                           /*PDx*/ DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(),\
+                           /*PEx*/ DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(),\
                           }
 
 #define INCLUDE_I2C
@@ -90,10 +90,11 @@
 #define INCLUDE_UART
 #define STM32F4_UART_TX_BUFFER_SIZE 256
 #define STM32F4_UART_RX_BUFFER_SIZE 512
-#define STM32F4_UART_TX_PINS  { { PIN(A,  9), AF(7)   }, { PIN(D, 5), AF(7) }, { PIN(D,  8), AF(7) }, { PIN(A, 0), AF(8)   } }
-#define STM32F4_UART_RX_PINS  { { PIN(A, 10), AF(7)   }, { PIN(D, 6), AF(7) }, { PIN(D,  9), AF(7) }, { PIN(A, 1), AF(8)   } }
-#define STM32F4_UART_CTS_PINS { { PIN_NONE  , AF_NONE }, { PIN(D, 3), AF(7) }, { PIN(D, 11), AF(7) }, { PIN_NONE , AF_NONE } }
-#define STM32F4_UART_RTS_PINS { { PIN_NONE  , AF_NONE }, { PIN(D, 4), AF(7) }, { PIN(D, 12), AF(7) }, { PIN_NONE , AF_NONE } }
+//                              {     USART1          }, {     USART2         }, {  USART3 - GOPORT1  }, {      UART4         }, {     UART5 - NC     }, {      USART6        }, {   UART7 - GOPORT2  }, {   UART8 - GOPORT3  }
+#define STM32F4_UART_TX_PINS  { { PIN(B,  6), AF(7)   }, { PIN(A,  2), AF(7)  }, { PIN(D,  8), AF(8)  }, { PIN(A, 0), AF(8)   }, { PIN_NONE , AF_NONE }, { PIN(C, 6), AF(8)   }, { PIN(E, 8), AF(8)   }, { PIN(E, 1), AF(8)   } }
+#define STM32F4_UART_RX_PINS  { { PIN(B,  7), AF(7)   }, { PIN(A,  3), AF(7)  }, { PIN(D,  9), AF(8)  }, { PIN(A, 1), AF(8)   }, { PIN_NONE , AF_NONE }, { PIN(C, 7), AF(8)   }, { PIN(E, 7), AF(8)   }, { PIN(E, 0), AF(8)   } }
+#define STM32F4_UART_CTS_PINS { { PIN_NONE  , AF_NONE }, { PIN(A,  0), AF(7)  }, { PIN_NONE , AF_NONE }, { PIN_NONE , AF_NONE }, { PIN_NONE , AF_NONE }, { PIN_NONE , AF_NONE }, { PIN_NONE , AF_NONE }, { PIN_NONE , AF_NONE } }
+#define STM32F4_UART_RTS_PINS { { PIN_NONE  , AF_NONE }, { PIN(A,  1), AF(7)  }, { PIN_NONE , AF_NONE }, { PIN_NONE , AF_NONE }, { PIN_NONE , AF_NONE }, { PIN_NONE , AF_NONE }, { PIN_NONE , AF_NONE }, { PIN_NONE , AF_NONE } }
 
 #define INCLUDE_USBCLIENT
 #define STM32F4_USB_QUEUE_SIZE 16
