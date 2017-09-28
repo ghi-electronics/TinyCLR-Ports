@@ -65,14 +65,14 @@
 
 #define INCLUDE_PWM
 #define MAX_PWM_PER_CONTROLLER 1
-#define TOTAL_PWM_CONTROLLER 4
-#define AT91_PWM_PINS { { { PIN(C,18), PS(C) } }, { { PIN(C,19), PS(C) } }, { { PIN(C,20), PS(C) } }, { { PIN(C,21), PS(C) } } }
+#define TOTAL_PWM_CONTROLLER 3
+#define AT91_PWM_PINS { { { PIN(D,14), PS(B) } }, { { PIN(D,15), PS(B) } }, { { PIN(D,16), PS(B) } } }
 
 #define INCLUDE_SPI
-#define TOTAL_SPI_CONTROLLERS 2
-#define AT91_SPI_MISO_PINS { { PIN(A,11), PS(A) }, { PIN(A,21), PS(B) } }
-#define AT91_SPI_MOSI_PINS { { PIN(A,12), PS(A) }, { PIN(A,22), PS(B) } }
-#define AT91_SPI_SCLK_PINS { { PIN(A,13), PS(A) }, { PIN(A,13), PS(B) } }
+#define TOTAL_SPI_CONTROLLERS 1
+#define AT91_SPI_MISO_PINS { { PIN(A,25), PS(A) } }
+#define AT91_SPI_MOSI_PINS { { PIN(A,26), PS(A) } }
+#define AT91_SPI_SCLK_PINS { { PIN(A,27), PS(A) } }
 
 #define INCLUDE_UART
 #define TOTAL_UART_CONTROLLERS 4
