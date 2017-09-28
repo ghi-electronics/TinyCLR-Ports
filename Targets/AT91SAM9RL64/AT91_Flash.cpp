@@ -46,7 +46,7 @@
 #define FLASH_BLOCK_SIZE                        (528 * 8)
 
 //SPI config
-#define SPI_CS                                   PIN(A,14)
+#define SPI_CS                                   PIN(A,28)
 #define SPI_CLOCK_RATE_HZ                        20000000
 #define SPI_MODULE                               0// SPI0
 
