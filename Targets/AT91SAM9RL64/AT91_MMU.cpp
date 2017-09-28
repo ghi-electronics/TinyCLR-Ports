@@ -195,7 +195,7 @@ extern "C" {
 
 }
 
-static const uint32_t c_Bootstrap_Register_Begin = 0xF0000000;//0xFFF00000;
+static const uint32_t c_Bootstrap_Register_Begin = 0xFFF00000;
 static const uint32_t c_Bootstrap_Register_End = 0xFFFFFFFF;
 static const uint32_t c_Bootstrap_SDRAM_Begin = SDRAM_MEMORY_BASE;
 static const uint32_t c_Bootstrap_SDRAM_End = SDRAM_MEMORY_BASE + SDRAM_MEMORY_SIZE - ARM9_MMU::c_TTB_size;
