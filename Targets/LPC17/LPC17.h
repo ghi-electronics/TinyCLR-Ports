@@ -113,6 +113,7 @@ struct LPC17_Gpio_PinConfiguration {
     LPC17_Gpio_SlewRate slewRate;
     LPC17_Gpio_OutputType outputType;
     LPC17_Gpio_PinFunction pinFunction;
+    bool apply;
 };
 
 #define PIN(port, pin) (port * 32 + pin)
@@ -120,9 +121,10 @@ struct LPC17_Gpio_PinConfiguration {
 #define PF(num) (CONCAT(LPC17_Gpio_PinFunction::PinFunction, num))
 #define PF_NONE LPC17_Gpio_PinFunction::PinFunction0
 
-#define INIT(direction, resistorMode, hysteresis, inputPolarity, slewRate, outputType, pinFunction) { LPC17_Gpio_Direction::direction, LPC17_Gpio_ResistorMode::resistorMode, LPC17_Gpio_Hysteresis::hysteresis, LPC17_Gpio_InputPolarity::inputPolarity, LPC17_Gpio_SlewRate::slewRate, LPC17_Gpio_OutputType::outputType,LPC17_Gpio_PinFunction::pinFunction }
-#define ALTFUN(direction, resistorMode, outputType, pinFunction) { LPC17_Gpio_Direction::direction, LPC17_Gpio_ResistorMode::resistorMode, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::outputType,LPC17_Gpio_PinFunction::pinFunction }
-#define INPUT(outputType, resistorMode) { LPC17_Gpio_Direction::Input, LPC17_Gpio_ResistorMode::resistorMode, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::outputType,LPC17_Gpio_PinFunction::PinFunction0 }
+#define INIT(direction, resistorMode, hysteresis, inputPolarity, slewRate, outputType, pinFunction, apply) { LPC17_Gpio_Direction::direction, LPC17_Gpio_ResistorMode::resistorMode, LPC17_Gpio_Hysteresis::hysteresis, LPC17_Gpio_InputPolarity::inputPolarity, LPC17_Gpio_SlewRate::slewRate, LPC17_Gpio_OutputType::outputType,LPC17_Gpio_PinFunction::pinFunction, apply }
+#define ALTFUN(direction, resistorMode, outputType, pinFunction) { LPC17_Gpio_Direction::direction, LPC17_Gpio_ResistorMode::resistorMode, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::outputType,LPC17_Gpio_PinFunction::pinFunction, true }
+#define INPUT(outputType, resistorMode) { LPC17_Gpio_Direction::Input, LPC17_Gpio_ResistorMode::resistorMode, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::outputType,LPC17_Gpio_PinFunction::PinFunction0, true }
+#define DEFAULT() { LPC17_Gpio_Direction::Input, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull, LPC17_Gpio_PinFunction::PinFunction0, false }
 
 void LPC17_Gpio_Reset();
 const TinyCLR_Api_Info* LPC17_Gpio_GetApi();
@@ -147,7 +149,7 @@ bool LPC17_Gpio_ConfigurePin(int32_t pin, LPC17_Gpio_Direction pinDir, LPC17_Gpi
 void LPC17_Gpio_EnableOutputPin(int32_t pin, bool initialState);
 void LPC17_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
 
-struct PwmController {    
+struct PwmController {
     int32_t                         channel[MAX_PWM_PER_CONTROLLER];
     int32_t                         match[MAX_PWM_PER_CONTROLLER];
     LPC17_Gpio_Pin                  gpioPin[MAX_PWM_PER_CONTROLLER];

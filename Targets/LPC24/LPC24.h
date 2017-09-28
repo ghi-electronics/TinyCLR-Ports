@@ -134,7 +134,8 @@ struct LPC24_Gpio_Pin {
 struct LPC24_Gpio_PinConfiguration {
     LPC24_Gpio_Direction pinDirection;
     LPC24_Gpio_PinMode pinMode;
-    LPC24_Gpio_PinFunction pinFunction;    
+    LPC24_Gpio_PinFunction pinFunction;
+    bool apply;
 };
 
 #define PIN(port, pin) (port * 32 + pin)
@@ -142,9 +143,10 @@ struct LPC24_Gpio_PinConfiguration {
 #define PF(num) (CONCAT(LPC24_Gpio_PinFunction::PinFunction, num))
 #define PF_NONE LPC24_Gpio_PinFunction::PinFunction0
 
-#define INIT(direction, pinMode) { LPC24_Gpio_Direction::direction, LPC24_Gpio_PinMode::pinMode, LPC24_Gpio_PinFunction::PinFunction0 }
-#define ALTFUN(direction, pinMode, pinFunction) { LPC24_Gpio_Direction::direction, LPC24_Gpio_PinMode::pinMode, LPC24_Gpio_PinFunction::pinFunction }
-#define INPUT(pinMode) { LPC24_Gpio_Direction::Input, LPC24_Gpio_PinMode::pinMode, LPC24_Gpio_PinFunction::PinFunction0 }
+#define INIT(direction, pinMode, apply) { LPC24_Gpio_Direction::direction, LPC24_Gpio_PinMode::pinMode, LPC24_Gpio_PinFunction::PinFunction0, apply }
+#define ALTFUN(direction, pinMode, pinFunction) { LPC24_Gpio_Direction::direction, LPC24_Gpio_PinMode::pinMode, LPC24_Gpio_PinFunction::pinFunction, true }
+#define INPUT(pinMode) { LPC24_Gpio_Direction::Input, LPC24_Gpio_PinMode::pinMode, LPC24_Gpio_PinFunction::PinFunction0, true }
+#define DEFAULT() { LPC24_Gpio_Direction::Input, LPC24_Gpio_PinMode::Inactive, LPC24_Gpio_PinFunction::PinFunction0, false }
 
 void LPC24_Gpio_Reset();
 const TinyCLR_Api_Info* LPC24_Gpio_GetApi();
@@ -204,10 +206,10 @@ int32_t LPC24_Dac_GetMinValue(const TinyCLR_Dac_Provider* self);
 int32_t LPC24_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self);
 
 // PWM
-struct PwmController {   
+struct PwmController {
     int32_t                     channel[MAX_PWM_PER_CONTROLLER];
     int32_t                     match[MAX_PWM_PER_CONTROLLER];
-    LPC24_Gpio_Pin              gpioPin[MAX_PWM_PER_CONTROLLER];    
+    LPC24_Gpio_Pin              gpioPin[MAX_PWM_PER_CONTROLLER];
     uint32_t                    outputEnabled[MAX_PWM_PER_CONTROLLER];
     uint32_t                    *matchAddress[MAX_PWM_PER_CONTROLLER];
     bool                        invert[MAX_PWM_PER_CONTROLLER];
@@ -301,7 +303,7 @@ uint32_t LPC24_Flash_GetPartId();
 class LPC24_SmartPtr_IRQ {
 
     uint32_t m_state;
-    
+
     void Disable();
     void Restore();
 
