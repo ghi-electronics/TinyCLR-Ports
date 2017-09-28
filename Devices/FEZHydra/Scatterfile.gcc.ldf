@@ -44,7 +44,7 @@ SECTIONS
         *(SectionForBootstrapInRam)
     }>ERAM AT>LR_FLASH
     
-    ER_RAM_RW 0x20200000: ALIGN(0x8)
+    ER_RAM_RW 0x20101000: ALIGN(0x8)
     {
         * (rwdata)
         * (.data*)
@@ -65,22 +65,22 @@ SECTIONS
         * (.ARM.extab*)
     }    
     
-    ER_HEAP_BEGIN 0x20400000 : ALIGN(0x8)
+    ER_HEAP_BEGIN 0x20300000 : ALIGN(0x8)
     {
         * (SectionForHeapBegin)
     }
     
-    ER_HEAP_END 0x20E00000 - 0x8 : ALIGN(0x8)
+    ER_HEAP_END 0x20380000 - 0x8 : ALIGN(0x8)
     {
         * (SectionForHeapEnd)
     }
     
-    ER_RLP_BEGIN 0x20E00000 : ALIGN(0x8)
+    ER_RLP_BEGIN 0x20380000 : ALIGN(0x8)
     {
         * (SectionForRlpBegin)
     }>IRAM
     
-    ER_RLP_END 0x20F00000 - 0x08: 
+    ER_RLP_END 0x203F0000 - 0x08: 
     {
         * (SectionForRlpEnd)
     }>IRAM
