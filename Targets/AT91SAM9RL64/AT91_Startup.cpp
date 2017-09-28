@@ -20,14 +20,6 @@
 
 #include "AT91.h"
 
-#define MEM_MAP_REG 0xE01FC040 // memory maping register
-
-// manually filled in
-#define PLL_MVAL                        12 // 14
-#define PLL_NVAL                        1  // 1
-#define CCLK_DIVIDER                    4  // 5
-#define USB_DIVIDER                     6  // 7
-
 extern "C" {
     extern int HeapBegin;
     extern int HeapEnd;
@@ -48,11 +40,13 @@ extern "C" {
     extern uint32_t ARM_Vectors;
 
 }
-
+void AT91_SAM_ClockInit(void);
 #pragma arm section code = "SectionForBootstrapOperations"
 
 extern "C" {
     void __section("SectionForBootstrapOperations") SystemInit() {
+
+        AT91_SAM_ClockInit();
 
         AT91_CPU_BootstrapCode();
 
@@ -202,6 +196,63 @@ void AT91_Startup_GetRunApp(bool& runApp) {
     controller->ReleasePin(controller, RUN_APP_PIN);
 
     runApp = value == RUN_APP_STATE;
+}
+
+#define BOARD_OSCOUNT           (AT91_PMC::CKGR_OSCOUNT & (64 << 8))
+#define BOARD_CKGR_PLLA         ( (0x1 << 29) | AT91_PMC::CKGR_OUT_2)
+#define BOARD_PLLACOUNT         (63 << 8)
+#define BOARD_MULA              (AT91_PMC::CKGR_MUL & (199 << 16))
+#define BOARD_DIVA              (AT91_PMC::CKGR_DIV & 12)
+#define BOARD_PRESCALER         AT91_PMC::PMC_MDIV_2
+
+#define BOARD_USBDIV            AT91C_CKGR_USBDIV_2
+#define BOARD_CKGR_PLLB         AT91C_CKGR_OUT_0
+#define BOARD_PLLBCOUNT         BOARD_PLLACOUNT
+#define BOARD_MULB              (124 << 16)
+#define BOARD_DIVB              12
+
+#define BOARD_USBEN				(1<<16)
+#define BOARD_USBPLLCOUNT		(0x0F<<20)
+#define BOARD_BIASEN			(1<<24)
+#define BOARD_BIASCOUNT			(0x0F<<28)
+
+#define READ(peripheral, register)          (peripheral.register)
+#define WRITE(peripheral, register, value)  (peripheral.register = value)
+
+/*
+* Setup PLL & SDRAM
+*/
+void AT91_SAM_ClockInit(void) {
+    // Power Management Controller
+    AT91_PMC &pmc = AT91::PMC();
+
+    // Initialize main oscillator
+    pmc.PMC_CKGR_MOR = BOARD_OSCOUNT | AT91_PMC::CKGR_MOSCEN;
+    while (!(pmc.PMC_SR & AT91_PMC::PMC_MOSCS));
+
+    // Initialize PLLA at 200MHz
+    pmc.PMC_CKGR_PLLAR = BOARD_CKGR_PLLA
+        | BOARD_PLLACOUNT
+        | BOARD_MULA
+        | BOARD_DIVA;
+    while (!(pmc.PMC_SR & AT91_PMC::PMC_LOCKA));
+
+    // Initialize UTMI for USB usage
+    pmc.PMC_CKGR_UCKR = BOARD_USBEN | BOARD_USBPLLCOUNT | BOARD_BIASEN | BOARD_BIASCOUNT;
+    while (!(pmc.PMC_SR & AT91_PMC::PMC_LOCKU));
+
+
+    // Wait for the master clock if it was already initialized
+    while (!(pmc.PMC_SR & AT91_PMC::PMC_MCKRDY));
+
+    // Switch to fast clock
+    // Switch to main oscillator + prescaler
+    pmc.PMC_MCKR = BOARD_PRESCALER;
+    while (!(pmc.PMC_SR & AT91_PMC::PMC_MCKRDY));
+
+    // Switch to PLL + prescaler
+    pmc.PMC_MCKR |= AT91_PMC::PMC_CSS_PLLA_CLK;
+    while (!(pmc.PMC_SR & AT91_PMC::PMC_MCKRDY));
 }
 
 
