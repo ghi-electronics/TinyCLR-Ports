@@ -42,7 +42,7 @@
 #define SRAM_MEMORY_BASE 0x00300000
 #define SRAM_MEMORY_SIZE (32*1024)
 #define SDRAM_MEMORY_BASE 0x20000000
-#define SDRAM_MEMORY_SIZE (16*1024*1024)
+#define SDRAM_MEMORY_SIZE (4*1024*1024)
 
 #define FLASH_MEMORY_BASE 0x00000000
 #define FLASH_MEMORY_SIZE 0x00420000
@@ -60,8 +60,8 @@
 #define AT91_ADC_PINS { { PIN(B,11), PS(D) }, { PIN(B,12), PS(D) }, { PIN(B,13), PS(D) }, { PIN(B,14), PS(D) }, { PIN(B,15), PS(D) }, { PIN(B,16), PS(D) }, { PIN(A,17), PS(D) }, { PIN(B,6), PS(D) }, { PIN(B,7), PS(D) }, { PIN(B,8), PS(D) }, { PIN(B,9), PS(D) }, { PIN(B,10), PS(D) } }
 
 #define INCLUDE_I2C
-#define AT91_I2C_SCL_PINS { { PIN(A,31), PS(A) } }
-#define AT91_I2C_SDA_PINS { { PIN(A,30), PS(A) } }
+#define AT91_I2C_SCL_PINS { { PIN(A,24), PS(A) } }
+#define AT91_I2C_SDA_PINS { { PIN(A,23), PS(A) } }
 
 #define INCLUDE_PWM
 #define MAX_PWM_PER_CONTROLLER 1
@@ -75,13 +75,13 @@
 #define AT91_SPI_SCLK_PINS { { PIN(A,13), PS(A) }, { PIN(A,13), PS(B) } }
 
 #define INCLUDE_UART
-#define TOTAL_UART_CONTROLLERS 6
+#define TOTAL_UART_CONTROLLERS 4
 #define AT91_UART_TX_BUFFER_SIZE (16*1024)
 #define AT91_UART_RX_BUFFER_SIZE (16*1024)
-#define AT91_UART_TX_PINS { { PIN(A, 9), PS(A) } , { PIN(A, 0), PS(A) }, { PIN(A, 5), PS(A) } , { PIN(A, 7), PS(A) } , { PIN(C, 8), PS(C) } , { PIN(C,16), PS(C) } }
-#define AT91_UART_RX_PINS { { PIN(A,10), PS(A) } , { PIN(A, 1), PS(A) }, { PIN(A, 6), PS(A) } , { PIN(A, 8), PS(A) } , { PIN(C, 9), PS(C) } , { PIN(C,17), PS(C) } }
-#define AT91_UART_RTS_PINS { { PIN_NONE , PS_NONE }, { PIN(A, 2), PS(A) }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } }
-#define AT91_UART_CTS_PINS { { PIN_NONE , PS_NONE }, { PIN(A, 3), PS(A) }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } }
+#define AT91_UART_TX_PINS { { PIN(A,22), PS(A) } , { PIN(A, 6), PS(A) }, { PIN(A, 11), PS(A) } , { PIN(A, 13), PS(A) } }
+#define AT91_UART_RX_PINS { { PIN(A,21), PS(A) } , { PIN(A, 7), PS(A) }, { PIN(A, 12), PS(A) } , { PIN(A, 14), PS(A) } }
+#define AT91_UART_RTS_PINS { { PIN_NONE , PS_NONE }, { PIN(A, 9), PS(A) }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } }
+#define AT91_UART_CTS_PINS { { PIN_NONE , PS_NONE }, { PIN(A, 10), PS(A) }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } }
 
 #define INCLUDE_USBCLIENT
 #define TOTAL_USB_CONTROLLER 1
