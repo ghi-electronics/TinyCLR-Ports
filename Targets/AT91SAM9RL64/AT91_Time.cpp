@@ -17,10 +17,10 @@
 
 #define AT91_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS 4
 
-#define SLOW_CLOCKS_PER_SECOND              (AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 32)
-#define CLOCK_COMMON_FACTOR                 10
-#define SLOW_CLOCKS_TEN_MHZ_GCD             10
-#define SLOW_CLOCKS_MILLISECOND_GCD         10
+#define SLOW_CLOCKS_PER_SECOND              (AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 128)
+#define CLOCK_COMMON_FACTOR                 250
+#define SLOW_CLOCKS_TEN_MHZ_GCD             250
+#define SLOW_CLOCKS_MILLISECOND_GCD         250
 
 //////////////////////////////////////////////////////////////////////////////
 // TIMER driver
@@ -357,7 +357,7 @@ TinyCLR_Result AT91_Time_Acquire(const TinyCLR_Time_Provider* self) {
     g_AT91_TIME_Driver.m_lastRead = 0;
     g_AT91_TIME_Driver.m_nextCompare = (uint64_t)AT91_TIMER_Driver::c_MaxTimerValue;
 
-    if (!AT91_TIMER_Driver::Initialize(AT91_TIMER_Driver::c_SystemTimer, true, AT91_TC::TC_CLKS_TIMER_DIV3_CLOCK, (uint32_t*)&AT91_Time_InterruptHandler, (void*)self))
+    if (!AT91_TIMER_Driver::Initialize(AT91_TIMER_Driver::c_SystemTimer, true, AT91_TC::TC_CLKS_TIMER_DIV4_CLOCK, (uint32_t*)&AT91_Time_InterruptHandler, (void*)self))
         return TinyCLR_Result::InvalidOperation;;
 
     AT91_TIMER_Driver::SetCompare(AT91_TIMER_Driver::c_SystemTimer, AT91_TIMER_Driver::c_MaxTimerValue);
