@@ -453,8 +453,10 @@ int32_t AT91_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self) {
 void AT91_Gpio_Reset() {
     AT91_PMC &pmc = AT91::PMC();
 
-    pmc.PMC_PCER = (1 << 2); // Enable Power Control Port A, B
-    pmc.PMC_PCER = (1 << 3); // Enable Power Control Port C, D
+    pmc.EnablePeriphClock(AT91C_ID_PIOA);
+    pmc.EnablePeriphClock(AT91C_ID_PIOB);
+    pmc.EnablePeriphClock(AT91C_ID_PIOC);
+    pmc.EnablePeriphClock(AT91C_ID_PIOD);
 
     for (auto port = 0; port < MAX_PORT; port++) {
         // initialize pins as free
