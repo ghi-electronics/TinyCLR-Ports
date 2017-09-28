@@ -132,8 +132,8 @@ bool AT91_TIMER_Driver::Initialize(uint32_t timer, bool freeRunning, uint32_t cl
 
         // First, enable the clock of the TIMER
         AT91_PMC &pmc = AT91::PMC();
-        //pmc.PMC_PCER = (1 << (AT91C_ID_TC0+timer));//hyddra
-        pmc.PMC_PCER = (1 << (17 + timer));//G400
+        pmc.PMC_PCER = (1 << (AT91C_ID_TC0+timer));//hyddra
+        //pmc.PMC_PCER = (1 << (17 + timer));//G400
 
         // Disable the clock and the interrupts
         tc.TC_CCR = AT91_TC::TC_CLKDIS;
