@@ -311,10 +311,10 @@ size_t AT91_Cache_GetUncachableAddress(size_t address);
 struct AT91_PIO {
 
 
-    static const uint32_t c_Base = AT91C_BASE_PIOA;
+     static const uint32_t c_Base = AT91C_BASE_PIOA;
 
-    static const uint32_t c_Base_Offset = 0x200;
-
+     static const uint32_t c_Base_Offset = 0x200;
+        
 
     /****/ volatile uint32_t PIO_PER;   // PIO Enable Register
 
@@ -322,7 +322,7 @@ struct AT91_PIO {
 
     /****/ volatile uint32_t PIO_PSR;   // PIO Status Register
 
-    /****/ volatile uint32_t Reserved0[1];  //
+    /****/ volatile uint32_t Reserved0[1];  // 
 
     /****/ volatile uint32_t PIO_OER;   // Output Enable Register
 
@@ -330,7 +330,7 @@ struct AT91_PIO {
 
     /****/ volatile uint32_t PIO_OSR;   // Output Status Register
 
-    /****/ volatile uint32_t Reserved1[1];  //
+    /****/ volatile uint32_t Reserved1[1];  // 
 
     /****/ volatile uint32_t PIO_IFER;  // Input Filter Enable Register
 
@@ -338,7 +338,7 @@ struct AT91_PIO {
 
     /****/ volatile uint32_t PIO_IFSR;  // Input Filter Status Register
 
-    /****/ volatile uint32_t Reserved2[1];  //
+    /****/ volatile uint32_t Reserved2[1];  // 
 
     /****/ volatile uint32_t PIO_SODR;  // Set Output Data Register
 
@@ -362,7 +362,7 @@ struct AT91_PIO {
 
     /****/ volatile uint32_t PIO_MDSR;  // Multi-driver Status Register
 
-    /****/ volatile uint32_t Reserved3[1];  //
+    /****/ volatile uint32_t Reserved3[1];  // 
 
     /****/ volatile uint32_t PIO_PPUDR;     // Pull-up Disable Register
 
@@ -370,7 +370,7 @@ struct AT91_PIO {
 
     /****/ volatile uint32_t PIO_PPUSR;     // Pull-up Status Register
 
-    /****/ volatile uint32_t Reserved4[1];  //
+    /****/ volatile uint32_t Reserved4[1];  // 
 
     /****/ volatile uint32_t PIO_ASR;   // Select A Register
 
@@ -378,7 +378,7 @@ struct AT91_PIO {
 
     /****/ volatile uint32_t PIO_ABSR;  // AB Select Status Register
 
-    /****/ volatile uint32_t Reserved5[9];  //
+    /****/ volatile uint32_t Reserved5[9];  // 
 
     /****/ volatile uint32_t PIO_OWER;  // Output Write Enable Register
 
@@ -386,7 +386,6 @@ struct AT91_PIO {
 
     /****/ volatile uint32_t PIO_OWSR;  // Output Write Status Register
 };
-
 // --//
 
 
