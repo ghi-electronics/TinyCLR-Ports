@@ -263,8 +263,8 @@ enum class STM32F4_Gpio_PortMode : uint8_t {
 enum class STM32F4_Gpio_OutputSpeed : uint8_t {
     Low = 0,
     Medium = 1,
-    Fast = 2,
-    High = 3
+    High = 2,
+    VeryHigh = 3
 };
 
 enum class STM32F4_Gpio_AlternateFunction : uint8_t {
@@ -303,6 +303,7 @@ struct STM32F4_Gpio_PinConfiguration {
     STM32F4_Gpio_PullDirection pullDirection;
     STM32F4_Gpio_AlternateFunction alternateFunction;
     bool outputDirection;
+    bool apply;
 };
 
 #define PIN(port, pin) ((CHARIZE(port) - 'A') * 16 + pin)
@@ -310,11 +311,12 @@ struct STM32F4_Gpio_PinConfiguration {
 #define AF(num) (CONCAT(STM32F4_Gpio_AlternateFunction::AF, num))
 #define AF_NONE STM32F4_Gpio_AlternateFunction::AF0
 
-#define INIT(portMode, outputType, outputSpeed, pullDirection, alternateFunction, outputDirection) { STM32F4_Gpio_PortMode::portMode, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::pullDirection, STM32F4_Gpio_AlternateFunction::alternateFunction, outputDirection }
-#define ALTFUN(outputType, outputSpeed, pullDirection, alternateFunction) INIT(AlternateFunction, outputType, outputSpeed, pullDirection, alternateFunction, false)
-#define ANALOG() INIT(Analog, PushPull, High, None, AF0, false)
-#define OUTPUT(outputType, outputSpeed, outputDirection) INIT(GeneralPurposeOutput, outputType, outputSpeed, None, AF0, outputDirection)
-#define INPUT(outputType, outputSpeed, pullDirection) INIT(Input, outputType, outputSpeed, pullDirection, AF0, false)
+#define INIT(portMode, outputType, outputSpeed, outputDirection, pullDirection, alternateFunction, apply) { STM32F4_Gpio_PortMode::portMode, STM32F4_Gpio_OutputType::outputType, STM32F4_Gpio_OutputSpeed::outputSpeed, STM32F4_Gpio_PullDirection::pullDirection, STM32F4_Gpio_AlternateFunction::alternateFunction, outputDirection, apply }
+#define ALTFUN(outputType, outputSpeed, pullDirection, alternateFunction) INIT(AlternateFunction, outputType, outputSpeed, false, pullDirection, alternateFunction, true)
+#define ANALOG() INIT(Analog, PushPull, VeryHigh, false, None, AF0, true)
+#define OUTPUT(outputType, outputSpeed, outputDirection, pullDirection) INIT(GeneralPurposeOutput, outputType, outputSpeed, outputDirection, pullDirection, AF0, true)
+#define INPUT(pullDirection) INIT(Input, PushPull, VeryHigh, false, pullDirection, AF0, true)
+#define DEFAULT() INIT(Input, PushPull, VeryHigh, false, PullDown, AF0, false)
 
 bool STM32F4_GpioInternal_OpenPin(int32_t pin);
 bool STM32F4_GpioInternal_ClosePin(int32_t pin);

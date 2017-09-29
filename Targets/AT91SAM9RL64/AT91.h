@@ -41,10 +41,10 @@
 #define AT91C_ID_US2    ((unsigned int)  8) // USART 2
 #define AT91C_ID_US3    ((unsigned int)  9) // USART 3
 #define AT91C_ID_MCI    ((unsigned int) 10) // Multimedia Card Interface
-#define AT91C_ID_TWI0   ((unsigned int) 11) // Two-Wire Interface 0 
+#define AT91C_ID_TWI0   ((unsigned int) 11) // Two-Wire Interface 0
 #define AT91C_ID_TWI1   ((unsigned int) 12) // Two-Wire Interface 1
 #define AT91C_ID_TWI    AT91C_ID_TWI0       // only support one I2C
-#define AT91C_ID_SPI0    ((unsigned int) 13) // Serial Peripheral Interface 
+#define AT91C_ID_SPI0    ((unsigned int) 13) // Serial Peripheral Interface
 #define AT91C_ID_SSC0   ((unsigned int) 14) // Serial Synchronous Controller 0
 #define AT91C_ID_SSC1   ((unsigned int) 15) // Serial Synchronous Controller 1
 #define AT91C_ID_TC0    ((unsigned int) 16) // Timer Counter 0
@@ -133,11 +133,11 @@
 // Timer number - See AT91_TIMER.H
 #define AT91_MAX_TIMER      3
 
-// Max GPIO number 
-#define AT91_MAX_GPIO       128 
+// Max GPIO number
+#define AT91_MAX_GPIO       128
 
 // Max USART Number
-#define AT91_MAX_USART   3 
+#define AT91_MAX_USART   3
 
 // SHDWC bit defines
 #define AT91C_SHDWC__SHUTDOWN_KEY   0xA5000000   // reset key
@@ -152,7 +152,7 @@ struct AT91_PMC {
 
     /****/ volatile uint32_t PMC_SCSR;                // System Clock Status Register
 
-    /****/ volatile uint32_t Reserved0[1];            // 
+    /****/ volatile uint32_t Reserved0[1];            //
 
     /****/ volatile uint32_t PMC_PCER;                // Peripheral Clock Enable Register
 
@@ -171,11 +171,11 @@ struct AT91_PMC {
     /****/ volatile uint32_t PMC_CKGR_MCFR;  // Main Clock  Frequency Register
     static const    uint32_t CKGR_MAINF      = (0xFFFF << 0);     // (CKGR) Main Clock Frequency
     static const    uint32_t CKGR_MAINRDY    = (0x1UL << 16);       // (CKGR) Main Clock Ready
-    
+
 
     /****/ volatile uint32_t PMC_CKGR_PLLAR;  // PLL Register
 
-       
+
     static const    uint32_t CKGR_DIV        = (0xFF << 0);     // (CKGR) Divider Selected
     static const    uint32_t CKGR_DIV_0      = (0x0);           // (CKGR) Divider output is 0
     static const    uint32_t CKGR_DIV_BYPASS = (0x1);           // (CKGR) Divider is bypassed
@@ -191,8 +191,8 @@ struct AT91_PMC {
     static const    uint32_t CKGR_USBDIV_1   = (0x1UL << 28);     // (CKGR) Divider output is PLL clock output divided by 2
     static const    uint32_t CKGR_USBDIV_2   = (0x2UL << 28);     // (CKGR) Divider output is PLL clock output divided by 4
 
-    /****/ volatile uint32_t Reserved1[1];            // 
-    
+    /****/ volatile uint32_t Reserved1[1];            //
+
     /****/ volatile uint32_t PMC_MCKR;  // Master Clock Register
     static const    uint32_t PMC_CSS           = (0x3 <<  0);   //  (PMC) Programmable Clock Selection
     static const    uint32_t PMC_CSS_SLOW_CLK  = (0x0);         //  (PMC) Slow Clock is selected
@@ -212,11 +212,11 @@ struct AT91_PMC {
     static const    uint32_t PMC_MDIV_2        = (0x1 <<  8);   //  (PMC) The processor clock is twice as fast as the master clock
     static const    uint32_t PMC_MDIV_3        = (0x2 <<  8);   //  (PMC) The processor clock is four times faster than the master clock
 
-    /****/ volatile uint32_t Reserved3[3];  // 
+    /****/ volatile uint32_t Reserved3[3];  //
 
     /****/ volatile uint32_t PMC_PCKR[2];   // Programmable Clock Register
 
-    /****/ volatile uint32_t Reserved4[6];  // 
+    /****/ volatile uint32_t Reserved4[6];  //
 
     /****/ volatile uint32_t PMC_IER;   // Interrupt Enable Register
     static const    uint32_t PMC_MOSCS     = (0x1 <<  0);       // (PMC) MOSC Status/Enable/Disable/Mask
@@ -239,7 +239,7 @@ struct AT91_PMC {
 
     static const    uint32_t PMC_PLLICPR__PLLA = (0x1 <<  0);
     static const    uint32_t PMC_PLLICPR__PLLB = (0x1 << 16);
-    
+
     __inline void EnableSystemClock(uint32_t clkIds)
     {
         PMC_SCER = clkIds;
@@ -314,7 +314,7 @@ struct AT91_PIO {
      static const uint32_t c_Base = AT91C_BASE_PIOA;
 
      static const uint32_t c_Base_Offset = 0x200;
-        
+
 
     /****/ volatile uint32_t PIO_PER;   // PIO Enable Register
 
@@ -322,7 +322,7 @@ struct AT91_PIO {
 
     /****/ volatile uint32_t PIO_PSR;   // PIO Status Register
 
-    /****/ volatile uint32_t Reserved0[1];  // 
+    /****/ volatile uint32_t Reserved0[1];  //
 
     /****/ volatile uint32_t PIO_OER;   // Output Enable Register
 
@@ -330,7 +330,7 @@ struct AT91_PIO {
 
     /****/ volatile uint32_t PIO_OSR;   // Output Status Register
 
-    /****/ volatile uint32_t Reserved1[1];  // 
+    /****/ volatile uint32_t Reserved1[1];  //
 
     /****/ volatile uint32_t PIO_IFER;  // Input Filter Enable Register
 
@@ -338,7 +338,7 @@ struct AT91_PIO {
 
     /****/ volatile uint32_t PIO_IFSR;  // Input Filter Status Register
 
-    /****/ volatile uint32_t Reserved2[1];  // 
+    /****/ volatile uint32_t Reserved2[1];  //
 
     /****/ volatile uint32_t PIO_SODR;  // Set Output Data Register
 
@@ -362,7 +362,7 @@ struct AT91_PIO {
 
     /****/ volatile uint32_t PIO_MDSR;  // Multi-driver Status Register
 
-    /****/ volatile uint32_t Reserved3[1];  // 
+    /****/ volatile uint32_t Reserved3[1];  //
 
     /****/ volatile uint32_t PIO_PPUDR;     // Pull-up Disable Register
 
@@ -370,7 +370,7 @@ struct AT91_PIO {
 
     /****/ volatile uint32_t PIO_PPUSR;     // Pull-up Status Register
 
-    /****/ volatile uint32_t Reserved4[1];  // 
+    /****/ volatile uint32_t Reserved4[1];  //
 
     /****/ volatile uint32_t PIO_ASR;   // Select A Register
 
@@ -378,7 +378,7 @@ struct AT91_PIO {
 
     /****/ volatile uint32_t PIO_ABSR;  // AB Select Status Register
 
-    /****/ volatile uint32_t Reserved5[9];  // 
+    /****/ volatile uint32_t Reserved5[9];  //
 
     /****/ volatile uint32_t PIO_OWER;  // Output Write Enable Register
 
@@ -449,6 +449,7 @@ struct AT91_Gpio_PinConfiguration {
     AT91_Gpio_Schmitt schmitt;
     AT91_Gpio_DriveSpeed speed;
     AT91_Gpio_PeripheralSelection peripheralSelection;
+    bool apply;
 };
 
 #define PIN(port, pin) ((CHARIZE(port) - 'A') * 32 + pin)
@@ -456,9 +457,10 @@ struct AT91_Gpio_PinConfiguration {
 #define PS(num) (CONCAT(AT91_Gpio_PeripheralSelection::Peripheral, num))
 #define PS_NONE AT91_Gpio_PeripheralSelection::None
 
-#define INIT(pinDirection, resistorMode, peripheralSelection) { AT91_Gpio_Direction::pinDirection, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable,  AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::peripheralSelection }
-#define ALTFUN(direction, resistorMode, peripheralSelection) { AT91_Gpio_Direction::direction, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable,  AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::peripheralSelection }
-#define INPUT(resistorMode) { AT91_Gpio_Direction::Input, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable, AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::None }
+#define INIT(pinDirection, resistorMode, peripheralSelection, apply) { AT91_Gpio_Direction::pinDirection, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable,  AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::peripheralSelection, apply }
+#define ALTFUN(direction, resistorMode, peripheralSelection) { AT91_Gpio_Direction::direction, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable,  AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::peripheralSelection, true }
+#define INPUT(resistorMode) { AT91_Gpio_Direction::Input, AT91_Gpio_ResistorMode::resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable, AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::None, true }
+#define DEFAULT() { AT91_Gpio_Direction::Input, AT91_Gpio_ResistorMode::Inactive, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Disable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable, AT91_Gpio_DriveSpeed::High, AT91_Gpio_PeripheralSelection::None, false }
 
 void AT91_Gpio_Reset();
 const TinyCLR_Api_Info* AT91_Gpio_GetApi();
@@ -524,7 +526,7 @@ struct PwmController {
     uint32_t                        *dutyCycleReg;
     uint32_t                        *channelUpdateReg;
 
-    AT91_Gpio_Pin                   gpioPin[MAX_PWM_PER_CONTROLLER];   
+    AT91_Gpio_Pin                   gpioPin[MAX_PWM_PER_CONTROLLER];
 
     bool                            invert[MAX_PWM_PER_CONTROLLER];
     double                          frequency;
@@ -658,9 +660,9 @@ struct AT91_USART {
     static const uint32_t c_Base          = AT91C_BASE_US0;
     static const uint32_t c_Base_offset   = 0x4000;
 
-    static const uint32_t c_MAX_BAUDRATE  = ((AT91_SYSTEM_PERIPHERAL_CLOCK_HZ*10)/ 16); 
+    static const uint32_t c_MAX_BAUDRATE  = ((AT91_SYSTEM_PERIPHERAL_CLOCK_HZ*10)/ 16);
     static const uint32_t c_MIN_BAUDRATE  = 0;
-    
+
     /****/ volatile uint32_t US_CR;          // Control Register
     static const    uint32_t US_RSTRX        = ((unsigned int) 0x1 <<  2); // (DBGU) Reset Receiver
     static const    uint32_t US_RSTTX        = ((unsigned int) 0x1 <<  3); //  (DBGU) Reset Transmitter
@@ -769,16 +771,16 @@ struct AT91_USART {
 
     /****/ volatile uint32_t US_TTGR;        // Transmitter Time-guard Register
 
-    /****/ volatile uint32_t Reserved0[5];   // 
+    /****/ volatile uint32_t Reserved0[5];   //
 
     /****/ volatile uint32_t US_FIDI;        // FI_DI_Ratio Register
 
     /****/ volatile uint32_t US_NER;         // Nb Errors Register
 
-    /****/ volatile uint32_t Reserved1[1];   // 
+    /****/ volatile uint32_t Reserved1[1];   //
 
     /****/ volatile uint32_t US_IF;          // IRDA_FILTER Register
-    
+
 #if defined(PLATFORM_ARM_SAM9RL64_ANY)
 
     /****/ volatile uint32_t US_MAN;          // Manchester Encoder Decoder Register

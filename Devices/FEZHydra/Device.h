@@ -20,7 +20,7 @@
 #define DEVICE_VERSION ((0ULL << 48) | (6ULL << 32) | (0ULL << 16) | (0ULL << 0))
 
 #define USB_DEBUGGER_VENDOR_ID 0x1B9F
-#define USB_DEBUGGER_PRODUCT_ID 0x5008
+#define USB_DEBUGGER_PRODUCT_ID 0x5005
 
 #define UART_DEBUGGER_INDEX 0
 #define USB_DEBUGGER_INDEX 0
@@ -48,11 +48,11 @@
 #define FLASH_MEMORY_SIZE 0x00420000
 
 #define INCLUDE_GPIO
-#define AT91_GPIO_PINS  {/*      0              1              2              3              4              5              6              7              8              9              10             11             12             13             14             15             16             17             18             19             20             21             22             23             24             25             26             27             28             29             30             31          */\
-                         /*P0x*/ INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp),\
-                         /*P1x*/ INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp),\
-                         /*P2x*/ INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp),\
-                         /*P3x*/ INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp), INPUT(PullUp),\
+#define AT91_GPIO_PINS  {/*      0          1          2          3          4          5          6          7          8          9          10         11         12         13         14         15         16         17         18         19         20         21         22         23         24         25         26         27         28         29         30         31      */\
+                         /*P0x*/ DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(),\
+                         /*P1x*/ DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(),\
+                         /*P2x*/ DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(),\
+                         /*P3x*/ DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(),\
                          }
 
 
