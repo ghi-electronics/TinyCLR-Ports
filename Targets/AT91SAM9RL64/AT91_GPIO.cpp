@@ -283,27 +283,15 @@ bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_P
         switch (peripheralSelection) {
         case AT91_Gpio_PeripheralSelection::PeripheralA:
             pioX.PIO_PDR = bitmask;
-            pioX.PIO_ASR &= ~bitmask; // Writes a zero to bit that is masked
-            pioX.PIO_BSR &= ~bitmask; // Writes a zero to bit that is masked
+            pioX.PIO_ASR = bitmask; // Writes a zero to bit that is masked
+
             break;
 
         case AT91_Gpio_PeripheralSelection::PeripheralB:
             pioX.PIO_PDR = bitmask;
-            pioX.PIO_ASR |= bitmask;
-            pioX.PIO_BSR &= ~bitmask;
+            pioX.PIO_BSR = bitmask;
             break;
 
-        case AT91_Gpio_PeripheralSelection::PeripheralC:
-            pioX.PIO_PDR = bitmask;
-            pioX.PIO_ASR &= ~bitmask;
-            pioX.PIO_BSR |= bitmask;
-            break;
-
-        case AT91_Gpio_PeripheralSelection::PeripheralD:
-            pioX.PIO_PDR = bitmask;
-            pioX.PIO_ASR |= bitmask;
-            pioX.PIO_BSR |= bitmask;
-            break;
         }
 
         pioX.PIO_IDR = bitmask; // Disable the Input Change Interrupt
