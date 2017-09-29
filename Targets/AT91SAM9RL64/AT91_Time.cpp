@@ -294,12 +294,12 @@ uint64_t AT91_Time_GetCurrentTicks(const TinyCLR_Time_Provider* self) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    uint32_t value = AT91_TIMER_Driver::ReadCounter(AT91_TIMER_Driver::c_SystemTimer);
+    uint16_t value = AT91_TIMER_Driver::ReadCounter(AT91_TIMER_Driver::c_SystemTimer);
 
-    g_AT91_TIME_Driver.m_lastRead &= (0xFFFFFFFF00000000ull);
+    g_AT91_TIME_Driver.m_lastRead &= (0xFFFFFFFFFFFF0000ull);
 
     if (AT91_TIMER_Driver::DidTimerOverFlow(AT91_TIMER_Driver::c_SystemTimer)) {
-        g_AT91_TIME_Driver.m_lastRead += (0x1ull << 32);
+        g_AT91_TIME_Driver.m_lastRead += (0x1ull << 16);
     }
 
     g_AT91_TIME_Driver.m_lastRead |= value;
@@ -335,7 +335,7 @@ TinyCLR_Result AT91_Time_SetCompare(const TinyCLR_Time_Provider* self, uint64_t 
         }
 
         AT91_TIMER_Driver::SetCompare(AT91_TIMER_Driver::c_SystemTimer,
-            (uint32_t)(AT91_TIMER_Driver::ReadCounter(AT91_TIMER_Driver::c_SystemTimer) + diff));
+            (uint16_t)(AT91_TIMER_Driver::ReadCounter(AT91_TIMER_Driver::c_SystemTimer) + diff));
 
         if (AT91_Time_GetCurrentTicks(self) > processorTicks) {
             fForceInterrupt = true;
