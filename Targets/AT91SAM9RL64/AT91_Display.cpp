@@ -496,71 +496,9 @@ uint32_t* AT91_Display_GetFrameBuffer();
 static TinyCLR_Display_Provider displayProvider;
 static TinyCLR_Api_Info displayApi;
 
-static const AT91_Gpio_Pin g_at91_display_pins[] = AT91_DISPLAY_CONTROLLER_PINS;
-static const AT91_Gpio_Pin g_at91_display_enable_pin = AT91_DISPLAY_ENABLE_PIN;
-
-// Define the multiplexing pins LCD
-#define AT91_LCDVSYNC  (2 * 32 + 4) // AT91_GPIO_Driver::PC4
-#define AT91_LCDHSYNC  (2 * 32 + 5) // AT91_GPIO_Driver::PC5
-#define AT91_LCDDOTCK  (2 * 32 + 6) // AT91_GPIO_Driver::PC6
-#define AT91_LCDDEN    (2 * 32 + 7) // AT91_GPIO_Driver::PC7
-#define AT91_LCDCC     (2 * 32 + 3) // AT91_GPIO_Driver::PC3
-#define AT91_LCDPWR    (2 * 32 + 1) // AT91_GPIO_Driver::PC1
-
-//#define AT91_LCDD2     AT91_GPIO_Driver::PC8
-// B0..B4
-#define AT91_LCDD3     (2 * 32 + 9) // AT91_GPIO_Driver::PC9
-#define AT91_LCDD4     (2 * 32 + 10) // AT91_GPIO_Driver::PC10
-#define AT91_LCDD5     (2 * 32 + 11) // AT91_GPIO_Driver::PC11
-#define AT91_LCDD6     (2 * 32 + 12) // AT91_GPIO_Driver::PC12
-#define AT91_LCDD7     (2 * 32 + 13) // AT91_GPIO_Driver::PC13
-
-//#define AT91_LCDD10    AT91_GPIO_Driver::PC14
-// G0..G5
-#define AT91_LCDD11    (2 * 32 + 15) // AT91_GPIO_Driver::PC15
-#define AT91_LCDD12    (2 * 32 + 16) // AT91_GPIO_Driver::PC16
-#define AT91_LCDD13    (2 * 32 + 17) // AT91_GPIO_Driver::PC17
-#define AT91_LCDD14    (2 * 32 + 18) // AT91_GPIO_Driver::PC18
-#define AT91_LCDD15    (2 * 32 + 19) // AT91_GPIO_Driver::PC19
-#define AT91_LCDD19    (2 * 32 + 21) // AT91_GPIO_Driver::PC21
-
-// R0..R4
-#define AT91_LCDD18    (2 * 32 + 20) // AT91_GPIO_Driver::PC20
-#define AT91_LCDD20    (2 * 32 + 22) // AT91_GPIO_Driver::PC22
-#define AT91_LCDD21    (2 * 32 + 23) // AT91_GPIO_Driver::PC23
-#define AT91_LCDD22    (2 * 32 + 24) // AT91_GPIO_Driver::PC24
-#define AT91_LCDD23    (2 * 32 + 25) // AT91_GPIO_Driver::PC25
-
-static const uint8_t c_LCD_1[] =
-{
-    AT91_LCDHSYNC,
-    AT91_LCDVSYNC,
-    AT91_LCDDOTCK,
-    //AT91_LCDDEN,
-    AT91_LCDCC,
-
-};
-
-static const uint8_t c_LCD_2[] =
-{
-    AT91_LCDD3,
-    AT91_LCDD4,
-    AT91_LCDD5,
-    AT91_LCDD6,
-    AT91_LCDD7,
-    AT91_LCDD11,
-    AT91_LCDD12,
-    AT91_LCDD13,
-    AT91_LCDD14,
-    AT91_LCDD15,
-    AT91_LCDD18,
-    AT91_LCDD19,
-    AT91_LCDD20,
-    AT91_LCDD21,
-    AT91_LCDD22,
-    AT91_LCDD23,
-    //AT91_LCDPWR,
-};
+static const AT91_Gpio_Pin g_at91_display_dataPins[] = AT91_DISPLAY_DATA_PINS;
+static const AT91_Gpio_Pin g_at91_display_controlPins[] = AT91_DISPLAY_CONTROL_PINS;
+static const AT91_Gpio_Pin g_at91_display_enablePin = AT91_DISPLAY_ENABLE_PIN;
 
 bool AT91_Display_Initialize() {
 
@@ -588,30 +526,22 @@ bool AT91_Display_Initialize() {
 
     uint32_t pin;
     uint32_t value;
-#if 1
+
     /* Selected as LCD pins */
-    for (pin = 0; pin < SIZEOF_ARRAY(c_LCD_1); pin++) {
-        //CPU_GPIO_DisablePin( c_LCD_1[pin], RESISTOR_DISABLED, 0, GPIO_ALT_MODE_1);
-        //AT91_Gpio_ConfigurePin(g_at91_display_pins[pin].number, AT91_Gpio_Direction::Input, g_at91_display_pins[pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-        AT91_Gpio_ConfigurePin(c_LCD_1[pin], AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_ResistorMode::Inactive);
+    for (pin = 0; pin < SIZEOF_ARRAY(g_at91_display_dataPins); pin++) {
+        AT91_Gpio_ConfigurePin(g_at91_display_dataPins[pin].number, AT91_Gpio_Direction::Input, g_at91_display_dataPins[pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
     }
-    for (pin = 0; pin < SIZEOF_ARRAY(c_LCD_2); pin++) {
-        //CPU_GPIO_DisablePin( c_LCD_2[pin], RESISTOR_DISABLED, 0, GPIO_ALT_MODE_2);
-        //AT91_Gpio_ConfigurePin(g_at91_display_pins[pin].number, AT91_Gpio_Direction::Input, g_at91_display_pins[pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-        AT91_Gpio_ConfigurePin(c_LCD_2[pin], AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::PeripheralB, AT91_Gpio_ResistorMode::Inactive);
+    for (pin = 0; pin < SIZEOF_ARRAY(g_at91_display_controlPins); pin++) {
+        AT91_Gpio_ConfigurePin(g_at91_display_controlPins[pin].number, AT91_Gpio_Direction::Input, g_at91_display_controlPins[pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
     }
+
     /* Enable CS for LCD */
     //CPU_GPIO_EnableOutputPin((GPIO_PIN)AT91_LCDC_CS, 0);
-
     if (m_AT91_DisplayOutputEnableIsFixed)
-        //CPU_GPIO_EnableOutputPin(AT91_LCDDEN, m_AT91_DisplayOutputEnablePolarity);
-        //AT91_Gpio_EnableOutputPin(g_at91_display_enable_pin.number, m_AT91_DisplayOutputEnablePolarity);
-        AT91_Gpio_EnableOutputPin(AT91_LCDDEN, m_AT91_DisplayOutputEnablePolarity);
+        AT91_Gpio_EnableOutputPin(g_at91_display_enablePin.number, m_AT91_DisplayOutputEnablePolarity);
     else
-        //CPU_GPIO_DisablePin(AT91_LCDDEN, RESISTOR_DISABLED, 0, GPIO_ALT_MODE_1);
-        //AT91_Gpio_ConfigurePin(g_at91_display_enable_pin.number, AT91_Gpio_Direction::Input, g_at91_display_enable_pin.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-        AT91_Gpio_ConfigurePin(AT91_LCDDEN, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::PeripheralA, AT91_Gpio_ResistorMode::Inactive);
-#endif
+        AT91_Gpio_ConfigurePin(g_at91_display_enablePin.number, AT91_Gpio_Direction::Input, g_at91_display_enablePin.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+
     AT91_PMC &pmc = AT91::PMC();
     pmc.EnablePeriphClock(AT91C_ID_LCDC);
 
