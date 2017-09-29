@@ -53,7 +53,7 @@ AT91_Interrupt_Vectors s_IsrTable[] =
     DEFINE_IRQ(10,  0),      // Multimedia Card Interface
     DEFINE_IRQ(11,  6),      // Two-Wire Interface
     DEFINE_IRQ(12,  6),      // Two-Wire Interface
-    DEFINE_IRQ(13,  5),      // Serial Peripheral Interface 
+    DEFINE_IRQ(13,  5),      // Serial Peripheral Interface
     DEFINE_IRQ(14,  4),      // Serial Synchronous Controller 0
     DEFINE_IRQ(15,  4),      // Serial Synchronous Controller 1
     DEFINE_IRQ(16,  6),      // Timer Counter 0
@@ -69,9 +69,9 @@ AT91_Interrupt_Vectors s_IsrTable[] =
     DEFINE_IRQ(26,  0),
     DEFINE_IRQ(27,  0),
     DEFINE_IRQ(28,  0),
-    DEFINE_IRQ(29,  0),     
-    DEFINE_IRQ(30,  0),     
-    DEFINE_IRQ(31,  0),      // Advanced Interrupt Controller       
+    DEFINE_IRQ(29,  0),
+    DEFINE_IRQ(30,  0),
+    DEFINE_IRQ(31,  0),      // Advanced Interrupt Controller
 };
 
 TinyCLR_Interrupt_StartStopHandler AT91_Interrupt_Started;
