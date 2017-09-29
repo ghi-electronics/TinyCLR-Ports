@@ -163,54 +163,54 @@ struct AT91_PMC {
     /****/ volatile uint32_t PMC_CKGR_UCKR;            // UTMI Clock Register
 
     /****/ volatile uint32_t PMC_CKGR_MOR;            // Main Oscillator Register
-    static const    uint32_t CKGR_MOSCEN     = (0x1 << 0);       // (CKGR) Main Oscillator Enable
-    static const    uint32_t CKGR_OSCBYPASS  = (0x1 << 1);       // (CKGR) Main Oscillator Bypass
-    static const    uint32_t CKGR_OSCOUNT    = (0xFF << 8);      // (CKGR) Main Oscillator Start-up Time
+    static const    uint32_t CKGR_MOSCEN = (0x1 << 0);       // (CKGR) Main Oscillator Enable
+    static const    uint32_t CKGR_OSCBYPASS = (0x1 << 1);       // (CKGR) Main Oscillator Bypass
+    static const    uint32_t CKGR_OSCOUNT = (0xFF << 8);      // (CKGR) Main Oscillator Start-up Time
 
 
     /****/ volatile uint32_t PMC_CKGR_MCFR;  // Main Clock  Frequency Register
-    static const    uint32_t CKGR_MAINF      = (0xFFFF << 0);     // (CKGR) Main Clock Frequency
-    static const    uint32_t CKGR_MAINRDY    = (0x1UL << 16);       // (CKGR) Main Clock Ready
+    static const    uint32_t CKGR_MAINF = (0xFFFF << 0);     // (CKGR) Main Clock Frequency
+    static const    uint32_t CKGR_MAINRDY = (0x1UL << 16);       // (CKGR) Main Clock Ready
 
 
     /****/ volatile uint32_t PMC_CKGR_PLLAR;  // PLL Register
 
 
-    static const    uint32_t CKGR_DIV        = (0xFF << 0);     // (CKGR) Divider Selected
-    static const    uint32_t CKGR_DIV_0      = (0x0);           // (CKGR) Divider output is 0
+    static const    uint32_t CKGR_DIV = (0xFF << 0);     // (CKGR) Divider Selected
+    static const    uint32_t CKGR_DIV_0 = (0x0);           // (CKGR) Divider output is 0
     static const    uint32_t CKGR_DIV_BYPASS = (0x1);           // (CKGR) Divider is bypassed
-    static const    uint32_t CKGR_PLLCOUNT   = (0x3F << 8);     // (CKGR) PLL Counter
-    static const    uint32_t CKGR_OUT        = (0x3 << 14);     // (CKGR) PLL Output Frequency Range
-    static const    uint32_t CKGR_OUT_0      = (0x0 << 14);     // (CKGR) Please refer to the PLL datasheet
-    static const    uint32_t CKGR_OUT_1      = (0x1 << 14);     // (CKGR) Please refer to the PLL datasheet
-    static const    uint32_t CKGR_OUT_2      = (0x2 << 14);     // (CKGR) Please refer to the PLL datasheet
-    static const    uint32_t CKGR_OUT_3      = (0x3 << 14);     // (CKGR) Please refer to the PLL datasheet
-    static const    uint32_t CKGR_MUL        = (0x7FFUL << 16);   // (CKGR) PLL Multiplier
-    static const    uint32_t CKGR_USBDIV     = (0x3UL << 28);     // (CKGR) Divider for USB Clocks
-    static const    uint32_t CKGR_USBDIV_0   = (0x0UL << 28);     // (CKGR) Divider output is PLL clock output
-    static const    uint32_t CKGR_USBDIV_1   = (0x1UL << 28);     // (CKGR) Divider output is PLL clock output divided by 2
-    static const    uint32_t CKGR_USBDIV_2   = (0x2UL << 28);     // (CKGR) Divider output is PLL clock output divided by 4
+    static const    uint32_t CKGR_PLLCOUNT = (0x3F << 8);     // (CKGR) PLL Counter
+    static const    uint32_t CKGR_OUT = (0x3 << 14);     // (CKGR) PLL Output Frequency Range
+    static const    uint32_t CKGR_OUT_0 = (0x0 << 14);     // (CKGR) Please refer to the PLL datasheet
+    static const    uint32_t CKGR_OUT_1 = (0x1 << 14);     // (CKGR) Please refer to the PLL datasheet
+    static const    uint32_t CKGR_OUT_2 = (0x2 << 14);     // (CKGR) Please refer to the PLL datasheet
+    static const    uint32_t CKGR_OUT_3 = (0x3 << 14);     // (CKGR) Please refer to the PLL datasheet
+    static const    uint32_t CKGR_MUL = (0x7FFUL << 16);   // (CKGR) PLL Multiplier
+    static const    uint32_t CKGR_USBDIV = (0x3UL << 28);     // (CKGR) Divider for USB Clocks
+    static const    uint32_t CKGR_USBDIV_0 = (0x0UL << 28);     // (CKGR) Divider output is PLL clock output
+    static const    uint32_t CKGR_USBDIV_1 = (0x1UL << 28);     // (CKGR) Divider output is PLL clock output divided by 2
+    static const    uint32_t CKGR_USBDIV_2 = (0x2UL << 28);     // (CKGR) Divider output is PLL clock output divided by 4
 
     /****/ volatile uint32_t Reserved1[1];            //
 
     /****/ volatile uint32_t PMC_MCKR;  // Master Clock Register
-    static const    uint32_t PMC_CSS           = (0x3 <<  0);   //  (PMC) Programmable Clock Selection
-    static const    uint32_t PMC_CSS_SLOW_CLK  = (0x0);         //  (PMC) Slow Clock is selected
-    static const    uint32_t PMC_CSS_MAIN_CLK  = (0x1);         //  (PMC) Main Clock is selected
-    static const    uint32_t PMC_CSS_PLLA_CLK  = (0x2);         //  (PMC) Clock from PLL1 is selected = (SAM9 only);
-    static const    uint32_t PMC_CSS_PLL_CLK   = (0x3);         //  (PMC) Clock from PLL is selected
-    static const    uint32_t PMC_PRES          = (0x7 <<  2);   //  (PMC) Programmable Clock Prescaler
-    static const    uint32_t PMC_PRES_CLK      = (0x0 <<  2);   //  (PMC) Selected clock
-    static const    uint32_t PMC_PRES_CLK_2    = (0x1 <<  2);   //  (PMC) Selected clock divided by 2
-    static const    uint32_t PMC_PRES_CLK_4    = (0x2 <<  2);   //  (PMC) Selected clock divided by 4
-    static const    uint32_t PMC_PRES_CLK_8    = (0x3 <<  2);   //  (PMC) Selected clock divided by 8
-    static const    uint32_t PMC_PRES_CLK_16   = (0x4 <<  2);   //  (PMC) Selected clock divided by 16
-    static const    uint32_t PMC_PRES_CLK_32   = (0x5 <<  2);   //  (PMC) Selected clock divided by 32
-    static const    uint32_t PMC_PRES_CLK_64   = (0x6 <<  2);   //  (PMC) Selected clock divided by 64
-    static const    uint32_t PMC_MDIV          = (0x3 <<  8);   //  (PMC) Master Clock Division
-    static const    uint32_t PMC_MDIV_1        = (0x0 <<  8);   //  (PMC) The master clock and the processor clock are the same
-    static const    uint32_t PMC_MDIV_2        = (0x1 <<  8);   //  (PMC) The processor clock is twice as fast as the master clock
-    static const    uint32_t PMC_MDIV_3        = (0x2 <<  8);   //  (PMC) The processor clock is four times faster than the master clock
+    static const    uint32_t PMC_CSS = (0x3 << 0);   //  (PMC) Programmable Clock Selection
+    static const    uint32_t PMC_CSS_SLOW_CLK = (0x0);         //  (PMC) Slow Clock is selected
+    static const    uint32_t PMC_CSS_MAIN_CLK = (0x1);         //  (PMC) Main Clock is selected
+    static const    uint32_t PMC_CSS_PLLA_CLK = (0x2);         //  (PMC) Clock from PLL1 is selected = (SAM9 only);
+    static const    uint32_t PMC_CSS_PLL_CLK = (0x3);         //  (PMC) Clock from PLL is selected
+    static const    uint32_t PMC_PRES = (0x7 << 2);   //  (PMC) Programmable Clock Prescaler
+    static const    uint32_t PMC_PRES_CLK = (0x0 << 2);   //  (PMC) Selected clock
+    static const    uint32_t PMC_PRES_CLK_2 = (0x1 << 2);   //  (PMC) Selected clock divided by 2
+    static const    uint32_t PMC_PRES_CLK_4 = (0x2 << 2);   //  (PMC) Selected clock divided by 4
+    static const    uint32_t PMC_PRES_CLK_8 = (0x3 << 2);   //  (PMC) Selected clock divided by 8
+    static const    uint32_t PMC_PRES_CLK_16 = (0x4 << 2);   //  (PMC) Selected clock divided by 16
+    static const    uint32_t PMC_PRES_CLK_32 = (0x5 << 2);   //  (PMC) Selected clock divided by 32
+    static const    uint32_t PMC_PRES_CLK_64 = (0x6 << 2);   //  (PMC) Selected clock divided by 64
+    static const    uint32_t PMC_MDIV = (0x3 << 8);   //  (PMC) Master Clock Division
+    static const    uint32_t PMC_MDIV_1 = (0x0 << 8);   //  (PMC) The master clock and the processor clock are the same
+    static const    uint32_t PMC_MDIV_2 = (0x1 << 8);   //  (PMC) The processor clock is twice as fast as the master clock
+    static const    uint32_t PMC_MDIV_3 = (0x2 << 8);   //  (PMC) The processor clock is four times faster than the master clock
 
     /****/ volatile uint32_t Reserved3[3];  //
 
@@ -219,15 +219,15 @@ struct AT91_PMC {
     /****/ volatile uint32_t Reserved4[6];  //
 
     /****/ volatile uint32_t PMC_IER;   // Interrupt Enable Register
-    static const    uint32_t PMC_MOSCS     = (0x1 <<  0);       // (PMC) MOSC Status/Enable/Disable/Mask
-    static const    uint32_t PMC_LOCKA     = (0x1 <<  1);       // (PMC) PLL Status/Enable/Disable/Mask =(SAM9 Only);
-    static const    uint32_t PMC_LOCK      = (0x1 <<  2);       // (PMC) PLL Status/Enable/Disable/Mask
-    static const    uint32_t PMC_MCKRDY    = (0x1 <<  3);       // (PMC) MCK_RDY Status/Enable/Disable/Mask
-    static const    uint32_t PMC_PCK0RDY   = (0x1 <<  8);       // (PMC) PCK0_RDY Status/Enable/Disable/Mask
-    static const    uint32_t PMC_PCK1RDY   = (0x1 <<  9);       // (PMC) PCK1_RDY Status/Enable/Disable/Mask
-    static const    uint32_t PMC_PCK2RDY   = (0x1 << 10);       // (PMC) PCK2_RDY Status/Enable/Disable/Mask
-    static const    uint32_t PMC_PCK3RDY   = (0x1 << 11);       // (PMC) PCK3_RDY Status/Enable/Disable/Mask
-    static const    uint32_t PMC_LOCKU      = (0x1 << 6);           //(PMC) USB clock locked
+    static const    uint32_t PMC_MOSCS = (0x1 << 0);       // (PMC) MOSC Status/Enable/Disable/Mask
+    static const    uint32_t PMC_LOCKA = (0x1 << 1);       // (PMC) PLL Status/Enable/Disable/Mask =(SAM9 Only);
+    static const    uint32_t PMC_LOCK = (0x1 << 2);       // (PMC) PLL Status/Enable/Disable/Mask
+    static const    uint32_t PMC_MCKRDY = (0x1 << 3);       // (PMC) MCK_RDY Status/Enable/Disable/Mask
+    static const    uint32_t PMC_PCK0RDY = (0x1 << 8);       // (PMC) PCK0_RDY Status/Enable/Disable/Mask
+    static const    uint32_t PMC_PCK1RDY = (0x1 << 9);       // (PMC) PCK1_RDY Status/Enable/Disable/Mask
+    static const    uint32_t PMC_PCK2RDY = (0x1 << 10);       // (PMC) PCK2_RDY Status/Enable/Disable/Mask
+    static const    uint32_t PMC_PCK3RDY = (0x1 << 11);       // (PMC) PCK3_RDY Status/Enable/Disable/Mask
+    static const    uint32_t PMC_LOCKU = (0x1 << 6);           //(PMC) USB clock locked
     /****/ volatile uint32_t PMC_IDR;   // Interrupt Disable Register
 
     /****/ volatile uint32_t PMC_SR;    // Status Register
@@ -237,34 +237,29 @@ struct AT91_PMC {
     /****/ volatile uint32_t Reserved5[4]; // Reserved
 
 
-    static const    uint32_t PMC_PLLICPR__PLLA = (0x1 <<  0);
+    static const    uint32_t PMC_PLLICPR__PLLA = (0x1 << 0);
     static const    uint32_t PMC_PLLICPR__PLLB = (0x1 << 16);
 
-    __inline void EnableSystemClock(uint32_t clkIds)
-    {
+    __inline void EnableSystemClock(uint32_t clkIds) {
         PMC_SCER = clkIds;
     }
 
-    __inline void DisableSystemClock(uint32_t clkIds)
-    {
+    __inline void DisableSystemClock(uint32_t clkIds) {
         PMC_SCDR = clkIds;
     }
 
-    __inline void EnablePeriphClock(uint32_t periphIds)
-    {
+    __inline void EnablePeriphClock(uint32_t periphIds) {
         PMC_PCER = (1 << periphIds);
     }
 
-    __inline void DisablePeriphClock(uint32_t periphIds)
-    {
+    __inline void DisablePeriphClock(uint32_t periphIds) {
         PMC_PCDR = (1 << periphIds);
     }
 };
 
 
 // MMU
-struct ARM9_MMU
-{
+struct ARM9_MMU {
     static const uint32_t c_TTB_size = 0x4000;
 
     static const uint32_t c_MMU_L1_Fault = 0x00;
@@ -311,9 +306,9 @@ size_t AT91_Cache_GetUncachableAddress(size_t address);
 struct AT91_PIO {
 
 
-     static const uint32_t c_Base = AT91C_BASE_PIOA;
+    static const uint32_t c_Base = AT91C_BASE_PIOA;
 
-     static const uint32_t c_Base_Offset = 0x200;
+    static const uint32_t c_Base_Offset = 0x200;
 
 
     /****/ volatile uint32_t PIO_PER;   // PIO Enable Register
@@ -555,8 +550,7 @@ int32_t AT91_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self);
 // AT91_SPI
 //
 
-struct AT91_SPI
-{
+struct AT91_SPI {
     static const uint32_t c_Base_1 = AT91C_BASE_SPI0;
     static const uint32_t c_Base_2 = AT91C_BASE_SPI1;
 
@@ -612,8 +606,7 @@ struct AT91_SPI
     /****/ volatile uint32_t SPI_CSR2;       // Chip Select Register 2
     /****/ volatile uint32_t SPI_CSR3;       // Chip Select Register 3
 
-    __inline static uint32_t ConvertClockRateToDivisor(uint32_t clockKHz)
-    {
+    __inline static uint32_t ConvertClockRateToDivisor(uint32_t clockKHz) {
         uint32_t mckKHz = AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 1000;
         uint32_t divisor = mckKHz / clockKHz;
 
@@ -627,8 +620,7 @@ struct AT91_SPI
     }
 
     // no data in TX FIFO
-    __inline bool TransmitBufferEmpty(AT91_SPI & _SPI)
-    {
+    __inline bool TransmitBufferEmpty(AT91_SPI & _SPI) {
         return (_SPI.SPI_SR & SPI_SR_TXEMPTY) != 0;
     }
 };
@@ -656,110 +648,110 @@ TinyCLR_Result AT91_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* s
 //
 struct AT91_USART {
 
-    static const uint32_t c_Base_dbg      = AT91C_BASE_DBGU;
-    static const uint32_t c_Base          = AT91C_BASE_US0;
-    static const uint32_t c_Base_offset   = 0x4000;
+    static const uint32_t c_Base_dbg = AT91C_BASE_DBGU;
+    static const uint32_t c_Base = AT91C_BASE_US0;
+    static const uint32_t c_Base_offset = 0x4000;
 
-    static const uint32_t c_MAX_BAUDRATE  = ((AT91_SYSTEM_PERIPHERAL_CLOCK_HZ*10)/ 16);
-    static const uint32_t c_MIN_BAUDRATE  = 0;
+    static const uint32_t c_MAX_BAUDRATE = ((AT91_SYSTEM_PERIPHERAL_CLOCK_HZ * 10) / 16);
+    static const uint32_t c_MIN_BAUDRATE = 0;
 
     /****/ volatile uint32_t US_CR;          // Control Register
-    static const    uint32_t US_RSTRX        = ((unsigned int) 0x1 <<  2); // (DBGU) Reset Receiver
-    static const    uint32_t US_RSTTX        = ((unsigned int) 0x1 <<  3); //  (DBGU) Reset Transmitter
-    static const    uint32_t US_RXEN         = ((unsigned int) 0x1 <<  4); //  (DBGU) Receiver Enable
-    static const    uint32_t US_RXDIS        = ((unsigned int) 0x1 <<  5); //  (DBGU) Receiver Disable
-    static const    uint32_t US_TXEN         = ((unsigned int) 0x1 <<  6); //  (DBGU) Transmitter Enable
-    static const    uint32_t US_TXDIS        = ((unsigned int) 0x1 <<  7); //  (DBGU) Transmitter Disable
-    static const    uint32_t US_RSTSTA       = ((unsigned int) 0x1 <<  8); //  (DBGU) Reset Status Bits
-    static const    uint32_t US_STTBRK       = ((unsigned int) 0x1 <<  9); //  (USART) Start Break
-    static const    uint32_t US_STPBRK       = ((unsigned int) 0x1 << 10); //  (USART) Stop Break
-    static const    uint32_t US_STTTO        = ((unsigned int) 0x1 << 11); //  (USART) Start Time-out
-    static const    uint32_t US_SENDA        = ((unsigned int) 0x1 << 12); //  (USART) Send Address
-    static const    uint32_t US_RSTIT        = ((unsigned int) 0x1 << 13); //  (USART) Reset Iterations
-    static const    uint32_t US_RSTNACK      = ((unsigned int) 0x1 << 14); //  (USART) Reset Non Acknowledge
-    static const    uint32_t US_RETTO        = ((unsigned int) 0x1 << 15); //  (USART) Rearm Time-out
-    static const    uint32_t US_DTREN        = ((unsigned int) 0x1UL << 16); //  (USART) Data Terminal ready Enable
-    static const    uint32_t US_DTRDIS       = ((unsigned int) 0x1UL << 17); //  (USART) Data Terminal ready Disable
-    static const    uint32_t US_RTSEN        = ((unsigned int) 0x1UL << 18); //  (USART) Request to Send enable
-    static const    uint32_t US_RTSDIS       = ((unsigned int) 0x1UL << 19); //  (USART) Request to Send Disable
+    static const    uint32_t US_RSTRX = ((unsigned int)0x1 << 2); // (DBGU) Reset Receiver
+    static const    uint32_t US_RSTTX = ((unsigned int)0x1 << 3); //  (DBGU) Reset Transmitter
+    static const    uint32_t US_RXEN = ((unsigned int)0x1 << 4); //  (DBGU) Receiver Enable
+    static const    uint32_t US_RXDIS = ((unsigned int)0x1 << 5); //  (DBGU) Receiver Disable
+    static const    uint32_t US_TXEN = ((unsigned int)0x1 << 6); //  (DBGU) Transmitter Enable
+    static const    uint32_t US_TXDIS = ((unsigned int)0x1 << 7); //  (DBGU) Transmitter Disable
+    static const    uint32_t US_RSTSTA = ((unsigned int)0x1 << 8); //  (DBGU) Reset Status Bits
+    static const    uint32_t US_STTBRK = ((unsigned int)0x1 << 9); //  (USART) Start Break
+    static const    uint32_t US_STPBRK = ((unsigned int)0x1 << 10); //  (USART) Stop Break
+    static const    uint32_t US_STTTO = ((unsigned int)0x1 << 11); //  (USART) Start Time-out
+    static const    uint32_t US_SENDA = ((unsigned int)0x1 << 12); //  (USART) Send Address
+    static const    uint32_t US_RSTIT = ((unsigned int)0x1 << 13); //  (USART) Reset Iterations
+    static const    uint32_t US_RSTNACK = ((unsigned int)0x1 << 14); //  (USART) Reset Non Acknowledge
+    static const    uint32_t US_RETTO = ((unsigned int)0x1 << 15); //  (USART) Rearm Time-out
+    static const    uint32_t US_DTREN = ((unsigned int)0x1UL << 16); //  (USART) Data Terminal ready Enable
+    static const    uint32_t US_DTRDIS = ((unsigned int)0x1UL << 17); //  (USART) Data Terminal ready Disable
+    static const    uint32_t US_RTSEN = ((unsigned int)0x1UL << 18); //  (USART) Request to Send enable
+    static const    uint32_t US_RTSDIS = ((unsigned int)0x1UL << 19); //  (USART) Request to Send Disable
 
     /****/ volatile uint32_t US_MR;          // Mode Register
-    static const    uint32_t US_USMODE       = ((unsigned int) 0xF <<  0); //  (USART) Usart mode
-    static const    uint32_t     US_USMODE_NORMAL               = ((unsigned int) 0x0); //  (USART) Normal
-    static const    uint32_t     US_USMODE_RS485                = ((unsigned int) 0x1); //  (USART) RS485
-    static const    uint32_t     US_USMODE_HWHSH                = ((unsigned int) 0x2); //  (USART) Hardware Handshaking
-    static const    uint32_t     US_USMODE_MODEM                = ((unsigned int) 0x3); //  (USART) Modem
-    static const    uint32_t     US_USMODE_ISO7816_0            = ((unsigned int) 0x4); //  (USART) ISO7816 protocol: T = 0
-    static const    uint32_t     US_USMODE_ISO7816_1            = ((unsigned int) 0x6); //  (USART) ISO7816 protocol: T = 1
-    static const    uint32_t     US_USMODE_IRDA                 = ((unsigned int) 0x8); //  (USART) IrDA
-    static const    uint32_t     US_USMODE_SWHSH                = ((unsigned int) 0xC); //  (USART) Software Handshaking
-    static const    uint32_t US_CLKS         = ((unsigned int) 0x3 <<  4); //  (USART) Clock Selection = (Baud Rate generator Input Clock
-    static const    uint32_t     US_CLKS_CLOCK                = ((unsigned int) 0x0 <<  4); //  (USART) Clock
-    static const    uint32_t     US_CLKS_FDIV1                = ((unsigned int) 0x1 <<  4); //  (USART) fdiv1
-    static const    uint32_t     US_CLKS_SLOW                 = ((unsigned int) 0x2 <<  4); //  (USART) slow_clock = (ARM);
-    static const    uint32_t     US_CLKS_EXT                  = ((unsigned int) 0x3 <<  4); //  (USART) External = (SCK);
-    static const    uint32_t US_CHRL         = ((unsigned int) 0x3 <<  6); //  (USART) Clock Selection = (Baud Rate generator Input Clock
-    static const    uint32_t     US_CHRL_5_BITS               = ((unsigned int) 0x0 <<  6); //  (USART) Character Length: 5 bits
-    static const    uint32_t     US_CHRL_6_BITS               = ((unsigned int) 0x1 <<  6); //  (USART) Character Length: 6 bits
-    static const    uint32_t     US_CHRL_7_BITS               = ((unsigned int) 0x2 <<  6); //  (USART) Character Length: 7 bits
-    static const    uint32_t     US_CHRL_8_BITS               = ((unsigned int) 0x3 <<  6); //  (USART) Character Length: 8 bits
-    static const    uint32_t US_SYNC         = ((unsigned int) 0x1 <<  8); //  (USART) Synchronous Mode Select
-    static const    uint32_t US_NBSTOP       = ((unsigned int) 0x3 << 12); //  (USART) Number of Stop bits
-    static const    uint32_t     US_NBSTOP_1_BIT                = ((unsigned int) 0x0 << 12); //  (USART) 1 stop bit
-    static const    uint32_t     US_NBSTOP_15_BIT               = ((unsigned int) 0x1 << 12); //  (USART) Asynchronous = (SYNC=0); 2 stop bits Synchronous = (SYNC=1); 2 stop bits
-    static const    uint32_t     US_NBSTOP_2_BIT                = ((unsigned int) 0x2 << 12); //  (USART) 2 stop bits
-    static const    uint32_t US_MSBF         = ((unsigned int) 0x1 << 16); //  (USART) Bit Order
-    static const    uint32_t US_MODE9        = ((unsigned int) 0x1 << 17); //  (USART) 9-bit Character length
-    static const    uint32_t US_CKLO         = ((unsigned int) 0x1 << 18); //  (USART) Clock Output Select
-    static const    uint32_t US_OVER         = ((unsigned int) 0x1 << 19); //  (USART) Over Sampling Mode
-    static const    uint32_t US_INACK        = ((unsigned int) 0x1 << 20); //  (USART) Inhibit Non Acknowledge
-    static const    uint32_t US_DSNACK       = ((unsigned int) 0x1 << 21); //  (USART) Disable Successive NACK
-    static const    uint32_t US_MAX_ITER     = ((unsigned int) 0x1 << 24); //  (USART) Number of Repetitions
-    static const    uint32_t US_FILTER       = ((unsigned int) 0x1 << 28); //  (USART) Receive Line Filter
-    static const    uint32_t US_PAR          = (0x7 <<  9); // = (DBGU); Parity type
-    static const    uint32_t     US_PAR_EVEN                 = (0x0 <<  9); // = (DBGU); Even Parity
-    static const    uint32_t     US_PAR_ODD                  = (0x1 <<  9); // = (DBGU); Odd Parity
-    static const    uint32_t     US_PAR_SPACE                = (0x2 <<  9); // = (DBGU); Parity forced to 0 = (Space);
-    static const    uint32_t     US_PAR_MARK                 = (0x3 <<  9); // = (DBGU); Parity forced to 1 = (Mark);
-    static const    uint32_t     US_PAR_NONE                 = (0x4 <<  9); // = (DBGU); No Parity
-    static const    uint32_t     US_PAR_MULTI_DROP           = (0x6 <<  9); // = (DBGU); Multi-drop mode
-    static const    uint32_t US_CHMODE       = (0x3 << 14); // = (DBGU); Channel Mode
-    static const    uint32_t     US_CHMODE_NORMAL               = (0x0UL << 14); // = (DBGU); Normal Mode: The USART channel operates as an RX/TX USART.
-    static const    uint32_t     US_CHMODE_AUTO                 = (0x1UL << 14); // = (DBGU); Automatic Echo: Receiver Data Input is connected to the TXD pin.
-    static const    uint32_t     US_CHMODE_LOCAL                = (0x2UL << 14); // = (DBGU); Local Loopback: Transmitter Output Signal is connected to Receiver Input Signal.
-    static const    uint32_t     US_CHMODE_REMOTE               = (0x3UL << 14); // = (DBGU); Remote Loopback: RXD pin is internally connected to TXD pin.
+    static const    uint32_t US_USMODE = ((unsigned int)0xF << 0); //  (USART) Usart mode
+    static const    uint32_t     US_USMODE_NORMAL = ((unsigned int)0x0); //  (USART) Normal
+    static const    uint32_t     US_USMODE_RS485 = ((unsigned int)0x1); //  (USART) RS485
+    static const    uint32_t     US_USMODE_HWHSH = ((unsigned int)0x2); //  (USART) Hardware Handshaking
+    static const    uint32_t     US_USMODE_MODEM = ((unsigned int)0x3); //  (USART) Modem
+    static const    uint32_t     US_USMODE_ISO7816_0 = ((unsigned int)0x4); //  (USART) ISO7816 protocol: T = 0
+    static const    uint32_t     US_USMODE_ISO7816_1 = ((unsigned int)0x6); //  (USART) ISO7816 protocol: T = 1
+    static const    uint32_t     US_USMODE_IRDA = ((unsigned int)0x8); //  (USART) IrDA
+    static const    uint32_t     US_USMODE_SWHSH = ((unsigned int)0xC); //  (USART) Software Handshaking
+    static const    uint32_t US_CLKS = ((unsigned int)0x3 << 4); //  (USART) Clock Selection = (Baud Rate generator Input Clock
+    static const    uint32_t     US_CLKS_CLOCK = ((unsigned int)0x0 << 4); //  (USART) Clock
+    static const    uint32_t     US_CLKS_FDIV1 = ((unsigned int)0x1 << 4); //  (USART) fdiv1
+    static const    uint32_t     US_CLKS_SLOW = ((unsigned int)0x2 << 4); //  (USART) slow_clock = (ARM);
+    static const    uint32_t     US_CLKS_EXT = ((unsigned int)0x3 << 4); //  (USART) External = (SCK);
+    static const    uint32_t US_CHRL = ((unsigned int)0x3 << 6); //  (USART) Clock Selection = (Baud Rate generator Input Clock
+    static const    uint32_t     US_CHRL_5_BITS = ((unsigned int)0x0 << 6); //  (USART) Character Length: 5 bits
+    static const    uint32_t     US_CHRL_6_BITS = ((unsigned int)0x1 << 6); //  (USART) Character Length: 6 bits
+    static const    uint32_t     US_CHRL_7_BITS = ((unsigned int)0x2 << 6); //  (USART) Character Length: 7 bits
+    static const    uint32_t     US_CHRL_8_BITS = ((unsigned int)0x3 << 6); //  (USART) Character Length: 8 bits
+    static const    uint32_t US_SYNC = ((unsigned int)0x1 << 8); //  (USART) Synchronous Mode Select
+    static const    uint32_t US_NBSTOP = ((unsigned int)0x3 << 12); //  (USART) Number of Stop bits
+    static const    uint32_t     US_NBSTOP_1_BIT = ((unsigned int)0x0 << 12); //  (USART) 1 stop bit
+    static const    uint32_t     US_NBSTOP_15_BIT = ((unsigned int)0x1 << 12); //  (USART) Asynchronous = (SYNC=0); 2 stop bits Synchronous = (SYNC=1); 2 stop bits
+    static const    uint32_t     US_NBSTOP_2_BIT = ((unsigned int)0x2 << 12); //  (USART) 2 stop bits
+    static const    uint32_t US_MSBF = ((unsigned int)0x1 << 16); //  (USART) Bit Order
+    static const    uint32_t US_MODE9 = ((unsigned int)0x1 << 17); //  (USART) 9-bit Character length
+    static const    uint32_t US_CKLO = ((unsigned int)0x1 << 18); //  (USART) Clock Output Select
+    static const    uint32_t US_OVER = ((unsigned int)0x1 << 19); //  (USART) Over Sampling Mode
+    static const    uint32_t US_INACK = ((unsigned int)0x1 << 20); //  (USART) Inhibit Non Acknowledge
+    static const    uint32_t US_DSNACK = ((unsigned int)0x1 << 21); //  (USART) Disable Successive NACK
+    static const    uint32_t US_MAX_ITER = ((unsigned int)0x1 << 24); //  (USART) Number of Repetitions
+    static const    uint32_t US_FILTER = ((unsigned int)0x1 << 28); //  (USART) Receive Line Filter
+    static const    uint32_t US_PAR = (0x7 << 9); // = (DBGU); Parity type
+    static const    uint32_t     US_PAR_EVEN = (0x0 << 9); // = (DBGU); Even Parity
+    static const    uint32_t     US_PAR_ODD = (0x1 << 9); // = (DBGU); Odd Parity
+    static const    uint32_t     US_PAR_SPACE = (0x2 << 9); // = (DBGU); Parity forced to 0 = (Space);
+    static const    uint32_t     US_PAR_MARK = (0x3 << 9); // = (DBGU); Parity forced to 1 = (Mark);
+    static const    uint32_t     US_PAR_NONE = (0x4 << 9); // = (DBGU); No Parity
+    static const    uint32_t     US_PAR_MULTI_DROP = (0x6 << 9); // = (DBGU); Multi-drop mode
+    static const    uint32_t US_CHMODE = (0x3 << 14); // = (DBGU); Channel Mode
+    static const    uint32_t     US_CHMODE_NORMAL = (0x0UL << 14); // = (DBGU); Normal Mode: The USART channel operates as an RX/TX USART.
+    static const    uint32_t     US_CHMODE_AUTO = (0x1UL << 14); // = (DBGU); Automatic Echo: Receiver Data Input is connected to the TXD pin.
+    static const    uint32_t     US_CHMODE_LOCAL = (0x2UL << 14); // = (DBGU); Local Loopback: Transmitter Output Signal is connected to Receiver Input Signal.
+    static const    uint32_t     US_CHMODE_REMOTE = (0x3UL << 14); // = (DBGU); Remote Loopback: RXD pin is internally connected to TXD pin.
 
     /****/ volatile uint32_t US_IER;         // Interrupt Enable Register
-    static const    uint32_t US_RXBRK        = ((unsigned int) 0x1 <<  2); //  (USART) Break Received/End of Break
-    static const    uint32_t US_TIMEOUT      = ((unsigned int) 0x1 <<  8); //  (USART) Receiver Time-out
-    static const    uint32_t US_ITERATION    = ((unsigned int) 0x1 << 10); //  (USART) Max number of Repetitions Reached
-    static const    uint32_t US_NACK         = ((unsigned int) 0x1 << 13); //  (USART) Non Acknowledge
-    static const    uint32_t US_RIIC         = ((unsigned int) 0x1 << 16); //  (USART) Ring INdicator Input Change Flag
-    static const    uint32_t US_DSRIC        = ((unsigned int) 0x1 << 17); //  (USART) Data Set Ready Input Change Flag
-    static const    uint32_t US_DCDIC        = ((unsigned int) 0x1 << 18); //  (USART) Data Carrier Flag
-    static const    uint32_t US_CTSIC        = ((unsigned int) 0x1 << 19); //  (USART) Clear To Send Input Change Flag
-    static const    uint32_t US_RXRDY        = (0x1UL <<  0); // = (DBGU); RXRDY Interrupt
-    static const    uint32_t US_TXRDY        = (0x1UL <<  1); // = (DBGU); TXRDY Interrupt
-    static const    uint32_t US_ENDRX        = (0x1UL <<  3); // = (DBGU); End of Receive Transfer Interrupt
-    static const    uint32_t US_ENDTX        = (0x1UL <<  4); // = (DBGU); End of Transmit Interrupt
-    static const    uint32_t US_OVRE         = (0x1UL <<  5); // = (DBGU); Overrun Interrupt
-    static const    uint32_t US_FRAME        = (0x1UL <<  6); // = (DBGU); Framing Error Interrupt
-    static const    uint32_t US_PARE         = (0x1UL <<  7); // = (DBGU); Parity Error Interrupt
-    static const    uint32_t US_TXEMPTY      = (0x1UL <<  9); // = (DBGU); TXEMPTY Interrupt
-    static const    uint32_t US_TXBUFE       = (0x1UL << 11); // = (DBGU); TXBUFE Interrupt
-    static const    uint32_t US_RXBUFF       = (0x1UL << 12); // = (DBGU); RXBUFF Interrupt
-    static const    uint32_t US_COMM_TX      = (0x1UL << 30); // = (DBGU); COMM_TX Interrupt
-    static const    uint32_t US_COMM_RX      = (0x1UL << 31); // = (DBGU); COMM_RX Interrupt
+    static const    uint32_t US_RXBRK = ((unsigned int)0x1 << 2); //  (USART) Break Received/End of Break
+    static const    uint32_t US_TIMEOUT = ((unsigned int)0x1 << 8); //  (USART) Receiver Time-out
+    static const    uint32_t US_ITERATION = ((unsigned int)0x1 << 10); //  (USART) Max number of Repetitions Reached
+    static const    uint32_t US_NACK = ((unsigned int)0x1 << 13); //  (USART) Non Acknowledge
+    static const    uint32_t US_RIIC = ((unsigned int)0x1 << 16); //  (USART) Ring INdicator Input Change Flag
+    static const    uint32_t US_DSRIC = ((unsigned int)0x1 << 17); //  (USART) Data Set Ready Input Change Flag
+    static const    uint32_t US_DCDIC = ((unsigned int)0x1 << 18); //  (USART) Data Carrier Flag
+    static const    uint32_t US_CTSIC = ((unsigned int)0x1 << 19); //  (USART) Clear To Send Input Change Flag
+    static const    uint32_t US_RXRDY = (0x1UL << 0); // = (DBGU); RXRDY Interrupt
+    static const    uint32_t US_TXRDY = (0x1UL << 1); // = (DBGU); TXRDY Interrupt
+    static const    uint32_t US_ENDRX = (0x1UL << 3); // = (DBGU); End of Receive Transfer Interrupt
+    static const    uint32_t US_ENDTX = (0x1UL << 4); // = (DBGU); End of Transmit Interrupt
+    static const    uint32_t US_OVRE = (0x1UL << 5); // = (DBGU); Overrun Interrupt
+    static const    uint32_t US_FRAME = (0x1UL << 6); // = (DBGU); Framing Error Interrupt
+    static const    uint32_t US_PARE = (0x1UL << 7); // = (DBGU); Parity Error Interrupt
+    static const    uint32_t US_TXEMPTY = (0x1UL << 9); // = (DBGU); TXEMPTY Interrupt
+    static const    uint32_t US_TXBUFE = (0x1UL << 11); // = (DBGU); TXBUFE Interrupt
+    static const    uint32_t US_RXBUFF = (0x1UL << 12); // = (DBGU); RXBUFF Interrupt
+    static const    uint32_t US_COMM_TX = (0x1UL << 30); // = (DBGU); COMM_TX Interrupt
+    static const    uint32_t US_COMM_RX = (0x1UL << 31); // = (DBGU); COMM_RX Interrupt
 
     /****/ volatile uint32_t US_IDR;         // Interrupt Disable Register
 
     /****/ volatile uint32_t US_IMR;         // Interrupt Mask Register
 
     /****/ volatile uint32_t US_CSR;         // Channel Status Register
-    static const    uint32_t US_RI           = ((unsigned int) 0x1 << 20); //  (USART) Image of RI Input
-    static const    uint32_t US_DSR          = ((unsigned int) 0x1 << 21); //  (USART) Image of DSR Input
-    static const    uint32_t US_DCD          = ((unsigned int) 0x1 << 22); //  (USART) Image of DCD Input
-    static const    uint32_t US_CTS          = ((unsigned int) 0x1 << 23); //  (USART) Image of CTS Input
+    static const    uint32_t US_RI = ((unsigned int)0x1 << 20); //  (USART) Image of RI Input
+    static const    uint32_t US_DSR = ((unsigned int)0x1 << 21); //  (USART) Image of DSR Input
+    static const    uint32_t US_DCD = ((unsigned int)0x1 << 22); //  (USART) Image of DCD Input
+    static const    uint32_t US_CTS = ((unsigned int)0x1 << 23); //  (USART) Image of CTS Input
 
     /****/ volatile uint32_t US_RHR;         // Receiver Holding Register
 
@@ -861,8 +853,7 @@ TinyCLR_Result AT91_Flash_Reset(const TinyCLR_Deployment_Provider* self);
 //////////////////////////////////////////////////////////////////////////////
 // AT91_AIC
 //
-struct AT91_AIC
-{
+struct AT91_AIC {
     static const uint32_t c_Base = AT91C_BASE_AIC;
 
     /****/ volatile uint32_t AIC_SMR[32];    // Source Mode Register
@@ -924,10 +915,8 @@ struct AT91_AIC
     /****/ volatile uint32_t AIC_FFSR;       // Fast Forcing Status Register
 
 
-    bool IsInterruptPending()
-    {
-        if (AIC_IPR & AIC_IMR)
-        {
+    bool IsInterruptPending() {
+        if (AIC_IPR & AIC_IMR) {
             return true;
         }
 
@@ -1020,8 +1009,7 @@ extern TinyCLR_Interrupt_StartStopHandler AT91_Interrupt_Ended;
 //////////////////////////////////////////////////////////////////////////////
 // AT91_I2C
 //
-struct AT91_I2C
-{
+struct AT91_I2C {
     static const uint32_t c_Base = AT91C_BASE_TWI;
 
     //--//
@@ -1291,6 +1279,176 @@ TinyCLR_Result AT91_UsbClient_SetStringDescriptor(const TinyCLR_UsbClient_Provid
 TinyCLR_Result AT91_UsbClient_SetOsExtendedPropertyHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_OsExtendedPropertyHandler handler);
 
 // LCD
+struct AT91_LCDC {
+
+    static const uint32_t c_Base = AT91C_BASE_LCDC;
+
+    /****/ volatile uint32_t LCDC_BA1;        // DMA Base Address Register 1
+
+    /****/ volatile uint32_t LCDC_BA2;        // DMA Base Address Register 2
+
+    /****/ volatile uint32_t LCDC_FRMP1;      // DMA Frame Pointer Register 1
+    static const    uint32_t LCDC_FRMPT1 = ((uint32_t)0x3FFFFF << 0); // (LCDC) Frame Pointer Address 1
+
+    /****/ volatile uint32_t LCDC_FRMP2;      // DMA Frame Pointer Register 2
+    static const    uint32_t LCDC_FRMPT2 = ((uint32_t)0x1FFFFF << 0); // (LCDC) Frame Pointer Address 2
+
+    /****/ volatile uint32_t LCDC_FRMA1;      // DMA Frame Address Register 1
+
+    /****/ volatile uint32_t LCDC_FRMA2;      // DMA Frame Address Register 2
+
+    /****/ volatile uint32_t LCDC_FRMCFG;     // DMA Frame Configuration Register
+    static const    uint32_t LCDC_FRSIZE = ((uint32_t)0x3FFFFF << 0); // (LCDC) FRAME SIZE
+    static const    uint32_t LCDC_BLENGTH = ((uint32_t)0xF << 24); // (LCDC) BURST LENGTH
+
+    /****/ volatile uint32_t LCDC_DMACON;     // DMA Control Register
+    static const    uint32_t LCDC_DMAEN = ((uint32_t)0x1 << 0); // (LCDC) DAM Enable
+    static const    uint32_t LCDC_DMARST = ((uint32_t)0x1 << 1); // (LCDC) DMA Reset (WO)
+    static const    uint32_t LCDC_DMABUSY = ((uint32_t)0x1 << 2); // (LCDC) DMA Reset (WO)
+
+    /****/ volatile uint32_t LCDC_DMA2DCFG;   // DMA 2D addressing configuration
+    static const    uint32_t LCDC_ADDRINC = ((uint32_t)0xFFFF << 0); // (LCDC) Number of 32b words that the DMA must jump when going to the next line
+    static const    uint32_t LCDC_PIXELOFF = ((uint32_t)0x1F << 24); // (LCDC) Offset (in bits) of the first pixel of the screen in the memory word which contain it
+
+    /****/ volatile uint32_t Reserved0[503];
+
+    /****/ volatile uint32_t LCDC_LCDCON1;    // LCD Control 1 Register
+    static const    uint32_t LCDC_BYPASS = ((uint32_t)0x1 << 0); // (LCDC) Bypass lcd_pccklk divider
+    static const    uint32_t LCDC_CLKVAL = ((uint32_t)0x1FF << 12); // (LCDC) 9-bit Divider for pixel clock frequency
+    static const    uint32_t LCDC_LINCNT = ((uint32_t)0x7FF << 21); // (LCDC) Line Counter (RO)
+
+    /****/ volatile uint32_t LCDC_LCDCON2;    // LCD Control 2 Register
+    static const    uint32_t LCDC_DISTYPE = ((uint32_t)0x3 << 0); // (LCDC) Display Type
+    static const    uint32_t  LCDC_DISTYPE_STNMONO = ((uint32_t)0x0); // (LCDC) STN Mono
+    static const    uint32_t  LCDC_DISTYPE_STNCOLOR = ((uint32_t)0x1); // (LCDC) STN Color
+    static const    uint32_t  LCDC_DISTYPE_TFT = ((uint32_t)0x2); // (LCDC) TFT
+    static const    uint32_t LCDC_SCANMOD = ((uint32_t)0x1 << 2); // (LCDC) Scan Mode
+    static const    uint32_t  LCDC_SCANMOD_SINGLESCAN = ((uint32_t)0x0 << 2); // (LCDC) Single Scan
+    static const    uint32_t  LCDC_SCANMOD_DUALSCAN = ((uint32_t)0x1 << 2); // (LCDC) Dual Scan
+    static const    uint32_t LCDC_IFWIDTH = ((uint32_t)0x3 << 3);// (LCDC) Interface Width
+    static const    uint32_t  LCDC_IFWIDTH_FOURBITSWIDTH = ((uint32_t)0x0 << 3); // (LCDC) 4 Bits
+    static const    uint32_t  LCDC_IFWIDTH_EIGTHBITSWIDTH = ((uint32_t)0x1 << 3); // (LCDC) 8 Bits
+    static const    uint32_t  LCDC_IFWIDTH_SIXTEENBITSWIDTH = ((uint32_t)0x2 << 3); // (LCDC) 16 Bits
+    static const    uint32_t LCDC_PIXELSIZE = ((uint32_t)0x7 << 5); // (LCDC) Bits per pixel
+    static const    uint32_t  LCDC_PIXELSIZE_ONEBITSPERPIXEL = ((uint32_t)0x0 << 5); // (LCDC) 1 Bits
+    static const    uint32_t  LCDC_PIXELSIZE_TWOBITSPERPIXEL = ((uint32_t)0x1 << 5); // (LCDC) 2 Bits
+    static const    uint32_t  LCDC_PIXELSIZE_FOURBITSPERPIXEL = ((uint32_t)0x2 << 5); // (LCDC) 4 Bits
+    static const    uint32_t  LCDC_PIXELSIZE_EIGTHBITSPERPIXEL = ((uint32_t)0x3 << 5); // (LCDC) 8 Bits
+    static const    uint32_t  LCDC_PIXELSIZE_SIXTEENBITSPERPIXEL = ((uint32_t)0x4 << 5); // (LCDC) 16 Bits
+    static const    uint32_t  LCDC_PIXELSIZE_TWENTYFOURBITSPERPIXEL = ((uint32_t)0x5 << 5); // (LCDC) 24 Bits
+    static const    uint32_t LCDC_INVVD = ((uint32_t)0x1 << 8); // (LCDC) lcd datas polarity
+    static const    uint32_t  LCDC_INVVD_NORMALPOL = ((uint32_t)0x0 << 8); // (LCDC) Normal Polarity
+    static const    uint32_t  LCDC_INVVD_INVERTEDPOL = ((uint32_t)0x1 << 8); // (LCDC) Inverted Polarity
+    static const    uint32_t LCDC_INVFRAME = ((uint32_t)0x1 << 9); // (LCDC) lcd vsync polarity
+    static const    uint32_t  LCDC_INVFRAME_NORMALPOL = ((uint32_t)0x0 << 9); // (LCDC) Normal Polarity
+    static const    uint32_t  LCDC_INVFRAME_INVERTEDPOL = ((uint32_t)0x1 << 9); // (LCDC) Inverted Polarity
+    static const    uint32_t LCDC_INVLINE = ((uint32_t)0x1 << 10); // (LCDC) lcd hsync polarity
+    static const    uint32_t  LCDC_INVLINE_NORMALPOL = ((uint32_t)0x0 << 10); // (LCDC) Normal Polarity
+    static const    uint32_t  LCDC_INVLINE_INVERTEDPOL = ((uint32_t)0x1 << 10); // (LCDC) Inverted Polarity
+    static const    uint32_t LCDC_INVCLK = ((uint32_t)0x1 << 11); // (LCDC) lcd pclk polarity
+    static const    uint32_t  LCDC_INVCLK_NORMALPOL = ((uint32_t)0x0 << 11); // (LCDC) Normal Polarity
+    static const    uint32_t  LCDC_INVCLK_INVERTEDPOL = ((uint32_t)0x1 << 11); // (LCDC) Inverted Polarity
+    static const    uint32_t LCDC_INVDVAL = ((uint32_t)0x1 << 12); // (LCDC) lcd dval polarity
+    static const    uint32_t  LCDC_INVDVAL_NORMALPOL = ((uint32_t)0x0 << 12); // (LCDC) Normal Polarity
+    static const    uint32_t  LCDC_INVDVAL_INVERTEDPOL = ((uint32_t)0x1 << 12); // (LCDC) Inverted Polarity
+    static const    uint32_t LCDC_CLKMOD = ((uint32_t)0x1 << 15); // (LCDC) lcd pclk Mode
+    static const    uint32_t  LCDC_CLKMOD_ACTIVEONLYDISP = ((uint32_t)0x0 << 15); // (LCDC) Active during display period
+    static const    uint32_t  LCDC_CLKMOD_ALWAYSACTIVE = ((uint32_t)0x1 << 15); // (LCDC) Always Active
+    static const    uint32_t LCDC_MEMOR = ((uint32_t)0x1 << 31); // (LCDC) lcd pclk Mode
+    static const    uint32_t  LCDC_MEMOR_BIGIND = ((uint32_t)0x0 << 31); // (LCDC) Big Endian
+    static const    uint32_t  LCDC_MEMOR_LITTLEIND = ((uint32_t)0x1 << 31); // (LCDC) Little Endian
+
+    /****/ volatile uint32_t LCDC_TIM1;       // LCD Timing Config 1 Register
+    static const    uint32_t LCDC_VFP = ((uint32_t)0xFF << 0); // (LCDC) Vertical Front Porch
+    static const    uint32_t LCDC_VBP = ((uint32_t)0xFF << 8); // (LCDC) Vertical Back Porch
+    static const    uint32_t LCDC_VPW = ((uint32_t)0x3F << 16); // (LCDC) Vertical Synchronization Pulse Width
+    static const    uint32_t LCDC_VHDLY = ((uint32_t)0xF << 24); // (LCDC) Vertical to Horizontal Delay
+
+    /****/ volatile uint32_t LCDC_TIM2;       // LCD Timing Config 2 Register
+    static const    uint32_t LCDC_HBP = ((uint32_t)0xFF << 0); // (LCDC) Horizontal Back Porch
+    static const    uint32_t LCDC_HPW = ((uint32_t)0x3F << 8); // (LCDC) Horizontal Synchronization Pulse Width
+    static const    uint32_t LCDC_HFP = ((uint32_t)0x3FF << 22); // (LCDC) Horizontal Front Porch
+
+    /****/ volatile uint32_t LCDC_LCDFRCFG;   // LCD Frame Config Register
+    static const    uint32_t LCDC_LINEVAL = ((uint32_t)0x7FF << 0); // (LCDC) Vertical Size of LCD Module
+    static const    uint32_t LCDC_HOZVAL = ((uint32_t)0x7FF << 21); // (LCDC) Horizontal Size of LCD Module
+
+    /****/ volatile uint32_t LCDC_FIFO;       // LCD FIFO Register
+    static const    uint32_t LCDC_FIFOTH = ((uint32_t)0xFFFF << 0); // (LCDC) FIFO Threshold
+
+    /****/ volatile uint32_t LCDC_MVAL;       // LCD Mode Toggle Rate Value Register
+    static const    uint32_t LCDC_MVALUE = ((uint32_t)0xFF << 0); // (LCDC) Toggle Rate Value
+    static const    uint32_t LCDC_MMODE = ((uint32_t)0x1 << 31); // (LCDC) Toggle Rate Sel
+    static const    uint32_t  LCDC_MMODE_EACHFRAME = ((uint32_t)0x0 << 31); // (LCDC) Each Frame
+    static const    uint32_t  LCDC_MMODE_MVALDEFINED = ((uint32_t)0x1 << 31); // (LCDC) Defined by MVAL
+
+    /****/ volatile uint32_t LCDC_DP1_2;      // Dithering Pattern DP1_2 Register
+    static const    uint32_t LCDC_DP1_2_FIELD = ((uint32_t)0xFF << 0); // (LCDC) Ratio
+
+    /****/ volatile uint32_t LCDC_DP4_7;      // Dithering Pattern DP4_7 Register
+    static const    uint32_t LCDC_DP4_7_FIELD = ((uint32_t)0xFFFFFFF << 0); // (LCDC) Ratio
+
+    /****/ volatile uint32_t LCDC_DP3_5;      // Dithering Pattern DP3_5 Register
+    static const    uint32_t LCDC_DP3_5_FIELD = ((uint32_t)0xFFFFF << 0); // (LCDC) Ratio
+
+    /****/ volatile uint32_t LCDC_DP2_3;      // Dithering Pattern DP2_3 Register
+    static const    uint32_t LCDC_DP2_3_FIELD = ((uint32_t)0xFFF << 0); // (LCDC) Ratio
+
+    /****/ volatile uint32_t LCDC_DP5_7;      // Dithering Pattern DP5_7 Register
+    static const    uint32_t LCDC_DP5_7_FIELD = ((uint32_t)0xFFFFFFF << 0); // (LCDC) Ratio
+
+    /****/ volatile uint32_t LCDC_DP3_4;      // Dithering Pattern DP3_4 Register
+    static const    uint32_t LCDC_DP3_4_FIELD = ((uint32_t)0xFFFF << 0); // (LCDC) Ratio
+
+    /****/ volatile uint32_t LCDC_DP4_5;      // Dithering Pattern DP4_5 Register
+    static const    uint32_t LCDC_DP4_5_FIELD = ((uint32_t)0xFFFFF << 0); // (LCDC) Ratio
+
+    /****/ volatile uint32_t LCDC_DP6_7;      // Dithering Pattern DP6_7 Register
+    static const    uint32_t LCDC_DP6_7_FIELD = ((uint32_t)0xFFFFFFF << 0); // (LCDC) Ratio
+
+    /****/ volatile uint32_t LCDC_PWRCON;     // Power Control Register
+    static const    uint32_t LCDC_PWR = ((uint32_t)0x1 << 0); // (LCDC) LCD Module Power Control
+    static const    uint32_t LCDC_GUARDT = ((uint32_t)0x7F << 1); // (LCDC) Delay in Frame Period
+    static const    uint32_t LCDC_BUSY = ((uint32_t)0x1 << 31); // (LCDC) Read Only : 1 indicates that LCDC is busy
+    static const    uint32_t  LCDC_BUSY_LCDNOTBUSY = ((uint32_t)0x0 << 31); // (LCDC) LCD is Not Busy
+    static const    uint32_t  LCDC_BUSY_LCDBUSY = ((uint32_t)0x1 << 31); // (LCDC) LCD is Busy
+
+    /****/ volatile uint32_t LCDC_CTRSTCON;   // Contrast Control Register
+    static const    uint32_t LCDC_PS = ((uint32_t)0x3 << 0); // (LCDC) LCD Contrast Counter Prescaler
+    static const    uint32_t  LCDC_PS_NOTDIVIDED = ((uint32_t)0x0); // (LCDC) Counter Freq is System Freq.
+    static const    uint32_t  LCDC_PS_DIVIDEDBYTWO = ((uint32_t)0x1); // (LCDC) Counter Freq is System Freq divided by 2.
+    static const    uint32_t  LCDC_PS_DIVIDEDBYFOUR = ((uint32_t)0x2); // (LCDC) Counter Freq is System Freq divided by 4.
+    static const    uint32_t  LCDC_PS_DIVIDEDBYEIGHT = ((uint32_t)0x3); // (LCDC) Counter Freq is System Freq divided by 8.
+    static const    uint32_t LCDC_POL = ((uint32_t)0x1 << 2); // (LCDC) Polarity of output Pulse
+    static const    uint32_t  LCDC_POL_NEGATIVEPULSE = ((uint32_t)0x0 << 2); // (LCDC) Negative Pulse
+    static const    uint32_t  LCDC_POL_POSITIVEPULSE = ((uint32_t)0x1 << 2); // (LCDC) Positive Pulse
+    static const    uint32_t LCDC_ENA = ((uint32_t)0x1 << 3); // (LCDC) PWM generator Control
+    static const    uint32_t  LCDC_ENA_PWMGEMDISABLED = ((uint32_t)0x0 << 3); // (LCDC) PWM Generator Disabled
+    static const    uint32_t  LCDC_ENA_PWMGEMENABLED = ((uint32_t)0x1 << 3); // (LCDC) PWM Generator Disabled
+
+    /****/ volatile uint32_t LCDC_CTRSTVAL;   // Contrast Value Register
+    static const    uint32_t LCDC_CVAL = ((uint32_t)0xFF << 0); // (LCDC) PWM Compare Value
+
+    /****/ volatile uint32_t LCDC_IER;        // Interrupt Enable Register
+    static const    uint32_t LCDC_LNI = ((uint32_t)0x1 << 0); // (LCDC) Line Interrupt
+    static const    uint32_t LCDC_LSTLNI = ((uint32_t)0x1 << 1); // (LCDC) Last Line Interrupt
+    static const    uint32_t LCDC_EOFI = ((uint32_t)0x1 << 2); // (LCDC) End Of Frame Interrupt
+    static const    uint32_t LCDC_UFLWI = ((uint32_t)0x1 << 4); // (LCDC) FIFO Underflow Interrupt
+    static const    uint32_t LCDC_OWRI = ((uint32_t)0x1 << 5); // (LCDC) Over Write Interrupt
+    static const    uint32_t LCDC_MERI = ((uint32_t)0x1 << 6); // (LCDC) Memory Error  Interrupt
+
+    /****/ volatile uint32_t LCDC_IDR;        // Interrupt Disable Register
+    /****/ volatile uint32_t LCDC_IMR;        // Interrupt Mask Register
+    /****/ volatile uint32_t LCDC_ISR;        // Interrupt Enable Register
+    /****/ volatile uint32_t LCDC_ICR;        // Interrupt Clear Register
+    /****/ volatile uint32_t LCDC_GPR;        // General Purpose Register
+    static const    uint32_t LCDC_GPRBUS = ((uint32_t)0xFF << 0); // (LCDC) 8 bits available
+    /****/ volatile uint32_t LCDC_ITR;        // Interrupts Test Register
+    /****/ volatile uint32_t LCDC_IRR;        // Interrupts Raw Status Register
+    /****/ volatile uint32_t Reserved1[230];
+    /****/ volatile uint32_t LCDC_LUT_ENTRY[256];     // LUT Entries Register
+};
+
 void AT91_Display_Reset();
 const TinyCLR_Api_Info* AT91_Display_GetApi();
 TinyCLR_Result AT91_Display_Acquire(const TinyCLR_Display_Provider* self, uint32_t width, uint32_t height);
@@ -1306,8 +1464,7 @@ TinyCLR_Display_InterfaceType AT91_Display_GetType(const TinyCLR_Display_Provide
 //////////////////////////////////////////////////////////////////////////////
 // WATCHDOG
 //
-struct AT91_WATCHDOG
-{
+struct AT91_WATCHDOG {
     static const uint32_t c_Base = AT91C_BASE_WDTC;
 
     //--//
@@ -1344,8 +1501,7 @@ void AT91_Startup_GetHeap(uint8_t*& start, size_t& length);
 void AT91_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index);
 void AT91_Startup_GetRunApp(bool& runApp);
 
-struct AT91
-{
+struct AT91 {
 
     static const uint32_t c_UncachableMask = 0x80000000;
 
@@ -1367,20 +1523,22 @@ struct AT91
     static AT91_TC      & TIMER(int sel) { return *(AT91_TC*)(size_t)(AT91_TC::c_Base + (sel * 0x40)); }
     static AT91_WATCHDOG& WTDG() { return *(AT91_WATCHDOG*)(size_t)(AT91_WATCHDOG::c_Base); }
     //***************************************************************************************************************************************************************************************************************
-     static AT91_USART   & USART( int sel )  { if( sel == 0) return *(AT91_USART   *)(size_t)(AT91_USART::c_Base_dbg);
-                                                  else      return *(AT91_USART   *)(size_t)(AT91_USART::c_Base + ((sel - 1) * 0x4000));                        }
+    static AT91_USART   & USART(int sel) {
+        if (sel == 0) return *(AT91_USART   *)(size_t)(AT91_USART::c_Base_dbg);
+        else      return *(AT91_USART   *)(size_t)(AT91_USART::c_Base + ((sel - 1) * 0x4000));
+    }
     //***************************************************************************************************************************************************************************************************************
     // static AT91_UDP     & UDP()             { return *(AT91_UDP     *)(size_t)(AT91_UDP     ::c_Base                                      ); }
 
     // #if defined(PLATFORM_ARM_SAM9261_ANY) || defined(PLATFORM_ARM_SAM9RL64_ANY)
-        // static AT91_LCDC    & LCDC()            { return *(AT91_LCDC    *)(size_t)(AT91_LCDC    ::c_Base                                      ); }
+    static AT91_LCDC    & LCDC() { return *(AT91_LCDC    *)(size_t)(AT91_LCDC::c_Base); }
 
-        // static AT91_SDRAMC  & SDRAMC()          { return *(AT91_SDRAMC  *)(size_t)(AT91_SDRAMC  ::c_Base                                      ); }
-        // static AT91_SMC     & SMCTRL()          { return *(AT91_SMC     *)(size_t)(AT91_SMC     ::c_Base                                      ); }
-        // static AT91_MATRIX  & MATRIX()          { return *(AT91_MATRIX  *)(size_t)(AT91_MATRIX  ::c_Base                                      ); }
-    // #endif
-        // static AT91_DDRS     & DDRS()             { return *(AT91_DDRS     *)(size_t)(AT91_DDRS     ::c_Base                                      ); }
-        // static AT91_PIT     & PIT()             { return *(AT91_PIT     *)(size_t)(AT91_PIT     ::c_Base                                      ); }
-        //--//
+    // static AT91_SDRAMC  & SDRAMC()          { return *(AT91_SDRAMC  *)(size_t)(AT91_SDRAMC  ::c_Base                                      ); }
+    // static AT91_SMC     & SMCTRL()          { return *(AT91_SMC     *)(size_t)(AT91_SMC     ::c_Base                                      ); }
+    // static AT91_MATRIX  & MATRIX()          { return *(AT91_MATRIX  *)(size_t)(AT91_MATRIX  ::c_Base                                      ); }
+// #endif
+    // static AT91_DDRS     & DDRS()             { return *(AT91_DDRS     *)(size_t)(AT91_DDRS     ::c_Base                                      ); }
+    // static AT91_PIT     & PIT()             { return *(AT91_PIT     *)(size_t)(AT91_PIT     ::c_Base                                      ); }
+    //--//
 
 };
