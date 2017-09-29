@@ -16,7 +16,7 @@
 #include "AT91.h"
 
 #ifdef INCLUDE_DISPLAY
-
+//LUT configurations
 typedef struct _PALETTEENTRY_LCD {
     unsigned char Red;
     unsigned char Green;
@@ -24,303 +24,6 @@ typedef struct _PALETTEENTRY_LCD {
     unsigned char Flags;
 } PALETTEENTRY_LCD, *PPALETTEENTRY_LCD;
 
-
-struct AT91SAM9X35_LCDC {
-    volatile uint32_t LCDC_LCDCFG0;
-    volatile uint32_t LCDC_LCDCFG1;
-    volatile uint32_t LCDC_LCDCFG2;
-    volatile uint32_t LCDC_LCDCFG3;
-    volatile uint32_t LCDC_LCDCFG4;
-    volatile uint32_t LCDC_LCDCFG5;
-    volatile uint32_t LCDC_LCDCFG6;
-    volatile uint32_t RESERVED_1;
-    volatile uint32_t LCDC_LCDEN;
-    volatile uint32_t LCDC_LCDDIS;
-    volatile const uint32_t LCDC_LCDSR;
-    volatile uint32_t LCDC_LCDIER;
-    volatile uint32_t LCDC_LCDIDR;
-    volatile uint32_t LCDC_LCDIMR;
-    volatile uint32_t LCDC_LCDISR;
-    volatile uint32_t RESERVED_2;
-    volatile uint32_t LCDC_BASECHER;
-    volatile uint32_t LCDC_BASECHDR;
-    volatile uint32_t LCDC_BASECHSR;
-    volatile uint32_t LCDC_BASEIER;
-    volatile uint32_t LCDC_BASEIDR;
-    volatile uint32_t LCDC_BASEIMR;
-    volatile uint32_t LCDC_BASEISR;
-    volatile uint32_t LCDC_BASEHEAD;
-    volatile uint32_t LCDC_BASEADDR;
-    volatile uint32_t LCDC_BASECTRL;
-    volatile uint32_t LCDC_BASENEXT;
-    volatile uint32_t LCDC_BASECFG0;
-    volatile uint32_t LCDC_BASECFG1;
-    volatile uint32_t LCDC_BASECFG2;
-    volatile uint32_t LCDC_BASECFG3;
-    volatile uint32_t LCDC_BASECFG4;
-    volatile uint32_t RESERVED_3[32];
-    volatile uint32_t LCDC_OVRCHER1;
-    volatile uint32_t LCDC_OVRCHDR1;
-    volatile uint32_t LCDC_OVRCHSR1;
-    volatile uint32_t LCDC_OVRIER1;
-    volatile uint32_t LCDC_OVRIDR1;
-    volatile uint32_t LCDC_OVRIMR1;
-    volatile uint32_t LCDC_OVRISR1;
-    volatile uint32_t LCDC_OVRHEAD1;
-    volatile uint32_t LCDC_OVRADDR1;
-    volatile uint32_t LCDC_OVRCTRL1;
-    volatile uint32_t LCDC_OVRNEXT1;
-    volatile uint32_t LCDC_OVRCFG0;
-    volatile uint32_t LCDC_OVRCFG1;
-    volatile uint32_t LCDC_OVRCFG2;
-    volatile uint32_t LCDC_OVRCFG3;
-    volatile uint32_t LCDC_OVRCFG4;
-    volatile uint32_t LCDC_OVRCFG5;
-    volatile uint32_t LCDC_OVRCFG6;
-    volatile uint32_t LCDC_OVRCFG7;
-    volatile uint32_t LCDC_OVRCFG8;
-    volatile uint32_t LCDC_OVRCFG9;
-    volatile uint32_t RESERVED_4[75];
-    volatile uint32_t LCDC_HEOCHER;
-    volatile uint32_t LCDC_HEOCHDR;
-    volatile uint32_t LCDC_HEOCHSR;
-    volatile uint32_t LCDC_HEOIER;
-    volatile uint32_t LCDC_HEOIDR;
-    volatile uint32_t LCDC_HEOIMR;
-    volatile uint32_t LCDC_HEOISR;
-    volatile uint32_t LCDC_HEOHEAD;
-    volatile uint32_t LCDC_HEOADDR;
-    volatile uint32_t LCDC_HEOCTRL;
-    volatile uint32_t LCDC_HEONEXT;
-    volatile uint32_t LCDC_HEOUHEAD;
-    volatile uint32_t LCDC_HEOUADDR;
-    volatile uint32_t LCDC_HEOUCTRL;
-    volatile uint32_t LCDC_HEOUNEXT;
-    volatile uint32_t LCDC_HEOVHEAD;
-    volatile uint32_t LCDC_HEOVADDR;
-    volatile uint32_t LCDC_HEOVCTRL;
-    volatile uint32_t LCDC_HEOVNEXT;
-    volatile uint32_t LCDC_HEOCFG0;
-    volatile uint32_t LCDC_HEOCFG1;
-    volatile uint32_t LCDC_HEOCFG2;
-    volatile uint32_t LCDC_HEOCFG3;
-    volatile uint32_t LCDC_HEOCFG4;
-    volatile uint32_t LCDC_HEOCFG5;
-    volatile uint32_t LCDC_HEOCFG6;
-    volatile uint32_t LCDC_HEOCFG7;
-    volatile uint32_t LCDC_HEOCFG8;
-    volatile uint32_t LCDC_HEOCFG9;
-    volatile uint32_t LCDC_HEOCFG10;
-    volatile uint32_t LCDC_HEOCFG11;
-    volatile uint32_t LCDC_HEOCFG12;
-    volatile uint32_t LCDC_HEOCFG13;
-    volatile uint32_t LCDC_HEOCFG14;
-    volatile uint32_t LCDC_HEOCFG15;
-    volatile uint32_t LCDC_HEOCFG16;
-    volatile uint32_t RESERVED_5[12];
-    volatile uint32_t LCDC_HCRCHER;
-    volatile uint32_t LCDC_HCRCHDR;
-    volatile uint32_t LCDC_HCRCHSR;
-    volatile uint32_t LCDC_HCRIER;
-    volatile uint32_t LCDC_HCRIDR;
-    volatile uint32_t LCDC_HCRIMR;
-    volatile uint32_t LCDC_HCRISR;
-    volatile uint32_t LCDC_HCRHEAD;
-    volatile uint32_t LCDC_HCRADDR;
-    volatile uint32_t LCDC_HCRCTRL;
-    volatile uint32_t LCDC_HCRNEXT;
-    volatile uint32_t LCDC_HCRCFG0;
-    volatile uint32_t LCDC_HCRCFG1;
-    volatile uint32_t LCDC_HCRCFG2;
-    volatile uint32_t LCDC_HCRCFG3;
-    volatile uint32_t LCDC_HCRCFG4;
-    volatile uint32_t RESERVED_6;
-    volatile uint32_t LCDC_HCRCFG6;
-    volatile uint32_t LCDC_HCRCFG7;
-    volatile uint32_t LCDC_HCRCFG8;
-    volatile uint32_t LCDC_HCRCFG9;
-    volatile uint32_t RESERVED_7[27];
-    volatile uint32_t LCDC_BASECLUT[256];
-    volatile uint32_t LCDC_OVR1CLUT[256];
-    volatile uint32_t RESERVED_8[256];
-    volatile uint32_t LCDC_HEOCLUT[256];
-    volatile uint32_t LCDC_HCRCLUT[256];
-    volatile uint32_t RESERVED_9[507];
-    volatile uint32_t LCDC_ADDRSIZE;
-    volatile uint32_t LCDC_IPNAME1;
-    volatile uint32_t LCDC_IPNAME2;
-    volatile uint32_t LCDC_FEATURES;
-    volatile uint32_t LCDC_VERSION;
-};
-
-#define LCDC_BASECFG0_DLBO (0x1u << 8) /**< \brief (LCDC_BASECFG0) Defined Length Burst Only For Channel Bus Transaction. */
-#define LCDC_BASECFG0_BLEN_AHB_INCR16 (0x3u << 4) /**< \brief (LCDC_BASECFG0) AHB Access is started as soon as there is enough space in the FIFO to store a total amount of sixteen 32-bit data. An AHB INCR16 Burst is preferred. SINGLE, INCR, INCR4, INCR8 and INCR16 bursts can be used. INCR is used for a burst of 2 and 3 beats. */
-
-/* -------- LCDC_LCDCFG0 : (LCDC Offset: 0x00000000) LCD Controller Configuration Register 0 -------- */
-#define LCDC_LCDCFG0_CLKPOL (0x1u << 0) /**< \brief (LCDC_LCDCFG0) LCD Controller Clock Polarity */
-#define LCDC_LCDCFG0_CLKSEL (0x1u << 2) /**< \brief (LCDC_LCDCFG0) LCD Controller Clock Source Selection */
-#define LCDC_LCDCFG0_CLKPWMSEL (0x1u << 3) /**< \brief (LCDC_LCDCFG0) LCD Controller PWM Clock Source Selection */
-#define LCDC_LCDCFG0_CGDISBASE (0x1u << 8) /**< \brief (LCDC_LCDCFG0) Clock Gating Disable Control for the Base Layer */
-#define LCDC_LCDCFG0_CGDISOVR1 (0x1u << 9) /**< \brief (LCDC_LCDCFG0) Clock Gating Disable Control for the Overlay 1 Layer */
-#define LCDC_LCDCFG0_CGDISHEO (0x1u << 11) /**< \brief (LCDC_LCDCFG0) Clock Gating Disable Control for the High End Overlay */
-#define LCDC_LCDCFG0_CGDISHCR (0x1u << 12) /**< \brief (LCDC_LCDCFG0) Clock Gating Disable Control for the Hardware Cursor Layer */
-#define LCDC_LCDCFG0_CLKDIV_Pos 16
-#define LCDC_LCDCFG0_CLKDIV_Msk (0xffu << LCDC_LCDCFG0_CLKDIV_Pos) /**< \brief (LCDC_LCDCFG0) LCD Controller Clock Divider */
-#define LCDC_LCDCFG0_CLKDIV(value) ((LCDC_LCDCFG0_CLKDIV_Msk & ((value) << LCDC_LCDCFG0_CLKDIV_Pos)))
-/* -------- LCDC_LCDCFG1 : (LCDC Offset: 0x00000004) LCD Controller Configuration Register 1 -------- */
-#define LCDC_LCDCFG1_HSPW_Pos 0
-#define LCDC_LCDCFG1_HSPW_Msk (0x3fu << LCDC_LCDCFG1_HSPW_Pos) /**< \brief (LCDC_LCDCFG1) Horizontal Synchronization Pulse Width */
-#define LCDC_LCDCFG1_HSPW(value) ((LCDC_LCDCFG1_HSPW_Msk & ((value) << LCDC_LCDCFG1_HSPW_Pos)))
-#define LCDC_LCDCFG1_VSPW_Pos 16
-#define LCDC_LCDCFG1_VSPW_Msk (0x3fu << LCDC_LCDCFG1_VSPW_Pos) /**< \brief (LCDC_LCDCFG1) Vertical Synchronization Pulse Width */
-#define LCDC_LCDCFG1_VSPW(value) ((LCDC_LCDCFG1_VSPW_Msk & ((value) << LCDC_LCDCFG1_VSPW_Pos)))
-/* -------- LCDC_LCDCFG2 : (LCDC Offset: 0x00000008) LCD Controller Configuration Register 2 -------- */
-#define LCDC_LCDCFG2_VFPW_Pos 0
-#define LCDC_LCDCFG2_VFPW_Msk (0x3fu << LCDC_LCDCFG2_VFPW_Pos) /**< \brief (LCDC_LCDCFG2) Vertical Front Porch Width */
-#define LCDC_LCDCFG2_VFPW(value) ((LCDC_LCDCFG2_VFPW_Msk & ((value) << LCDC_LCDCFG2_VFPW_Pos)))
-#define LCDC_LCDCFG2_VBPW_Pos 16
-#define LCDC_LCDCFG2_VBPW_Msk (0x3fu << LCDC_LCDCFG2_VBPW_Pos) /**< \brief (LCDC_LCDCFG2) Vertical Back Porch Width */
-#define LCDC_LCDCFG2_VBPW(value) ((LCDC_LCDCFG2_VBPW_Msk & ((value) << LCDC_LCDCFG2_VBPW_Pos)))
-/* -------- LCDC_LCDCFG3 : (LCDC Offset: 0x0000000C) LCD Controller Configuration Register 3 -------- */
-#define LCDC_LCDCFG3_HFPW_Pos 0
-#define LCDC_LCDCFG3_HFPW_Msk (0xffu << LCDC_LCDCFG3_HFPW_Pos) /**< \brief (LCDC_LCDCFG3) Horizontal Front Porch Width */
-#define LCDC_LCDCFG3_HFPW(value) ((LCDC_LCDCFG3_HFPW_Msk & ((value) << LCDC_LCDCFG3_HFPW_Pos)))
-#define LCDC_LCDCFG3_HBPW_Pos 16
-#define LCDC_LCDCFG3_HBPW_Msk (0xffu << LCDC_LCDCFG3_HBPW_Pos) /**< \brief (LCDC_LCDCFG3) Horizontal Back Porch Width */
-#define LCDC_LCDCFG3_HBPW(value) ((LCDC_LCDCFG3_HBPW_Msk & ((value) << LCDC_LCDCFG3_HBPW_Pos)))
-/* -------- LCDC_LCDCFG4 : (LCDC Offset: 0x00000010) LCD Controller Configuration Register 4 -------- */
-#define LCDC_LCDCFG4_PPL_Pos 0
-#define LCDC_LCDCFG4_PPL_Msk (0x7ffu << LCDC_LCDCFG4_PPL_Pos) /**< \brief (LCDC_LCDCFG4) Number of Pixels Per Line */
-#define LCDC_LCDCFG4_PPL(value) ((LCDC_LCDCFG4_PPL_Msk & ((value) << LCDC_LCDCFG4_PPL_Pos)))
-#define LCDC_LCDCFG4_RPF_Pos 16
-#define LCDC_LCDCFG4_RPF_Msk (0x7ffu << LCDC_LCDCFG4_RPF_Pos) /**< \brief (LCDC_LCDCFG4) Number of Active Rows Per Frame */
-#define LCDC_LCDCFG4_RPF(value) ((LCDC_LCDCFG4_RPF_Msk & ((value) << LCDC_LCDCFG4_RPF_Pos)))
-/* -------- LCDC_LCDCFG5 : (LCDC Offset: 0x00000014) LCD Controller Configuration Register 5 -------- */
-#define LCDC_LCDCFG5_HSPOL (0x1u << 0) /**< \brief (LCDC_LCDCFG5) Horizontal Synchronization Pulse Polarity */
-#define LCDC_LCDCFG5_VSPOL (0x1u << 1) /**< \brief (LCDC_LCDCFG5) Vertical Synchronization Pulse Polarity */
-#define LCDC_LCDCFG5_VSPDLYS (0x1u << 2) /**< \brief (LCDC_LCDCFG5) Vertical Synchronization Pulse Start */
-#define LCDC_LCDCFG5_VSPDLYE (0x1u << 3) /**< \brief (LCDC_LCDCFG5) Vertical Synchronization Pulse End */
-#define LCDC_LCDCFG5_DISPPOL (0x1u << 4) /**< \brief (LCDC_LCDCFG5) Display Signal Polarity */
-#define LCDC_LCDCFG5_SERIAL (0x1u << 5) /**< \brief (LCDC_LCDCFG5)  */
-#define LCDC_LCDCFG5_DITHER (0x1u << 6) /**< \brief (LCDC_LCDCFG5) LCD Controller Dithering */
-#define LCDC_LCDCFG5_DISPDLY (0x1u << 7) /**< \brief (LCDC_LCDCFG5) LCD Controller Display Power Signal Synchronization */
-#define LCDC_LCDCFG5_MODE_Pos 8
-#define LCDC_LCDCFG5_MODE_Msk (0x3u << LCDC_LCDCFG5_MODE_Pos) /**< \brief (LCDC_LCDCFG5) LCD Controller Output Mode */
-#define   LCDC_LCDCFG5_MODE_OUTPUT_12BPP (0x0u << 8) /**< \brief (LCDC_LCDCFG5) LCD output mode is set to 12 bits per pixel */
-#define   LCDC_LCDCFG5_MODE_OUTPUT_16BPP (0x1u << 8) /**< \brief (LCDC_LCDCFG5) LCD output mode is set to 16 bits per pixel */
-#define   LCDC_LCDCFG5_MODE_OUTPUT_18BPP (0x2u << 8) /**< \brief (LCDC_LCDCFG5) LCD output mode is set to 18 bits per pixel */
-#define   LCDC_LCDCFG5_MODE_OUTPUT_24BPP (0x3u << 8) /**< \brief (LCDC_LCDCFG5) LCD output mode is set to 24 bits per pixel */
-#define LCDC_LCDCFG5_VSPSU (0x1u << 12) /**< \brief (LCDC_LCDCFG5) LCD Controller Vertical Synchronization Pulse Setup Configuration */
-#define LCDC_LCDCFG5_VSPHO (0x1u << 13) /**< \brief (LCDC_LCDCFG5) LCD Controller Vertical Synchronization Pulse Hold Configuration */
-#define LCDC_LCDCFG5_GUARDTIME_Pos 16
-#define LCDC_LCDCFG5_GUARDTIME_Msk (0x1fu << LCDC_LCDCFG5_GUARDTIME_Pos) /**< \brief (LCDC_LCDCFG5) LCD DISPLAY Guard Time */
-#define LCDC_LCDCFG5_GUARDTIME(value) ((LCDC_LCDCFG5_GUARDTIME_Msk & ((value) << LCDC_LCDCFG5_GUARDTIME_Pos)))
-/* -------- LCDC_LCDCFG6 : (LCDC Offset: 0x00000018) LCD Controller Configuration Register 6 -------- */
-#define LCDC_LCDCFG6_PWMPS_Pos 0
-#define LCDC_LCDCFG6_PWMPS_Msk (0x7u << LCDC_LCDCFG6_PWMPS_Pos) /**< \brief (LCDC_LCDCFG6) PWM Clock Prescaler */
-#define LCDC_LCDCFG6_PWMPS(value) ((LCDC_LCDCFG6_PWMPS_Msk & ((value) << LCDC_LCDCFG6_PWMPS_Pos)))
-#define LCDC_LCDCFG6_PWMPOL (0x1u << 4) /**< \brief (LCDC_LCDCFG6) LCD Controller PWM Signal Polarity */
-#define LCDC_LCDCFG6_PWMCVAL_Pos 8
-#define LCDC_LCDCFG6_PWMCVAL_Msk (0xffu << LCDC_LCDCFG6_PWMCVAL_Pos) /**< \brief (LCDC_LCDCFG6) LCD Controller PWM Compare Value */
-#define LCDC_LCDCFG6_PWMCVAL(value) ((LCDC_LCDCFG6_PWMCVAL_Msk & ((value) << LCDC_LCDCFG6_PWMCVAL_Pos)))
-/* -------- LCDC_LCDEN : (LCDC Offset: 0x00000020) LCD Controller Enable Register -------- */
-#define LCDC_LCDEN_CLKEN (0x1u << 0) /**< \brief (LCDC_LCDEN) LCD Controller Pixel Clock Enable */
-#define LCDC_LCDEN_SYNCEN (0x1u << 1) /**< \brief (LCDC_LCDEN) LCD Controller Horizontal and Vertical Synchronization Enable */
-#define LCDC_LCDEN_DISPEN (0x1u << 2) /**< \brief (LCDC_LCDEN) LCD Controller DISP Signal Enable */
-#define LCDC_LCDEN_PWMEN (0x1u << 3) /**< \brief (LCDC_LCDEN) LCD Controller Pulse Width Modulation Enable */
-/* -------- LCDC_LCDSR : (LCDC Offset: 0x00000028) LCD Controller Status Register -------- */
-#define LCDC_LCDSR_CLKSTS (0x1u << 0) /**< \brief (LCDC_LCDSR) Clock Status */
-#define LCDC_LCDSR_LCDSTS (0x1u << 1) /**< \brief (LCDC_LCDSR) LCD Controller Synchronization status */
-#define LCDC_LCDSR_DISPSTS (0x1u << 2) /**< \brief (LCDC_LCDSR) LCD Controller DISP Signal Status */
-#define LCDC_LCDSR_PWMSTS (0x1u << 3) /**< \brief (LCDC_LCDSR) LCD Controller PWM Signal Status */
-#define LCDC_LCDSR_SIPSTS (0x1u << 4) /**< \brief (LCDC_LCDSR) Synchronization In Progress */
-
-/** Frequency of the board main oscillator */
-#define BOARD_MAINOSC           12000000
-
-/** Master clock frequency (when using board_lowlevel.c) */
-#define BOARD_MCK                ((unsigned long)((BOARD_MAINOSC / 3 / 2 / 3) * 200 ))
-
-/** Display width in pixels. */
-#define BOARD_LCD_WIDTH             480 // 480 // 800 // 320 // 800 -- Current Active | ChipworkX Display | 7in CapTouch | T35 | Original board Display Module
-/** Display height in pixels. */
-#define BOARD_LCD_HEIGHT            272 // 272 // 480 // 240 // 480 -- Current Active | ChipworkX Display | 7in CapTouch | T35 | Original board Display Module
-
-/** Display interface width in bits. */
-#define BOARD_LCD_IFWIDTH           16
-/** Frame size in words (height * width * bpp / 32) */
-#define BOARD_LCD_FRAMESIZE         (BOARD_LCD_WIDTH * BOARD_LCD_HEIGHT * BOARD_LCD_IFWIDTH / 32)
-
-/** Vertical front porch in number of lines. */
-#define BOARD_LCD_TIMING_VFP        2 // 2 // 7 //16 // 22 -- Current Active | ChipworkX Display | 7in CapTouch | T35 | Original board Display Module
-/** Vertical back porch in number of lines. */
-#define BOARD_LCD_TIMING_VBP        2 // 2 // 23 // 8 // 21 -- Current Active | ChipworkX Display | 7in CapTouch | T35 | Original board Display Module
-/** Vertical pulse width in number of lines. */
-#define BOARD_LCD_TIMING_VPW        10 // 10 // 1 // 10 // 2 -- Current Active | ChipworkX Display | 7in CapTouch | T35 | Original board Display Module
-/** Horizontal front porch in LCDDOTCLK cycles. */
-#define BOARD_LCD_TIMING_HFP        2 // 2 // 16 // 51 // 64 -- Current Active | ChipworkX Display | 7in CapTouch | T35 | Original board Display Module
-/** Horizontal back porch in LCDDOTCLK cycles. */
-#define BOARD_LCD_TIMING_HBP        2 // 2 // 46 // 27 // 64 -- Current Active | ChipworkX Display | 7in CapTouch | T35 | Original board Display Module
-/** Horizontal pulse width in LCDDOTCLK cycles. */
-#define BOARD_LCD_TIMING_HPW        41 // 41 // 1 // 41 // 128 -- Current Active | ChipworkX Display | 7in CapTouch | T35 | Original board Display Module
-
-/** Frame rate in Hz. */
-#define BOARD_LCD_FRAMERATE         40
-
-/** Pixel clock rate in Hz (HS period * VS period * BOARD_LCD_FRAMERATE). */
-#define BOARD_LCD_PIXELCLOCK        ((BOARD_LCD_TIMING_HPW+BOARD_LCD_TIMING_HBP+BOARD_LCD_WIDTH+BOARD_LCD_TIMING_HFP)\
-                                    *(BOARD_LCD_TIMING_VPW+BOARD_LCD_TIMING_VBP+BOARD_LCD_HEIGHT+BOARD_LCD_TIMING_VFP)\
-                                    *BOARD_LCD_FRAMERATE)
-
-
-// #define AT91_LCDD0		_P(C,0)
-// #define AT91_LCDD1		_P(C,1)
-// #define AT91_LCDD2		_P(C,2)
-// #define AT91_LCDD3		_P(C,3)
-// #define AT91_LCDD4		_P(C,4)
-// #define AT91_LCDD5		_P(C,5)
-// #define AT91_LCDD6		_P(C,6)
-// #define AT91_LCDD7		_P(C,7)
-// #define AT91_LCDD8		_P(C,8)
-// #define AT91_LCDD9		_P(C,9)
-// #define AT91_LCDD10		_P(C,10)
-// #define AT91_LCDD11		_P(C,11)
-// #define AT91_LCDD12		_P(C,12)
-// #define AT91_LCDD13		_P(C,13)
-// #define AT91_LCDD14		_P(C,14)
-// #define AT91_LCDD15		_P(C,15)
-// #define AT91_LCDDISP	_P(C,24)
-// #define AT91_LCDPWM		_P(C,26)
-// #define AT91_LCDVSYNC	_P(C,27)
-// #define AT91_LCDHSYNC	_P(C,28)
-// #define AT91_LCDDEN		_P(C,29)
-// #define AT91_LCDPCK		_P(C,30)
-
-// static const uint8_t LCDPins[] =
-// {
-    // AT91_LCDD0,
-    // AT91_LCDD1,
-    // AT91_LCDD2,
-    // AT91_LCDD3,
-    // AT91_LCDD4,
-    // AT91_LCDD5,
-    // AT91_LCDD6,
-    // AT91_LCDD7,
-    // AT91_LCDD8,
-    // AT91_LCDD9,
-    // AT91_LCDD10,
-    // AT91_LCDD11,
-    // AT91_LCDD12,
-    // AT91_LCDD13,
-    // AT91_LCDD14,
-    // AT91_LCDD15,
-    // AT91_LCDDISP,
-    // AT91_LCDPWM,
-    // AT91_LCDVSYNC,
-    // AT91_LCDHSYNC,
-    // AT91_LCDDEN,
-    // AT91_LCDPCK,
-// };
 
 const uint8_t characters[129][5] = {
 0x00,0x00,0x00,0x00,0x00,
@@ -715,9 +418,7 @@ const PALETTEENTRY_LCD c_rgbPalette[256] =
     { 0xff, 0xff, 0xff, 0 }     /* 255 Sys White     gray 255  */
 };
 
-//////////////////////////////////////////////////////////////////////////////
-// AT91_LCDC_Driver
-//
+
 
 #define VIDEO_RAM_SIZE                  (800*600*2) // Maximum LCD screen size times bytes per pixel
 
@@ -728,32 +429,9 @@ const PALETTEENTRY_LCD c_rgbPalette[256] =
 
 /* More or less configurable parameters for LCDC controller*/
 #define SIDSAFB_FIFO_SIZE		512
-#define SIDSAFB_DMA_BURST_LEN	16
+#define SIDSAFB_DMA_BURST_LEN	5
 #define SIDSAFB_CRST_VAL        0xc8   // 0xda
 
-typedef struct _LCDCDescriptor {
-    uint32_t addr;
-    uint32_t ctrl;
-    uint32_t next;
-} LCDCDescriptor;
-
-/** CULT information */
-typedef struct _CLUTInfo {
-    uint8_t bpp;
-    uint8_t nbColors;
-} CLUTInfo;
-
-/** LCDC General Layer information */
-typedef struct _Layer {
-    void* pBuffer;
-    CLUTInfo clut;
-    uint16_t  reserved;
-    LCDCDescriptor dmaD;
-} Layer;
-
-//
-// AT91_LCDC_Driver
-//////////////////////////////////////////////////////////////////////////////
 
 enum AT91_LCD_Rotation {
     rotateNormal_0,
@@ -763,6 +441,8 @@ enum AT91_LCD_Rotation {
 };
 
 int64_t m_AT91_Display_ReservedVitualRamLocation[VIDEO_RAM_SIZE / 8];
+
+//static uint32_t* AT91_LCD_Screen_Buffer = (uint32_t*)0x20F00000;
 
 uint32_t m_AT91_DisplayWidth = 0;
 uint32_t m_AT91_DisplayHeight = 0;
@@ -775,6 +455,9 @@ uint32_t m_AT91_DisplayVerticalFrontPorch = 0;
 uint32_t m_AT91_DisplayVerticalBackPorch = 0;
 uint32_t m_AT91_Display_TextRow = 0;
 uint32_t m_AT91_Display_TextColumn = 0;
+uint32_t m_AT91_Display_PixelClockDivider = 0;
+uint32_t m_AT91_Display_BitsPerPixel = 16;
+uint32_t m_AT91_Display_EnableTFT = true;
 
 bool m_AT91_DisplayOutputEnableIsFixed = false;
 bool m_AT91_DisplayOutputEnablePolarity = false;
@@ -813,144 +496,177 @@ uint32_t* AT91_Display_GetFrameBuffer();
 static TinyCLR_Display_Provider displayProvider;
 static TinyCLR_Api_Info displayApi;
 
-static Layer baseLayer;
-
-void AT91_Display_SetBaseLayerDMA() {
-    AT91SAM9X35_LCDC *lcd = (AT91SAM9X35_LCDC*)AT91C_BASE_LCDC;
-
-    Layer *pointerToBaseLayer = &baseLayer;
-    LCDCDescriptor *DMApointerForBase = &pointerToBaseLayer->dmaD;
-
-    void *pBaseBuffer = pointerToBaseLayer->pBuffer;
-
-    if (pBaseBuffer)
-        pointerToBaseLayer->pBuffer = pBaseBuffer;
-    else
-        pBaseBuffer = pointerToBaseLayer->pBuffer;
-
-    DMApointerForBase->addr = (uint32_t)((uint32_t*)m_AT91_Display_ReservedVitualRamLocation);
-    DMApointerForBase->ctrl = 0x1;
-    DMApointerForBase->next = (uint32_t)DMApointerForBase;
-
-    lcd->LCDC_BASEADDR = DMApointerForBase->addr;
-    lcd->LCDC_BASECTRL = 0x1;
-    lcd->LCDC_BASENEXT = (uint32_t)DMApointerForBase;
-    lcd->LCDC_BASECFG4 = 0x100;
-    lcd->LCDC_BASECHER = 0x3;
-}
-
-static const AT91_Gpio_Pin g_at91_display_pins[] = AT91_DISPLAY_CONTROLLER_PINS;
-static const AT91_Gpio_Pin g_at91_display_enable_pin = AT91_DISPLAY_ENABLE_PIN;
+static const AT91_Gpio_Pin g_at91_display_dataPins[] = AT91_DISPLAY_DATA_PINS;
+static const AT91_Gpio_Pin g_at91_display_controlPins[] = AT91_DISPLAY_CONTROL_PINS;
+static const AT91_Gpio_Pin g_at91_display_enablePin = AT91_DISPLAY_ENABLE_PIN;
 
 bool AT91_Display_Initialize() {
 
-    AT91SAM9X35_LCDC *lcd = (AT91SAM9X35_LCDC*)AT91C_BASE_LCDC;
-    AT91_PMC &pmc = AT91::PMC();
+    if (m_AT91_DisplayPixelClockRateKHz == 0x0) {
 
-    if (m_AT91_DisplayWidth == 0) {
-        for (uint32_t pin = 0; pin < SIZEOF_ARRAY(g_at91_display_pins); pin++) {
-            AT91_Gpio_EnableInputPin(g_at91_display_pins[pin].number, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        }
-
-        AT91_Gpio_EnableInputPin(g_at91_display_enable_pin.number, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-
-        return false;
-    }
-
-    if (m_AT91_DisplayPixelClockRateKHz == 0) {
         return true;
     }
-    // ******** Enable the LCD Pins ********
-// Enable GPIO C clock
+
+    // Pixel Clock Divider is calculated by this equation Frequency = System Clock / ((Divider + 1) * 2)
+    // The following equation should calculate Pixel Clock Divider
+    // Divider = ((AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 2) - (m_AT91_DisplayPixelClockRateKHz * 1000)) / (m_AT91_DisplayPixelClockRateKHz * 1000);
+    if (m_AT91_DisplayPixelClockRateKHz > 25000) // 25000 KHz is maximum supported frequency
+        m_AT91_DisplayPixelClockRateKHz = 25000;
+
+    m_AT91_Display_PixelClockDivider = ((AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 2) - (m_AT91_DisplayPixelClockRateKHz * 1000)) / (m_AT91_DisplayPixelClockRateKHz * 1000);
+
+    if (((AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 2) - (m_AT91_DisplayPixelClockRateKHz * 1000)) % (m_AT91_DisplayPixelClockRateKHz * 1000) > 0)
+        m_AT91_Display_PixelClockDivider += 1;
+
+    if (m_AT91_Display_PixelClockDivider > 511) // Pixel clock divider cannot exceed a 9 bit number which is 511 in Decimal.
+        m_AT91_Display_PixelClockDivider = 511;
+
+
+    /////////////////////////////////////////////
+
+    uint32_t pin;
+    uint32_t value;
+
+    /* Selected as LCD pins */
+    for (pin = 0; pin < SIZEOF_ARRAY(g_at91_display_dataPins); pin++) {
+        AT91_Gpio_ConfigurePin(g_at91_display_dataPins[pin].number, AT91_Gpio_Direction::Input, g_at91_display_dataPins[pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+    }
+    for (pin = 0; pin < SIZEOF_ARRAY(g_at91_display_controlPins); pin++) {
+        AT91_Gpio_ConfigurePin(g_at91_display_controlPins[pin].number, AT91_Gpio_Direction::Input, g_at91_display_controlPins[pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+    }
+
+    /* Enable CS for LCD */
+    //CPU_GPIO_EnableOutputPin((GPIO_PIN)AT91_LCDC_CS, 0);
+    if (m_AT91_DisplayOutputEnableIsFixed)
+        AT91_Gpio_EnableOutputPin(g_at91_display_enablePin.number, m_AT91_DisplayOutputEnablePolarity);
+    else
+        AT91_Gpio_ConfigurePin(g_at91_display_enablePin.number, AT91_Gpio_Direction::Input, g_at91_display_enablePin.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+
+    AT91_PMC &pmc = AT91::PMC();
     pmc.EnablePeriphClock(AT91C_ID_LCDC);
 
-    // Set LCD pins
-    for (uint32_t pin = 0; pin < SIZEOF_ARRAY(g_at91_display_pins); pin++) {
-        AT91_Gpio_ConfigurePin(g_at91_display_pins[pin].number, AT91_Gpio_Direction::Input, g_at91_display_pins[pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+    AT91_LCDC &lcdc = AT91::LCDC();
+
+    /* Turn off the LCD controller and the DMA controller */
+    lcdc.LCDC_PWRCON = 0x0C;
+    lcdc.LCDC_DMACON = 0;
+
+    // Reset LCDC DMA
+    lcdc.LCDC_DMACON = AT91_LCDC::LCDC_DMARST;
+
+    /* ...set frame size and burst length = 8 words (?) */
+    value = (m_AT91_DisplayHeight * m_AT91_DisplayWidth * m_AT91_Display_BitsPerPixel) >> 5; // / 32;
+    value |= 0x04000000;
+    lcdc.LCDC_FRMCFG = value;
+
+    /* Set pixel clock divider */
+    if (m_AT91_Display_PixelClockDivider == 0)
+        lcdc.LCDC_LCDCON1 = AT91_LCDC::LCDC_BYPASS;
+    else
+        lcdc.LCDC_LCDCON1 = m_AT91_Display_PixelClockDivider << 12;
+
+    /* Set configurations for LCDCON2 */
+    if (m_AT91_Display_EnableTFT)
+        value = (AT91_LCDC::LCDC_MEMOR_LITTLEIND | AT91_LCDC::LCDC_DISTYPE_TFT | AT91_LCDC::LCDC_CLKMOD);
+    else
+        value = (AT91_LCDC::LCDC_MEMOR_LITTLEIND | AT91_LCDC::LCDC_CLKMOD);
+
+    if (m_AT91_DisplayHorizontalSyncPolarity == false) // Original was if it is true set 1
+        value |= 1 << 10;   /* INVLINE */
+    if (m_AT91_DisplayVerticalSyncPolarity == false) // Original was if it is true set 1
+        value |= 1 << 9;    /* INVFRAME */
+
+    switch (m_AT91_Display_BitsPerPixel) {
+        //Bits per pixel: 0 = 1, 1 = 2, 2 = 4, 3 = 8, 4 = 16, 5 = 24
+    case 1:
+        value |= (0 << 5);
+        break;
+    case 2:
+        value |= (1 << 5);
+        break;
+    case 4:
+        value |= (2 << 5);
+        break;
+    case 8:
+        value |= (3 << 5);
+        break;
+    case 16:
+        value |= (4 << 5);
+        break;
+    case 24:
+        value |= (5 << 5);
+        break;
+    default:
+        //debug_printf("Unsupported LCD Bus Width : %d\r\n", m_AT91_Display_BitsPerPixel);
+        return false;
+    };
+
+    lcdc.LCDC_LCDCON2 = value;
+
+    for (uint32_t i = 0; i < 256; i++) {
+        lcdc.LCDC_LUT_ENTRY[i] =
+            ((c_rgbPalette[i].Red) >> 3 |
+            ((c_rgbPalette[i].Green & 0xf8) << 2) |
+                ((c_rgbPalette[i].Blue & 0xf8) << 7));
     }
 
-    if (m_AT91_DisplayOutputEnableIsFixed) {
-        AT91_Gpio_EnableOutputPin(g_at91_display_enable_pin.number, m_AT91_DisplayOutputEnablePolarity);
+    /* Horizontal timing */
+    value = (m_AT91_DisplayHorizontalFrontPorch - 1) << 21;
+    value |= (m_AT91_DisplayHorizontalSyncPulseWidth - 1) << 8;
+    value |= m_AT91_DisplayHorizontalBackPorch - 1;
+    lcdc.LCDC_TIM2 = value;
+
+    /* Vertical timing */
+    value = (m_AT91_DisplayVerticalSyncPulseWidth - 1) << 16;
+
+
+
+
+    m_AT91_DisplayVerticalBackPorch += m_AT91_DisplayVerticalSyncPulseWidth; //1;//10; For Hydra or Atmel you need to add the VPW to the VBP in order for the screen to align properly.
+
+    value |= m_AT91_DisplayVerticalBackPorch << 8;
+
+    value |= m_AT91_DisplayVerticalFrontPorch;
+    lcdc.LCDC_TIM1 = value;
+
+    value = (m_AT91_DisplayWidth - 1) << 21;
+    value |= (m_AT91_DisplayHeight - 1);
+
+    lcdc.LCDC_LCDFRCFG = value;
+
+    /* FIFO Threshold: Use formula from data sheet */
+    value = SIDSAFB_FIFO_SIZE - (2 * SIDSAFB_DMA_BURST_LEN + 3);
+    lcdc.LCDC_FIFO = value;
+
+    /* Toggle LCD_MODE every frame */
+    //lcdc.LCDC_MVAL = 0;
+
+    //STN Dithering
+    if (!(m_AT91_Display_EnableTFT)) {
+        lcdc.LCDC_DP1_2 = 0xA5;
+        lcdc.LCDC_DP4_7 = 0x05AF0FA5;
+        lcdc.LCDC_DP3_5 = 0x000A5A5F;
+        lcdc.LCDC_DP2_3 = 0x00000A5F;
+        lcdc.LCDC_DP5_7 = 0x0FAF5FA5;
+        lcdc.LCDC_DP3_4 = 0x0000FAF5;
+        lcdc.LCDC_DP4_5 = 0x000FAF5F;
+        lcdc.LCDC_DP6_7 = 0x0F5FFAFF;
     }
-    else {
-        AT91_Gpio_ConfigurePin(g_at91_display_enable_pin.number, AT91_Gpio_Direction::Input, g_at91_display_enable_pin.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-    }
 
-    // Enable the LCD clock
-    pmc.EnablePeriphClock(AT91C_ID_LCDC);
-    *((volatile uint32_t*)0xFFFFFC00) = 1 << 3; // Accessing PMC_SCER register to enable system clock.
+    /* Disable all interrupts */
+    lcdc.LCDC_IDR = ~0UL;
+    // Set contrast
+    value = AT91_LCDC::LCDC_PS_DIVIDEDBYEIGHT | AT91_LCDC::LCDC_POL_POSITIVEPULSE | AT91_LCDC::LCDC_ENA_PWMGEMENABLED;
+    lcdc.LCDC_CTRSTCON = value;
+    lcdc.LCDC_CTRSTVAL = 0xDA;
 
-    // Disable LCD interrupts
-    lcd->LCDC_LCDIDR = 0xFFFFFFFF;
+    lcdc.LCDC_BA1 = (uint32_t)m_AT91_Display_ReservedVitualRamLocation;
+    lcdc.LCDC_FRMCFG = (4 << 24) + (m_AT91_DisplayHeight * m_AT91_DisplayWidth * m_AT91_Display_BitsPerPixel >> 5);
 
-    // Configure channels
-    lcd->LCDC_BASECFG0 = LCDC_BASECFG0_DLBO | LCDC_BASECFG0_BLEN_AHB_INCR16;
-    lcd->LCDC_BASECFG1 = (3 << 4);
+    // Enable
+    lcdc.LCDC_DMACON = AT91_LCDC::LCDC_DMAEN;
+    lcdc.LCDC_PWRCON = AT91_LCDC::LCDC_PWR | (0x0F << 1);
 
-    // Configure channels
-    lcd->LCDC_OVRCFG0 = LCDC_BASECFG0_DLBO | LCDC_BASECFG0_BLEN_AHB_INCR16;
-    lcd->LCDC_OVRCFG1 = (3 << 4);
-    lcd->LCDC_OVRCFG2 = (100 << 16) | 100; //(LCD_GetHeight() << 16) | LCD_GetWidth();
-    lcd->LCDC_OVRCFG3 = (50 << 16) | 350; //(LCD_GetHeight() << 16) | LCD_GetWidth();
-
-    // Configure channels
-    lcd->LCDC_HEOCFG0 = LCDC_BASECFG0_DLBO | LCDC_BASECFG0_BLEN_AHB_INCR16;
-    lcd->LCDC_HEOCFG1 = (3 << 4);
-    lcd->LCDC_HEOCFG2 = (150 << 16) | 100; //(LCD_GetHeight() << 16) | LCD_GetWidth();
-    lcd->LCDC_HEOCFG3 = (50 << 16) | 350; //(LCD_GetHeight() << 16) | LCD_GetWidth();
-
-    lcd->LCDC_LCDCFG0 = LCDC_LCDCFG0_CLKDIV((AT91_SYSTEM_PERIPHERAL_CLOCK_HZ * 2) / (m_AT91_DisplayPixelClockRateKHz * 1000) - 2)
-        | LCDC_LCDCFG0_CGDISHCR
-        | LCDC_LCDCFG0_CGDISHEO
-        | LCDC_LCDCFG0_CGDISOVR1
-        | LCDC_LCDCFG0_CGDISBASE
-        | LCDC_LCDCFG0_CLKPWMSEL
-        | LCDC_LCDCFG0_CLKSEL
-        | m_AT91_DisplayPixelPolarity;
-
-    lcd->LCDC_LCDCFG1 = LCDC_LCDCFG1_VSPW(m_AT91_DisplayVerticalSyncPulseWidth - 1)
-        | LCDC_LCDCFG1_HSPW(m_AT91_DisplayHorizontalSyncPulseWidth - 1);
-
-    lcd->LCDC_LCDCFG2 = LCDC_LCDCFG2_VBPW(m_AT91_DisplayVerticalBackPorch)
-        | LCDC_LCDCFG2_VFPW(m_AT91_DisplayVerticalFrontPorch - 1);
-
-    lcd->LCDC_LCDCFG3 = LCDC_LCDCFG3_HBPW(m_AT91_DisplayHorizontalBackPorch - 1)
-        | LCDC_LCDCFG3_HFPW(m_AT91_DisplayHorizontalFrontPorch - 1);
-
-    lcd->LCDC_LCDCFG4 = LCDC_LCDCFG4_RPF(m_AT91_DisplayHeight - 1)
-        | LCDC_LCDCFG4_PPL(m_AT91_DisplayWidth - 1);
-
-    lcd->LCDC_LCDCFG5 = LCDC_LCDCFG5_GUARDTIME(30)
-        | (0x01 << 8) // To select 16bpp // LCDC_LCDCFG5_MODE_OUTPUT_24BPP
-        | LCDC_LCDCFG5_DISPDLY
-        | LCDC_LCDCFG5_VSPDLYS
-        | ((m_AT91_DisplayVerticalSyncPolarity ? 0 : 1) << 1)
-        | (m_AT91_DisplayHorizontalSyncPolarity ? 0 : 1);
-
-    lcd->LCDC_LCDCFG6 = LCDC_LCDCFG6_PWMCVAL(0xF0)
-        | LCDC_LCDCFG6_PWMPOL
-        | LCDC_LCDCFG6_PWMPS(6);
-
-    // 2. Enable the Pixel Clock by writing one to the CLKEN field of the LCDC_LCDEN register.
-    lcd->LCDC_LCDEN = LCDC_LCDEN_CLKEN;
-    // 3. Poll CLKSTS field of the LCDC_LCDSR register to check that the clock is running.
-    while (!(lcd->LCDC_LCDSR & LCDC_LCDSR_CLKSTS));
-
-    // 4. Enable Horizontal and Vertical Synchronization by writing one to the SYNCEN field of the LCDC_LCDEN register.
-    lcd->LCDC_LCDEN = LCDC_LCDEN_SYNCEN;
-    // 5. Poll LCDSTS field of the LCDC_LCDSR register to check that the synchronization is up.
-    while (!(lcd->LCDC_LCDSR & LCDC_LCDSR_LCDSTS));
-    // 6. Enable the display power signal writing one to the DISPEN field of the LCDC_LCDEN register.
-    lcd->LCDC_LCDEN = LCDC_LCDEN_DISPEN;
-    // 7. Poll DISPSTS field of the LCDC_LCDSR register to check that the power signal is activated.
-    while (!(lcd->LCDC_LCDSR & LCDC_LCDSR_DISPSTS));
-    // 8. Enable backlight
-    lcd->LCDC_LCDEN = LCDC_LCDEN_PWMEN;
-
-    AT91_Display_SetBaseLayerDMA();
-
-
-    AT91_Display_Clear();
     m_AT91_DisplayEnable = true;
 
     return true;
