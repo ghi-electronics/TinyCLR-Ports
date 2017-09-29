@@ -15,15 +15,15 @@
 
 #include "AT91.h"
 
-#define PWM_MODE_REGISTER				(*(uint32_t *)(AT91C_BASE_PWMC + 0x00))
-#define PWM_ENABLE_REGISTER				(*(uint32_t *)(AT91C_BASE_PWMC + 0x04))
-#define PWM_DISABLE_REGISTER			(*(uint32_t *)(AT91C_BASE_PWMC + 0x08))
-#define PWM_INTERUPT_ENABLE_REGISTER	(*(uint32_t *)(AT91C_BASE_PWMC + 0x10))
-#define PWM_INTERUPT_DISABLE_REGISTER	(*(uint32_t *)(AT91C_BASE_PWMC + 0x14))
+#define PWM_MODE_REGISTER               (*(uint32_t *)(0xFFFC8000))
+#define PWM_ENABLE_REGISTER             (*(uint32_t *)(0xFFFC8004))
+#define PWM_DISABLE_REGISTER            (*(uint32_t *)(0xFFFC8008))
+#define PWM_INTERUPT_ENABLE_REGISTER    (*(uint32_t *)(0xFFFC8010))
+#define PWM_INTERUPT_DISABLE_REGISTER   (*(uint32_t *)(0xFFFC8014))
 
-#define PWM_CHANNEL_MODE_REGISTER(x)	(uint32_t *)(AT91C_BASE_PWMC + (0x200 + (x * 0x20) + 0x00))
-#define PWM_DUTY_REGISTER(x)            (uint32_t *)(AT91C_BASE_PWMC + (0x200 + (x * 0x20) + 0x04))
-#define PWM_CHANNEL_UPDATE_REGISTER(x)  (uint32_t *)(AT91C_BASE_PWMC + (0x200 + (x * 0x10) + ((x + 1) * 0x10)))
+#define PWM_CHANNEL_MODE_REGISTER(x)    (uint32_t *)(0xFFFC8000 + (0x200 + (x * 0x20) + 0x00))
+#define PWM_DUTY_REGISTER(x)            (uint32_t *)(0xFFFC8000 + (0x200 + (x * 0x20) + 0x04))
+#define PWM_CHANNEL_UPDATE_REGISTER(x)  (uint32_t *)(0xFFFC8000 + (0x200 + (x * 0x10) + ((x + 1) * 0x10)))
 
 #define PWM_MILLISECONDS                1000
 #define PWM_MICROSECONDS                1000000
