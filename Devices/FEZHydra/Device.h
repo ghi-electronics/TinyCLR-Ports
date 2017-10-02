@@ -33,8 +33,8 @@
 #define RUN_APP_PULL TinyCLR_Gpio_PinDriveMode::InputPullUp
 #define RUN_APP_STATE TinyCLR_Gpio_PinValue::High
 
-#define RAM_BOOTLOADER_HOLD_ADDRESS 0x20FFFFF8
-#define RAM_BOOTLOADER_HOLD_VALUE 0x9B3642AE
+#define RAM_BOOTLOADER_HOLD_ADDRESS 0x266FFFF0
+#define RAM_BOOTLOADER_HOLD_VALUE 0xCAC6839D
 
 #define AT91_AHB_CLOCK_HZ (200*1000*1000) // 200 MHz
 #define AT91_SYSTEM_PERIPHERAL_CLOCK_HZ (AT91_AHB_CLOCK_HZ / 2) // 100MHz (Peripheral Clock - MCK)
@@ -89,7 +89,7 @@
 
 #define INCLUDE_DISPLAY
 #define AT91_DISPLAY_CONTROL_PINS { { PIN(C,1), PS(A) }, { PIN(C,3), PS(A) }, { PIN(C,4), PS(A) }, { PIN(C,5), PS(A) }, { PIN(C,6), PS(A) }, { PIN(C,7), PS(A) } }
-#define AT91_DISPLAY_DATA_PINS { { PIN(C,9), PS(B) }, { PIN(C,10), PS(B) }, { PIN(C,11), PS(B) }, { PIN(C,12), PS(B) }, { PIN(C,13), PS(B) }, { PIN(C,15), PS(B) }, { PIN(C,16), PS(B) }, { PIN(C,17), PS(B) }, { PIN(C,18), PS(B) }, { PIN(C,19), PS(B) }, { PIN(C,20), PS(B) }, { PIN(C,21), PS(B) }, { PIN(C,22), PS(B) }, { PIN(C,23), PS(B) }, { PIN(C,24), PS(B) }, { PIN(C,25), PS(B) } } 
+#define AT91_DISPLAY_DATA_PINS { { PIN(C,9), PS(B) }, { PIN(C,10), PS(B) }, { PIN(C,11), PS(B) }, { PIN(C,12), PS(B) }, { PIN(C,13), PS(B) }, { PIN(C,15), PS(B) }, { PIN(C,16), PS(B) }, { PIN(C,17), PS(B) }, { PIN(C,18), PS(B) }, { PIN(C,19), PS(B) }, { PIN(C,20), PS(B) }, { PIN(C,21), PS(B) }, { PIN(C,22), PS(B) }, { PIN(C,23), PS(B) }, { PIN(C,24), PS(B) }, { PIN(C,25), PS(B) } }
 #define AT91_DISPLAY_ENABLE_PIN { PIN(C, 7), PS(A) }
 
 #include <AT91.h>
