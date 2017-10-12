@@ -28,11 +28,11 @@
 
 /* STM32F4 clock configuration */
 #if !defined(STM32F4_EXT_CRYSTAL_CLOCK_HZ)
- #define STM32F4_INTERNAL_OSCILATOR_CLOCK_HZ 16000000
- #define STM32F4_EXT_CRYSTAL_CLOCK_HZ STM32F4_INTERNAL_OSCILATOR_CLOCK_HZ
- #define RCC_PLLCFGR_PLLS_BITS (RCC_PLLCFGR_PLLSRC_HSI)
+#define STM32F4_INTERNAL_OSCILATOR_CLOCK_HZ 16000000
+#define STM32F4_EXT_CRYSTAL_CLOCK_HZ STM32F4_INTERNAL_OSCILATOR_CLOCK_HZ
+#define RCC_PLLCFGR_PLLS_BITS (RCC_PLLCFGR_PLLSRC_HSI)
 #else
- #define RCC_PLLCFGR_PLLS_BITS (RCC_PLLCFGR_PLLSRC_HSE)
+#define RCC_PLLCFGR_PLLS_BITS (RCC_PLLCFGR_PLLSRC_HSE)
 #endif
 
 #if STM32F4_EXT_CRYSTAL_CLOCK_HZ % ONE_MHZ != 0
@@ -216,7 +216,7 @@ extern "C" {
         SCB->CPACR |= 0x3 << 2 * 10 | 0x3 << 2 * 11; // full access
 
 #if DEBUG || _DEBUG
-    // configure jtag debug support
+// configure jtag debug support
         DBGMCU->CR = DBGMCU_CR_DBG_SLEEP;
 #endif
 
@@ -231,15 +231,15 @@ extern "C" {
         RCC->CR &= ~(RCC_CR_PLLON | RCC_CR_PLLI2SON); // pll off
 
 #if RCC_PLLCFGR_PLLS_BITS == RCC_PLLCFGR_PLLSRC_HSE
-    // turn HSE on
+// turn HSE on
         RCC->CR |= RCC_CR_HSEON;
         while (!(RCC->CR & RCC_CR_HSERDY));
 #endif
 
         // Set flash access time and enable caches & prefetch buffer
-    // The prefetch buffer must not be enabled on rev A devices.
-    // Rev A cannot be read from revision field (another rev A error!).
-    // The wrong device field (411=F2) must be used instead!
+        // The prefetch buffer must not be enabled on rev A devices.
+        // Rev A cannot be read from revision field (another rev A error!).
+        // The wrong device field (411=F2) must be used instead!
         if ((DBGMCU->IDCODE & 0xFF) == 0x11) {
             FLASH->ACR = FLASH_ACR_ICEN | FLASH_ACR_DCEN | FLASH_ACR_LATENCY_BITS;
         }
@@ -258,18 +258,12 @@ extern "C" {
             | RCC_CFGR_PPRE1_DIV_BITS  // APB1 clock
             | RCC_CFGR_PPRE2_DIV_BITS; // APB2 clock
 
-  // minimal peripheral clocks
-#ifndef RCC_AHB1ENR_CCMDATARAMEN
-        RCC->AHB1ENR = 0;
-#else
-        RCC->AHB1ENR = RCC_AHB1ENR_CCMDATARAMEN; // 64k RAM (CCM)
+    // minimal peripheral clocks
+#ifdef RCC_AHB1ENR_CCMDATARAMEN
+        RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN; // 64k RAM (CCM)
 #endif
-        RCC->AHB2ENR = 0;
-        RCC->AHB3ENR = 0;
-        RCC->APB1ENR = RCC_APB1ENR_PWREN;    // PWR clock used for sleep;
-        RCC->APB2ENR = RCC_APB2ENR_SYSCFGEN; // SYSCFG clock used for IO;
 
-        // stop HSI clock
+    // stop HSI clock
 #if RCC_PLLCFGR_PLLS_BITS == RCC_PLLCFGR_PLLSRC_HSE
         RCC->CR &= ~RCC_CR_HSION;
 #endif
@@ -277,18 +271,39 @@ extern "C" {
         // remove Flash remap to Boot area to avoid problems with Monitor_Execute
         SYSCFG->MEMRMP = 1; // map System memory to Boot area
 
-
 #ifdef STM32F4_Enable_RTC
         STM32F4_RTC_Initialize(); // enable RTC
 #endif
 
-#if !defined(RCC_AHB1ENR_GPIOFEN) || !defined(RCC_AHB1ENR_GPIOGEN)
-    // Enable GPIO clocks for ports A - F
-        RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN | RCC_AHB1ENR_GPIOEEN;
-#else
-    // Enable GPIO clocks for ports A - G
-        RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN | RCC_AHB1ENR_GPIOEEN | RCC_AHB1ENR_GPIOFEN | RCC_AHB1ENR_GPIOGEN;
+    // GPIO port A to D is always present
+        RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN;
 
+#ifdef RCC_AHB1ENR_GPIOEEN
+        RCC->AHB1ENR |= RCC_AHB1ENR_GPIOEEN;
+#endif
+
+#ifdef RCC_AHB1ENR_GPIOFEN
+        RCC->AHB1ENR |= RCC_AHB1ENR_GPIOFEN;
+#endif
+
+#ifdef RCC_AHB1ENR_GPIOGEN
+        RCC->AHB1ENR |= RCC_AHB1ENR_GPIOGEN;
+#endif
+
+#ifdef RCC_AHB1ENR_GPIOHEN
+        RCC->AHB1ENR |= RCC_AHB1ENR_GPIOHEN;
+#endif
+
+#ifdef RCC_AHB1ENR_GPIOIEN
+        RCC->AHB1ENR |= RCC_AHB1ENR_GPIOIEN;
+#endif
+
+#ifdef RCC_AHB1ENR_GPIOJEN
+        RCC->AHB1ENR |= RCC_AHB1ENR_GPIOJEN;
+#endif
+
+#ifdef RCC_AHB1ENR_GPIOKEN
+        RCC->AHB1ENR |= RCC_AHB1ENR_GPIOKEN;
 #endif
     }
 }
@@ -419,7 +434,7 @@ void STM32F4_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index) {
     api = DEBUGGER_FORCE_API;
     index = DEBUGGER_FORCE_INDEX;
 #else
-    #error You must specify a debugger mode pin or specify the API explicitly.
+#error You must specify a debugger mode pin or specify the API explicitly.
 #endif
 }
 
