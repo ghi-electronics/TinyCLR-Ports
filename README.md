@@ -12,8 +12,6 @@ Some targets and devices are maintained by GHI Electronics while others are main
 - G30
 - G80
 - USBizi
-- [WiFiMCU](http://www.wifimcu.com/)
-- [Wio LTE](http://wiki.seeed.cc/Wio_Tracker_LTE_CAT1/)
 
 ## Targets
 - LPC17
