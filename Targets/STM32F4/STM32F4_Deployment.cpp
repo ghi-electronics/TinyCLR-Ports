@@ -119,14 +119,15 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Write(const 
     return TinyCLR_Result::Success;
 }
 
-const uint32_t sectorAddress[] = DEPLOYMENT_SECTOR_ADDRESSES;
-const uint32_t sectorSize[] = DEPLOYMENT_SECTOR_SIZES; // Sector size can be diffirent if different sector.
+const uint32_t deploymentSectorAddress[] = DEPLOYMENT_SECTOR_ADDRESS;
+const uint32_t deploymentSectorSize[] = DEPLOYMENT_SECTOR_SIZES;
+const uint32_t flashSectorAddress[] = FLASH_SECTOR_ADDRESS;
 
 TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_IsSectorErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
-    if (sector >= SIZEOF_ARRAY(sectorAddress)) return TinyCLR_Result::IndexOutOfRange;
+    if (sector >= SIZEOF_ARRAY(deploymentSectorAddress)) return TinyCLR_Result::IndexOutOfRange;
 
-    uint32_t address = sectorAddress[sector];
-    size_t length = sectorSize[sector];
+    uint32_t address = deploymentSectorAddress[sector];
+    size_t length = deploymentSectorSize[sector];
 
     CHIP_WORD* ChipAddress = (CHIP_WORD *)address;
     CHIP_WORD* EndAddress = (CHIP_WORD *)(address + length);
@@ -147,16 +148,28 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_IsSectorEras
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_EraseSector(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
-    if (sector >= SIZEOF_ARRAY(sectorAddress)) return TinyCLR_Result::IndexOutOfRange;
+    if (sector >= SIZEOF_ARRAY(deploymentSectorAddress)) return TinyCLR_Result::IndexOutOfRange;
 
-    uint32_t address = sectorAddress[sector];
-    uint32_t num = (address - FLASH_BASE) >> 14;
+    uint32_t address = deploymentSectorAddress[sector];
+    uint32_t num = 0;
 
-    if (num >= 4) num = (num >> 3) + 4;
+    while (num < SIZEOF_ARRAY(flashSectorAddress)) {
+        if (address <= flashSectorAddress[num])
+            break;
+
+        num++;
+    }
+
+    if (num == SIZEOF_ARRAY(flashSectorAddress))
+        return TinyCLR_Result::ArgumentInvalid;
 
     if (STM32F4_FLASH->CR & FLASH_CR_LOCK) { // unlock
         STM32F4_FLASH->KEYR = STM32F4_FLASH_KEY1;
         STM32F4_FLASH->KEYR = STM32F4_FLASH_KEY2;
+    }
+
+    if (num >= 12) {
+        num += 4;
     }
 
     // enable erasing
@@ -189,13 +202,13 @@ TinyCLR_Result STM32F4_Flash_Release(const TinyCLR_Deployment_Provider* self) {
 
 
 TinyCLR_Result STM32F4_Flash_GetSectorSizeForAddress(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size) {
-    int32_t sectors = SIZEOF_ARRAY(sectorAddress);
+    int32_t sectors = SIZEOF_ARRAY(deploymentSectorAddress);
 
     size = 0;
 
     for (int32_t i = 0; i < sectors; i++) {
-        if (address >= sectorAddress[i] && address < sectorAddress[i] + sectorSize[i]) {
-            size = sectorSize[i];
+        if (address >= deploymentSectorAddress[i] && address < deploymentSectorAddress[i] + deploymentSectorSize[i]) {
+            size = deploymentSectorSize[i];
 
             break;
         }
@@ -205,9 +218,9 @@ TinyCLR_Result STM32F4_Flash_GetSectorSizeForAddress(const TinyCLR_Deployment_Pr
 }
 
 TinyCLR_Result STM32F4_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
-    addresses = sectorAddress;
-    sizes = sectorSize;
-    count = SIZEOF_ARRAY(sectorAddress);
+    addresses = deploymentSectorAddress;
+    sizes = deploymentSectorSize;
+    count = SIZEOF_ARRAY(deploymentSectorAddress);
 
     return TinyCLR_Result::Success;
 }
