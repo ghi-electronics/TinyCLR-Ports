@@ -161,8 +161,9 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_IsSectorEras
 TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_EraseSector(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
     if (sector >= SIZEOF_ARRAY(deploymentSectors)) return TinyCLR_Result::IndexOutOfRange;
 
-    uint32_t address = deploymentSectors[sector].address;
     uint32_t num = deploymentSectors[sector].id;
+
+    if (num > 11) num +=4;
 
     if (STM32F4_FLASH->CR & FLASH_CR_LOCK) { // unlock
         STM32F4_FLASH->KEYR = STM32F4_FLASH_KEY1;
