@@ -23,6 +23,12 @@
 
 typedef uint16_t CHIP_WORD;
 
+struct STM32F4_Flash_Deployment {
+    uint32_t id;
+    uint32_t address;
+    uint32_t size;
+};
+
 #define FLASH_CR_PSIZE_BITS FLASH_CR_PSIZE_0 // 16 bit programming
 
 #if STM32F4_SUPPLY_VOLTAGE_MV < 2100
@@ -33,6 +39,10 @@ typedef uint16_t CHIP_WORD;
 #endif
 
 TinyCLR_Result STM32F4_Flash_GetSectorSizeForAddress(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size);
+
+static const STM32F4_Flash_Deployment deploymentSectors[] = DEPLOYMENT_SECTORS;
+uint32_t deploymentSectorAddress[SIZEOF_ARRAY(deploymentSectors)];
+uint32_t deploymentSectorSize[SIZEOF_ARRAY(deploymentSectors)];
 
 static const uint32_t STM32F4_FLASH_KEY1 = 0x45670123;
 static const uint32_t STM32F4_FLASH_KEY2 = 0xcdef89ab;
@@ -57,6 +67,11 @@ const TinyCLR_Api_Info* STM32F4_Deployment_GetApi() {
     deploymentApi.Version = 0;
     deploymentApi.Count = 1;
     deploymentApi.Implementation = &deploymentProvider;
+
+    for (int32_t i = 0; i < SIZEOF_ARRAY(deploymentSectors); i++) {
+        deploymentSectorAddress[i] = deploymentSectors[i].address;
+        deploymentSectorSize[i] = deploymentSectors[i].size;
+    }
 
     return &deploymentApi;
 }
@@ -119,14 +134,11 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Write(const 
     return TinyCLR_Result::Success;
 }
 
-const uint32_t sectorAddress[] = DEPLOYMENT_SECTOR_ADDRESSES;
-const uint32_t sectorSize[] = DEPLOYMENT_SECTOR_SIZES; // Sector size can be diffirent if different sector.
-
 TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_IsSectorErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
-    if (sector >= SIZEOF_ARRAY(sectorAddress)) return TinyCLR_Result::IndexOutOfRange;
+    if (sector >= SIZEOF_ARRAY(deploymentSectors)) return TinyCLR_Result::IndexOutOfRange;
 
-    uint32_t address = sectorAddress[sector];
-    size_t length = sectorSize[sector];
+    uint32_t address = deploymentSectors[sector].address;
+    size_t length = deploymentSectors[sector].size;
 
     CHIP_WORD* ChipAddress = (CHIP_WORD *)address;
     CHIP_WORD* EndAddress = (CHIP_WORD *)(address + length);
@@ -147,12 +159,10 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_IsSectorEras
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_EraseSector(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
-    if (sector >= SIZEOF_ARRAY(sectorAddress)) return TinyCLR_Result::IndexOutOfRange;
+    if (sector >= SIZEOF_ARRAY(deploymentSectors)) return TinyCLR_Result::IndexOutOfRange;
 
-    uint32_t address = sectorAddress[sector];
-    uint32_t num = (address - FLASH_BASE) >> 14;
-
-    if (num >= 4) num = (num >> 3) + 4;
+    uint32_t address = deploymentSectors[sector].address;
+    uint32_t num = deploymentSectors[sector].id;
 
     if (STM32F4_FLASH->CR & FLASH_CR_LOCK) { // unlock
         STM32F4_FLASH->KEYR = STM32F4_FLASH_KEY1;
@@ -189,13 +199,13 @@ TinyCLR_Result STM32F4_Flash_Release(const TinyCLR_Deployment_Provider* self) {
 
 
 TinyCLR_Result STM32F4_Flash_GetSectorSizeForAddress(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size) {
-    int32_t sectors = SIZEOF_ARRAY(sectorAddress);
+    int32_t sectors = SIZEOF_ARRAY(deploymentSectors);
 
     size = 0;
 
     for (int32_t i = 0; i < sectors; i++) {
-        if (address >= sectorAddress[i] && address < sectorAddress[i] + sectorSize[i]) {
-            size = sectorSize[i];
+        if (address >= deploymentSectors[i].address && address < deploymentSectors[i].address + deploymentSectors[i].size) {
+            size = deploymentSectors[i].size;
 
             break;
         }
@@ -205,9 +215,9 @@ TinyCLR_Result STM32F4_Flash_GetSectorSizeForAddress(const TinyCLR_Deployment_Pr
 }
 
 TinyCLR_Result STM32F4_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
-    addresses = sectorAddress;
-    sizes = sectorSize;
-    count = SIZEOF_ARRAY(sectorAddress);
+    addresses = deploymentSectorAddress;
+    sizes = deploymentSectorSize;
+    count = SIZEOF_ARRAY(deploymentSectorAddress);
 
     return TinyCLR_Result::Success;
 }
