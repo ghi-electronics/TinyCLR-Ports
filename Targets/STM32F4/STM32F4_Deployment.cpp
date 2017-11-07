@@ -23,6 +23,12 @@
 
 typedef uint16_t CHIP_WORD;
 
+struct STM32F4_Flash_Deployment {
+    uint32_t id;
+    uint32_t address;
+    uint32_t size;
+};
+
 #define FLASH_CR_PSIZE_BITS FLASH_CR_PSIZE_0 // 16 bit programming
 
 #if STM32F4_SUPPLY_VOLTAGE_MV < 2100
@@ -33,6 +39,10 @@ typedef uint16_t CHIP_WORD;
 #endif
 
 TinyCLR_Result STM32F4_Flash_GetSectorSizeForAddress(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size);
+
+static const STM32F4_Flash_Deployment deploymentSectors[] = DEPLOYMENT_SECTORS;
+uint32_t deploymentSectorAddress[SIZEOF_ARRAY(deploymentSectors)];
+uint32_t deploymentSectorSize[SIZEOF_ARRAY(deploymentSectors)];
 
 static const uint32_t STM32F4_FLASH_KEY1 = 0x45670123;
 static const uint32_t STM32F4_FLASH_KEY2 = 0xcdef89ab;
@@ -57,6 +67,11 @@ const TinyCLR_Api_Info* STM32F4_Deployment_GetApi() {
     deploymentApi.Version = 0;
     deploymentApi.Count = 1;
     deploymentApi.Implementation = &deploymentProvider;
+
+    for (int32_t i = 0; i < SIZEOF_ARRAY(deploymentSectors); i++) {
+        deploymentSectorAddress[i] = deploymentSectors[i].address;
+        deploymentSectorSize[i] = deploymentSectors[i].size;
+    }
 
     return &deploymentApi;
 }
@@ -119,15 +134,11 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Write(const 
     return TinyCLR_Result::Success;
 }
 
-const uint32_t deploymentSectorAddress[] = DEPLOYMENT_SECTOR_ADDRESS;
-const uint32_t deploymentSectorSize[] = DEPLOYMENT_SECTOR_SIZES;
-const uint32_t flashSectorAddress[] = FLASH_SECTOR_ADDRESS;
-
 TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_IsSectorErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
-    if (sector >= SIZEOF_ARRAY(deploymentSectorAddress)) return TinyCLR_Result::IndexOutOfRange;
+    if (sector >= SIZEOF_ARRAY(deploymentSectors)) return TinyCLR_Result::IndexOutOfRange;
 
-    uint32_t address = deploymentSectorAddress[sector];
-    size_t length = deploymentSectorSize[sector];
+    uint32_t address = deploymentSectors[sector].address;
+    size_t length = deploymentSectors[sector].size;
 
     CHIP_WORD* ChipAddress = (CHIP_WORD *)address;
     CHIP_WORD* EndAddress = (CHIP_WORD *)(address + length);
@@ -148,28 +159,14 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_IsSectorEras
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_EraseSector(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
-    if (sector >= SIZEOF_ARRAY(deploymentSectorAddress)) return TinyCLR_Result::IndexOutOfRange;
+    if (sector >= SIZEOF_ARRAY(deploymentSectors)) return TinyCLR_Result::IndexOutOfRange;
 
-    uint32_t address = deploymentSectorAddress[sector];
-    uint32_t num = 0;
-
-    while (num < SIZEOF_ARRAY(flashSectorAddress)) {
-        if (address <= flashSectorAddress[num])
-            break;
-
-        num++;
-    }
-
-    if (num == SIZEOF_ARRAY(flashSectorAddress))
-        return TinyCLR_Result::ArgumentInvalid;
+    uint32_t address = deploymentSectors[sector].address;
+    uint32_t num = deploymentSectors[sector].id;
 
     if (STM32F4_FLASH->CR & FLASH_CR_LOCK) { // unlock
         STM32F4_FLASH->KEYR = STM32F4_FLASH_KEY1;
         STM32F4_FLASH->KEYR = STM32F4_FLASH_KEY2;
-    }
-
-    if (num >= 12) {
-        num += 4;
     }
 
     // enable erasing
@@ -202,13 +199,13 @@ TinyCLR_Result STM32F4_Flash_Release(const TinyCLR_Deployment_Provider* self) {
 
 
 TinyCLR_Result STM32F4_Flash_GetSectorSizeForAddress(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size) {
-    int32_t sectors = SIZEOF_ARRAY(deploymentSectorAddress);
+    int32_t sectors = SIZEOF_ARRAY(deploymentSectors);
 
     size = 0;
 
     for (int32_t i = 0; i < sectors; i++) {
-        if (address >= deploymentSectorAddress[i] && address < deploymentSectorAddress[i] + deploymentSectorSize[i]) {
-            size = deploymentSectorSize[i];
+        if (address >= deploymentSectors[i].address && address < deploymentSectors[i].address + deploymentSectors[i].size) {
+            size = deploymentSectors[i].size;
 
             break;
         }
