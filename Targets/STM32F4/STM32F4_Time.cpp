@@ -253,7 +253,7 @@ asm volatile (
     ".thumb\n\t"
     ".global  IDelayLoop\n\t"
     "@AREA ||i.IDelayLoop||, CODE, READONLY @ void IDelayLoop(UINT32 count)\n\t"
-    ".section i.IDelayLoop, \"ax\", %progbits\n\t"
+    ".section SectionForCodeIDelayLoop, \"ax\", %progbits\n\t"
     ".thumb_func\n\t"
     "IDelayLoop:\n\t"
     "subs    r0, r0, #3          @@ 1 cycle\n\t"
