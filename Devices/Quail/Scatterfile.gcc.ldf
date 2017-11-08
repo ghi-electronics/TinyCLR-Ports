@@ -58,7 +58,7 @@ SECTIONS
 
     ER_RAM_RO  : ALIGN(0x08)
     {
-
+        * (SectionForCode*)
     }>IRAM AT>LR_FLASH
 
     /DISCARD/  :
