@@ -303,7 +303,7 @@ TinyCLR_Result STM32F4_Pwm_DisablePin(const TinyCLR_Pwm_Provider* self, int32_t 
     return TinyCLR_Result::Success;
 }
 
-int32_t STM32F4_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self) {    
+int32_t STM32F4_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self) {
     return PWM_PER_CONTROLLER;
 }
 
