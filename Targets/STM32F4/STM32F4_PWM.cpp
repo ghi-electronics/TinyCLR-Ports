@@ -303,16 +303,8 @@ TinyCLR_Result STM32F4_Pwm_DisablePin(const TinyCLR_Pwm_Provider* self, int32_t 
     return TinyCLR_Result::Success;
 }
 
-int32_t STM32F4_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self) {
-    int chnlCnt = 0;
-
-    for (int p = 0; p < PWM_PER_CONTROLLER; p++) {
-        if (pwmController(self->Index).gpioPin[p].number != PIN_NONE) {
-            chnlCnt++;
-        }
-    }
-
-    return chnlCnt;
+int32_t STM32F4_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self) {    
+    return PWM_PER_CONTROLLER;
 }
 
 STM32F4_Gpio_Pin* STM32F4_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t pin) {
