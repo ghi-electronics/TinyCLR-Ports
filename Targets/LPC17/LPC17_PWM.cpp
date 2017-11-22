@@ -226,15 +226,7 @@ TinyCLR_Result LPC17_Pwm_DisablePin(const TinyCLR_Pwm_Provider* self, int32_t pi
 }
 
 int32_t LPC17_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self) {
-    uint32_t chnlCnt = 0;
-
-    for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-        if (g_PwmController[self->Index].gpioPin[p].number != PIN_NONE) {
-            chnlCnt++;
-        }
-    }
-
-    return chnlCnt;
+    return MAX_PWM_PER_CONTROLLER;
 }
 
 int32_t LPC17_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t pin) {
