@@ -438,8 +438,8 @@ void STM32F4_Pwm_Reset() {
             c.invert[0] = false;
             c.dutyCycle[0] = 0.0;
 
-            c.gpioPin[i].number = pwmPins[controller]->number;
-            c.gpioPin[i].alternateFunction = pwmPins[controller]->alternateFunction;
+            c.gpioPin[i].number = pwmPins[controller][i].number;
+            c.gpioPin[i].alternateFunction = pwmPins[controller][i].alternateFunction;
         }
 
         STM32F4_Pwm_ResetController(controller);
