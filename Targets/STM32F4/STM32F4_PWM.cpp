@@ -335,7 +335,7 @@ TinyCLR_Result STM32F4_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, 
     treg->PSC = pwmController(self->Index).presc - 1;
     treg->ARR = pwmController(self->Index).period - 1;
 
-    if (pwmController(self->Index).timer == 2) {
+    if (pwmController(self->Index).timer == 2 || pwmController(self->Index).timer == 5) {
         if (pin == 0)
             treg->CCR1 = duration;
         else if (pin == 1)
