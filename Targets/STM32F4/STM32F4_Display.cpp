@@ -17,6 +17,8 @@
 #include <string.h>
 #include "STM32F4.h"
 
+#ifdef INCLUDE_DISPLAY
+
 #define MAX_LAYER  2
 
 /**
@@ -1057,3 +1059,4 @@ void STM32F4_Display_Reset() {
     STM32F4_Display_Uninitialize();
 }
 
+#endif //INCLUDE_DISPLAY
