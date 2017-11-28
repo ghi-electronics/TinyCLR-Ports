@@ -19,7 +19,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define INCLUDE_CAN
+#ifdef INCLUDE_CAN
 
 static TinyCLR_Can_Provider canProvider;
 static TinyCLR_Api_Info canApi;
