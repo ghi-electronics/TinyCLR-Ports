@@ -334,3 +334,12 @@ TinyCLR_Result STM32F4_Display_WriteString(const TinyCLR_Display_Provider* self,
 int32_t STM32F4_Display_GetWidth(const TinyCLR_Display_Provider* self);
 int32_t STM32F4_Display_GetHeight(const TinyCLR_Display_Provider* self);
 TinyCLR_Display_InterfaceType STM32F4_Display_GetType(const TinyCLR_Display_Provider* self);
+
+const TinyCLR_Api_Info* STM32F4_Can_GetApi();
+TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Provider* self);
+TinyCLR_Result STM32F4_Can_Release(const TinyCLR_Can_Provider* self);
+TinyCLR_Result STM32F4_Can_Reset(const TinyCLR_Can_Provider* self);
+TinyCLR_Result STM32F4_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_t arbID, uint32_t flags, uint8_t *data);
+TinyCLR_Result STM32F4_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t * arbID, uint32_t *flags, uint64_t *ts, uint8_t *data);
+TinyCLR_Result STM32F4_Can_SetSpeed(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t brp, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling, uint32_t &speed);
+TinyCLR_Result STM32F4_Can_GetMessageCount(const TinyCLR_Can_Provider* self);

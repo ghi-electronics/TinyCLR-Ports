@@ -654,12 +654,6 @@ void CAN_FilterInit(CAN_FilterInitTypeDef* CAN_FilterInitStruct) {
     CAN1->FMR &= ~FMR_FINIT;
 }
 
-uint32_t Can_CalculateBaudrate(int32_t propagation, int32_t phase1, int32_t phase2, int32_t brp, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
-    uint32_t baudrate = (((synchronizationJumpWidth - 1) << 24) | ((phase2 - 1) << 20) | ((phase1 - 1) << 16) | brp);
-    return baudrate;
-}
-
-
 /**
   * @brief  Receives a correct CAN frame.
   * @param  CANx: where x can be 1 or 2 to select the CAN peripheral.
@@ -1143,10 +1137,6 @@ bool CAN_ErrorHandler(uint8_t channel)
 	return false;
 }
 
-
-static TinyCLR_Can_Provider canProvider;
-static TinyCLR_Api_Info canApi;
-
 static const STM32F4_Gpio_Pin g_STM32F4_Can_Tx_Pins[] = STM32F4_CAN_TX_PINS;
 static const STM32F4_Gpio_Pin g_STM32F4_Can_Rx_Pins[] = STM32F4_CAN_RX_PINS;
 
@@ -1154,9 +1144,34 @@ static const int TOTAL_CAN_CONTROLLERS = SIZEOF_ARRAY(g_STM32F4_Can_Tx_Pins);
 
 static STM32F4_Can_Controller canController[TOTAL_CAN_CONTROLLERS];
 
+static TinyCLR_Can_Provider *canProvider[TOTAL_CAN_CONTROLLERS];
+static TinyCLR_Api_Info canApi;
+
+static uint8_t canProviderDefs[TOTAL_CAN_CONTROLLERS * sizeof(TinyCLR_Can_Provider)];
+
 const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
 
-    return nullptr;
+ for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
+        canProvider[i] = (TinyCLR_Can_Provider*)(canProviderDefs + (i * sizeof(TinyCLR_Can_Provider)));
+        canProvider[i]->Parent = &canApi;
+        canProvider[i]->Index = i;
+        canProvider[i]->Acquire = &STM32F4_Can_Acquire;
+        canProvider[i]->Release = &STM32F4_Can_Release;
+		canProvider[i]->Reset = &STM32F4_Can_Reset;
+        canProvider[i]->PostMessage = &STM32F4_Can_PostMessage;
+		canProvider[i]->GetMessage = &STM32F4_Can_GetMessage;
+        canProvider[i]->SetSpeed = &STM32F4_Can_SetSpeed;
+        canProvider[i]->GetMessageCount = &STM32F4_Can_GetMessageCount;        
+    }
+
+    canApi.Author = "GHI Electronics, LLC";
+    canApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.CanProvider";
+    canApi.Type = TinyCLR_Api_Type::CanProvider;
+    canApi.Version = 0;
+    canApi.Count = TOTAL_CAN_CONTROLLERS;
+    canApi.Implementation = canProvider;
+	
+    return &canApi;
 }
 
 uint32_t STM32_Can_GetLocalTime() {
@@ -1456,7 +1471,47 @@ TinyCLR_Result STM32F4_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_
 }
 
 TinyCLR_Result STM32F4_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t * arbID, uint32_t *flags, uint64_t *ts, uint8_t *data) {
+	STM32F4_Can_Message *can_msg;
+	
+	uint32_t *canData = (uint32_t*)data;
+	
+	int32_t channel = self->Index;
+	
+	if(canController[channel].can_rx_count)
+	{
+		DISABLE_INTERRUPTS_SCOPED(irq);
+		
+		can_msg = &canController[channel].canRxMessagesFifo[canController[channel].can_rx_out];
+		canController[channel].can_rx_out++;
+		
+		if (canController[channel].can_rx_out == CAN_MESSAGES_MAX)
+			canController[channel].can_rx_out = 0;
+				
+		canController[channel].can_rx_count--;
+		//can1_send_error_event=TRUE;
+		
+		*flags = can_msg->Frame ;
+		*arbID = can_msg->MsgID; // CAN ID
+		canData[0] = can_msg->DataA;
+		canData[1] = can_msg->DataB;
+		*ts = ((uint64_t)can_msg->TimeStampL) | ((uint64_t)can_msg->TimeStampH << 32);
+	}
+	
+	return TinyCLR_Result::Success;
+    
+}
 
+TinyCLR_Result STM32F4_Can_SetSpeed(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t brp, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling, uint32_t &speed) {
+    speed = (((synchronizationJumpWidth - 1) << 24) | ((phase2 - 1) << 20) | ((phase1 - 1) << 16) | brp);
     return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Can_GetMessageCount(const TinyCLR_Can_Provider* self, int32_t &messageCount) {
+	int32_t channel = self->Index;
+	
+	messageCount = canController[channel].can_rx_count;
+	
+	return TinyCLR_Result::Success;
+	
 }
 #endif // INCLUDE_CAN
