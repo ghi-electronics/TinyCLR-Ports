@@ -31,29 +31,80 @@
 
 
 /** @defgroup CAN_InitStatus
-  * @{
-  */
+* @{
+*/
 
 #define CAN_InitStatus_Failed              ((uint8_t)0x00) /*!< CAN initialization failed */
 #define CAN_InitStatus_Success             ((uint8_t)0x01) /*!< CAN initialization OK */
 
-  /** @defgroup CAN_filter_mode
-    * @{
-    */
+/** @defgroup CAN_filter_mode
+* @{
+*/
 #define CAN_FilterMode_IdMask       ((uint8_t)0x00)  /*!< identifier/mask mode */
 #define CAN_FilterMode_IdList       ((uint8_t)0x01)  /*!< identifier list mode */
 
-    /** @defgroup CAN_filter_scale
-      * @{
-      */
+/** @defgroup CAN_filter_scale
+* @{
+*/
 #define CAN_FilterScale_16bit       ((uint8_t)0x00) /*!< Two 16-bit filters */
 #define CAN_FilterScale_32bit       ((uint8_t)0x01) /*!< One 32-bit filter */
 
-      /** @defgroup CAN_filter_FIFO
-        * @{
-        */
+/** @defgroup CAN_filter_FIFO
+* @{
+*/
 #define CAN_Filter_FIFO0             ((uint8_t)0x00)  /*!< Filter FIFO 0 assignment for filter x */
 #define CAN_Filter_FIFO1             ((uint8_t)0x01)  /*!< Filter FIFO 1 assignment for filter x *
+
+/** @defgroup CAN_transmit_constants 
+* @{
+*/
+#define CAN_TxStatus_Failed         ((uint8_t)0x00)/*!< CAN transmission failed */
+#define CAN_TxStatus_Ok             ((uint8_t)0x01) /*!< CAN transmission succeeded */
+#define CAN_TxStatus_Pending        ((uint8_t)0x02) /*!< CAN transmission pending */
+#define CAN_TxStatus_NoMailBox      ((uint8_t)0x04) /*!< CAN cell did not provide 
+an empty mailbox */
+
+/** @defgroup CAN_identifier_type 
+* @{
+*/
+#define CAN_Id_Standard             ((uint32_t)0x00000000)  /*!< Standard Id */
+#define CAN_Id_Extended             ((uint32_t)0x00000004)  /*!< Extended Id */
+
+
+/** @defgroup CAN_receive_FIFO_number_constants 
+  * @{
+  */
+#define CAN_FIFO0                 ((uint8_t)0x00) /*!< CAN FIFO 0 used to receive */
+#define CAN_FIFO1                 ((uint8_t)0x01) /*!< CAN FIFO 1 used to receive */
+
+/** @defgroup CAN_interrupts 
+  * @{
+  */ 
+#define CAN_IT_TME                  ((uint32_t)0x00000001) /*!< Transmit mailbox empty Interrupt*/
+
+/* Receive Interrupts */
+#define CAN_IT_FMP0                 ((uint32_t)0x00000002) /*!< FIFO 0 message pending Interrupt*/
+#define CAN_IT_FF0                  ((uint32_t)0x00000004) /*!< FIFO 0 full Interrupt*/
+#define CAN_IT_FOV0                 ((uint32_t)0x00000008) /*!< FIFO 0 overrun Interrupt*/
+#define CAN_IT_FMP1                 ((uint32_t)0x00000010) /*!< FIFO 1 message pending Interrupt*/
+#define CAN_IT_FF1                  ((uint32_t)0x00000020) /*!< FIFO 1 full Interrupt*/
+#define CAN_IT_FOV1                 ((uint32_t)0x00000040) /*!< FIFO 1 overrun Interrupt*/
+
+/* Operating Mode Interrupts */
+#define CAN_IT_WKU                  ((uint32_t)0x00010000) /*!< Wake-up Interrupt*/
+#define CAN_IT_SLK                  ((uint32_t)0x00020000) /*!< Sleep acknowledge Interrupt*/
+
+/* Error Interrupts */
+#define CAN_IT_EWG                  ((uint32_t)0x00000100) /*!< Error warning Interrupt*/
+#define CAN_IT_EPV                  ((uint32_t)0x00000200) /*!< Error passive Interrupt*/
+#define CAN_IT_BOF                  ((uint32_t)0x00000400) /*!< Bus-off Interrupt*/
+#define CAN_IT_LEC                  ((uint32_t)0x00000800) /*!< Last error code Interrupt*/
+#define CAN_IT_ERR                  ((uint32_t)0x00008000) /*!< Error Interrupt*/
+
+/* Flags named as Interrupts : kept only for FW compatibility */
+#define CAN_IT_RQCP0   CAN_IT_TME
+#define CAN_IT_RQCP1   CAN_IT_TME
+#define CAN_IT_RQCP2   CAN_IT_TME
 
 /* CAN Master Control Register bits */
 #define MCR_DBF           ((uint32_t)0x00010000) /* software master reset */
@@ -254,22 +305,22 @@ enum class STM32F4_Can_Error : uint32_t {
 };
 
 struct STM32F4_Can_Controller {
-    STM32F4_Can_Message canMessage[CAN_MESSAGES_MAX];
+    STM32F4_Can_Message canRxMessagesFifo[CAN_MESSAGES_MAX];
 
     int32_t can_rx_count;
     int32_t can_rx_in;
     int32_t can_rx_out;
-
+	
     int32_t can_send_errorEvent;
 
     uint32_t baudrate;
 
-    CanTxMsg txMessage;
-    CanRxMsg rxMessage;
-
     uint8_t sendEvent;
+	
+	CanTxMsg *txMessage;
+    CanRxMsg *rxMessage;
 
-    STM32F4_Can_InitTypeDef initTypeDef;
+	STM32F4_Can_InitTypeDef initTypeDef;
     CAN_FilterInitTypeDef filterInitTypeDef;
 
 };
@@ -356,7 +407,7 @@ int32_t BinarySearch2(uint32_t *lowerBounds, uint32_t *upperBounds, int32_t firs
     return -1;    // failed to find key
 }
 
-TinyCLR_Result GHAL_CAN_SetExplicitFilters(int channel, uint32_t *filters, uint32_t length) {
+TinyCLR_Result CAN_SetExplicitFilters(int channel, uint32_t *filters, uint32_t length) {
     uint32_t *_matchFilters;
 
     _matchFilters = (uint32_t*)canLocateMemoryProvider.Allocate(&canLocateMemoryProvider, length * sizeof(uint32_t));
@@ -371,14 +422,14 @@ TinyCLR_Result GHAL_CAN_SetExplicitFilters(int channel, uint32_t *filters, uint3
     {
         DISABLE_INTERRUPTS_SCOPED(irq);
 
-        CANData[channel - 1].matchFiltersSize = length;
-        CANData[channel - 1].matchFilters = _matchFilters;
+        CANData[channel].matchFiltersSize = length;
+        CANData[channel].matchFilters = _matchFilters;
     }
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result GHAL_CAN_SetGroupFilters(int channel, uint32_t *lowerBounds, uint32_t *upperBounds, uint32_t length) {
+TinyCLR_Result CAN_SetGroupFilters(int channel, uint32_t *lowerBounds, uint32_t *upperBounds, uint32_t length) {
     uint32_t *_lowerBoundFilters, *_upperBoundFilters;
 
     _lowerBoundFilters = (uint32_t*)canLocateMemoryProvider.Allocate(&canLocateMemoryProvider, length * sizeof(uint32_t));
@@ -406,9 +457,9 @@ TinyCLR_Result GHAL_CAN_SetGroupFilters(int channel, uint32_t *lowerBounds, uint
     {
         DISABLE_INTERRUPTS_SCOPED(irq);
 
-        CANData[channel - 1].groupFiltersSize = length;
-        CANData[channel - 1].lowerBoundFilters = _lowerBoundFilters;
-        CANData[channel - 1].upperBoundFilters = _upperBoundFilters;
+        CANData[channel].groupFiltersSize = length;
+        CANData[channel].lowerBoundFilters = _lowerBoundFilters;
+        CANData[channel].upperBoundFilters = _upperBoundFilters;
     }
 
     return TinyCLR_Result::Success;;
@@ -423,7 +474,7 @@ TinyCLR_Result GHAL_CAN_SetGroupFilters(int channel, uint32_t *lowerBounds, uint
   * @retval Constant indicates initialization succeed which will be
   *         CAN_InitStatus_Failed or CAN_InitStatus_Success.
   */
-uint8_t STM32F4_Can_Initialize(CAN_TypeDef* CANx, STM32F4_Can_InitTypeDef* CAN_InitStruct) {
+uint8_t CAN_Initialize(CAN_TypeDef* CANx, STM32F4_Can_InitTypeDef* CAN_InitStruct) {
     uint8_t InitStatus = CAN_InitStatus_Failed;
     uint32_t wait_ack = 0x00000000;
 
@@ -532,12 +583,7 @@ uint8_t STM32F4_Can_Initialize(CAN_TypeDef* CANx, STM32F4_Can_InitTypeDef* CAN_I
 void CAN_FilterInit(CAN_FilterInitTypeDef* CAN_FilterInitStruct) {
     uint32_t filter_number_bit_pos = 0;
     /* Check the parameters */
-    // TQD assert_param(IS_CAN_FILTER_NUMBER(CAN_FilterInitStruct->CAN_FilterNumber));
-    // TQD assert_param(IS_CAN_FILTER_MODE(CAN_FilterInitStruct->CAN_FilterMode));
-    // TQD assert_param(IS_CAN_FILTER_SCALE(CAN_FilterInitStruct->CAN_FilterScale));
-    // TQD assert_param(IS_CAN_FILTER_FIFO(CAN_FilterInitStruct->CAN_FilterFIFOAssignment));
-    // TQD assert_param(IS_FUNCTIONAL_STATE(CAN_FilterInitStruct->CAN_FilterActivation));
-
+   
     filter_number_bit_pos = ((uint32_t)1) << CAN_FilterInitStruct->CAN_FilterNumber;
 
     /* Initialisation mode for the filter */
@@ -608,11 +654,495 @@ void CAN_FilterInit(CAN_FilterInitTypeDef* CAN_FilterInitStruct) {
     CAN1->FMR &= ~FMR_FINIT;
 }
 
-uint32_t STM32F4_Can_CalculateBaudrate(int32_t propagation, int32_t phase1, int32_t phase2, int32_t brp, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
+uint32_t Can_CalculateBaudrate(int32_t propagation, int32_t phase1, int32_t phase2, int32_t brp, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
     uint32_t baudrate = (((synchronizationJumpWidth - 1) << 24) | ((phase2 - 1) << 20) | ((phase1 - 1) << 16) | brp);
     return baudrate;
-
 }
+
+
+/**
+  * @brief  Receives a correct CAN frame.
+  * @param  CANx: where x can be 1 or 2 to select the CAN peripheral.
+  * @param  FIFONumber: Receive FIFO number, CAN_FIFO0 or CAN_FIFO1.
+  * @param  RxMessage: pointer to a structure receive frame which contains CAN Id,
+  *         CAN DLC, CAN data and FMI number.
+  * @retval None
+  */
+void CAN_Receive(CAN_TypeDef* CANx, uint8_t FIFONumber, CanRxMsg* RxMessage)
+{
+  /* Check the parameters */
+  // TQD assert_param(IS_CAN_ALL_PERIPH(CANx));
+  // TQD assert_param(IS_CAN_FIFO(FIFONumber));
+  /* Get the Id */
+  RxMessage->IDE = (uint8_t)0x04 & CANx->sFIFOMailBox[FIFONumber].RIR;
+  if (RxMessage->IDE == CAN_Id_Standard)
+  {
+    RxMessage->StdId = (uint32_t)0x000007FF & (CANx->sFIFOMailBox[FIFONumber].RIR >> 21);
+  }
+  else
+  {
+    RxMessage->ExtId = (uint32_t)0x1FFFFFFF & (CANx->sFIFOMailBox[FIFONumber].RIR >> 3);
+  }
+  
+  RxMessage->RTR = (uint8_t)0x02 & CANx->sFIFOMailBox[FIFONumber].RIR;
+  /* Get the DLC */
+  RxMessage->DLC = (uint8_t)0x0F & CANx->sFIFOMailBox[FIFONumber].RDTR;
+  /* Get the FMI */
+  RxMessage->FMI = (uint8_t)0xFF & (CANx->sFIFOMailBox[FIFONumber].RDTR >> 8);
+  /* Get the data field */
+  RxMessage->Data[0] = (uint8_t)0xFF & CANx->sFIFOMailBox[FIFONumber].RDLR;
+  RxMessage->Data[1] = (uint8_t)0xFF & (CANx->sFIFOMailBox[FIFONumber].RDLR >> 8);
+  RxMessage->Data[2] = (uint8_t)0xFF & (CANx->sFIFOMailBox[FIFONumber].RDLR >> 16);
+  RxMessage->Data[3] = (uint8_t)0xFF & (CANx->sFIFOMailBox[FIFONumber].RDLR >> 24);
+  RxMessage->Data[4] = (uint8_t)0xFF & CANx->sFIFOMailBox[FIFONumber].RDHR;
+  RxMessage->Data[5] = (uint8_t)0xFF & (CANx->sFIFOMailBox[FIFONumber].RDHR >> 8);
+  RxMessage->Data[6] = (uint8_t)0xFF & (CANx->sFIFOMailBox[FIFONumber].RDHR >> 16);
+  RxMessage->Data[7] = (uint8_t)0xFF & (CANx->sFIFOMailBox[FIFONumber].RDHR >> 24);
+  /* Release the FIFO */
+  /* Release FIFO0 */
+  if (FIFONumber == CAN_FIFO0)
+  {
+    CANx->RF0R |= CAN_RF0R_RFOM0;
+  }
+  /* Release FIFO1 */
+  else /* FIFONumber == CAN_FIFO1 */
+  {
+    CANx->RF1R |= CAN_RF1R_RFOM1;
+  }
+}
+
+/**
+  * @brief  Initiates and transmits a CAN frame message.
+  * @param  CANx: where x can be 1 or 2 to to select the CAN peripheral.
+  * @param  TxMessage: pointer to a structure which contains CAN Id, CAN DLC and CAN data.
+  * @retval The number of the mailbox that is used for transmission or
+  *         CAN_TxStatus_NoMailBox if there is no empty mailbox.
+  */
+uint8_t CAN_Transmit(CAN_TypeDef* CANx, CanTxMsg* TxMessage)
+{
+  uint8_t transmit_mailbox = 0;
+
+  /* Select one empty transmit mailbox */
+  if ((CANx->TSR&CAN_TSR_TME0) == CAN_TSR_TME0)
+  {
+    transmit_mailbox = 0;
+  }
+  else if ((CANx->TSR&CAN_TSR_TME1) == CAN_TSR_TME1)
+  {
+    transmit_mailbox = 1;
+  }
+  else if ((CANx->TSR&CAN_TSR_TME2) == CAN_TSR_TME2)
+  {
+    transmit_mailbox = 2;
+  }
+  else
+  {
+    transmit_mailbox = CAN_TxStatus_NoMailBox;
+  }
+
+  if (transmit_mailbox != CAN_TxStatus_NoMailBox)
+  {
+    /* Set up the Id */
+    CANx->sTxMailBox[transmit_mailbox].TIR &= TMIDxR_TXRQ;
+    if (TxMessage->IDE == CAN_Id_Standard)
+    {
+      // TQD assert_param(IS_CAN_STDID(TxMessage->StdId));  
+      CANx->sTxMailBox[transmit_mailbox].TIR |= ((TxMessage->StdId << 21) | \
+                                                  TxMessage->RTR);
+    }
+    else
+    {
+      // TQD assert_param(IS_CAN_EXTID(TxMessage->ExtId));
+      CANx->sTxMailBox[transmit_mailbox].TIR |= ((TxMessage->ExtId << 3) | \
+                                                  TxMessage->IDE | \
+                                                  TxMessage->RTR);
+    }
+    
+    /* Set up the DLC */
+    TxMessage->DLC &= (uint8_t)0x0000000F;
+    CANx->sTxMailBox[transmit_mailbox].TDTR &= (uint32_t)0xFFFFFFF0;
+    CANx->sTxMailBox[transmit_mailbox].TDTR |= TxMessage->DLC;
+
+    /* Set up the data field */
+    CANx->sTxMailBox[transmit_mailbox].TDLR = (((uint32_t)TxMessage->Data[3] << 24) | 
+                                             ((uint32_t)TxMessage->Data[2] << 16) |
+                                             ((uint32_t)TxMessage->Data[1] << 8) | 
+                                             ((uint32_t)TxMessage->Data[0]));
+    CANx->sTxMailBox[transmit_mailbox].TDHR = (((uint32_t)TxMessage->Data[7] << 24) | 
+                                             ((uint32_t)TxMessage->Data[6] << 16) |
+                                             ((uint32_t)TxMessage->Data[5] << 8) |
+                                             ((uint32_t)TxMessage->Data[4]));
+    /* Request transmission */
+    CANx->sTxMailBox[transmit_mailbox].TIR |= TMIDxR_TXRQ;
+  }
+  
+  return transmit_mailbox;
+}
+
+/**
+  * @brief  Checks the transmission status of a CAN Frame.
+  * @param  CANx: where x can be 1 or 2 to select the CAN peripheral.
+  * @param  TransmitMailbox: the number of the mailbox that is used for transmission.
+  * @retval CAN_TxStatus_Ok if the CAN driver transmits the message, 
+  *         CAN_TxStatus_Failed in an other case.
+  */
+uint8_t CAN_TransmitStatus(CAN_TypeDef* CANx, uint8_t TransmitMailbox)
+{
+	uint32_t state = 0;
+
+	/* Check the parameters */
+
+
+	switch (TransmitMailbox)
+	{
+		case (CAN_TXMAILBOX_0): 
+			state =   CANx->TSR &  (CAN_TSR_RQCP0 | CAN_TSR_TXOK0 | CAN_TSR_TME0);
+		break;
+		case (CAN_TXMAILBOX_1): 
+			state =   CANx->TSR &  (CAN_TSR_RQCP1 | CAN_TSR_TXOK1 | CAN_TSR_TME1);
+		break;
+		case (CAN_TXMAILBOX_2): 
+			state =   CANx->TSR &  (CAN_TSR_RQCP2 | CAN_TSR_TXOK2 | CAN_TSR_TME2);
+		break;
+		default:
+			state = CAN_TxStatus_Failed;
+		break;
+	}
+	switch (state)
+	{
+		/* transmit pending  */
+		case (0x0): state = CAN_TxStatus_Pending;
+		break;
+		/* transmit failed  */
+		case (CAN_TSR_RQCP0 | CAN_TSR_TME0): state = CAN_TxStatus_Failed;
+		break;
+		case (CAN_TSR_RQCP1 | CAN_TSR_TME1): state = CAN_TxStatus_Failed;
+		break;
+		case (CAN_TSR_RQCP2 | CAN_TSR_TME2): state = CAN_TxStatus_Failed;
+		break;
+		/* transmit succeeded  */
+		case (CAN_TSR_RQCP0 | CAN_TSR_TXOK0 | CAN_TSR_TME0):state = CAN_TxStatus_Ok;
+		break;
+		case (CAN_TSR_RQCP1 | CAN_TSR_TXOK1 | CAN_TSR_TME1):state = CAN_TxStatus_Ok;
+		break;
+		case (CAN_TSR_RQCP2 | CAN_TSR_TXOK2 | CAN_TSR_TME2):state = CAN_TxStatus_Ok;
+		break;
+		default: state = CAN_TxStatus_Failed;
+		break;
+	}
+	return (uint8_t) state;
+}
+
+#define CAN_TRANSFER_TIMEOUT 0xFFFF
+uint32_t CAN_GetTransferTimeout()
+{
+   return CAN_TRANSFER_TIMEOUT;
+}
+
+/**
+  * @brief  Cancels a transmit request.
+  * @param  CANx: where x can be 1 or 2 to select the CAN peripheral.
+  * @param  Mailbox: Mailbox number.
+  * @retval None
+  */
+void CAN_CancelTransmit(CAN_TypeDef* CANx, uint8_t Mailbox)
+{
+  /* Check the parameters */
+  // TQD assert_param(IS_CAN_ALL_PERIPH(CANx));
+  // TQD assert_param(IS_CAN_TRANSMITMAILBOX(Mailbox));
+  /* abort transmission */
+  switch (Mailbox)
+  {
+    case (CAN_TXMAILBOX_0): CANx->TSR |= CAN_TSR_ABRQ0;
+      break;
+    case (CAN_TXMAILBOX_1): CANx->TSR |= CAN_TSR_ABRQ1;
+      break;
+    case (CAN_TXMAILBOX_2): CANx->TSR |= CAN_TSR_ABRQ2;
+      break;
+    default:
+      break;
+  }
+}
+/**
+  * @brief  Clears the CANx's interrupt pending bits.
+  * @param  CANx: where x can be 1 or 2 to to select the CAN peripheral.
+  * @param  CAN_IT: specifies the interrupt pending bit to clear.
+  *          This parameter can be one of the following values:
+  *            @arg CAN_IT_TME: Transmit mailbox empty Interrupt
+  *            @arg CAN_IT_FF0: FIFO 0 full Interrupt
+  *            @arg CAN_IT_FOV0: FIFO 0 overrun Interrupt
+  *            @arg CAN_IT_FF1: FIFO 1 full Interrupt
+  *            @arg CAN_IT_FOV1: FIFO 1 overrun Interrupt
+  *            @arg CAN_IT_WKU: Wake-up Interrupt
+  *            @arg CAN_IT_SLK: Sleep acknowledge Interrupt  
+  *            @arg CAN_IT_EWG: Error warning Interrupt
+  *            @arg CAN_IT_EPV: Error passive Interrupt
+  *            @arg CAN_IT_BOF: Bus-off Interrupt  
+  *            @arg CAN_IT_LEC: Last error code Interrupt
+  *            @arg CAN_IT_ERR: Error Interrupt 
+  * @retval None
+  */
+void CAN_ClearITPendingBit(CAN_TypeDef* CANx, uint32_t CAN_IT)
+{
+  /* Check the parameters */
+  // TQD assert_param(IS_CAN_ALL_PERIPH(CANx));
+  // TQD assert_param(IS_CAN_CLEAR_IT(CAN_IT));
+
+  switch (CAN_IT)
+  {
+    case CAN_IT_TME:
+      /* Clear CAN_TSR_RQCPx (rc_w1)*/
+      CANx->TSR = CAN_TSR_RQCP0|CAN_TSR_RQCP1|CAN_TSR_RQCP2;  
+      break;
+    case CAN_IT_FF0:
+      /* Clear CAN_RF0R_FULL0 (rc_w1)*/
+      CANx->RF0R = CAN_RF0R_FULL0; 
+      break;
+    case CAN_IT_FOV0:
+      /* Clear CAN_RF0R_FOVR0 (rc_w1)*/
+      CANx->RF0R = CAN_RF0R_FOVR0; 
+      break;
+    case CAN_IT_FF1:
+      /* Clear CAN_RF1R_FULL1 (rc_w1)*/
+      CANx->RF1R = CAN_RF1R_FULL1;  
+      break;
+    case CAN_IT_FOV1:
+      /* Clear CAN_RF1R_FOVR1 (rc_w1)*/
+      CANx->RF1R = CAN_RF1R_FOVR1; 
+      break;
+    case CAN_IT_WKU:
+      /* Clear CAN_MSR_WKUI (rc_w1)*/
+      CANx->MSR = CAN_MSR_WKUI;  
+      break;
+    case CAN_IT_SLK:
+      /* Clear CAN_MSR_SLAKI (rc_w1)*/ 
+      CANx->MSR = CAN_MSR_SLAKI;   
+      break;
+    case CAN_IT_EWG:
+      /* Clear CAN_MSR_ERRI (rc_w1) */
+      CANx->MSR = CAN_MSR_ERRI;
+       /* @note the corresponding Flag is cleared by hardware depending on the CAN Bus status*/ 
+      break;
+    case CAN_IT_EPV:
+      /* Clear CAN_MSR_ERRI (rc_w1) */
+      CANx->MSR = CAN_MSR_ERRI; 
+       /* @note the corresponding Flag is cleared by hardware depending on the CAN Bus status*/
+      break;
+    case CAN_IT_BOF:
+      /* Clear CAN_MSR_ERRI (rc_w1) */ 
+      CANx->MSR = CAN_MSR_ERRI; 
+       /* @note the corresponding Flag is cleared by hardware depending on the CAN Bus status*/
+       break;
+    case CAN_IT_LEC:
+      /*  Clear LEC bits */
+      CANx->ESR = RESET; 
+      /* Clear CAN_MSR_ERRI (rc_w1) */
+      CANx->MSR = CAN_MSR_ERRI; 
+      break;
+    case CAN_IT_ERR:
+      /*Clear LEC bits */
+      CANx->ESR = RESET; 
+      /* Clear CAN_MSR_ERRI (rc_w1) */
+      CANx->MSR = CAN_MSR_ERRI; 
+       /* @note BOFF, EPVF and EWGF Flags are cleared by hardware depending on the CAN Bus status*/
+       break;
+    default:
+       break;
+   }
+}
+
+/**
+  * @brief  Checks whether the CAN interrupt has occurred or not.
+  * @param  CAN_Reg: specifies the CAN interrupt register to check.
+  * @param  It_Bit: specifies the interrupt source bit to check.
+  * @retval The new state of the CAN Interrupt (SET or RESET).
+  */
+static ITStatus CheckITStatus(uint32_t CAN_Reg, uint32_t It_Bit)
+{
+  ITStatus pendingbitstatus = RESET;
+  
+  if ((CAN_Reg & It_Bit) != (uint32_t)RESET)
+  {
+    /* CAN_IT is set */
+    pendingbitstatus = SET;
+  }
+  else
+  {
+    /* CAN_IT is reset */
+    pendingbitstatus = RESET;
+  }
+  return pendingbitstatus;
+}
+
+
+/**
+  * @brief  Checks whether the specified CANx interrupt has occurred or not.
+  * @param  CANx: where x can be 1 or 2 to to select the CAN peripheral.
+  * @param  CAN_IT: specifies the CAN interrupt source to check.
+  *          This parameter can be one of the following values:
+  *            @arg CAN_IT_TME: Transmit mailbox empty Interrupt 
+  *            @arg CAN_IT_FMP0: FIFO 0 message pending Interrupt 
+  *            @arg CAN_IT_FF0: FIFO 0 full Interrupt
+  *            @arg CAN_IT_FOV0: FIFO 0 overrun Interrupt
+  *            @arg CAN_IT_FMP1: FIFO 1 message pending Interrupt 
+  *            @arg CAN_IT_FF1: FIFO 1 full Interrupt
+  *            @arg CAN_IT_FOV1: FIFO 1 overrun Interrupt
+  *            @arg CAN_IT_WKU: Wake-up Interrupt
+  *            @arg CAN_IT_SLK: Sleep acknowledge Interrupt  
+  *            @arg CAN_IT_EWG: Error warning Interrupt
+  *            @arg CAN_IT_EPV: Error passive Interrupt
+  *            @arg CAN_IT_BOF: Bus-off Interrupt  
+  *            @arg CAN_IT_LEC: Last error code Interrupt
+  *            @arg CAN_IT_ERR: Error Interrupt
+  * @retval The current state of CAN_IT (SET or RESET).
+  */
+ITStatus CAN_GetITStatus(CAN_TypeDef* CANx, uint32_t CAN_IT)
+{
+  ITStatus itstatus = RESET;
+  /* Check the parameters */
+  // TQD assert_param(IS_CAN_ALL_PERIPH(CANx));
+  // TQD assert_param(IS_CAN_IT(CAN_IT));
+  
+  /* check the interrupt enable bit */
+ if((CANx->IER & CAN_IT) != RESET)
+ {
+   /* in case the Interrupt is enabled, .... */
+    switch (CAN_IT)
+    {
+      case CAN_IT_TME:
+        /* Check CAN_TSR_RQCPx bits */
+        itstatus = CheckITStatus(CANx->TSR, CAN_TSR_RQCP0|CAN_TSR_RQCP1|CAN_TSR_RQCP2);  
+        break;
+      case CAN_IT_FMP0:
+        /* Check CAN_RF0R_FMP0 bit */
+        itstatus = CheckITStatus(CANx->RF0R, CAN_RF0R_FMP0);  
+        break;
+      case CAN_IT_FF0:
+        /* Check CAN_RF0R_FULL0 bit */
+        itstatus = CheckITStatus(CANx->RF0R, CAN_RF0R_FULL0);  
+        break;
+      case CAN_IT_FOV0:
+        /* Check CAN_RF0R_FOVR0 bit */
+        itstatus = CheckITStatus(CANx->RF0R, CAN_RF0R_FOVR0);  
+        break;
+      case CAN_IT_FMP1:
+        /* Check CAN_RF1R_FMP1 bit */
+        itstatus = CheckITStatus(CANx->RF1R, CAN_RF1R_FMP1);  
+        break;
+      case CAN_IT_FF1:
+        /* Check CAN_RF1R_FULL1 bit */
+        itstatus = CheckITStatus(CANx->RF1R, CAN_RF1R_FULL1);  
+        break;
+      case CAN_IT_FOV1:
+        /* Check CAN_RF1R_FOVR1 bit */
+        itstatus = CheckITStatus(CANx->RF1R, CAN_RF1R_FOVR1);  
+        break;
+      case CAN_IT_WKU:
+        /* Check CAN_MSR_WKUI bit */
+        itstatus = CheckITStatus(CANx->MSR, CAN_MSR_WKUI);  
+        break;
+      case CAN_IT_SLK:
+        /* Check CAN_MSR_SLAKI bit */
+        itstatus = CheckITStatus(CANx->MSR, CAN_MSR_SLAKI);  
+        break;
+      case CAN_IT_EWG:
+        /* Check CAN_ESR_EWGF bit */
+        itstatus = CheckITStatus(CANx->ESR, CAN_ESR_EWGF);  
+        break;
+      case CAN_IT_EPV:
+        /* Check CAN_ESR_EPVF bit */
+        itstatus = CheckITStatus(CANx->ESR, CAN_ESR_EPVF);  
+        break;
+      case CAN_IT_BOF:
+        /* Check CAN_ESR_BOFF bit */
+        itstatus = CheckITStatus(CANx->ESR, CAN_ESR_BOFF);  
+        break;
+      case CAN_IT_LEC:
+        /* Check CAN_ESR_LEC bit */
+        itstatus = CheckITStatus(CANx->ESR, CAN_ESR_LEC);  
+        break;
+      case CAN_IT_ERR:
+        /* Check CAN_MSR_ERRI bit */ 
+        itstatus = CheckITStatus(CANx->MSR, CAN_MSR_ERRI); 
+        break;
+      default:
+        /* in case of error, return RESET */
+        itstatus = RESET;
+        break;
+    }
+  }
+  else
+  {
+   /* in case the Interrupt is not enabled, return RESET */
+    itstatus  = RESET;
+  }
+  
+  /* Return the CAN_IT status */
+  return  itstatus;
+}
+
+
+bool CAN_ErrorHandler(uint8_t channel)
+{
+	CAN_TypeDef* CANx;
+	if (channel==0)
+		CANx = CAN1;
+	else 
+		CANx  = CAN2;
+//	if (CAN_GetITStatus(CANx, CAN_IT_FMP0))
+//	{
+//		//CAN_ClearITPendingBit(
+//		 return true;
+//	}
+//	else 
+    if (CAN_GetITStatus(CANx, CAN_IT_FF0))
+	{
+		CAN_ClearITPendingBit(CANx,CAN_IT_FF0);
+		//GPAL_SendInternalEvent(GPAL_INTERNALEVENT_CAN, (channel) | (CAN_RXOver << 8));
+		return true;
+	}
+	else if (CAN_GetITStatus(CANx, CAN_IT_FOV0))
+	{
+		CAN_ClearITPendingBit(CANx,CAN_IT_FOV0);
+		//GPAL_SendInternalEvent(GPAL_INTERNALEVENT_CAN, (channel) | (CAN_Overrun << 8));
+
+		return true;
+	}	
+	else if (CAN_GetITStatus(CANx, CAN_IT_BOF))
+	{
+		CAN_ClearITPendingBit(CANx,CAN_IT_BOF);
+		//GPAL_SendInternalEvent(GPAL_INTERNALEVENT_CAN, (channel) | (CAN_BusOff << 8));
+		return true;
+	}
+	else if (CAN_GetITStatus(CANx, CAN_IT_EPV))
+	{
+		CAN_ClearITPendingBit(CANx,CAN_IT_EPV);
+		//GPAL_SendInternalEvent(GPAL_INTERNALEVENT_CAN, (channel) | (CAN_ErrorPassive << 8));
+		return true;
+	}
+	
+	else if (CAN_GetITStatus(CANx, CAN_IT_LEC))
+	{
+		CAN_ClearITPendingBit(CANx,CAN_IT_LEC);
+		// return true;
+	}
+	else if (CAN_GetITStatus(CANx, CAN_IT_ERR))
+	{
+		CAN_ClearITPendingBit(CANx,CAN_IT_ERR);
+		//GPAL_SendInternalEvent(GPAL_INTERNALEVENT_CAN, (channel) | (CAN_ErrorPassive << 8));
+		return true;
+	}
+	else if (CAN_GetITStatus(CANx, CAN_IT_EWG))
+	{
+		CAN_ClearITPendingBit(CANx,CAN_IT_EWG);
+		//GPAL_SendInternalEvent(GPAL_INTERNALEVENT_CAN, (channel) | (CAN_ErrorPassive << 8));
+		//return true;
+	}
+	
+		
+	return false;
+}
+
 
 static TinyCLR_Can_Provider canProvider;
 static TinyCLR_Api_Info canApi;
@@ -627,6 +1157,136 @@ static STM32F4_Can_Controller canController[TOTAL_CAN_CONTROLLERS];
 const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
 
     return nullptr;
+}
+
+uint32_t STM32_Can_GetLocalTime() {
+	return 0x00000000;
+}
+void STM32_Can_RxInterruptHandler( int32_t channel )
+{
+	uint32_t * pDest;
+	uint32_t len =0;
+	uint32_t msgid =0;// (((CAN_GetMessageID(pCand->pHw,MAILBOX_TO_RECEIVE_INDEX)>>29) & 0x1)<<31);
+	uint32_t extendMode=0;
+	uint32_t rtrmode=0;
+	char passed = 0;
+	
+	uint32_t error = CAN_ErrorHandler(channel);
+
+	if (channel==0)
+	{
+		
+		CAN_Receive(CAN1, CAN_FIFO0, canController[channel].rxMessage);		
+	}
+	else 
+	{
+		
+		CAN_Receive(CAN2, CAN_FIFO0, canController[channel].rxMessage);		
+	}
+	
+	if (error)
+	  return;
+
+
+	len = canController[channel].rxMessage->DLC;
+	if (canController[channel].rxMessage->IDE == CAN_Id_Standard)
+	{
+		msgid = canController[channel].rxMessage->StdId;
+		extendMode = 0;
+	}
+	else 
+	{
+		msgid = canController[channel].rxMessage->ExtId;
+		extendMode = 1;//(1<<31); // last bit in frame is extend mode flag 0: 11 bit, 1: 29 bit id
+	}
+	rtrmode = (canController[channel].rxMessage->RTR)>>1 ;  
+	// Filter
+	if(CANData[channel].groupFiltersSize || CANData[channel].matchFiltersSize)
+	{
+		//uint32_t ID = msgid;
+		//char passed = 0;
+
+		if(CANData[channel].groupFiltersSize)
+		{
+			if(BinarySearch2(CANData[channel].lowerBoundFilters, CANData[channel].upperBoundFilters, 0, CANData[channel].groupFiltersSize-1, msgid) >= 0)
+				passed = 1;
+		}
+
+		if(!passed && CANData[channel].matchFiltersSize)
+		{
+			if(BinarySearch(CANData[channel].matchFilters, 0, CANData[channel].matchFiltersSize-1, msgid) >= 0)
+				passed = 1;
+		}
+
+		if(!passed)
+		{
+			//C1CMR = 0x04; // release receive buffer
+			return;
+		}
+	}
+	
+	if (canController[channel].can_rx_count > CAN_MESSAGES_MAX-3) {
+		return;
+	}
+	
+	pDest = (uint32_t *)&canController[channel].canRxMessagesFifo[canController[channel].can_rx_in];
+	
+	uint64_t t = STM32_Can_GetLocalTime();
+	*pDest = t & 0xFFFFFFFF;
+	pDest++;
+	*pDest = t >> 32;
+	pDest++;
+	*pDest = ( (extendMode<<31) | (rtrmode<<30) | (len<<16) );  // Frame
+	pDest++;
+	*pDest = msgid;//can_rx[nbCan].dwMsgID; // ID		//change by gongjun
+
+	pDest++;
+	//*pDest = can_rx[nbCan].msgData[0]; // Data A
+	*pDest = canController[channel].rxMessage->Data[0] | (canController[channel].rxMessage->Data[1]<<8)  | (canController[channel].rxMessage->Data[2]<<16)  | (canController[channel].rxMessage->Data[3]<<24);
+	
+
+	pDest++;
+	//*pDest = can_rx[nbCan].msgData[1]; // Data B
+	*pDest = canController[channel].rxMessage->Data[4] | (canController[channel].rxMessage->Data[5]<<8)  | (canController[channel].rxMessage->Data[6]<<16)  | (canController[channel].rxMessage->Data[7]<<24);
+	
+	canController[channel].can_rx_count++;
+	canController[channel].can_rx_in++;
+	
+	if (canController[channel].can_rx_in == CAN_MESSAGES_MAX) {
+		canController[channel].can_rx_in = 0;
+	}
+	
+	//SendRxDataEvent(channel);	
+	return;
+}
+
+void STM32F4_Can_TxInterruptHandler0(void *param) {
+	int32_t channel = 0;
+	
+	if (CAN_ErrorHandler(channel)) // has error
+	{
+		return;
+	}
+}
+
+void STM32F4_Can_TxInterruptHandler1(void *param) {
+	int32_t channel = 1;
+	
+	if (CAN_ErrorHandler(channel)) // has error
+	{
+		return;
+	}
+}
+
+
+void STM32F4_Can_RxInterruptHandler0(void *param) {
+	int32_t channel = 0;
+	STM32_Can_RxInterruptHandler(channel);
+}
+
+void STM32F4_Can_RxInterruptHandler1(void *param) {
+	int32_t channel = 1;
+	STM32_Can_RxInterruptHandler(channel);
 }
 
 TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Provider* self) {
@@ -666,7 +1326,7 @@ TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Provider* self) {
     canController[channel].initTypeDef.CAN_BS1 = ((canController[channel].baudrate >> 16) & 0x0F);
     canController[channel].initTypeDef.CAN_Prescaler = ((canController[channel].baudrate >> 0) & 0x3FF);
 
-    STM32F4_Can_Initialize(channel == 0 ? CAN1 : CAN2, &canController[channel].initTypeDef);
+    CAN_Initialize(channel == 0 ? CAN1 : CAN2, &canController[channel].initTypeDef);
 
 
 
@@ -682,7 +1342,27 @@ TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Provider* self) {
     canController[channel].filterInitTypeDef.CAN_FilterActivation = ENABLE;
 
     CAN_FilterInit(&canController[channel].filterInitTypeDef);
+	
+	canController[channel].can_rx_count = 0;
+    canController[channel].can_rx_in = 0;
+    canController[channel].can_rx_out = 0;	
+    canController[channel].can_send_errorEvent = 0;
+    canController[channel].baudrate = 0;
+    canController[channel].sendEvent = 0;
+	
+	if (channel == 0) {
+		STM32F4_InterruptInternal_Activate(CAN1_TX_IRQn, (uint32_t*)&STM32F4_Can_TxInterruptHandler0, 0);
+		STM32F4_InterruptInternal_Activate(CAN1_RX0_IRQn, (uint32_t*)&STM32F4_Can_RxInterruptHandler0, 0);
+		
+		CAN1->IER |= (CAN_IT_FMP0  | CAN_IT_FF0  | CAN_IT_FOV0 | CAN_IT_EWG | CAN_IT_EPV |CAN_IT_BOF | CAN_IT_LEC| CAN_IT_ERR);
+	}
+	else {
+		STM32F4_InterruptInternal_Activate(CAN2_TX_IRQn, (uint32_t*)&STM32F4_Can_TxInterruptHandler1, 0);
+		STM32F4_InterruptInternal_Activate(CAN2_RX0_IRQn, (uint32_t*)&STM32F4_Can_RxInterruptHandler1, 0);
 
+		CAN2->IER |= (CAN_IT_FMP0  | CAN_IT_FF0  | CAN_IT_FOV0 | CAN_IT_EWG | CAN_IT_EPV |CAN_IT_BOF | CAN_IT_LEC| CAN_IT_ERR);
+	}
+	
     return TinyCLR_Result::Success;
 }
 
@@ -707,12 +1387,6 @@ TinyCLR_Result STM32F4_Can_Release(const TinyCLR_Can_Provider* self) {
     STM32F4_GpioInternal_ClosePin(g_STM32F4_Can_Rx_Pins[channel].number);
 
     RCC->APB1ENR &= ((channel == 0) ? ~RCC_APB1ENR_CAN1EN : ~RCC_APB1ENR_CAN2EN);
-
-
-
-
-
-
     return TinyCLR_Result::Success;
 }
 
@@ -722,6 +1396,62 @@ TinyCLR_Result STM32F4_Can_Reset(const TinyCLR_Can_Provider* self) {
 
 TinyCLR_Result STM32F4_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_t arbID, uint32_t flags, uint8_t *data) {
 
+	uint32_t *canData = (uint32_t*)data;
+	
+	int32_t channel = self->Index;
+	
+	if (channel == 0) {
+		uint32_t i=0;
+
+		uint8_t txmailbox;
+		
+		bool isextid = (((flags)>>31) & 0x1);
+		 /* Transmit Structure preparation */
+		canController[channel].txMessage->RTR = (((flags)>>30) & 0x1);
+				
+		if (isextid)
+		{
+			canController[channel].txMessage->IDE = CAN_Id_Extended;
+			canController[channel].txMessage->ExtId = arbID;
+		}
+		else
+		{
+			canController[channel].txMessage->IDE = CAN_Id_Standard;
+			canController[channel].txMessage->StdId = arbID;
+		}
+		canController[channel].txMessage->DLC = ((flags)>>16) & 0xF;
+
+		canController[channel].txMessage->Data[0] =((canData[0]>>0) & 0xFF);
+		canController[channel].txMessage->Data[1] =((canData[0]>>8) & 0xFF);
+		canController[channel].txMessage->Data[2] =((canData[0]>>16) & 0xFF);
+		canController[channel].txMessage->Data[3] =((canData[0]>>24) & 0xFF);
+		canController[channel].txMessage->Data[4] =((canData[1]>>0) & 0xFF);
+		canController[channel].txMessage->Data[5] =((canData[1]>8) & 0xFF);
+		canController[channel].txMessage->Data[6] =((canData[1]>>16) & 0xFF);
+		canController[channel].txMessage->Data[7] =((canData[1]>>24) & 0xFF);
+
+		
+		txmailbox = 	CAN_Transmit(CAN1, canController[channel].txMessage); // No mail box is ready
+		if (txmailbox != CAN_TxStatus_NoMailBox)
+		{
+			while (CAN_TransmitStatus(CAN1,txmailbox) != CAN_TxStatus_Ok && i<CAN_GetTransferTimeout()) 
+			{
+				i++;				
+			}
+		}
+		
+		if (txmailbox == CAN_TxStatus_NoMailBox || i==CAN_GetTransferTimeout()) 
+		{
+		 
+			CAN_CancelTransmit(CAN1,txmailbox);
+			CAN_ErrorHandler(channel);
+			return TinyCLR_Result::InvalidOperation;
+		}
+	}
+	else {
+		// TO DO CAN 2
+		return TinyCLR_Result::NotSupported;
+	}
     return TinyCLR_Result::Success;
 }
 
