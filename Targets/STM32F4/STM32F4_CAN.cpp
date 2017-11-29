@@ -1150,8 +1150,7 @@ static TinyCLR_Api_Info canApi;
 static uint8_t canProviderDefs[TOTAL_CAN_CONTROLLERS * sizeof(TinyCLR_Can_Provider)];
 
 const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
-
- for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
+	for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
         canProvider[i] = (TinyCLR_Can_Provider*)(canProviderDefs + (i * sizeof(TinyCLR_Can_Provider)));
         canProvider[i]->Parent = &canApi;
         canProvider[i]->Index = i;
@@ -1162,6 +1161,7 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
 		canProvider[i]->GetMessage = &STM32F4_Can_GetMessage;
         canProvider[i]->SetSpeed = &STM32F4_Can_SetSpeed;
         canProvider[i]->GetMessageCount = &STM32F4_Can_GetMessageCount;        
+        canProvider[i]->SetMessageReceivedHandler = &STM32F4_Can_SetMessageReceivedHandler;        
     }
 
     canApi.Author = "GHI Electronics, LLC";
@@ -1511,6 +1511,12 @@ TinyCLR_Result STM32F4_Can_GetMessageCount(const TinyCLR_Can_Provider* self, int
 	
 	messageCount = canController[channel].can_rx_count;
 	
+	return TinyCLR_Result::Success;	
+}
+
+TinyCLR_Result STM32F4_Can_SetMessageReceivedHandler(const TinyCLR_Can_Provider* self, TinyCLR_Can_DataReceivedHandler handler) {
+	int32_t channel = self->Index;	
+	// TODO	
 	return TinyCLR_Result::Success;
 	
 }
