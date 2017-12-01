@@ -88,6 +88,9 @@ bool STM32F4_InterruptInternal_Activate(uint32_t index, uint32_t *isr, void* isr
     uint32_t *irq_vectors = (uint32_t*)&__Vectors;
 
     irq_vectors[id + 16] = (uint32_t)isr; // exception = irq + 16
+
+    __DMB();
+
     NVIC->ICPR[id >> 5] = 1 << (id & 0x1F); // clear pending bit
     NVIC->ISER[id >> 5] = 1 << (id & 0x1F); // set enable bit
 
