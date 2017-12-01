@@ -229,7 +229,7 @@ void STM32F4_Uart_Interrupt5(void* param) {
     if (sr & USART_SR_TXE)
         STM32F4_Uart_IrqTx(5);
 }
-
+#ifdef UART7
 void STM32F4_Uart_Interrupt6(void* param) {
     uint16_t sr = UART7->SR;
 
@@ -239,7 +239,7 @@ void STM32F4_Uart_Interrupt6(void* param) {
     if (sr & USART_SR_TXE)
         STM32F4_Uart_IrqTx(6);
 }
-
+#ifdef UART8
 void STM32F4_Uart_Interrupt7(void* param) {
     uint16_t sr = UART8->SR;
 
@@ -249,7 +249,7 @@ void STM32F4_Uart_Interrupt7(void* param) {
     if (sr & USART_SR_TXE)
         STM32F4_Uart_IrqTx(7);
 }
-
+#ifdef UART9
 void STM32F4_Uart_Interrupt8(void* param) {
     uint16_t sr = UART9->SR;
 
@@ -259,6 +259,9 @@ void STM32F4_Uart_Interrupt8(void* param) {
     if (sr & USART_SR_TXE)
         STM32F4_Uart_IrqTx(8);
 }
+#endif
+#endif
+#endif
 #endif
 
 TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
@@ -309,18 +312,18 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
         RCC->APB1ENR |= RCC_APB1ENR_UART7EN;
         clk = STM32F4_APB1_CLOCK_HZ;
     }
-#endif
 #ifdef UART8
     else if (portNum == 7) {
         RCC->APB1ENR |= RCC_APB1ENR_UART8EN;
         clk = STM32F4_APB1_CLOCK_HZ;
     }
-#endif
 #ifdef UART9
     else if (portNum == 8) {
         RCC->APB2ENR |= RCC_APB2ENR_UART9EN;
         clk = STM32F4_APB2_CLOCK_HZ;
     }
+#endif
+#endif	
 #endif
 #endif
     //  baudrate
@@ -425,19 +428,19 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
     case 6:
         STM32F4_InterruptInternal_Activate(UART7_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt6, 0);
         break;
-#endif
 
 #ifdef UART8
     case 7:
         STM32F4_InterruptInternal_Activate(UART8_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt7, 0);
         break;
-#endif
+
 #ifdef UART9
     case 8:
         STM32F4_InterruptInternal_Activate(UART9_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt8, 0);
         break;
 #endif
-
+#endif
+#endif
 #endif
     }
 
@@ -488,21 +491,19 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
     case 6:
         STM32F4_InterruptInternal_Deactivate(UART7_IRQn);
         break;
-#endif
 
 #ifdef UART8
     case 7:
         STM32F4_InterruptInternal_Deactivate(UART8_IRQn);
         break;
-#endif
+
 #ifdef UART9
     case 8:
         STM32F4_InterruptInternal_Deactivate(UART9_IRQn);
         break;
 #endif
-
-
-
+#endif
+#endif
 #endif
     }
 
@@ -524,19 +525,20 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
     else if (portNum == 6) {
         RCC->APB1ENR &= ~RCC_APB1ENR_UART7EN;
     }
-#endif
+
 #ifdef UART8
     else if (portNum == 7) {
         RCC->APB1ENR &= ~RCC_APB1ENR_UART8EN;
     }
-#endif
+
 #ifdef UART9
     else if (portNum == 8) {
         RCC->APB2ENR &= ~RCC_APB2ENR_UART9EN;
     }
 #endif
 #endif
-
+#endif
+#endif
     g_UartController[portNum].txBufferCount = 0;
     g_UartController[portNum].txBufferIn = 0;
     g_UartController[portNum].txBufferOut = 0;
