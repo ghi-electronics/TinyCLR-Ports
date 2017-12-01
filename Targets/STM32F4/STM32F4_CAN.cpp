@@ -1065,12 +1065,7 @@ ITStatus CAN_GetITStatus(CAN_TypeDef* CANx, uint32_t CAN_IT) {
 
 
 bool CAN_ErrorHandler(uint8_t channel) {
-    CAN_TypeDef* CANx;
-
-    if (channel == 0)
-        CANx = CAN1;
-    else
-        CANx = CAN2;
+    CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
 
     if (CAN_GetITStatus(CANx, CAN_IT_FF0)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_FF0);
@@ -1153,16 +1148,11 @@ void STM32_Can_RxInterruptHandler(int32_t channel) {
     uint32_t rtrmode = 0;
     char passed = 0;
 
+    CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
+
     uint32_t error = CAN_ErrorHandler(channel);
 
-    if (channel == 0) {
-
-        CAN_Receive(CAN1, CAN_FIFO0, canController[channel].rxMessage);
-    }
-    else {
-
-        CAN_Receive(CAN2, CAN_FIFO0, canController[channel].rxMessage);
-    }
+    CAN_Receive(CANx, CAN_FIFO0, canController[channel].rxMessage);
 
     if (error)
         return;
@@ -1346,52 +1336,49 @@ TinyCLR_Result STM32F4_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_
 
     int32_t channel = self->Index;
 
-    if (channel == 0) {
-        uint32_t i = 0;
+    CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
 
-        uint8_t txmailbox;
+    uint32_t i = 0;
 
-        bool isextid = (((flags) >> 31) & 0x1);
-        /* Transmit Structure preparation */
-        canController[channel].txMessage->RTR = (((flags) >> 30) & 0x1);
+    uint8_t txmailbox;
 
-        if (isextid) {
-            canController[channel].txMessage->IDE = CAN_Id_Extended;
-            canController[channel].txMessage->ExtId = arbID;
-        }
-        else {
-            canController[channel].txMessage->IDE = CAN_Id_Standard;
-            canController[channel].txMessage->StdId = arbID;
-        }
-        canController[channel].txMessage->DLC = ((flags) >> 16) & 0xF;
+    bool isextid = (((flags) >> 31) & 0x1);
+    /* Transmit Structure preparation */
+    canController[channel].txMessage->RTR = (((flags) >> 30) & 0x1);
 
-        canController[channel].txMessage->Data[0] = ((canData[0] >> 0) & 0xFF);
-        canController[channel].txMessage->Data[1] = ((canData[0] >> 8) & 0xFF);
-        canController[channel].txMessage->Data[2] = ((canData[0] >> 16) & 0xFF);
-        canController[channel].txMessage->Data[3] = ((canData[0] >> 24) & 0xFF);
-        canController[channel].txMessage->Data[4] = ((canData[1] >> 0) & 0xFF);
-        canController[channel].txMessage->Data[5] = ((canData[1] > 8) & 0xFF);
-        canController[channel].txMessage->Data[6] = ((canData[1] >> 16) & 0xFF);
-        canController[channel].txMessage->Data[7] = ((canData[1] >> 24) & 0xFF);
-
-        txmailbox = CAN_Transmit(CAN1, canController[channel].txMessage); // No mail box is ready
-        if (txmailbox != CAN_TxStatus_NoMailBox) {
-            while (CAN_TransmitStatus(CAN1, txmailbox) != CAN_TxStatus_Ok && i < CAN_GetTransferTimeout()) {
-                i++;
-            }
-        }
-
-        if (txmailbox == CAN_TxStatus_NoMailBox || i == CAN_GetTransferTimeout()) {
-
-            CAN_CancelTransmit(CAN1, txmailbox);
-            CAN_ErrorHandler(channel);
-            return TinyCLR_Result::InvalidOperation;
-        }
+    if (isextid) {
+        canController[channel].txMessage->IDE = CAN_Id_Extended;
+        canController[channel].txMessage->ExtId = arbID;
     }
     else {
-        // TO DO CAN 2
-        return TinyCLR_Result::NotSupported;
+        canController[channel].txMessage->IDE = CAN_Id_Standard;
+        canController[channel].txMessage->StdId = arbID;
     }
+    canController[channel].txMessage->DLC = ((flags) >> 16) & 0xF;
+
+    canController[channel].txMessage->Data[0] = ((canData[0] >> 0) & 0xFF);
+    canController[channel].txMessage->Data[1] = ((canData[0] >> 8) & 0xFF);
+    canController[channel].txMessage->Data[2] = ((canData[0] >> 16) & 0xFF);
+    canController[channel].txMessage->Data[3] = ((canData[0] >> 24) & 0xFF);
+    canController[channel].txMessage->Data[4] = ((canData[1] >> 0) & 0xFF);
+    canController[channel].txMessage->Data[5] = ((canData[1] > 8) & 0xFF);
+    canController[channel].txMessage->Data[6] = ((canData[1] >> 16) & 0xFF);
+    canController[channel].txMessage->Data[7] = ((canData[1] >> 24) & 0xFF);
+
+    txmailbox = CAN_Transmit(CANx, canController[channel].txMessage); // No mail box is ready
+    if (txmailbox != CAN_TxStatus_NoMailBox) {
+        while (CAN_TransmitStatus(CANx, txmailbox) != CAN_TxStatus_Ok && i < CAN_GetTransferTimeout()) {
+            i++;
+        }
+    }
+
+    if (txmailbox == CAN_TxStatus_NoMailBox || i == CAN_GetTransferTimeout()) {
+
+        CAN_CancelTransmit(CANx, txmailbox);
+        CAN_ErrorHandler(channel);
+        return TinyCLR_Result::InvalidOperation;
+    }
+
     return TinyCLR_Result::Success;
 }
 
@@ -1428,13 +1415,15 @@ TinyCLR_Result STM32F4_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t
 TinyCLR_Result STM32F4_Can_SetSpeed(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t brp, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
     int32_t channel = self->Index;
 
-    RCC->APB1RSTR |= RCC_APB1ENR_CAN1EN;
+    CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
+
+    RCC->APB1RSTR |= ((channel == 0) ? RCC_APB1ENR_CAN1EN : RCC_APB1ENR_CAN2EN);
 
     STM32F4_Time_Delay(nullptr, 1000);
 
-    RCC->APB1RSTR &= ~RCC_APB1ENR_CAN1EN;
+    RCC->APB1RSTR &= ((channel == 0) ? ~RCC_APB1ENR_CAN1EN : ~RCC_APB1ENR_CAN2EN);
 
-    RCC->APB1ENR |= ((channel == 0) ? RCC_APB1ENR_CAN1EN : RCC_APB1ENR_CAN2EN);
+    RCC->APB1ENR |= ((channel == 0) ? RCC_APB1ENR_CAN1EN : (RCC_APB1ENR_CAN1EN | RCC_APB1ENR_CAN2EN));
 
     canController[channel].baudrate = (((synchronizationJumpWidth - 1) << 24) | ((phase2 - 1) << 20) | ((phase1 - 1) << 16) | brp);
 
@@ -1451,7 +1440,7 @@ TinyCLR_Result STM32F4_Can_SetSpeed(const TinyCLR_Can_Provider* self, int32_t pr
     canController[channel].initTypeDef.CAN_BS1 = ((canController[channel].baudrate >> 16) & 0x0F);
     canController[channel].initTypeDef.CAN_Prescaler = ((canController[channel].baudrate >> 0) & 0x3FF);
 
-    CAN_Initialize(channel == 0 ? CAN1 : CAN2, &canController[channel].initTypeDef);
+    CAN_Initialize(CANx, &canController[channel].initTypeDef);
 
     canController[channel].filterInitTypeDef.CAN_FilterNumber = (channel == 0 ? 0 : 14);
 
@@ -1469,15 +1458,13 @@ TinyCLR_Result STM32F4_Can_SetSpeed(const TinyCLR_Can_Provider* self, int32_t pr
     if (channel == 0) {
         STM32F4_InterruptInternal_Activate(CAN1_TX_IRQn, (uint32_t*)&STM32F4_Can_TxInterruptHandler0, 0);
         STM32F4_InterruptInternal_Activate(CAN1_RX0_IRQn, (uint32_t*)&STM32F4_Can_RxInterruptHandler0, 0);
-
-        CAN1->IER |= (CAN_IT_FMP0 | CAN_IT_FF0 | CAN_IT_FOV0 | CAN_IT_EWG | CAN_IT_EPV | CAN_IT_BOF | CAN_IT_LEC | CAN_IT_ERR);
     }
     else {
         STM32F4_InterruptInternal_Activate(CAN2_TX_IRQn, (uint32_t*)&STM32F4_Can_TxInterruptHandler1, 0);
         STM32F4_InterruptInternal_Activate(CAN2_RX0_IRQn, (uint32_t*)&STM32F4_Can_RxInterruptHandler1, 0);
-
-        CAN2->IER |= (CAN_IT_FMP0 | CAN_IT_FF0 | CAN_IT_FOV0 | CAN_IT_EWG | CAN_IT_EPV | CAN_IT_BOF | CAN_IT_LEC | CAN_IT_ERR);
     }
+
+    CANx->IER |= (CAN_IT_FMP0 | CAN_IT_FF0 | CAN_IT_FOV0 | CAN_IT_EWG | CAN_IT_EPV | CAN_IT_BOF | CAN_IT_LEC | CAN_IT_ERR);
 
     return TinyCLR_Result::Success;
 }
