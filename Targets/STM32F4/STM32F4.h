@@ -344,3 +344,5 @@ TinyCLR_Result STM32F4_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t
 TinyCLR_Result STM32F4_Can_SetSpeed(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t brp, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling);
 TinyCLR_Result STM32F4_Can_GetMessageCount(const TinyCLR_Can_Provider* self, int32_t &messageCount);
 TinyCLR_Result STM32F4_Can_SetMessageReceivedHandler(const TinyCLR_Can_Provider* self, TinyCLR_Can_DataReceivedHandler handler);
+
+extern const TinyCLR_Api_Provider* globalApiProvider;
