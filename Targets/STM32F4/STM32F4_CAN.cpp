@@ -1326,7 +1326,29 @@ TinyCLR_Result STM32F4_Can_Release(const TinyCLR_Can_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_Reset(const TinyCLR_Can_Provider* self) {
+TinyCLR_Result STM32F4_Can_Reset(const TinyCLR_Can_Provider* self) {      
+    int32_t channel = self->Index;
+    
+    CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
+    
+    canController[channel].can_rx_count = 0;
+    canController[channel].can_rx_in = 0;
+    canController[channel].can_rx_out = 0;
+    
+    RCC->APB1RSTR |= ((channel == 0) ? RCC_APB1ENR_CAN1EN : RCC_APB1ENR_CAN2EN);
+
+    STM32F4_Time_Delay(nullptr, 1000);
+
+    RCC->APB1RSTR &= ((channel == 0) ? ~RCC_APB1ENR_CAN1EN : ~RCC_APB1ENR_CAN2EN);
+    
+    RCC->APB1ENR |= ((channel == 0) ? RCC_APB1ENR_CAN1EN : (RCC_APB1ENR_CAN1EN | RCC_APB1ENR_CAN2EN));
+    
+    CAN_Initialize(CANx, &canController[channel].initTypeDef);
+    
+    CAN_FilterInit(&canController[channel].filterInitTypeDef);
+    
+    CANx->IER |= (CAN_IT_FMP0 | CAN_IT_FF0 | CAN_IT_FOV0 | CAN_IT_EWG | CAN_IT_EPV | CAN_IT_BOF | CAN_IT_LEC | CAN_IT_ERR);
+    
     return TinyCLR_Result::Success;
 }
 
