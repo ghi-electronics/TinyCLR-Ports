@@ -307,25 +307,38 @@ enum class STM32F4_Can_Error : uint32_t {
 };
 
 struct STM32F4_Can_Controller {
+    const TinyCLR_Can_Provider* provider; 
+    
     STM32F4_Can_Message *canRxMessagesFifo;
-
-    int32_t can_rx_count;
-    int32_t can_rx_in;
-    int32_t can_rx_out;
-
-    int32_t can_send_errorEvent;
-
-    uint32_t baudrate;
-
-    uint8_t sendEvent;
 
     CanTxMsg *txMessage;
     CanRxMsg *rxMessage;
 
     STM32F4_Can_InitTypeDef initTypeDef;
     CAN_FilterInitTypeDef filterInitTypeDef;
+    
+    TinyCLR_Can_ErrorReceivedHandler   errorEventHandler;
+    TinyCLR_Can_MessageReceivedHandler    messageReceivedEventHandler;
+    
+    int32_t can_rx_count;
+    int32_t can_rx_in;
+    int32_t can_rx_out;
+
+    uint32_t baudrate;
 
 };
+
+static const STM32F4_Gpio_Pin g_STM32F4_Can_Tx_Pins[] = STM32F4_CAN_TX_PINS;
+static const STM32F4_Gpio_Pin g_STM32F4_Can_Rx_Pins[] = STM32F4_CAN_RX_PINS;
+
+static const int TOTAL_CAN_CONTROLLERS = SIZEOF_ARRAY(g_STM32F4_Can_Tx_Pins);
+
+static STM32F4_Can_Controller canController[TOTAL_CAN_CONTROLLERS];
+
+static TinyCLR_Can_Provider *canProvider[TOTAL_CAN_CONTROLLERS];
+static TinyCLR_Api_Info canApi;
+
+static uint8_t canProviderDefs[TOTAL_CAN_CONTROLLERS * sizeof(TinyCLR_Can_Provider)];
 
 void InsertionSort(uint32_t *arr, int32_t length) {
     uint32_t i, j, tmp;
@@ -1053,68 +1066,55 @@ ITStatus CAN_GetITStatus(CAN_TypeDef* CANx, uint32_t CAN_IT) {
 
 bool CAN_ErrorHandler(uint8_t channel) {
     CAN_TypeDef* CANx;
+    
     if (channel == 0)
         CANx = CAN1;
     else
         CANx = CAN2;
-    //	if (CAN_GetITStatus(CANx, CAN_IT_FMP0))
-    //	{
-    //		//CAN_ClearITPendingBit(
-    //		 return true;
-    //	}
-    //	else
+    
     if (CAN_GetITStatus(CANx, CAN_IT_FF0)) {
-        CAN_ClearITPendingBit(CANx, CAN_IT_FF0);
-        //GPAL_SendInternalEvent(GPAL_INTERNALEVENT_CAN, (channel) | (CAN_RXOver << 8));
+        CAN_ClearITPendingBit(CANx, CAN_IT_FF0);                
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::RxOver);
+        
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_FOV0)) {
-        CAN_ClearITPendingBit(CANx, CAN_IT_FOV0);
-        //GPAL_SendInternalEvent(GPAL_INTERNALEVENT_CAN, (channel) | (CAN_Overrun << 8));
+        CAN_ClearITPendingBit(CANx, CAN_IT_FOV0);       
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::OverRun);
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_BOF)) {
-        CAN_ClearITPendingBit(CANx, CAN_IT_BOF);
-        //GPAL_SendInternalEvent(GPAL_INTERNALEVENT_CAN, (channel) | (CAN_BusOff << 8));
+        CAN_ClearITPendingBit(CANx, CAN_IT_BOF);        
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::BusOff);
+        
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_EPV)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_EPV);
-        //GPAL_SendInternalEvent(GPAL_INTERNALEVENT_CAN, (channel) | (CAN_ErrorPassive << 8));
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ErrorPassive);
+        
         return true;
     }
 
     else if (CAN_GetITStatus(CANx, CAN_IT_LEC)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_LEC);
-        // return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_ERR)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_ERR);
-        //GPAL_SendInternalEvent(GPAL_INTERNALEVENT_CAN, (channel) | (CAN_ErrorPassive << 8));
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ErrorPassive);
+        
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_EWG)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_EWG);
-        //GPAL_SendInternalEvent(GPAL_INTERNALEVENT_CAN, (channel) | (CAN_ErrorPassive << 8));
-        //return true;
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ErrorPassive);        
     }
 
 
     return false;
 }
 
-static const STM32F4_Gpio_Pin g_STM32F4_Can_Tx_Pins[] = STM32F4_CAN_TX_PINS;
-static const STM32F4_Gpio_Pin g_STM32F4_Can_Rx_Pins[] = STM32F4_CAN_RX_PINS;
-
-static const int TOTAL_CAN_CONTROLLERS = SIZEOF_ARRAY(g_STM32F4_Can_Tx_Pins);
-
-static STM32F4_Can_Controller canController[TOTAL_CAN_CONTROLLERS];
-
-static TinyCLR_Can_Provider *canProvider[TOTAL_CAN_CONTROLLERS];
-static TinyCLR_Api_Info canApi;
-
-static uint8_t canProviderDefs[TOTAL_CAN_CONTROLLERS * sizeof(TinyCLR_Can_Provider)];
 
 const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
@@ -1129,6 +1129,7 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
         canProvider[i]->SetSpeed = &STM32F4_Can_SetSpeed;
         canProvider[i]->GetMessageCount = &STM32F4_Can_GetMessageCount;
         canProvider[i]->SetMessageReceivedHandler = &STM32F4_Can_SetMessageReceivedHandler;
+        canProvider[i]->SetErrorReceivedHandler = &STM32F4_Can_SetErrorReceivedHandler;
     }
 
     canApi.Author = "GHI Electronics, LLC";
@@ -1147,11 +1148,11 @@ uint32_t STM32_Can_GetLocalTime() {
 void STM32_Can_RxInterruptHandler(int32_t channel) {
     uint32_t * pDest;
     uint32_t len = 0;
-    uint32_t msgid = 0;// (((CAN_GetMessageID(pCand->pHw,MAILBOX_TO_RECEIVE_INDEX)>>29) & 0x1)<<31);
+    uint32_t msgid = 0;
     uint32_t extendMode = 0;
     uint32_t rtrmode = 0;
     char passed = 0;
-
+    
     uint32_t error = CAN_ErrorHandler(channel);
 
     if (channel == 0) {
@@ -1166,7 +1167,6 @@ void STM32_Can_RxInterruptHandler(int32_t channel) {
     if (error)
         return;
 
-
     len = canController[channel].rxMessage->DLC;
     if (canController[channel].rxMessage->IDE == CAN_Id_Standard) {
         msgid = canController[channel].rxMessage->StdId;
@@ -1174,15 +1174,12 @@ void STM32_Can_RxInterruptHandler(int32_t channel) {
     }
     else {
         msgid = canController[channel].rxMessage->ExtId;
-        extendMode = 1;//(1<<31); // last bit in frame is extend mode flag 0: 11 bit, 1: 29 bit id
+        extendMode = 1;
     }
     rtrmode = (canController[channel].rxMessage->RTR) >> 1;
-#if 0
-    // Filter
-    if (CANData[channel].groupFiltersSize || CANData[channel].matchFiltersSize) {
-        //uint32_t ID = msgid;
-        //char passed = 0;
 
+    // Filter
+    if (CANData[channel].groupFiltersSize || CANData[channel].matchFiltersSize) {        
         if (CANData[channel].groupFiltersSize) {
             if (BinarySearch2(CANData[channel].lowerBoundFilters, CANData[channel].upperBoundFilters, 0, CANData[channel].groupFiltersSize - 1, msgid) >= 0)
                 passed = 1;
@@ -1194,11 +1191,10 @@ void STM32_Can_RxInterruptHandler(int32_t channel) {
         }
 
         if (!passed) {
-            //C1CMR = 0x04; // release receive buffer
             return;
         }
     }
-#endif
+
     if (canController[channel].can_rx_count > CAN_MESSAGES_MAX - 3) {
         return;
     }
@@ -1206,21 +1202,22 @@ void STM32_Can_RxInterruptHandler(int32_t channel) {
     pDest = (uint32_t *)&canController[channel].canRxMessagesFifo[canController[channel].can_rx_in];
 
     uint64_t t = STM32_Can_GetLocalTime();
+    
     *pDest = t & 0xFFFFFFFF;
+ 
     pDest++;
     *pDest = t >> 32;
+    
     pDest++;
     *pDest = ((extendMode << 31) | (rtrmode << 30) | (len << 16));  // Frame
+    
     pDest++;
     *pDest = msgid;//can_rx[nbCan].dwMsgID; // ID		//change by gongjun
 
-    pDest++;
-    //*pDest = can_rx[nbCan].msgData[0]; // Data A
+    pDest++;    
     *pDest = canController[channel].rxMessage->Data[0] | (canController[channel].rxMessage->Data[1] << 8) | (canController[channel].rxMessage->Data[2] << 16) | (canController[channel].rxMessage->Data[3] << 24);
 
-
-    pDest++;
-    //*pDest = can_rx[nbCan].msgData[1]; // Data B
+    pDest++;    
     *pDest = canController[channel].rxMessage->Data[4] | (canController[channel].rxMessage->Data[5] << 8) | (canController[channel].rxMessage->Data[6] << 16) | (canController[channel].rxMessage->Data[7] << 24);
 
     canController[channel].can_rx_count++;
@@ -1230,7 +1227,8 @@ void STM32_Can_RxInterruptHandler(int32_t channel) {
         canController[channel].can_rx_in = 0;
     }
 
-    //SendRxDataEvent(channel);
+    canController[channel].messageReceivedEventHandler(canController[channel].provider, canController[channel].can_rx_count);
+    
     return;
 }
 
@@ -1295,13 +1293,10 @@ TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Provider* self) {
 
     canController[channel].can_rx_count = 0;
     canController[channel].can_rx_in = 0;
-    canController[channel].can_rx_out = 0;
-    canController[channel].can_send_errorEvent = 0;
-    canController[channel].baudrate = 0;
-    canController[channel].sendEvent = 0;
-
-    RCC->APB1ENR |= ((channel == 0) ? RCC_APB1ENR_CAN1EN : RCC_APB1ENR_CAN2EN);
-
+    canController[channel].can_rx_out = 0;    
+    canController[channel].baudrate = 0;    
+    canController[channel].provider = self;
+        
     return TinyCLR_Result::Success;
 }
 
@@ -1379,7 +1374,6 @@ TinyCLR_Result STM32F4_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_
         canController[channel].txMessage->Data[6] = ((canData[1] >> 16) & 0xFF);
         canController[channel].txMessage->Data[7] = ((canData[1] >> 24) & 0xFF);
 
-
         txmailbox = CAN_Transmit(CAN1, canController[channel].txMessage); // No mail box is ready
         if (txmailbox != CAN_TxStatus_NoMailBox) {
             while (CAN_TransmitStatus(CAN1, txmailbox) != CAN_TxStatus_Ok && i < CAN_GetTransferTimeout()) {
@@ -1433,14 +1427,14 @@ TinyCLR_Result STM32F4_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t
 
 TinyCLR_Result STM32F4_Can_SetSpeed(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t brp, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
     int32_t channel = self->Index;
-
-    volatile int delay = 0;
+   
     RCC->APB1RSTR |= RCC_APB1ENR_CAN1EN;
 
-    for (delay = 0; delay < 0xFF; delay++);
+    STM32F4_Time_Delay(nullptr, 1000);
 
     RCC->APB1RSTR &= ~RCC_APB1ENR_CAN1EN;
-
+    
+    RCC->APB1ENR |= ((channel == 0) ? RCC_APB1ENR_CAN1EN : RCC_APB1ENR_CAN2EN);
 
     canController[channel].baudrate = (((synchronizationJumpWidth - 1) << 24) | ((phase2 - 1) << 20) | ((phase1 - 1) << 16) | brp);
 
@@ -1474,8 +1468,7 @@ TinyCLR_Result STM32F4_Can_SetSpeed(const TinyCLR_Can_Provider* self, int32_t pr
 
     if (channel == 0) {
         STM32F4_InterruptInternal_Activate(CAN1_TX_IRQn, (uint32_t*)&STM32F4_Can_TxInterruptHandler0, 0);
-        STM32F4_InterruptInternal_Activate(CAN1_RX0_IRQn, (uint32_t*)&STM32F4_Can_RxInterruptHandler0, 0);
-        STM32F4_InterruptInternal_Activate(CAN1_RX1_IRQn, (uint32_t*)&STM32F4_Can_RxInterruptHandler0, 0);
+        STM32F4_InterruptInternal_Activate(CAN1_RX0_IRQn, (uint32_t*)&STM32F4_Can_RxInterruptHandler0, 0);        
 
         CAN1->IER |= (CAN_IT_FMP0 | CAN_IT_FF0 | CAN_IT_FOV0 | CAN_IT_EWG | CAN_IT_EPV | CAN_IT_BOF | CAN_IT_LEC | CAN_IT_ERR);
     }
@@ -1485,7 +1478,6 @@ TinyCLR_Result STM32F4_Can_SetSpeed(const TinyCLR_Can_Provider* self, int32_t pr
 
         CAN2->IER |= (CAN_IT_FMP0 | CAN_IT_FF0 | CAN_IT_FOV0 | CAN_IT_EWG | CAN_IT_EPV | CAN_IT_BOF | CAN_IT_LEC | CAN_IT_ERR);
     }
-
 
     return TinyCLR_Result::Success;
 }
@@ -1498,9 +1490,19 @@ TinyCLR_Result STM32F4_Can_GetMessageCount(const TinyCLR_Can_Provider* self, int
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_SetMessageReceivedHandler(const TinyCLR_Can_Provider* self, TinyCLR_Can_DataReceivedHandler handler) {
+TinyCLR_Result STM32F4_Can_SetMessageReceivedHandler(const TinyCLR_Can_Provider* self, TinyCLR_Can_MessageReceivedHandler handler) {
     int32_t channel = self->Index;
-    // TODO
+    
+    canController[channel].messageReceivedEventHandler = handler;
+    
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Can_SetErrorReceivedHandler(const TinyCLR_Can_Provider* self, TinyCLR_Can_ErrorReceivedHandler handler) {
+    int32_t channel = self->Index;
+    
+    canController[channel].errorEventHandler = handler;
+    
     return TinyCLR_Result::Success;
 
 }
