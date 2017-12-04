@@ -1532,7 +1532,12 @@ TinyCLR_Result STM32F4_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uin
 }
 
 TinyCLR_Result STM32F4_Can_DiscardIncomingMessages(const TinyCLR_Can_Provider* self) {
-    //TODO
+    int32_t channel = self->Index;
+	
+	canController[channel].can_rx_count = 0;
+	canController[channel].can_rx_in = 0;
+	canController[channel].can_rx_out = 0;
+	
     return TinyCLR_Result::Success;
 }
 
