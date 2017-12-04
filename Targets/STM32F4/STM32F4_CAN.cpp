@@ -1068,8 +1068,7 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
         canProvider[i]->DiscardIncomingMessages = &STM32F4_Can_DiscardIncomingMessages;
         canProvider[i]->TransmissionAllowed = &STM32F4_Can_TransmissionAllowed;
         canProvider[i]->ReceiveErrorCount = &STM32F4_Can_ReceiveErrorCount;
-        canProvider[i]->TransmitErrorCount = &STM32F4_Can_TransmitErrorCount;
-        canProvider[i]->TransmittedMessagesSent = &STM32F4_Can_TransmittedMessagesSent;
+        canProvider[i]->TransmitErrorCount = &STM32F4_Can_TransmitErrorCount;        
         canProvider[i]->GetSourceClock = &STM32F4_Can_GetSourceClock;
         canProvider[i]->SetReceiveBufferSize = &STM32F4_Can_SetReceiveBufferSize;
     }
@@ -1571,11 +1570,6 @@ TinyCLR_Result STM32F4_Can_TransmitErrorCount(const TinyCLR_Can_Provider* self, 
     errorCount = (uint8_t)((CANx->ESR & CAN_ESR_REC) >> 16);;
 
     return TinyCLR_Result::Success;;
-}
-
-TinyCLR_Result STM32F4_Can_TransmittedMessagesSent(const TinyCLR_Can_Provider* self, int32_t &mesaagesSent) {
-    //TODO
-    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t &sourceClock) {
