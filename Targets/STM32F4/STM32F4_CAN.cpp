@@ -1542,7 +1542,13 @@ TinyCLR_Result STM32F4_Can_DiscardIncomingMessages(const TinyCLR_Can_Provider* s
 }
 
 TinyCLR_Result STM32F4_Can_TransmissionAllowed(const TinyCLR_Can_Provider* self, bool &allow) {
-    allow = true;
+    int32_t channel = self->Index;
+
+    CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
+
+    allow = false;
+
+    if ((CANx->TSR&CAN_TSR_TME0) == CAN_TSR_TME0 || (CANx->TSR&CAN_TSR_TME1) == CAN_TSR_TME1 || (CANx->TSR&CAN_TSR_TME2) == CAN_TSR_TME2) allow = true;
 
     return TinyCLR_Result::Success;;
 }
@@ -1572,7 +1578,7 @@ TinyCLR_Result STM32F4_Can_TransmittedMessagesSent(const TinyCLR_Can_Provider* s
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t &sourceClock) {    
+TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t &sourceClock) {
     sourceClock = STM32F4_APB1_CLOCK_HZ;
 
     return TinyCLR_Result::Success;;
