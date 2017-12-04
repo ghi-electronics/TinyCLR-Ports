@@ -1572,9 +1572,9 @@ TinyCLR_Result STM32F4_Can_TransmittedMessagesSent(const TinyCLR_Can_Provider* s
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t &sourceClock) {
-    //TODO
-    sourceClock = 0;
+TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t &sourceClock) {    
+    sourceClock = STM32F4_APB1_CLOCK_HZ;
+
     return TinyCLR_Result::Success;;
 }
 
