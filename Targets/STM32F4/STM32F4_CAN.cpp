@@ -1533,29 +1533,37 @@ TinyCLR_Result STM32F4_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uin
 
 TinyCLR_Result STM32F4_Can_DiscardIncomingMessages(const TinyCLR_Can_Provider* self) {
     int32_t channel = self->Index;
-	
-	canController[channel].can_rx_count = 0;
-	canController[channel].can_rx_in = 0;
-	canController[channel].can_rx_out = 0;
-	
+
+    canController[channel].can_rx_count = 0;
+    canController[channel].can_rx_in = 0;
+    canController[channel].can_rx_out = 0;
+
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Can_TransmissionAllowed(const TinyCLR_Can_Provider* self, bool &allow) {
-    //TODO
     allow = true;
+
     return TinyCLR_Result::Success;;
 }
 
 TinyCLR_Result STM32F4_Can_ReceiveErrorCount(const TinyCLR_Can_Provider* self, int32_t &errorCount) {
-    //TODO
-    errorCount = 0;
+    int32_t channel = self->Index;
+
+    CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
+
+    errorCount = (uint8_t)((CANx->ESR & CAN_ESR_REC) >> 24);;
+
     return TinyCLR_Result::Success;;
 }
 
 TinyCLR_Result STM32F4_Can_TransmitErrorCount(const TinyCLR_Can_Provider* self, int32_t &errorCount) {
-    //TODO
-    errorCount = 0;
+    int32_t channel = self->Index;
+
+    CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
+
+    errorCount = (uint8_t)((CANx->ESR & CAN_ESR_REC) >> 16);;
+
     return TinyCLR_Result::Success;;
 }
 
