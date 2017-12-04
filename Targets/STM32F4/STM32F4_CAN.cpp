@@ -1086,7 +1086,7 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
 }
 
 uint32_t STM32_Can_GetLocalTime() {
-    return 0x00000000;
+    return STM32F4_Time_GetTimeForProcessorTicks(nullptr, STM32F4_Time_GetCurrentProcessorTicks(nullptr));
 }
 void STM32_Can_RxInterruptHandler(int32_t channel) {
     uint32_t * pDest;
@@ -1582,6 +1582,8 @@ TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint
 }
 
 TinyCLR_Result STM32F4_Can_SetReceiveBufferSize(const TinyCLR_Can_Provider* self, int32_t size) {
+    int32_t channel = self->Index;
+
     if (size > 3) {
         canController[channel].can_max_messages_receiving = size;
         return TinyCLR_Result::Success;;
