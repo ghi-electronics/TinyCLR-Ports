@@ -420,68 +420,6 @@ int32_t BinarySearch2(uint32_t *lowerBounds, uint32_t *upperBounds, int32_t firs
     return -1;    // failed to find key
 }
 
-TinyCLR_Result CAN_SetExplicitFilters(int channel, uint32_t *filters, uint32_t length) {
-    uint32_t *_matchFilters;
-
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)globalApiProvider->FindDefault(globalApiProvider, TinyCLR_Api_Type::MemoryProvider);
-
-    _matchFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
-
-    if (!_matchFilters)
-        return TinyCLR_Result::OutOfMemory;
-
-    memcpy(_matchFilters, filters, length * sizeof(uint32_t));
-
-    InsertionSort(_matchFilters, length);
-
-    {
-        DISABLE_INTERRUPTS_SCOPED(irq);
-
-        canData[channel].matchFiltersSize = length;
-        canData[channel].matchFilters = _matchFilters;
-    }
-
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result CAN_SetGroupFilters(int channel, uint32_t *lowerBounds, uint32_t *upperBounds, uint32_t length) {
-    uint32_t *_lowerBoundFilters, *_upperBoundFilters;
-
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)globalApiProvider->FindDefault(globalApiProvider, TinyCLR_Api_Type::MemoryProvider);
-
-    _lowerBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
-    _upperBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
-
-    if (!_lowerBoundFilters || !_upperBoundFilters) {
-        memoryProvider->Free(memoryProvider, _lowerBoundFilters);
-        memoryProvider->Free(memoryProvider, _upperBoundFilters);
-
-        return  TinyCLR_Result::OutOfMemory;
-    }
-
-    memcpy(_lowerBoundFilters, lowerBounds, length * sizeof(uint32_t));
-    memcpy(_upperBoundFilters, upperBounds, length * sizeof(uint32_t));
-
-    bool success = InsertionSort2CheckOverlap(_lowerBoundFilters, _upperBoundFilters, length);
-
-    if (!success) {
-        memoryProvider->Free(memoryProvider, _lowerBoundFilters);
-        memoryProvider->Free(memoryProvider, _upperBoundFilters);
-
-        return TinyCLR_Result::ArgumentInvalid;
-    }
-
-    {
-        DISABLE_INTERRUPTS_SCOPED(irq);
-
-        canData[channel].groupFiltersSize = length;
-        canData[channel].lowerBoundFilters = _lowerBoundFilters;
-        canData[channel].upperBoundFilters = _upperBoundFilters;
-    }
-
-    return TinyCLR_Result::Success;;
-}
-
 /**
   * @brief  Initializes the CAN peripheral according to the specified
   *         parameters in the CAN_InitStruct.
@@ -1125,6 +1063,15 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
         canProvider[i]->GetMessageCount = &STM32F4_Can_GetMessageCount;
         canProvider[i]->SetMessageReceivedHandler = &STM32F4_Can_SetMessageReceivedHandler;
         canProvider[i]->SetErrorReceivedHandler = &STM32F4_Can_SetErrorReceivedHandler;
+        canProvider[i]->SetExplicitFilters = &STM32F4_Can_SetExplicitFilters;
+        canProvider[i]->SetGroupFilters = &STM32F4_Can_SetGroupFilters;
+        canProvider[i]->DiscardIncomingMessages = &STM32F4_Can_DiscardIncomingMessages;
+        canProvider[i]->TransmissionAllowed = &STM32F4_Can_TransmissionAllowed;
+        canProvider[i]->ReceiveErrorCount = &STM32F4_Can_ReceiveErrorCount;
+        canProvider[i]->TransmitErrorCount = &STM32F4_Can_TransmitErrorCount;
+        canProvider[i]->TransmittedMessagesSent = &STM32F4_Can_TransmittedMessagesSent;
+        canProvider[i]->GetSourceClock = &STM32F4_Can_GetSourceClock;
+        canProvider[i]->SetReceiveBufferSize = &STM32F4_Can_SetReceiveBufferSize;
     }
 
     canApi.Author = "GHI Electronics, LLC";
@@ -1326,29 +1273,29 @@ TinyCLR_Result STM32F4_Can_Release(const TinyCLR_Can_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_Reset(const TinyCLR_Can_Provider* self) {      
+TinyCLR_Result STM32F4_Can_Reset(const TinyCLR_Can_Provider* self) {
     int32_t channel = self->Index;
-    
+
     CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
-    
+
     canController[channel].can_rx_count = 0;
     canController[channel].can_rx_in = 0;
     canController[channel].can_rx_out = 0;
-    
+
     RCC->APB1RSTR |= ((channel == 0) ? RCC_APB1ENR_CAN1EN : RCC_APB1ENR_CAN2EN);
 
     STM32F4_Time_Delay(nullptr, 1000);
 
     RCC->APB1RSTR &= ((channel == 0) ? ~RCC_APB1ENR_CAN1EN : ~RCC_APB1ENR_CAN2EN);
-    
+
     RCC->APB1ENR |= ((channel == 0) ? RCC_APB1ENR_CAN1EN : (RCC_APB1ENR_CAN1EN | RCC_APB1ENR_CAN2EN));
-    
+
     CAN_Initialize(CANx, &canController[channel].initTypeDef);
-    
+
     CAN_FilterInit(&canController[channel].filterInitTypeDef);
-    
+
     CANx->IER |= (CAN_IT_FMP0 | CAN_IT_FF0 | CAN_IT_FOV0 | CAN_IT_EWG | CAN_IT_EPV | CAN_IT_BOF | CAN_IT_LEC | CAN_IT_ERR);
-    
+
     return TinyCLR_Result::Success;
 }
 
@@ -1514,4 +1461,113 @@ TinyCLR_Result STM32F4_Can_SetErrorReceivedHandler(const TinyCLR_Can_Provider* s
 
     return TinyCLR_Result::Success;
 }
+
+TinyCLR_Result STM32F4_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, uint8_t *filters, int32_t length) {
+    uint32_t *_matchFilters;
+    uint32_t *filters32 = (uint32_t*)filters;
+
+    int32_t channel = self->Index;
+
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)globalApiProvider->FindDefault(globalApiProvider, TinyCLR_Api_Type::MemoryProvider);
+
+    _matchFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
+
+    if (!_matchFilters)
+        return TinyCLR_Result::OutOfMemory;
+
+    memcpy(_matchFilters, filters32, length * sizeof(uint32_t));
+
+    InsertionSort(_matchFilters, length);
+
+    {
+        DISABLE_INTERRUPTS_SCOPED(irq);
+
+        canData[channel].matchFiltersSize = length;
+        canData[channel].matchFilters = _matchFilters;
+    }
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8_t *lowerBounds, uint8_t *upperBounds, int32_t length) {
+    uint32_t *_lowerBoundFilters, *_upperBoundFilters;
+    uint32_t *lowerBounds32 = (uint32_t *)lowerBounds;
+    uint32_t *upperBounds32 = (uint32_t *)upperBounds;
+
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)globalApiProvider->FindDefault(globalApiProvider, TinyCLR_Api_Type::MemoryProvider);
+
+    int32_t channel = self->Index;
+
+    _lowerBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
+    _upperBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
+
+    if (!_lowerBoundFilters || !_upperBoundFilters) {
+        memoryProvider->Free(memoryProvider, _lowerBoundFilters);
+        memoryProvider->Free(memoryProvider, _upperBoundFilters);
+
+        return  TinyCLR_Result::OutOfMemory;
+    }
+
+    memcpy(_lowerBoundFilters, lowerBounds32, length * sizeof(uint32_t));
+    memcpy(_upperBoundFilters, upperBounds32, length * sizeof(uint32_t));
+
+    bool success = InsertionSort2CheckOverlap(_lowerBoundFilters, _upperBoundFilters, length);
+
+    if (!success) {
+        memoryProvider->Free(memoryProvider, _lowerBoundFilters);
+        memoryProvider->Free(memoryProvider, _upperBoundFilters);
+
+        return TinyCLR_Result::ArgumentInvalid;
+    }
+
+    {
+        DISABLE_INTERRUPTS_SCOPED(irq);
+
+        canData[channel].groupFiltersSize = length;
+        canData[channel].lowerBoundFilters = _lowerBoundFilters;
+        canData[channel].upperBoundFilters = _upperBoundFilters;
+    }
+
+    return TinyCLR_Result::Success;;
+}
+
+TinyCLR_Result STM32F4_Can_DiscardIncomingMessages(const TinyCLR_Can_Provider* self) {
+    //TODO
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Can_TransmissionAllowed(const TinyCLR_Can_Provider* self, bool &allow) {
+    //TODO
+    allow = true;
+    return TinyCLR_Result::Success;;
+}
+
+TinyCLR_Result STM32F4_Can_ReceiveErrorCount(const TinyCLR_Can_Provider* self, int32_t &errorCount) {
+    //TODO
+    errorCount = 0;
+    return TinyCLR_Result::Success;;
+}
+
+TinyCLR_Result STM32F4_Can_TransmitErrorCount(const TinyCLR_Can_Provider* self, int32_t &errorCount) {
+    //TODO
+    errorCount = 0;
+    return TinyCLR_Result::Success;;
+}
+
+TinyCLR_Result STM32F4_Can_TransmittedMessagesSent(const TinyCLR_Can_Provider* self, int32_t &mesaagesSent) {
+    //TODO
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t &sourceClock) {
+    //TODO
+    sourceClock = 0;
+    return TinyCLR_Result::Success;;
+}
+
+TinyCLR_Result STM32F4_Can_SetReceiveBufferSize(const TinyCLR_Can_Provider* self, int32_t size) {
+    //TODO
+    return TinyCLR_Result::Success;;
+}
+
 #endif // INCLUDE_CAN
