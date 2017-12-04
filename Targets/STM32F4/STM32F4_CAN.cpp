@@ -324,6 +324,8 @@ struct STM32F4_Can_Controller {
     int32_t can_rx_in;
     int32_t can_rx_out;
 
+    int32_t can_max_messages_receiving;
+
     uint32_t baudrate;
 
 };
@@ -1068,7 +1070,7 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
         canProvider[i]->DiscardIncomingMessages = &STM32F4_Can_DiscardIncomingMessages;
         canProvider[i]->TransmissionAllowed = &STM32F4_Can_TransmissionAllowed;
         canProvider[i]->ReceiveErrorCount = &STM32F4_Can_ReceiveErrorCount;
-        canProvider[i]->TransmitErrorCount = &STM32F4_Can_TransmitErrorCount;        
+        canProvider[i]->TransmitErrorCount = &STM32F4_Can_TransmitErrorCount;
         canProvider[i]->GetSourceClock = &STM32F4_Can_GetSourceClock;
         canProvider[i]->SetReceiveBufferSize = &STM32F4_Can_SetReceiveBufferSize;
     }
@@ -1131,7 +1133,7 @@ void STM32_Can_RxInterruptHandler(int32_t channel) {
         }
     }
 
-    if (canController[channel].can_rx_count > CAN_MESSAGES_MAX - 3) {
+    if (canController[channel].can_rx_count > canController[channel].can_max_messages_receiving - 3) {
         return;
     }
 
@@ -1159,7 +1161,7 @@ void STM32_Can_RxInterruptHandler(int32_t channel) {
     canController[channel].can_rx_count++;
     canController[channel].can_rx_in++;
 
-    if (canController[channel].can_rx_in == CAN_MESSAGES_MAX) {
+    if (canController[channel].can_rx_in == canController[channel].can_max_messages_receiving) {
         canController[channel].can_rx_in = 0;
     }
 
@@ -1200,37 +1202,11 @@ TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Provider* self) {
     STM32F4_GpioInternal_ConfigurePin(g_STM32F4_Can_Tx_Pins[channel].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, g_STM32F4_Can_Tx_Pins[channel].alternateFunction);
     STM32F4_GpioInternal_ConfigurePin(g_STM32F4_Can_Rx_Pins[channel].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, g_STM32F4_Can_Rx_Pins[channel].alternateFunction);
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)globalApiProvider->FindDefault(globalApiProvider, TinyCLR_Api_Type::MemoryProvider);
-
-    canController[channel].canRxMessagesFifo = (STM32F4_Can_Message*)memoryProvider->Allocate(memoryProvider, CAN_MESSAGES_MAX * sizeof(STM32F4_Can_Message));
-
-    if (canController[channel].canRxMessagesFifo == nullptr) {
-        return TinyCLR_Result::OutOfMemory;
-    }
-
-    canController[channel].txMessage = (STM32F4_Can_TxMessage*)memoryProvider->Allocate(memoryProvider, sizeof(STM32F4_Can_TxMessage));
-
-    if (canController[channel].txMessage == nullptr) {
-        // Release if already allocated, avoid leak memory
-        memoryProvider->Free(memoryProvider, canController[channel].canRxMessagesFifo);
-
-        return TinyCLR_Result::OutOfMemory;
-    }
-
-    canController[channel].rxMessage = (STM32F4_Can_RxMessage*)memoryProvider->Allocate(memoryProvider, sizeof(STM32F4_Can_RxMessage));
-
-    if (canController[channel].rxMessage == nullptr) {
-        // Release if already allocated, avoid leak memory
-        memoryProvider->Free(memoryProvider, canController[channel].txMessage);
-        memoryProvider->Free(memoryProvider, canController[channel].canRxMessagesFifo);
-
-        return TinyCLR_Result::OutOfMemory;
-    }
-
     canController[channel].can_rx_count = 0;
     canController[channel].can_rx_in = 0;
     canController[channel].can_rx_out = 0;
     canController[channel].baudrate = 0;
+    canController[channel].can_max_messages_receiving = CAN_MESSAGES_MAX;
     canController[channel].provider = self;
 
     return TinyCLR_Result::Success;
@@ -1363,7 +1339,7 @@ TinyCLR_Result STM32F4_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t
         can_msg = &canController[channel].canRxMessagesFifo[canController[channel].can_rx_out];
         canController[channel].can_rx_out++;
 
-        if (canController[channel].can_rx_out == CAN_MESSAGES_MAX)
+        if (canController[channel].can_rx_out == canController[channel].can_max_messages_receiving)
             canController[channel].can_rx_out = 0;
 
         canController[channel].can_rx_count--;
@@ -1384,6 +1360,33 @@ TinyCLR_Result STM32F4_Can_SetSpeed(const TinyCLR_Can_Provider* self, int32_t pr
     int32_t channel = self->Index;
 
     CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
+
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)globalApiProvider->FindDefault(globalApiProvider, TinyCLR_Api_Type::MemoryProvider);
+
+    canController[channel].canRxMessagesFifo = (STM32F4_Can_Message*)memoryProvider->Allocate(memoryProvider, canController[channel].can_max_messages_receiving * sizeof(STM32F4_Can_Message));
+
+    if (canController[channel].canRxMessagesFifo == nullptr) {
+        return TinyCLR_Result::OutOfMemory;
+    }
+
+    canController[channel].txMessage = (STM32F4_Can_TxMessage*)memoryProvider->Allocate(memoryProvider, sizeof(STM32F4_Can_TxMessage));
+
+    if (canController[channel].txMessage == nullptr) {
+        // Release if already allocated, avoid leak memory
+        memoryProvider->Free(memoryProvider, canController[channel].canRxMessagesFifo);
+
+        return TinyCLR_Result::OutOfMemory;
+    }
+
+    canController[channel].rxMessage = (STM32F4_Can_RxMessage*)memoryProvider->Allocate(memoryProvider, sizeof(STM32F4_Can_RxMessage));
+
+    if (canController[channel].rxMessage == nullptr) {
+        // Release if already allocated, avoid leak memory
+        memoryProvider->Free(memoryProvider, canController[channel].txMessage);
+        memoryProvider->Free(memoryProvider, canController[channel].canRxMessagesFifo);
+
+        return TinyCLR_Result::OutOfMemory;
+    }
 
     RCC->APB1RSTR |= ((channel == 0) ? RCC_APB1ENR_CAN1EN : RCC_APB1ENR_CAN2EN);
 
@@ -1579,8 +1582,14 @@ TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint
 }
 
 TinyCLR_Result STM32F4_Can_SetReceiveBufferSize(const TinyCLR_Can_Provider* self, int32_t size) {
-    //TODO
-    return TinyCLR_Result::Success;;
+    if (size > 3) {
+        canController[channel].can_max_messages_receiving = size;
+        return TinyCLR_Result::Success;;
+    }
+    else {
+        canController[channel].can_max_messages_receiving = CAN_MESSAGES_MAX;
+        return TinyCLR_Result::ArgumentInvalid;;
+    }
 }
 
 #endif // INCLUDE_CAN
