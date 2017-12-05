@@ -360,6 +360,28 @@ void LPC17_Startup_GetHeap(uint8_t*& start, size_t& length);
 void LPC17_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index);
 void LPC17_Startup_GetRunApp(bool& runApp);
 
+// Controller Network Area
+const TinyCLR_Api_Info* LPC17_Can_GetApi();
+TinyCLR_Result LPC17_Can_Acquire(const TinyCLR_Can_Provider* self);
+TinyCLR_Result LPC17_Can_Release(const TinyCLR_Can_Provider* self);
+TinyCLR_Result LPC17_Can_Reset(const TinyCLR_Can_Provider* self);
+TinyCLR_Result LPC17_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_t arbID, uint32_t flags, uint8_t *data);
+TinyCLR_Result LPC17_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t * arbID, uint32_t *flags, uint64_t *ts, uint8_t *data);
+TinyCLR_Result LPC17_Can_SetSpeed(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t brp, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling);
+TinyCLR_Result LPC17_Can_GetMessageCount(const TinyCLR_Can_Provider* self, int32_t &messageCount);
+TinyCLR_Result LPC17_Can_SetMessageReceivedHandler(const TinyCLR_Can_Provider* self, TinyCLR_Can_MessageReceivedHandler handler);
+TinyCLR_Result LPC17_Can_SetErrorReceivedHandler(const TinyCLR_Can_Provider* self, TinyCLR_Can_ErrorReceivedHandler handler);
+TinyCLR_Result LPC17_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, uint8_t *filters, int32_t length);
+TinyCLR_Result LPC17_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8_t *lowerBounds, uint8_t *upperBounds, int32_t length);
+TinyCLR_Result LPC17_Can_DiscardIncomingMessages(const TinyCLR_Can_Provider* self);
+TinyCLR_Result LPC17_Can_TransmissionAllowed(const TinyCLR_Can_Provider* self, bool &allow);
+TinyCLR_Result LPC17_Can_ReceiveErrorCount(const TinyCLR_Can_Provider* self, int32_t &errorCount);
+TinyCLR_Result LPC17_Can_TransmitErrorCount(const TinyCLR_Can_Provider* self, int32_t &errorCount);
+TinyCLR_Result LPC17_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t &sourceClock);
+TinyCLR_Result LPC17_Can_SetReceiveBufferSize(const TinyCLR_Can_Provider* self, int32_t size);
+
+extern const TinyCLR_Api_Provider* globalApiProvider;
+
 //System Control Block
 #define PCON_OFFSET 0xC0
 #define PCON_IDL_MASK 0x1
