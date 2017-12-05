@@ -20,7 +20,7 @@
 
 #ifdef INCLUDE_CAN
 
-#define CAN_MESSAGES_MAX 128
+#define STM32F4_CAN_RX_BUFFER_DEFAULT_SIZE 128
 
 #define CAN_TRANSFER_TIMEOUT 0xFFFF
 
@@ -1204,7 +1204,7 @@ TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Provider* self) {
     canController[channel].can_rx_in = 0;
     canController[channel].can_rx_out = 0;
     canController[channel].baudrate = 0;
-    canController[channel].can_max_messages_receiving = CAN_MESSAGES_MAX;
+    canController[channel].can_max_messages_receiving = STM32F4_CAN_RX_BUFFER_DEFAULT_SIZE;
     canController[channel].provider = self;
 
     return TinyCLR_Result::Success;
@@ -1587,7 +1587,7 @@ TinyCLR_Result STM32F4_Can_SetReceiveBufferSize(const TinyCLR_Can_Provider* self
         return TinyCLR_Result::Success;;
     }
     else {
-        canController[channel].can_max_messages_receiving = CAN_MESSAGES_MAX;
+        canController[channel].can_max_messages_receiving = STM32F4_CAN_RX_BUFFER_DEFAULT_SIZE;
         return TinyCLR_Result::ArgumentInvalid;;
     }
 }
