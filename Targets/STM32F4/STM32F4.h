@@ -357,4 +357,4 @@ int32_t STM32F4_Display_GetWidth(const TinyCLR_Display_Provider* self);
 int32_t STM32F4_Display_GetHeight(const TinyCLR_Display_Provider* self);
 TinyCLR_Display_InterfaceType STM32F4_Display_GetType(const TinyCLR_Display_Provider* self);
 
-extern const TinyCLR_Api_Provider* globalApiProvider;
+extern const TinyCLR_Api_Provider* apiProvider;
