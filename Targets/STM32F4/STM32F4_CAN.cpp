@@ -340,22 +340,6 @@ static TinyCLR_Api_Info canApi;
 
 static uint8_t canProviderDefs[TOTAL_CAN_CONTROLLERS * sizeof(TinyCLR_Can_Provider)];
 
-void InsertionSort(uint32_t *arr, int32_t length) {
-    uint32_t i, j, tmp;
-
-    for (i = 1; i < length; i++) {
-        j = i;
-
-        while (j > 0 && arr[j - 1] > arr[j]) {
-            tmp = arr[j];
-            arr[j] = arr[j - 1];
-            arr[j - 1] = tmp;
-
-            j--;
-        }
-    }
-}
-
 bool InsertionSort2CheckOverlap(uint32_t *lowerBounds, uint32_t *upperBounds, int32_t length) {
 
     uint32_t i, j, tmp, tmp2;
@@ -1477,7 +1461,7 @@ TinyCLR_Result STM32F4_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, 
 
     memcpy(_matchFilters, filters32, length * sizeof(uint32_t));
 
-    InsertionSort(_matchFilters, length);
+    std::sort(_matchFilters, _matchFilters + length);
 
     {
         DISABLE_INTERRUPTS_SCOPED(irq);
