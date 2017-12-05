@@ -273,11 +273,11 @@ typedef struct {
 
 
 struct STM32F4_CanData_T {
-    uint32_t *matchFilters;
+    uint32_t* matchFilters;
     uint32_t matchFiltersSize;
 
-    uint32_t *lowerBoundFilters;
-    uint32_t *upperBoundFilters;
+    uint32_t* lowerBoundFilters;
+    uint32_t* upperBoundFilters;
     uint32_t groupFiltersSize;
 
 }canData[2];
@@ -340,7 +340,7 @@ static TinyCLR_Api_Info canApi;
 
 static uint8_t canProviderDefs[TOTAL_CAN_CONTROLLERS * sizeof(TinyCLR_Can_Provider)];
 
-bool InsertionSort2CheckOverlap(uint32_t *lowerBounds, uint32_t *upperBounds, int32_t length) {
+bool InsertionSort2CheckOverlap(uint32_t* lowerBounds, uint32_t* upperBounds, int32_t length) {
 
     uint32_t i, j, tmp, tmp2;
 
@@ -371,7 +371,7 @@ bool InsertionSort2CheckOverlap(uint32_t *lowerBounds, uint32_t *upperBounds, in
     return true;
 }
 
-int32_t BinarySearch(uint32_t *sortedArray, int32_t first, int32_t last, uint32_t key) {
+int32_t BinarySearch(uint32_t* sortedArray, int32_t first, int32_t last, uint32_t key) {
     int32_t mid;
     while (first <= last) {
         mid = (first + last) / 2;  // compute mid point.
@@ -386,7 +386,7 @@ int32_t BinarySearch(uint32_t *sortedArray, int32_t first, int32_t last, uint32_
     return -1;    // failed to find key
 }
 
-int32_t BinarySearch2(uint32_t *lowerBounds, uint32_t *upperBounds, int32_t first, int32_t last, uint32_t key) {
+int32_t BinarySearch2(uint32_t* lowerBounds, uint32_t* upperBounds, int32_t first, int32_t last, uint32_t key) {
 
     int32_t mid;
 
@@ -1043,16 +1043,16 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
         canProvider[i]->Reset = &STM32F4_Can_Reset;
         canProvider[i]->PostMessage = &STM32F4_Can_PostMessage;
         canProvider[i]->GetMessage = &STM32F4_Can_GetMessage;
-        canProvider[i]->SetSpeed = &STM32F4_Can_SetSpeed;
-        canProvider[i]->GetMessageCount = &STM32F4_Can_GetMessageCount;
+        canProvider[i]->SetTimings = &STM32F4_Can_SetTimings;
+        canProvider[i]->GetUnMessageCount = &STM32F4_Can_GetUnMessageCount;
         canProvider[i]->SetMessageReceivedHandler = &STM32F4_Can_SetMessageReceivedHandler;
         canProvider[i]->SetErrorReceivedHandler = &STM32F4_Can_SetErrorReceivedHandler;
         canProvider[i]->SetExplicitFilters = &STM32F4_Can_SetExplicitFilters;
         canProvider[i]->SetGroupFilters = &STM32F4_Can_SetGroupFilters;
-        canProvider[i]->DiscardIncomingMessages = &STM32F4_Can_DiscardIncomingMessages;
+        canProvider[i]->DiscardUnreadMessages = &STM32F4_Can_DiscardUnreadMessages;
         canProvider[i]->TransmissionAllowed = &STM32F4_Can_TransmissionAllowed;
-        canProvider[i]->ReceiveErrorCount = &STM32F4_Can_ReceiveErrorCount;
-        canProvider[i]->TransmitErrorCount = &STM32F4_Can_TransmitErrorCount;
+        canProvider[i]->GetReceiveErrorCount = &STM32F4_Can_GetReceiveErrorCount;
+        canProvider[i]->GetTransmitErrorCount = &STM32F4_Can_GetTransmitErrorCount;
         canProvider[i]->GetSourceClock = &STM32F4_Can_GetSourceClock;
         canProvider[i]->SetReceiveBufferSize = &STM32F4_Can_SetReceiveBufferSize;
     }
@@ -1071,7 +1071,7 @@ uint32_t STM32_Can_GetLocalTime() {
     return STM32F4_Time_GetTimeForProcessorTicks(nullptr, STM32F4_Time_GetCurrentProcessorTicks(nullptr));
 }
 void STM32_Can_RxInterruptHandler(int32_t channel) {
-    uint32_t * pDest;
+    uint32_t* pDest;
     uint32_t len = 0;
     uint32_t msgid = 0;
     uint32_t extendMode = 0;
@@ -1256,9 +1256,9 @@ TinyCLR_Result STM32F4_Can_Reset(const TinyCLR_Can_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_t arbID, uint32_t flags, uint8_t *data) {
+TinyCLR_Result STM32F4_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, uint32_t flags, uint8_t*data) {
 
-    uint32_t *canData = (uint32_t*)data;
+    uint32_t* canData = (uint32_t*)data;
 
     int32_t channel = self->Index;
 
@@ -1274,11 +1274,11 @@ TinyCLR_Result STM32F4_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_
 
     if (isextid) {
         canController[channel].txMessage->IDE = CAN_Id_Extended;
-        canController[channel].txMessage->ExtId = arbID;
+        canController[channel].txMessage->ExtId = arbitrationId;
     }
     else {
         canController[channel].txMessage->IDE = CAN_Id_Standard;
-        canController[channel].txMessage->StdId = arbID;
+        canController[channel].txMessage->StdId = arbitrationId;
     }
     canController[channel].txMessage->DLC = ((flags) >> 16) & 0xF;
 
@@ -1308,10 +1308,10 @@ TinyCLR_Result STM32F4_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t * arbID, uint32_t *flags, uint64_t *ts, uint8_t *data) {
+TinyCLR_Result STM32F4_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t* arbitrationId, uint32_t*flags, uint64_t *ts, uint8_t*data) {
     STM32F4_Can_Message *can_msg;
 
-    uint32_t *canData = (uint32_t*)data;
+    uint32_t* canData = (uint32_t*)data;
 
     int32_t channel = self->Index;
 
@@ -1328,7 +1328,7 @@ TinyCLR_Result STM32F4_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t
         //can1_send_error_event=TRUE;
 
         *flags = can_msg->Frame;
-        *arbID = can_msg->MsgID; // CAN ID
+        *arbitrationId = can_msg->MsgID; // CAN ID
         canData[0] = can_msg->DataA;
         canData[1] = can_msg->DataB;
         *ts = ((uint64_t)can_msg->TimeStampL) | ((uint64_t)can_msg->TimeStampH << 32);
@@ -1338,7 +1338,7 @@ TinyCLR_Result STM32F4_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t
 
 }
 
-TinyCLR_Result STM32F4_Can_SetSpeed(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t brp, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
+TinyCLR_Result STM32F4_Can_SetTimings(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t brp, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
     int32_t channel = self->Index;
 
     CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
@@ -1422,10 +1422,10 @@ TinyCLR_Result STM32F4_Can_SetSpeed(const TinyCLR_Can_Provider* self, int32_t pr
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_GetMessageCount(const TinyCLR_Can_Provider* self, int32_t &messageCount) {
+TinyCLR_Result STM32F4_Can_GetUnMessageCount(const TinyCLR_Can_Provider* self, size_t& count) {
     int32_t channel = self->Index;
 
-    messageCount = canController[channel].can_rx_count;
+    count = canController[channel].can_rx_count;
 
     return TinyCLR_Result::Success;
 }
@@ -1446,9 +1446,9 @@ TinyCLR_Result STM32F4_Can_SetErrorReceivedHandler(const TinyCLR_Can_Provider* s
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, uint8_t *filters, int32_t length) {
-    uint32_t *_matchFilters;
-    uint32_t *filters32 = (uint32_t*)filters;
+TinyCLR_Result STM32F4_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, uint8_t* filters, int32_t length) {
+    uint32_t*_matchFilters;
+    uint32_t*filters32 = (uint32_t*)filters;
 
     int32_t channel = self->Index;
 
@@ -1473,10 +1473,10 @@ TinyCLR_Result STM32F4_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8_t *lowerBounds, uint8_t *upperBounds, int32_t length) {
-    uint32_t *_lowerBoundFilters, *_upperBoundFilters;
-    uint32_t *lowerBounds32 = (uint32_t *)lowerBounds;
-    uint32_t *upperBounds32 = (uint32_t *)upperBounds;
+TinyCLR_Result STM32F4_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8_t* lowerBounds, uint8_t* upperBounds, int32_t length) {
+    uint32_t* _lowerBoundFilters, *_upperBoundFilters;
+    uint32_t* lowerBounds32 = (uint32_t *)lowerBounds;
+    uint32_t* upperBounds32 = (uint32_t *)upperBounds;
 
     auto memoryProvider = (const TinyCLR_Memory_Provider*)globalApiProvider->FindDefault(globalApiProvider, TinyCLR_Api_Type::MemoryProvider);
 
@@ -1515,7 +1515,7 @@ TinyCLR_Result STM32F4_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uin
     return TinyCLR_Result::Success;;
 }
 
-TinyCLR_Result STM32F4_Can_DiscardIncomingMessages(const TinyCLR_Can_Provider* self) {
+TinyCLR_Result STM32F4_Can_DiscardUnreadMessages(const TinyCLR_Can_Provider* self) {
     int32_t channel = self->Index;
 
     canController[channel].can_rx_count = 0;
@@ -1525,7 +1525,7 @@ TinyCLR_Result STM32F4_Can_DiscardIncomingMessages(const TinyCLR_Can_Provider* s
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_TransmissionAllowed(const TinyCLR_Can_Provider* self, bool &allow) {
+TinyCLR_Result STM32F4_Can_TransmissionAllowed(const TinyCLR_Can_Provider* self, bool& allow) {
     int32_t channel = self->Index;
 
     CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
@@ -1537,33 +1537,33 @@ TinyCLR_Result STM32F4_Can_TransmissionAllowed(const TinyCLR_Can_Provider* self,
     return TinyCLR_Result::Success;;
 }
 
-TinyCLR_Result STM32F4_Can_ReceiveErrorCount(const TinyCLR_Can_Provider* self, int32_t &errorCount) {
+TinyCLR_Result STM32F4_Can_GetReceiveErrorCount(const TinyCLR_Can_Provider* self, size_t& count) {
     int32_t channel = self->Index;
 
     CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
 
-    errorCount = (uint8_t)((CANx->ESR & CAN_ESR_REC) >> 24);;
+    count = (uint8_t)((CANx->ESR & CAN_ESR_REC) >> 24);;
 
     return TinyCLR_Result::Success;;
 }
 
-TinyCLR_Result STM32F4_Can_TransmitErrorCount(const TinyCLR_Can_Provider* self, int32_t &errorCount) {
+TinyCLR_Result STM32F4_Can_GetTransmitErrorCount(const TinyCLR_Can_Provider* self, size_t& count) {
     int32_t channel = self->Index;
 
     CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
 
-    errorCount = (uint8_t)((CANx->ESR & CAN_ESR_REC) >> 16);;
+    count = (uint8_t)((CANx->ESR & CAN_ESR_REC) >> 16);;
 
     return TinyCLR_Result::Success;;
 }
 
-TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t &sourceClock) {
+TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t& sourceClock) {
     sourceClock = STM32F4_APB1_CLOCK_HZ;
 
     return TinyCLR_Result::Success;;
 }
 
-TinyCLR_Result STM32F4_Can_SetReceiveBufferSize(const TinyCLR_Can_Provider* self, int32_t size) {
+TinyCLR_Result STM32F4_Can_SetReceiveBufferSize(const TinyCLR_Can_Provider* self, size_t size) {
     int32_t channel = self->Index;
 
     if (size > 3) {
