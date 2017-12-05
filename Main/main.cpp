@@ -17,6 +17,8 @@
 
 #define TARGET(a) CONCAT(DEVICE_TARGET, a)
 
+const TinyCLR_Api_Provider* apiProvider;
+
 void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 #ifdef INCLUDE_ADC
     apiProvider->Add(apiProvider, TARGET(_Adc_GetApi)());
@@ -57,6 +59,8 @@ void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 #ifdef INCLUDE_USBCLIENT
     apiProvider->Add(apiProvider, TARGET(_UsbClient_GetApi)());
 #endif
+
+    ::apiProvider = apiProvider;
 }
 
 int main() {
