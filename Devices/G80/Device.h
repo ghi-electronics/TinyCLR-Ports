@@ -51,6 +51,10 @@
 
 #define INCLUDE_ADC
 
+#define INCLUDE_CAN
+#define STM32F4_CAN_TX_PINS { { PIN(D, 1), AF(9) }, { PIN(B, 13), AF(9) } }
+#define STM32F4_CAN_RX_PINS { { PIN(D, 0), AF(9) }, { PIN(B, 12), AF(9) } }
+
 #define INCLUDE_DAC
 
 #define INCLUDE_GPIO
@@ -103,7 +107,3 @@
 #define STM32F4_USB_DP_PINS { { PIN(A, 12), AF(10) } }
 #define STM32F4_USB_VB_PINS { { PIN(A,  9), AF(10) } }
 #define STM32F4_USB_ID_PINS { { PIN(A, 10), AF(10) } }
-
-#define INCLUDE_CAN
-#define STM32F4_CAN_TX_PINS { { PIN(D, 1), AF(9) }, { PIN(B, 13), AF(9) } }
-#define STM32F4_CAN_RX_PINS { { PIN(D, 0), AF(9) }, { PIN(B, 12), AF(9) } }
