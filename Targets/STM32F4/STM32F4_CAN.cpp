@@ -1,5 +1,3 @@
-// Copyright Microsoft Corporation
-// Copyright Oberon microsystems, Inc
 // Copyright GHI Electronics, LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
