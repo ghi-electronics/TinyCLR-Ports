@@ -17,8 +17,6 @@
 
 #define TARGET(a) CONCAT(DEVICE_TARGET, a)
 
-const TinyCLR_Api_Provider* globalApiProvider;
-
 void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 #ifdef INCLUDE_ADC
     apiProvider->Add(apiProvider, TARGET(_Adc_GetApi)());
@@ -64,8 +62,6 @@ void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
     apiProvider->Add(apiProvider, TARGET(_Can_GetApi)());
     apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::CanProvider, TARGET(_Can_GetApi)()->Name);
 #endif
-
-    globalApiProvider = apiProvider;
 }
 
 int main() {
