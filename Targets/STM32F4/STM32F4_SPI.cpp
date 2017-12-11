@@ -288,6 +288,7 @@ bool STM32F4_Spi_Transaction_nWrite8_nRead8(int32_t controller) {
     uint8_t* outBuf = g_SpiController[controller].writeBuffer;
     uint8_t* inBuf = g_SpiController[controller].readBuffer;
     int32_t outLen = g_SpiController[controller].writeLength;
+    int32_t inLen = g_SpiController[controller].readLength;
 
     int32_t num, ii, i = 0;
 
@@ -300,22 +301,36 @@ bool STM32F4_Spi_Transaction_nWrite8_nRead8(int32_t controller) {
         ii = 0x80000000; // disable write to inBuf
     }
 
-    uint8_t out = outBuf[0];
-    uint16_t in;
-    spi->DR = out; // write first word
+    if (num < outLen)
+        num = outLen;
+
+    uint8_t out = outLen > 0 ? outBuf[0] : 0;
+    uint8_t in;
+
+    while (!(spi->SR & SPI_SR_TXE)); // wait for Tx empty
+
+    *(uint8_t*)&spi->DR = out; // write first word
+
     while (++i < num) {
         if (i < outLen) {
             out = outBuf[i]; // get new output data
+        }
+        else {
+            out = 0;
         }
 
         while (!(spi->SR & SPI_SR_RXNE)) { /* wait for Rx buffer full */
         }
 
-        in = spi->DR; // read input
-        spi->DR = out; // start output
+        in = *(uint8_t*)&spi->DR; // read input
 
-        if (ii >= 0) {
+        while (!(spi->SR & SPI_SR_TXE)); // wait for Tx empty
+
+        *(uint8_t*)&spi->DR = out; // start output
+
+        if (ii >= 0 && inLen > 0) {
             inBuf[ii] = (uint8_t)in; // save input data
+            inLen--;
         }
 
         ii++;
@@ -324,7 +339,7 @@ bool STM32F4_Spi_Transaction_nWrite8_nRead8(int32_t controller) {
     while (!(spi->SR & SPI_SR_RXNE)) { /* wait for Rx buffer full */
     }
 
-    in = spi->DR; // read last input
+    in = *(uint8_t*)&spi->DR; // read last input
 
     if (ii >= 0) {
         inBuf[ii] = (uint8_t)in; // save last input
