@@ -65,6 +65,8 @@ TinyCLR_Result STM32F4_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onIn
     // force point to SysTick_Handler because GNU does not link to the function automatically
     irq_vectors[15] = (uint32_t)&SysTick_Handler;
 
+    __DMB(); // ensure table is written
+
     SCB->AIRCR = (0x5FA << SCB_AIRCR_VECTKEY_Pos) // unlock key
         | (7 << SCB_AIRCR_PRIGROUP_Pos);   // no priority group bits
     SCB->VTOR = (uint32_t)&__Vectors; // vector table base
@@ -89,9 +91,7 @@ bool STM32F4_InterruptInternal_Activate(uint32_t index, uint32_t *isr, void* isr
 
     irq_vectors[id + 16] = (uint32_t)isr; // exception = irq + 16
 
-    __DMB();
-
-    NVIC->ICPR[id >> 5] = 1 << (id & 0x1F); // clear pending bit
+    DMB(); // ensure table is written    NVIC->ICPR[id >> 5] = 1 << (id & 0x1F); // clear pending bit
     NVIC->ISER[id >> 5] = 1 << (id & 0x1F); // set enable bit
 
     return true;

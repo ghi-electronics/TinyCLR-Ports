@@ -262,6 +262,8 @@ extern "C" {
 #ifdef RCC_AHB1ENR_CCMDATARAMEN
         RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN; // 64k RAM (CCM)
 #endif
+        RCC->APB1ENR |= RCC_APB1ENR_PWREN;    // PWR clock used for sleep;
+        RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN; // SYSCFG clock used for IO;
 
     // stop HSI clock
 #if RCC_PLLCFGR_PLLS_BITS == RCC_PLLCFGR_PLLSRC_HSE
