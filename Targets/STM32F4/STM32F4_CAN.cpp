@@ -1038,8 +1038,8 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
         canProvider[i]->Acquire = &STM32F4_Can_Acquire;
         canProvider[i]->Release = &STM32F4_Can_Release;
         canProvider[i]->Reset = &STM32F4_Can_Reset;
-        canProvider[i]->PostMessage = &STM32F4_Can_PostMessage;
-        canProvider[i]->GetMessage = &STM32F4_Can_GetMessage;
+        canProvider[i]->WriteMessage = &STM32F4_Can_WriteMessage;
+        canProvider[i]->ReadMessage = &STM32F4_Can_ReadMessage;
         canProvider[i]->SetTimings = &STM32F4_Can_SetTimings;
         canProvider[i]->GetUnReadMessageCount = &STM32F4_Can_GetUnReadMessageCount;
         canProvider[i]->SetMessageReceivedHandler = &STM32F4_Can_SetMessageReceivedHandler;
@@ -1260,7 +1260,7 @@ TinyCLR_Result STM32F4_Can_Reset(const TinyCLR_Can_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool extendedId, bool remoteTransmissionRequest, uint8_t* data, int32_t length) {
+TinyCLR_Result STM32F4_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool extendedId, bool remoteTransmissionRequest, uint8_t* data, int32_t length) {
 
     uint32_t* canData = (uint32_t*)data;
 
@@ -1311,7 +1311,7 @@ TinyCLR_Result STM32F4_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& extendedId, bool& remoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, int32_t& length) {
+TinyCLR_Result STM32F4_Can_ReadMessage(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& extendedId, bool& remoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, int32_t& length) {
     STM32F4_Can_Message *can_msg;
 
     uint32_t* canData = (uint32_t*)data;
