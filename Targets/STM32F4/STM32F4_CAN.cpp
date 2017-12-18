@@ -287,12 +287,15 @@ typedef struct {
     uint32_t TimeStampL;
     uint32_t TimeStampH;
 
-    uint32_t Frame; // Bits 16..19: DLC - Data Length Counter
-                    // Bit 30: Set if this is a RTR message
-                    // Bit 31: Set if this is a 29-bit ID message
     uint32_t MsgID;	// CAN Message ID (11-bit or 29-bit)
+
+    bool extendedId;
+    bool remoteTransmissionRequest;
+
     uint32_t DataA;	// CAN Message Data Bytes 0-3
     uint32_t DataB;	// CAN Message Data Bytes 4-7
+
+    int32_t length;
 
 } STM32F4_Can_Message;
 
@@ -1074,10 +1077,14 @@ uint32_t STM32_Can_GetLocalTime() {
 }
 void STM32_Can_RxInterruptHandler(int32_t channel) {
     uint32_t* pDest;
-    uint32_t len = 0;
+
+    int32_t len = 0;
+
     uint32_t msgid = 0;
-    uint32_t extendMode = 0;
-    uint32_t rtrmode = 0;
+
+    bool extendMode = 0;
+    bool rtrmode = 0;
+
     char passed = 0;
 
     CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
@@ -1090,15 +1097,17 @@ void STM32_Can_RxInterruptHandler(int32_t channel) {
         return;
 
     len = canController[channel].rxMessage->DLC;
+
     if (canController[channel].rxMessage->IDE == CAN_Id_Standard) {
         msgid = canController[channel].rxMessage->StdId;
-        extendMode = 0;
+        extendMode = false;
     }
     else {
         msgid = canController[channel].rxMessage->ExtId;
-        extendMode = 1;
+        extendMode = true;
     }
-    rtrmode = (canController[channel].rxMessage->RTR) >> 1;
+
+    rtrmode = (((canController[channel].rxMessage->RTR) & 0x02) != 0) ? true : false;
 
     // Filter
     if (canData[channel].groupFiltersSize || canData[channel].matchFiltersSize) {
@@ -1121,26 +1130,25 @@ void STM32_Can_RxInterruptHandler(int32_t channel) {
         return;
     }
 
-    pDest = (uint32_t *)&canController[channel].canRxMessagesFifo[canController[channel].can_rx_in];
+    STM32F4_Can_Message *can_msg = &canController[channel].canRxMessagesFifo[canController[channel].can_rx_in];
 
     uint64_t t = STM32_Can_GetLocalTime();
 
-    *pDest = t & 0xFFFFFFFF;
+    can_msg->TimeStampL = t & 0xFFFFFFFF;
 
-    pDest++;
-    *pDest = t >> 32;
+    can_msg->TimeStampH = t >> 32;
 
-    pDest++;
-    *pDest = ((extendMode << 31) | (rtrmode << 30) | (len << 16));  // Frame
+    can_msg->MsgID = msgid;
 
-    pDest++;
-    *pDest = msgid;//can_rx[nbCan].dwMsgID; // ID		//change by gongjun
+    can_msg->extendedId = extendMode;
 
-    pDest++;
-    *pDest = canController[channel].rxMessage->Data[0] | (canController[channel].rxMessage->Data[1] << 8) | (canController[channel].rxMessage->Data[2] << 16) | (canController[channel].rxMessage->Data[3] << 24);
+    can_msg->remoteTransmissionRequest = rtrmode;
 
-    pDest++;
-    *pDest = canController[channel].rxMessage->Data[4] | (canController[channel].rxMessage->Data[5] << 8) | (canController[channel].rxMessage->Data[6] << 16) | (canController[channel].rxMessage->Data[7] << 24);
+    can_msg->DataA = canController[channel].rxMessage->Data[0] | (canController[channel].rxMessage->Data[1] << 8) | (canController[channel].rxMessage->Data[2] << 16) | (canController[channel].rxMessage->Data[3] << 24);
+
+    can_msg->DataB = canController[channel].rxMessage->Data[4] | (canController[channel].rxMessage->Data[5] << 8) | (canController[channel].rxMessage->Data[6] << 16) | (canController[channel].rxMessage->Data[7] << 24);
+
+    can_msg->length = len;
 
     canController[channel].can_rx_count++;
     canController[channel].can_rx_in++;
@@ -1260,7 +1268,7 @@ TinyCLR_Result STM32F4_Can_Reset(const TinyCLR_Can_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, uint32_t flags, uint8_t*data) {
+TinyCLR_Result STM32F4_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool extendedId, bool remoteTransmissionRequest, uint8_t* data, int32_t length) {
 
     uint32_t* canData = (uint32_t*)data;
 
@@ -1272,11 +1280,10 @@ TinyCLR_Result STM32F4_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_
 
     uint8_t txmailbox;
 
-    bool isextid = (((flags) >> 31) & 0x1);
     /* Transmit Structure preparation */
-    canController[channel].txMessage->RTR = (((flags) >> 30) & 0x1);
+    canController[channel].txMessage->RTR = (remoteTransmissionRequest == true) ? 1 : 0;
 
-    if (isextid) {
+    if (extendedId) {
         canController[channel].txMessage->IDE = CAN_Id_Extended;
         canController[channel].txMessage->ExtId = arbitrationId;
     }
@@ -1284,7 +1291,7 @@ TinyCLR_Result STM32F4_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_
         canController[channel].txMessage->IDE = CAN_Id_Standard;
         canController[channel].txMessage->StdId = arbitrationId;
     }
-    canController[channel].txMessage->DLC = ((flags) >> 16) & 0xF;
+    canController[channel].txMessage->DLC = length & 0x0F;
 
     canController[channel].txMessage->Data[0] = ((canData[0] >> 0) & 0xFF);
     canController[channel].txMessage->Data[1] = ((canData[0] >> 8) & 0xFF);
@@ -1312,7 +1319,7 @@ TinyCLR_Result STM32F4_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t* arbitrationId, uint32_t*flags, uint64_t *ts, uint8_t*data) {
+TinyCLR_Result STM32F4_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& extendedId, bool& remoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, int32_t& length) {
     STM32F4_Can_Message *can_msg;
 
     uint32_t* canData = (uint32_t*)data;
@@ -1329,13 +1336,16 @@ TinyCLR_Result STM32F4_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t
             canController[channel].can_rx_out = 0;
 
         canController[channel].can_rx_count--;
-        //can1_send_error_event=TRUE;
 
-        *flags = can_msg->Frame;
-        *arbitrationId = can_msg->MsgID; // CAN ID
+        arbitrationId = can_msg->MsgID;
+        extendedId = can_msg->extendedId;
+        remoteTransmissionRequest = can_msg->remoteTransmissionRequest;
+        length = can_msg->length;
+
         canData[0] = can_msg->DataA;
         canData[1] = can_msg->DataB;
-        *ts = ((uint64_t)can_msg->TimeStampL) | ((uint64_t)can_msg->TimeStampH << 32);
+
+        timestamp = ((uint64_t)can_msg->TimeStampL) | ((uint64_t)can_msg->TimeStampH << 32);
     }
 
     return TinyCLR_Result::Success;
