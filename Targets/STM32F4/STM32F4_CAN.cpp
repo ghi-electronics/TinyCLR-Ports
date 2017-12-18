@@ -1049,7 +1049,7 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
         canProvider[i]->PostMessage = &STM32F4_Can_PostMessage;
         canProvider[i]->GetMessage = &STM32F4_Can_GetMessage;
         canProvider[i]->SetTimings = &STM32F4_Can_SetTimings;
-        canProvider[i]->GetUnMessageCount = &STM32F4_Can_GetUnMessageCount;
+        canProvider[i]->GetUnReadMessageCount = &STM32F4_Can_GetUnReadMessageCount;
         canProvider[i]->SetMessageReceivedHandler = &STM32F4_Can_SetMessageReceivedHandler;
         canProvider[i]->SetErrorReceivedHandler = &STM32F4_Can_SetErrorReceivedHandler;
         canProvider[i]->SetExplicitFilters = &STM32F4_Can_SetExplicitFilters;
@@ -1436,7 +1436,7 @@ TinyCLR_Result STM32F4_Can_SetTimings(const TinyCLR_Can_Provider* self, int32_t 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_GetUnMessageCount(const TinyCLR_Can_Provider* self, size_t& count) {
+TinyCLR_Result STM32F4_Can_GetUnReadMessageCount(const TinyCLR_Can_Provider* self, size_t& count) {
     int32_t channel = self->Index;
 
     count = canController[channel].can_rx_count;
