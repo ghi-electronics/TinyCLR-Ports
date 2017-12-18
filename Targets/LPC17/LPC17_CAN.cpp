@@ -2492,7 +2492,19 @@ TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t
     if (remoteTransmissionRequest)
         flags |= 0x40000000;
 
-    flags |= (length << 16) & 0x0F;
+    flags |= (length & 0x0F) << 16;
+
+    bool readyToSend = false;
+
+    uint32_t timeout = CAN_TRANSFER_TIMEOUT;
+
+    while (readyToSend == false && timeout > 0) {
+        LPC17_Can_IsSendingAllowed(self, readyToSend);
+        timeout--;
+    }
+
+    if (timeout == 0)
+        return TinyCLR_Result::Busy;
 
     if (channel == 0) {
         status = C1SR;
