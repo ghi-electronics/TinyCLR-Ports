@@ -2042,7 +2042,7 @@ static uint8_t canProviderDefs[TOTAL_CAN_CONTROLLERS * sizeof(TinyCLR_Can_Provid
 void CAN_DisableExplicitFilters(int32_t channel) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)globalApiProvider->FindDefault(globalApiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
     if (canData[channel].matchFiltersSize && canData[channel].matchFilters != nullptr) {
         memoryProvider->Free(memoryProvider, canData[channel].matchFilters);
@@ -2054,7 +2054,7 @@ void CAN_DisableExplicitFilters(int32_t channel) {
 void CAN_DisableGroupFilters(int32_t channel) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)globalApiProvider->FindDefault(globalApiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
     if (canData[channel].groupFiltersSize) {
         if (canData[channel].lowerBoundFilters != nullptr)
@@ -2156,22 +2156,6 @@ void CAN_SetACCF(uint32_t ACCFMode) {
     return;
 }
 
-void InsertionSort(uint32_t *arr, int32_t length) {
-    uint32_t i, j, tmp;
-
-    for (i = 1; i < length; i++) {
-        j = i;
-
-        while (j > 0 && arr[j - 1] > arr[j]) {
-            tmp = arr[j];
-            arr[j] = arr[j - 1];
-            arr[j - 1] = tmp;
-
-            j--;
-        }
-    }
-}
-
 bool InsertionSort2CheckOverlap(uint32_t *lowerBounds, uint32_t *upperBounds, int32_t length) {
 
     uint32_t i, j, tmp, tmp2;
@@ -2246,18 +2230,18 @@ const TinyCLR_Api_Info* LPC17_Can_GetApi() {
         canProvider[i]->Reset = &LPC17_Can_Reset;
         canProvider[i]->PostMessage = &LPC17_Can_PostMessage;
         canProvider[i]->GetMessage = &LPC17_Can_GetMessage;
-        canProvider[i]->SetSpeed = &LPC17_Can_SetSpeed;
-        canProvider[i]->GetMessageCount = &LPC17_Can_GetMessageCount;
+        canProvider[i]->SetTimings = &LPC17_Can_SetTimings;
+        canProvider[i]->GetUnReadMessageCount = &LPC17_Can_GetUnReadMessageCount;
         canProvider[i]->SetMessageReceivedHandler = &LPC17_Can_SetMessageReceivedHandler;
         canProvider[i]->SetErrorReceivedHandler = &LPC17_Can_SetErrorReceivedHandler;
         canProvider[i]->SetExplicitFilters = &LPC17_Can_SetExplicitFilters;
         canProvider[i]->SetGroupFilters = &LPC17_Can_SetGroupFilters;
-        canProvider[i]->DiscardIncomingMessages = &LPC17_Can_DiscardIncomingMessages;
-        canProvider[i]->TransmissionAllowed = &LPC17_Can_TransmissionAllowed;
-        canProvider[i]->ReceiveErrorCount = &LPC17_Can_ReceiveErrorCount;
-        canProvider[i]->TransmitErrorCount = &LPC17_Can_TransmitErrorCount;
+        canProvider[i]->DiscardUnreadMessages = &LPC17_Can_DiscardUnreadMessages;
+        canProvider[i]->IsSendingAllowed = &LPC17_Can_IsSendingAllowed;
+        canProvider[i]->GetReadErrorCount = &LPC17_Can_GetReadErrorCount;
+        canProvider[i]->GetWriteErrorCount = &LPC17_Can_GetWriteErrorCount;
         canProvider[i]->GetSourceClock = &LPC17_Can_GetSourceClock;
-        canProvider[i]->SetReceiveBufferSize = &LPC17_Can_SetReceiveBufferSize;
+        canProvider[i]->SetReadBufferSize = &LPC17_Can_SetReadBufferSize;
     }
 
     canApi.Author = "GHI Electronics, LLC";
@@ -2323,26 +2307,24 @@ void CAN_ISR_Rx(int32_t channel) {
     }
 
     // initialize destination pointer
-    pDest = (uint32_t *)&canController[channel].canRxMessagesFifo[canController[channel].can_rx_in];
+    LPC17_Can_Message *can_msg = &canController[channel].canRxMessagesFifo[canController[channel].can_rx_in];
 
     // timestamp
     uint64_t t = LPC17_Can_GetLocalTime();
 
-    *pDest = t & 0xFFFFFFFF;
-    pDest++;
-    *pDest = t >> 32;
-    pDest++;
+    can_msg->TimeStampL = t & 0xFFFFFFFF;
+    can_msg->TimeStampH = t >> 32;
 
     *pDest = C1RFS;  // Frame
 
-    pDest++;
-    *pDest = C1RID; // ID        //change by gongjun
+    
+    can_msg->MsgID = C1RID; // ID        //change by gongjun
 
-    pDest++;
-    *pDest = C1RDA; // Data A
 
-    pDest++;
-    *pDest = C1RDB; // Data B
+    can_msg->DataA  = C1RDA; // Data A
+
+
+    can_msg->DataB = C1RDB; // Data B
 
     if (channel == 0)
         C1CMR = 0x04; // release receive buffer
@@ -2439,7 +2421,7 @@ TinyCLR_Result LPC17_Can_Release(const TinyCLR_Can_Provider* self) {
 
     int32_t channel = self->Index;
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)globalApiProvider->FindDefault(globalApiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
     TinyCLR_Result releasePin = LPC17_Gpio_ReleasePin(nullptr, g_LPC17_Can_Tx_Pins[channel].number);
 
@@ -2480,7 +2462,7 @@ TinyCLR_Result LPC17_Can_Reset(const TinyCLR_Can_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_t arbID, uint32_t flags, uint8_t *data) {
+TinyCLR_Result LPC17_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool extendedId, bool remoteTransmissionRequest, uint8_t* data, int32_t length) {
 
     uint32_t *canData = (uint32_t*)data;
     uint32_t status;
@@ -2519,7 +2501,7 @@ TinyCLR_Result LPC17_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_t 
     return TinyCLR_Result::Busy;
 }
 
-TinyCLR_Result LPC17_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t * arbID, uint32_t *flags, uint64_t *ts, uint8_t *data) {
+TinyCLR_Result LPC17_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& extendedId, bool& remoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, int32_t& length) {
     LPC17_Can_Message *can_msg;
 
     uint32_t *canData = (uint32_t*)data;
@@ -2549,12 +2531,12 @@ TinyCLR_Result LPC17_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t *
 
 }
 
-TinyCLR_Result LPC17_Can_SetSpeed(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t brp, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
+TinyCLR_Result LPC17_Can_SetTimings(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t brp, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
     int32_t channel = self->Index;
 
     LPC17xx_SYSCON &SYSCON = *(LPC17xx_SYSCON *)(size_t)(LPC17xx_SYSCON::c_SYSCON_Base);
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)globalApiProvider->FindDefault(globalApiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
     canController[channel].canRxMessagesFifo = (LPC17_Can_Message*)memoryProvider->Allocate(memoryProvider, canController[channel].can_max_messages_receiving * sizeof(LPC17_Can_Message));
 
@@ -2595,7 +2577,7 @@ TinyCLR_Result LPC17_Can_SetSpeed(const TinyCLR_Can_Provider* self, int32_t prop
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_GetMessageCount(const TinyCLR_Can_Provider* self, int32_t &messageCount) {
+TinyCLR_Result LPC17_Can_GetUnReadMessageCount(const TinyCLR_Can_Provider* self, size_t& count) {
     int32_t channel = self->Index;
 
     messageCount = canController[channel].can_rx_count;
@@ -2619,13 +2601,13 @@ TinyCLR_Result LPC17_Can_SetErrorReceivedHandler(const TinyCLR_Can_Provider* sel
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, uint8_t *filters, int32_t length) {
+TinyCLR_Result LPC17_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, uint8_t* filters, int32_t length) {
     uint32_t *_matchFilters;
     uint32_t *filters32 = (uint32_t*)filters;
 
     int32_t channel = self->Index;
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)globalApiProvider->FindDefault(globalApiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
     _matchFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
 
@@ -2648,12 +2630,12 @@ TinyCLR_Result LPC17_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, ui
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8_t *lowerBounds, uint8_t *upperBounds, int32_t length) {
+TinyCLR_Result LPC17_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8_t* lowerBounds, uint8_t* upperBounds, int32_t length) {
     uint32_t *_lowerBoundFilters, *_upperBoundFilters;
     uint32_t *lowerBounds32 = (uint32_t *)lowerBounds;
     uint32_t *upperBounds32 = (uint32_t *)upperBounds;
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)globalApiProvider->FindDefault(globalApiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
     int32_t channel = self->Index;
 
@@ -2692,7 +2674,7 @@ TinyCLR_Result LPC17_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8
     return TinyCLR_Result::Success;;
 }
 
-TinyCLR_Result LPC17_Can_DiscardIncomingMessages(const TinyCLR_Can_Provider* self) {
+TinyCLR_Result LPC17_Can_DiscardUnreadMessages(const TinyCLR_Can_Provider* self) {
     int32_t channel = self->Index;
 
     canController[channel].can_rx_count = 0;
@@ -2702,7 +2684,7 @@ TinyCLR_Result LPC17_Can_DiscardIncomingMessages(const TinyCLR_Can_Provider* sel
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_TransmissionAllowed(const TinyCLR_Can_Provider* self, bool &allow) {
+TinyCLR_Result LPC17_Can_IsSendingAllowed(const TinyCLR_Can_Provider* self, bool& allow) {
     int32_t channel = self->Index;
 
     uint32_t status = 0;
@@ -2720,29 +2702,29 @@ TinyCLR_Result LPC17_Can_TransmissionAllowed(const TinyCLR_Can_Provider* self, b
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_ReceiveErrorCount(const TinyCLR_Can_Provider* self, int32_t &errorCount) {
+TinyCLR_Result LPC17_Can_GetReadErrorCount(const TinyCLR_Can_Provider* self, size_t& count) {
     int32_t channel = self->Index;
 
-    errorCount = channel == 0 ? ((C1GSR >> 16) & 0xFF) : ((C2GSR >> 16) & 0xFF);
+    count = channel == 0 ? ((C1GSR >> 16) & 0xFF) : ((C2GSR >> 16) & 0xFF);
 
     return TinyCLR_Result::Success;;
 }
 
-TinyCLR_Result LPC17_Can_TransmitErrorCount(const TinyCLR_Can_Provider* self, int32_t &errorCount) {
+TinyCLR_Result LPC17_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, size_t& count) {
     int32_t channel = self->Index;
 
-    errorCount = channel == 0 ? (C1GSR >> 24) : (C2GSR >> 24);
+    count = channel == 0 ? (C1GSR >> 24) : (C2GSR >> 24);
 
     return TinyCLR_Result::Success;;
 }
 
-TinyCLR_Result LPC17_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t &sourceClock) {
+TinyCLR_Result LPC17_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t& sourceClock) {
     sourceClock = LPC17_AHB_CLOCK_HZ / 2;
 
     return TinyCLR_Result::Success;;
 }
 
-TinyCLR_Result LPC17_Can_SetReceiveBufferSize(const TinyCLR_Can_Provider* self, int32_t size) {
+TinyCLR_Result LPC17_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, size_t size) {
     int32_t channel = self->Index;
 
     if (size > 3) {
