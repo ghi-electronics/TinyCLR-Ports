@@ -1291,7 +1291,7 @@ TinyCLR_Result STM32F4_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_
     canController[channel].txMessage->Data[2] = ((canData[0] >> 16) & 0xFF);
     canController[channel].txMessage->Data[3] = ((canData[0] >> 24) & 0xFF);
     canController[channel].txMessage->Data[4] = ((canData[1] >> 0) & 0xFF);
-    canController[channel].txMessage->Data[5] = ((canData[1] > 8) & 0xFF);
+    canController[channel].txMessage->Data[5] = ((canData[1] >> 8) & 0xFF);
     canController[channel].txMessage->Data[6] = ((canData[1] >> 16) & 0xFF);
     canController[channel].txMessage->Data[7] = ((canData[1] >> 24) & 0xFF);
 
