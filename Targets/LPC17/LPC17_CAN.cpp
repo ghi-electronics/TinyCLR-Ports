@@ -1989,25 +1989,20 @@ struct LPC17_CanData_T {
 
 
 typedef struct {
-    uint32_t TimeStampL;
-    uint32_t TimeStampH;
+    uint32_t timeStampL;
+    uint32_t timeStampH;
 
-    uint32_t Frame; // Bits 16..19: DLC - Data Length Counter
-                    // Bit 30: Set if this is a RTR message
-                    // Bit 31: Set if this is a 29-bit ID message
-    uint32_t MsgID;    // CAN Message ID (11-bit or 29-bit)
-    uint32_t DataA;    // CAN Message Data Bytes 0-3
-    uint32_t DataB;    // CAN Message Data Bytes 4-7
+    uint32_t msgId;
+
+    bool extendedId;
+    bool remoteTransmissionRequest;
+
+    uint32_t dataA;
+    uint32_t dataB;
+
+    int32_t length;
 
 } LPC17_Can_Message;
-
-enum class LPC17_Can_Error : uint32_t {
-    OverRun,
-    RxOver,
-    BusOff,
-    ErrorPassive,
-    dataReveived = 0xFF,
-};
 
 struct LPC17_Can_Controller {
     const TinyCLR_Can_Provider* provider;
@@ -2228,8 +2223,8 @@ const TinyCLR_Api_Info* LPC17_Can_GetApi() {
         canProvider[i]->Acquire = &LPC17_Can_Acquire;
         canProvider[i]->Release = &LPC17_Can_Release;
         canProvider[i]->Reset = &LPC17_Can_Reset;
-        canProvider[i]->PostMessage = &LPC17_Can_PostMessage;
-        canProvider[i]->GetMessage = &LPC17_Can_GetMessage;
+        canProvider[i]->WriteMessage = &LPC17_Can_WriteMessage;
+        canProvider[i]->ReadMessage = &LPC17_Can_ReadMessage;
         canProvider[i]->SetTimings = &LPC17_Can_SetTimings;
         canProvider[i]->GetUnReadMessageCount = &LPC17_Can_GetUnReadMessageCount;
         canProvider[i]->SetMessageReceivedHandler = &LPC17_Can_SetMessageReceivedHandler;
@@ -2268,8 +2263,6 @@ uint32_t LPC17_Can_GetLocalTime() {
 **
 ******************************************************************************/
 void CAN_ISR_Rx(int32_t channel) {
-    uint32_t * pDest;
-
     // filter
     if (canData[channel].groupFiltersSize || canData[channel].matchFiltersSize) {
         uint32_t ID = channel == 0 ? C1RID : C2RID;
@@ -2301,7 +2294,9 @@ void CAN_ISR_Rx(int32_t channel) {
         else
             C2CMR = 0x04; // release receive buffer
 
-        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::RxOver);
+        auto interop = (const TinyCLR_Interop_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider);
+
+        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::ReadBufferFull);
 
         return;
     }
@@ -2312,24 +2307,40 @@ void CAN_ISR_Rx(int32_t channel) {
     // timestamp
     uint64_t t = LPC17_Can_GetLocalTime();
 
-    can_msg->TimeStampL = t & 0xFFFFFFFF;
-    can_msg->TimeStampH = t >> 32;
+    can_msg->timeStampL = t & 0xFFFFFFFF;
+    can_msg->timeStampH = t >> 32;
 
-    *pDest = C1RFS;  // Frame
+    uint32_t flag;
+    uint32_t dataA;
+    uint32_t dataB;
+    uint32_t msgId;
 
-    
-    can_msg->MsgID = C1RID; // ID        //change by gongjun
-
-
-    can_msg->DataA  = C1RDA; // Data A
-
-
-    can_msg->DataB = C1RDB; // Data B
-
-    if (channel == 0)
+    if (channel == 0) {
+        flag = C1RFS;  // Frame
+        msgId = C1RID;
+        dataA = C1RDA;
+        dataB = C1RDB;
         C1CMR = 0x04; // release receive buffer
-    else
+    }
+    else {
+        flag = C2RFS;  // Frame
+        msgId = C2RID;
+        dataA = C2RDA;
+        dataB = C2RDB;
         C2CMR = 0x04; // release receive buffer
+    }
+
+    can_msg->length = (flag >> 16) & 0x0F;
+
+    can_msg->extendedId = ((flag & 0x80000000) != 0) ? true : false;
+
+    can_msg->remoteTransmissionRequest = ((flag & 0x40000000) != 0) ? true : false;
+
+    can_msg->msgId = msgId; // ID
+
+    can_msg->dataA = dataA; // Data A
+
+    can_msg->dataB = dataB; // Data B
 
     canController[channel].can_rx_count++;
     canController[channel].can_rx_in++;
@@ -2338,7 +2349,9 @@ void CAN_ISR_Rx(int32_t channel) {
         canController[channel].can_rx_in = 0;
     }
 
-    canController[channel].messageReceivedEventHandler(canController[channel].provider, canController[channel].can_rx_count);
+    auto interop = (const TinyCLR_Interop_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider);
+
+    canController[channel].messageReceivedEventHandler(interop, canController[channel].provider, canController[channel].can_rx_count);
 }
 void LPC17_Can_RxInterruptHandler(void *param) {
     uint32_t status = CANRxSR;
@@ -2349,20 +2362,22 @@ void LPC17_Can_RxInterruptHandler(void *param) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
+    auto interop = (const TinyCLR_Interop_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider);
+
     if (status & (1 << 8)) {
         channel = 0;
 
         CAN_ISR_Rx(channel);
 
         if (c1 & (1 << 3)) {
-            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::OverRun);
+            canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::ReadBufferOverrun);
         }
         if (c1 & (1 << 5)) {
-            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ErrorPassive);
+            canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::Passive);
         }
         if (c1 & (1 << 7)) {
             C1MOD = 1;    // Reset CAN
-            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::BusOff);
+            canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::BusOff);
         }
 
     }
@@ -2372,14 +2387,14 @@ void LPC17_Can_RxInterruptHandler(void *param) {
         CAN_ISR_Rx(channel);
 
         if (c2 & (1 << 3)) {
-            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::OverRun);
+            canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::ReadBufferOverrun);
         }
         if (c2 & (1 << 5)) {
-            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ErrorPassive);
+            canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::Passive);
         }
         if (c2 & (1 << 7)) {
             C2MOD = 1;    // Reset CAN
-            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::BusOff);
+            canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::BusOff);
         }
     }
 }
@@ -2462,19 +2477,29 @@ TinyCLR_Result LPC17_Can_Reset(const TinyCLR_Can_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool extendedId, bool remoteTransmissionRequest, uint8_t* data, int32_t length) {
+TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool extendedId, bool remoteTransmissionRequest, uint8_t* data, int32_t length) {
 
     uint32_t *canData = (uint32_t*)data;
+
+    uint32_t flags = 0;
     uint32_t status;
 
     int32_t channel = self->Index;
+
+    if (extendedId)
+        flags |= 0x80000000;
+
+    if (remoteTransmissionRequest)
+        flags |= 0x40000000;
+
+    flags |= (length << 16) & 0x0F;
 
     if (channel == 0) {
         status = C1SR;
 
         if (status & 0x00000004) {
             C1TFI1 = flags & 0xC00F0000;
-            C1TID1 = arbID;
+            C1TID1 = arbitrationId;
             C1TDA1 = canData[0];
             C1TDB1 = canData[1];
 
@@ -2488,7 +2513,7 @@ TinyCLR_Result LPC17_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_t 
 
         if (status & 0x00000004) {
             C2TFI1 = flags & 0xC00F0000;
-            C2TID1 = arbID;
+            C2TID1 = arbitrationId;
             C2TDA1 = canData[0];
             C2TDB1 = canData[1];
 
@@ -2501,7 +2526,7 @@ TinyCLR_Result LPC17_Can_PostMessage(const TinyCLR_Can_Provider* self, uint32_t 
     return TinyCLR_Result::Busy;
 }
 
-TinyCLR_Result LPC17_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& extendedId, bool& remoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, int32_t& length) {
+TinyCLR_Result LPC17_Can_ReadMessage(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& extendedId, bool& remoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, int32_t& length) {
     LPC17_Can_Message *can_msg;
 
     uint32_t *canData = (uint32_t*)data;
@@ -2518,13 +2543,17 @@ TinyCLR_Result LPC17_Can_GetMessage(const TinyCLR_Can_Provider* self, uint32_t& 
             canController[channel].can_rx_out = 0;
 
         canController[channel].can_rx_count--;
-        //can1_send_error_event=TRUE;
 
-        *flags = can_msg->Frame;
-        *arbID = can_msg->MsgID; // CAN ID
-        canData[0] = can_msg->DataA;
-        canData[1] = can_msg->DataB;
-        *ts = ((uint64_t)can_msg->TimeStampL) | ((uint64_t)can_msg->TimeStampH << 32);
+        arbitrationId = can_msg->msgId;
+        extendedId = can_msg->extendedId;
+        remoteTransmissionRequest = can_msg->remoteTransmissionRequest;
+
+        canData[0] = can_msg->dataA;
+        canData[1] = can_msg->dataB;
+
+        length = can_msg->length;
+
+        timestamp = ((uint64_t)can_msg->timeStampL) | ((uint64_t)can_msg->timeStampH << 32);
     }
 
     return TinyCLR_Result::Success;
@@ -2580,7 +2609,7 @@ TinyCLR_Result LPC17_Can_SetTimings(const TinyCLR_Can_Provider* self, int32_t pr
 TinyCLR_Result LPC17_Can_GetUnReadMessageCount(const TinyCLR_Can_Provider* self, size_t& count) {
     int32_t channel = self->Index;
 
-    messageCount = canController[channel].can_rx_count;
+    count = canController[channel].can_rx_count;
 
     return TinyCLR_Result::Success;
 }
@@ -2616,7 +2645,7 @@ TinyCLR_Result LPC17_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, ui
 
     memcpy(_matchFilters, filters32, length * sizeof(uint32_t));
 
-    InsertionSort(_matchFilters, length);
+    std::sort(_matchFilters, _matchFilters + length);
 
     {
         DISABLE_INTERRUPTS_SCOPED(irq);
