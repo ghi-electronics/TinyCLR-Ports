@@ -1059,7 +1059,7 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
         canProvider[i]->GetReadErrorCount = &STM32F4_Can_GetReadErrorCount;
         canProvider[i]->GetWriteErrorCount = &STM32F4_Can_GetWriteErrorCount;
         canProvider[i]->GetSourceClock = &STM32F4_Can_GetSourceClock;
-        canProvider[i]->SetReceiveBufferSize = &STM32F4_Can_SetReceiveBufferSize;
+        canProvider[i]->SetReadBufferSize = &STM32F4_Can_SetReadBufferSize;
     }
 
     canApi.Author = "GHI Electronics, LLC";
@@ -1580,7 +1580,7 @@ TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint
     return TinyCLR_Result::Success;;
 }
 
-TinyCLR_Result STM32F4_Can_SetReceiveBufferSize(const TinyCLR_Can_Provider* self, size_t size) {
+TinyCLR_Result STM32F4_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, size_t size) {
     int32_t channel = self->Index;
 
     if (size > 3) {

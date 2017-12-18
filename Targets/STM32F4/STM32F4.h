@@ -120,7 +120,7 @@ TinyCLR_Result STM32F4_Can_IsSendingAllowed(const TinyCLR_Can_Provider* self, bo
 TinyCLR_Result STM32F4_Can_GetReadErrorCount(const TinyCLR_Can_Provider* self, size_t& count);
 TinyCLR_Result STM32F4_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, size_t& count);
 TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t& sourceClock);
-TinyCLR_Result STM32F4_Can_SetReceiveBufferSize(const TinyCLR_Can_Provider* self, size_t size);
+TinyCLR_Result STM32F4_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, size_t size);
 
 ////////////////////////////////////////////////////////////////////////////////
 //DAC
