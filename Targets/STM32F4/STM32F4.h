@@ -116,7 +116,7 @@ TinyCLR_Result STM32F4_Can_SetErrorReceivedHandler(const TinyCLR_Can_Provider* s
 TinyCLR_Result STM32F4_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, uint8_t* filters, int32_t length);
 TinyCLR_Result STM32F4_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8_t* lowerBounds, uint8_t* upBounds, int32_t length);
 TinyCLR_Result STM32F4_Can_DiscardUnreadMessages(const TinyCLR_Can_Provider* self);
-TinyCLR_Result STM32F4_Can_TransmissionAllowed(const TinyCLR_Can_Provider* self, bool& allow);
+TinyCLR_Result STM32F4_Can_IsSendingAllowed(const TinyCLR_Can_Provider* self, bool& allow);
 TinyCLR_Result STM32F4_Can_GetReceiveErrorCount(const TinyCLR_Can_Provider* self, size_t& count);
 TinyCLR_Result STM32F4_Can_GetTransmitErrorCount(const TinyCLR_Can_Provider* self, size_t& count);
 TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t& sourceClock);
