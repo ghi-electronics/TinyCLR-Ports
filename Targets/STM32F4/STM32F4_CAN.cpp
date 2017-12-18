@@ -1431,6 +1431,9 @@ TinyCLR_Result STM32F4_Can_GetUnMessageCount(const TinyCLR_Can_Provider* self, s
 
     count = canController[channel].can_rx_count;
 
+    if (count == 0)
+        return TinyCLR_Result::NoData;
+
     return TinyCLR_Result::Success;
 }
 
