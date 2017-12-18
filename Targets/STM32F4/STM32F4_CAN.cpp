@@ -1057,7 +1057,7 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
         canProvider[i]->DiscardUnreadMessages = &STM32F4_Can_DiscardUnreadMessages;
         canProvider[i]->IsSendingAllowed = &STM32F4_Can_IsSendingAllowed;
         canProvider[i]->GetReadErrorCount = &STM32F4_Can_GetReadErrorCount;
-        canProvider[i]->GetTransmitErrorCount = &STM32F4_Can_GetTransmitErrorCount;
+        canProvider[i]->GetWriteErrorCount = &STM32F4_Can_GetWriteErrorCount;
         canProvider[i]->GetSourceClock = &STM32F4_Can_GetSourceClock;
         canProvider[i]->SetReceiveBufferSize = &STM32F4_Can_SetReceiveBufferSize;
     }
@@ -1564,7 +1564,7 @@ TinyCLR_Result STM32F4_Can_GetReadErrorCount(const TinyCLR_Can_Provider* self, s
     return TinyCLR_Result::Success;;
 }
 
-TinyCLR_Result STM32F4_Can_GetTransmitErrorCount(const TinyCLR_Can_Provider* self, size_t& count) {
+TinyCLR_Result STM32F4_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, size_t& count) {
     int32_t channel = self->Index;
 
     CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
