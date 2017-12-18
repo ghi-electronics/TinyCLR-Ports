@@ -299,14 +299,6 @@ typedef struct {
 
 } STM32F4_Can_Message;
 
-enum class STM32F4_Can_Error : uint32_t {
-    OverRun,
-    RxOver,
-    BusOff,
-    ErrorPassive,
-    dataReveived = 0xFF,
-};
-
 struct STM32F4_Can_Controller {
     const TinyCLR_Can_Provider* provider;
 
@@ -996,13 +988,13 @@ bool CAN_ErrorHandler(uint8_t channel) {
 
     if (CAN_GetITStatus(CANx, CAN_IT_FF0)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_FF0);
-        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::RxOver);
+        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::ReadBufferFull);
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_FOV0)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_FOV0);
-        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::OverRun);
+        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::ReadBufferOverrun);
 
         return true;
     }
@@ -1014,7 +1006,7 @@ bool CAN_ErrorHandler(uint8_t channel) {
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_EPV)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_EPV);
-        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::ErrorPassive);
+        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::Passive);
 
         return true;
     }
@@ -1024,13 +1016,13 @@ bool CAN_ErrorHandler(uint8_t channel) {
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_ERR)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_ERR);
-        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::ErrorPassive);
+        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::Passive);
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_EWG)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_EWG);
-        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::ErrorPassive);
+        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::Passive);
     }
 
 
