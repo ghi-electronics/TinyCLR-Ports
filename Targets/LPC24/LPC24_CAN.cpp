@@ -45,9 +45,9 @@ explicit EXT IDs, and group EXT IDs. */
 #define EXP_EXT_ID                0x100000
 #define GRP_EXT_ID                0x200000
 
-#define CAN_BASE 0x40038000
+// #define CAN_BASE 0x40038000
 
-#define AFMR (*(volatile unsigned long *)0x4003C000)
+#define AFMR (*(volatile unsigned long *)0xE003C000)
 #define AFMR_OFFSET 0x4000
 #define AFMR_AccOff_MASK 0x1
 #define AFMR_AccOff 0x1
@@ -59,34 +59,34 @@ explicit EXT IDs, and group EXT IDs. */
 #define AFMR_eFCAN 0x4
 #define AFMR_eFCAN_BIT 2
 
-#define SFF_sa (*(volatile unsigned long *)0x4003C004)
+#define SFF_sa (*(volatile unsigned long *)0xE003C004)
 #define SFF_sa_OFFSET 0x4004
 
-#define SFF_GRP_sa (*(volatile unsigned long *)0x4003C008)
+#define SFF_GRP_sa (*(volatile unsigned long *)0xE003C008)
 #define SFF_GRP_sa_OFFSET 0x4008
 
-#define EFF_sa (*(volatile unsigned long *)0x4003C00C)
+#define EFF_sa (*(volatile unsigned long *)0xE003C00C)
 #define EFF_sa_OFFSET 0x400C
 
-#define EFF_GRP_sa (*(volatile unsigned long *)0x4003C010)
+#define EFF_GRP_sa (*(volatile unsigned long *)0xE003C010)
 #define EFF_GRP_sa_OFFSET 0x4010
 
-#define ENDofTable (*(volatile unsigned long *)0x4003C014)
+#define ENDofTable (*(volatile unsigned long *)0xE003C014)
 #define ENDofTable_OFFSET 0x4014
 
-#define LUTerrAd (*(volatile unsigned long *)0x4003C018)
+#define LUTerrAd (*(volatile unsigned long *)0xE003C018)
 #define LUTerrAd_OFFSET 0x4018
 
-#define LUTerr (*(volatile unsigned long *)0x4003C01C)
+#define LUTerr (*(volatile unsigned long *)0xE003C01C)
 #define LUTerr_OFFSET 0x401C
 
-#define FCANIE (*(volatile unsigned long *)0x4003C020)
+#define FCANIE (*(volatile unsigned long *)0xE003C020)
 #define FCANIE_OFFSET 0x4020
 #define FCANIE_FCANIE_MASK 0x1
 #define FCANIE_FCANIE 0x1
 #define FCANIE_FCANIE_BIT 0
 
-#define FCANIC0 (*(volatile unsigned long *)0x4003C024)
+#define FCANIC0 (*(volatile unsigned long *)0xE003C024)
 #define FCANIC0_OFFSET 0x4024
 #define FCANIC0_IntPnd0_MASK 0x1
 #define FCANIC0_IntPnd0 0x1
@@ -185,7 +185,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define FCANIC0_IntPnd31 0x80000000
 #define FCANIC0_IntPnd31_BIT 31
 
-#define FCANIC1 (*(volatile unsigned long *)0x4003C028)
+#define FCANIC1 (*(volatile unsigned long *)0xE003C028)
 #define FCANIC1_OFFSET 0x4028
 #define FCANIC1_IntPnd32_MASK 0x1
 #define FCANIC1_IntPnd32 0x1
@@ -284,7 +284,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define FCANIC1_IntPnd63 0x80000000
 #define FCANIC1_IntPnd63_BIT 31
 
-#define CANTxSR (*(volatile unsigned long *)0x40040000)
+#define CANTxSR (*(volatile unsigned long *)0xE0040000)
 #define CANTxSR_OFFSET 0x8000
 #define CANTxSR_TS1_MASK 0x1
 #define CANTxSR_TS1 0x1
@@ -305,7 +305,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define CANTxSR_TCS2 0x20000
 #define CANTxSR_TCS2_BIT 17
 
-#define CANRxSR (*(volatile unsigned long *)0x40040004)
+#define CANRxSR (*(volatile unsigned long *)0xE0040004)
 #define CANRxSR_OFFSET 0x8004
 #define CANRxSR_RS1_MASK 0x1
 #define CANRxSR_RS1 0x1
@@ -326,7 +326,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define CANRxSR_DOS2 0x20000
 #define CANRxSR_DOS2_BIT 17
 
-#define CANMSR (*(volatile unsigned long *)0x40040008)
+#define CANMSR (*(volatile unsigned long *)0xE0040008)
 #define CANMSR_OFFSET 0x8008
 #define CANMSR_ES1_MASK 0x1
 #define CANMSR_ES1 0x1
@@ -341,9 +341,9 @@ explicit EXT IDs, and group EXT IDs. */
 #define CANMSR_BS2 0x200
 #define CANMSR_BS2_BIT 9
 
-#define CAN1_BASE 0x40044000
+#define CAN1_BASE 0xE0044000
 
-#define C1MOD (*(volatile unsigned long *)0x40044000)
+#define C1MOD (*(volatile unsigned long *)0xE0044000)
 #define CAN1MOD C1MOD
 #define C1MOD_OFFSET 0x0
 #define CAN1MOD_OFFSET C1MOD_OFFSET
@@ -390,7 +390,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1MOD_TM_BIT 7
 #define CAN1MOD_TM_BIT C1MOD_TM_BIT
 
-#define C1CMR (*(volatile unsigned long *)0x40044004)
+#define C1CMR (*(volatile unsigned long *)0xE0044004)
 #define CAN1CMR C1CMR
 #define C1CMR_OFFSET 0x4
 #define CAN1CMR_OFFSET C1CMR_OFFSET
@@ -443,7 +443,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1CMR_STB3_BIT 7
 #define CAN1CMR_STB3_BIT C1CMR_STB3_BIT
 
-#define C1GSR (*(volatile unsigned long *)0x40044008)
+#define C1GSR (*(volatile unsigned long *)0xE0044008)
 #define CAN1GSR C1GSR
 #define C1GSR_OFFSET 0x8
 #define CAN1GSR_OFFSET C1GSR_OFFSET
@@ -504,7 +504,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1GSR_TXERR_BIT 24
 #define CAN1GSR_TXERR_BIT C1GSR_TXERR_BIT
 
-#define C1ICR (*(volatile unsigned long *)0x4004400C)
+#define C1ICR (*(volatile unsigned long *)0xE004400C)
 #define CAN1ICR C1ICR
 #define C1ICR_OFFSET 0xC
 #define CAN1ICR_OFFSET C1ICR_OFFSET
@@ -593,7 +593,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1ICR_ALCBIT_BIT 24
 #define CAN1ICR_ALCBIT_BIT C1ICR_ALCBIT_BIT
 
-#define C1IER (*(volatile unsigned long *)0x40044010)
+#define C1IER (*(volatile unsigned long *)0xE0044010)
 #define CAN1IER C1IER
 #define C1IER_OFFSET 0x10
 #define CAN1IER_OFFSET C1IER_OFFSET
@@ -664,7 +664,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1IER_TIE3_BIT 10
 #define CAN1IER_TIE3_BIT C1IER_TIE3_BIT
 
-#define C1BTR (*(volatile unsigned long *)0x40044014)
+#define C1BTR (*(volatile unsigned long *)0xE0044014)
 #define CAN1BTR C1BTR
 #define C1BTR_OFFSET 0x14
 #define CAN1BTR_OFFSET C1BTR_OFFSET
@@ -691,7 +691,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1BTR_SAM_BIT 23
 #define CAN1BTR_SAM_BIT C1BTR_SAM_BIT
 
-#define C1EWL (*(volatile unsigned long *)0x40044018)
+#define C1EWL (*(volatile unsigned long *)0xE0044018)
 #define CAN1EWL C1EWL
 #define C1EWL_OFFSET 0x18
 #define CAN1EWL_OFFSET C1EWL_OFFSET
@@ -700,7 +700,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1EWL_EWL_BIT 0
 #define CAN1EWL_EWL_BIT C1EWL_EWL_BIT
 
-#define C1SR (*(volatile unsigned long *)0x4004401C)
+#define C1SR (*(volatile unsigned long *)0xE004401C)
 #define CAN1SR C1SR
 #define C1SR_OFFSET 0x1C
 #define CAN1SR_OFFSET C1SR_OFFSET
@@ -849,7 +849,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1SR_BS3_BIT 23
 #define CAN1SR_BS3_BIT C1SR_BS3_BIT
 
-#define C1RFS (*(volatile unsigned long *)0x40044020)
+#define C1RFS (*(volatile unsigned long *)0xE0044020)
 #define CAN1RFS C1RFS
 #define C1RFS_OFFSET 0x20
 #define CAN1RFS_OFFSET C1RFS_OFFSET
@@ -880,7 +880,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1RFS_FF_BIT 31
 #define CAN1RFS_FF_BIT C1RFS_FF_BIT
 
-#define C1RID (*(volatile unsigned long *)0x40044024)
+#define C1RID (*(volatile unsigned long *)0xE0044024)
 #define CAN1RID C1RID
 #define C1RID_OFFSET 0x24
 #define CAN1RID_OFFSET C1RID_OFFSET
@@ -889,7 +889,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1RID_ID_BIT 0
 #define CAN1RID_ID_BIT C1RID_ID_BIT
 
-#define C1RDA (*(volatile unsigned long *)0x40044028)
+#define C1RDA (*(volatile unsigned long *)0xE0044028)
 #define CAN1RDA C1RDA
 #define C1RDA_OFFSET 0x28
 #define CAN1RDA_OFFSET C1RDA_OFFSET
@@ -910,7 +910,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1RDA_Data_4_BIT 24
 #define CAN1RDA_Data_4_BIT C1RDA_Data_4_BIT
 
-#define C1RDB (*(volatile unsigned long *)0x4004402C)
+#define C1RDB (*(volatile unsigned long *)0xE004402C)
 #define CAN1RDB C1RDB
 #define C1RDB_OFFSET 0x2C
 #define CAN1RDB_OFFSET C1RDB_OFFSET
@@ -931,7 +931,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1RDB_Data_8_BIT 24
 #define CAN1RDB_Data_8_BIT C1RDB_Data_8_BIT
 
-#define C1TFI1 (*(volatile unsigned long *)0x40044030)
+#define C1TFI1 (*(volatile unsigned long *)0xE0044030)
 #define CAN1TFI1 C1TFI1
 #define C1TFI1_OFFSET 0x30
 #define CAN1TFI1_OFFSET C1TFI1_OFFSET
@@ -956,7 +956,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1TFI1_FF_BIT 31
 #define CAN1TFI1_FF_BIT C1TFI1_FF_BIT
 
-#define C1TID1 (*(volatile unsigned long *)0x40044034)
+#define C1TID1 (*(volatile unsigned long *)0xE0044034)
 #define CAN1TID1 C1TID1
 #define C1TID1_OFFSET 0x34
 #define CAN1TID1_OFFSET C1TID1_OFFSET
@@ -965,7 +965,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1TID1_ID_BIT 0
 #define CAN1TID1_ID_BIT C1TID1_ID_BIT
 
-#define C1TDA1 (*(volatile unsigned long *)0x40044038)
+#define C1TDA1 (*(volatile unsigned long *)0xE0044038)
 #define CAN1TDA1 C1TDA1
 #define C1TDA1_OFFSET 0x38
 #define CAN1TDA1_OFFSET C1TDA1_OFFSET
@@ -986,7 +986,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1TDA1_Data_4_BIT 24
 #define CAN1TDA1_Data_4_BIT C1TDA1_Data_4_BIT
 
-#define C1TDB1 (*(volatile unsigned long *)0x4004403C)
+#define C1TDB1 (*(volatile unsigned long *)0xE004403C)
 #define CAN1TDB1 C1TDB1
 #define C1TDB1_OFFSET 0x3C
 #define CAN1TDB1_OFFSET C1TDB1_OFFSET
@@ -1007,7 +1007,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1TDB1_Data_8_BIT 24
 #define CAN1TDB1_Data_8_BIT C1TDB1_Data_8_BIT
 
-#define C1TFI2 (*(volatile unsigned long *)0x40044040)
+#define C1TFI2 (*(volatile unsigned long *)0xE0044040)
 #define CAN1TFI2 C1TFI2
 #define C1TFI2_OFFSET 0x40
 #define CAN1TFI2_OFFSET C1TFI2_OFFSET
@@ -1032,7 +1032,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1TFI2_FF_BIT 31
 #define CAN1TFI2_FF_BIT C1TFI2_FF_BIT
 
-#define C1TID2 (*(volatile unsigned long *)0x40044044)
+#define C1TID2 (*(volatile unsigned long *)0xE0044044)
 #define CAN1TID2 C1TID2
 #define C1TID2_OFFSET 0x44
 #define CAN1TID2_OFFSET C1TID2_OFFSET
@@ -1041,7 +1041,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1TID2_ID_BIT 0
 #define CAN1TID2_ID_BIT C1TID2_ID_BIT
 
-#define C1TDA2 (*(volatile unsigned long *)0x40044048)
+#define C1TDA2 (*(volatile unsigned long *)0xE0044048)
 #define CAN1TDA2 C1TDA2
 #define C1TDA2_OFFSET 0x48
 #define CAN1TDA2_OFFSET C1TDA2_OFFSET
@@ -1062,7 +1062,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1TDA2_Data_4_BIT 24
 #define CAN1TDA2_Data_4_BIT C1TDA2_Data_4_BIT
 
-#define C1TDB2 (*(volatile unsigned long *)0x4004404C)
+#define C1TDB2 (*(volatile unsigned long *)0xE004404C)
 #define CAN1TDB2 C1TDB2
 #define C1TDB2_OFFSET 0x4C
 #define CAN1TDB2_OFFSET C1TDB2_OFFSET
@@ -1083,7 +1083,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1TDB2_Data_8_BIT 24
 #define CAN1TDB2_Data_8_BIT C1TDB2_Data_8_BIT
 
-#define C1TFI3 (*(volatile unsigned long *)0x40044050)
+#define C1TFI3 (*(volatile unsigned long *)0xE0044050)
 #define CAN1TFI3 C1TFI3
 #define C1TFI3_OFFSET 0x50
 #define CAN1TFI3_OFFSET C1TFI3_OFFSET
@@ -1108,7 +1108,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1TFI3_FF_BIT 31
 #define CAN1TFI3_FF_BIT C1TFI3_FF_BIT
 
-#define C1TID3 (*(volatile unsigned long *)0x40044054)
+#define C1TID3 (*(volatile unsigned long *)0xE0044054)
 #define CAN1TID3 C1TID3
 #define C1TID3_OFFSET 0x54
 #define CAN1TID3_OFFSET C1TID3_OFFSET
@@ -1117,7 +1117,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1TID3_ID_BIT 0
 #define CAN1TID3_ID_BIT C1TID3_ID_BIT
 
-#define C1TDA3 (*(volatile unsigned long *)0x40044058)
+#define C1TDA3 (*(volatile unsigned long *)0xE0044058)
 #define CAN1TDA3 C1TDA3
 #define C1TDA3_OFFSET 0x58
 #define CAN1TDA3_OFFSET C1TDA3_OFFSET
@@ -1138,7 +1138,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1TDA3_Data_4_BIT 24
 #define CAN1TDA3_Data_4_BIT C1TDA3_Data_4_BIT
 
-#define C1TDB3 (*(volatile unsigned long *)0x4004405C)
+#define C1TDB3 (*(volatile unsigned long *)0xE004405C)
 #define CAN1TDB3 C1TDB3
 #define C1TDB3_OFFSET 0x5C
 #define CAN1TDB3_OFFSET C1TDB3_OFFSET
@@ -1159,9 +1159,9 @@ explicit EXT IDs, and group EXT IDs. */
 #define C1TDB3_Data_8_BIT 24
 #define CAN1TDB3_Data_8_BIT C1TDB3_Data_8_BIT
 
-#define CAN2_BASE 0x40048000
+#define CAN2_BASE 0xE0048000
 
-#define C2MOD (*(volatile unsigned long *)0x40048000)
+#define C2MOD (*(volatile unsigned long *)0xE0048000)
 #define CAN2MOD C2MOD
 #define C2MOD_OFFSET 0x0
 #define CAN2MOD_OFFSET C2MOD_OFFSET
@@ -1208,7 +1208,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2MOD_TM_BIT 7
 #define CAN2MOD_TM_BIT C2MOD_TM_BIT
 
-#define C2CMR (*(volatile unsigned long *)0x40048004)
+#define C2CMR (*(volatile unsigned long *)0xE0048004)
 #define CAN2CMR C2CMR
 #define C2CMR_OFFSET 0x4
 #define CAN2CMR_OFFSET C2CMR_OFFSET
@@ -1261,7 +1261,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2CMR_STB3_BIT 7
 #define CAN2CMR_STB3_BIT C2CMR_STB3_BIT
 
-#define C2GSR (*(volatile unsigned long *)0x40048008)
+#define C2GSR (*(volatile unsigned long *)0xE0048008)
 #define CAN2GSR C2GSR
 #define C2GSR_OFFSET 0x8
 #define CAN2GSR_OFFSET C2GSR_OFFSET
@@ -1322,7 +1322,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2GSR_TXERR_BIT 24
 #define CAN2GSR_TXERR_BIT C2GSR_TXERR_BIT
 
-#define C2ICR (*(volatile unsigned long *)0x4004800C)
+#define C2ICR (*(volatile unsigned long *)0xE004800C)
 #define CAN2ICR C2ICR
 #define C2ICR_OFFSET 0xC
 #define CAN2ICR_OFFSET C2ICR_OFFSET
@@ -1411,7 +1411,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2ICR_ALCBIT_BIT 24
 #define CAN2ICR_ALCBIT_BIT C2ICR_ALCBIT_BIT
 
-#define C2IER (*(volatile unsigned long *)0x40048010)
+#define C2IER (*(volatile unsigned long *)0xE0048010)
 #define CAN2IER C2IER
 #define C2IER_OFFSET 0x10
 #define CAN2IER_OFFSET C2IER_OFFSET
@@ -1482,7 +1482,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2IER_TIE3_BIT 10
 #define CAN2IER_TIE3_BIT C2IER_TIE3_BIT
 
-#define C2BTR (*(volatile unsigned long *)0x40048014)
+#define C2BTR (*(volatile unsigned long *)0xE0048014)
 #define CAN2BTR C2BTR
 #define C2BTR_OFFSET 0x14
 #define CAN2BTR_OFFSET C2BTR_OFFSET
@@ -1509,7 +1509,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2BTR_SAM_BIT 23
 #define CAN2BTR_SAM_BIT C2BTR_SAM_BIT
 
-#define C2EWL (*(volatile unsigned long *)0x40048018)
+#define C2EWL (*(volatile unsigned long *)0xE0048018)
 #define CAN2EWL C2EWL
 #define C2EWL_OFFSET 0x18
 #define CAN2EWL_OFFSET C2EWL_OFFSET
@@ -1518,7 +1518,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2EWL_EWL_BIT 0
 #define CAN2EWL_EWL_BIT C2EWL_EWL_BIT
 
-#define C2SR (*(volatile unsigned long *)0x4004801C)
+#define C2SR (*(volatile unsigned long *)0xE004801C)
 #define CAN2SR C2SR
 #define C2SR_OFFSET 0x1C
 #define CAN2SR_OFFSET C2SR_OFFSET
@@ -1667,7 +1667,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2SR_BS3_BIT 23
 #define CAN2SR_BS3_BIT C2SR_BS3_BIT
 
-#define C2RFS (*(volatile unsigned long *)0x40048020)
+#define C2RFS (*(volatile unsigned long *)0xE0048020)
 #define CAN2RFS C2RFS
 #define C2RFS_OFFSET 0x20
 #define CAN2RFS_OFFSET C2RFS_OFFSET
@@ -1698,7 +1698,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2RFS_FF_BIT 31
 #define CAN2RFS_FF_BIT C2RFS_FF_BIT
 
-#define C2RID (*(volatile unsigned long *)0x40048024)
+#define C2RID (*(volatile unsigned long *)0xE0048024)
 #define CAN2RID C2RID
 #define C2RID_OFFSET 0x24
 #define CAN2RID_OFFSET C2RID_OFFSET
@@ -1707,7 +1707,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2RID_ID_BIT 0
 #define CAN2RID_ID_BIT C2RID_ID_BIT
 
-#define C2RDA (*(volatile unsigned long *)0x40048028)
+#define C2RDA (*(volatile unsigned long *)0xE0048028)
 #define CAN2RDA C2RDA
 #define C2RDA_OFFSET 0x28
 #define CAN2RDA_OFFSET C2RDA_OFFSET
@@ -1728,7 +1728,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2RDA_Data_4_BIT 24
 #define CAN2RDA_Data_4_BIT C2RDA_Data_4_BIT
 
-#define C2RDB (*(volatile unsigned long *)0x4004802C)
+#define C2RDB (*(volatile unsigned long *)0xE004802C)
 #define CAN2RDB C2RDB
 #define C2RDB_OFFSET 0x2C
 #define CAN2RDB_OFFSET C2RDB_OFFSET
@@ -1749,7 +1749,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2RDB_Data_8_BIT 24
 #define CAN2RDB_Data_8_BIT C2RDB_Data_8_BIT
 
-#define C2TFI1 (*(volatile unsigned long *)0x40048030)
+#define C2TFI1 (*(volatile unsigned long *)0xE0048030)
 #define CAN2TFI1 C2TFI1
 #define C2TFI1_OFFSET 0x30
 #define CAN2TFI1_OFFSET C2TFI1_OFFSET
@@ -1774,7 +1774,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2TFI1_FF_BIT 31
 #define CAN2TFI1_FF_BIT C2TFI1_FF_BIT
 
-#define C2TID1 (*(volatile unsigned long *)0x40048034)
+#define C2TID1 (*(volatile unsigned long *)0xE0048034)
 #define CAN2TID1 C2TID1
 #define C2TID1_OFFSET 0x34
 #define CAN2TID1_OFFSET C2TID1_OFFSET
@@ -1783,7 +1783,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2TID1_ID_BIT 0
 #define CAN2TID1_ID_BIT C2TID1_ID_BIT
 
-#define C2TDA1 (*(volatile unsigned long *)0x40048038)
+#define C2TDA1 (*(volatile unsigned long *)0xE0048038)
 #define CAN2TDA1 C2TDA1
 #define C2TDA1_OFFSET 0x38
 #define CAN2TDA1_OFFSET C2TDA1_OFFSET
@@ -1804,7 +1804,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2TDA1_Data_4_BIT 24
 #define CAN2TDA1_Data_4_BIT C2TDA1_Data_4_BIT
 
-#define C2TDB1 (*(volatile unsigned long *)0x4004803C)
+#define C2TDB1 (*(volatile unsigned long *)0xE004803C)
 #define CAN2TDB1 C2TDB1
 #define C2TDB1_OFFSET 0x3C
 #define CAN2TDB1_OFFSET C2TDB1_OFFSET
@@ -1825,7 +1825,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2TDB1_Data_8_BIT 24
 #define CAN2TDB1_Data_8_BIT C2TDB1_Data_8_BIT
 
-#define C2TFI2 (*(volatile unsigned long *)0x40048040)
+#define C2TFI2 (*(volatile unsigned long *)0xE0048040)
 #define CAN2TFI2 C2TFI2
 #define C2TFI2_OFFSET 0x40
 #define CAN2TFI2_OFFSET C2TFI2_OFFSET
@@ -1850,7 +1850,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2TFI2_FF_BIT 31
 #define CAN2TFI2_FF_BIT C2TFI2_FF_BIT
 
-#define C2TID2 (*(volatile unsigned long *)0x40048044)
+#define C2TID2 (*(volatile unsigned long *)0xE0048044)
 #define CAN2TID2 C2TID2
 #define C2TID2_OFFSET 0x44
 #define CAN2TID2_OFFSET C2TID2_OFFSET
@@ -1859,7 +1859,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2TID2_ID_BIT 0
 #define CAN2TID2_ID_BIT C2TID2_ID_BIT
 
-#define C2TDA2 (*(volatile unsigned long *)0x40048048)
+#define C2TDA2 (*(volatile unsigned long *)0xE0048048)
 #define CAN2TDA2 C2TDA2
 #define C2TDA2_OFFSET 0x48
 #define CAN2TDA2_OFFSET C2TDA2_OFFSET
@@ -1880,7 +1880,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2TDA2_Data_4_BIT 24
 #define CAN2TDA2_Data_4_BIT C2TDA2_Data_4_BIT
 
-#define C2TDB2 (*(volatile unsigned long *)0x4004804C)
+#define C2TDB2 (*(volatile unsigned long *)0xE004804C)
 #define CAN2TDB2 C2TDB2
 #define C2TDB2_OFFSET 0x4C
 #define CAN2TDB2_OFFSET C2TDB2_OFFSET
@@ -1901,7 +1901,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2TDB2_Data_8_BIT 24
 #define CAN2TDB2_Data_8_BIT C2TDB2_Data_8_BIT
 
-#define C2TFI3 (*(volatile unsigned long *)0x40048050)
+#define C2TFI3 (*(volatile unsigned long *)0xE0048050)
 #define CAN2TFI3 C2TFI3
 #define C2TFI3_OFFSET 0x50
 #define CAN2TFI3_OFFSET C2TFI3_OFFSET
@@ -1926,7 +1926,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2TFI3_FF_BIT 31
 #define CAN2TFI3_FF_BIT C2TFI3_FF_BIT
 
-#define C2TID3 (*(volatile unsigned long *)0x40048054)
+#define C2TID3 (*(volatile unsigned long *)0xE0048054)
 #define CAN2TID3 C2TID3
 #define C2TID3_OFFSET 0x54
 #define CAN2TID3_OFFSET C2TID3_OFFSET
@@ -1935,7 +1935,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2TID3_ID_BIT 0
 #define CAN2TID3_ID_BIT C2TID3_ID_BIT
 
-#define C2TDA3 (*(volatile unsigned long *)0x40048058)
+#define C2TDA3 (*(volatile unsigned long *)0xE0048058)
 #define CAN2TDA3 C2TDA3
 #define C2TDA3_OFFSET 0x58
 #define CAN2TDA3_OFFSET C2TDA3_OFFSET
@@ -1956,7 +1956,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2TDA3_Data_4_BIT 24
 #define CAN2TDA3_Data_4_BIT C2TDA3_Data_4_BIT
 
-#define C2TDB3 (*(volatile unsigned long *)0x4004805C)
+#define C2TDB3 (*(volatile unsigned long *)0xE004805C)
 #define CAN2TDB3 C2TDB3
 #define C2TDB3_OFFSET 0x5C
 #define CAN2TDB3_OFFSET C2TDB3_OFFSET
@@ -2414,8 +2414,8 @@ TinyCLR_Result LPC24_Can_Acquire(const TinyCLR_Can_Provider* self) {
         return TinyCLR_Result::SharingViolation;
 
     // set pin as analog
-    LPC24_Gpio_ConfigurePin(g_LPC24_Can_Tx_Pins[channel].number, LPC24_Gpio_Direction::Input, g_LPC24_Can_Tx_Pins[channel].pinFunction, LPC24_Gpio_ResistorMode::Inactive, LPC24_Gpio_Hysteresis::Disable, LPC24_Gpio_InputPolarity::NotInverted, LPC24_Gpio_SlewRate::StandardMode, LPC24_Gpio_OutputType::PushPull);
-    LPC24_Gpio_ConfigurePin(g_LPC24_Can_Rx_Pins[channel].number, LPC24_Gpio_Direction::Input, g_LPC24_Can_Rx_Pins[channel].pinFunction, LPC24_Gpio_ResistorMode::Inactive, LPC24_Gpio_Hysteresis::Disable, LPC24_Gpio_InputPolarity::NotInverted, LPC24_Gpio_SlewRate::StandardMode, LPC24_Gpio_OutputType::PushPull);
+    LPC24_Gpio_ConfigurePin(g_LPC24_Can_Tx_Pins[channel].number, LPC24_Gpio_Direction::Input, g_LPC24_Can_Tx_Pins[channel].pinFunction, LPC24_Gpio_PinMode::Inactive);
+    LPC24_Gpio_ConfigurePin(g_LPC24_Can_Rx_Pins[channel].number, LPC24_Gpio_Direction::Input, g_LPC24_Can_Rx_Pins[channel].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
     canController[channel].can_rx_count = 0;
     canController[channel].can_rx_in = 0;
@@ -2428,10 +2428,10 @@ TinyCLR_Result LPC24_Can_Acquire(const TinyCLR_Can_Provider* self) {
     canData[channel].groupFiltersSize = 0;
 
     if (channel == 0)
-        LPC_SC->PCONP |= (1 << 13);    // Enable clock to the peripheral
+        LPC24XX::SYSCON().PCONP |= (1 << 13);    // Enable clock to the peripheral
 
     if (channel == 1)
-        LPC_SC->PCONP |= (1 << 14);    // Enable clock to the peripheral
+        LPC24XX::SYSCON().PCONP |= (1 << 14);    // Enable clock to the peripheral
 
     CAN_SetACCF(ACCF_BYPASS);
 
@@ -2583,7 +2583,7 @@ TinyCLR_Result LPC24_Can_ReadMessage(const TinyCLR_Can_Provider* self, uint32_t&
 TinyCLR_Result LPC24_Can_SetTimings(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t brp, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
     int32_t channel = self->Index;
 
-    LPC24xx_SYSCON &SYSCON = *(LPC24xx_SYSCON *)(size_t)(LPC24xx_SYSCON::c_SYSCON_Base);
+    LPC24XX_SYSCON &SYSCON = *(LPC24XX_SYSCON *)(size_t)(LPC24XX_SYSCON::c_SYSCON_Base);
 
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
@@ -2622,7 +2622,7 @@ TinyCLR_Result LPC24_Can_SetTimings(const TinyCLR_Can_Provider* self, int32_t pr
 
     }
 
-    LPC24_Interrupt_Activate(CAN_IRQn, (uint32_t*)&LPC24_Can_RxInterruptHandler, 0);
+    LPC24_Interrupt_Activate(LPC24XX_VIC::c_IRQ_INDEX_CAN, (uint32_t*)&LPC24_Can_RxInterruptHandler, 0);
 
     return TinyCLR_Result::Success;
 }
