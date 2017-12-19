@@ -2355,8 +2355,6 @@ void CAN_ISR_Rx(int32_t channel) {
 }
 void LPC17_Can_RxInterruptHandler(void *param) {
     uint32_t status = CANRxSR;
-    uint32_t c1 = CAN1ICR;
-    uint32_t c2 = CAN2ICR;
 
     int32_t channel;
 
@@ -2366,6 +2364,8 @@ void LPC17_Can_RxInterruptHandler(void *param) {
 
     if (status & (1 << 8)) {
         channel = 0;
+
+        uint32_t c1 = CAN1ICR;
 
         CAN_ISR_Rx(channel);
 
@@ -2383,6 +2383,8 @@ void LPC17_Can_RxInterruptHandler(void *param) {
     }
     if (status & (1 << 9)) {
         channel = 1;
+
+        uint32_t c2 = CAN2ICR;
 
         CAN_ISR_Rx(channel);
 
@@ -2425,7 +2427,13 @@ TinyCLR_Result LPC17_Can_Acquire(const TinyCLR_Can_Provider* self) {
     canData[channel].matchFiltersSize = 0;
     canData[channel].groupFiltersSize = 0;
 
-    LPC_SC->PCONP |= (1 << 13);    // Enable clock to the peripheral
+    if (channel == 0)
+        LPC_SC->PCONP |= (1 << 13);    // Enable clock to the peripheral
+
+    if (channel == 1)
+        LPC_SC->PCONP |= (1 << 14);    // Enable clock to the peripheral
+
+    CAN_SetACCF(ACCF_BYPASS);
 
     return TinyCLR_Result::Success;
 }
@@ -2597,6 +2605,7 @@ TinyCLR_Result LPC17_Can_SetTimings(const TinyCLR_Can_Provider* self, int32_t pr
         C1BTR = canController[channel].baudrate;
 
         C1MOD = 0x4;    // CAN in normal operation mode
+
         C1IER = 0x01 | (1 << 7) | (1 << 3) | (1 << 5);    // Enable receive interrupts
     }
     else {
