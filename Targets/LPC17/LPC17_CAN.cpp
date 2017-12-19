@@ -22,7 +22,7 @@
 
 #ifdef INCLUDE_CAN
 
-#define CAN_MESSAGES_MAX 128
+#define LPC17_CAN_RX_BUFFER_DEFAULT_SIZE 128
 
 #define CAN_TRANSFER_TIMEOUT 0xFFFF
 
@@ -2421,7 +2421,7 @@ TinyCLR_Result LPC17_Can_Acquire(const TinyCLR_Can_Provider* self) {
     canController[channel].can_rx_in = 0;
     canController[channel].can_rx_out = 0;
     canController[channel].baudrate = 0;
-    canController[channel].can_max_messages_receiving = CAN_MESSAGES_MAX;
+    canController[channel].can_max_messages_receiving = LPC17_CAN_RX_BUFFER_DEFAULT_SIZE;
     canController[channel].provider = self;
 
     canData[channel].matchFiltersSize = 0;
@@ -2782,7 +2782,7 @@ TinyCLR_Result LPC17_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, siz
         return TinyCLR_Result::Success;;
     }
     else {
-        canController[channel].can_max_messages_receiving = CAN_MESSAGES_MAX;
+        canController[channel].can_max_messages_receiving = LPC17_CAN_RX_BUFFER_DEFAULT_SIZE;
         return TinyCLR_Result::ArgumentInvalid;;
     }
 }
