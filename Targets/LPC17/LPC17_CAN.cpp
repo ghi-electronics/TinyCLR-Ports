@@ -2477,10 +2477,22 @@ TinyCLR_Result LPC17_Can_Reset(const TinyCLR_Can_Provider* self) {
     canController[channel].can_rx_out = 0;
 
     // Reset CAN
-    if (channel == 0)
-        C1MOD = 1;
-    else
-        C2MOD = 1;
+    if (channel == 0) {
+        C1MOD = 1;    // Reset CAN
+        C1IER = 0;    // Disable Receive Interrupt
+        C1GSR = 0;    // Reset error counter when CANxMOD is in reset
+        C1BTR = canController[channel].baudrate;
+        C1MOD = 0x4;    // CAN in normal operation mode
+        C1IER = 0x01 | (1 << 7) | (1 << 3) | (1 << 5);    // Enable receive interrupts
+    }
+    else {
+        C2MOD = 1;    // Reset CAN
+        C2IER = 0;    // Disable Receive Interrupt
+        C2GSR = 0;    // Reset error counter when CANxMOD is in reset
+        C2BTR = canController[channel].baudrate;
+        C2MOD = 0x0;    // CAN in normal operation mode
+        C2IER = 0x01 | (1 << 7) | (1 << 3) | (1 << 5);    // Enable receive interrupts
+    }
 
     return TinyCLR_Result::Success;
 }
@@ -2601,11 +2613,8 @@ TinyCLR_Result LPC17_Can_SetTimings(const TinyCLR_Can_Provider* self, int32_t pr
         C1MOD = 1;    // Reset CAN
         C1IER = 0;    // Disable Receive Interrupt
         C1GSR = 0;    // Reset error counter when CANxMOD is in reset
-
         C1BTR = canController[channel].baudrate;
-
         C1MOD = 0x4;    // CAN in normal operation mode
-
         C1IER = 0x01 | (1 << 7) | (1 << 3) | (1 << 5);    // Enable receive interrupts
     }
     else {
@@ -2614,12 +2623,9 @@ TinyCLR_Result LPC17_Can_SetTimings(const TinyCLR_Can_Provider* self, int32_t pr
         C2MOD = 1;    // Reset CAN
         C2IER = 0;    // Disable Receive Interrupt
         C2GSR = 0;    // Reset error counter when CANxMOD is in reset
-
         C2BTR = canController[channel].baudrate;
-
         C2MOD = 0x0;    // CAN in normal operation mode
         C2IER = 0x01 | (1 << 3) | (1 << 5) | (1 << 7);        // Enable receive interrupts
-
     }
 
     LPC17_Interrupt_Activate(CAN_IRQn, (uint32_t*)&LPC17_Can_RxInterruptHandler, 0);
