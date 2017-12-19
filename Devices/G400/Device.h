@@ -92,4 +92,8 @@
 #define AT91_DISPLAY_BACKLIGHT_PIN { PIN_NONE, PS_NONE }
 #define AT91_DISPLAY_ENABLE_PIN { PIN(C, 29), PS(A) }
 
+#define INCLUDE_CAN
+#define AT91_CAN_TX_PINS { { PIN(A, 10), PS(B) }, { PIN(A, 6), PS(B) } }
+#define AT91_CAN_RX_PINS { { PIN(A,  9), PS(B) }, { PIN(A, 5), PS(B) } }
+
 #include <AT91.h>
