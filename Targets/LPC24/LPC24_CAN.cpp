@@ -2769,7 +2769,7 @@ TinyCLR_Result LPC24_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, si
 }
 
 TinyCLR_Result LPC24_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t& sourceClock) {
-    sourceClock = LPC24_AHB_CLOCK_HZ / 2;
+    sourceClock = LPC24_AHB_CLOCK_HZ;
 
     return TinyCLR_Result::Success;;
 }
