@@ -60,9 +60,6 @@ typedef struct {
 
 /** CAN Driver Transfer Parameters */
 typedef struct _CandTransfer {
-    //void* fCallback;        /**< Callback function when transfer finished */
-    //void* pArg;             /**< Callback arguments */
-
     uint32_t dwMsgID;       /**< Message ID _MIDx */
     uint32_t msgData[2];    /**< Message data */
     uint8_t bMailbox;       /**< Mailbox used */
@@ -74,9 +71,6 @@ typedef struct _CandTransfer {
 // CAN Driver instance struct.
 typedef struct _Cand {
     Can* pHw;                   /**< Pointer to HW register base */
-
-    //CandCallback fCallback;     /**< Pointer to Callback function */
-    //void*        pArg;          /**< Pointer to Callback argument */
 
     sCandTransfer *pMbs[CAN_NUM_MAILBOX];   /**< Pointer list to mailboxes */
 
@@ -1001,7 +995,7 @@ uint8_t CAND_IsTransferDone(sCandTransfer *pXfr) {
 
 
 
-struct AT91_CanData_T {
+struct AT91_Can_Filter {
     uint32_t *matchFilters;
     uint32_t matchFiltersSize;
 
@@ -1009,7 +1003,7 @@ struct AT91_CanData_T {
     uint32_t *upperBoundFilters;
     uint32_t groupFiltersSize;
 
-}canData[2];
+};
 
 
 typedef struct {
@@ -1049,6 +1043,8 @@ struct AT91_Can_Controller {
     sCandTransfer can_tx;
     sCandTransfer can_rx;
 
+    AT91_Can_Filter canDataFilter;
+
 };
 
 static const AT91_Gpio_Pin g_AT91_Can_Tx_Pins[] = AT91_CAN_TX_PINS;
@@ -1068,10 +1064,10 @@ void CAN_DisableExplicitFilters(int32_t channel) {
 
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-    if (canData[channel].matchFiltersSize && canData[channel].matchFilters != nullptr) {
-        memoryProvider->Free(memoryProvider, canData[channel].matchFilters);
+    if (canController[channel].canDataFilter.matchFiltersSize && canController[channel].canDataFilter.matchFilters != nullptr) {
+        memoryProvider->Free(memoryProvider, canController[channel].canDataFilter.matchFilters);
 
-        canData[channel].matchFiltersSize = 0;
+        canController[channel].canDataFilter.matchFiltersSize = 0;
     }
 }
 
@@ -1080,14 +1076,14 @@ void CAN_DisableGroupFilters(int32_t channel) {
 
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-    if (canData[channel].groupFiltersSize) {
-        if (canData[channel].lowerBoundFilters != nullptr)
-            memoryProvider->Free(memoryProvider, canData[channel].lowerBoundFilters);
+    if (canController[channel].canDataFilter.groupFiltersSize) {
+        if (canController[channel].canDataFilter.lowerBoundFilters != nullptr)
+            memoryProvider->Free(memoryProvider, canController[channel].canDataFilter.lowerBoundFilters);
 
-        if (canData[channel].upperBoundFilters != nullptr)
-            memoryProvider->Free(memoryProvider, canData[channel].upperBoundFilters);
+        if (canController[channel].canDataFilter.upperBoundFilters != nullptr)
+            memoryProvider->Free(memoryProvider, canController[channel].canDataFilter.upperBoundFilters);
 
-        canData[channel].groupFiltersSize = 0;
+        canController[channel].canDataFilter.groupFiltersSize = 0;
     }
 }
 
@@ -1260,16 +1256,16 @@ void CopyMessageFromMailBoxToBuffer(uint8_t channel, uint32_t dwMsr) {
     }
 
     // filter
-    if (canData[channel].groupFiltersSize || canData[channel].matchFiltersSize) {
+    if (canController[channel].canDataFilter.groupFiltersSize || canController[channel].canDataFilter.matchFiltersSize) {
         //Added filter for AT91_CAN0
-        if (canData[channel].groupFiltersSize || canData[channel].matchFiltersSize) {
-            if (canData[channel].groupFiltersSize) {
-                if (BinarySearch2(canData[channel].lowerBoundFilters, canData[channel].upperBoundFilters, 0, canData[channel].groupFiltersSize - 1, msgid) >= 0)
+        if (canController[channel].canDataFilter.groupFiltersSize || canController[channel].canDataFilter.matchFiltersSize) {
+            if (canController[channel].canDataFilter.groupFiltersSize) {
+                if (BinarySearch2(canController[channel].canDataFilter.lowerBoundFilters, canController[channel].canDataFilter.upperBoundFilters, 0, canController[channel].canDataFilter.groupFiltersSize - 1, msgid) >= 0)
                     passed = 1;
             }
 
-            if (!passed && canData[channel].matchFiltersSize) {
-                if (BinarySearch(canData[channel].matchFilters, 0, canData[channel].matchFiltersSize - 1, msgid) >= 0)
+            if (!passed && canController[channel].canDataFilter.matchFiltersSize) {
+                if (BinarySearch(canController[channel].canDataFilter.matchFilters, 0, canController[channel].canDataFilter.matchFiltersSize - 1, msgid) >= 0)
                     passed = 1;
             }
 
@@ -1454,8 +1450,8 @@ TinyCLR_Result AT91_Can_Acquire(const TinyCLR_Can_Provider* self) {
     canController[channel].can_max_messages_receiving = AT91_CAN_RX_BUFFER_DEFAULT_SIZE;
     canController[channel].provider = self;
 
-    canData[channel].matchFiltersSize = 0;
-    canData[channel].groupFiltersSize = 0;
+    canController[channel].canDataFilter.matchFiltersSize = 0;
+    canController[channel].canDataFilter.groupFiltersSize = 0;
 
     canController[channel].cand.pHw = (channel == 0 ? AT91_CAN0 : AT91_CAN1);
     canController[channel].cand.bID = (channel == 0 ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
@@ -1550,7 +1546,7 @@ TinyCLR_Result AT91_Can_Reset(const TinyCLR_Can_Provider* self) {
 
 TinyCLR_Result AT91_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool extendedId, bool remoteTransmissionRequest, uint8_t* data, int32_t length) {
 
-    uint32_t *canData = (uint32_t*)data;
+    uint32_t *data32 = (uint32_t*)data;
 
     int32_t channel = self->Index;
 
@@ -1596,8 +1592,8 @@ TinyCLR_Result AT91_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t 
     }
     else {
         canController[channel].can_tx.bMsgLen = length;
-        canController[channel].can_tx.msgData[0] = canData[0];
-        canController[channel].can_tx.msgData[1] = canData[1];
+        canController[channel].can_tx.msgData[0] = data32[0];
+        canController[channel].can_tx.msgData[1] = data32[1];
         CAND_Transfer(pCand, &canController[channel].can_tx);
     }
 
@@ -1617,7 +1613,7 @@ TinyCLR_Result AT91_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t 
 TinyCLR_Result AT91_Can_ReadMessage(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& extendedId, bool& remoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, int32_t& length) {
     AT91_Can_Message *can_msg;
 
-    uint32_t *canData = (uint32_t*)data;
+    uint32_t *data32 = (uint32_t*)data;
 
     int32_t channel = self->Index;
 
@@ -1636,8 +1632,8 @@ TinyCLR_Result AT91_Can_ReadMessage(const TinyCLR_Can_Provider* self, uint32_t& 
         extendedId = can_msg->extendedId;
         remoteTransmissionRequest = can_msg->remoteTransmissionRequest;
 
-        canData[0] = can_msg->dataA;
-        canData[1] = can_msg->dataB;
+        data32[0] = can_msg->dataA;
+        data32[1] = can_msg->dataB;
 
         length = can_msg->length;
 
@@ -1739,8 +1735,8 @@ TinyCLR_Result AT91_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, uin
 
         CAN_DisableExplicitFilters(channel);
 
-        canData[channel].matchFiltersSize = length;
-        canData[channel].matchFilters = _matchFilters;
+        canController[channel].canDataFilter.matchFiltersSize = length;
+        canController[channel].canDataFilter.matchFilters = _matchFilters;
     }
 
     return TinyCLR_Result::Success;
@@ -1782,9 +1778,9 @@ TinyCLR_Result AT91_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8_
 
         CAN_DisableGroupFilters(channel);
 
-        canData[channel].groupFiltersSize = length;
-        canData[channel].lowerBoundFilters = _lowerBoundFilters;
-        canData[channel].upperBoundFilters = _upperBoundFilters;
+        canController[channel].canDataFilter.groupFiltersSize = length;
+        canController[channel].canDataFilter.lowerBoundFilters = _lowerBoundFilters;
+        canController[channel].canDataFilter.upperBoundFilters = _upperBoundFilters;
     }
 
     return TinyCLR_Result::Success;;
