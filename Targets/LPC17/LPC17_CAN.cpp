@@ -1977,7 +1977,7 @@ explicit EXT IDs, and group EXT IDs. */
 #define C2TDB3_Data_8_BIT 24
 #define CAN2TDB3_Data_8_BIT C2TDB3_Data_8_BIT
 
-struct LPC17_CanData_T {
+struct LPC17_Can_Filter {
     uint32_t *matchFilters;
     uint32_t matchFiltersSize;
 
@@ -1985,7 +1985,7 @@ struct LPC17_CanData_T {
     uint32_t *upperBoundFilters;
     uint32_t groupFiltersSize;
 
-}canData[2];
+};
 
 
 typedef struct {
@@ -2020,6 +2020,8 @@ struct LPC17_Can_Controller {
 
     uint32_t baudrate;
 
+    LPC17_Can_Filter canDataFilter;
+
 };
 
 static const LPC17_Gpio_Pin g_LPC17_Can_Tx_Pins[] = LPC17_CAN_TX_PINS;
@@ -2039,10 +2041,10 @@ void CAN_DisableExplicitFilters(int32_t channel) {
 
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-    if (canData[channel].matchFiltersSize && canData[channel].matchFilters != nullptr) {
-        memoryProvider->Free(memoryProvider, canData[channel].matchFilters);
+    if (canController[channel].canDataFilter.matchFiltersSize && canController[channel].canDataFilter.matchFilters != nullptr) {
+        memoryProvider->Free(memoryProvider, canController[channel].canDataFilter.matchFilters);
 
-        canData[channel].matchFiltersSize = 0;
+        canController[channel].canDataFilter.matchFiltersSize = 0;
     }
 }
 
@@ -2051,14 +2053,14 @@ void CAN_DisableGroupFilters(int32_t channel) {
 
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-    if (canData[channel].groupFiltersSize) {
-        if (canData[channel].lowerBoundFilters != nullptr)
-            memoryProvider->Free(memoryProvider, canData[channel].lowerBoundFilters);
+    if (canController[channel].canDataFilter.groupFiltersSize) {
+        if (canController[channel].canDataFilter.lowerBoundFilters != nullptr)
+            memoryProvider->Free(memoryProvider, canController[channel].canDataFilter.lowerBoundFilters);
 
-        if (canData[channel].upperBoundFilters != nullptr)
-            memoryProvider->Free(memoryProvider, canData[channel].upperBoundFilters);
+        if (canController[channel].canDataFilter.upperBoundFilters != nullptr)
+            memoryProvider->Free(memoryProvider, canController[channel].canDataFilter.upperBoundFilters);
 
-        canData[channel].groupFiltersSize = 0;
+        canController[channel].canDataFilter.groupFiltersSize = 0;
     }
 }
 
@@ -2264,18 +2266,18 @@ uint32_t LPC17_Can_GetLocalTime() {
 ******************************************************************************/
 void CAN_ISR_Rx(int32_t channel) {
     // filter
-    if (canData[channel].groupFiltersSize || canData[channel].matchFiltersSize) {
+    if (canController[channel].canDataFilter.groupFiltersSize || canController[channel].canDataFilter.matchFiltersSize) {
         uint32_t ID = channel == 0 ? C1RID : C2RID;
 
         char passed = 0;
 
-        if (canData[channel].groupFiltersSize) {
-            if (BinarySearch2(canData[channel].lowerBoundFilters, canData[channel].upperBoundFilters, 0, canData[channel].groupFiltersSize - 1, ID) >= 0)
+        if (canController[channel].canDataFilter.groupFiltersSize) {
+            if (BinarySearch2(canController[channel].canDataFilter.lowerBoundFilters, canController[channel].canDataFilter.upperBoundFilters, 0, canController[channel].canDataFilter.groupFiltersSize - 1, ID) >= 0)
                 passed = 1;
         }
 
-        if (!passed && canData[channel].matchFiltersSize) {
-            if (BinarySearch(canData[channel].matchFilters, 0, canData[channel].matchFiltersSize - 1, ID) >= 0)
+        if (!passed && canController[channel].canDataFilter.matchFiltersSize) {
+            if (BinarySearch(canController[channel].canDataFilter.matchFilters, 0, canController[channel].canDataFilter.matchFiltersSize - 1, ID) >= 0)
                 passed = 1;
         }
 
@@ -2424,8 +2426,8 @@ TinyCLR_Result LPC17_Can_Acquire(const TinyCLR_Can_Provider* self) {
     canController[channel].can_max_messages_receiving = LPC17_CAN_RX_BUFFER_DEFAULT_SIZE;
     canController[channel].provider = self;
 
-    canData[channel].matchFiltersSize = 0;
-    canData[channel].groupFiltersSize = 0;
+    canController[channel].canDataFilter.matchFiltersSize = 0;
+    canController[channel].canDataFilter.groupFiltersSize = 0;
 
     if (channel == 0)
         LPC_SC->PCONP |= (1 << 13);    // Enable clock to the peripheral
@@ -2499,7 +2501,7 @@ TinyCLR_Result LPC17_Can_Reset(const TinyCLR_Can_Provider* self) {
 
 TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool extendedId, bool remoteTransmissionRequest, uint8_t* data, int32_t length) {
 
-    uint32_t *canData = (uint32_t*)data;
+    uint32_t *data32 = (uint32_t*)data;
 
     uint32_t flags = 0;
     uint32_t status;
@@ -2532,8 +2534,8 @@ TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t
         if (status & 0x00000004) {
             C1TFI1 = flags & 0xC00F0000;
             C1TID1 = arbitrationId;
-            C1TDA1 = canData[0];
-            C1TDB1 = canData[1];
+            C1TDA1 = data32[0];
+            C1TDB1 = data32[1];
 
             C1CMR = 0x21;
 
@@ -2546,8 +2548,8 @@ TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t
         if (status & 0x00000004) {
             C2TFI1 = flags & 0xC00F0000;
             C2TID1 = arbitrationId;
-            C2TDA1 = canData[0];
-            C2TDB1 = canData[1];
+            C2TDA1 = data32[0];
+            C2TDB1 = data32[1];
 
             C2CMR = 0x21;
 
@@ -2561,7 +2563,7 @@ TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t
 TinyCLR_Result LPC17_Can_ReadMessage(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& extendedId, bool& remoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, int32_t& length) {
     LPC17_Can_Message *can_msg;
 
-    uint32_t *canData = (uint32_t*)data;
+    uint32_t *data32 = (uint32_t*)data;
 
     int32_t channel = self->Index;
 
@@ -2580,8 +2582,8 @@ TinyCLR_Result LPC17_Can_ReadMessage(const TinyCLR_Can_Provider* self, uint32_t&
         extendedId = can_msg->extendedId;
         remoteTransmissionRequest = can_msg->remoteTransmissionRequest;
 
-        canData[0] = can_msg->dataA;
-        canData[1] = can_msg->dataB;
+        data32[0] = can_msg->dataA;
+        data32[1] = can_msg->dataB;
 
         length = can_msg->length;
 
@@ -2679,8 +2681,8 @@ TinyCLR_Result LPC17_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, ui
 
         CAN_DisableExplicitFilters(channel);
 
-        canData[channel].matchFiltersSize = length;
-        canData[channel].matchFilters = _matchFilters;
+        canController[channel].canDataFilter.matchFiltersSize = length;
+        canController[channel].canDataFilter.matchFilters = _matchFilters;
     }
 
     return TinyCLR_Result::Success;
@@ -2722,9 +2724,9 @@ TinyCLR_Result LPC17_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8
 
         CAN_DisableGroupFilters(channel);
 
-        canData[channel].groupFiltersSize = length;
-        canData[channel].lowerBoundFilters = _lowerBoundFilters;
-        canData[channel].upperBoundFilters = _upperBoundFilters;
+        canController[channel].canDataFilter.groupFiltersSize = length;
+        canController[channel].canDataFilter.lowerBoundFilters = _lowerBoundFilters;
+        canController[channel].canDataFilter.upperBoundFilters = _upperBoundFilters;
     }
 
     return TinyCLR_Result::Success;;
