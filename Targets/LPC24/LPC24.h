@@ -148,6 +148,8 @@ struct LPC24_Gpio_PinConfiguration {
 #define INPUT(pinMode) { LPC24_Gpio_Direction::Input, LPC24_Gpio_PinMode::pinMode, LPC24_Gpio_PinFunction::PinFunction0, true }
 #define DEFAULT() { LPC24_Gpio_Direction::Input, LPC24_Gpio_PinMode::Inactive, LPC24_Gpio_PinFunction::PinFunction0, false }
 
+extern const TinyCLR_Api_Provider* apiProvider;
+
 void LPC24_Gpio_Reset();
 const TinyCLR_Api_Info* LPC24_Gpio_GetApi();
 TinyCLR_Result LPC24_Gpio_Acquire(const TinyCLR_Gpio_Provider* self);
@@ -172,7 +174,6 @@ bool LPC24_Gpio_ReadPin(int32_t pin);
 void LPC24_Gpio_WritePin(int32_t pin, bool value);
 bool LPC24_Gpio_ConfigurePin(int32_t pin, LPC24_Gpio_Direction pinDir, LPC24_Gpio_PinFunction alternateFunction, LPC24_Gpio_PinMode pullResistor);
 
-
 // ADC
 const TinyCLR_Api_Info* LPC24_Adc_GetApi();
 void LPC24_Adc_Reset();
@@ -191,6 +192,28 @@ int32_t LPC24_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self);
 TinyCLR_Adc_ChannelMode LPC24_Adc_GetChannelMode(const TinyCLR_Adc_Provider* self);
 TinyCLR_Result LPC24_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
 bool LPC24_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
+
+////////////////////////////////////////////////////////////////////////////////
+//CAN
+////////////////////////////////////////////////////////////////////////////////
+const TinyCLR_Api_Info* LPC24_Can_GetApi();
+TinyCLR_Result LPC24_Can_Acquire(const TinyCLR_Can_Provider* self);
+TinyCLR_Result LPC24_Can_Release(const TinyCLR_Can_Provider* self);
+TinyCLR_Result LPC24_Can_Reset(const TinyCLR_Can_Provider* self);
+TinyCLR_Result LPC24_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool extendedId, bool remoteTransmissionRequest, uint8_t* data, int32_t length);
+TinyCLR_Result LPC24_Can_ReadMessage(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& extendedId, bool& remoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, int32_t& length);
+TinyCLR_Result LPC24_Can_SetTimings(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t brp, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling);
+TinyCLR_Result LPC24_Can_GetUnReadMessageCount(const TinyCLR_Can_Provider* self, size_t& count);
+TinyCLR_Result LPC24_Can_SetMessageReceivedHandler(const TinyCLR_Can_Provider* self, TinyCLR_Can_MessageReceivedHandler handler);
+TinyCLR_Result LPC24_Can_SetErrorReceivedHandler(const TinyCLR_Can_Provider* self, TinyCLR_Can_ErrorReceivedHandler handler);
+TinyCLR_Result LPC24_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, uint8_t* filters, int32_t length);
+TinyCLR_Result LPC24_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8_t* lowerBounds, uint8_t* upBounds, int32_t length);
+TinyCLR_Result LPC24_Can_DiscardUnreadMessages(const TinyCLR_Can_Provider* self);
+TinyCLR_Result LPC24_Can_IsSendingAllowed(const TinyCLR_Can_Provider* self, bool& allow);
+TinyCLR_Result LPC24_Can_GetReadErrorCount(const TinyCLR_Can_Provider* self, size_t& count);
+TinyCLR_Result LPC24_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, size_t& count);
+TinyCLR_Result LPC24_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t& sourceClock);
+TinyCLR_Result LPC24_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, size_t size);
 
 //DAC
 const TinyCLR_Api_Info* LPC24_Dac_GetApi();
