@@ -272,7 +272,7 @@ typedef struct {
 } STM32F4_Can_RxMessage;
 
 
-struct STM32F4_CanData_T {
+struct STM32F4_Can_Filter {
     uint32_t* matchFilters;
     uint32_t matchFiltersSize;
 
@@ -280,7 +280,7 @@ struct STM32F4_CanData_T {
     uint32_t* upperBoundFilters;
     uint32_t groupFiltersSize;
 
-}canData[2];
+};
 
 
 typedef struct {
@@ -320,6 +320,8 @@ struct STM32F4_Can_Controller {
     int32_t can_max_messages_receiving;
 
     uint32_t baudrate;
+
+    STM32F4_Can_Filter canDataFilter;
 
 };
 
@@ -1038,18 +1040,18 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
         canProvider[i]->Acquire = &STM32F4_Can_Acquire;
         canProvider[i]->Release = &STM32F4_Can_Release;
         canProvider[i]->Reset = &STM32F4_Can_Reset;
-        canProvider[i]->WriteMessage = &STM32F4_Can_WriteMessage;
-        canProvider[i]->ReadMessage = &STM32F4_Can_ReadMessage;
-        canProvider[i]->SetTimings = &STM32F4_Can_SetTimings;
-        canProvider[i]->GetUnReadMessageCount = &STM32F4_Can_GetUnReadMessageCount;
+        canProvider[i]->WriteMessages = &STM32F4_Can_WriteMessages;
+        canProvider[i]->ReadMessages = &STM32F4_Can_ReadMessages;
+        canProvider[i]->SetBitTimings = &STM32F4_Can_SetBitTimings;
+        canProvider[i]->GetUnreadMessageCount = &STM32F4_Can_GetUnreadMessageCount;
         canProvider[i]->SetMessageReceivedHandler = &STM32F4_Can_SetMessageReceivedHandler;
         canProvider[i]->SetErrorReceivedHandler = &STM32F4_Can_SetErrorReceivedHandler;
         canProvider[i]->SetExplicitFilters = &STM32F4_Can_SetExplicitFilters;
         canProvider[i]->SetGroupFilters = &STM32F4_Can_SetGroupFilters;
         canProvider[i]->DiscardUnreadMessages = &STM32F4_Can_DiscardUnreadMessages;
         canProvider[i]->IsSendingAllowed = &STM32F4_Can_IsSendingAllowed;
-        canProvider[i]->GetReadErrorCount = &STM32F4_Can_GetReadErrorCount;
         canProvider[i]->GetWriteErrorCount = &STM32F4_Can_GetWriteErrorCount;
+        canProvider[i]->GetReadErrorCount = &STM32F4_Can_GetReadErrorCount;
         canProvider[i]->GetSourceClock = &STM32F4_Can_GetSourceClock;
         canProvider[i]->SetReadBufferSize = &STM32F4_Can_SetReadBufferSize;
     }
@@ -1102,14 +1104,14 @@ void STM32_Can_RxInterruptHandler(int32_t channel) {
     rtrmode = (((canController[channel].rxMessage->RTR) & 0x02) != 0) ? true : false;
 
     // Filter
-    if (canData[channel].groupFiltersSize || canData[channel].matchFiltersSize) {
-        if (canData[channel].groupFiltersSize) {
-            if (BinarySearch2(canData[channel].lowerBoundFilters, canData[channel].upperBoundFilters, 0, canData[channel].groupFiltersSize - 1, msgid) >= 0)
+    if (canController[channel].canDataFilter.groupFiltersSize || canController[channel].canDataFilter.matchFiltersSize) {
+        if (canController[channel].canDataFilter.groupFiltersSize) {
+            if (BinarySearch2(canController[channel].canDataFilter.lowerBoundFilters, canController[channel].canDataFilter.upperBoundFilters, 0, canController[channel].canDataFilter.groupFiltersSize - 1, msgid) >= 0)
                 passed = 1;
         }
 
-        if (!passed && canData[channel].matchFiltersSize) {
-            if (BinarySearch(canData[channel].matchFilters, 0, canData[channel].matchFiltersSize - 1, msgid) >= 0)
+        if (!passed && canController[channel].canDataFilter.matchFiltersSize) {
+            if (BinarySearch(canController[channel].canDataFilter.matchFilters, 0, canController[channel].canDataFilter.matchFiltersSize - 1, msgid) >= 0)
                 passed = 1;
         }
 
@@ -1260,9 +1262,9 @@ TinyCLR_Result STM32F4_Can_Reset(const TinyCLR_Can_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool extendedId, bool remoteTransmissionRequest, uint8_t* data, int32_t length) {
+TinyCLR_Result STM32F4_Can_WriteMessages(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length) {
 
-    uint32_t* canData = (uint32_t*)data;
+    uint32_t* data32 = (uint32_t*)data;
 
     int32_t channel = self->Index;
 
@@ -1273,9 +1275,9 @@ TinyCLR_Result STM32F4_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32
     uint8_t txmailbox;
 
     /* Transmit Structure preparation */
-    canController[channel].txMessage->RTR = (remoteTransmissionRequest == true) ? 1 : 0;
+    canController[channel].txMessage->RTR = (isRemoteTransmissionRequest == true) ? 1 : 0;
 
-    if (extendedId) {
+    if (isExtendedId) {
         canController[channel].txMessage->IDE = CAN_Id_Extended;
         canController[channel].txMessage->ExtId = arbitrationId;
     }
@@ -1285,14 +1287,14 @@ TinyCLR_Result STM32F4_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32
     }
     canController[channel].txMessage->DLC = length & 0x0F;
 
-    canController[channel].txMessage->Data[0] = ((canData[0] >> 0) & 0xFF);
-    canController[channel].txMessage->Data[1] = ((canData[0] >> 8) & 0xFF);
-    canController[channel].txMessage->Data[2] = ((canData[0] >> 16) & 0xFF);
-    canController[channel].txMessage->Data[3] = ((canData[0] >> 24) & 0xFF);
-    canController[channel].txMessage->Data[4] = ((canData[1] >> 0) & 0xFF);
-    canController[channel].txMessage->Data[5] = ((canData[1] >> 8) & 0xFF);
-    canController[channel].txMessage->Data[6] = ((canData[1] >> 16) & 0xFF);
-    canController[channel].txMessage->Data[7] = ((canData[1] >> 24) & 0xFF);
+    canController[channel].txMessage->Data[0] = ((data32[0] >> 0) & 0xFF);
+    canController[channel].txMessage->Data[1] = ((data32[0] >> 8) & 0xFF);
+    canController[channel].txMessage->Data[2] = ((data32[0] >> 16) & 0xFF);
+    canController[channel].txMessage->Data[3] = ((data32[0] >> 24) & 0xFF);
+    canController[channel].txMessage->Data[4] = ((data32[1] >> 0) & 0xFF);
+    canController[channel].txMessage->Data[5] = ((data32[1] >> 8) & 0xFF);
+    canController[channel].txMessage->Data[6] = ((data32[1] >> 16) & 0xFF);
+    canController[channel].txMessage->Data[7] = ((data32[1] >> 24) & 0xFF);
 
     txmailbox = CAN_Transmit(CANx, canController[channel].txMessage); // No mail box is ready
     if (txmailbox != CAN_TxStatus_NoMailBox) {
@@ -1311,10 +1313,10 @@ TinyCLR_Result STM32F4_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_ReadMessage(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& extendedId, bool& remoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, int32_t& length) {
+TinyCLR_Result STM32F4_Can_ReadMessages(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length) {
     STM32F4_Can_Message *can_msg;
 
-    uint32_t* canData = (uint32_t*)data;
+    uint32_t* data32 = (uint32_t*)data;
 
     int32_t channel = self->Index;
 
@@ -1330,12 +1332,12 @@ TinyCLR_Result STM32F4_Can_ReadMessage(const TinyCLR_Can_Provider* self, uint32_
         canController[channel].can_rx_count--;
 
         arbitrationId = can_msg->MsgID;
-        extendedId = can_msg->extendedId;
-        remoteTransmissionRequest = can_msg->remoteTransmissionRequest;
+        isExtendedId = can_msg->extendedId;
+        isRemoteTransmissionRequest = can_msg->remoteTransmissionRequest;
         length = can_msg->length;
 
-        canData[0] = can_msg->DataA;
-        canData[1] = can_msg->DataB;
+        data32[0] = can_msg->DataA;
+        data32[1] = can_msg->DataB;
 
         timestamp = ((uint64_t)can_msg->TimeStampL) | ((uint64_t)can_msg->TimeStampH << 32);
     }
@@ -1344,7 +1346,7 @@ TinyCLR_Result STM32F4_Can_ReadMessage(const TinyCLR_Can_Provider* self, uint32_
 
 }
 
-TinyCLR_Result STM32F4_Can_SetTimings(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t brp, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
+TinyCLR_Result STM32F4_Can_SetBitTimings(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
     int32_t channel = self->Index;
 
     CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
@@ -1384,7 +1386,7 @@ TinyCLR_Result STM32F4_Can_SetTimings(const TinyCLR_Can_Provider* self, int32_t 
 
     RCC->APB1ENR |= ((channel == 0) ? RCC_APB1ENR_CAN1EN : (RCC_APB1ENR_CAN1EN | RCC_APB1ENR_CAN2EN));
 
-    canController[channel].baudrate = (((synchronizationJumpWidth - 1) << 24) | ((phase2 - 1) << 20) | ((phase1 - 1) << 16) | brp);
+    canController[channel].baudrate = (((synchronizationJumpWidth - 1) << 24) | ((phase2 - 1) << 20) | ((phase1 - 1) << 16) | baudratePrescaler);
 
     canController[channel].initTypeDef.CAN_TTCM = DISABLE;
     canController[channel].initTypeDef.CAN_ABOM = DISABLE;
@@ -1428,13 +1430,13 @@ TinyCLR_Result STM32F4_Can_SetTimings(const TinyCLR_Can_Provider* self, int32_t 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_GetUnReadMessageCount(const TinyCLR_Can_Provider* self, size_t& count) {
+TinyCLR_Result STM32F4_Can_GetUnreadMessageCount(const TinyCLR_Can_Provider* self, size_t& count) {
     int32_t channel = self->Index;
 
     count = canController[channel].can_rx_count;
 
-    if (count == 0)
-        return TinyCLR_Result::NoData;
+    if (!count)
+        return TinyCLR_Result::NoDataAvailable;
 
     return TinyCLR_Result::Success;
 }
@@ -1455,7 +1457,7 @@ TinyCLR_Result STM32F4_Can_SetErrorReceivedHandler(const TinyCLR_Can_Provider* s
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, uint8_t* filters, int32_t length) {
+TinyCLR_Result STM32F4_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, uint8_t* filters, size_t length) {
     uint32_t*_matchFilters;
     uint32_t*filters32 = (uint32_t*)filters;
 
@@ -1475,14 +1477,14 @@ TinyCLR_Result STM32F4_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, 
     {
         DISABLE_INTERRUPTS_SCOPED(irq);
 
-        canData[channel].matchFiltersSize = length;
-        canData[channel].matchFilters = _matchFilters;
+        canController[channel].canDataFilter.matchFiltersSize = length;
+        canController[channel].canDataFilter.matchFilters = _matchFilters;
     }
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8_t* lowerBounds, uint8_t* upperBounds, int32_t length) {
+TinyCLR_Result STM32F4_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8_t* lowerBounds, uint8_t* upperBounds, size_t length) {
     uint32_t* _lowerBoundFilters, *_upperBoundFilters;
     uint32_t* lowerBounds32 = (uint32_t *)lowerBounds;
     uint32_t* upperBounds32 = (uint32_t *)upperBounds;
@@ -1516,9 +1518,9 @@ TinyCLR_Result STM32F4_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uin
     {
         DISABLE_INTERRUPTS_SCOPED(irq);
 
-        canData[channel].groupFiltersSize = length;
-        canData[channel].lowerBoundFilters = _lowerBoundFilters;
-        canData[channel].upperBoundFilters = _upperBoundFilters;
+        canController[channel].canDataFilter.groupFiltersSize = length;
+        canController[channel].canDataFilter.lowerBoundFilters = _lowerBoundFilters;
+        canController[channel].canDataFilter.upperBoundFilters = _upperBoundFilters;
     }
 
     return TinyCLR_Result::Success;;
@@ -1534,14 +1536,14 @@ TinyCLR_Result STM32F4_Can_DiscardUnreadMessages(const TinyCLR_Can_Provider* sel
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_IsSendingAllowed(const TinyCLR_Can_Provider* self, bool& allow) {
+TinyCLR_Result STM32F4_Can_IsSendingAllowed(const TinyCLR_Can_Provider* self, bool& allowed) {
     int32_t channel = self->Index;
 
     CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
 
-    allow = false;
+    allowed = false;
 
-    if ((CANx->TSR&CAN_TSR_TME0) == CAN_TSR_TME0 || (CANx->TSR&CAN_TSR_TME1) == CAN_TSR_TME1 || (CANx->TSR&CAN_TSR_TME2) == CAN_TSR_TME2) allow = true;
+    if ((CANx->TSR&CAN_TSR_TME0) == CAN_TSR_TME0 || (CANx->TSR&CAN_TSR_TME1) == CAN_TSR_TME1 || (CANx->TSR&CAN_TSR_TME2) == CAN_TSR_TME2) allowed = true;
 
     return TinyCLR_Result::Success;;
 }
