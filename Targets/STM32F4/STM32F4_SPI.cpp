@@ -291,7 +291,7 @@ bool STM32F4_Spi_Transaction_nWrite8_nRead8(int32_t controller) {
     uint8_t out = outLen > 0 ? outBuf[0] : 0;
     uint8_t in;
 
-     while (!(spi->SR & SPI_SR_TXE)); // wait for Tx empty
+    while (!(spi->SR & SPI_SR_TXE)); // wait for Tx empty
 
     spi->DR = out; // write first word
 
@@ -307,7 +307,7 @@ bool STM32F4_Spi_Transaction_nWrite8_nRead8(int32_t controller) {
 
         in = spi->DR; // read input
 
-         while (!(spi->SR & SPI_SR_TXE)); // wait for Tx empty
+        while (!(spi->SR & SPI_SR_TXE)); // wait for Tx empty
 
         spi->DR = out; // start output
 
@@ -444,6 +444,14 @@ TinyCLR_Result STM32F4_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, i
 
     bool clockActiveState = (((int32_t)g_SpiController[controller].Mode) & 0x02) == 0 ? true : false;
     g_SpiController[controller].clockIdleState = !clockActiveState;
+
+    auto& sclk = g_STM32F4_Spi_Sclk_Pins[controller];
+
+    STM32F4_GpioInternal_ConfigurePin(sclk.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, g_SpiController[controller].clockIdleState ? STM32F4_Gpio_PullDirection::PullUp : STM32F4_Gpio_PullDirection::PullDown, sclk.alternateFunction);
+
+    auto timeProvider = (const TinyCLR_Time_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::TimeProvider);
+
+    STM32F4_Time_Delay(timeProvider, 1);
 
     if (STM32F4_GpioInternal_OpenPin(g_SpiController[controller].ChipSelectLine)) {
         // CS setup
