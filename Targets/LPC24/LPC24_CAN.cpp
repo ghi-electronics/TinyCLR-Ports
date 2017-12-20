@@ -2641,7 +2641,7 @@ TinyCLR_Result LPC24_Can_SetBitTimings(const TinyCLR_Can_Provider* self, int32_t
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Can_GetUnReadMessageCount(const TinyCLR_Can_Provider* self, size_t& count) {
+TinyCLR_Result LPC24_Can_GetUnreadMessageCount(const TinyCLR_Can_Provider* self, size_t& count) {
     int32_t channel = self->Index;
 
     count = canController[channel].can_rx_count;
