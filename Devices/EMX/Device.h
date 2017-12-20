@@ -87,4 +87,8 @@
 #define LPC24_DISPLAY_BACKLIGHT_PIN  { PIN_NONE, PF_NONE }
 #define LPC24_DISPLAY_ENABLE_PIN  { PIN(2, 4), PF(3) }
 
+#define INCLUDE_CAN
+#define LPC24_CAN_TX_PINS { { PIN(0, 1), PF(1) }, { PIN(0, 5), PF(2) } }
+#define LPC24_CAN_RX_PINS { { PIN(0, 0), PF(1) }, { PIN(0, 4), PF(2) } }
+
 #include <LPC24.h>
