@@ -47,6 +47,10 @@
 #define INCLUDE_ADC
 #define LPC17_ADC_PINS { { PIN(0, 23), PF(1) }, { PIN(0, 24), PF(1) }, { PIN(0, 25), PF(1) }, { PIN(0, 26), PF(1) }, { PIN(1, 30), PF(3) }, { PIN(1, 31) , PF(3) }, { PIN(0, 12), PF(3) }, { PIN(0, 13), PF(3) } }
 
+#define INCLUDE_CAN
+#define LPC17_CAN_TX_PINS { { PIN(0, 1), PF(1) }, { PIN(0, 5), PF(2) } }
+#define LPC17_CAN_RX_PINS { { PIN(0, 0), PF(1) }, { PIN(0, 4), PF(2) } }
+
 #define INCLUDE_DAC
 #define LPC17_DAC_PINS { { PIN(0, 26), PF(2) } }
 
@@ -95,9 +99,5 @@
 #define LPC17_DISPLAY_CONTROLLER_PINS { { PIN(1, 20), PF(7) }, { PIN(1, 21), PF(7) }, { PIN(1, 22), PF(7) }, { PIN(1, 23), PF(7) }, { PIN(1, 24), PF(7) }, { PIN(1, 25), PF(7) }, { PIN(1, 26), PF(7) }, { PIN(1, 27), PF(7) }, { PIN(1, 28), PF(7)}, { PIN(1, 29), PF(7) }, { PIN(2, 2), PF(7) }, { PIN(2, 3), PF(7) }, { PIN(2, 5), PF(7) }, { PIN(2, 6), PF(7) }, { PIN(2, 7), PF(7) }, { PIN(2, 8), PF(7) }, { PIN(2, 9), PF(7) }, { PIN(2, 12), PF(5) }, { PIN(2, 13), PF(7) } }
 #define LPC17_DISPLAY_BACKLIGHT_PIN  { PIN(1, 19), PF(7) }
 #define LPC17_DISPLAY_ENABLE_PIN  { PIN(2, 4), PF(7) }
-
-#define INCLUDE_CAN
-#define LPC17_CAN_TX_PINS { { PIN(0, 1), PF(1) }, { PIN(0, 5), PF(2) } }
-#define LPC17_CAN_RX_PINS { { PIN(0, 0), PF(1) }, { PIN(0, 4), PF(2) } }
 
 #include <LPC17.h>
