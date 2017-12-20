@@ -51,6 +51,10 @@
 
 #define INCLUDE_ADC
 
+#define INCLUDE_CAN
+#define STM32F4_CAN_TX_PINS { { PIN(B, 9), AF(9) }, { PIN(B, 6), AF(9) } }
+#define STM32F4_CAN_RX_PINS { { PIN(B, 8), AF(9) }, { PIN(B, 5), AF(9) } }
+
 #define INCLUDE_DAC
 
 #define INCLUDE_GPIO
