@@ -43,7 +43,7 @@ const char IOCON_Type[] = { 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'W', 'W', 'W', 'D
 
 
 static const LPC17_Gpio_PinConfiguration pins[] = LPC17_GPIO_PINS;
-                            
+
 #define LPC17_Gpio_PinReserved                 1
 #define LPC17_Gpio_DebounceDefaultMilisecond   20
 #define LPC17_Gpio_MaxPins                     SIZEOF_ARRAY(pins)
@@ -141,11 +141,11 @@ void LPC17_Gpio_InterruptHandler(void* param) {
 
             if (executeIsr) {
                 LPC17_Gpio_Read(&gpioProvider, state->pin, state->currentValue); // read value as soon as possible
-                
+
                 state->ISR(state->controller, state->pin, state->currentValue);
             }
         }
-    }    
+    }
 }
 
 TinyCLR_Result LPC17_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR) {
@@ -214,67 +214,67 @@ bool LPC17_Gpio_ConfigurePin(int32_t pin, LPC17_Gpio_Direction pinDir, LPC17_Gpi
     uint32_t* FIODIR_Register = FIODIR(pin);
 
     switch (pinDir) {
-        case LPC17_Gpio_Direction::Output:
-            *FIODIR_Register |= GET_PIN_MASK(pin);
-            break;
+    case LPC17_Gpio_Direction::Output:
+        *FIODIR_Register |= GET_PIN_MASK(pin);
+        break;
 
-        default:
-            *FIODIR_Register &= ~GET_PIN_MASK(pin);
-            break;
+    default:
+        *FIODIR_Register &= ~GET_PIN_MASK(pin);
+        break;
     }
 
     uint32_t* IOCON_Register = IOCON_BASE;
 
-    uint32_t analogDigitalMode = 0;
-    uint32_t digitalAnalogMode = 0; // Default is False; Only one AnalogOut pin on whole processor.
+    uint32_t digitalMode = 0;
+    uint32_t analogMode = 0; // Default is False; Only one AnalogOut pin on whole processor.
 
     IOCON_Register += pin;
 
     switch (IOCON_Type[pin]) {
-        case 'D':
-            *IOCON_Register &= 0xFFFFFFE0; // Clear mask to clear pullResistor and Alt Function before resetting
-            *IOCON_Register |= ((uint8_t)pullResistor << 3) | ((uint8_t)alternateFunction);
+    case 'D':
+        *IOCON_Register &= 0xFFFFFFE0; // Clear mask to clear pullResistor and Alt Function before resetting
+        *IOCON_Register |= ((uint8_t)pullResistor << 3) | ((uint8_t)alternateFunction);
 
-            if (pinDir == LPC17_Gpio_Direction::Input) {
-                *IOCON_Register |= ((uint8_t)hysteresis << 5);
-                *IOCON_Register |= ((uint8_t)inputPolarity << 6);
-            }
+        if (pinDir == LPC17_Gpio_Direction::Input) {
+            *IOCON_Register |= ((uint8_t)hysteresis << 5);
+            *IOCON_Register |= ((uint8_t)inputPolarity << 6);
+        }
 
-            if (pinDir == LPC17_Gpio_Direction::Output) {
-                *IOCON_Register |= ((uint8_t)slewRate << 9);
-                *IOCON_Register |= ((uint8_t)outputType << 10);
-            }
+        if (pinDir == LPC17_Gpio_Direction::Output) {
+            *IOCON_Register |= ((uint8_t)slewRate << 9);
+            *IOCON_Register |= ((uint8_t)outputType << 10);
+        }
 
-            break;
-        case 'A':
-            *IOCON_Register &= 0xFFFEFF60; // Clear mask to clear pullResistor, Alt Function, Digital Status, and ADC/DAC Mode before resetting
+        break;
+    case 'A':
+        *IOCON_Register &= 0xFFFEFF60; // Clear mask to clear pullResistor, Alt Function, Digital Status, and ADC/DAC Mode before resetting
 
-            // If pin is GPIO then the pin must be set to Digital Mode Vs. Analog Mode
-            if (alternateFunction == LPC17_Gpio_PinFunction::PinFunction0)
-                analogDigitalMode = 1; // pin is set Digital Mode
-            else
-                analogDigitalMode = 0; // pin is set to Analog Mode
+        // If pin is GPIO then the pin must be set to Digital Mode Vs. Analog Mode
+        if (alternateFunction == LPC17_Gpio_PinFunction::PinFunction0 || alternateFunction == LPC17_Gpio_PinFunction::PinFunction3)
+            digitalMode = 1; // pin is set Digital Mode
+        else
+            digitalMode = 0; // pin is set to Analog Mode
 
-            // If pin is to be Digital to Analog Converter, then the pin must be set to Digital to Analog Mode Vs. Analog to Digital Mode
-            if (alternateFunction == LPC17_Gpio_PinFunction::PinFunction2)
-                digitalAnalogMode = 1; // pin is set Digital to Analog Mode
-            else
-                digitalAnalogMode = 0; // pin is set to Analog to Digital Mode
+        // If pin is to be Digital to Analog Converter, then the pin must be set to Digital to Analog Mode Vs. Analog to Digital Mode
+        if (alternateFunction == LPC17_Gpio_PinFunction::PinFunction2)
+            analogMode = 1; // pin is set Digital to Analog Mode
+        else
+            analogMode = 0; // pin is set to Analog to Digital Mode
 
-            *IOCON_Register |= (digitalAnalogMode << 16) | (analogDigitalMode << 7) | ((uint8_t)pullResistor << 3) | ((uint8_t)alternateFunction);
-            break;
-        case 'U':
-            *IOCON_Register &= 0xFFFFFFF8; // Clear mask to clear Alt Function before resetting
-            *IOCON_Register |= ((uint8_t)alternateFunction);
-            break;
-        case 'I':
-            *IOCON_Register &= 0xFFFFFFF8; // Clear mask to clear Alt Function before resetting
-            *IOCON_Register |= ((uint8_t)alternateFunction);
-            break;
-        case 'W':
-            *IOCON_Register &= 0xFFFFFFE0; // Clear mask to clear pullResistor and Alt Function before resetting
-            *IOCON_Register |= ((uint8_t)pullResistor << 3) | ((uint8_t)alternateFunction);
-            break;
+        *IOCON_Register |= (analogMode << 16) | (digitalMode << 7) | ((uint8_t)pullResistor << 3) | ((uint8_t)alternateFunction);
+        break;
+    case 'U':
+        *IOCON_Register &= 0xFFFFFFF8; // Clear mask to clear Alt Function before resetting
+        *IOCON_Register |= ((uint8_t)alternateFunction);
+        break;
+    case 'I':
+        *IOCON_Register &= 0xFFFFFFF8; // Clear mask to clear Alt Function before resetting
+        *IOCON_Register |= ((uint8_t)alternateFunction);
+        break;
+    case 'W':
+        *IOCON_Register &= 0xFFFFFFE0; // Clear mask to clear pullResistor and Alt Function before resetting
+        *IOCON_Register |= ((uint8_t)pullResistor << 3) | ((uint8_t)alternateFunction);
+        break;
     }
 }
 
@@ -307,13 +307,13 @@ void LPC17_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode mode) {
     LPC17_Gpio_ResistorMode resistorMode = LPC17_Gpio_ResistorMode::Inactive;
 
     switch (mode) {
-        case TinyCLR_Gpio_PinDriveMode::InputPullUp:
-            resistorMode = LPC17_Gpio_ResistorMode::PullUp;
-            break;
+    case TinyCLR_Gpio_PinDriveMode::InputPullUp:
+        resistorMode = LPC17_Gpio_ResistorMode::PullUp;
+        break;
 
-        case TinyCLR_Gpio_PinDriveMode::InputPullDown:
-            resistorMode = LPC17_Gpio_ResistorMode::PullDown;
-            break;
+    case TinyCLR_Gpio_PinDriveMode::InputPullDown:
+        resistorMode = LPC17_Gpio_ResistorMode::PullDown;
+        break;
     }
 
     LPC17_Gpio_ConfigurePin(pin, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, resistorMode, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
@@ -366,11 +366,11 @@ TinyCLR_Result LPC17_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t 
 bool LPC17_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode) {
 
     switch (mode) {
-        case TinyCLR_Gpio_PinDriveMode::Output:
-        case TinyCLR_Gpio_PinDriveMode::Input:
-        case TinyCLR_Gpio_PinDriveMode::InputPullUp:
-        case TinyCLR_Gpio_PinDriveMode::InputPullDown:
-            return true;
+    case TinyCLR_Gpio_PinDriveMode::Output:
+    case TinyCLR_Gpio_PinDriveMode::Input:
+    case TinyCLR_Gpio_PinDriveMode::InputPullUp:
+    case TinyCLR_Gpio_PinDriveMode::InputPullDown:
+        return true;
     }
 
     return false;
@@ -385,28 +385,28 @@ TinyCLR_Result LPC17_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_
         return TinyCLR_Result::ArgumentOutOfRange;
 
     switch (driveMode) {
-        case TinyCLR_Gpio_PinDriveMode::Output:
-            LPC17_Gpio_ConfigurePin(pin, LPC17_Gpio_Direction::Output, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-            break;
+    case TinyCLR_Gpio_PinDriveMode::Output:
+        LPC17_Gpio_ConfigurePin(pin, LPC17_Gpio_Direction::Output, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        break;
 
-        case TinyCLR_Gpio_PinDriveMode::Input:
-            LPC17_Gpio_ConfigurePin(pin, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-            break;
+    case TinyCLR_Gpio_PinDriveMode::Input:
+        LPC17_Gpio_ConfigurePin(pin, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        break;
 
-        case TinyCLR_Gpio_PinDriveMode::InputPullUp:
-            LPC17_Gpio_ConfigurePin(pin, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-            break;
+    case TinyCLR_Gpio_PinDriveMode::InputPullUp:
+        LPC17_Gpio_ConfigurePin(pin, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        break;
 
-        case TinyCLR_Gpio_PinDriveMode::InputPullDown:
-            LPC17_Gpio_ConfigurePin(pin, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::PullDown, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-            break;
+    case TinyCLR_Gpio_PinDriveMode::InputPullDown:
+        LPC17_Gpio_ConfigurePin(pin, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::PullDown, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        break;
 
-        case TinyCLR_Gpio_PinDriveMode::OutputOpenDrain:
-        case TinyCLR_Gpio_PinDriveMode::OutputOpenDrainPullUp:
-        case TinyCLR_Gpio_PinDriveMode::OutputOpenSource:
-        case TinyCLR_Gpio_PinDriveMode::OutputOpenSourcePullDown:
-        default:
-            return  TinyCLR_Result::NotSupported;
+    case TinyCLR_Gpio_PinDriveMode::OutputOpenDrain:
+    case TinyCLR_Gpio_PinDriveMode::OutputOpenDrainPullUp:
+    case TinyCLR_Gpio_PinDriveMode::OutputOpenSource:
+    case TinyCLR_Gpio_PinDriveMode::OutputOpenSourcePullDown:
+    default:
+        return  TinyCLR_Result::NotSupported;
     }
 
     g_pinDriveMode[pin] = driveMode;
@@ -418,7 +418,7 @@ int32_t LPC17_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t
     if (pin >= LPC17_Gpio_MaxPins || pin < 0)
         return 0;
 
-    return LPC17_Time_GetTimeForProcessorTicks(nullptr, (uint64_t)(g_debounceTicksPin[pin])) / 10;            
+    return LPC17_Time_GetTimeForProcessorTicks(nullptr, (uint64_t)(g_debounceTicksPin[pin])) / 10;
 }
 
 TinyCLR_Result LPC17_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, int32_t debounceTime) {
