@@ -32,7 +32,7 @@ struct LPC17xx_USART {
 
 
 
-    static const uint32_t c_ClockRate = LPC17_SYSTEM_CLOCK_HZ/2;
+    static const uint32_t c_ClockRate = LPC17_SYSTEM_CLOCK_HZ / 2;
 
     static const uint32_t c_MAX_BAUDRATE = c_ClockRate / 16;
     static const uint32_t c_MIN_BAUDRATE = 0;
@@ -360,7 +360,7 @@ void LPC17_Uart_ReceiveData(int portNum, uint32_t LSR_Value, uint32_t IIR_Value)
                 }
             } while (LSR_Value & LPC17xx_USART::UART_LSR_RFDR);
         }
-    }    
+    }
 }
 void LPC17_Uart_TransmitData(int portNum, uint32_t LSR_Value, uint32_t IIR_Value) {
     INTERRUPT_STARTED_SCOPED(isr);
@@ -388,7 +388,7 @@ void LPC17_Uart_TransmitData(int portNum, uint32_t LSR_Value, uint32_t IIR_Value
                 LPC17_Uart_TxBufferEmptyInterruptEnable(portNum, false); // Disable interrupt when no more data to send.
             }
         }
-    }    
+    }
 }
 
 void UART_IntHandler(int portNum) {
@@ -413,33 +413,26 @@ void UART_IntHandler(int portNum) {
 
     LPC17_Uart_ReceiveData(portNum, LSR_Value, IIR_Value);
 
-    LPC17_Uart_TransmitData(portNum, LSR_Value, IIR_Value);    
+    LPC17_Uart_TransmitData(portNum, LSR_Value, IIR_Value);
 }
 //--//
 void UART0_IntHandler(void *param) {
-
     UART_IntHandler(0);
-
 }
+
 void UART1_IntHandler(void *param) {
-
     UART_IntHandler(1);
-
 }
+
 void UART2_IntHandler(void *param) {
-
     UART_IntHandler(2);
-
 }
+
 void UART3_IntHandler(void *param) {
-
     UART_IntHandler(3);
-
 }
 void UART4_IntHandler(void *param) {
-
     UART_IntHandler(4);
-
 }
 
 TinyCLR_Result LPC17_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
@@ -460,6 +453,21 @@ TinyCLR_Result LPC17_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
 
     g_UartController[portNum].provider = self;
 
+    // Enable power config
+    switch (portNum) {
+
+    case 0: LPC_SC->PCONP |= PCONP_PCUART0; break;
+
+    case 1: LPC_SC->PCONP |= PCONP_PCUART1; break;
+
+    case 2: LPC_SC->PCONP |= PCONP_PCUART2; break;
+
+    case 3: LPC_SC->PCONP |= PCONP_PCUART3; break;
+
+    case 4: LPC_SC->PCONP |= PCONP_PCUART4; break;
+
+    }
+
     int32_t txPin = LPC17_Uart_GetTxPin(portNum);
     int32_t rxPin = LPC17_Uart_GetRxPin(portNum);
 
@@ -474,29 +482,25 @@ void LPC17_Uart_SetClock(int32_t portNum, int32_t pclkSel) {
     LPC17xx_SYSCON &SYSCON = *(LPC17xx_SYSCON *)(size_t)(LPC17xx_SYSCON::c_SYSCON_Base);
 
     switch (portNum) {
-        case 0:
-            SYSCON.PCLKSEL0 &= ~(0x03 << 6);
-            SYSCON.PCLKSEL0 |= (pclkSel << 6);
+    case 0:
+        SYSCON.PCLKSEL0 &= ~(0x03 << 6);
+        SYSCON.PCLKSEL0 |= (pclkSel << 6);
+        break;
 
-            break;
+    case 1:
+        SYSCON.PCLKSEL0 &= ~(0x03 << 8);
+        SYSCON.PCLKSEL0 |= (pclkSel << 8);
+        break;
 
-        case 1:
-            SYSCON.PCLKSEL0 &= ~(0x03 << 8);
-            SYSCON.PCLKSEL0 |= (pclkSel << 8);
+    case 2:
+        SYSCON.PCLKSEL1 &= ~(0x03 << 16);
+        SYSCON.PCLKSEL1 |= (pclkSel << 16);
+        break;
 
-            break;
-
-        case 2:
-            SYSCON.PCLKSEL1 &= ~(0x03 << 16);
-            SYSCON.PCLKSEL1 |= (pclkSel << 16);
-
-            break;
-
-        case 3:
-            SYSCON.PCLKSEL1 &= ~(0x03 << 18);
-            SYSCON.PCLKSEL1 |= (pclkSel << 18);
-
-            break;
+    case 3:
+        SYSCON.PCLKSEL1 &= ~(0x03 << 18);
+        SYSCON.PCLKSEL1 |= (pclkSel << 18);
+        break;
     }
 }
 TinyCLR_Result LPC17_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, uint32_t baudRate, uint32_t dataBits, TinyCLR_Uart_Parity parity, TinyCLR_Uart_StopBitCount stopBits, TinyCLR_Uart_Handshake handshaking) {
@@ -511,46 +515,31 @@ TinyCLR_Result LPC17_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
 
     uint32_t fdr;
 
-    // Enable power config
-    switch (portNum) {
-
-        case 0: LPC_SC->PCONP |= PCONP_PCUART0; break;
-
-        case 1: LPC_SC->PCONP |= PCONP_PCUART1; break;
-
-        case 2: LPC_SC->PCONP |= PCONP_PCUART2; break;
-
-        case 3: LPC_SC->PCONP |= PCONP_PCUART3; break;
-
-        case 4: LPC_SC->PCONP |= PCONP_PCUART4; break;
-
-    }
-
     switch (baudRate) {
 
-        case 9600: LPC17_Uart_SetClock(portNum, 0); fdr = 0x54; divisor = 217; break;
+    case 9600: LPC17_Uart_SetClock(portNum, 0); fdr = 0x54; divisor = 217; break;
 
-        case 14400: LPC17_Uart_SetClock(portNum, 0); fdr = 81; divisor = 217; break;
+    case 14400: LPC17_Uart_SetClock(portNum, 0); fdr = 81; divisor = 217; break;
 
-        case 19200: LPC17_Uart_SetClock(portNum, 0); fdr = 177; divisor = 179; break;
+    case 19200: LPC17_Uart_SetClock(portNum, 0); fdr = 177; divisor = 179; break;
 
-        case 38400: LPC17_Uart_SetClock(portNum, 0); fdr = 131; divisor = 71; break;
+    case 38400: LPC17_Uart_SetClock(portNum, 0); fdr = 131; divisor = 71; break;
 
-        case 57600: LPC17_Uart_SetClock(portNum, 0); fdr = 213; divisor = 47; break;
+    case 57600: LPC17_Uart_SetClock(portNum, 0); fdr = 213; divisor = 47; break;
 
-        case 115200: LPC17_Uart_SetClock(portNum, 0); fdr = 117; divisor = 19; break;
+    case 115200: LPC17_Uart_SetClock(portNum, 0); fdr = 117; divisor = 19; break;
 
-        case 230400: LPC17_Uart_SetClock(portNum, 0); fdr = 229; divisor = 12; break;
+    case 230400: LPC17_Uart_SetClock(portNum, 0); fdr = 229; divisor = 12; break;
 
-        case 460800: LPC17_Uart_SetClock(portNum, 1); fdr = 229; divisor = 6; break;
+    case 460800: LPC17_Uart_SetClock(portNum, 1); fdr = 229; divisor = 6; break;
 
-        case 921600: LPC17_Uart_SetClock(portNum, 1); fdr = 229; divisor = 3; break;
+    case 921600: LPC17_Uart_SetClock(portNum, 1); fdr = 229; divisor = 3; break;
 
-        default:
-            LPC17_Uart_SetClock(portNum, 1);
-            divisor = ((LPC17xx_USART::c_ClockRate / (baudRate * 16)));
-            fdr = 0x10;
-            break;
+    default:
+        LPC17_Uart_SetClock(portNum, 1);
+        divisor = ((LPC17xx_USART::c_ClockRate / (baudRate * 16)));
+        fdr = 0x10;
+        break;
 
     }
 
@@ -576,59 +565,55 @@ TinyCLR_Result LPC17_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
     }
 
     switch (stopBits) {
-        case TinyCLR_Uart_StopBitCount::Two:
-            USARTC.UART_LCR |= LPC17xx_USART::UART_LCR_NSB_15_STOPBITS;
+    case TinyCLR_Uart_StopBitCount::Two:
+        USARTC.UART_LCR |= LPC17xx_USART::UART_LCR_NSB_15_STOPBITS;
 
-            if (dataBits == 5)
-                return TinyCLR_Result::NotSupported;
-
-            break;
-
-        case TinyCLR_Uart_StopBitCount::One:
-            USARTC.UART_LCR |= LPC17xx_USART::UART_LCR_NSB_1_STOPBITS;
-
-            break;
-
-        case TinyCLR_Uart_StopBitCount::OnePointFive:
-            USARTC.UART_LCR |= LPC17xx_USART::UART_LCR_NSB_15_STOPBITS;
-
-            if (dataBits != 5)
-                return TinyCLR_Result::NotSupported;
-
-            break;
-
-        default:
-
+        if (dataBits == 5)
             return TinyCLR_Result::NotSupported;
+        break;
+
+    case TinyCLR_Uart_StopBitCount::One:
+        USARTC.UART_LCR |= LPC17xx_USART::UART_LCR_NSB_1_STOPBITS;
+        break;
+
+    case TinyCLR_Uart_StopBitCount::OnePointFive:
+        USARTC.UART_LCR |= LPC17xx_USART::UART_LCR_NSB_15_STOPBITS;
+
+        if (dataBits != 5)
+            return TinyCLR_Result::NotSupported;
+        break;
+
+    default:
+        return TinyCLR_Result::NotSupported;
     }
 
     switch (parity) {
 
-        case TinyCLR_Uart_Parity::Space:
-            USARTC.UART_LCR |= LPC17xx_USART::UART_LCR_SPE;
+    case TinyCLR_Uart_Parity::Space:
+        USARTC.UART_LCR |= LPC17xx_USART::UART_LCR_SPE;
 
-        case TinyCLR_Uart_Parity::Even:
-            USARTC.UART_LCR |= (LPC17xx_USART::UART_LCR_EPE | LPC17xx_USART::UART_LCR_PBE);
+    case TinyCLR_Uart_Parity::Even:
+        USARTC.UART_LCR |= (LPC17xx_USART::UART_LCR_EPE | LPC17xx_USART::UART_LCR_PBE);
 
-            break;
+        break;
 
-        case TinyCLR_Uart_Parity::Mark:
-            USARTC.UART_LCR |= LPC17xx_USART::UART_LCR_SPE;
+    case TinyCLR_Uart_Parity::Mark:
+        USARTC.UART_LCR |= LPC17xx_USART::UART_LCR_SPE;
 
-        case  TinyCLR_Uart_Parity::Odd:
-            USARTC.UART_LCR |= LPC17xx_USART::UART_LCR_PBE;
+    case  TinyCLR_Uart_Parity::Odd:
+        USARTC.UART_LCR |= LPC17xx_USART::UART_LCR_PBE;
 
-            break;
+        break;
 
-        case TinyCLR_Uart_Parity::None:
+    case TinyCLR_Uart_Parity::None:
 
-            USARTC.UART_LCR &= ~LPC17xx_USART::UART_LCR_PBE;
+        USARTC.UART_LCR &= ~LPC17xx_USART::UART_LCR_PBE;
 
-            break;
+        break;
 
-        default:
+    default:
 
-            return TinyCLR_Result::NotSupported;
+        return TinyCLR_Result::NotSupported;
     }
 
     if (handshaking != TinyCLR_Uart_Handshake::None && portNum != 2) // Only port 2 support handshaking
@@ -636,15 +621,15 @@ TinyCLR_Result LPC17_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
 
 
     switch (handshaking) {
-        case TinyCLR_Uart_Handshake::RequestToSend:
-            USARTC.UART_MCR |= (1 << 6) | (1 << 7);  // Enable CTS - RTS
-            USARTC.SEL2.IER.UART_IER |= (1 << 7) | (1 << 3);    // Enable Interrupt CTS
-            g_UartController[portNum].handshakeEnable = true;
-            break;
+    case TinyCLR_Uart_Handshake::RequestToSend:
+        USARTC.UART_MCR |= (1 << 6) | (1 << 7);  // Enable CTS - RTS
+        USARTC.SEL2.IER.UART_IER |= (1 << 7) | (1 << 3);    // Enable Interrupt CTS
+        g_UartController[portNum].handshakeEnable = true;
+        break;
 
-        case TinyCLR_Uart_Handshake::XOnXOff:
-        case TinyCLR_Uart_Handshake::RequestToSendXOnXOff:
-            return TinyCLR_Result::NotSupported;
+    case TinyCLR_Uart_Handshake::XOnXOff:
+    case TinyCLR_Uart_Handshake::RequestToSendXOnXOff:
+        return TinyCLR_Result::NotSupported;
     }
 
     // CWS: Set the RX FIFO trigger level (to 8 bytes), reset RX, TX FIFO
@@ -654,33 +639,33 @@ TinyCLR_Result LPC17_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
         LPC17xx_USART::UART_FCR_FME;
 
     switch (portNum) {
-        case 0:
-            LPC17_Interrupt_Activate(UART0_IRQn, (uint32_t*)&UART0_IntHandler, 0);
+    case 0:
+        LPC17_Interrupt_Activate(UART0_IRQn, (uint32_t*)&UART0_IntHandler, 0);
 
-            break;
+        break;
 
-        case 1:
-            LPC17_Interrupt_Activate(UART1_IRQn, (uint32_t*)&UART1_IntHandler, 0);
+    case 1:
+        LPC17_Interrupt_Activate(UART1_IRQn, (uint32_t*)&UART1_IntHandler, 0);
 
-            break;
+        break;
 
-        case 2:
-            LPC17_Interrupt_Activate(UART2_IRQn, (uint32_t*)&UART2_IntHandler, 0);
+    case 2:
+        LPC17_Interrupt_Activate(UART2_IRQn, (uint32_t*)&UART2_IntHandler, 0);
 
-            break;
+        break;
 
-        case 3:
-            LPC17_Interrupt_Activate(UART3_IRQn, (uint32_t*)&UART3_IntHandler, 0);
+    case 3:
+        LPC17_Interrupt_Activate(UART3_IRQn, (uint32_t*)&UART3_IntHandler, 0);
 
-            break;
+        break;
 
-        case 4:
-            LPC17_Interrupt_Activate(UART4_IRQn, (uint32_t*)&UART4_IntHandler, 0);
+    case 4:
+        LPC17_Interrupt_Activate(UART4_IRQn, (uint32_t*)&UART4_IntHandler, 0);
 
-            break;
+        break;
 
-        default:
-            return TinyCLR_Result::ArgumentOutOfRange;
+    default:
+        return TinyCLR_Result::ArgumentOutOfRange;
     }
 
     USARTC.UART_TER = LPC17xx_USART::UART_TER_TXEN;
@@ -715,21 +700,23 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Provider* self) {
             USARTC.SEL2.IER.UART_IER &= ~((1 << 7) | (1 << 3));
         }
 
+        LPC17_Uart_PinConfiguration(portNum, false);
+
         // Disable to save power
         switch (portNum) {
 
-            case 0: LPC_SC->PCONP &= ~PCONP_PCUART0; break;
+        case 0: LPC_SC->PCONP &= ~PCONP_PCUART0; break;
 
-            case 1: LPC_SC->PCONP &= ~PCONP_PCUART1; break;
+        case 1: LPC_SC->PCONP &= ~PCONP_PCUART1; break;
 
-            case 2: LPC_SC->PCONP &= ~PCONP_PCUART2; break;
+        case 2: LPC_SC->PCONP &= ~PCONP_PCUART2; break;
 
-            case 3: LPC_SC->PCONP &= ~PCONP_PCUART3; break;
+        case 3: LPC_SC->PCONP &= ~PCONP_PCUART3; break;
 
-            case 4: LPC_SC->PCONP &= ~PCONP_PCUART4; break;
+        case 4: LPC_SC->PCONP &= ~PCONP_PCUART4; break;
         }
 
-        LPC17_Uart_PinConfiguration(portNum, false);
+
     }
 
     g_UartController[portNum].txBufferCount = 0;
