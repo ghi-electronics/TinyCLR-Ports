@@ -33,6 +33,7 @@ struct STM32F4_Timer_Driver {
     TinyCLR_Time_TickCallback m_DequeuAndExecute;
 
     static bool Initialize();
+    static bool UnInitialize();
     static void Reload(uint32_t value);
 
 };
@@ -164,29 +165,17 @@ extern "C" {
     void SysTick_Handler(void *param) {
         INTERRUPT_STARTED_SCOPED(isr);
 
-            if (STM32F4_Time_GetCurrentProcessorTicks(nullptr) >= g_nextEvent) { // handle event
-                g_STM32F4_Timer_Driver.m_DequeuAndExecute();
-            }
-            else {
-                STM32F4_Time_SetNextTickCallbackTime(nullptr, g_nextEvent);
-            }
+        if (STM32F4_Time_GetCurrentProcessorTicks(nullptr) >= g_nextEvent) { // handle event
+            g_STM32F4_Timer_Driver.m_DequeuAndExecute();
+        }
+        else {
+            STM32F4_Time_SetNextTickCallbackTime(nullptr, g_nextEvent);
+        }
     }
 
 }
 
 TinyCLR_Result STM32F4_Time_Acquire(const TinyCLR_Time_Provider* self) {
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result STM32F4_Time_Release(const TinyCLR_Time_Provider* self) {
-    SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
-
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result STM32F4_Time_SetTickCallback(const TinyCLR_Time_Provider* self, TinyCLR_Time_TickCallback callback) {
-    if (g_STM32F4_Timer_Driver.m_DequeuAndExecute != nullptr) return TinyCLR_Result::InvalidOperation;
-
     g_nextEvent = TIMER_IDLE_VALUE;
 
     g_STM32F4_Timer_Driver.Initialize();
@@ -194,6 +183,18 @@ TinyCLR_Result STM32F4_Time_SetTickCallback(const TinyCLR_Time_Provider* self, T
     g_STM32F4_Timer_Driver.m_periodTicks = SysTick_LOAD_RELOAD_Msk;
 
     g_STM32F4_Timer_Driver.Reload(g_STM32F4_Timer_Driver.m_periodTicks);
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Time_Release(const TinyCLR_Time_Provider* self) {
+    g_STM32F4_Timer_Driver.UnInitialize();
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Time_SetTickCallback(const TinyCLR_Time_Provider* self, TinyCLR_Time_TickCallback callback) {
+    if (g_STM32F4_Timer_Driver.m_DequeuAndExecute != nullptr) return TinyCLR_Result::InvalidOperation;
 
     g_STM32F4_Timer_Driver.m_DequeuAndExecute = callback;
 
@@ -246,6 +247,13 @@ void STM32F4_Timer_Driver::Reload(uint32_t value) {
     SysTick->LOAD = (uint32_t)(g_STM32F4_Timer_Driver.m_currentTick - 1UL);
     SysTick->VAL = 0UL;
 }
+
+bool STM32F4_Timer_Driver::UnInitialize() {
+    SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
+
+    return true;
+}
+
 #ifdef __GNUC__
 asm volatile (
     ".syntax unified\n\t"
