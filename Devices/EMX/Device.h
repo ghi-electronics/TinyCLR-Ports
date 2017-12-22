@@ -51,6 +51,10 @@
 #define INCLUDE_ADC
 #define LPC24_ADC_PINS { { PIN(0,23), PF(1) }, { PIN(0,24), PF(1) }, { PIN(0,25), PF(1) }, { PIN(0,26), PF(1) }, { PIN_NONE, PF_NONE }, { PIN(1,31), PF(3) }, { PIN(0,12), PF(3) }, { PIN(0,13), PF(3) } }
 
+#define INCLUDE_CAN
+#define LPC24_CAN_TX_PINS { { PIN(0, 1), PF(1) }, { PIN(0, 5), PF(2) } }
+#define LPC24_CAN_RX_PINS { { PIN(0, 0), PF(1) }, { PIN(0, 4), PF(2) } }
+
 #define INCLUDE_DAC
 #define LPC24_DAC_PINS { { PIN(0,26), PF(2)} }
 

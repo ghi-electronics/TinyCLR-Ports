@@ -43,6 +43,26 @@ TinyCLR_Adc_ChannelMode LPC17_Adc_GetChannelMode(const TinyCLR_Adc_Provider* sel
 TinyCLR_Result LPC17_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
 bool LPC17_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
 
+// CAN
+const TinyCLR_Api_Info* LPC17_Can_GetApi();
+TinyCLR_Result LPC17_Can_Acquire(const TinyCLR_Can_Provider* self);
+TinyCLR_Result LPC17_Can_Release(const TinyCLR_Can_Provider* self);
+TinyCLR_Result LPC17_Can_Reset(const TinyCLR_Can_Provider* self);
+TinyCLR_Result LPC17_Can_WriteMessages(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length);
+TinyCLR_Result LPC17_Can_ReadMessages(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length);
+TinyCLR_Result LPC17_Can_SetBitTimings(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling);
+TinyCLR_Result LPC17_Can_GetUnreadMessageCount(const TinyCLR_Can_Provider* self, size_t& count);
+TinyCLR_Result LPC17_Can_SetMessageReceivedHandler(const TinyCLR_Can_Provider* self, TinyCLR_Can_MessageReceivedHandler handler);
+TinyCLR_Result LPC17_Can_SetErrorReceivedHandler(const TinyCLR_Can_Provider* self, TinyCLR_Can_ErrorReceivedHandler handler);
+TinyCLR_Result LPC17_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, uint8_t* filters, size_t length);
+TinyCLR_Result LPC17_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8_t* lowerBounds, uint8_t* upperBounds, size_t length);
+TinyCLR_Result LPC17_Can_DiscardUnreadMessages(const TinyCLR_Can_Provider* self);
+TinyCLR_Result LPC17_Can_IsSendingAllowed(const TinyCLR_Can_Provider* self, bool& allowed);
+TinyCLR_Result LPC17_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, size_t& count);
+TinyCLR_Result LPC17_Can_GetReadErrorCount(const TinyCLR_Can_Provider* self, size_t& count);
+TinyCLR_Result LPC17_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t& sourceClock);
+TinyCLR_Result LPC17_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, size_t size);
+
 //DAC
 const TinyCLR_Api_Info* LPC17_Dac_GetApi();
 void LPC17_Dac_Reset();
@@ -359,6 +379,8 @@ void LPC17_Startup_Initialize();
 void LPC17_Startup_GetHeap(uint8_t*& start, size_t& length);
 void LPC17_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index);
 void LPC17_Startup_GetRunApp(bool& runApp);
+
+extern const TinyCLR_Api_Provider* apiProvider;
 
 //System Control Block
 #define PCON_OFFSET 0xC0

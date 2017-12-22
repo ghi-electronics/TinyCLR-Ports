@@ -97,4 +97,7 @@
 
 #define USE_INTERNAL_FLASH_DEPLOYMENT
 
+#define LPC24_CAN_TX_PINS { { PIN(0, 1), PF(1) }, { PIN(0, 5), PF(2) } }
+#define LPC24_CAN_RX_PINS { { PIN(0, 0), PF(1) }, { PIN(0, 4), PF(2) } }
+
 #include <LPC24.h>

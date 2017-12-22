@@ -59,6 +59,10 @@
 #define INCLUDE_ADC
 #define AT91_ADC_PINS { { PIN(B,11), PS(D) }, { PIN(B,12), PS(D) }, { PIN(B,13), PS(D) }, { PIN(B,14), PS(D) }, { PIN(B,15), PS(D) }, { PIN(B,16), PS(D) }, { PIN(A,17), PS(D) }, { PIN(B,6), PS(D) }, { PIN(B,7), PS(D) }, { PIN(B,8), PS(D) }, { PIN(B,9), PS(D) }, { PIN(B,10), PS(D) } }
 
+#define INCLUDE_CAN
+#define AT91_CAN_TX_PINS { { PIN(A, 10), PS(B) }, { PIN(A, 6), PS(B) } }
+#define AT91_CAN_RX_PINS { { PIN(A,  9), PS(B) }, { PIN(A, 5), PS(B) } }
+
 #define INCLUDE_I2C
 #define AT91_I2C_SCL_PINS { { PIN(A,31), PS(A) } }
 #define AT91_I2C_SDA_PINS { { PIN(A,30), PS(A) } }
