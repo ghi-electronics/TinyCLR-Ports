@@ -25,6 +25,11 @@ void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
     apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::AdcProvider, TARGET(_Adc_GetApi)()->Name);
 #endif
 
+#ifdef INCLUDE_CAN
+    apiProvider->Add(apiProvider, TARGET(_Can_GetApi)());
+    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::CanProvider, TARGET(_Can_GetApi)()->Name);
+#endif
+
 #ifdef INCLUDE_DAC
     apiProvider->Add(apiProvider, TARGET(_Dac_GetApi)());
     apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::DacProvider, TARGET(_Dac_GetApi)()->Name);
@@ -58,11 +63,6 @@ void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 
 #ifdef INCLUDE_USBCLIENT
     apiProvider->Add(apiProvider, TARGET(_UsbClient_GetApi)());
-#endif
-
-#ifdef INCLUDE_CAN
-    apiProvider->Add(apiProvider, TARGET(_Can_GetApi)());
-    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::CanProvider, TARGET(_Can_GetApi)()->Name);
 #endif
 
     ::apiProvider = apiProvider;
