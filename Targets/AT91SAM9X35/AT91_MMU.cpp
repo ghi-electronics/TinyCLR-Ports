@@ -190,6 +190,12 @@ bool CPU_IsMMUEnabled() {
 #endif // #if defined(COMPILE_ARM) || defined(COMPILE_THUMB)
 
 extern "C" {
+    extern uint32_t Load$$SDRAM$$Base;
+    extern uint32_t Image$$SDRAM$$Length;
+
+    extern uint32_t Load$$SRAM$$Base;
+    extern uint32_t Image$$SRAM$$Length;
+
     extern uint32_t Load$$ER_RLP$$Base;
     extern uint32_t Image$$ER_RLP$$Length;
 
@@ -197,12 +203,10 @@ extern "C" {
 
 static const uint32_t c_Bootstrap_Register_Begin = 0xF0000000;//0xFFF00000;
 static const uint32_t c_Bootstrap_Register_End = 0xFFFFFFFF;
-static const uint32_t c_Bootstrap_SDRAM_Begin = SDRAM_MEMORY_BASE;
-static const uint32_t c_Bootstrap_SDRAM_End = SDRAM_MEMORY_BASE + SDRAM_MEMORY_SIZE - ARM9_MMU::c_TTB_size;
-static const uint32_t c_Bootstrap_SRAM_Begin = SRAM_MEMORY_BASE;
-static const uint32_t c_Bootstrap_SRAM_End = SRAM_MEMORY_BASE + SRAM_MEMORY_SIZE;
-static const uint32_t c_Bootstrap_FLASH_Begin = FLASH_MEMORY_BASE;
-static const uint32_t c_Bootstrap_FLASH_End = FLASH_MEMORY_BASE + FLASH_MEMORY_SIZE;
+static const uint32_t c_Bootstrap_SDRAM_Begin = ((uint32_t)&Load$$SDRAM$$Base);
+static const uint32_t c_Bootstrap_SDRAM_End = c_Bootstrap_SDRAM_Begin + ((uint32_t)&Image$$SDRAM$$Length)  - ARM9_MMU::c_TTB_size;
+static const uint32_t c_Bootstrap_SRAM_Begin = ((uint32_t)&Load$$SRAM$$Base);;
+static const uint32_t c_Bootstrap_SRAM_End = c_Bootstrap_SRAM_Begin + ((uint32_t)&Image$$SRAM$$Length);
 static uint32_t* const c_Bootstrap_BaseOfTTBs = (uint32_t*)(c_Bootstrap_SDRAM_End);
 
 static const uint32_t c_RLP_Physical_Address = ((uint32_t)&Load$$ER_RLP$$Base);
