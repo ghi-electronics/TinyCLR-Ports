@@ -190,8 +190,8 @@ bool CPU_IsMMUEnabled() {
 #endif // #if defined(COMPILE_ARM) || defined(COMPILE_THUMB)
 
 extern "C" {
-    extern uint32_t Load$$ER_RLP_BEGIN$$Base;
-    extern uint32_t Load$$ER_RLP_END$$Base;
+    extern uint32_t Load$$ER_RLP$$Base;
+    extern uint32_t Image$$ER_RLP$$Length;
 
 }
 
@@ -205,8 +205,8 @@ static const uint32_t c_Bootstrap_FLASH_Begin = FLASH_MEMORY_BASE;
 static const uint32_t c_Bootstrap_FLASH_End = FLASH_MEMORY_BASE + FLASH_MEMORY_SIZE;
 static uint32_t* const c_Bootstrap_BaseOfTTBs = (uint32_t*)(c_Bootstrap_SDRAM_End);
 
-static const uint32_t c_RLP_Physical_Address = ((uint32_t)&Load$$ER_RLP_BEGIN$$Base);
-static const uint32_t c_RLP_Size = (((uint32_t)&Load$$ER_RLP_END$$Base) - ((uint32_t)&Load$$ER_RLP_BEGIN$$Base));
+static const uint32_t c_RLP_Physical_Address = ((uint32_t)&Load$$ER_RLP$$Base);
+static const uint32_t c_RLP_Size = ((uint32_t)&Image$$ER_RLP$$Length);
 static const uint32_t c_RLP_Virtual_Address_Cached = 0xA0000000; // Added for RLP Support of Memory MMU
 static const uint32_t c_RLP_Virtual_Address_Uncached = 0xB0000000; // Added for RLP Support of Memory MMU
 
