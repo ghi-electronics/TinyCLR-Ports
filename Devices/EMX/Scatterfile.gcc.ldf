@@ -2,9 +2,8 @@ ENTRY(EntryPoint)
 MEMORY
 {
     IRAM : ORIGIN = 0x40000000, LENGTH = 0x00010000
-    SDRAM : ORIGIN = 0xA0000000, LENGTH = 0x00800000
-    LR_FLASH : ORIGIN = 0x00000000, LENGTH = 0x00080000
-    LR_CONFIG : ORIGIN = 0xA0EF0000, LENGTH = 0x00010000
+    SDRAM : ORIGIN = 0xA0000000, LENGTH = 0x01000000
+    LR_FLASH : ORIGIN = 0x00000000, LENGTH = 0x00080000    
 }
 SECTIONS
 {
@@ -74,10 +73,20 @@ SECTIONS
         * (SectionForHeapBegin)
     }>SDRAM
 
-    ER_HEAP_END 0xA0400000 - 0x8 :
+    ER_HEAP_END 0xA0F00000 - 0x8 :
     {
         * (SectionForHeapEnd)
     }>SDRAM
+    
+    ER_RLP_BEGIN 0xA0F00000 : ALIGN(0x8)
+    {
+        * (SectionForRlpBegin)
+    }>IRAM
+    
+    ER_RLP_END 0xA1000000 - 0x08: 
+    {
+        * (SectionForRlpEnd)
+    }>IRAM
 
     ER_STACK_BOTTOM 0x40001000 : ALIGN(0x8)
     {
@@ -88,11 +97,6 @@ SECTIONS
     {
         * (SectionForStackTop +LAST)
     }>IRAM
-
-    ER_CONFIG 0xA0EF0000 :
-    {
-        * (SectionForConfig)
-    }>LR_CONFIG
 }
 Load$$ER_FLASH$$Base = LOADADDR(ER_FLASH);
 Image$$ER_FLASH$$Length = SIZEOF(ER_FLASH);
@@ -106,4 +110,6 @@ Image$$ER_RAM_RW$$ZI$$Base = ADDR(.bss);
 Image$$ER_RAM_RW$$ZI$$Length = SIZEOF(.bss);
 Image$$ER_VECTOR$$Base = ADDR(ER_VECTOR);
 Image$$ER_VECTOR$$Length = 0x00000040;
+Load$$ER_RLP$$Base = LOADADDR(ER_RLP_BEGIN);
+Image$$ER_RLP$$Length = LOADADDR(ER_RLP_END) - LOADADDR(ER_RLP_BEGIN);
 __use_no_semihosting_swi = 0;

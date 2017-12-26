@@ -85,4 +85,4 @@
 #define STM32F4_USB_DM_PINS { { PIN(A, 11), AF(10) } }
 #define STM32F4_USB_DP_PINS { { PIN(A, 12), AF(10) } }
 #define STM32F4_USB_VB_PINS { { PIN(A,  9), AF(10) } }
-#define STM32F4_USB_ID_PINS { { PIN(A, 10), AF(10) } 
+#define STM32F4_USB_ID_PINS { { PIN(A, 10), AF(10) } }
