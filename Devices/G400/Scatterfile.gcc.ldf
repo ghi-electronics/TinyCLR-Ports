@@ -106,8 +106,6 @@ Image$$ER_RAM_RW$$Length = SIZEOF(ER_RAM_RW);
 Load$$ER_RAM_RW$$Base = LOADADDR(ER_RAM_RW);
 Image$$ER_RAM_RW$$ZI$$Base = ADDR(.bss);
 Image$$ER_RAM_RW$$ZI$$Length = SIZEOF(.bss);
-
-Load$$ER_RLP_BEGIN$$Base = LOADADDR(ER_RLP_BEGIN);
-Load$$ER_RLP_END$$Base = LOADADDR(ER_RLP_END);
-
+Load$$ER_RLP$$Base = LOADADDR(ER_RLP_BEGIN);
+Image$$ER_RLP$$Length = LOADADDR(ER_RLP_END) - LOADADDR(ER_RLP_BEGIN);
 __use_no_semihosting_swi = 0;
