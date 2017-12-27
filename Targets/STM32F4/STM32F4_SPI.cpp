@@ -43,12 +43,8 @@ struct SpiController {
     size_t readLength;
     size_t writeLength;
 
-    int32_t ChipSelectLine;
-    int32_t ClockFrequency;
-    int32_t DataBitLength;
-    TinyCLR_Spi_Mode Mode;
-
-    bool clockIdleState;
+    int32_t chipSelectLine;
+    int32_t dataBitLength;
 };
 
 static SpiController g_SpiController[TOTAL_SPI_CONTROLLERS];
@@ -106,114 +102,16 @@ const TinyCLR_Api_Info* STM32F4_Spi_GetApi() {
 
         STM32F4_Spi_Release(spiProviders[controller]);
 
-        if (g_SpiController[controller].ChipSelectLine != PIN_NONE)
-            STM32F4_GpioInternal_ClosePin(g_SpiController[controller].ChipSelectLine);
+        if (g_SpiController[controller].chipSelectLine != PIN_NONE)
+            STM32F4_GpioInternal_ClosePin(g_SpiController[controller].chipSelectLine);
     }
 
     return &spiApi;
 }
 
 bool STM32F4_Spi_Transaction_Start(int32_t controller) {
-    switch (controller) {
-#ifdef SPI1
-    case 0:
-        RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
-        break; // enable SPI1 clock
 
-#ifdef SPI2
-    case 1:
-        RCC->APB1ENR |= RCC_APB1ENR_SPI2EN;
-        break; // enable SPI2 clock
-
-#ifdef SPI3
-    case 2:
-        RCC->APB1ENR |= RCC_APB1ENR_SPI3EN;
-        break; // enable SPI3 clock
-
-#ifdef SPI4
-    case 3:
-        RCC->APB2ENR |= RCC_APB2ENR_SPI4EN;
-        break; // enable SPI4 clock
-
-#ifdef SPI5
-    case 4:
-        RCC->APB2ENR |= RCC_APB2ENR_SPI5EN;
-        break; // enable SPI5 clock
-
-#ifdef SPI6
-    case 5:
-        RCC->APB2ENR |= RCC_APB2ENR_SPI6EN;
-        break; // enable SPI6 clock
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-    }
-
-    ptr_SPI_TypeDef spi = g_STM32_Spi_Port[controller];
-
-    // set mode bits
-    uint32_t cr1 = SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_MSTR | SPI_CR1_SPE;
-
-    if (g_SpiController[controller].DataBitLength == DATA_BIT_LENGTH_16) {
-        cr1 |= SPI_CR1_DFF;
-    }
-
-    switch (g_SpiController[controller].Mode) {
-
-    case TinyCLR_Spi_Mode::Mode0: // CPOL = 0, CPHA = 0.
-
-        break;
-
-    case TinyCLR_Spi_Mode::Mode1: // CPOL = 0, CPHA = 1.
-        cr1 |= SPI_CR1_CPHA;
-        break;
-
-    case TinyCLR_Spi_Mode::Mode2: //  CPOL = 1, CPHA = 0.
-        cr1 |= SPI_CR1_CPOL;
-        break;
-
-    case TinyCLR_Spi_Mode::Mode3: // CPOL = 1, CPHA = 1
-        cr1 |= SPI_CR1_CPOL | SPI_CR1_CPHA;
-        break;
-    }
-
-    // set clock prescaler
-    uint32_t clock = STM32F4_APB2_CLOCK_HZ / 2000; // SPI1 on APB2
-
-    uint32_t clockKhz = g_SpiController[controller].ClockFrequency / 1000;
-
-    if (controller > 0 && controller < 3) {
-        clock = STM32F4_APB1_CLOCK_HZ / 2000; // SPI2/3 on APB1
-    }
-
-    if (clock > clockKhz << 3) {
-        clock >>= 4;
-        cr1 |= SPI_CR1_BR_2;
-    }
-
-    if (clock > clockKhz << 1) {
-        clock >>= 2;
-        cr1 |= SPI_CR1_BR_1;
-    }
-
-    if (clock > clockKhz) {
-        cr1 |= SPI_CR1_BR_0;
-    }
-
-    spi->CR1 = cr1;
-
-    auto& sclk = g_STM32F4_Spi_Sclk_Pins[controller];
-    auto& miso = g_STM32F4_Spi_Miso_Pins[controller];
-    auto& mosi = g_STM32F4_Spi_Mosi_Pins[controller];
-
-    STM32F4_GpioInternal_WritePin(g_SpiController[controller].ChipSelectLine, false);
-
-    STM32F4_GpioInternal_ConfigurePin(sclk.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, g_SpiController[controller].clockIdleState ? STM32F4_Gpio_PullDirection::PullUp : STM32F4_Gpio_PullDirection::PullDown, sclk.alternateFunction);
-    STM32F4_GpioInternal_ConfigurePin(miso.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, miso.alternateFunction);
-    STM32F4_GpioInternal_ConfigurePin(mosi.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, mosi.alternateFunction);
+    STM32F4_GpioInternal_WritePin(g_SpiController[controller].chipSelectLine, false);
 
     return true;
 }
@@ -223,55 +121,7 @@ bool STM32F4_Spi_Transaction_Stop(int32_t controller) {
 
     while (spi->SR & SPI_SR_BSY); // wait for completion
 
-    spi->CR1 = 0; // disable SPI
-
-    auto& sclk = g_STM32F4_Spi_Sclk_Pins[controller];
-    auto& miso = g_STM32F4_Spi_Miso_Pins[controller];
-    auto& mosi = g_STM32F4_Spi_Mosi_Pins[controller];
-
-    STM32F4_GpioInternal_ConfigurePin(miso.number, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
-    STM32F4_GpioInternal_ConfigurePin(mosi.number, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
-    STM32F4_GpioInternal_ConfigurePin(sclk.number, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, g_SpiController[controller].clockIdleState ? STM32F4_Gpio_PullDirection::PullUp : STM32F4_Gpio_PullDirection::PullDown, STM32F4_Gpio_AlternateFunction::AF0);
-
-    switch (controller) {
-#ifdef SPI1
-    case 0:
-        RCC->APB2ENR &= ~RCC_APB2ENR_SPI1EN;
-        break; // disable SPI1 clock
-
-#ifdef SPI2
-    case 1:
-        RCC->APB1ENR &= ~RCC_APB1ENR_SPI2EN;
-        break; // disable SPI2 clock
-
-#ifdef SPI3
-    case 2:
-        RCC->APB1ENR &= ~RCC_APB1ENR_SPI3EN;
-        break; // disable SPI3 clock
-
-#ifdef SPI4
-    case 3:
-        RCC->APB2ENR &= ~RCC_APB2ENR_SPI4EN;
-        break; // disable SPI4 clock
-
-#ifdef SPI5
-    case 4:
-        RCC->APB2ENR &= ~RCC_APB2ENR_SPI5EN;
-        break; // disable SPI5 clock
-
-#ifdef SPI6
-    case 5:
-        RCC->APB2ENR &= ~RCC_APB2ENR_SPI6EN;
-        break; // disable SPI6 clock
-#endif
-#endif
-#endif
-#endif
-#endif
-#endif
-    }
-
-    STM32F4_GpioInternal_WritePin(g_SpiController[controller].ChipSelectLine, true);
+    STM32F4_GpioInternal_WritePin(g_SpiController[controller].chipSelectLine, true);
 
     return true;
 }
@@ -356,7 +206,7 @@ TinyCLR_Result STM32F4_Spi_TransferFullDuplex(const TinyCLR_Spi_Provider* self, 
     g_SpiController[controller].writeBuffer = (uint8_t*)writeBuffer;
     g_SpiController[controller].writeLength = writeLength;
 
-    if (g_SpiController[controller].DataBitLength == DATA_BIT_LENGTH_16) {
+    if (g_SpiController[controller].dataBitLength == DATA_BIT_LENGTH_16) {
         if (!STM32F4_Spi_Transaction_nWrite16_nRead16(controller))
             return TinyCLR_Result::InvalidOperation;
     }
@@ -386,7 +236,7 @@ TinyCLR_Result STM32F4_Spi_Read(const TinyCLR_Spi_Provider* self, uint8_t* buffe
     g_SpiController[controller].writeBuffer = nullptr;
     g_SpiController[controller].writeLength = 0;
 
-    if (g_SpiController[controller].DataBitLength == DATA_BIT_LENGTH_16) {
+    if (g_SpiController[controller].dataBitLength == DATA_BIT_LENGTH_16) {
         if (!STM32F4_Spi_Transaction_nWrite16_nRead16(controller))
             return TinyCLR_Result::InvalidOperation;
     }
@@ -416,7 +266,7 @@ TinyCLR_Result STM32F4_Spi_Write(const TinyCLR_Spi_Provider* self, const uint8_t
     g_SpiController[controller].writeBuffer = (uint8_t*)buffer;
     g_SpiController[controller].writeLength = length;
 
-    if (g_SpiController[controller].DataBitLength == DATA_BIT_LENGTH_16) {
+    if (g_SpiController[controller].dataBitLength == DATA_BIT_LENGTH_16) {
         if (!STM32F4_Spi_Transaction_nWrite16_nRead16(controller))
             return TinyCLR_Result::InvalidOperation;
     }
@@ -437,29 +287,120 @@ TinyCLR_Result STM32F4_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, i
     if (controller >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
-    g_SpiController[controller].ChipSelectLine = chipSelectLine;
-    g_SpiController[controller].ClockFrequency = clockFrequency;
-    g_SpiController[controller].DataBitLength = dataBitLength;
-    g_SpiController[controller].Mode = mode;
+    g_SpiController[controller].chipSelectLine = chipSelectLine;
+    g_SpiController[controller].dataBitLength = dataBitLength;
 
-    bool clockActiveState = (((int32_t)g_SpiController[controller].Mode) & 0x02) == 0 ? true : false;
-    g_SpiController[controller].clockIdleState = !clockActiveState;
+    bool clockActiveState = (((int32_t)mode) & 0x02) == 0 ? true : false;
 
     auto& sclk = g_STM32F4_Spi_Sclk_Pins[controller];
+    auto& miso = g_STM32F4_Spi_Miso_Pins[controller];
+    auto& mosi = g_STM32F4_Spi_Mosi_Pins[controller];
 
-    STM32F4_GpioInternal_ConfigurePin(sclk.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, g_SpiController[controller].clockIdleState ? STM32F4_Gpio_PullDirection::PullUp : STM32F4_Gpio_PullDirection::PullDown, sclk.alternateFunction);
+    STM32F4_GpioInternal_ConfigurePin(sclk.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, clockActiveState ? STM32F4_Gpio_PullDirection::PullDown : STM32F4_Gpio_PullDirection::PullUp, sclk.alternateFunction);
+    STM32F4_GpioInternal_ConfigurePin(miso.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, miso.alternateFunction);
+    STM32F4_GpioInternal_ConfigurePin(mosi.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, mosi.alternateFunction);
 
     auto timeProvider = (const TinyCLR_Time_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::TimeProvider);
 
     STM32F4_Time_Delay(timeProvider, 1);
 
-    if (STM32F4_GpioInternal_OpenPin(g_SpiController[controller].ChipSelectLine)) {
+    if (STM32F4_GpioInternal_OpenPin(g_SpiController[controller].chipSelectLine)) {
         // CS setup
-        STM32F4_GpioInternal_ConfigurePin(g_SpiController[controller].ChipSelectLine, STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
+        STM32F4_GpioInternal_ConfigurePin(g_SpiController[controller].chipSelectLine, STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
 
-        STM32F4_GpioInternal_WritePin(g_SpiController[controller].ChipSelectLine, true);
-
+        STM32F4_GpioInternal_WritePin(g_SpiController[controller].chipSelectLine, true);
     }
+
+    switch (controller) {
+#ifdef SPI1
+    case 0:
+        RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
+        break; // enable SPI1 clock
+
+#ifdef SPI2
+    case 1:
+        RCC->APB1ENR |= RCC_APB1ENR_SPI2EN;
+        break; // enable SPI2 clock
+
+#ifdef SPI3
+    case 2:
+        RCC->APB1ENR |= RCC_APB1ENR_SPI3EN;
+        break; // enable SPI3 clock
+
+#ifdef SPI4
+    case 3:
+        RCC->APB2ENR |= RCC_APB2ENR_SPI4EN;
+        break; // enable SPI4 clock
+
+#ifdef SPI5
+    case 4:
+        RCC->APB2ENR |= RCC_APB2ENR_SPI5EN;
+        break; // enable SPI5 clock
+
+#ifdef SPI6
+    case 5:
+        RCC->APB2ENR |= RCC_APB2ENR_SPI6EN;
+        break; // enable SPI6 clock
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+    }
+
+    ptr_SPI_TypeDef spi = g_STM32_Spi_Port[controller];
+
+    // set mode bits
+    uint32_t cr1 = SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_MSTR | SPI_CR1_SPE;
+
+    if (dataBitLength == DATA_BIT_LENGTH_16) {
+        cr1 |= SPI_CR1_DFF;
+    }
+
+    switch (mode) {
+
+    case TinyCLR_Spi_Mode::Mode0: // CPOL = 0, CPHA = 0.
+
+        break;
+
+    case TinyCLR_Spi_Mode::Mode1: // CPOL = 0, CPHA = 1.
+        cr1 |= SPI_CR1_CPHA;
+        break;
+
+    case TinyCLR_Spi_Mode::Mode2: //  CPOL = 1, CPHA = 0.
+        cr1 |= SPI_CR1_CPOL;
+        break;
+
+    case TinyCLR_Spi_Mode::Mode3: // CPOL = 1, CPHA = 1
+        cr1 |= SPI_CR1_CPOL | SPI_CR1_CPHA;
+        break;
+    }
+
+    // set clock prescaler
+    uint32_t clock = STM32F4_APB2_CLOCK_HZ / 2000; // SPI1 on APB2
+
+    uint32_t clockKhz = clockFrequency / 1000;
+
+    if (controller > 0 && controller < 3) {
+        clock = STM32F4_APB1_CLOCK_HZ / 2000; // SPI2/3 on APB1
+    }
+
+    if (clock > clockKhz << 3) {
+        clock >>= 4;
+        cr1 |= SPI_CR1_BR_2;
+    }
+
+    if (clock > clockKhz << 1) {
+        clock >>= 2;
+        cr1 |= SPI_CR1_BR_1;
+    }
+
+    if (clock > clockKhz) {
+        cr1 |= SPI_CR1_BR_0;
+    }
+
+    spi->CR1 = cr1;
 
     return TinyCLR_Result::Success;
 }
@@ -474,7 +415,7 @@ TinyCLR_Result STM32F4_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
     auto& miso = g_STM32F4_Spi_Miso_Pins[controller];
     auto& mosi = g_STM32F4_Spi_Mosi_Pins[controller];
 
-    g_SpiController[controller].ChipSelectLine = PIN_NONE;
+    g_SpiController[controller].chipSelectLine = PIN_NONE;
 
     // Check each pin single time make sure once fail not effect to other pins
     if (STM32F4_GpioInternal_OpenPin(sclk.number) && STM32F4_GpioInternal_OpenPin(miso.number) && STM32F4_GpioInternal_OpenPin(mosi.number)) {
@@ -490,10 +431,6 @@ TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Provider* self) {
         return TinyCLR_Result::ArgumentNull;
 
     int32_t controller = (self->Index);
-
-    auto& sclk = g_STM32F4_Spi_Sclk_Pins[controller];
-    auto& miso = g_STM32F4_Spi_Miso_Pins[controller];
-    auto& mosi = g_STM32F4_Spi_Mosi_Pins[controller];
 
     switch (controller) {
 #ifdef SPI1
@@ -532,6 +469,14 @@ TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Provider* self) {
 #endif
 #endif
     }
+
+    auto& sclk = g_STM32F4_Spi_Sclk_Pins[controller];
+    auto& miso = g_STM32F4_Spi_Miso_Pins[controller];
+    auto& mosi = g_STM32F4_Spi_Mosi_Pins[controller];
+
+    STM32F4_GpioInternal_ConfigurePin(miso.number, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
+    STM32F4_GpioInternal_ConfigurePin(mosi.number, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
+    STM32F4_GpioInternal_ConfigurePin(sclk.number, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
 
     STM32F4_GpioInternal_ClosePin(sclk.number);
     STM32F4_GpioInternal_ClosePin(miso.number);
