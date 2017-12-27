@@ -95,7 +95,13 @@ SECTIONS
         * (SectionForStackTop +LAST)
     }
 
+    Load$$SDRAM$$Base = ORIGIN(ERAM);
+    Image$$SDRAM$$Length = LENGTH(ERAM);
+    Load$$SRAM$$Base = ORIGIN(IRAM);
+    Image$$SRAM$$Length = LENGTH(IRAM);
+
 }
+
 Load$$ER_FLASH$$Base = LOADADDR(ER_FLASH);
 Image$$ER_FLASH$$Length = SIZEOF(ER_FLASH);
 Image$$ER_RAM_RO$$Base = ADDR(ER_RAM_RO);
