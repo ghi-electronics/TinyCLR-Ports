@@ -68,7 +68,7 @@
 #define TOTAL_SPI_CONTROLLERS 2
 #define AT91_SPI_MISO_PINS { { PIN(A,11), PS(A) }, { PIN(A,21), PS(B) } }
 #define AT91_SPI_MOSI_PINS { { PIN(A,12), PS(A) }, { PIN(A,22), PS(B) } }
-#define AT91_SPI_SCLK_PINS { { PIN(A,13), PS(A) }, { PIN(A,13), PS(B) } }
+#define AT91_SPI_SCLK_PINS { { PIN(A,13), PS(A) }, { PIN(A,23), PS(B) } }
 
 #define INCLUDE_UART
 #define TOTAL_UART_CONTROLLERS 6

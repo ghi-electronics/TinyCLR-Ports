@@ -103,19 +103,19 @@ bool AT91_Spi_Transaction_Start(int32_t controller) {
     switch (g_SpiController[controller].Mode) {
 
     case TinyCLR_Spi_Mode::Mode0: // CPOL = 0, CPHA = 0.
-
-        break;
-
-    case TinyCLR_Spi_Mode::Mode1: // CPOL = 0, CPHA = 1.
         CSR |= AT91_SPI::SPI_CSR_NCPHA;
         break;
 
+    case TinyCLR_Spi_Mode::Mode1: // CPOL = 0, CPHA = 1.
+        
+        break;
+
     case TinyCLR_Spi_Mode::Mode2: //  CPOL = 1, CPHA = 0.
-        CSR |= AT91_SPI::SPI_CSR_CPOL;
+        CSR |= AT91_SPI::SPI_CSR_CPOL | AT91_SPI::SPI_CSR_NCPHA;
         break;
 
     case TinyCLR_Spi_Mode::Mode3: // CPOL = 1, CPHA = 1
-        CSR |= AT91_SPI::SPI_CSR_CPOL | AT91_SPI::SPI_CSR_NCPHA;
+        CSR |= AT91_SPI::SPI_CSR_CPOL;
         break;
     }
 
