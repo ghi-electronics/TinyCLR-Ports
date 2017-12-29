@@ -870,14 +870,14 @@ TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Provider* self) {
 int32_t LPC17_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self) {
     // CPSDVSR min 2, max 254
     // SCR min 0, max 127
-    return LPC17_AHB_CLOCK_HZ / (254 * (127 + 1));
+    return (LPC17_AHB_CLOCK_HZ / 2) / (254 * (127 + 1));
 
 }
 
 int32_t LPC17_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self) {
     // CPSDVSR min 2, max 254
     // SCR min 0, max 127
-    return LPC17_AHB_CLOCK_HZ / (2 * (0 + 1));
+    return (LPC17_AHB_CLOCK_HZ / 2) / (2 * (0 + 1));
 }
 
 int32_t LPC17_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self) {
