@@ -696,22 +696,11 @@ TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Provider* self) {
 }
 
 int32_t LPC24_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self) {
-    // Theoretically this could read the Clock and PLL configurations
-    // to determine an actual realistic minimum, however there doesn't
-    // seem to be a lot of value in that since the CPU_SPI_Xaction_Start
-    // has to determine the applicability of the selected speed at the
-    // time a transaction is started anyway.
-    return 1;
+    return (LPC24_AHB_CLOCK_HZ / 2) / (254 * (127 + 1));
 }
 
 int32_t LPC24_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self) {
-    // Theoretically this could read the Clock and PLL configurations
-    // to determine an actual realistic maximum, however there doesn't
-    // seem to be a lot of value in that since the CPU_SPI_Xaction_Start
-    // has to determine the applicability of the selected speed at the
-    // time a transaction is started anyway.
-    // Max supported (e.g. not overclocked) AHB speed / 2
-    return 48000000;
+    return (LPC24_AHB_CLOCK_HZ / 2) / (2 * (0 + 1));
 }
 
 int32_t LPC24_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self) {

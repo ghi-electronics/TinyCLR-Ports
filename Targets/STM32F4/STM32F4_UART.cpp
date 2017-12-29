@@ -116,7 +116,7 @@ const TinyCLR_Api_Info* STM32F4_Uart_GetApi() {
     if (TOTAL_UART_CONTROLLERS > 7) g_STM32F4_Uart_Ports[7] = UART8;
 #ifdef UART9
     if (TOTAL_UART_CONTROLLERS > 8) g_STM32F4_Uart_Ports[8] = UART9;
-#endif	
+#endif
 #endif
 #endif
 #endif
@@ -171,7 +171,7 @@ void STM32F4_Uart_IrqTx(int portNum) {
     }
 }
 
-void STM32F4_Uart_Interrupt0(void* param) {    
+void STM32F4_Uart_Interrupt0(void* param) {
     uint16_t sr = USART1->SR;
 
     if (sr & (USART_SR_RXNE | USART_SR_ORE))
@@ -323,7 +323,7 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
         clk = STM32F4_APB2_CLOCK_HZ;
     }
 #endif
-#endif	
+#endif
 #endif
 #endif
     //  baudrate

@@ -390,7 +390,7 @@ struct LPC17xx_SPI {
     static const uint32_t c_SPI1_Base = 0x40030000; // 0xE0030000;
     static const uint32_t c_SPI2_Base = 0x400AC000; // 0x400AC000; // TQD
 
-    static const uint32_t c_SPI_Clk_KHz = (LPC17_SYSTEM_CLOCK_HZ/2/1000);
+    static const uint32_t c_SPI_Clk_KHz = (LPC17_SYSTEM_CLOCK_HZ / 2 / 1000);
 
     static const uint32_t c_SPI0 = 0;
     static const uint32_t c_SPI1 = 1;
@@ -535,21 +535,21 @@ bool LPC17_Spi_Transaction_Start(int32_t controller) {
 
     switch (g_SpiController[controller].Mode) {
 
-        case TinyCLR_Spi_Mode::Mode0: // CPOL = 0, CPHA = 0.
+    case TinyCLR_Spi_Mode::Mode0: // CPOL = 0, CPHA = 0.
 
-            break;
+        break;
 
-        case TinyCLR_Spi_Mode::Mode1: // CPOL = 0, CPHA = 1.
-            SPI.SSPxCR0 |= (1 << 7);
-            break;
+    case TinyCLR_Spi_Mode::Mode1: // CPOL = 0, CPHA = 1.
+        SPI.SSPxCR0 |= (1 << 7);
+        break;
 
-        case TinyCLR_Spi_Mode::Mode2: //  CPOL = 1, CPHA = 0.
-            SPI.SSPxCR0 |= (1 << 6);
-            break;
+    case TinyCLR_Spi_Mode::Mode2: //  CPOL = 1, CPHA = 0.
+        SPI.SSPxCR0 |= (1 << 6);
+        break;
 
-        case TinyCLR_Spi_Mode::Mode3: // CPOL = 1, CPHA = 1
-            SPI.SSPxCR0 |= (1 << 6) | (1 << 7);
-            break;
+    case TinyCLR_Spi_Mode::Mode3: // CPOL = 1, CPHA = 1
+        SPI.SSPxCR0 |= (1 << 6) | (1 << 7);
+        break;
     }
 
     SPI.SSPxCR0 &= ~(0xFF << 8);
@@ -818,17 +818,17 @@ TinyCLR_Result LPC17_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
         return TinyCLR_Result::SharingViolation;
 
     switch (controller) {
-        case 0:
-            LPC_SC->PCONP |= PCONP_PCSSP0;
-            break;
+    case 0:
+        LPC_SC->PCONP |= PCONP_PCSSP0;
+        break;
 
-        case 1:
-            LPC_SC->PCONP |= PCONP_PCSSP1;
-            break;
+    case 1:
+        LPC_SC->PCONP |= PCONP_PCSSP1;
+        break;
 
-        case 2:
-            LPC_SC->PCONP |= PCONP_PCSSP2;
-            break;
+    case 2:
+        LPC_SC->PCONP |= PCONP_PCSSP2;
+        break;
     }
 
     return TinyCLR_Result::Success;
@@ -851,39 +851,33 @@ TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Provider* self) {
 
 
     switch (controller) {
-        case 0:
-            LPC_SC->PCONP &= ~PCONP_PCSSP0;
-            break;
+    case 0:
+        LPC_SC->PCONP &= ~PCONP_PCSSP0;
+        break;
 
-        case 1:
+    case 1:
 
-            break;
+        break;
 
-        case 2:
-            LPC_SC->PCONP &= ~PCONP_PCSSP2;
-            break;
+    case 2:
+        LPC_SC->PCONP &= ~PCONP_PCSSP2;
+        break;
     }
 
     return TinyCLR_Result::Success;
 }
 
 int32_t LPC17_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self) {
-    // Theoretically this could read the Clock and PLL configurations
-    // to determine an actual realistic minimum, however there doesn't
-    // seem to be a lot of value in that since the CPU_SPI_Xaction_Start
-    // has to determine the applicability of the selected speed at the
-    // time a transaction is started anyway.
-    return 1;
+    // CPSDVSR min 2, max 254
+    // SCR min 0, max 127
+    return (LPC17_AHB_CLOCK_HZ / 2) / (254 * (127 + 1));
+
 }
 
 int32_t LPC17_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self) {
-    // Theoretically this could read the Clock and PLL configurations
-    // to determine an actual realistic maximum, however there doesn't
-    // seem to be a lot of value in that since the CPU_SPI_Xaction_Start
-    // has to determine the applicability of the selected speed at the
-    // time a transaction is started anyway.
-    // Max supported (e.g. not overclocked) AHB speed / 2
-    return 48000000;
+    // CPSDVSR min 2, max 254
+    // SCR min 0, max 127
+    return (LPC17_AHB_CLOCK_HZ / 2) / (2 * (0 + 1));
 }
 
 int32_t LPC17_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self) {
