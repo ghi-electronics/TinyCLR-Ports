@@ -1040,9 +1040,9 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
         canProvider[i]->Acquire = &STM32F4_Can_Acquire;
         canProvider[i]->Release = &STM32F4_Can_Release;
         canProvider[i]->Reset = &STM32F4_Can_Reset;
-        canProvider[i]->WriteMessages = &STM32F4_Can_WriteMessages;
-        canProvider[i]->ReadMessages = &STM32F4_Can_ReadMessages;
-        canProvider[i]->SetBitTimings = &STM32F4_Can_SetBitTimings;
+        canProvider[i]->WriteMessage = &STM32F4_Can_WriteMessage;
+        canProvider[i]->ReadMessage = &STM32F4_Can_ReadMessage;
+        canProvider[i]->SetBitTiming = &STM32F4_Can_SetBitTiming;
         canProvider[i]->GetUnreadMessageCount = &STM32F4_Can_GetUnreadMessageCount;
         canProvider[i]->SetMessageReceivedHandler = &STM32F4_Can_SetMessageReceivedHandler;
         canProvider[i]->SetErrorReceivedHandler = &STM32F4_Can_SetErrorReceivedHandler;
@@ -1262,7 +1262,7 @@ TinyCLR_Result STM32F4_Can_Reset(const TinyCLR_Can_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_WriteMessages(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length) {
+TinyCLR_Result STM32F4_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length) {
 
     uint32_t* data32 = (uint32_t*)data;
 
@@ -1313,7 +1313,7 @@ TinyCLR_Result STM32F4_Can_WriteMessages(const TinyCLR_Can_Provider* self, uint3
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_ReadMessages(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length) {
+TinyCLR_Result STM32F4_Can_ReadMessage(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length) {
     STM32F4_Can_Message *can_msg;
 
     uint32_t* data32 = (uint32_t*)data;
@@ -1346,7 +1346,7 @@ TinyCLR_Result STM32F4_Can_ReadMessages(const TinyCLR_Can_Provider* self, uint32
 
 }
 
-TinyCLR_Result STM32F4_Can_SetBitTimings(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
+TinyCLR_Result STM32F4_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
     int32_t channel = self->Index;
 
     CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);

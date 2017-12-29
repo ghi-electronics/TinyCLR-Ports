@@ -2224,9 +2224,9 @@ const TinyCLR_Api_Info* LPC24_Can_GetApi() {
         canProvider[i]->Acquire = &LPC24_Can_Acquire;
         canProvider[i]->Release = &LPC24_Can_Release;
         canProvider[i]->Reset = &LPC24_Can_Reset;
-        canProvider[i]->WriteMessages = &LPC24_Can_WriteMessages;
-        canProvider[i]->ReadMessages = &LPC24_Can_ReadMessages;
-        canProvider[i]->SetBitTimings = &LPC24_Can_SetBitTimings;
+        canProvider[i]->WriteMessage = &LPC24_Can_WriteMessage;
+        canProvider[i]->ReadMessage = &LPC24_Can_ReadMessage;
+        canProvider[i]->SetBitTiming = &LPC24_Can_SetBitTiming;
         canProvider[i]->GetUnreadMessageCount = &LPC24_Can_GetUnreadMessageCount;
         canProvider[i]->SetMessageReceivedHandler = &LPC24_Can_SetMessageReceivedHandler;
         canProvider[i]->SetErrorReceivedHandler = &LPC24_Can_SetErrorReceivedHandler;
@@ -2499,7 +2499,7 @@ TinyCLR_Result LPC24_Can_Reset(const TinyCLR_Can_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Can_WriteMessages(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length) {
+TinyCLR_Result LPC24_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length) {
 
     uint32_t *data32 = (uint32_t*)data;
 
@@ -2560,7 +2560,7 @@ TinyCLR_Result LPC24_Can_WriteMessages(const TinyCLR_Can_Provider* self, uint32_
     return TinyCLR_Result::Busy;
 }
 
-TinyCLR_Result LPC24_Can_ReadMessages(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length) {
+TinyCLR_Result LPC24_Can_ReadMessage(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length) {
     LPC24_Can_Message *can_msg;
 
     uint32_t *data32 = (uint32_t*)data;
@@ -2594,7 +2594,7 @@ TinyCLR_Result LPC24_Can_ReadMessages(const TinyCLR_Can_Provider* self, uint32_t
 
 }
 
-TinyCLR_Result LPC24_Can_SetBitTimings(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
+TinyCLR_Result LPC24_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
     int32_t channel = self->Index;
 
     LPC24XX_SYSCON &SYSCON = *(LPC24XX_SYSCON *)(size_t)(LPC24XX_SYSCON::c_SYSCON_Base);
