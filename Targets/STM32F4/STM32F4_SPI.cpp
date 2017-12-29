@@ -541,35 +541,24 @@ TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Provider* self) {
 }
 
 int32_t STM32F4_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self) {
-    // Theoretically this could read the Clock and PLL configurations
-    // to determine an actual realistic minimum, however there doesn't
-    // seem to be a lot of value in that since the CPU_SPI_Xaction_Start
-    // has to determine the applicability of the selected speed at the
-    // time a transaction is started anyway.
+    if (controller > 0 && controller < 3)
+        return  STM32F4_APB1_CLOCK_HZ / 256;
+    else
+        return STM32F4_APB2_CLOCK_HZ / 256;
     return 1;
 }
 
 int32_t STM32F4_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self) {
-    // Theoretically this could read the Clock and PLL configurations
-    // to determine an actual realistic maximum, however there doesn't
-    // seem to be a lot of value in that since the CPU_SPI_Xaction_Start
-    // has to determine the applicability of the selected speed at the
-    // time a transaction is started anyway.
-    // Max supported (e.g. not overclocked) AHB speed / 2
-    return 48000000;
+    int32_t controller = (self->Index);
+
+    if (controller > 0 && controller < 3)
+        return  STM32F4_APB1_CLOCK_HZ >> 1;
+    else
+        return STM32F4_APB2_CLOCK_HZ >> 1;
+
 }
 
 int32_t STM32F4_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self) {
-    // This could maintain a map of the actual pins
-    // that are available for a particular port.
-    // (Not all pins can be mapped to all ports.)
-    // The value of doing that, however, is marginal
-    // since the count of possible chip selects doesn't
-    // really help in determining which chip select to
-    // use so just report the total count of all GPIO
-    // pins as possible so that the selected Chip select
-    // line coresponds to a GPIO pin number directly
-    // without needing any additional translation/mapping.
     return STM32F4_Gpio_GetPinCount(nullptr);
 }
 
