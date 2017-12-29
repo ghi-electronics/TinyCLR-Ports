@@ -370,11 +370,11 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Provider* self) {
 }
 
 int32_t AT91_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self) {
-    return 1;
+    return AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 255;
 }
 
 int32_t AT91_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self) {
-    return 48000000;
+    return AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 1;
 }
 
 int32_t AT91_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self) {
