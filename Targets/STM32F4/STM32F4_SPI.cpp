@@ -541,6 +541,8 @@ TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Provider* self) {
 }
 
 int32_t STM32F4_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self) {
+    int32_t controller = (self->Index);
+
     if (controller > 0 && controller < 3)
         return  STM32F4_APB1_CLOCK_HZ / 256;
     else
