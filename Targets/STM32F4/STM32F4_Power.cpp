@@ -37,10 +37,10 @@ const TinyCLR_Api_Info* STM32F4_Power_GetApi() {
     return &powerApi;
 }
 
-void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep_Level level) {
+void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level) {
     switch (level) {
 
-        case TinyCLR_Power_Sleep_Level::Hibernate: // stop
+        case TinyCLR_Power_SleepLevel::Hibernate: // stop
             SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
             PWR->CR |= PWR_CR_CWUF | PWR_CR_FPDS | PWR_CR_LPDS; // low power deepsleep
 
@@ -63,7 +63,7 @@ void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep
 
             return;
 
-        case TinyCLR_Power_Sleep_Level::Off: // standby
+        case TinyCLR_Power_SleepLevel::Off: // standby
             SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
             PWR->CR |= PWR_CR_CWUF | PWR_CR_PDDS; // power down deepsleep
 

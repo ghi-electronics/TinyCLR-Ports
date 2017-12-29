@@ -340,7 +340,7 @@ void LPC17_Time_GetDriftParameters(const TinyCLR_Time_Provider* self, int32_t* a
 // Power
 const TinyCLR_Api_Info* LPC17_Power_GetApi();
 void LPC17_Power_SetHandlers(void(*stop)(), void(*restart)());
-void LPC17_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep_Level level);
+void LPC17_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level);
 void LPC17_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter);
 TinyCLR_Result LPC17_Power_Acquire(const TinyCLR_Power_Provider* self);
 TinyCLR_Result LPC17_Power_Release(const TinyCLR_Power_Provider* self);

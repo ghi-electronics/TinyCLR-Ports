@@ -1288,7 +1288,7 @@ void AT91_Time_GetDriftParameters(const TinyCLR_Time_Provider* self, int32_t* a,
 // Power
 const TinyCLR_Api_Info* AT91_Power_GetApi();
 void AT91_Power_SetHandlers(void(*stop)(), void(*restart)());
-void AT91_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep_Level level);
+void AT91_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level);
 void AT91_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter);
 TinyCLR_Result AT91_Power_Acquire(const TinyCLR_Power_Provider* self);
 TinyCLR_Result AT91_Power_Release(const TinyCLR_Power_Provider* self);
