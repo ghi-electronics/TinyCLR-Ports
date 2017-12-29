@@ -2225,16 +2225,16 @@ const TinyCLR_Api_Info* LPC17_Can_GetApi() {
         canProvider[i]->Acquire = &LPC17_Can_Acquire;
         canProvider[i]->Release = &LPC17_Can_Release;
         canProvider[i]->Reset = &LPC17_Can_Reset;
-        canProvider[i]->WriteMessages = &LPC17_Can_WriteMessages;
-        canProvider[i]->ReadMessages = &LPC17_Can_ReadMessages;
-        canProvider[i]->SetBitTimings = &LPC17_Can_SetBitTimings;
+        canProvider[i]->WriteMessage = &LPC17_Can_WriteMessage;
+        canProvider[i]->ReadMessage = &LPC17_Can_ReadMessage;
+        canProvider[i]->SetBitTiming = &LPC17_Can_SetBitTiming;
         canProvider[i]->GetUnreadMessageCount = &LPC17_Can_GetUnreadMessageCount;
         canProvider[i]->SetMessageReceivedHandler = &LPC17_Can_SetMessageReceivedHandler;
         canProvider[i]->SetErrorReceivedHandler = &LPC17_Can_SetErrorReceivedHandler;
         canProvider[i]->SetExplicitFilters = &LPC17_Can_SetExplicitFilters;
         canProvider[i]->SetGroupFilters = &LPC17_Can_SetGroupFilters;
-        canProvider[i]->DiscardUnreadMessages = &LPC17_Can_DiscardUnreadMessages;
-        canProvider[i]->IsSendingAllowed = &LPC17_Can_IsSendingAllowed;
+        canProvider[i]->ClearReadBuffer = &LPC17_Can_ClearReadBuffer;
+        canProvider[i]->IsWritingAllowed = &LPC17_Can_IsWritingAllowed;
         canProvider[i]->GetWriteErrorCount = &LPC17_Can_GetWriteErrorCount;
         canProvider[i]->GetReadErrorCount = &LPC17_Can_GetReadErrorCount;
         canProvider[i]->GetSourceClock = &LPC17_Can_GetSourceClock;
@@ -2499,7 +2499,7 @@ TinyCLR_Result LPC17_Can_Reset(const TinyCLR_Can_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_WriteMessages(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length) {
+TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length) {
 
     uint32_t *data32 = (uint32_t*)data;
 
@@ -2521,7 +2521,7 @@ TinyCLR_Result LPC17_Can_WriteMessages(const TinyCLR_Can_Provider* self, uint32_
     uint32_t timeout = CAN_TRANSFER_TIMEOUT;
 
     while (readyToSend == false && timeout > 0) {
-        LPC17_Can_IsSendingAllowed(self, readyToSend);
+        LPC17_Can_IsWritingAllowed(self, readyToSend);
         timeout--;
     }
 
@@ -2560,7 +2560,7 @@ TinyCLR_Result LPC17_Can_WriteMessages(const TinyCLR_Can_Provider* self, uint32_
     return TinyCLR_Result::Busy;
 }
 
-TinyCLR_Result LPC17_Can_ReadMessages(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length) {
+TinyCLR_Result LPC17_Can_ReadMessage(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length) {
     LPC17_Can_Message *can_msg;
 
     uint32_t *data32 = (uint32_t*)data;
@@ -2594,7 +2594,7 @@ TinyCLR_Result LPC17_Can_ReadMessages(const TinyCLR_Can_Provider* self, uint32_t
 
 }
 
-TinyCLR_Result LPC17_Can_SetBitTimings(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
+TinyCLR_Result LPC17_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
     int32_t channel = self->Index;
 
     LPC17xx_SYSCON &SYSCON = *(LPC17xx_SYSCON *)(size_t)(LPC17xx_SYSCON::c_SYSCON_Base);
@@ -2732,7 +2732,7 @@ TinyCLR_Result LPC17_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8
     return TinyCLR_Result::Success;;
 }
 
-TinyCLR_Result LPC17_Can_DiscardUnreadMessages(const TinyCLR_Can_Provider* self) {
+TinyCLR_Result LPC17_Can_ClearReadBuffer(const TinyCLR_Can_Provider* self) {
     int32_t channel = self->Index;
 
     canController[channel].can_rx_count = 0;
@@ -2742,7 +2742,7 @@ TinyCLR_Result LPC17_Can_DiscardUnreadMessages(const TinyCLR_Can_Provider* self)
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_IsSendingAllowed(const TinyCLR_Can_Provider* self, bool& allowed) {
+TinyCLR_Result LPC17_Can_IsWritingAllowed(const TinyCLR_Can_Provider* self, bool& allowed) {
     int32_t channel = self->Index;
 
     uint32_t status = 0;
