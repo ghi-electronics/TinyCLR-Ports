@@ -46,16 +46,16 @@ void LPC24_Power_SetHandlers(void(*stop)(), void(*restart)()) {
     g_LPC24_restartHandler = restart;
 }
 
-void LPC24_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep_Level level) {
+void LPC24_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level) {
     switch (level) {
 
-    case TinyCLR_Power_Sleep_Level::Hibernate: // stop
+    case TinyCLR_Power_SleepLevel::Hibernate: // stop
         if (g_LPC24_stopHandler != 0)
             g_LPC24_stopHandler();
 
         return;
 
-    case TinyCLR_Power_Sleep_Level::Off: // standby
+    case TinyCLR_Power_SleepLevel::Off: // standby
         // stop peripherals if needed
         if (g_LPC24_stopHandler != 0)
             g_LPC24_stopHandler();

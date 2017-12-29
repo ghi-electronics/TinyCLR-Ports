@@ -519,8 +519,8 @@ TinyCLR_Result AT91_Can_SetMessageReceivedHandler(const TinyCLR_Can_Provider* se
 TinyCLR_Result AT91_Can_SetErrorReceivedHandler(const TinyCLR_Can_Provider* self, TinyCLR_Can_ErrorReceivedHandler handler);
 TinyCLR_Result AT91_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, uint8_t* filters, size_t length);
 TinyCLR_Result AT91_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8_t* lowerBounds, uint8_t* upperBounds, size_t length);
-TinyCLR_Result AT91_Can_DiscardUnreadMessages(const TinyCLR_Can_Provider* self);
-TinyCLR_Result AT91_Can_IsSendingAllowed(const TinyCLR_Can_Provider* self, bool& allowed);
+TinyCLR_Result AT91_Can_ClearReadBuffer(const TinyCLR_Can_Provider* self);
+TinyCLR_Result AT91_Can_IsWritingAllowed(const TinyCLR_Can_Provider* self, bool& allowed);
 TinyCLR_Result AT91_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, size_t& count);
 TinyCLR_Result AT91_Can_GetReadErrorCount(const TinyCLR_Can_Provider* self, size_t& count);
 TinyCLR_Result AT91_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t& sourceClock);
@@ -1288,7 +1288,7 @@ void AT91_Time_GetDriftParameters(const TinyCLR_Time_Provider* self, int32_t* a,
 // Power
 const TinyCLR_Api_Info* AT91_Power_GetApi();
 void AT91_Power_SetHandlers(void(*stop)(), void(*restart)());
-void AT91_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep_Level level);
+void AT91_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level);
 void AT91_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter);
 TinyCLR_Result AT91_Power_Acquire(const TinyCLR_Power_Provider* self);
 TinyCLR_Result AT91_Power_Release(const TinyCLR_Power_Provider* self);

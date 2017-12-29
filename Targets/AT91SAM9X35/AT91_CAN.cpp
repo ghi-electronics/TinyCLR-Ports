@@ -1196,8 +1196,8 @@ const TinyCLR_Api_Info* AT91_Can_GetApi() {
         canProvider[i]->SetErrorReceivedHandler = &AT91_Can_SetErrorReceivedHandler;
         canProvider[i]->SetExplicitFilters = &AT91_Can_SetExplicitFilters;
         canProvider[i]->SetGroupFilters = &AT91_Can_SetGroupFilters;
-        canProvider[i]->DiscardUnreadMessages = &AT91_Can_DiscardUnreadMessages;
-        canProvider[i]->IsSendingAllowed = &AT91_Can_IsSendingAllowed;
+        canProvider[i]->ClearReadBuffer = &AT91_Can_ClearReadBuffer;
+        canProvider[i]->IsWritingAllowed = &AT91_Can_IsWritingAllowed;
         canProvider[i]->GetWriteErrorCount = &AT91_Can_GetWriteErrorCount;
         canProvider[i]->GetReadErrorCount = &AT91_Can_GetReadErrorCount;
         canProvider[i]->GetSourceClock = &AT91_Can_GetSourceClock;
@@ -1560,7 +1560,7 @@ TinyCLR_Result AT91_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t 
     uint32_t timeout = CAN_TRANSFER_TIMEOUT;
 
     while (readyToSend == false && timeout > 0) {
-        AT91_Can_IsSendingAllowed(self, readyToSend);
+        AT91_Can_IsWritingAllowed(self, readyToSend);
         AT91_Time_Delay(nullptr, 1);
         timeout--;
     }
@@ -1786,7 +1786,7 @@ TinyCLR_Result AT91_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8_
     return TinyCLR_Result::Success;;
 }
 
-TinyCLR_Result AT91_Can_DiscardUnreadMessages(const TinyCLR_Can_Provider* self) {
+TinyCLR_Result AT91_Can_ClearReadBuffer(const TinyCLR_Can_Provider* self) {
     int32_t channel = self->Index;
 
     canController[channel].can_rx_count = 0;
@@ -1796,7 +1796,7 @@ TinyCLR_Result AT91_Can_DiscardUnreadMessages(const TinyCLR_Can_Provider* self) 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Can_IsSendingAllowed(const TinyCLR_Can_Provider* self, bool& allowed) {
+TinyCLR_Result AT91_Can_IsWritingAllowed(const TinyCLR_Can_Provider* self, bool& allowed) {
     int32_t channel = self->Index;
 
     sCand *pCand = &canController[channel].cand;

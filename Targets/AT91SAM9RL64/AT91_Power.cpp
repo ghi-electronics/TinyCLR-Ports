@@ -44,16 +44,16 @@ void AT91_Power_SetHandlers(void(*stop)(), void(*restart)()) {
     g_AT91_restartHandler = restart;
 }
 
-void AT91_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep_Level level) {
+void AT91_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level) {
     switch (level) {
 
-    case TinyCLR_Power_Sleep_Level::Hibernate: // stop
+    case TinyCLR_Power_SleepLevel::Hibernate: // stop
         if (g_AT91_stopHandler != 0)
             g_AT91_stopHandler();
 
         return;
 
-    case TinyCLR_Power_Sleep_Level::Off: // standby
+    case TinyCLR_Power_SleepLevel::Off: // standby
         // stop peripherals if needed
         if (g_AT91_stopHandler != 0)
             g_AT91_stopHandler();

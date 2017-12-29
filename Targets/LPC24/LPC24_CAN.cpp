@@ -2232,8 +2232,8 @@ const TinyCLR_Api_Info* LPC24_Can_GetApi() {
         canProvider[i]->SetErrorReceivedHandler = &LPC24_Can_SetErrorReceivedHandler;
         canProvider[i]->SetExplicitFilters = &LPC24_Can_SetExplicitFilters;
         canProvider[i]->SetGroupFilters = &LPC24_Can_SetGroupFilters;
-        canProvider[i]->DiscardUnreadMessages = &LPC24_Can_DiscardUnreadMessages;
-        canProvider[i]->IsSendingAllowed = &LPC24_Can_IsSendingAllowed;
+        canProvider[i]->ClearReadBuffer = &LPC24_Can_ClearReadBuffer;
+        canProvider[i]->IsWritingAllowed = &LPC24_Can_IsWritingAllowed;
         canProvider[i]->GetWriteErrorCount = &LPC24_Can_GetWriteErrorCount;
         canProvider[i]->GetReadErrorCount = &LPC24_Can_GetReadErrorCount;
         canProvider[i]->GetSourceClock = &LPC24_Can_GetSourceClock;
@@ -2521,7 +2521,7 @@ TinyCLR_Result LPC24_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t
     uint32_t timeout = CAN_TRANSFER_TIMEOUT;
 
     while (readyToSend == false && timeout > 0) {
-        LPC24_Can_IsSendingAllowed(self, readyToSend);
+        LPC24_Can_IsWritingAllowed(self, readyToSend);
         timeout--;
     }
 
@@ -2738,7 +2738,7 @@ TinyCLR_Result LPC24_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8
     return TinyCLR_Result::Success;;
 }
 
-TinyCLR_Result LPC24_Can_DiscardUnreadMessages(const TinyCLR_Can_Provider* self) {
+TinyCLR_Result LPC24_Can_ClearReadBuffer(const TinyCLR_Can_Provider* self) {
     int32_t channel = self->Index;
 
     canController[channel].can_rx_count = 0;
@@ -2748,7 +2748,7 @@ TinyCLR_Result LPC24_Can_DiscardUnreadMessages(const TinyCLR_Can_Provider* self)
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Can_IsSendingAllowed(const TinyCLR_Can_Provider* self, bool& allowed) {
+TinyCLR_Result LPC24_Can_IsWritingAllowed(const TinyCLR_Can_Provider* self, bool& allowed) {
     int32_t channel = self->Index;
 
     uint32_t status = 0;

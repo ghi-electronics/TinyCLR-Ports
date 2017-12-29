@@ -58,7 +58,7 @@ const TinyCLR_Api_Info* STM32F4_Power_GetApi();
 TinyCLR_Result STM32F4_Power_Acquire(const TinyCLR_Power_Provider* self);
 TinyCLR_Result STM32F4_Power_Release(const TinyCLR_Power_Provider* self);
 void STM32F4_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter);
-void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep_Level level);
+void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level);
 
 ////////////////////////////////////////////////////////////////////////////////
 //Time
@@ -115,8 +115,8 @@ TinyCLR_Result STM32F4_Can_SetMessageReceivedHandler(const TinyCLR_Can_Provider*
 TinyCLR_Result STM32F4_Can_SetErrorReceivedHandler(const TinyCLR_Can_Provider* self, TinyCLR_Can_ErrorReceivedHandler handler);
 TinyCLR_Result STM32F4_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, uint8_t* filters, size_t length);
 TinyCLR_Result STM32F4_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8_t* lowerBounds, uint8_t* upperBounds, size_t length);
-TinyCLR_Result STM32F4_Can_DiscardUnreadMessages(const TinyCLR_Can_Provider* self);
-TinyCLR_Result STM32F4_Can_IsSendingAllowed(const TinyCLR_Can_Provider* self, bool& allowed);
+TinyCLR_Result STM32F4_Can_ClearReadBuffer(const TinyCLR_Can_Provider* self);
+TinyCLR_Result STM32F4_Can_IsWritingAllowed(const TinyCLR_Can_Provider* self, bool& allowed);
 TinyCLR_Result STM32F4_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, size_t& count);
 TinyCLR_Result STM32F4_Can_GetReadErrorCount(const TinyCLR_Can_Provider* self, size_t& count);
 TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t& sourceClock);
