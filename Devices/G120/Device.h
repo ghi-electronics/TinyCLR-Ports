@@ -19,7 +19,7 @@
 #define DEVICE_TARGET LPC17
 #define DEVICE_NAME "G120"
 #define DEVICE_MANUFACTURER "GHI Electronics, LLC"
-#define DEVICE_VERSION ((0ULL << 48) | (6ULL << 32) | (0ULL << 16) | (0ULL << 0))
+#define DEVICE_VERSION ((0ULL << 48) | (7ULL << 32) | (0ULL << 16) | (0ULL << 0))
 
 #define USB_DEBUGGER_VENDOR_ID 0x1B9F
 #define USB_DEBUGGER_PRODUCT_ID 0x5007
