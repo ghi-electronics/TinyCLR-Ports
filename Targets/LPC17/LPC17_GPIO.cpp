@@ -426,7 +426,7 @@ TinyCLR_Result LPC17_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, 
         return TinyCLR_Result::ArgumentOutOfRange;
 
     if (debounceTime > 0 && debounceTime < 10000) {
-        g_debounceTicksPin[pin] = LPC17_Time_MillisecondsToTicks(nullptr, (uint64_t)debounceTime);
+        g_debounceTicksPin[pin] = (uint32_t)LPC17_Time_GetProcessorTicksForTime(nullptr, (uint64_t)debounceTime * 1000 * 10);
         return TinyCLR_Result::Success;
     }
 
