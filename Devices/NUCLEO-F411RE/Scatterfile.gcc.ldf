@@ -19,6 +19,7 @@ SECTIONS
         * (.conststring*)
         * (.glue*)
         * (tinyclr_metadata)
+        * (SectionForCode*)
         PROVIDE(_sbrk = .);
         PROVIDE(_write = .);
         PROVIDE(_close = .);
@@ -57,7 +58,7 @@ SECTIONS
     
     ER_RAM_RO  : ALIGN(0x08)
     {
-        * (SectionForCode*)
+
     }>IRAM AT>LR_FLASH	
 	    
     /DISCARD/  :
