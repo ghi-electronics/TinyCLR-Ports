@@ -36,7 +36,7 @@
 #define PWM_MICROSECONDS  1000000
 #define PWM_NANOSECONDS   1000000000
 
-static PwmController* g_PwmController;
+static PwmController g_PwmController[TOTAL_PWM_CONTROLLER];
 
 static uint8_t pwmProviderDefs[TOTAL_PWM_CONTROLLER * sizeof(TinyCLR_Pwm_Provider)];
 static TinyCLR_Pwm_Provider* pwmProviders[TOTAL_PWM_CONTROLLER];
