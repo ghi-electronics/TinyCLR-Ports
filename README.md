@@ -4,19 +4,21 @@ This repository hosts ports of TinyCLR to many different devices. For informatio
 Some targets and devices are maintained by GHI Electronics while others are maintained by community contributions. Right now, the below devices and targets are officially supported and maintained by us: 
 
 ## Devices
+- FEZCLR
+- G30
+- G80
+- G120
+- G400
 - Cerb
 - EMX
 - EmbeddedMaster
-- FEZCLR
-- G120
-- G30
-- G80
 - USBizi
 
 ## Targets
 - LPC17
 - LPC24
 - STM32F4
+- AT91
 
 # Contributing
 In order to contribute to TinyCLR, you must sign a [GHI Electronics Contribution License Agreement (CLA)](http://files.ghielectronics.com/downloads/Documents/GHI%20Electronics%20Contribution%20License%20Agreement.pdf) before we can accept any pull request from you. This only needs to be done once for any project from GHI Electronics. You can read more about CLAs on their [wikipedia page](http://en.wikipedia.org/wiki/Contributor_License_Agreement).
