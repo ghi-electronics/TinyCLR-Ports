@@ -45,9 +45,6 @@ void STM32F4_Pwm_Reset();
 
 #define STM32F4_MIN_PWM_FREQUENCY 1
 
-#define pwmController(x)  g_PwmController[x]
-
-
 typedef  TIM_TypeDef* ptr_TIM_TypeDef;
 
 struct PwmController {
@@ -55,6 +52,8 @@ struct PwmController {
     STM32F4_Gpio_Pin         gpioPin[PWM_PER_CONTROLLER];
 
     bool                invert[PWM_PER_CONTROLLER];
+    bool                isOpened[PWM_PER_CONTROLLER];
+
     double              actualFreq;
     double              theoryFreq;
     double              dutyCycle[PWM_PER_CONTROLLER];
@@ -142,6 +141,8 @@ TinyCLR_Result STM32F4_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t 
     if (pin & 2) reg = &treg->CCMR2; // 2 or 3
     *reg |= mode;
 
+    g_PwmController[self->Index].isOpened[pin] = true;
+
     return TinyCLR_Result::Success;
 }
 
@@ -164,6 +165,8 @@ TinyCLR_Result STM32F4_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t 
     }
 
     STM32F4_GpioInternal_ClosePin(actualPin->number);
+
+    g_PwmController[self->Index].isOpened[pin] = false;
 
     return TinyCLR_Result::Success;
 }
@@ -426,44 +429,30 @@ void STM32F4_Pwm_Reset() {
 #endif
 
     for (auto controller = 0u; controller < TOTAL_PWM_CONTROLLER; controller++) {
-        auto& c = g_PwmController[controller];
-
-        c.actualFreq = 0.0;
-        c.theoryFreq = 0.0;
-        c.period = 0;
-        c.presc = 0;
-        c.timer = controller + 1;
-
-        for (auto i = 0; i < PWM_PER_CONTROLLER; i++) {
-            c.invert[0] = false;
-            c.dutyCycle[0] = 0.0;
-
-            c.gpioPin[i].number = pwmPins[controller][i].number;
-            c.gpioPin[i].alternateFunction = pwmPins[controller][i].alternateFunction;
-        }
-
         STM32F4_Pwm_ResetController(controller);
-
-        for (int p = 0; p < PWM_PER_CONTROLLER; p++) {
-            if (pwmController(controller).gpioPin[p].number != PIN_NONE) {
-                STM32F4_Pwm_DisablePin(pwmProviders[controller], p);
-                STM32F4_Pwm_ReleasePin(pwmProviders[controller], p);
-            }
-        }
     }
 }
 
 void STM32F4_Pwm_ResetController(int32_t controller) {
     for (int p = 0; p < PWM_PER_CONTROLLER; p++) {
-        if (pwmController(controller).gpioPin[p].number != PIN_NONE) {
-            pwmController(controller).dutyCycle[p] = 0;
-            pwmController(controller).invert[p] = false;
+        g_PwmController[controller].gpioPin[p].number = pwmPins[controller][p].number;
+        g_PwmController[controller].gpioPin[p].alternateFunction = pwmPins[controller][p].alternateFunction;
+
+        if (g_PwmController[controller].gpioPin[p].number != PIN_NONE) {
+            g_PwmController[controller].dutyCycle[p] = 0;
+            g_PwmController[controller].invert[p] = false;
+        }
+
+        if (g_PwmController[controller].isOpened[p] == true) {
+            STM32F4_Pwm_DisablePin(pwmProviders[controller], p);
+            STM32F4_Pwm_ReleasePin(pwmProviders[controller], p);
         }
     }
 
-    pwmController(controller).theoryFreq = 0;
-    pwmController(controller).actualFreq = 0;
-    pwmController(controller).period = 0;
-    pwmController(controller).presc = 0;
+    g_PwmController[controller].theoryFreq = 0.0;
+    g_PwmController[controller].actualFreq = 0.0;
+    g_PwmController[controller].period = 0;
+    g_PwmController[controller].presc = 0;
+    g_PwmController[controller].timer = controller + 1;
 }
 

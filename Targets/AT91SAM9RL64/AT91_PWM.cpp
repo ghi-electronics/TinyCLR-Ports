@@ -36,7 +36,7 @@
 #define PWM_MICROSECONDS  1000000
 #define PWM_NANOSECONDS   1000000000
 
-static PwmController* g_PwmController;
+static PwmController g_PwmController[TOTAL_PWM_CONTROLLER];
 
 static uint8_t pwmProviderDefs[TOTAL_PWM_CONTROLLER * sizeof(TinyCLR_Pwm_Provider)];
 static TinyCLR_Pwm_Provider* pwmProviders[TOTAL_PWM_CONTROLLER];
@@ -68,6 +68,8 @@ const TinyCLR_Api_Info* AT91_Pwm_GetApi() {
     pwmApi.Count = TOTAL_PWM_CONTROLLER;
     pwmApi.Implementation = (pwmApi.Count > 1) ? pwmProviders : (TinyCLR_Pwm_Provider**)&pwmProviderDefs;
 
+    AT91_Pwm_Reset();
+
     return &pwmApi;
 }
 
@@ -97,6 +99,8 @@ TinyCLR_Result AT91_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t pin
 
     AT91_Pwm_SetPinState(self, pin, false);
 
+    g_PwmController[self->Index].isOpened[pin] = true;
+
     return TinyCLR_Result::Success;;
 }
 
@@ -108,6 +112,8 @@ TinyCLR_Result AT91_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t pin
     PWM_INTERUPT_DISABLE_REGISTER |= (1 << controller);
 
     AT91_Gpio_ClosePin(actualPin);
+
+    g_PwmController[self->Index].isOpened[pin] = false;
 
     return TinyCLR_Result::Success;
 }
@@ -358,29 +364,26 @@ TinyCLR_Result AT91_Pwm_Release(const TinyCLR_Pwm_Provider* self) {
 void AT91_Pwm_Reset() {
     for (auto controller = 0; controller < TOTAL_PWM_CONTROLLER; controller++) {
         AT91_Pwm_ResetController(controller);
-
-        for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-            if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p].number != PIN_NONE) {
-                // Reset PWM and close pin
-                AT91_Pwm_DisablePin(pwmProviders[controller], p);
-                AT91_Pwm_ReleasePin(pwmProviders[controller], p);
-            }
-        }
     }
 }
 
 void AT91_Pwm_ResetController(int32_t controller) {
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-        g_PwmController[pwmProviders[controller]->Index].gpioPin[p] = AT91_Pwm_GetPins(controller, p);
+        g_PwmController[controller].gpioPin[p] = AT91_Pwm_GetPins(controller, p);
 
-        if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p].number != PIN_NONE) {
+        if (g_PwmController[controller].gpioPin[p].number != PIN_NONE) {
             // Reset values
-            g_PwmController[pwmProviders[controller]->Index].channelModeReg = PWM_CHANNEL_MODE_REGISTER(controller);
-            g_PwmController[pwmProviders[controller]->Index].dutyCycleReg = PWM_DUTY_REGISTER(controller);
-            g_PwmController[pwmProviders[controller]->Index].channelUpdateReg = PWM_CHANNEL_UPDATE_REGISTER(controller);
-            g_PwmController[pwmProviders[controller]->Index].invert[p] = false;
-            g_PwmController[pwmProviders[controller]->Index].frequency = 0.0;
-            g_PwmController[pwmProviders[controller]->Index].dutyCycle[p] = 0.0;
+            g_PwmController[controller].channelModeReg = PWM_CHANNEL_MODE_REGISTER(controller);
+            g_PwmController[controller].dutyCycleReg = PWM_DUTY_REGISTER(controller);
+            g_PwmController[controller].channelUpdateReg = PWM_CHANNEL_UPDATE_REGISTER(controller);
+            g_PwmController[controller].invert[p] = false;
+            g_PwmController[controller].frequency = 0.0;
+            g_PwmController[controller].dutyCycle[p] = 0.0;
+
+            if (g_PwmController[controller].isOpened[p] == true) {
+                AT91_Pwm_DisablePin(pwmProviders[controller], p);
+                AT91_Pwm_ReleasePin(pwmProviders[controller], p);
+            }
         }
     }
 }
