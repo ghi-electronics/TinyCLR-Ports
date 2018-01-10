@@ -524,6 +524,8 @@ struct PwmController {
     AT91_Gpio_Pin                   gpioPin[MAX_PWM_PER_CONTROLLER];
 
     bool                            invert[MAX_PWM_PER_CONTROLLER];
+    bool                            isOpened[MAX_PWM_PER_CONTROLLER];
+
     double                          frequency;
     double                          dutyCycle[MAX_PWM_PER_CONTROLLER];
 };
