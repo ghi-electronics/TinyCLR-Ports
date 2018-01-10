@@ -172,10 +172,15 @@ void LPC17_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
 struct PwmController {
     int32_t                         channel[MAX_PWM_PER_CONTROLLER];
     int32_t                         match[MAX_PWM_PER_CONTROLLER];
+
     LPC17_Gpio_Pin                  gpioPin[MAX_PWM_PER_CONTROLLER];
+
     uint32_t                        outputEnabled[MAX_PWM_PER_CONTROLLER];
     uint32_t                        *matchAddress[MAX_PWM_PER_CONTROLLER];
+
     bool                            invert[MAX_PWM_PER_CONTROLLER];
+    bool                            isOpened[MAX_PWM_PER_CONTROLLER];
+
     double                          frequency;
     double                          dutyCycle[MAX_PWM_PER_CONTROLLER];
 };
