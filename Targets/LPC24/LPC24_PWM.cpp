@@ -96,6 +96,8 @@ const TinyCLR_Api_Info* LPC24_Pwm_GetApi() {
         pwmProviders[i]->GetPinCount = &LPC24_Pwm_GetPinCount;
     }
 
+    LPC24_Pwm_Reset();
+
     pwmApi.Author = "GHI Electronics, LLC";
     pwmApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.PwmProvider";
     pwmApi.Type = TinyCLR_Api_Type::PwmProvider;
@@ -138,6 +140,8 @@ TinyCLR_Result LPC24_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t pi
         PWM1PCR |= (1 << (9 + (g_PwmController[self->Index].match[pin]))); // To enable output on the proper channel
     }
 
+    g_PwmController[self->Index].isOpened[pin] = true;
+
     return TinyCLR_Result::Success;;
 }
 
@@ -145,6 +149,8 @@ TinyCLR_Result LPC24_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t pi
     int32_t actualPin = LPC24_Pwm_GetGpioPinForChannel(self, pin);
 
     LPC24_Gpio_ClosePin(actualPin);
+
+    g_PwmController[self->Index].isOpened[pin] = false;
 
     return TinyCLR_Result::Success;
 }
@@ -400,14 +406,6 @@ void LPC24_Pwm_Reset() {
 
     for (auto controller = 0; controller < TOTAL_PWM_CONTROLLER; controller++) {
         LPC24_Pwm_ResetController(controller);
-
-        for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-            if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p].number != PIN_NONE) {
-                // Reset PWM and close pin
-                LPC24_Pwm_DisablePin(pwmProviders[controller], p);
-                LPC24_Pwm_ReleasePin(pwmProviders[controller], p);
-            }
-        }
     }
 }
 
@@ -434,6 +432,15 @@ void LPC24_Pwm_ResetController(int32_t controller) {
             g_PwmController[pwmProviders[controller]->Index].invert[p] = false;
             g_PwmController[pwmProviders[controller]->Index].frequency = 0.0;
             g_PwmController[pwmProviders[controller]->Index].dutyCycle[p] = 0.0;
+            if (g_PwmController[controller].isOpened[p] == true) {
+                if (controller == 0)
+                    PWM0PCR &= ~(1 << (9 + (g_PwmController[controller].match[p]))); // To disable output on the proper channel
+                if (controller == 1)
+                    PWM1PCR &= ~(1 << (9 + (g_PwmController[controller].match[p]))); // To disable output on the proper channel
+
+                LPC24_Pwm_DisablePin(pwmProviders[controller], p);
+                LPC24_Pwm_ReleasePin(pwmProviders[controller], p);
+            }
         }
     }
 }

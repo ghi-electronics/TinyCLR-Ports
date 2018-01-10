@@ -230,10 +230,15 @@ int32_t LPC24_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self);
 struct PwmController {
     int32_t                     channel[MAX_PWM_PER_CONTROLLER];
     int32_t                     match[MAX_PWM_PER_CONTROLLER];
+
     LPC24_Gpio_Pin              gpioPin[MAX_PWM_PER_CONTROLLER];
+
     uint32_t                    outputEnabled[MAX_PWM_PER_CONTROLLER];
     uint32_t                    *matchAddress[MAX_PWM_PER_CONTROLLER];
+
     bool                        invert[MAX_PWM_PER_CONTROLLER];
+    bool                        isOpened[MAX_PWM_PER_CONTROLLER];
+
     double                      frequency;
     double                      dutyCycle[MAX_PWM_PER_CONTROLLER];
 };
@@ -745,21 +750,21 @@ struct LPC24XX_TIMER {
     //functions.
     static uint32_t inline getIntNo(int Timer) {
         switch (Timer) {
-            case  c_Timer_0:
-                return LPC24XX_VIC::c_IRQ_INDEX_TIMER0;
-                break;
-            case  c_Timer_1:
-                return LPC24XX_VIC::c_IRQ_INDEX_TIMER1;
-                break;
-            case  c_Timer_2:
-                return LPC24XX_VIC::c_IRQ_INDEX_TIMER2;
-                break;
-            case  c_Timer_3:
-                return LPC24XX_VIC::c_IRQ_INDEX_TIMER3;
-                break;
-            default:
-                return(Timer);
-                break;
+        case  c_Timer_0:
+            return LPC24XX_VIC::c_IRQ_INDEX_TIMER0;
+            break;
+        case  c_Timer_1:
+            return LPC24XX_VIC::c_IRQ_INDEX_TIMER1;
+            break;
+        case  c_Timer_2:
+            return LPC24XX_VIC::c_IRQ_INDEX_TIMER2;
+            break;
+        case  c_Timer_3:
+            return LPC24XX_VIC::c_IRQ_INDEX_TIMER3;
+            break;
+        default:
+            return(Timer);
+            break;
         }
     }
 };
@@ -891,21 +896,21 @@ struct LPC24XX_USART {
     //functions.
     static uint32_t inline getIntNo(int ComPortNum) {
         switch (ComPortNum) {
-            case c_Uart_0:
-                return LPC24XX_VIC::c_IRQ_INDEX_UART0;
-                break;
-            case c_Uart_1:
-                return LPC24XX_VIC::c_IRQ_INDEX_UART1;
-                break;
-            case c_Uart_2:
-                return LPC24XX_VIC::c_IRQ_INDEX_UART2;
-                break;
-            case c_Uart_3:
-                return LPC24XX_VIC::c_IRQ_INDEX_UART3;
-                break;
-            default:
-                return(ComPortNum);
-                break;
+        case c_Uart_0:
+            return LPC24XX_VIC::c_IRQ_INDEX_UART0;
+            break;
+        case c_Uart_1:
+            return LPC24XX_VIC::c_IRQ_INDEX_UART1;
+            break;
+        case c_Uart_2:
+            return LPC24XX_VIC::c_IRQ_INDEX_UART2;
+            break;
+        case c_Uart_3:
+            return LPC24XX_VIC::c_IRQ_INDEX_UART3;
+            break;
+        default:
+            return(ComPortNum);
+            break;
         }
     }
 };
@@ -977,7 +982,7 @@ struct LPC24XX_WATCHDOG {
 //
 struct LPC24XX_I2C {
     static const uint32_t c_I2C_Base = 0xE001C000;
-    static const uint32_t c_I2C_Clk_KHz = SYSTEM_CLOCK_HZ/1000;
+    static const uint32_t c_I2C_Clk_KHz = SYSTEM_CLOCK_HZ / 1000;
 
     /****/ volatile uint32_t I2CONSET;
     static const    uint32_t I2EN = 0x00000040;
@@ -1010,7 +1015,7 @@ struct LPC24XX_SPI {
     static const uint32_t c_SPI0_Base = 0xE0068000;
     static const uint32_t c_SPI1_Base = 0xE0030000;
 
-    static const uint32_t c_SPI_Clk_KHz = (LPC24_AHB_CLOCK_HZ/1000);
+    static const uint32_t c_SPI_Clk_KHz = (LPC24_AHB_CLOCK_HZ / 1000);
     static const uint32_t c_SPI0 = 0;
     static const uint32_t c_SPI1 = 1;
 
