@@ -1917,6 +1917,8 @@ const TinyCLR_Api_Info* AT91_UsbClient_GetApi() {
     usbClientApi.Count = 1;
     usbClientApi.Implementation = &usbClientProvider;
 
+    AT91_UsbClient_SoftReset(usbClientProvider.Index);
+
     return &usbClientApi;
 }
 
