@@ -30,8 +30,6 @@ struct LPC17xx_USART {
     static const uint32_t c_UartBase_3 = 0x4009C000;
     static const uint32_t c_UartBase_4 = 0x400A4000;
 
-
-
     static const uint32_t c_ClockRate = LPC17_SYSTEM_CLOCK_HZ / 2;
 
     static const uint32_t c_MAX_BAUDRATE = c_ClockRate / 16;
@@ -401,6 +399,10 @@ void UART_IntHandler(int portNum) {
     volatile uint32_t LSR_Value = USARTC.UART_LSR;           // Store LSR value since it's Read-to-Clear
     volatile uint32_t IIR_Value = USARTC.SEL3.IIR.UART_IIR & LPC17xx_USART::UART_IIR_IID_mask;
 
+    if (g_UartController[portNum].handshakeEnable) {
+            volatile bool dump = USARTC.UART_MSR; // Clr status register
+    }
+
     if (LSR_Value & 0x04) {
         UART_SetErrorEvent(portNum, TinyCLR_Uart_Error::ReceiveParity);
     }
@@ -616,7 +618,7 @@ TinyCLR_Result LPC17_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
         return TinyCLR_Result::NotSupported;
     }
 
-    if (handshaking != TinyCLR_Uart_Handshake::None && portNum != 2) // Only port 2 support handshaking
+    if (handshaking != TinyCLR_Uart_Handshake::None && portNum != 1) // Only port 2 support handshaking
         return TinyCLR_Result::NotSupported;
 
 
