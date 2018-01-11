@@ -1486,7 +1486,7 @@ bool UsbClient_Driver::Initialize(int controller) {
 bool UsbClient_Driver::Uninitialize(int controller) {
     USB_CONTROLLER_STATE *State = &STM32F4_UsbClient_ControllerState[controller].state;
 
-    if (State == nullptr)
+    if (State == nullptr || !State->Initialized)
         return false;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -2683,7 +2683,7 @@ const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi() {
     usbClientApi.Implementation = &usbClientProvider;
 
     //With this uncommented USB fails to start and the program doesn't run
-    //STM32F4_UsbClient_Reset();
+    STM32F4_UsbClient_Reset();
 
     return &usbClientApi;
 }
