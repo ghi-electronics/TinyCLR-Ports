@@ -228,6 +228,10 @@ void LPC24_Uart_InterruptHandler(void *param) {
     volatile uint32_t LSR_Value = USARTC.UART_LSR;                     // Store LSR value since it's Read-to-Clear
     volatile uint32_t IIR_Value = USARTC.SEL3.IIR.UART_IIR & LPC24XX_USART::UART_IIR_IID_mask;
 
+    if (g_LPC24_Uart_Controller[portNum].handshakeEnable) {
+        volatile bool dump = USARTC.UART_MSR; // Clr status register
+    }
+
     if (LSR_Value & 0x04) {
         LPC24_Uart_SetErrorEvent(portNum, TinyCLR_Uart_Error::ReceiveParity);
     }
@@ -433,7 +437,7 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
         return TinyCLR_Result::NotSupported;
     }
 
-    if (handshaking != TinyCLR_Uart_Handshake::None && portNum != 2) // Only port 2 support handshaking
+    if (handshaking != TinyCLR_Uart_Handshake::None && portNum != 1) // Only port 2 support handshaking
         return TinyCLR_Result::NotSupported;
 
 
