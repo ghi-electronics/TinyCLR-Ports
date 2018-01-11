@@ -2682,7 +2682,6 @@ const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi() {
     usbClientApi.Count = 1;
     usbClientApi.Implementation = &usbClientProvider;
 
-    //With this uncommented USB fails to start and the program doesn't run
     STM32F4_UsbClient_Reset();
 
     return &usbClientApi;
