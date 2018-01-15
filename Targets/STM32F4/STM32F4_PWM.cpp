@@ -92,7 +92,6 @@ const TinyCLR_Api_Info* STM32F4_Pwm_GetApi() {
         pwmProviders[i]->SetDesiredFrequency = &STM32F4_Pwm_SetDesiredFrequency;
         pwmProviders[i]->GetMinFrequency = &STM32F4_Pwm_GetMinFrequency;
         pwmProviders[i]->GetMaxFrequency = &STM32F4_Pwm_GetMaxFrequency;
-        pwmProviders[i]->GetActualFrequency = &STM32F4_Pwm_GetActualFrequency;
         pwmProviders[i]->GetPinCount = &STM32F4_Pwm_GetPinCount;
     }
 

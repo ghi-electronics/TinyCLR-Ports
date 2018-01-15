@@ -92,7 +92,6 @@ const TinyCLR_Api_Info* LPC24_Pwm_GetApi() {
         pwmProviders[i]->SetPulseParameters = &LPC24_Pwm_SetPulseParameters;
         pwmProviders[i]->GetMinFrequency = &LPC24_Pwm_GetMinFrequency;
         pwmProviders[i]->GetMaxFrequency = &LPC24_Pwm_GetMaxFrequency;
-        pwmProviders[i]->GetActualFrequency = &LPC24_Pwm_GetActualFrequency;
         pwmProviders[i]->GetPinCount = &LPC24_Pwm_GetPinCount;
     }
 

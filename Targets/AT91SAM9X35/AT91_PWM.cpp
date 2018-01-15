@@ -57,7 +57,6 @@ const TinyCLR_Api_Info* AT91_Pwm_GetApi() {
         pwmProviders[i]->SetPulseParameters = &AT91_Pwm_SetPulseParameters;
         pwmProviders[i]->GetMinFrequency = &AT91_Pwm_GetMinFrequency;
         pwmProviders[i]->GetMaxFrequency = &AT91_Pwm_GetMaxFrequency;
-        pwmProviders[i]->GetActualFrequency = &AT91_Pwm_GetActualFrequency;
         pwmProviders[i]->GetPinCount = &AT91_Pwm_GetPinCount;
     }
 
