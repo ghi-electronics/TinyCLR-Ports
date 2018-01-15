@@ -20,6 +20,8 @@
 const TinyCLR_Api_Provider* apiProvider;
 
 void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
+    ::apiProvider = apiProvider;
+
 #ifdef INCLUDE_ADC
     apiProvider->Add(apiProvider, TARGET(_Adc_GetApi)());
     apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::AdcProvider, TARGET(_Adc_GetApi)()->Name);
@@ -64,8 +66,6 @@ void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 #ifdef INCLUDE_USBCLIENT
     apiProvider->Add(apiProvider, TARGET(_UsbClient_GetApi)());
 #endif
-
-    ::apiProvider = apiProvider;
 }
 
 int main() {
