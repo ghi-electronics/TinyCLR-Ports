@@ -724,7 +724,7 @@ void LPC17_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height,
     case LPC17xx_LCD_Rotation::rotateNormal_0:
 
         if (xOffset == 0 && yOffset == 0 &&
-            width == screenWidth &&    height == screenHeight) {
+            width == screenWidth && height == screenHeight) {
             LPC17_Display_MemCopy(to, from, (screenWidth*screenHeight * 2));
         }
         else {
@@ -886,7 +886,7 @@ TinyCLR_Result LPC17_Display_DrawBuffer(const TinyCLR_Display_Provider* self, in
 }
 
 TinyCLR_Result LPC17_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer) {
-    while (buffer != '\0') {
+    while (buffer != 0) {
         LPC17_Display_WriteFormattedChar(buffer[0]);
         buffer++;
     }
