@@ -95,8 +95,8 @@
 #define INCLUDE_UART
 #define STM32F4_UART_TX_BUFFER_SIZE 256
 #define STM32F4_UART_RX_BUFFER_SIZE 512
-#define STM32F4_UART_TX_PINS  { { PIN(B,  6), AF(7)   }, { PIN(A, 2), AF(7) }, { PIN(B, 10), AF(7) } , { PIN_NONE  , AF_NONE } , { PIN_NONE  , AF_NONE } , { PIN(A, 6) , AF(7)   } }
-#define STM32F4_UART_RX_PINS  { { PIN(B,  7), AF(7)   }, { PIN(A, 3), AF(7) }, { PIN(B, 11), AF(7) } , { PIN_NONE  , AF_NONE } , { PIN_NONE  , AF_NONE } , { PIN(A, 7) , AF(7)   } }
+#define STM32F4_UART_TX_PINS  { { PIN(B,  6), AF(7)   }, { PIN(A, 2), AF(7) }, { PIN(B, 10), AF(7) } , { PIN_NONE  , AF_NONE } , { PIN_NONE  , AF_NONE } , { PIN(C, 6) , AF(8)   } }
+#define STM32F4_UART_RX_PINS  { { PIN(B,  7), AF(7)   }, { PIN(A, 3), AF(7) }, { PIN(B, 11), AF(7) } , { PIN_NONE  , AF_NONE } , { PIN_NONE  , AF_NONE } , { PIN(C, 7) , AF(8)   } }
 #define STM32F4_UART_CTS_PINS { { PIN_NONE  , AF_NONE }, { PIN(A, 0), AF(7) }, { PIN(B, 13), AF(7) } , { PIN_NONE  , AF_NONE } , { PIN_NONE  , AF_NONE } , { PIN_NONE  , AF_NONE } }
 #define STM32F4_UART_RTS_PINS { { PIN_NONE  , AF_NONE }, { PIN(A, 1), AF(7) }, { PIN(B, 14), AF(7) } , { PIN_NONE  , AF_NONE } , { PIN_NONE  , AF_NONE } , { PIN_NONE  , AF_NONE } }
 
