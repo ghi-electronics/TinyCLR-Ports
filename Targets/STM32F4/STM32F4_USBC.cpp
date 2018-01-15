@@ -2659,6 +2659,26 @@ void STM32F4_UsbClient_Reset() {
     }
 }
 
+TinyCLR_Result STM32F4_UsbClient_GetReadBufferSize(const TinyCLR_UsbClient_Provider* self, size_t& size) {
+    size = 1;
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_UsbClient_SetReadBufferSize(const TinyCLR_UsbClient_Provider* self, size_t size) {
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_UsbClient_GetWriteBufferSize(const TinyCLR_UsbClient_Provider* self, size_t& size) {
+    size = 1;
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_UsbClient_SetWriteBufferSize(const TinyCLR_UsbClient_Provider* self, size_t size) {
+    return TinyCLR_Result::Success;
+}
+
 const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi() {
     usbClientProvider.Parent = &usbClientApi;
     usbClientProvider.Index = 0;
@@ -2674,6 +2694,10 @@ const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi() {
     usbClientProvider.SetStringDescriptor = &STM32F4_UsbClient_SetStringDescriptor;
     usbClientProvider.SetDataReceivedHandler = &STM32F4_UsbClient_SetDataReceivedHandler;
     usbClientProvider.SetOsExtendedPropertyHandler = &STM32F4_UsbClient_SetOsExtendedPropertyHandler;
+    usbClientProvider.GetReadBufferSize = &STM32F4_UsbClient_GetReadBufferSize;
+    usbClientProvider.SetReadBufferSize = &STM32F4_UsbClient_SetReadBufferSize;
+    usbClientProvider.GetWriteBufferSize = &STM32F4_UsbClient_GetWriteBufferSize;
+    usbClientProvider.SetWriteBufferSize = &STM32F4_UsbClient_SetWriteBufferSize;
 
     usbClientApi.Author = "GHI Electronics, LLC";
     usbClientApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.UsbClientProvider";

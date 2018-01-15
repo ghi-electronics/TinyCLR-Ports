@@ -120,7 +120,10 @@ TinyCLR_Result STM32F4_Can_IsWritingAllowed(const TinyCLR_Can_Provider* self, bo
 TinyCLR_Result STM32F4_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, size_t& count);
 TinyCLR_Result STM32F4_Can_GetReadErrorCount(const TinyCLR_Can_Provider* self, size_t& count);
 TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t& sourceClock);
+TinyCLR_Result STM32F4_Can_GetReadBufferSize(const TinyCLR_Can_Provider* self, size_t& size);
 TinyCLR_Result STM32F4_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, size_t size);
+TinyCLR_Result STM32F4_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t& size);
+TinyCLR_Result STM32F4_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t size);
 
 ////////////////////////////////////////////////////////////////////////////////
 //DAC
@@ -220,6 +223,10 @@ TinyCLR_Result STM32F4_Uart_GetIsDataTerminalReadyEnabled(const TinyCLR_Uart_Pro
 TinyCLR_Result STM32F4_Uart_SetIsDataTerminalReadyEnabled(const TinyCLR_Uart_Provider* self, bool state);
 TinyCLR_Result STM32F4_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Provider* self, bool& state);
 TinyCLR_Result STM32F4_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Provider* self, bool state);
+TinyCLR_Result STM32F4_Uart_GetReadBufferSize(const TinyCLR_Uart_Provider* self, size_t& size);
+TinyCLR_Result STM32F4_Uart_SetReadBufferSize(const TinyCLR_Uart_Provider* self, size_t size);
+TinyCLR_Result STM32F4_Uart_GetWriteBufferSize(const TinyCLR_Uart_Provider* self, size_t& size);
+TinyCLR_Result STM32F4_Uart_SetWriteBufferSize(const TinyCLR_Uart_Provider* self, size_t size);
 
 ////////////////////////////////////////////////////////////////////////////////
 //USB Client
@@ -237,6 +244,10 @@ TinyCLR_Result STM32F4_UsbClient_SetConfigDescriptor(const TinyCLR_UsbClient_Pro
 TinyCLR_Result STM32F4_UsbClient_SetStringDescriptor(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_StringDescriptorType type, const wchar_t* value);
 TinyCLR_Result STM32F4_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_DataReceivedHandler handler);
 TinyCLR_Result STM32F4_UsbClient_SetOsExtendedPropertyHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_OsExtendedPropertyHandler handler);
+TinyCLR_Result STM32F4_UsbClient_GetReadBufferSize(const TinyCLR_UsbClient_Provider* self, size_t& size);
+TinyCLR_Result STM32F4_UsbClient_SetReadBufferSize(const TinyCLR_UsbClient_Provider* self, size_t size);
+TinyCLR_Result STM32F4_UsbClient_GetWriteBufferSize(const TinyCLR_UsbClient_Provider* self, size_t& size);
+TinyCLR_Result STM32F4_UsbClient_SetWriteBufferSize(const TinyCLR_UsbClient_Provider* self, size_t size);
 
 ////////////////////////////////////////////////////////////////////////////////
 //Interrupt Internal

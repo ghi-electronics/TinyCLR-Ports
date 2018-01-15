@@ -94,6 +94,10 @@ const TinyCLR_Api_Info* STM32F4_Uart_GetApi() {
         uartProviders[i]->SetIsDataTerminalReadyEnabled = STM32F4_Uart_SetIsDataTerminalReadyEnabled;
         uartProviders[i]->GetIsRequestToSendEnabled = STM32F4_Uart_GetIsRequestToSendEnabled;
         uartProviders[i]->SetIsRequestToSendEnabled = STM32F4_Uart_SetIsRequestToSendEnabled;
+        uartProviders[i]->GetReadBufferSize = STM32F4_Uart_GetReadBufferSize;
+        uartProviders[i]->SetReadBufferSize = STM32F4_Uart_SetReadBufferSize;
+        uartProviders[i]->GetWriteBufferSize = STM32F4_Uart_GetWriteBufferSize;
+        uartProviders[i]->SetWriteBufferSize = STM32F4_Uart_SetWriteBufferSize;
     }
 
     uartApi.Author = "GHI Electronics, LLC";
@@ -125,6 +129,26 @@ const TinyCLR_Api_Info* STM32F4_Uart_GetApi() {
     }
 
     return &uartApi;
+}
+
+TinyCLR_Result STM32F4_Uart_GetReadBufferSize(const TinyCLR_Uart_Provider* self, size_t& size) {
+    size = 1;
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Uart_SetReadBufferSize(const TinyCLR_Uart_Provider* self, size_t size) {
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Uart_GetWriteBufferSize(const TinyCLR_Uart_Provider* self, size_t& size) {
+    size = 1;
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Uart_SetWriteBufferSize(const TinyCLR_Uart_Provider* self, size_t size) {
+    return TinyCLR_Result::Success;
 }
 
 void STM32F4_Uart_IrqRx(int portNum) {

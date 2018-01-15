@@ -1053,7 +1053,10 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
         canProvider[i]->GetWriteErrorCount = &STM32F4_Can_GetWriteErrorCount;
         canProvider[i]->GetReadErrorCount = &STM32F4_Can_GetReadErrorCount;
         canProvider[i]->GetSourceClock = &STM32F4_Can_GetSourceClock;
-        canProvider[i]->SetReadBufferSize = &STM32F4_Can_SetReadBufferSize;
+        canProvider[i]->GetReadBufferSize = STM32F4_Can_GetReadBufferSize;
+        canProvider[i]->SetReadBufferSize = STM32F4_Can_SetReadBufferSize;
+        canProvider[i]->GetWriteBufferSize = STM32F4_Can_GetWriteBufferSize;
+        canProvider[i]->SetWriteBufferSize = STM32F4_Can_SetWriteBufferSize;
     }
 
     canApi.Author = "GHI Electronics, LLC";
@@ -1064,6 +1067,35 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
     canApi.Implementation = canProvider;
 
     return &canApi;
+}
+
+TinyCLR_Result STM32F4_Can_GetReadBufferSize(const TinyCLR_Can_Provider* self, size_t& size) {
+    size = 1;
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, size_t size) {
+    int32_t channel = self->Index;
+
+    if (size > 3) {
+        canController[channel].can_max_messages_receiving = size;
+        return TinyCLR_Result::Success;;
+    }
+    else {
+        canController[channel].can_max_messages_receiving = STM32F4_CAN_RX_BUFFER_DEFAULT_SIZE;
+        return TinyCLR_Result::ArgumentInvalid;;
+    }
+}
+
+TinyCLR_Result STM32F4_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t& size) {
+    size = 1;
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t size) {
+    return TinyCLR_Result::Success;
 }
 
 uint32_t STM32_Can_GetLocalTime() {
@@ -1572,19 +1604,6 @@ TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint
     sourceClock = STM32F4_APB1_CLOCK_HZ;
 
     return TinyCLR_Result::Success;;
-}
-
-TinyCLR_Result STM32F4_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, size_t size) {
-    int32_t channel = self->Index;
-
-    if (size > 3) {
-        canController[channel].can_max_messages_receiving = size;
-        return TinyCLR_Result::Success;;
-    }
-    else {
-        canController[channel].can_max_messages_receiving = STM32F4_CAN_RX_BUFFER_DEFAULT_SIZE;
-        return TinyCLR_Result::ArgumentInvalid;;
-    }
 }
 
 #endif // INCLUDE_CAN
