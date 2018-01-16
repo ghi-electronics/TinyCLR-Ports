@@ -3,6 +3,7 @@ MEMORY
 {
     IRAM : ORIGIN = 0x300000, LENGTH = 0x00008000
     ERAM : ORIGIN = 0x20000000, LENGTH = 0x00800000    
+    LR_FLASH : ORIGIN = 0x20000000, LENGTH = 0x08000000    
 }
 SECTIONS
 {
@@ -93,6 +94,10 @@ SECTIONS
     {
         * (SectionForStackTop +LAST)
     }
+    Load$$SDRAM$$Base = ORIGIN(ERAM);
+    Image$$SDRAM$$Length = LENGTH(ERAM);
+    Load$$SRAM$$Base = ORIGIN(IRAM);
+    Image$$SRAM$$Length = LENGTH(IRAM);
 }
 Load$$ER_FLASH$$Base = LOADADDR(ER_FLASH);
 Image$$ER_FLASH$$Length = SIZEOF(ER_FLASH);
