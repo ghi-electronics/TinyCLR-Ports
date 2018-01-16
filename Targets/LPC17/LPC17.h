@@ -62,6 +62,10 @@ TinyCLR_Result LPC17_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, si
 TinyCLR_Result LPC17_Can_GetReadErrorCount(const TinyCLR_Can_Provider* self, size_t& count);
 TinyCLR_Result LPC17_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t& sourceClock);
 TinyCLR_Result LPC17_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, size_t size);
+TinyCLR_Result LPC17_Can_GetReadBufferSize(const TinyCLR_Can_Provider* self, size_t& size);
+TinyCLR_Result LPC17_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, size_t size);
+TinyCLR_Result LPC17_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t& size);
+TinyCLR_Result LPC17_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t size);
 
 //DAC
 const TinyCLR_Api_Info* LPC17_Dac_GetApi();

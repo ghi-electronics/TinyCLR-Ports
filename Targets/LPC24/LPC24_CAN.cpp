@@ -2015,7 +2015,8 @@ struct LPC24_Can_Controller {
     int32_t can_rx_in;
     int32_t can_rx_out;
 
-    int32_t can_max_messages_receiving;
+    size_t can_rxBufferSize;
+    size_t can_txBufferSize;
 
     uint32_t baudrate;
 
@@ -2237,7 +2238,10 @@ const TinyCLR_Api_Info* LPC24_Can_GetApi() {
         canProvider[i]->GetWriteErrorCount = &LPC24_Can_GetWriteErrorCount;
         canProvider[i]->GetReadErrorCount = &LPC24_Can_GetReadErrorCount;
         canProvider[i]->GetSourceClock = &LPC24_Can_GetSourceClock;
-        canProvider[i]->SetReadBufferSize = &LPC24_Can_SetReadBufferSize;
+        canProvider[i]->GetReadBufferSize = LPC24_Can_GetReadBufferSize;
+        canProvider[i]->SetReadBufferSize = LPC24_Can_SetReadBufferSize;
+        canProvider[i]->GetWriteBufferSize = LPC24_Can_GetWriteBufferSize;
+        canProvider[i]->SetWriteBufferSize = LPC24_Can_SetWriteBufferSize;
     }
 
     canApi.Author = "GHI Electronics, LLC";
@@ -2289,7 +2293,7 @@ void CAN_ISR_Rx(int32_t channel) {
         }
     }
 
-    if (canController[channel].can_rx_count > (canController[channel].can_max_messages_receiving - 3)) {
+    if (canController[channel].can_rx_count > (canController[channel].can_rxBufferSize - 3)) {
         if (channel == 0)
             C1CMR = 0x04; // release receive buffer
         else
@@ -2346,7 +2350,7 @@ void CAN_ISR_Rx(int32_t channel) {
     canController[channel].can_rx_count++;
     canController[channel].can_rx_in++;
 
-    if (canController[channel].can_rx_in == canController[channel].can_max_messages_receiving) {
+    if (canController[channel].can_rx_in == canController[channel].can_rxBufferSize) {
         canController[channel].can_rx_in = 0;
     }
 
@@ -2422,7 +2426,7 @@ TinyCLR_Result LPC24_Can_Acquire(const TinyCLR_Can_Provider* self) {
     canController[channel].can_rx_in = 0;
     canController[channel].can_rx_out = 0;
     canController[channel].baudrate = 0;
-    canController[channel].can_max_messages_receiving = LPC24_CAN_RX_BUFFER_DEFAULT_SIZE;
+    canController[channel].can_rxBufferSize = LPC24_CAN_RX_BUFFER_DEFAULT_SIZE;
     canController[channel].provider = self;
 
     canController[channel].canDataFilter.matchFiltersSize = 0;
@@ -2461,8 +2465,11 @@ TinyCLR_Result LPC24_Can_Release(const TinyCLR_Can_Provider* self) {
     LPC24_Gpio_ClosePin(g_LPC24_Can_Tx_Pins[channel].number);
     LPC24_Gpio_ClosePin(g_LPC24_Can_Rx_Pins[channel].number);
 
-    if (canController[channel].canRxMessagesFifo != nullptr)
+    if (canController[channel].canRxMessagesFifo != nullptr) {
         memoryProvider->Free(memoryProvider, canController[channel].canRxMessagesFifo);
+
+        canController[channel].canRxMessagesFifo = nullptr;
+    }
 
     CAN_DisableExplicitFilters(channel);
     CAN_DisableGroupFilters(channel);
@@ -2573,7 +2580,7 @@ TinyCLR_Result LPC24_Can_ReadMessage(const TinyCLR_Can_Provider* self, uint32_t&
         can_msg = &canController[channel].canRxMessagesFifo[canController[channel].can_rx_out];
         canController[channel].can_rx_out++;
 
-        if (canController[channel].can_rx_out == canController[channel].can_max_messages_receiving)
+        if (canController[channel].can_rx_out == canController[channel].can_rxBufferSize)
             canController[channel].can_rx_out = 0;
 
         canController[channel].can_rx_count--;
@@ -2601,7 +2608,8 @@ TinyCLR_Result LPC24_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_t 
 
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-    canController[channel].canRxMessagesFifo = (LPC24_Can_Message*)memoryProvider->Allocate(memoryProvider, canController[channel].can_max_messages_receiving * sizeof(LPC24_Can_Message));
+    if (canController[channel].canRxMessagesFifo == nullptr)
+        canController[channel].canRxMessagesFifo = (LPC24_Can_Message*)memoryProvider->Allocate(memoryProvider, canController[channel].can_rxBufferSize * sizeof(LPC24_Can_Message));
 
     if (canController[channel].canRxMessagesFifo == nullptr) {
         return TinyCLR_Result::OutOfMemory;
@@ -2788,17 +2796,40 @@ TinyCLR_Result LPC24_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32
     return TinyCLR_Result::Success;;
 }
 
+TinyCLR_Result LPC24_Can_GetReadBufferSize(const TinyCLR_Can_Provider* self, size_t& size) {
+    int32_t channel = self->Index;
+
+    size = canController[channel].can_rxBufferSize;
+
+    return TinyCLR_Result::Success;
+}
+
 TinyCLR_Result LPC24_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, size_t size) {
     int32_t channel = self->Index;
 
     if (size > 3) {
-        canController[channel].can_max_messages_receiving = size;
+        canController[channel].can_rxBufferSize = size;
         return TinyCLR_Result::Success;;
     }
     else {
-        canController[channel].can_max_messages_receiving = LPC24_CAN_RX_BUFFER_DEFAULT_SIZE;
+        canController[channel].can_rxBufferSize = LPC24_CAN_RX_BUFFER_DEFAULT_SIZE;
         return TinyCLR_Result::ArgumentInvalid;;
     }
 }
 
+TinyCLR_Result LPC24_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t& size) {
+    int32_t channel = self->Index;
+
+    size = canController[channel].can_txBufferSize;
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result LPC24_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t size) {
+    int32_t channel = self->Index;
+
+    canController[channel].can_txBufferSize = 1;
+
+    return size == 1 ? TinyCLR_Result::Success : TinyCLR_Result::NotSupported;
+}
 #endif // INCLUDE_CAN
