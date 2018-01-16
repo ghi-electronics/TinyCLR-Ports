@@ -143,6 +143,8 @@
 #define AT91C_SHDWC__SHUTDOWN_KEY   0xA5000000   // reset key
 #define AT91C_SHDWC__SHDW           0x01         // processor reset bit
 
+extern const TinyCLR_Api_Provider* apiProvider;
+
 struct AT91_PMC {
     static const uint32_t c_Base = AT91C_BASE_PMC;
 

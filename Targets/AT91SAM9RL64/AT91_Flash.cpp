@@ -364,7 +364,7 @@ TinyCLR_Result AT91_Flash_Acquire(const TinyCLR_Deployment_Provider* self, bool&
 
     AT91_Spi_Acquire(g_AT91_Flash_Controller.provider);
 
-    AT91_Spi_SetActiveSettings(g_AT91_Flash_Controller.provider, SPI_CS, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode1);
+    AT91_Spi_SetActiveSettings(g_AT91_Flash_Controller.provider, SPI_CS, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     AT91_Flash_Reset(self);
 
