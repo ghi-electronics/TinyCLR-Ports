@@ -27,10 +27,6 @@
 #define STM32F4_UART_DATA_BIT_LENGTH_8    8
 #define STM32F4_UART_DATA_BIT_LENGTH_9    9
 
-//Default buffers size
-#define STM32F4_UART_DEFAULT_TX_BUFFER_SIZE  256
-#define STM32F4_UART_DEFAULT_RX_BUFFER_SIZE  512
-
 bool STM32F4_Uart_TxHandshakeEnabledState(int portNum);
 void STM32F4_Uart_TxBufferEmptyInterruptEnable(int portNum, bool enable);
 void STM32F4_Uart_RxBufferFullInterruptEnable(int portNum, bool enable);
