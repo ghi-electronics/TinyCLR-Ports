@@ -960,7 +960,7 @@ TinyCLR_Result LPC24_Display_DrawBuffer(const TinyCLR_Display_Provider* self, in
 }
 
 TinyCLR_Result LPC24_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer) {
-    while (buffer != '\0') {
+    while (buffer != 0) {
         LPC24_Display_WriteFormattedChar(buffer[0]);
         buffer++;
     }
