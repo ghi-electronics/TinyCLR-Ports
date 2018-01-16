@@ -16,8 +16,10 @@
 #include <algorithm>
 #include "LPC24.h"
 
-struct LPC24_Uart_Controller {
+static const uint32_t g_LPC24_Uart_TxDefaultBuffersSize[] = LPC24_UART_DEFAULT_TX_BUFFER_SIZE;
+static const uint32_t g_LPC24_Uart_RxDefaultBuffersSize[] = LPC24_UART_DEFAULT_RX_BUFFER_SIZE;
 
+struct LPC24_Uart_Controller {
 
     uint8_t                             *TxBuffer;
     uint8_t                             *RxBuffer;
@@ -514,13 +516,13 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
     if (g_LPC24_Uart_Controller[portNum].txBufferSize == 0) {
-        g_LPC24_Uart_Controller[portNum].txBufferSize = LPC24_UART_DEFAULT_TX_BUFFER_SIZE ;
+        g_LPC24_Uart_Controller[portNum].txBufferSize = g_LPC24_Uart_TxDefaultBuffersSize[portNum] ;
 
         g_LPC24_Uart_Controller[self->Index].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_LPC24_Uart_Controller[portNum].txBufferSize);
     }
 
     if (g_LPC24_Uart_Controller[portNum].rxBufferSize == 0) {
-        g_LPC24_Uart_Controller[portNum].rxBufferSize = LPC24_UART_DEFAULT_RX_BUFFER_SIZE ;
+        g_LPC24_Uart_Controller[portNum].rxBufferSize = g_LPC24_Uart_RxDefaultBuffersSize[portNum] ;
         g_LPC24_Uart_Controller[self->Index].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_LPC24_Uart_Controller[portNum].rxBufferSize);
     }
 

@@ -22,7 +22,7 @@
 
 #ifdef INCLUDE_CAN
 
-#define LPC24_CAN_RX_BUFFER_DEFAULT_SIZE 128
+static const uint32_t g_LPC24_Can_defaultBuffersSize[] = LPC24_CAN_BUFFER_DEFAULT_SIZE;
 
 #define CAN_TRANSFER_TIMEOUT 0xFFFF
 
@@ -2426,7 +2426,7 @@ TinyCLR_Result LPC24_Can_Acquire(const TinyCLR_Can_Provider* self) {
     canController[channel].can_rx_in = 0;
     canController[channel].can_rx_out = 0;
     canController[channel].baudrate = 0;
-    canController[channel].can_rxBufferSize = LPC24_CAN_RX_BUFFER_DEFAULT_SIZE;
+    canController[channel].can_rxBufferSize = g_LPC24_Can_defaultBuffersSize[channel];
     canController[channel].provider = self;
 
     canController[channel].canDataFilter.matchFiltersSize = 0;
@@ -2812,7 +2812,7 @@ TinyCLR_Result LPC24_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, siz
         return TinyCLR_Result::Success;;
     }
     else {
-        canController[channel].can_rxBufferSize = LPC24_CAN_RX_BUFFER_DEFAULT_SIZE;
+        canController[channel].can_rxBufferSize = g_LPC24_Can_defaultBuffersSize[channel];
         return TinyCLR_Result::ArgumentInvalid;;
     }
 }
