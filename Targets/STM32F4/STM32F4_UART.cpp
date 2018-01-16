@@ -28,8 +28,8 @@
 #define STM32F4_UART_DATA_BIT_LENGTH_9    9
 
 //Default buffers size
-#define STM32F4_UART_TX_BUFFER_SIZE 256
-#define STM32F4_UART_RX_BUFFER_SIZE 512
+#define STM32F4_UART_DEFAULT_TX_BUFFER_SIZE  256
+#define STM32F4_UART_DEFAULT_RX_BUFFER_SIZE  512
 
 bool STM32F4_Uart_TxHandshakeEnabledState(int portNum);
 void STM32F4_Uart_TxBufferEmptyInterruptEnable(int portNum, bool enable);
@@ -505,13 +505,13 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
     if (g_UartController[portNum].txBufferSize == 0) {
-        g_UartController[portNum].txBufferSize = STM32F4_UART_TX_BUFFER_SIZE;
+        g_UartController[portNum].txBufferSize = STM32F4_UART_DEFAULT_TX_BUFFER_SIZE ;
 
         g_UartController[self->Index].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_UartController[portNum].txBufferSize);
     }
 
     if (g_UartController[portNum].rxBufferSize == 0) {
-        g_UartController[portNum].rxBufferSize = STM32F4_UART_RX_BUFFER_SIZE;
+        g_UartController[portNum].rxBufferSize = STM32F4_UART_DEFAULT_RX_BUFFER_SIZE ;
         g_UartController[self->Index].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_UartController[portNum].rxBufferSize);
     }
 

@@ -72,8 +72,8 @@
 
 #define INCLUDE_UART
 #define TOTAL_UART_CONTROLLERS 6
-#define AT91_UART_TX_BUFFER_SIZE (16*1024)
-#define AT91_UART_RX_BUFFER_SIZE (16*1024)
+#define AT91_UART_DEFAULT_TX_BUFFER_SIZE  (16*1024)
+#define AT91_UART_DEFAULT_RX_BUFFER_SIZE  (16*1024)
 #define AT91_UART_TX_PINS { { PIN(A, 9), PS(A) } , { PIN(A, 0), PS(A) }, { PIN(A, 5), PS(A) } , { PIN(A, 7), PS(A) } , { PIN(C, 8), PS(C) } , { PIN(C,16), PS(C) } }
 #define AT91_UART_RX_PINS { { PIN(A,10), PS(A) } , { PIN(A, 1), PS(A) }, { PIN(A, 6), PS(A) } , { PIN(A, 8), PS(A) } , { PIN(C, 9), PS(C) } , { PIN(C,17), PS(C) } }
 #define AT91_UART_RTS_PINS { { PIN_NONE , PS_NONE }, { PIN(A, 2), PS(A) }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } }

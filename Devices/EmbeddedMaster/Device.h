@@ -72,8 +72,8 @@
 
 #define INCLUDE_UART
 #define TOTAL_UART_CONTROLLERS 4
-#define LPC24_UART_TX_BUFFER_SIZE (16 * 1024)
-#define LPC24_UART_RX_BUFFER_SIZE (16 * 1024)
+#define LPC24_UART_DEFAULT_TX_BUFFER_SIZE  (16 * 1024)
+#define LPC24_UART_DEFAULT_RX_BUFFER_SIZE  (16 * 1024)
 #define LPC2478_UART_TX_PINS              { { PIN(0, 2), PF(1)   }, { PIN(2, 0) , PF(2) }, { PIN(4, 22), PF(2)   }, { PIN(0, 25), PF(3)   } }
 #define LPC2478_UART_RX_PINS              { { PIN(0, 3), PF(1)   }, { PIN(2, 1) , PF(2) }, { PIN(4, 23), PF(2)   }, { PIN(0, 26), PF(3)   } }
 #define LPC2478_UART_RTS_PINS             { { PIN_NONE , PF_NONE }, { PIN(3, 30), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } }
