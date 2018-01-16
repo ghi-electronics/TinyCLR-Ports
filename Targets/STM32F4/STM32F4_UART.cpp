@@ -63,6 +63,8 @@ static const STM32F4_Gpio_Pin g_STM32F4_Uart_Tx_Pins[] = STM32F4_UART_TX_PINS;
 static const STM32F4_Gpio_Pin g_STM32F4_Uart_Rx_Pins[] = STM32F4_UART_RX_PINS;
 static const STM32F4_Gpio_Pin g_STM32F4_Uart_Cts_Pins[] = STM32F4_UART_CTS_PINS;
 static const STM32F4_Gpio_Pin g_STM32F4_Uart_Rts_Pins[] = STM32F4_UART_RTS_PINS;
+static const uint32_t g_STM32F4_Uart_RxDefaultBuffersSize[] = STM32F4_UART_DEFAULT_RX_BUFFER_SIZE;
+static const uint32_t g_STM32F4_Uart_TxDefaultBuffersSize[] = STM32F4_UART_DEFAULT_TX_BUFFER_SIZE;
 
 static const int TOTAL_UART_CONTROLLERS = SIZEOF_ARRAY(g_STM32F4_Uart_Tx_Pins);
 
@@ -501,13 +503,13 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
     if (g_UartController[portNum].txBufferSize == 0) {
-        g_UartController[portNum].txBufferSize = STM32F4_UART_DEFAULT_TX_BUFFER_SIZE ;
+        g_UartController[portNum].txBufferSize = g_STM32F4_Uart_TxDefaultBuffersSize[portNum] ;
 
         g_UartController[self->Index].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_UartController[portNum].txBufferSize);
     }
 
     if (g_UartController[portNum].rxBufferSize == 0) {
-        g_UartController[portNum].rxBufferSize = STM32F4_UART_DEFAULT_RX_BUFFER_SIZE ;
+        g_UartController[portNum].rxBufferSize = g_STM32F4_Uart_RxDefaultBuffersSize[portNum] ;
         g_UartController[self->Index].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_UartController[portNum].rxBufferSize);
     }
 

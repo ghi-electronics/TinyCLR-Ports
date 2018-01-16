@@ -20,8 +20,6 @@
 
 #ifdef INCLUDE_CAN
 
-#define STM32F4_CAN_RX_BUFFER_DEFAULT_SIZE 128
-
 #define CAN_TRANSFER_TIMEOUT 0xFFFF
 
 #define CAN_Mode_Normal             ((uint8_t)0x00)  /*!< normal mode */
@@ -328,6 +326,7 @@ struct STM32F4_Can_Controller {
 
 static const STM32F4_Gpio_Pin g_STM32F4_Can_Tx_Pins[] = STM32F4_CAN_TX_PINS;
 static const STM32F4_Gpio_Pin g_STM32F4_Can_Rx_Pins[] = STM32F4_CAN_RX_PINS;
+static const uint32_t g_STM32F4_Can_defaultBuffersSize[] = STM32F4_CAN_BUFFER_DEFAULT_SIZE;
 
 static const int TOTAL_CAN_CONTROLLERS = SIZEOF_ARRAY(g_STM32F4_Can_Tx_Pins);
 
@@ -1086,7 +1085,7 @@ TinyCLR_Result STM32F4_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, s
         return TinyCLR_Result::Success;;
     }
     else {
-        canController[channel].can_rxBufferSize = STM32F4_CAN_RX_BUFFER_DEFAULT_SIZE;
+        canController[channel].can_rxBufferSize = g_STM32F4_Can_defaultBuffersSize[channel];
         return TinyCLR_Result::ArgumentInvalid;;
     }
 }
@@ -1235,7 +1234,7 @@ TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Provider* self) {
     canController[channel].can_rx_in = 0;
     canController[channel].can_rx_out = 0;
     canController[channel].baudrate = 0;
-    canController[channel].can_rxBufferSize = STM32F4_CAN_RX_BUFFER_DEFAULT_SIZE;
+    canController[channel].can_rxBufferSize = g_STM32F4_Can_defaultBuffersSize[channel];
     canController[channel].provider = self;
 
     canController[channel].canRxMessagesFifo = nullptr;
