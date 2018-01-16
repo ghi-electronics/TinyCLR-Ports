@@ -16,6 +16,9 @@
 #include <algorithm>
 #include "AT91.h"
 
+static const uint32_t g_AT91_Uart_TxDefaultBuffersSize[] = AT91_UART_DEFAULT_TX_BUFFER_SIZE;
+static const uint32_t g_AT91_Uart_RxDefaultBuffersSize[] = AT91_UART_DEFAULT_RX_BUFFER_SIZE;
+
 struct AT91_Uart_Controller {
 
 
@@ -413,13 +416,13 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, ui
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
     if (g_AT91_Uart_Controller[portNum].txBufferSize == 0) {
-        g_AT91_Uart_Controller[portNum].txBufferSize = AT91_UART_DEFAULT_TX_BUFFER_SIZE ;
+        g_AT91_Uart_Controller[portNum].txBufferSize = g_AT91_Uart_TxDefaultBuffersSize[portNum] ;
 
         g_AT91_Uart_Controller[self->Index].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_AT91_Uart_Controller[portNum].txBufferSize);
     }
 
     if (g_AT91_Uart_Controller[portNum].rxBufferSize == 0) {
-        g_AT91_Uart_Controller[portNum].rxBufferSize = AT91_UART_DEFAULT_RX_BUFFER_SIZE ;
+        g_AT91_Uart_Controller[portNum].rxBufferSize = g_AT91_Uart_RxDefaultBuffersSize[portNum] ;
         g_AT91_Uart_Controller[self->Index].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_AT91_Uart_Controller[portNum].rxBufferSize);
     }
 

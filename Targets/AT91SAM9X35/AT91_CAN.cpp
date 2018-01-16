@@ -22,7 +22,8 @@
 
 #ifdef INCLUDE_CAN
 
-#define AT91_CAN_RX_BUFFER_DEFAULT_SIZE 128
+static const uint32_t g_AT91_Can_defaultBuffersSize[] = AT91_CAN_BUFFER_DEFAULT_SIZE;
+
 #define CAN_TRANSFER_TIMEOUT 0xFFFFFF
 
 #define CANMB_NUMBER 8
@@ -1451,7 +1452,7 @@ TinyCLR_Result AT91_Can_Acquire(const TinyCLR_Can_Provider* self) {
     canController[channel].can_rx_in = 0;
     canController[channel].can_rx_out = 0;
     canController[channel].baudrate = 0;
-    canController[channel].can_rxBufferSize = AT91_CAN_RX_BUFFER_DEFAULT_SIZE;
+    canController[channel].can_rxBufferSize = g_AT91_Can_defaultBuffersSize[channel];
     canController[channel].provider = self;
 
     canController[channel].canDataFilter.matchFiltersSize = 0;
@@ -1859,7 +1860,7 @@ TinyCLR_Result AT91_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, size
         return TinyCLR_Result::Success;;
     }
     else {
-        canController[channel].can_rxBufferSize = AT91_CAN_RX_BUFFER_DEFAULT_SIZE;
+        canController[channel].can_rxBufferSize = g_AT91_Can_defaultBuffersSize[channel];
         return TinyCLR_Result::ArgumentInvalid;;
     }
 }

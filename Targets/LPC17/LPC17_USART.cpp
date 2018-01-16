@@ -184,6 +184,9 @@ struct LPC17xx_USART {
     }
 };
 
+static const uint32_t g_LPC17_Uart_TxDefaultBuffersSize[] = LPC17_UART_DEFAULT_TX_BUFFER_SIZE;
+static const uint32_t g_LPC17_Uart_RxDefaultBuffersSize[] = LPC17_UART_DEFAULT_RX_BUFFER_SIZE;
+
 struct UartController {
     uint8_t                             *TxBuffer;
     uint8_t                             *RxBuffer;
@@ -727,13 +730,13 @@ TinyCLR_Result LPC17_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
     if (g_UartController[portNum].txBufferSize == 0) {
-        g_UartController[portNum].txBufferSize = LPC17_UART_DEFAULT_TX_BUFFER_SIZE ;
+        g_UartController[portNum].txBufferSize = g_LPC17_Uart_TxDefaultBuffersSize[portNum] ;
 
         g_UartController[self->Index].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_UartController[portNum].txBufferSize);
     }
 
     if (g_UartController[portNum].rxBufferSize == 0) {
-        g_UartController[portNum].rxBufferSize = LPC17_UART_DEFAULT_RX_BUFFER_SIZE ;
+        g_UartController[portNum].rxBufferSize = g_LPC17_Uart_RxDefaultBuffersSize[portNum] ;
         g_UartController[self->Index].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_UartController[portNum].rxBufferSize);
     }
 
