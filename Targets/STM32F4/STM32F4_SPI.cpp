@@ -34,6 +34,8 @@ static const int TOTAL_SPI_CONTROLLERS = SIZEOF_ARRAY(g_STM32F4_Spi_Sclk_Pins);
 
 static ptr_SPI_TypeDef g_STM32_Spi_Port[TOTAL_SPI_CONTROLLERS];
 
+void STM32F4_Spi_Reset();
+
 // Pins
 
 struct SpiController {
@@ -46,6 +48,8 @@ struct SpiController {
     int32_t chipSelectLine;
     int32_t dataBitLength;
     int32_t clockFrequency;
+
+    bool isOpened;
 
     TinyCLR_Spi_Mode spiMode;
 };
@@ -100,14 +104,7 @@ const TinyCLR_Api_Info* STM32F4_Spi_GetApi() {
 #endif
 #endif
 
-    for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        int32_t controller = i;
-
-        STM32F4_Spi_Release(spiProviders[controller]);
-
-        if (g_SpiController[controller].chipSelectLine != PIN_NONE)
-            STM32F4_GpioInternal_ClosePin(g_SpiController[controller].chipSelectLine);
-    }
+    STM32F4_Spi_Reset();
 
     return &spiApi;
 }
@@ -436,6 +433,7 @@ TinyCLR_Result STM32F4_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
     STM32F4_GpioInternal_ConfigurePin(miso.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, miso.alternateFunction);
     STM32F4_GpioInternal_ConfigurePin(mosi.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, mosi.alternateFunction);
 
+    g_SpiController[controller].isOpened = true;
     return TinyCLR_Result::Success;
 }
 
@@ -495,6 +493,14 @@ TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Provider* self) {
     STM32F4_GpioInternal_ClosePin(miso.number);
     STM32F4_GpioInternal_ClosePin(mosi.number);
 
+    if (g_SpiController[controller].chipSelectLine != PIN_NONE) {
+        STM32F4_GpioInternal_ClosePin(g_SpiController[controller].chipSelectLine);
+
+        g_SpiController[controller].chipSelectLine = PIN_NONE;
+    }
+
+    g_SpiController[controller].isOpened = false;
+
     return TinyCLR_Result::Success;
 }
 
@@ -532,4 +538,12 @@ TinyCLR_Result STM32F4_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider
     dataBitLengthsCount = dataBitsCount;
 
     return TinyCLR_Result::Success;
+}
+
+void STM32F4_Spi_Reset() {
+    for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
+        if (g_SpiController[i].isOpened == true) {
+            STM32F4_Spi_Release(spiProviders[i]);
+        }
+    }
 }
