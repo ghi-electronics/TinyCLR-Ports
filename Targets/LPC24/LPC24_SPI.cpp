@@ -272,11 +272,13 @@ struct SpiController {
     size_t readLength;
     size_t readOffset;
 
-    int32_t ChipSelectLine;
-    int32_t ClockFrequency;
-    int32_t DataBitLength;
+    int32_t chipSelectLine;
+    int32_t clockFrequency;
+    int32_t dataBitLength;
 
-    TinyCLR_Spi_Mode Mode;
+    bool isOpened;
+
+    TinyCLR_Spi_Mode spiMode;
 };
 
 static SpiController g_SpiController[TOTAL_SPI_CONTROLLERS];
@@ -284,6 +286,8 @@ static SpiController g_SpiController[TOTAL_SPI_CONTROLLERS];
 static uint8_t spiProviderDefs[TOTAL_SPI_CONTROLLERS * sizeof(TinyCLR_Spi_Provider)];
 static TinyCLR_Spi_Provider* spiProviders[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Api_Info spiApi;
+
+void LPC24_Spi_Reset();
 
 const TinyCLR_Api_Info* LPC24_Spi_GetApi() {
     for (int i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
@@ -309,135 +313,27 @@ const TinyCLR_Api_Info* LPC24_Spi_GetApi() {
     spiApi.Version = 0;
     spiApi.Count = TOTAL_SPI_CONTROLLERS;
     spiApi.Implementation = spiProviders;
+
+    LPC24_Spi_Reset();
+
     return &spiApi;
 }
 
 bool LPC24_Spi_Transaction_Start(int32_t controller) {
-
-    uint32_t clkPin, misoPin, mosiPin;
-    LPC24_Gpio_PinFunction clkMode, misoMode, mosiMode;
-
-    LPC24XX_SPI & SPI = LPC24XX::SPI(controller);
-
-    clkPin = g_lpc24_spi_sclk_pins[controller].number;
-    misoPin = g_lpc24_spi_miso_pins[controller].number;
-    mosiPin = g_lpc24_spi_mosi_pins[controller].number;
-
-    clkMode = g_lpc24_spi_sclk_pins[controller].pinFunction;
-    misoMode = g_lpc24_spi_miso_pins[controller].pinFunction;
-    mosiMode = g_lpc24_spi_mosi_pins[controller].pinFunction;
-
-    int SCR, CPSDVSR;
-    uint32_t clockKhz = g_SpiController[controller].ClockFrequency / 1000;
-    uint32_t divider = (100 * LPC24XX_SPI::c_SPI_Clk_KHz / clockKhz); // 100 is only to avoid floating points
-    divider /= 2; // because CPSDVSR is even numbeer 2 to 254, so we are calculating using X = 2*CPSDVSR (x:1 to 127);
-    divider += 50;
-    divider /= 100;
-
-    SCR = divider / (127 + 1);// assuming X = Max value = 127
-    CPSDVSR = divider / (SCR + 1); // This is X
-    CPSDVSR *= 2;
-
-    if (SCR > 255) {
-
-        SCR = 255;
-
-    }
-
-    if (CPSDVSR <= 2) {
-
-        CPSDVSR = 2;
-
-    }
-
-    if (CPSDVSR >= 255) {
-
-        CPSDVSR = 254;
-
-    }
-
-    SPI.SSPxCPSR = CPSDVSR; // An even number between 2 and 254
-
-    LPC24_Gpio_ConfigurePin(clkPin, LPC24_Gpio_Direction::Input, clkMode, LPC24_Gpio_PinMode::Inactive);
-    LPC24_Gpio_ConfigurePin(misoPin, LPC24_Gpio_Direction::Input, misoMode, LPC24_Gpio_PinMode::Inactive);
-    LPC24_Gpio_ConfigurePin(mosiPin, LPC24_Gpio_Direction::Input, mosiMode, LPC24_Gpio_PinMode::Inactive);
-
-
-    SPI.SSPxCR1 = 0x02;//master
-
-    // set how many bits
-    if (g_SpiController[controller].DataBitLength == DATA_BIT_LENGTH_16) {
-
-        SPI.SSPxCR0 = 0x0F;
-
-    }
-    /*
-    else if(LPC24XX_SPI_Driver::is9Bit[index]) { // 9 bit
-
-        SPI.SSPxCR0 = 0x08;
-    }
-    */
-    else { // 8 bit
-
-        SPI.SSPxCR0 = 0x07;
-
-    }
-
-    SPI.SSPxCR0 &= ~((1 << 4) | (1 << 5));// SPI mode
-    SPI.SSPxCR0 &= ~(1 << 7);
-    SPI.SSPxCR0 &= ~(1 << 6);
-
-    switch (g_SpiController[controller].Mode) {
-
-    case TinyCLR_Spi_Mode::Mode0: // CPOL = 0, CPHA = 0.
-
-        break;
-
-    case TinyCLR_Spi_Mode::Mode1: // CPOL = 0, CPHA = 1.
-        SPI.SSPxCR0 |= (1 << 7);
-        break;
-
-    case TinyCLR_Spi_Mode::Mode2: //  CPOL = 1, CPHA = 0.
-        SPI.SSPxCR0 |= (1 << 6);
-        break;
-
-    case TinyCLR_Spi_Mode::Mode3: // CPOL = 1, CPHA = 1
-        SPI.SSPxCR0 |= (1 << 6) | (1 << 7);
-        break;
-    }
-
-    SPI.SSPxCR0 &= ~(0xFF << 8);
-    SPI.SSPxCR0 |= (SCR << 8);
-
-    // CS setup
-    LPC24_Gpio_EnableOutputPin(g_SpiController[controller].ChipSelectLine, false);
+    LPC24_Gpio_Write(nullptr, g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::Low);
 
     return true;
 }
 
 bool LPC24_Spi_Transaction_Stop(int32_t controller) {
-    LPC24_Gpio_Write(nullptr, g_SpiController[controller].ChipSelectLine, TinyCLR_Gpio_PinValue::High);
-
-    TinyCLR_Gpio_PinDriveMode res = TinyCLR_Gpio_PinDriveMode::InputPullDown;
-
-    if (g_SpiController[controller].Mode == TinyCLR_Spi_Mode::Mode3) {
-        res = TinyCLR_Gpio_PinDriveMode::InputPullUp;
-    }
-
-    int32_t clkPin = g_lpc24_spi_sclk_pins[controller].number;
-    int32_t misoPin = g_lpc24_spi_miso_pins[controller].number;
-    int32_t mosiPin = g_lpc24_spi_mosi_pins[controller].number;
-
-
-    LPC24_Gpio_EnableInputPin(clkPin, res);
-    LPC24_Gpio_EnableInputPin(misoPin, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-    LPC24_Gpio_EnableInputPin(mosiPin, TinyCLR_Gpio_PinDriveMode::InputPullDown);
+    LPC24_Gpio_Write(nullptr, g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::High);
 
     return true;
 }
 
 
 bool LPC24_Spi_Transaction_nWrite8_nRead8(int32_t controller) {
+    LPC24XX_SPI & SPI = LPC24XX::SPI(controller);
 
     uint8_t Data8;
     uint8_t* Write8 = g_SpiController[controller].writeBuffer;
@@ -446,8 +342,6 @@ bool LPC24_Spi_Transaction_nWrite8_nRead8(int32_t controller) {
     int32_t ReadCount = g_SpiController[controller].readLength;
     int32_t ReadStartOffset = g_SpiController[controller].readOffset;
     int32_t ReadTotal = 0;
-
-    LPC24XX_SPI & SPI = LPC24XX::SPI(controller);
 
     if (ReadCount) {
         ReadTotal = ReadCount + ReadStartOffset; // we need to read as many bytes as the buffer is long, plus the offset at which we start
@@ -553,7 +447,7 @@ TinyCLR_Result LPC24_Spi_TransferFullDuplex(const TinyCLR_Spi_Provider* self, co
     g_SpiController[controller].writeBuffer = (uint8_t*)writeBuffer;
     g_SpiController[controller].writeLength = writeLength;
 
-    if (g_SpiController[controller].DataBitLength == DATA_BIT_LENGTH_16) {
+    if (g_SpiController[controller].dataBitLength == DATA_BIT_LENGTH_16) {
         if (!LPC24_Spi_Transaction_nWrite16_nRead16(controller))
             return TinyCLR_Result::InvalidOperation;
     }
@@ -583,7 +477,7 @@ TinyCLR_Result LPC24_Spi_Read(const TinyCLR_Spi_Provider* self, uint8_t* buffer,
     g_SpiController[controller].writeBuffer = nullptr;
     g_SpiController[controller].writeLength = 0;
 
-    if (g_SpiController[controller].DataBitLength == DATA_BIT_LENGTH_16) {
+    if (g_SpiController[controller].dataBitLength == DATA_BIT_LENGTH_16) {
         if (!LPC24_Spi_Transaction_nWrite16_nRead16(controller))
             return TinyCLR_Result::InvalidOperation;
     }
@@ -612,7 +506,7 @@ TinyCLR_Result LPC24_Spi_Write(const TinyCLR_Spi_Provider* self, const uint8_t* 
     g_SpiController[controller].writeBuffer = (uint8_t*)buffer;
     g_SpiController[controller].writeLength = length;
 
-    if (g_SpiController[controller].DataBitLength == DATA_BIT_LENGTH_16) {
+    if (g_SpiController[controller].dataBitLength == DATA_BIT_LENGTH_16) {
         if (!LPC24_Spi_Transaction_nWrite16_nRead16(controller))
             return TinyCLR_Result::InvalidOperation;
     }
@@ -633,19 +527,125 @@ TinyCLR_Result LPC24_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int
     if (controller >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
-    g_SpiController[controller].ChipSelectLine = chipSelectLine;
-    g_SpiController[controller].ClockFrequency = clockFrequency;
-    g_SpiController[controller].DataBitLength = dataBitLength;
-    g_SpiController[controller].Mode = mode;
+    if (g_SpiController[controller].chipSelectLine == chipSelectLine
+        && g_SpiController[controller].dataBitLength == dataBitLength
+        && g_SpiController[controller].spiMode == mode
+        && g_SpiController[controller].clockFrequency == clockFrequency) {
+        return TinyCLR_Result::Success;
+    }
+
+    g_SpiController[controller].chipSelectLine = chipSelectLine;
+    g_SpiController[controller].clockFrequency = clockFrequency;
+    g_SpiController[controller].dataBitLength = dataBitLength;
+    g_SpiController[controller].spiMode = mode;
+
+    LPC24XX_SPI & SPI = LPC24XX::SPI(controller);
+
+    int SCR, CPSDVSR;
+    uint32_t clockKhz = g_SpiController[controller].clockFrequency / 1000;
+    uint32_t divider = (100 * LPC24XX_SPI::c_SPI_Clk_KHz / clockKhz); // 100 is only to avoid floating points
+    divider /= 2; // because CPSDVSR is even numbeer 2 to 254, so we are calculating using X = 2*CPSDVSR (x:1 to 127);
+    divider += 50;
+    divider /= 100;
+
+    SCR = divider / (127 + 1);// assuming X = Max value = 127
+    CPSDVSR = divider / (SCR + 1); // This is X
+    CPSDVSR *= 2;
+
+    if (SCR > 255) {
+
+        SCR = 255;
+
+    }
+
+    if (CPSDVSR <= 2) {
+
+        CPSDVSR = 2;
+
+    }
+
+    if (CPSDVSR >= 255) {
+
+        CPSDVSR = 254;
+
+    }
+
+    SPI.SSPxCPSR = CPSDVSR; // An even number between 2 and 254
+
+    SPI.SSPxCR1 = 0x02;//master
+
+    // set how many bits
+    if (g_SpiController[controller].dataBitLength == DATA_BIT_LENGTH_16) {
+
+        SPI.SSPxCR0 = 0x0F;
+
+    }
+    /*
+    else if(LPC24XX_SPI_Driver::is9Bit[index]) { // 9 bit
+
+        SPI.SSPxCR0 = 0x08;
+    }
+    */
+    else { // 8 bit
+
+        SPI.SSPxCR0 = 0x07;
+
+    }
+
+    SPI.SSPxCR0 &= ~((1 << 4) | (1 << 5));// SPI mode
+    SPI.SSPxCR0 &= ~(1 << 7);
+    SPI.SSPxCR0 &= ~(1 << 6);
+
+    switch (g_SpiController[controller].spiMode) {
+
+    case TinyCLR_Spi_Mode::Mode0: // CPOL = 0, CPHA = 0.
+
+        break;
+
+    case TinyCLR_Spi_Mode::Mode1: // CPOL = 0, CPHA = 1.
+        SPI.SSPxCR0 |= (1 << 7);
+        break;
+
+    case TinyCLR_Spi_Mode::Mode2: //  CPOL = 1, CPHA = 0.
+        SPI.SSPxCR0 |= (1 << 6);
+        break;
+
+    case TinyCLR_Spi_Mode::Mode3: // CPOL = 1, CPHA = 1
+        SPI.SSPxCR0 |= (1 << 6) | (1 << 7);
+        break;
+    }
+
+    SPI.SSPxCR0 &= ~(0xFF << 8);
+    SPI.SSPxCR0 |= (SCR << 8);
+
+    if (g_SpiController[controller].chipSelectLine != PIN_NONE) {
+        if (LPC24_Gpio_OpenPin(g_SpiController[controller].chipSelectLine)) {
+            LPC24_Gpio_EnableOutputPin(g_SpiController[controller].chipSelectLine, true);
+        }
+        else {
+            return TinyCLR_Result::SharingViolation;
+        }
+
+    }
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
+    if (self == nullptr)
+        return TinyCLR_Result::ArgumentNull;
     int32_t controller = (self->Index);
 
-    int32_t clkPin = g_lpc24_spi_sclk_pins[controller].number;
-    int32_t misoPin = g_lpc24_spi_miso_pins[controller].number;
-    int32_t mosiPin = g_lpc24_spi_mosi_pins[controller].number;
+    uint32_t clkPin, misoPin, mosiPin;
+    LPC24_Gpio_PinFunction clkMode, misoMode, mosiMode;
+
+    clkPin = g_lpc24_spi_sclk_pins[controller].number;
+    misoPin = g_lpc24_spi_miso_pins[controller].number;
+    mosiPin = g_lpc24_spi_mosi_pins[controller].number;
+
+    clkMode = g_lpc24_spi_sclk_pins[controller].pinFunction;
+    misoMode = g_lpc24_spi_miso_pins[controller].pinFunction;
+    mosiMode = g_lpc24_spi_mosi_pins[controller].pinFunction;
+
 
     // Check each pin single time make sure once fail not effect to other pins
     if (!LPC24_Gpio_OpenPin(clkPin))
@@ -665,21 +665,26 @@ TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
         break;
     }
 
+    LPC24_Gpio_ConfigurePin(clkPin, LPC24_Gpio_Direction::Input, clkMode, LPC24_Gpio_PinMode::Inactive);
+    LPC24_Gpio_ConfigurePin(misoPin, LPC24_Gpio_Direction::Input, misoMode, LPC24_Gpio_PinMode::Inactive);
+    LPC24_Gpio_ConfigurePin(mosiPin, LPC24_Gpio_Direction::Input, mosiMode, LPC24_Gpio_PinMode::Inactive);
+
+    g_SpiController[controller].isOpened = true;
+
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Provider* self) {
+    if (self == nullptr)
+        return TinyCLR_Result::ArgumentNull;
+
     int32_t controller = (self->Index);
+
+
 
     int32_t clkPin = g_lpc24_spi_sclk_pins[controller].number;
     int32_t misoPin = g_lpc24_spi_miso_pins[controller].number;
     int32_t mosiPin = g_lpc24_spi_mosi_pins[controller].number;
-
-    // Check each pin single time make sure once fail not effect to other pins
-    LPC24_Gpio_ClosePin(clkPin);
-    LPC24_Gpio_ClosePin(misoPin);
-    LPC24_Gpio_ClosePin(mosiPin);
-
 
     switch (controller) {
     case 0:
@@ -691,6 +696,19 @@ TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Provider* self) {
         break;
 
     }
+
+    // Check each pin single time make sure once fail not effect to other pins
+    LPC24_Gpio_EnableInputPin(clkPin, TinyCLR_Gpio_PinDriveMode::InputPullDown);
+    LPC24_Gpio_EnableInputPin(misoPin, TinyCLR_Gpio_PinDriveMode::InputPullDown);
+    LPC24_Gpio_EnableInputPin(mosiPin, TinyCLR_Gpio_PinDriveMode::InputPullDown);
+
+    if (g_SpiController[controller].chipSelectLine != PIN_NONE) {
+        LPC24_Gpio_EnableInputPin(g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinDriveMode::InputPullDown);
+
+        g_SpiController[controller].chipSelectLine = PIN_NONE;
+    }
+
+    g_SpiController[controller].isOpened = false;
 
     return TinyCLR_Result::Success;
 }
@@ -731,6 +749,8 @@ TinyCLR_Result LPC24_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* 
 
 void LPC24_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        LPC24_Spi_Release(spiProviders[i]);
+        if (g_SpiController[i].isOpened == true) {
+            LPC24_Spi_Release(spiProviders[i]);
+        }
     }
 }
