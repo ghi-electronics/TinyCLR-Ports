@@ -680,8 +680,6 @@ TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Provider* self) {
 
     int32_t controller = (self->Index);
 
-
-
     int32_t clkPin = g_lpc24_spi_sclk_pins[controller].number;
     int32_t misoPin = g_lpc24_spi_miso_pins[controller].number;
     int32_t mosiPin = g_lpc24_spi_mosi_pins[controller].number;

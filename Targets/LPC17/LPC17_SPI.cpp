@@ -836,7 +836,7 @@ TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Provider* self) {
     int32_t controller = (self->Index);
 
     if (controller == 1) // spi flash => can not reset or release during runing!
-        return TinyCLR_Result::ArgumentNull;
+        return TinyCLR_Result::Success;
 
     int32_t clkPin = g_lpc17_spi_sclk_pins[controller].number;
     int32_t misoPin = g_lpc17_spi_miso_pins[controller].number;

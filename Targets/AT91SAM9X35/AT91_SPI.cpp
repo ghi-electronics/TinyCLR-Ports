@@ -380,10 +380,10 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Provider* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    int32_t controller = (self->Index);
+    int32_t controller = (self->Index);    
 
     if (controller == 0) // SPI0 is for serial flash
-        return TinyCLR_Result::ArgumentNull;
+        return TinyCLR_Result::Success;
 
     AT91_PMC &pmc = AT91::PMC();
 
