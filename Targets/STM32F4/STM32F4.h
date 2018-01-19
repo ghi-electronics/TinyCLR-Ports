@@ -244,10 +244,6 @@ TinyCLR_Result STM32F4_UsbClient_SetConfigDescriptor(const TinyCLR_UsbClient_Pro
 TinyCLR_Result STM32F4_UsbClient_SetStringDescriptor(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_StringDescriptorType type, const wchar_t* value);
 TinyCLR_Result STM32F4_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_DataReceivedHandler handler);
 TinyCLR_Result STM32F4_UsbClient_SetOsExtendedPropertyHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_OsExtendedPropertyHandler handler);
-TinyCLR_Result STM32F4_UsbClient_GetReadBufferSize(const TinyCLR_UsbClient_Provider* self, size_t& size);
-TinyCLR_Result STM32F4_UsbClient_SetReadBufferSize(const TinyCLR_UsbClient_Provider* self, size_t size);
-TinyCLR_Result STM32F4_UsbClient_GetWriteBufferSize(const TinyCLR_UsbClient_Provider* self, size_t& size);
-TinyCLR_Result STM32F4_UsbClient_SetWriteBufferSize(const TinyCLR_UsbClient_Provider* self, size_t size);
 
 ////////////////////////////////////////////////////////////////////////////////
 //Interrupt Internal
