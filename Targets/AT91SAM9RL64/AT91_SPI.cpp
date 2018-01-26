@@ -70,7 +70,8 @@ const TinyCLR_Api_Info* AT91_Spi_GetApi() {
     spiApi.Type = TinyCLR_Api_Type::SpiProvider;
     spiApi.Version = 0;
     spiApi.Count = TOTAL_SPI_CONTROLLERS;
-    spiApi.Implementation = spiProviders;
+
+    spiApi.Implementation = (spiApi.Count > 1) ? spiProviders : reinterpret_cast<TinyCLR_Spi_Provider**>(spiProviderDefs);
 
     AT91_Spi_Reset();
 
