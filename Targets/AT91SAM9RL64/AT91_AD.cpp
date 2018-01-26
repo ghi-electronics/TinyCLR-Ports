@@ -18,12 +18,11 @@
 #define MAX_AVERAGE_AMOUNT 5
 
 //registers
-#define ADC_CONTROLLER_REGISTER_BASE 0xF804C000
-#define ADC_CONTROLLER_CHANNEL_DATA_REGISTER_BASE (ADC_CONTROLLER_REGISTER_BASE + 0x50)               // ADC_CDR0 ~ ADC_CDR11
-#define ADC_CONTROLLER_CONTROL_REGISTER (*(volatile uint32_t *)(ADC_CONTROLLER_REGISTER_BASE + 0x00)) // ADC_CR
-#define ADC_CONTROLLER_MODE_REGISTER (*(volatile uint32_t *)(ADC_CONTROLLER_REGISTER_BASE + 0x04))    // ADC_MR
-#define ADC_CONTROLLER_CHANNEL_ENABLE (*(volatile uint32_t *)(ADC_CONTROLLER_REGISTER_BASE + 0x10))   // ADC_CHER
-#define ADC_CONTROLLER_TRIGGER_REGISTER (*(volatile uint32_t *)(ADC_CONTROLLER_REGISTER_BASE + 0xC0)) // ADC_TRGR
+#define TOUCHSCREEN_ADC_CONTROLLER_CHANNEL_SELECT                          (*reinterpret_cast<volatile unsigned long *>(0xFFFD0010)) // TSADCC_CHER
+#define TOUCHSCREEN_ADC_CONTROLLER_CHANNEL_DISABLE_REGISTER                (*reinterpret_cast<volatile unsigned long *>(0xFFFD0014)) // TSADCC_MR
+#define TOUCHSCREEN_ADC_CONTROLLER_MODE_REGISTER                           (*reinterpret_cast<volatile unsigned long *>(0xFFFD0004)) // TSADCC_MR
+#define TOUCHSCREEN_ADC_CONTROLLER_TRIGGER_REGISTER                        (*reinterpret_cast<volatile unsigned long *>(0xFFFD0008)) // TSADCC_TRGR
+#define TOUCHSCREEN_ADC_CONTROLLER_CHANNEL_DATA_REGISTER_BASE_ADDRESS      0xFFFD0030 // TSADCC_TRGR
 
 static TinyCLR_Adc_Provider adcProvider;
 static TinyCLR_Api_Info adcApi;
@@ -108,9 +107,9 @@ TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Provider *self, int32_t
         return TinyCLR_Result::SharingViolation;
     }
 
-    ADC_CONTROLLER_CHANNEL_ENABLE = (1 << channel);
-    ADC_CONTROLLER_MODE_REGISTER = (63 << 8);
-    ADC_CONTROLLER_TRIGGER_REGISTER = 6;
+    TOUCHSCREEN_ADC_CONTROLLER_CHANNEL_SELECT = (1 << channel);
+    TOUCHSCREEN_ADC_CONTROLLER_MODE_REGISTER = (1 << 6) | (63 << 8) | (0xf << 24);
+    TOUCHSCREEN_ADC_CONTROLLER_TRIGGER_REGISTER = 6;
 
     return TinyCLR_Result::Success;
 }
@@ -167,11 +166,10 @@ TinyCLR_Result AT91_Adc_ReadValue(const TinyCLR_Adc_Provider *self, int32_t chan
 
     value = 0;
 
-    ADC_CONTROLLER_CONTROL_REGISTER = (1 << 1); // Starts the convertion process.
     // get the values
     for (auto i = 0; i < MAX_AVERAGE_AMOUNT; i++) {
         AT91_Time_Delay(nullptr, 5);
-        valueToStoreInArray = *((volatile uint32_t *)(ADC_CONTROLLER_CHANNEL_DATA_REGISTER_BASE + (channel * 0x4)));
+        valueToStoreInArray = *(reinterpret_cast<volatile uint32_t *>(TOUCHSCREEN_ADC_CONTROLLER_CHANNEL_DATA_REGISTER_BASE_ADDRESS + (channel * 0x4)));
         arrayValuesToSort[i] = valueToStoreInArray;
     }
 
