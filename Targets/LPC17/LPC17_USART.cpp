@@ -730,13 +730,13 @@ TinyCLR_Result LPC17_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
     if (g_UartController[portNum].txBufferSize == 0) {
-        g_UartController[portNum].txBufferSize = g_LPC17_Uart_TxDefaultBuffersSize[portNum] ;
+        g_UartController[portNum].txBufferSize = g_LPC17_Uart_TxDefaultBuffersSize[portNum];
 
         g_UartController[self->Index].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_UartController[portNum].txBufferSize);
     }
 
     if (g_UartController[portNum].rxBufferSize == 0) {
-        g_UartController[portNum].rxBufferSize = g_LPC17_Uart_RxDefaultBuffersSize[portNum] ;
+        g_UartController[portNum].rxBufferSize = g_LPC17_Uart_RxDefaultBuffersSize[portNum];
         g_UartController[self->Index].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_UartController[portNum].rxBufferSize);
     }
 
@@ -798,19 +798,20 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Provider* self) {
     g_UartController[portNum].rxBufferCount = 0;
     g_UartController[portNum].rxBufferIn = 0;
     g_UartController[portNum].rxBufferOut = 0;
+    if (apiProvider != nullptr) {
+        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+        if (g_UartController[self->Index].txBufferSize != 0) {
+            memoryProvider->Free(memoryProvider, g_UartController[self->Index].TxBuffer);
 
-    if (g_UartController[self->Index].txBufferSize != 0) {
-        memoryProvider->Free(memoryProvider, g_UartController[self->Index].TxBuffer);
+            g_UartController[self->Index].txBufferSize = 0;
+        }
 
-        g_UartController[self->Index].txBufferSize = 0;
-    }
+        if (g_UartController[self->Index].rxBufferSize != 0) {
+            memoryProvider->Free(memoryProvider, g_UartController[self->Index].RxBuffer);
 
-    if (g_UartController[self->Index].rxBufferSize != 0) {
-        memoryProvider->Free(memoryProvider, g_UartController[self->Index].RxBuffer);
-
-        g_UartController[self->Index].rxBufferSize = 0;
+            g_UartController[self->Index].rxBufferSize = 0;
+        }
     }
 
     g_UartController[portNum].isOpened = false;

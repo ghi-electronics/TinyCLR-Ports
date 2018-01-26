@@ -503,13 +503,13 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
     if (g_UartController[portNum].txBufferSize == 0) {
-        g_UartController[portNum].txBufferSize = g_STM32F4_Uart_TxDefaultBuffersSize[portNum] ;
+        g_UartController[portNum].txBufferSize = g_STM32F4_Uart_TxDefaultBuffersSize[portNum];
 
         g_UartController[self->Index].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_UartController[portNum].txBufferSize);
     }
 
     if (g_UartController[portNum].rxBufferSize == 0) {
-        g_UartController[portNum].rxBufferSize = g_STM32F4_Uart_RxDefaultBuffersSize[portNum] ;
+        g_UartController[portNum].rxBufferSize = g_STM32F4_Uart_RxDefaultBuffersSize[portNum];
         g_UartController[self->Index].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_UartController[portNum].rxBufferSize);
     }
 
@@ -617,21 +617,21 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
     STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Tx_Pins[portNum].number);
     STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Cts_Pins[portNum].number);
     STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Rts_Pins[portNum].number);
+    if (apiProvider != nullptr) {
+        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+        if (g_UartController[self->Index].txBufferSize != 0) {
+            memoryProvider->Free(memoryProvider, g_UartController[self->Index].TxBuffer);
 
-    if (g_UartController[self->Index].txBufferSize != 0) {
-        memoryProvider->Free(memoryProvider, g_UartController[self->Index].TxBuffer);
+            g_UartController[self->Index].txBufferSize = 0;
+        }
 
-        g_UartController[self->Index].txBufferSize = 0;
+        if (g_UartController[self->Index].rxBufferSize != 0) {
+            memoryProvider->Free(memoryProvider, g_UartController[self->Index].RxBuffer);
+
+            g_UartController[self->Index].rxBufferSize = 0;
+        }
     }
-
-    if (g_UartController[self->Index].rxBufferSize != 0) {
-        memoryProvider->Free(memoryProvider, g_UartController[self->Index].RxBuffer);
-
-        g_UartController[self->Index].rxBufferSize = 0;
-    }
-
     g_UartController[portNum].isOpened = false;
 
     return TinyCLR_Result::Success;

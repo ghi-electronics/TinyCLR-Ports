@@ -516,13 +516,13 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
     if (g_LPC24_Uart_Controller[portNum].txBufferSize == 0) {
-        g_LPC24_Uart_Controller[portNum].txBufferSize = g_LPC24_Uart_TxDefaultBuffersSize[portNum] ;
+        g_LPC24_Uart_Controller[portNum].txBufferSize = g_LPC24_Uart_TxDefaultBuffersSize[portNum];
 
         g_LPC24_Uart_Controller[self->Index].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_LPC24_Uart_Controller[portNum].txBufferSize);
     }
 
     if (g_LPC24_Uart_Controller[portNum].rxBufferSize == 0) {
-        g_LPC24_Uart_Controller[portNum].rxBufferSize = g_LPC24_Uart_RxDefaultBuffersSize[portNum] ;
+        g_LPC24_Uart_Controller[portNum].rxBufferSize = g_LPC24_Uart_RxDefaultBuffersSize[portNum];
         g_LPC24_Uart_Controller[self->Index].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_LPC24_Uart_Controller[portNum].rxBufferSize);
     }
 
@@ -589,19 +589,20 @@ TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Provider* self) {
         LPC24XX::SYSCON().PCONP &= ~PCONP_PCUART3;
         break;
     }
+    if (apiProvider != nullptr) {
+        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+        if (g_LPC24_Uart_Controller[self->Index].txBufferSize != 0) {
+            memoryProvider->Free(memoryProvider, g_LPC24_Uart_Controller[self->Index].TxBuffer);
 
-    if (g_LPC24_Uart_Controller[self->Index].txBufferSize != 0) {
-        memoryProvider->Free(memoryProvider, g_LPC24_Uart_Controller[self->Index].TxBuffer);
+            g_LPC24_Uart_Controller[self->Index].txBufferSize = 0;
+        }
 
-        g_LPC24_Uart_Controller[self->Index].txBufferSize = 0;
-    }
+        if (g_LPC24_Uart_Controller[self->Index].rxBufferSize != 0) {
+            memoryProvider->Free(memoryProvider, g_LPC24_Uart_Controller[self->Index].RxBuffer);
 
-    if (g_LPC24_Uart_Controller[self->Index].rxBufferSize != 0) {
-        memoryProvider->Free(memoryProvider, g_LPC24_Uart_Controller[self->Index].RxBuffer);
-
-        g_LPC24_Uart_Controller[self->Index].rxBufferSize = 0;
+            g_LPC24_Uart_Controller[self->Index].rxBufferSize = 0;
+        }
     }
 
     return TinyCLR_Result::Success;
