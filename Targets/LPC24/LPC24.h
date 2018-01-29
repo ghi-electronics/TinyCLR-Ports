@@ -391,8 +391,8 @@ TinyCLR_Result LPC24_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int
 TinyCLR_Result LPC24_I2c_ReadTransaction(const TinyCLR_I2c_Provider* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
 TinyCLR_Result LPC24_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
 TinyCLR_Result LPC24_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result);
-void LPC24_I2c_StartTransaction();
-void LPC24_I2c_StopTransaction();
+void LPC24_I2c_StartTransaction(int32_t portId);
+void LPC24_I2c_StopTransaction(int32_t portId);
 
 // Time
 const TinyCLR_Api_Info* LPC24_Time_GetApi();
@@ -988,7 +988,10 @@ struct LPC24XX_WATCHDOG {
 // I2C
 //
 struct LPC24XX_I2C {
-    static const uint32_t c_I2C_Base = 0xE001C000;
+    static const uint32_t c_I2C0_Base = 0xE001C000;
+    static const uint32_t c_I2C1_Base = 0xE005C000;
+    static const uint32_t c_I2C2_Base = 0xE0080000;
+
     static const uint32_t c_I2C_Clk_KHz = SYSTEM_CLOCK_HZ / 1000;
 
     /****/ volatile uint32_t I2CONSET;
@@ -1057,16 +1060,11 @@ struct LPC24XX_SPI {
 
 struct LPC24XX {
     static LPC24XX_VIC    & VIC() { return *(LPC24XX_VIC    *)(size_t)(LPC24XX_VIC::c_VIC_Base); }
-    //static LPC24XX_GPIO   & GPIO   (         ) { return *(LPC24XX_GPIO   *)(size_t)(      LPC24XX_GPIO  ::c_GPIO_Base                                 ); }
-    //static LPC24XX_GPIOIRQ   & GPIOIRQ   (         ) { return *(LPC24XX_GPIOIRQ   *)(size_t)(      LPC24XX_GPIOIRQ  ::c_GPIOIRQ_Base                                 ); }
     static LPC24XX_PCB    & PCB() { return *(LPC24XX_PCB    *)(size_t)(LPC24XX_PCB::c_PCB_Base); }
     static LPC24XX_SYSCON & SYSCON() { return *(LPC24XX_SYSCON *)(size_t)(LPC24XX_SYSCON::c_SYSCON_Base); }
-    //static LPC24XX_EMC    & EMC    (         ) { return *(LPC24XX_EMC    *)(size_t)(      LPC24XX_EMC   ::c_EMC_Base                                  ); }
     static LPC24XX_SPI    & SPI(int sel) { return *(LPC24XX_SPI    *)(size_t)((sel == 0) ? (LPC24XX_SPI::c_SPI0_Base) : (LPC24XX_SPI::c_SPI1_Base)); }
-    static LPC24XX_I2C    & I2C() { return *(LPC24XX_I2C    *)(size_t)(LPC24XX_I2C::c_I2C_Base); }
+    static LPC24XX_I2C    & I2C(int sel) { return *(LPC24XX_I2C    *)(size_t)((sel == 0) ? (LPC24XX_I2C::c_I2C0_Base) : (sel == 1 ? (LPC24XX_I2C::c_I2C1_Base) : (LPC24XX_I2C::c_I2C2_Base))); }
     static LPC24XX_WATCHDOG & WTDG() { return *(LPC24XX_WATCHDOG *)(size_t)(LPC24XX_WATCHDOG::c_WATCHDOG_Base); }
-    //static LPC24XX_DAC    & DAC    (         ) { return *(LPC24XX_DAC    *)(size_t)(      LPC24XX_DAC   ::c_DAC_Base                                  ); }
-
 
     static LPC24XX_TIMER  & TIMER(int sel) {
 
