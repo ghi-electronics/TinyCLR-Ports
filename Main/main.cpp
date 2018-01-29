@@ -17,7 +17,7 @@
 
 #define TARGET(a) CONCAT(DEVICE_TARGET, a)
 
-const TinyCLR_Api_Provider* apiProvider;
+const TinyCLR_Api_Provider* apiProvider = nullptr;
 
 void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
     ::apiProvider = apiProvider;
@@ -71,16 +71,16 @@ void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 int main() {
     TARGET(_Startup_Initialize)();
 
-
     uint8_t* heapStart;
     size_t heapLength;
 
     TARGET(_Startup_GetHeap)(heapStart, heapLength);
     TinyCLR_Startup_AddHeapRegion(heapStart, heapLength);
 
-
     const TinyCLR_Api_Info* debuggerApi;
     size_t debuggerIndex;
+
+    apiProvider = nullptr;
 
     TARGET(_Startup_GetDebugger)(debuggerApi, debuggerIndex);
     TinyCLR_Startup_SetDebugger(debuggerApi, debuggerIndex);

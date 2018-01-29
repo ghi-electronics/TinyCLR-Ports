@@ -416,13 +416,13 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, ui
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
     if (g_AT91_Uart_Controller[portNum].txBufferSize == 0) {
-        g_AT91_Uart_Controller[portNum].txBufferSize = g_AT91_Uart_TxDefaultBuffersSize[portNum] ;
+        g_AT91_Uart_Controller[portNum].txBufferSize = g_AT91_Uart_TxDefaultBuffersSize[portNum];
 
         g_AT91_Uart_Controller[self->Index].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_AT91_Uart_Controller[portNum].txBufferSize);
     }
 
     if (g_AT91_Uart_Controller[portNum].rxBufferSize == 0) {
-        g_AT91_Uart_Controller[portNum].rxBufferSize = g_AT91_Uart_RxDefaultBuffersSize[portNum] ;
+        g_AT91_Uart_Controller[portNum].rxBufferSize = g_AT91_Uart_RxDefaultBuffersSize[portNum];
         g_AT91_Uart_Controller[self->Index].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_AT91_Uart_Controller[portNum].rxBufferSize);
     }
     usart.US_MR = USMR;
@@ -460,18 +460,21 @@ TinyCLR_Result AT91_Uart_Release(const TinyCLR_Uart_Provider* self) {
     AT91_Uart_PinConfiguration(portNum, false);
 
     pmc.DisablePeriphClock(uartId);
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-    if (g_AT91_Uart_Controller[self->Index].txBufferSize != 0) {
-        memoryProvider->Free(memoryProvider, g_AT91_Uart_Controller[self->Index].TxBuffer);
+    if (apiProvider != nullptr) {
+        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-        g_AT91_Uart_Controller[self->Index].txBufferSize = 0;
-    }
+        if (g_AT91_Uart_Controller[self->Index].txBufferSize != 0) {
+            memoryProvider->Free(memoryProvider, g_AT91_Uart_Controller[self->Index].TxBuffer);
 
-    if (g_AT91_Uart_Controller[self->Index].rxBufferSize != 0) {
-        memoryProvider->Free(memoryProvider, g_AT91_Uart_Controller[self->Index].RxBuffer);
+            g_AT91_Uart_Controller[self->Index].txBufferSize = 0;
+        }
 
-        g_AT91_Uart_Controller[self->Index].rxBufferSize = 0;
+        if (g_AT91_Uart_Controller[self->Index].rxBufferSize != 0) {
+            memoryProvider->Free(memoryProvider, g_AT91_Uart_Controller[self->Index].RxBuffer);
+
+            g_AT91_Uart_Controller[self->Index].rxBufferSize = 0;
+        }
     }
 
     return TinyCLR_Result::Success;
