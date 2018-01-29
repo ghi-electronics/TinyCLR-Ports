@@ -1014,7 +1014,7 @@ TinyCLR_Result STM32F4_Display_DrawBuffer(const TinyCLR_Display_Provider* self, 
 }
 
 TinyCLR_Result STM32F4_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer) {
-    while (buffer != '\0') {
+    while (buffer != 0) {
         STM32F4_Display_WriteFormattedChar(buffer[0]);
         buffer++;
     }
