@@ -1063,7 +1063,7 @@ TinyCLR_Result AT91_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int
 }
 
 TinyCLR_Result AT91_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer) {
-    while (buffer != 0) {
+    while (buffer[0] != '\0') {
         AT91_Display_WriteFormattedChar(buffer[0]);
         buffer++;
     }
