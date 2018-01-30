@@ -26,7 +26,7 @@ int32_t LPC24_Startup_GetDeviceId() {
     return lpc24_deviceId;
 }
 
-void LPC24_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index) {
+void LPC24_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index) {
     TinyCLR_Gpio_PinValue value, valueUsbActive;
     auto controller = static_cast<const TinyCLR_Gpio_Provider*>(LPC24_Gpio_GetApi()->Implementation);
 

@@ -1360,7 +1360,7 @@ struct AT91_WATCHDOG {
 //Startup
 void AT91_Startup_Initialize();
 void AT91_Startup_GetHeap(uint8_t*& start, size_t& length);
-void AT91_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index);
+void AT91_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index);
 void AT91_Startup_GetRunApp(bool& runApp);
 
 struct AT91 {

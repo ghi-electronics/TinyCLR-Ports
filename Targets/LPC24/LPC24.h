@@ -503,7 +503,7 @@ TinyCLR_Display_InterfaceType LPC24_Display_GetType(const TinyCLR_Display_Provid
 void LPC24_Startup_Initialize();
 void LPC24_Startup_GetHeap(uint8_t*& start, size_t& length);
 int32_t LPC24_Startup_GetDeviceId();
-void LPC24_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index);
+void LPC24_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index);
 void LPC24_Startup_GetRunApp(bool& runApp);
 
 

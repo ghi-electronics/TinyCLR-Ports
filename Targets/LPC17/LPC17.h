@@ -390,7 +390,7 @@ TinyCLR_Display_InterfaceType LPC17_Display_GetType(const TinyCLR_Display_Provid
 //Startup
 void LPC17_Startup_Initialize();
 void LPC17_Startup_GetHeap(uint8_t*& start, size_t& length);
-void LPC17_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index);
+void LPC17_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index);
 void LPC17_Startup_GetRunApp(bool& runApp);
 
 extern const TinyCLR_Api_Provider* apiProvider;

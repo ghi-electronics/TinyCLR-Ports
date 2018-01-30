@@ -174,7 +174,7 @@ void AT91_Startup_Initialize() {
 
 }
 
-void AT91_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index) {
+void AT91_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index) {
     TinyCLR_Gpio_PinValue value;
     auto controller = static_cast<const TinyCLR_Gpio_Provider*>(AT91_Gpio_GetApi()->Implementation);
 

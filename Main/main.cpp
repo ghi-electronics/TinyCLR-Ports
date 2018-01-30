@@ -82,8 +82,8 @@ int main() {
 
     apiProvider = nullptr;
 
-    TARGET(_Startup_GetDebugger)(debuggerApi, debuggerIndex);
-    TinyCLR_Startup_SetDebugger(debuggerApi, debuggerIndex);
+    TARGET(_Startup_GetDebuggerTransportProvider)(debuggerApi, debuggerIndex);
+    TinyCLR_Startup_SetDebuggerTransportProvider(debuggerApi, debuggerIndex);
 
 
     TinyCLR_Startup_SetDeviceInformation(DEVICE_NAME, DEVICE_MANUFACTURER, DEVICE_VERSION);

@@ -74,7 +74,7 @@ TinyCLR_Gpio_PinValue LPC17_Startup_GetDebuggerSelectorUsbState() {
 }
 
 
-void LPC17_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index) {
+void LPC17_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index) {
     TinyCLR_Gpio_PinValue value, valueUsbActive;
     auto controller = static_cast<const TinyCLR_Gpio_Provider*>(LPC17_Gpio_GetApi()->Implementation);
 

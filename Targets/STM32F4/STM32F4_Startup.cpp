@@ -414,7 +414,7 @@ void STM32F4_Startup_Initialize() {
 
 }
 
-void STM32F4_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index) {
+void STM32F4_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index) {
 #if defined(DEBUGGER_SELECTOR_PIN) && defined(DEBUGGER_SELECTOR_PULL) && defined(DEBUGGER_SELECTOR_USB_STATE)
     TinyCLR_Gpio_PinValue value;
     auto controller = static_cast<const TinyCLR_Gpio_Provider*>(STM32F4_Gpio_GetApi()->Implementation);

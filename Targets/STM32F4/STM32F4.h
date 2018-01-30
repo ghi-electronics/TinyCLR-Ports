@@ -80,7 +80,7 @@ void STM32F4_Time_DelayNoInterrupt(const TinyCLR_Time_Provider* self, uint64_t m
 ////////////////////////////////////////////////////////////////////////////////
 void STM32F4_Startup_Initialize();
 void STM32F4_Startup_GetHeap(uint8_t*& start, size_t& length);
-void STM32F4_Startup_GetDebugger(const TinyCLR_Api_Info*& api, size_t& index);
+void STM32F4_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index);
 void STM32F4_Startup_GetRunApp(bool& runApp);
 
 ////////////////////////////////////////////////////////////////////////////////
