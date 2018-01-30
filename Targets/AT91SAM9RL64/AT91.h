@@ -1018,7 +1018,8 @@ extern TinyCLR_Interrupt_StartStopHandler AT91_Interrupt_Ended;
 // AT91_I2C
 //
 struct AT91_I2C {
-    static const uint32_t c_Base = AT91C_BASE_TWI;
+    static const uint32_t c_Base0 = AT91C_BASE_TWI0;
+    static const uint32_t c_Base1 = AT91C_BASE_TWI1;
 
     //--//
 
@@ -1519,7 +1520,7 @@ struct AT91 {
     //    static AT91_PWM     & PWM()             { return *(AT91_PWM     *)(size_t)(      AT91_PWM     ::c_Base                                      ); }
     //    static AT91_DMA     & DMA()             { return *(AT91_DMA     *)(size_t)(      AT91_DMA     ::c_Base                                      ); }
 
-    static AT91_I2C     & I2C() { return *(AT91_I2C     *)(size_t)(AT91_I2C::c_Base); }
+    static AT91_I2C     & I2C(int sel) { return *(AT91_I2C     *)(size_t)(sel == 0 ? AT91_I2C::c_Base0 : AT91_I2C::c_Base1); }
     static AT91_AIC     & AIC() { return *(AT91_AIC     *)(size_t)(AT91_AIC::c_Base); }
     static AT91_PIO     & PIO(int sel) { return *(AT91_PIO     *)(size_t)(AT91_PIO::c_Base + AT91_PIO::c_Base_Offset * sel); }
     static AT91_PMC     & PMC() { return *(AT91_PMC     *)(size_t)(AT91_PMC::c_Base); }
