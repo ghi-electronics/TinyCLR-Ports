@@ -121,6 +121,12 @@ TinyCLR_Result LPC24_Uart_SetReadBufferSize(const TinyCLR_Uart_Provider* self, s
 
     g_LPC24_Uart_Controller[self->Index].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
 
+    if (g_UartController[self->Index].RxBuffer == nullptr) {
+        g_UartController[self->Index].rxBufferSize = 0;
+
+        return TinyCLR_Result::OutOfMemory;
+    }
+
     return TinyCLR_Result::Success;
 }
 
@@ -143,6 +149,12 @@ TinyCLR_Result LPC24_Uart_SetWriteBufferSize(const TinyCLR_Uart_Provider* self, 
     g_LPC24_Uart_Controller[self->Index].txBufferSize = size;
 
     g_LPC24_Uart_Controller[self->Index].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
+
+    if (g_UartController[self->Index].TxBuffer == nullptr) {
+        g_UartController[self->Index].txBufferSize = 0;
+
+        return TinyCLR_Result::OutOfMemory;
+    }
 
     return TinyCLR_Result::Success;
 }
@@ -519,11 +531,24 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
         g_LPC24_Uart_Controller[portNum].txBufferSize = g_LPC24_Uart_TxDefaultBuffersSize[portNum];
 
         g_LPC24_Uart_Controller[self->Index].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_LPC24_Uart_Controller[portNum].txBufferSize);
+
+        if (g_UartController[self->Index].TxBuffer == nullptr) {
+            g_UartController[self->Index].txBufferSize = 0;
+
+            return TinyCLR_Result::OutOfMemory;
+        }
     }
 
     if (g_LPC24_Uart_Controller[portNum].rxBufferSize == 0) {
         g_LPC24_Uart_Controller[portNum].rxBufferSize = g_LPC24_Uart_RxDefaultBuffersSize[portNum];
+
         g_LPC24_Uart_Controller[self->Index].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_LPC24_Uart_Controller[portNum].rxBufferSize);
+
+        if (g_UartController[self->Index].RxBuffer == nullptr) {
+            g_UartController[self->Index].rxBufferSize = 0;
+
+            return TinyCLR_Result::OutOfMemory;
+        }
     }
 
     LPC24_Interrupt_Activate(LPC24XX_USART::getIntNo(portNum), (uint32_t*)&LPC24_Uart_InterruptHandler, (void*)self->Index);
