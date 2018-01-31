@@ -44,7 +44,7 @@ struct AT91_Uart_Controller {
 
 };
 
-static AT91_Uart_Controller g_AT91_Uart_Controller[TOTAL_UART_CONTROLLERS];
+static AT91_Uart_Controller g_UartController[TOTAL_UART_CONTROLLERS];
 
 #define SET_BITS(Var,Shift,Mask,fieldsMask) {Var = setFieldValue(Var,Shift,Mask,fieldsMask);}
 
@@ -132,7 +132,7 @@ AT91_Gpio_PeripheralSelection AT91_Uart_GetCtsAlternateFunction(int32_t portNum)
 }
 
 TinyCLR_Result AT91_Uart_GetReadBufferSize(const TinyCLR_Uart_Provider* self, size_t& size) {
-    size = g_AT91_Uart_Controller[self->Index].rxBufferSize;
+    size = g_UartController[self->Index].rxBufferSize;
 
     return TinyCLR_Result::Success;
 }
@@ -143,13 +143,13 @@ TinyCLR_Result AT91_Uart_SetReadBufferSize(const TinyCLR_Uart_Provider* self, si
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
 
-    if (g_AT91_Uart_Controller[self->Index].rxBufferSize) {
-        memoryProvider->Free(memoryProvider, g_AT91_Uart_Controller[self->Index].RxBuffer);
+    if (g_UartController[self->Index].rxBufferSize) {
+        memoryProvider->Free(memoryProvider, g_UartController[self->Index].RxBuffer);
     }
 
-    g_AT91_Uart_Controller[self->Index].rxBufferSize = size;
+    g_UartController[self->Index].rxBufferSize = size;
 
-    g_AT91_Uart_Controller[self->Index].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
+    g_UartController[self->Index].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
 
     if (g_UartController[self->Index].RxBuffer == nullptr) {
         g_UartController[self->Index].rxBufferSize = 0;
@@ -161,7 +161,7 @@ TinyCLR_Result AT91_Uart_SetReadBufferSize(const TinyCLR_Uart_Provider* self, si
 }
 
 TinyCLR_Result AT91_Uart_GetWriteBufferSize(const TinyCLR_Uart_Provider* self, size_t& size) {
-    size = g_AT91_Uart_Controller[self->Index].txBufferSize;
+    size = g_UartController[self->Index].txBufferSize;
 
     return TinyCLR_Result::Success;
 }
@@ -172,13 +172,13 @@ TinyCLR_Result AT91_Uart_SetWriteBufferSize(const TinyCLR_Uart_Provider* self, s
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
 
-    if (g_AT91_Uart_Controller[self->Index].txBufferSize) {
-        memoryProvider->Free(memoryProvider, g_AT91_Uart_Controller[self->Index].TxBuffer);
+    if (g_UartController[self->Index].txBufferSize) {
+        memoryProvider->Free(memoryProvider, g_UartController[self->Index].TxBuffer);
     }
 
-    g_AT91_Uart_Controller[self->Index].txBufferSize = size;
+    g_UartController[self->Index].txBufferSize = size;
 
-    g_AT91_Uart_Controller[self->Index].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
+    g_UartController[self->Index].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
 
     if (g_UartController[self->Index].TxBuffer == nullptr) {
         g_UartController[self->Index].txBufferSize = 0;
@@ -212,7 +212,7 @@ void AT91_Uart_PinConfiguration(int portNum, bool enable) {
         // Connect pin to UART
         AT91_Gpio_ConfigurePin(rxPin, AT91_Gpio_Direction::Input, rxPinMode, AT91_Gpio_ResistorMode::Inactive);
 
-        if (g_AT91_Uart_Controller[portNum].handshakeEnable) {
+        if (g_UartController[portNum].handshakeEnable) {
             AT91_Gpio_ConfigurePin(ctsPin, AT91_Gpio_Direction::Input, ctsPinMode, AT91_Gpio_ResistorMode::Inactive);
             AT91_Gpio_ConfigurePin(rtsPin, AT91_Gpio_Direction::Input, rtsPinMode, AT91_Gpio_ResistorMode::Inactive);
         }
@@ -223,7 +223,7 @@ void AT91_Uart_PinConfiguration(int portNum, bool enable) {
         // Connect pin to UART
         AT91_Gpio_ConfigurePin(rxPin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::Inactive);
 
-        if (g_AT91_Uart_Controller[portNum].handshakeEnable) {
+        if (g_UartController[portNum].handshakeEnable) {
             AT91_Gpio_ConfigurePin(ctsPin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::Inactive);
             AT91_Gpio_ConfigurePin(rtsPin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::Inactive);
         }
@@ -231,8 +231,8 @@ void AT91_Uart_PinConfiguration(int portNum, bool enable) {
 }
 
 void AT91_Uart_SetErrorEvent(int32_t portNum, TinyCLR_Uart_Error error) {
-    if (g_AT91_Uart_Controller[portNum].errorEventHandler != nullptr)
-        g_AT91_Uart_Controller[portNum].errorEventHandler(g_AT91_Uart_Controller[portNum].provider, error);
+    if (g_UartController[portNum].errorEventHandler != nullptr)
+        g_UartController[portNum].errorEventHandler(g_UartController[portNum].provider, error);
 }
 
 void AT91_Uart_ReceiveData(int32_t portNum) {
@@ -240,28 +240,28 @@ void AT91_Uart_ReceiveData(int32_t portNum) {
 
     uint8_t rxdata = usart.US_RHR;
 
-    g_AT91_Uart_Controller[portNum].RxBuffer[g_AT91_Uart_Controller[portNum].rxBufferIn++] = rxdata;
+    g_UartController[portNum].RxBuffer[g_UartController[portNum].rxBufferIn++] = rxdata;
 
-    g_AT91_Uart_Controller[portNum].rxBufferCount++;
+    g_UartController[portNum].rxBufferCount++;
 
-    if (g_AT91_Uart_Controller[portNum].rxBufferIn == g_AT91_Uart_Controller[portNum].rxBufferSize)
-        g_AT91_Uart_Controller[portNum].rxBufferIn = 0;
+    if (g_UartController[portNum].rxBufferIn == g_UartController[portNum].rxBufferSize)
+        g_UartController[portNum].rxBufferIn = 0;
 
-    if (g_AT91_Uart_Controller[portNum].dataReceivedEventHandler != nullptr)
-        g_AT91_Uart_Controller[portNum].dataReceivedEventHandler(g_AT91_Uart_Controller[portNum].provider, 1);
+    if (g_UartController[portNum].dataReceivedEventHandler != nullptr)
+        g_UartController[portNum].dataReceivedEventHandler(g_UartController[portNum].provider, 1);
 
 }
 
 void AT91_Uart_TransmitData(int32_t portNum) {
     AT91_USART &usart = AT91::USART(portNum);
 
-    if (g_AT91_Uart_Controller[portNum].txBufferCount > 0) {
-        uint8_t txdata = g_AT91_Uart_Controller[portNum].TxBuffer[g_AT91_Uart_Controller[portNum].txBufferOut++];
+    if (g_UartController[portNum].txBufferCount > 0) {
+        uint8_t txdata = g_UartController[portNum].TxBuffer[g_UartController[portNum].txBufferOut++];
 
-        g_AT91_Uart_Controller[portNum].txBufferCount--;
+        g_UartController[portNum].txBufferCount--;
 
-        if (g_AT91_Uart_Controller[portNum].txBufferOut == g_AT91_Uart_Controller[portNum].txBufferSize)
-            g_AT91_Uart_Controller[portNum].txBufferOut = 0;
+        if (g_UartController[portNum].txBufferOut == g_UartController[portNum].txBufferSize)
+            g_UartController[portNum].txBufferOut = 0;
 
         usart.US_THR = txdata; // write TX data
 
@@ -315,15 +315,15 @@ TinyCLR_Result AT91_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    g_AT91_Uart_Controller[portNum].txBufferCount = 0;
-    g_AT91_Uart_Controller[portNum].txBufferIn = 0;
-    g_AT91_Uart_Controller[portNum].txBufferOut = 0;
+    g_UartController[portNum].txBufferCount = 0;
+    g_UartController[portNum].txBufferIn = 0;
+    g_UartController[portNum].txBufferOut = 0;
 
-    g_AT91_Uart_Controller[portNum].rxBufferCount = 0;
-    g_AT91_Uart_Controller[portNum].rxBufferIn = 0;
-    g_AT91_Uart_Controller[portNum].rxBufferOut = 0;
+    g_UartController[portNum].rxBufferCount = 0;
+    g_UartController[portNum].rxBufferIn = 0;
+    g_UartController[portNum].rxBufferOut = 0;
 
-    g_AT91_Uart_Controller[portNum].provider = self;
+    g_UartController[portNum].provider = self;
 
     AT91_PMC &pmc = AT91::PMC();
 
@@ -427,10 +427,10 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, ui
 
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-    if (g_AT91_Uart_Controller[portNum].txBufferSize == 0) {
-        g_AT91_Uart_Controller[portNum].txBufferSize = g_AT91_Uart_TxDefaultBuffersSize[portNum];
+    if (g_UartController[portNum].txBufferSize == 0) {
+        g_UartController[portNum].txBufferSize = g_AT91_Uart_TxDefaultBuffersSize[portNum];
 
-        g_AT91_Uart_Controller[self->Index].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_AT91_Uart_Controller[portNum].txBufferSize);
+        g_UartController[self->Index].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_UartController[portNum].txBufferSize);
 
         if (g_UartController[self->Index].TxBuffer == nullptr) {
             g_UartController[self->Index].txBufferSize = 0;
@@ -439,10 +439,10 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, ui
         }
     }
 
-    if (g_AT91_Uart_Controller[portNum].rxBufferSize == 0) {
-        g_AT91_Uart_Controller[portNum].rxBufferSize = g_AT91_Uart_RxDefaultBuffersSize[portNum];
+    if (g_UartController[portNum].rxBufferSize == 0) {
+        g_UartController[portNum].rxBufferSize = g_AT91_Uart_RxDefaultBuffersSize[portNum];
 
-        g_AT91_Uart_Controller[self->Index].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_AT91_Uart_Controller[portNum].rxBufferSize);
+        g_UartController[self->Index].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_UartController[portNum].rxBufferSize);
 
         if (g_UartController[self->Index].RxBuffer == nullptr) {
             g_UartController[self->Index].rxBufferSize = 0;
@@ -455,7 +455,7 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, ui
     usart.US_CR = AT91_USART::US_RXEN;
     usart.US_CR = AT91_USART::US_TXEN;
 
-    g_AT91_Uart_Controller[portNum].isOpened = true;
+    g_UartController[portNum].isOpened = true;
 
     return TinyCLR_Result::Success;
 }
@@ -465,16 +465,16 @@ TinyCLR_Result AT91_Uart_Release(const TinyCLR_Uart_Provider* self) {
 
     int32_t portNum = self->Index;
 
-    g_AT91_Uart_Controller[portNum].txBufferCount = 0;
-    g_AT91_Uart_Controller[portNum].txBufferIn = 0;
-    g_AT91_Uart_Controller[portNum].txBufferOut = 0;
+    g_UartController[portNum].txBufferCount = 0;
+    g_UartController[portNum].txBufferIn = 0;
+    g_UartController[portNum].txBufferOut = 0;
 
-    g_AT91_Uart_Controller[portNum].rxBufferCount = 0;
-    g_AT91_Uart_Controller[portNum].rxBufferIn = 0;
-    g_AT91_Uart_Controller[portNum].rxBufferOut = 0;
+    g_UartController[portNum].rxBufferCount = 0;
+    g_UartController[portNum].rxBufferIn = 0;
+    g_UartController[portNum].rxBufferOut = 0;
 
-    g_AT91_Uart_Controller[portNum].isOpened = false;
-    g_AT91_Uart_Controller[portNum].handshakeEnable = false;
+    g_UartController[portNum].isOpened = false;
+    g_UartController[portNum].handshakeEnable = false;
 
     AT91_PMC &pmc = AT91::PMC();
 
@@ -489,16 +489,16 @@ TinyCLR_Result AT91_Uart_Release(const TinyCLR_Uart_Provider* self) {
     if (apiProvider != nullptr) {
         auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-        if (g_AT91_Uart_Controller[self->Index].txBufferSize != 0) {
-            memoryProvider->Free(memoryProvider, g_AT91_Uart_Controller[self->Index].TxBuffer);
+        if (g_UartController[self->Index].txBufferSize != 0) {
+            memoryProvider->Free(memoryProvider, g_UartController[self->Index].TxBuffer);
 
-            g_AT91_Uart_Controller[self->Index].txBufferSize = 0;
+            g_UartController[self->Index].txBufferSize = 0;
         }
 
-        if (g_AT91_Uart_Controller[self->Index].rxBufferSize != 0) {
-            memoryProvider->Free(memoryProvider, g_AT91_Uart_Controller[self->Index].RxBuffer);
+        if (g_UartController[self->Index].rxBufferSize != 0) {
+            memoryProvider->Free(memoryProvider, g_UartController[self->Index].RxBuffer);
 
-            g_AT91_Uart_Controller[self->Index].rxBufferSize = 0;
+            g_UartController[self->Index].rxBufferSize = 0;
         }
     }
 
@@ -538,13 +538,13 @@ bool AT91_Uart_TxHandshakeEnabledState(int portNum) {
 TinyCLR_Result AT91_Uart_Flush(const TinyCLR_Uart_Provider* self) {
     int32_t portNum = self->Index;
 
-    if (g_AT91_Uart_Controller[portNum].isOpened == false)
+    if (g_UartController[portNum].isOpened == false)
         return TinyCLR_Result::NotAvailable;
 
     // Make sute interrupt is enable
     AT91_Uart_TxBufferEmptyInterruptEnable(portNum, true);
 
-    while (g_AT91_Uart_Controller[portNum].txBufferCount > 0) {
+    while (g_UartController[portNum].txBufferCount > 0) {
         AT91_Time_Delay(nullptr, 1);
     }
 
@@ -557,23 +557,23 @@ TinyCLR_Result AT91_Uart_Read(const TinyCLR_Uart_Provider* self, uint8_t* buffer
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (g_AT91_Uart_Controller[portNum].isOpened == false || g_AT91_Uart_Controller[self->Index].rxBufferSize == 0) {
+    if (g_UartController[portNum].isOpened == false || g_UartController[self->Index].rxBufferSize == 0) {
         length = 0;
 
         return TinyCLR_Result::NotAvailable;
     }
 
-    length = std::min(g_AT91_Uart_Controller[portNum].rxBufferCount, length);
+    length = std::min(g_UartController[portNum].rxBufferCount, length);
 
     while (i < length) {
-        buffer[i] = g_AT91_Uart_Controller[portNum].RxBuffer[g_AT91_Uart_Controller[portNum].rxBufferOut];
+        buffer[i] = g_UartController[portNum].RxBuffer[g_UartController[portNum].rxBufferOut];
 
-        g_AT91_Uart_Controller[portNum].rxBufferOut++;
+        g_UartController[portNum].rxBufferOut++;
         i++;
-        g_AT91_Uart_Controller[portNum].rxBufferCount--;
+        g_UartController[portNum].rxBufferCount--;
 
-        if (g_AT91_Uart_Controller[portNum].rxBufferOut == g_AT91_Uart_Controller[portNum].rxBufferSize)
-            g_AT91_Uart_Controller[portNum].rxBufferOut = 0;
+        if (g_UartController[portNum].rxBufferOut == g_UartController[portNum].rxBufferSize)
+            g_UartController[portNum].rxBufferOut = 0;
     }
 
     return TinyCLR_Result::Success;
@@ -585,33 +585,33 @@ TinyCLR_Result AT91_Uart_Write(const TinyCLR_Uart_Provider* self, const uint8_t*
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (g_AT91_Uart_Controller[portNum].isOpened == false || g_AT91_Uart_Controller[self->Index].txBufferSize == 0) {
+    if (g_UartController[portNum].isOpened == false || g_UartController[self->Index].txBufferSize == 0) {
         length = 0;
 
         return TinyCLR_Result::NotAvailable;
     }
 
-    if (g_AT91_Uart_Controller[portNum].txBufferCount == g_AT91_Uart_Controller[portNum].txBufferSize) {
+    if (g_UartController[portNum].txBufferCount == g_UartController[portNum].txBufferSize) {
         AT91_Uart_SetErrorEvent(portNum, TinyCLR_Uart_Error::TransmitFull);
 
         return TinyCLR_Result::Busy;
     }
 
-    length = std::min(g_AT91_Uart_Controller[portNum].txBufferSize - g_AT91_Uart_Controller[portNum].txBufferCount, length);
+    length = std::min(g_UartController[portNum].txBufferSize - g_UartController[portNum].txBufferCount, length);
 
 
     while (i < length) {
 
-        g_AT91_Uart_Controller[portNum].TxBuffer[g_AT91_Uart_Controller[portNum].txBufferIn] = buffer[i];
+        g_UartController[portNum].TxBuffer[g_UartController[portNum].txBufferIn] = buffer[i];
 
-        g_AT91_Uart_Controller[portNum].txBufferCount++;
+        g_UartController[portNum].txBufferCount++;
 
         i++;
 
-        g_AT91_Uart_Controller[portNum].txBufferIn++;
+        g_UartController[portNum].txBufferIn++;
 
-        if (g_AT91_Uart_Controller[portNum].txBufferIn == g_AT91_Uart_Controller[portNum].txBufferSize)
-            g_AT91_Uart_Controller[portNum].txBufferIn = 0;
+        if (g_UartController[portNum].txBufferIn == g_UartController[portNum].txBufferSize)
+            g_UartController[portNum].txBufferIn = 0;
     }
 
     if (length > 0) {
@@ -628,7 +628,7 @@ TinyCLR_Result AT91_Uart_SetPinChangedHandler(const TinyCLR_Uart_Provider* self,
 TinyCLR_Result AT91_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Provider* self, TinyCLR_Uart_ErrorReceivedHandler handler) {
     int32_t portNum = self->Index;
 
-    g_AT91_Uart_Controller[portNum].errorEventHandler = handler;
+    g_UartController[portNum].errorEventHandler = handler;
 
     return TinyCLR_Result::Success;
 }
@@ -636,7 +636,7 @@ TinyCLR_Result AT91_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Provider* se
 TinyCLR_Result AT91_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Provider* self, TinyCLR_Uart_DataReceivedHandler handler) {
     int32_t portNum = self->Index;
 
-    g_AT91_Uart_Controller[portNum].dataReceivedEventHandler = handler;
+    g_UartController[portNum].dataReceivedEventHandler = handler;
 
     return TinyCLR_Result::Success;
 }
@@ -679,8 +679,8 @@ TinyCLR_Result AT91_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Provider* 
 
 void AT91_Uart_Reset() {
     for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
-        g_AT91_Uart_Controller[i].txBufferSize = 0;
-        g_AT91_Uart_Controller[i].rxBufferSize = 0;
+        g_UartController[i].txBufferSize = 0;
+        g_UartController[i].rxBufferSize = 0;
 
         AT91_Uart_Release(uartProviders[i]);
     }
