@@ -1064,7 +1064,7 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
     canApi.Type = TinyCLR_Api_Type::CanProvider;
     canApi.Version = 0;
     canApi.Count = TOTAL_CAN_CONTROLLERS;
-    canApi.Implementation = canProvider;
+    canApi.Implementation = (canApi.Count > 1) ? canProvider : reinterpret_cast<TinyCLR_Can_Provider**>(canProviderDefs);
 
     return &canApi;
 }
