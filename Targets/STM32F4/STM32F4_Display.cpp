@@ -506,7 +506,7 @@ bool STM32F4_Display_Initialize() {
     // InitializeConfiguration
     static LTDC_HandleTypeDef hltdc_F;
     LTDC_LayerCfgTypeDef      pLayerCfg;
-    
+
     RCC->CR &= ~(RCC_CR_PLLSAION);
 
     STM32F4_Time_Delay(nullptr, 0x10000);
@@ -519,7 +519,7 @@ bool STM32F4_Display_Initialize() {
 
     STM32F4_Time_Delay(nullptr, 0x10000);
 
-    RCC->APB2ENR |= RCC_APB2ENR_LTDCEN;    
+    RCC->APB2ENR |= RCC_APB2ENR_LTDCEN;
 
     //HorizontalSyncPolarity
     if (m_STM32F4_DisplayHorizontalSyncPolarity == false)
@@ -1013,11 +1013,10 @@ TinyCLR_Result STM32F4_Display_DrawBuffer(const TinyCLR_Display_Provider* self, 
     return  TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result STM32F4_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer) {
-    while (buffer[0] != '\0') {
-        STM32F4_Display_WriteFormattedChar(buffer[0]);
-        buffer++;
-    }
+TinyCLR_Result STM32F4_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer, size_t length) {
+    for (size_t i = 0; i < length; i++)
+        STM32F4_Display_WriteFormattedChar(buffer[i]);
+
     return TinyCLR_Result::Success;
 }
 

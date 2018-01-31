@@ -885,11 +885,10 @@ TinyCLR_Result LPC17_Display_DrawBuffer(const TinyCLR_Display_Provider* self, in
     return  TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result LPC17_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer) {
-    while (buffer[0] != '\0') {
-        LPC17_Display_WriteFormattedChar(buffer[0]);
-        buffer++;
-    }
+TinyCLR_Result LPC17_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer, size_t length) {
+    for (size_t i = 0; i < length; i++)
+        LPC17_Display_WriteFormattedChar(buffer[i]);
+
     return TinyCLR_Result::Success;
 }
 

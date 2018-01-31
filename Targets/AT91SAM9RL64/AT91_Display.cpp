@@ -1062,11 +1062,10 @@ TinyCLR_Result AT91_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int
     return  TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result AT91_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer) {
-    while (buffer[0] != '\0') {
-        AT91_Display_WriteFormattedChar(buffer[0]);
-        buffer++;
-    }
+TinyCLR_Result AT91_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer, size_t length) {
+    for (size_t i = 0; i < length; i++)
+        AT91_Display_WriteFormattedChar(buffer[i]);
+
     return TinyCLR_Result::Success;
 }
 
