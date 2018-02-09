@@ -829,18 +829,12 @@ void LPC17_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenHei
     }
 }
 
-TinyCLR_Result LPC17_Display_Acquire(const TinyCLR_Display_Provider* self, uint32_t width, uint32_t height) {
-    m_LPC17_DisplayWidth = width;
-    m_LPC17_DisplayHeight = height;
-
+TinyCLR_Result LPC17_Display_Acquire(const TinyCLR_Display_Provider* self) {
     m_LPC17_Display_CurrentRotation = LPC17xx_LCD_Rotation::rotateNormal_0;
 
     m_LPC17_Display_VituralRam = (uint16_t*)m_LPC17_Display_ReservedVitualRamLocation;
 
-    if (LPC17_Display_SetPinConfiguration())
-        return TinyCLR_Result::Success;
-
-    return  TinyCLR_Result::InvalidOperation;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC17_Display_Release(const TinyCLR_Display_Provider* self) {
@@ -850,39 +844,81 @@ TinyCLR_Result LPC17_Display_Release(const TinyCLR_Display_Provider* self) {
     return  TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result LPC17_Display_SetLcdConfiguration(const TinyCLR_Display_Provider* self, bool outputEnableIsFixed, bool outputEnablePolarity, bool pixelPolarity, uint32_t pixelClockRate, bool horizontalSyncPolarity, uint32_t horizontalSyncPulseWidth, uint32_t horizontalFrontPorch, uint32_t horizontalBackPorch, bool verticalSyncPolarity, uint32_t verticalSyncPulseWidth, uint32_t verticalFrontPorch, uint32_t verticalBackPorch) {
-    m_LPC17_DisplayOutputEnableIsFixed = outputEnableIsFixed;
-    m_LPC17_DisplayOutputEnablePolarity = outputEnablePolarity;
-    m_LPC17_DisplayPixelPolarity = pixelPolarity;
-
-    m_LPC17_DisplayPixelClockRateKHz = pixelClockRate / 1000;
-
-    m_LPC17_DisplayHorizontalSyncPolarity = horizontalSyncPolarity;
-
-    m_LPC17_DisplayHorizontalSyncPulseWidth = horizontalSyncPulseWidth;
-    m_LPC17_DisplayHorizontalFrontPorch = horizontalFrontPorch;
-    m_LPC17_DisplayHorizontalBackPorch = horizontalBackPorch;
-
-    m_LPC17_DisplayVerticalSyncPolarity = verticalSyncPolarity;
-
-    m_LPC17_DisplayVerticalSyncPulseWidth = verticalSyncPulseWidth;
-    m_LPC17_DisplayVerticalFrontPorch = verticalFrontPorch;
-    m_LPC17_DisplayVerticalBackPorch = verticalBackPorch;
-
-    if (LPC17_Display_Initialize())
+TinyCLR_Result LPC17_Display_Enable(const TinyCLR_Display_Provider* self) {
+    if (LPC17_Display_SetPinConfiguration() && LPC17_Display_Initialize())
         return TinyCLR_Result::Success;
 
-    return  TinyCLR_Result::InvalidOperation;
+    return TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result LPC17_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data, TinyCLR_Display_Format dataFormat) {
-    switch (dataFormat) {
-    case TinyCLR_Display_Format::Rgb565:
-        LPC17_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
-        return TinyCLR_Result::Success;
+TinyCLR_Result LPC17_Display_Disable(const TinyCLR_Display_Provider* self) {
+    return TinyCLR_Result::NotSupported;
+}
+
+TinyCLR_Result LPC17_Display_SetConfiguration(const TinyCLR_Display_Provider* self, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration) {
+    if (dataFormat != TinyCLR_Display_DataFormat::Rgb565) return TinyCLR_Result::NotSupported;
+
+    if (configuration != nullptr) {
+        auto& cfg = *(const TinyCLR_Display_ParallelConfiguration*)configuration;
+
+        m_LPC17_DisplayWidth = width;
+        m_LPC17_DisplayHeight = height;
+
+        m_LPC17_DisplayOutputEnableIsFixed = cfg.DataEnableIsFixed;
+        m_LPC17_DisplayOutputEnablePolarity = cfg.DataEnablePolarity;
+        m_LPC17_DisplayPixelPolarity = cfg.PixelPolarity;
+
+        m_LPC17_DisplayPixelClockRateKHz = cfg.PixelClockRate / 1000;
+
+        m_LPC17_DisplayHorizontalSyncPolarity = cfg.HorizontalSyncPolarity;
+
+        m_LPC17_DisplayHorizontalSyncPulseWidth = cfg.HorizontalSyncPulseWidth;
+        m_LPC17_DisplayHorizontalFrontPorch = cfg.HorizontalFrontPorch;
+        m_LPC17_DisplayHorizontalBackPorch = cfg.HorizontalBackPorch;
+
+        m_LPC17_DisplayVerticalSyncPolarity = cfg.VerticalSyncPolarity;
+
+        m_LPC17_DisplayVerticalSyncPulseWidth = cfg.VerticalSyncPulseWidth;
+        m_LPC17_DisplayVerticalFrontPorch = cfg.VerticalFrontPorch;
+        m_LPC17_DisplayVerticalBackPorch = cfg.VerticalBackPorch;
     }
 
-    return  TinyCLR_Result::InvalidOperation;
+    return  TinyCLR_Result::Success;
+}
+
+TinyCLR_Result LPC17_Display_GetConfiguration(const TinyCLR_Display_Provider* self, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration) {
+    dataFormat = TinyCLR_Display_DataFormat::Rgb565;
+    width = m_LPC17_DisplayWidth;
+    height = m_LPC17_DisplayHeight;
+
+    if (configuration != nullptr) {
+        auto& cfg = *(TinyCLR_Display_ParallelConfiguration*)configuration;
+
+        cfg.DataEnableIsFixed = m_LPC17_DisplayOutputEnableIsFixed;
+        cfg.DataEnablePolarity = m_LPC17_DisplayOutputEnablePolarity;
+        cfg.PixelPolarity = m_LPC17_DisplayPixelPolarity;
+
+        cfg.PixelClockRate = m_LPC17_DisplayPixelClockRateKHz * 1000;
+
+        cfg.HorizontalSyncPolarity = m_LPC17_DisplayHorizontalSyncPolarity;
+
+        cfg.HorizontalSyncPulseWidth = m_LPC17_DisplayHorizontalSyncPulseWidth;
+        cfg.HorizontalFrontPorch = m_LPC17_DisplayHorizontalFrontPorch;
+        cfg.HorizontalBackPorch = m_LPC17_DisplayHorizontalBackPorch;
+
+        cfg.VerticalSyncPolarity = m_LPC17_DisplayVerticalSyncPolarity;
+
+        cfg.VerticalSyncPulseWidth = m_LPC17_DisplayVerticalSyncPulseWidth;
+        cfg.VerticalFrontPorch = m_LPC17_DisplayVerticalFrontPorch;
+        cfg.VerticalBackPorch = m_LPC17_DisplayVerticalBackPorch;
+    }
+
+    return TinyCLR_Result::InvalidOperation;
+}
+
+TinyCLR_Result LPC17_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data) {
+    LPC17_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC17_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer, size_t length) {
@@ -892,16 +928,14 @@ TinyCLR_Result LPC17_Display_WriteString(const TinyCLR_Display_Provider* self, c
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC17_Display_GetWidth(const TinyCLR_Display_Provider* self) {
-    return LPC17_Display_GetWidth();;
-}
+TinyCLR_Display_DataFormat dataFormats[] = { TinyCLR_Display_DataFormat::Rgb565 };
 
-int32_t LPC17_Display_GetHeight(const TinyCLR_Display_Provider* self) {
-    return LPC17_Display_GetHeight();
-}
+TinyCLR_Result LPC17_Display_GetCapabilities(const TinyCLR_Display_Provider* self, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount) {
+    type = TinyCLR_Display_InterfaceType::Parallel;
+    supportedDataFormatCount = SIZEOF_ARRAY(dataFormats);
+    supportedDataFormats = dataFormats;
 
-TinyCLR_Display_InterfaceType LPC17_Display_GetType(const TinyCLR_Display_Provider* self) {
-    return TinyCLR_Display_InterfaceType::Parallel;
+    return TinyCLR_Result::Success;
 }
 
 const TinyCLR_Api_Info* LPC17_Display_GetApi() {
@@ -909,12 +943,13 @@ const TinyCLR_Api_Info* LPC17_Display_GetApi() {
     displayProvider.Index = 0;
     displayProvider.Acquire = &LPC17_Display_Acquire;
     displayProvider.Release = &LPC17_Display_Release;
-    displayProvider.SetLcdConfiguration = &LPC17_Display_SetLcdConfiguration;
+    displayProvider.Enable = &LPC17_Display_Enable;
+    displayProvider.Disable = &LPC17_Display_Disable;
+    displayProvider.SetConfiguration = &LPC17_Display_SetConfiguration;
+    displayProvider.GetConfiguration = &LPC17_Display_GetConfiguration;
+    displayProvider.GetCapabilities = &LPC17_Display_GetCapabilities;
     displayProvider.DrawBuffer = &LPC17_Display_DrawBuffer;
     displayProvider.WriteString = &LPC17_Display_WriteString;
-    displayProvider.GetWidth = &LPC17_Display_GetWidth;
-    displayProvider.GetHeight = &LPC17_Display_GetHeight;
-    displayProvider.GetType = &LPC17_Display_GetType;
 
     displayApi.Author = "GHI Electronics, LLC";
     displayApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.DisplayProvider";

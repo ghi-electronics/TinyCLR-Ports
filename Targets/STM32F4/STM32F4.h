@@ -355,13 +355,14 @@ bool STM32F4_GpioInternal_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode portMo
 
 void STM32F4_Display_Reset();
 const TinyCLR_Api_Info* STM32F4_Display_GetApi();
-TinyCLR_Result STM32F4_Display_Acquire(const TinyCLR_Display_Provider* self, uint32_t width, uint32_t height);
+TinyCLR_Result STM32F4_Display_Acquire(const TinyCLR_Display_Provider* self);
 TinyCLR_Result STM32F4_Display_Release(const TinyCLR_Display_Provider* self);
-TinyCLR_Result STM32F4_Display_SetLcdConfiguration(const TinyCLR_Display_Provider* self, bool outputEnableIsFixed, bool outputEnablePolarity, bool pixelPolarity, uint32_t pixelClockRate, bool horizontalSyncPolarity, uint32_t horizontalSyncPulseWidth, uint32_t horizontalFrontPorch, uint32_t horizontalBackPorch, bool verticalSyncPolarity, uint32_t verticalSyncPulseWidth, uint32_t verticalFrontPorch, uint32_t verticalBackPorch);
-TinyCLR_Result STM32F4_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data, TinyCLR_Display_Format dataFormat);
-TinyCLR_Result STM32F4_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer);
-int32_t STM32F4_Display_GetWidth(const TinyCLR_Display_Provider* self);
-int32_t STM32F4_Display_GetHeight(const TinyCLR_Display_Provider* self);
-TinyCLR_Display_InterfaceType STM32F4_Display_GetType(const TinyCLR_Display_Provider* self);
+TinyCLR_Result STM32F4_Display_Enable(const TinyCLR_Display_Provider* self);
+TinyCLR_Result STM32F4_Display_Disable(const TinyCLR_Display_Provider* self);
+TinyCLR_Result STM32F4_Display_GetCapabilities(const TinyCLR_Display_Provider* self, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount);
+TinyCLR_Result STM32F4_Display_GetConfiguration(const TinyCLR_Display_Provider* self, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration);
+TinyCLR_Result STM32F4_Display_SetConfiguration(const TinyCLR_Display_Provider* self, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration);
+TinyCLR_Result STM32F4_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data);
+TinyCLR_Result STM32F4_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer, size_t length);
 
 extern const TinyCLR_Api_Provider* apiProvider;
