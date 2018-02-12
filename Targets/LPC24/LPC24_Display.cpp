@@ -903,18 +903,12 @@ void LPC24_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenHei
     }
 }
 
-TinyCLR_Result LPC24_Display_Acquire(const TinyCLR_Display_Provider* self, uint32_t width, uint32_t height) {
-    m_LPC24_DisplayWidth = width;
-    m_LPC24_DisplayHeight = height;
-
+TinyCLR_Result LPC24_Display_Acquire(const TinyCLR_Display_Provider* self) {
     m_LPC24_Display_CurrentRotation = LPC24xx_LCD_Rotation::rotateNormal_0;
 
     m_LPC24_Display_VituralRam = (uint16_t*)m_LPC24_Display_ReservedVitualRamLocation;
 
-    if (LPC24_Display_SetPinConfiguration())
-        return TinyCLR_Result::Success;
-
-    return  TinyCLR_Result::InvalidOperation;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Display_Release(const TinyCLR_Display_Provider* self) {
@@ -924,39 +918,81 @@ TinyCLR_Result LPC24_Display_Release(const TinyCLR_Display_Provider* self) {
     return  TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result LPC24_Display_SetLcdConfiguration(const TinyCLR_Display_Provider* self, bool outputEnableIsFixed, bool outputEnablePolarity, bool pixelPolarity, uint32_t pixelClockRate, bool horizontalSyncPolarity, uint32_t horizontalSyncPulseWidth, uint32_t horizontalFrontPorch, uint32_t horizontalBackPorch, bool verticalSyncPolarity, uint32_t verticalSyncPulseWidth, uint32_t verticalFrontPorch, uint32_t verticalBackPorch) {
-    m_LPC24_DisplayOutputEnableIsFixed = outputEnableIsFixed;
-    m_LPC24_DisplayOutputEnablePolarity = outputEnablePolarity;
-    m_LPC24_DisplayPixelPolarity = pixelPolarity;
-
-    m_LPC24_DisplayPixelClockRateKHz = pixelClockRate / 1000;
-
-    m_LPC24_DisplayHorizontalSyncPolarity = horizontalSyncPolarity;
-
-    m_LPC24_DisplayHorizontalSyncPulseWidth = horizontalSyncPulseWidth;
-    m_LPC24_DisplayHorizontalFrontPorch = horizontalFrontPorch;
-    m_LPC24_DisplayHorizontalBackPorch = horizontalBackPorch;
-
-    m_LPC24_DisplayVerticalSyncPolarity = verticalSyncPolarity;
-
-    m_LPC24_DisplayVerticalSyncPulseWidth = verticalSyncPulseWidth;
-    m_LPC24_DisplayVerticalFrontPorch = verticalFrontPorch;
-    m_LPC24_DisplayVerticalBackPorch = verticalBackPorch;
-
-    if (LPC24_Display_Initialize())
+TinyCLR_Result LPC24_Display_Enable(const TinyCLR_Display_Provider* self) {
+    if (LPC24_Display_SetPinConfiguration() && LPC24_Display_Initialize())
         return TinyCLR_Result::Success;
 
-    return  TinyCLR_Result::InvalidOperation;
+    return TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result LPC24_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data, TinyCLR_Display_DataFormat dataFormat) {
-    switch (dataFormat) {
-    case TinyCLR_Display_DataFormat::Rgb565:
-        LPC24_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
-        return TinyCLR_Result::Success;
+TinyCLR_Result LPC24_Display_Disable(const TinyCLR_Display_Provider* self) {
+    return TinyCLR_Result::NotSupported;
+}
+
+TinyCLR_Result LPC24_Display_SetConfiguration(const TinyCLR_Display_Provider* self, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration) {
+    if (dataFormat != TinyCLR_Display_DataFormat::Rgb565) return TinyCLR_Result::NotSupported;
+
+    if (configuration != nullptr) {
+        auto& cfg = *(const TinyCLR_Display_ParallelConfiguration*)configuration;
+
+        m_LPC24_DisplayWidth = width;
+        m_LPC24_DisplayHeight = height;
+
+        m_LPC24_DisplayOutputEnableIsFixed = cfg.DataEnableIsFixed;
+        m_LPC24_DisplayOutputEnablePolarity = cfg.DataEnablePolarity;
+        m_LPC24_DisplayPixelPolarity = cfg.PixelPolarity;
+
+        m_LPC24_DisplayPixelClockRateKHz = cfg.PixelClockRate / 1000;
+
+        m_LPC24_DisplayHorizontalSyncPolarity = cfg.HorizontalSyncPolarity;
+
+        m_LPC24_DisplayHorizontalSyncPulseWidth = cfg.HorizontalSyncPulseWidth;
+        m_LPC24_DisplayHorizontalFrontPorch = cfg.HorizontalFrontPorch;
+        m_LPC24_DisplayHorizontalBackPorch = cfg.HorizontalBackPorch;
+
+        m_LPC24_DisplayVerticalSyncPolarity = cfg.VerticalSyncPolarity;
+
+        m_LPC24_DisplayVerticalSyncPulseWidth = cfg.VerticalSyncPulseWidth;
+        m_LPC24_DisplayVerticalFrontPorch = cfg.VerticalFrontPorch;
+        m_LPC24_DisplayVerticalBackPorch = cfg.VerticalBackPorch;
     }
 
-    return  TinyCLR_Result::InvalidOperation;
+    return  TinyCLR_Result::Success;
+}
+
+TinyCLR_Result LPC24_Display_GetConfiguration(const TinyCLR_Display_Provider* self, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration) {
+    dataFormat = TinyCLR_Display_DataFormat::Rgb565;
+    width = m_LPC24_DisplayWidth;
+    height = m_LPC24_DisplayHeight;
+
+    if (configuration != nullptr) {
+        auto& cfg = *(TinyCLR_Display_ParallelConfiguration*)configuration;
+
+        cfg.DataEnableIsFixed = m_LPC24_DisplayOutputEnableIsFixed;
+        cfg.DataEnablePolarity = m_LPC24_DisplayOutputEnablePolarity;
+        cfg.PixelPolarity = m_LPC24_DisplayPixelPolarity;
+
+        cfg.PixelClockRate = m_LPC24_DisplayPixelClockRateKHz * 1000;
+
+        cfg.HorizontalSyncPolarity = m_LPC24_DisplayHorizontalSyncPolarity;
+
+        cfg.HorizontalSyncPulseWidth = m_LPC24_DisplayHorizontalSyncPulseWidth;
+        cfg.HorizontalFrontPorch = m_LPC24_DisplayHorizontalFrontPorch;
+        cfg.HorizontalBackPorch = m_LPC24_DisplayHorizontalBackPorch;
+
+        cfg.VerticalSyncPolarity = m_LPC24_DisplayVerticalSyncPolarity;
+
+        cfg.VerticalSyncPulseWidth = m_LPC24_DisplayVerticalSyncPulseWidth;
+        cfg.VerticalFrontPorch = m_LPC24_DisplayVerticalFrontPorch;
+        cfg.VerticalBackPorch = m_LPC24_DisplayVerticalBackPorch;
+    }
+
+    return TinyCLR_Result::InvalidOperation;
+}
+
+TinyCLR_Result LPC24_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data) {
+    LPC24_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer, size_t length) {
@@ -966,16 +1002,14 @@ TinyCLR_Result LPC24_Display_WriteString(const TinyCLR_Display_Provider* self, c
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC24_Display_GetWidth(const TinyCLR_Display_Provider* self) {
-    return LPC24_Display_GetWidth();;
-}
+TinyCLR_Display_DataFormat dataFormats[] = { TinyCLR_Display_DataFormat::Rgb565 };
 
-int32_t LPC24_Display_GetHeight(const TinyCLR_Display_Provider* self) {
-    return LPC24_Display_GetHeight();
-}
+TinyCLR_Result LPC24_Display_GetCapabilities(const TinyCLR_Display_Provider* self, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount) {
+    type = TinyCLR_Display_InterfaceType::Parallel;
+    supportedDataFormatCount = SIZEOF_ARRAY(dataFormats);
+    supportedDataFormats = dataFormats;
 
-TinyCLR_Display_InterfaceType LPC24_Display_GetType(const TinyCLR_Display_Provider* self) {
-    return TinyCLR_Display_InterfaceType::Parallel;
+    return TinyCLR_Result::Success;
 }
 
 const TinyCLR_Api_Info* LPC24_Display_GetApi() {
@@ -983,12 +1017,13 @@ const TinyCLR_Api_Info* LPC24_Display_GetApi() {
     displayProvider.Index = 0;
     displayProvider.Acquire = &LPC24_Display_Acquire;
     displayProvider.Release = &LPC24_Display_Release;
-    displayProvider.SetLcdConfiguration = &LPC24_Display_SetLcdConfiguration;
+    displayProvider.Enable = &LPC24_Display_Enable;
+    displayProvider.Disable = &LPC24_Display_Disable;
+    displayProvider.SetConfiguration = &LPC24_Display_SetConfiguration;
+    displayProvider.GetConfiguration = &LPC24_Display_GetConfiguration;
+    displayProvider.GetCapabilities = &LPC24_Display_GetCapabilities;
     displayProvider.DrawBuffer = &LPC24_Display_DrawBuffer;
     displayProvider.WriteString = &LPC24_Display_WriteString;
-    displayProvider.GetWidth = &LPC24_Display_GetWidth;
-    displayProvider.GetHeight = &LPC24_Display_GetHeight;
-    displayProvider.GetType = &LPC24_Display_GetType;
 
     displayApi.Author = "GHI Electronics, LLC";
     displayApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.DisplayProvider";

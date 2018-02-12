@@ -1290,18 +1290,12 @@ void AT91_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenHeig
     }
 }
 
-TinyCLR_Result AT91_Display_Acquire(const TinyCLR_Display_Provider* self, uint32_t width, uint32_t height) {
-    m_AT91_DisplayWidth = width;
-    m_AT91_DisplayHeight = height;
-
+TinyCLR_Result AT91_Display_Acquire(const TinyCLR_Display_Provider* self) {
     m_AT91_Display_CurrentRotation = AT91_LCD_Rotation::rotateNormal_0;
 
     m_AT91_Display_VituralRam = (uint16_t*)m_AT91_Display_ReservedVitualRamLocation;
 
-    if (AT91_Display_SetPinConfiguration())
-        return TinyCLR_Result::Success;
-
-    return  TinyCLR_Result::InvalidOperation;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Display_Release(const TinyCLR_Display_Provider* self) {
@@ -1311,39 +1305,81 @@ TinyCLR_Result AT91_Display_Release(const TinyCLR_Display_Provider* self) {
     return  TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result AT91_Display_SetLcdConfiguration(const TinyCLR_Display_Provider* self, bool outputEnableIsFixed, bool outputEnablePolarity, bool pixelPolarity, uint32_t pixelClockRate, bool horizontalSyncPolarity, uint32_t horizontalSyncPulseWidth, uint32_t horizontalFrontPorch, uint32_t horizontalBackPorch, bool verticalSyncPolarity, uint32_t verticalSyncPulseWidth, uint32_t verticalFrontPorch, uint32_t verticalBackPorch) {
-    m_AT91_DisplayOutputEnableIsFixed = outputEnableIsFixed;
-    m_AT91_DisplayOutputEnablePolarity = outputEnablePolarity;
-    m_AT91_DisplayPixelPolarity = pixelPolarity;
-
-    m_AT91_DisplayPixelClockRateKHz = pixelClockRate / 1000;
-
-    m_AT91_DisplayHorizontalSyncPolarity = horizontalSyncPolarity;
-
-    m_AT91_DisplayHorizontalSyncPulseWidth = horizontalSyncPulseWidth;
-    m_AT91_DisplayHorizontalFrontPorch = horizontalFrontPorch;
-    m_AT91_DisplayHorizontalBackPorch = horizontalBackPorch;
-
-    m_AT91_DisplayVerticalSyncPolarity = verticalSyncPolarity;
-
-    m_AT91_DisplayVerticalSyncPulseWidth = verticalSyncPulseWidth;
-    m_AT91_DisplayVerticalFrontPorch = verticalFrontPorch;
-    m_AT91_DisplayVerticalBackPorch = verticalBackPorch;
-
-    if (AT91_Display_Initialize())
+TinyCLR_Result AT91_Display_Enable(const TinyCLR_Display_Provider* self) {
+    if (AT91_Display_SetPinConfiguration() && AT91_Display_Initialize())
         return TinyCLR_Result::Success;
 
-    return  TinyCLR_Result::InvalidOperation;
+    return TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result AT91_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data, TinyCLR_Display_DataFormat dataFormat) {
-    switch (dataFormat) {
-    case TinyCLR_Display_DataFormat::Rgb565:
-        AT91_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
-        return TinyCLR_Result::Success;
+TinyCLR_Result AT91_Display_Disable(const TinyCLR_Display_Provider* self) {
+    return TinyCLR_Result::NotSupported;
+}
+
+TinyCLR_Result AT91_Display_SetConfiguration(const TinyCLR_Display_Provider* self, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration) {
+    if (dataFormat != TinyCLR_Display_DataFormat::Rgb565) return TinyCLR_Result::NotSupported;
+
+    if (configuration != nullptr) {
+        auto& cfg = *(const TinyCLR_Display_ParallelConfiguration*)configuration;
+
+        m_AT91_DisplayWidth = width;
+        m_AT91_DisplayHeight = height;
+
+        m_AT91_DisplayOutputEnableIsFixed = cfg.DataEnableIsFixed;
+        m_AT91_DisplayOutputEnablePolarity = cfg.DataEnablePolarity;
+        m_AT91_DisplayPixelPolarity = cfg.PixelPolarity;
+
+        m_AT91_DisplayPixelClockRateKHz = cfg.PixelClockRate / 1000;
+
+        m_AT91_DisplayHorizontalSyncPolarity = cfg.HorizontalSyncPolarity;
+
+        m_AT91_DisplayHorizontalSyncPulseWidth = cfg.HorizontalSyncPulseWidth;
+        m_AT91_DisplayHorizontalFrontPorch = cfg.HorizontalFrontPorch;
+        m_AT91_DisplayHorizontalBackPorch = cfg.HorizontalBackPorch;
+
+        m_AT91_DisplayVerticalSyncPolarity = cfg.VerticalSyncPolarity;
+
+        m_AT91_DisplayVerticalSyncPulseWidth = cfg.VerticalSyncPulseWidth;
+        m_AT91_DisplayVerticalFrontPorch = cfg.VerticalFrontPorch;
+        m_AT91_DisplayVerticalBackPorch = cfg.VerticalBackPorch;
     }
 
-    return  TinyCLR_Result::InvalidOperation;
+    return  TinyCLR_Result::Success;
+}
+
+TinyCLR_Result AT91_Display_GetConfiguration(const TinyCLR_Display_Provider* self, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration) {
+    dataFormat = TinyCLR_Display_DataFormat::Rgb565;
+    width = m_AT91_DisplayWidth;
+    height = m_AT91_DisplayHeight;
+
+    if (configuration != nullptr) {
+        auto& cfg = *(TinyCLR_Display_ParallelConfiguration*)configuration;
+
+        cfg.DataEnableIsFixed = m_AT91_DisplayOutputEnableIsFixed;
+        cfg.DataEnablePolarity = m_AT91_DisplayOutputEnablePolarity;
+        cfg.PixelPolarity = m_AT91_DisplayPixelPolarity;
+
+        cfg.PixelClockRate = m_AT91_DisplayPixelClockRateKHz * 1000;
+
+        cfg.HorizontalSyncPolarity = m_AT91_DisplayHorizontalSyncPolarity;
+
+        cfg.HorizontalSyncPulseWidth = m_AT91_DisplayHorizontalSyncPulseWidth;
+        cfg.HorizontalFrontPorch = m_AT91_DisplayHorizontalFrontPorch;
+        cfg.HorizontalBackPorch = m_AT91_DisplayHorizontalBackPorch;
+
+        cfg.VerticalSyncPolarity = m_AT91_DisplayVerticalSyncPolarity;
+
+        cfg.VerticalSyncPulseWidth = m_AT91_DisplayVerticalSyncPulseWidth;
+        cfg.VerticalFrontPorch = m_AT91_DisplayVerticalFrontPorch;
+        cfg.VerticalBackPorch = m_AT91_DisplayVerticalBackPorch;
+    }
+
+    return TinyCLR_Result::InvalidOperation;
+}
+
+TinyCLR_Result AT91_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data) {
+    AT91_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer, size_t length) {
@@ -1353,16 +1389,14 @@ TinyCLR_Result AT91_Display_WriteString(const TinyCLR_Display_Provider* self, co
     return TinyCLR_Result::Success;
 }
 
-int32_t AT91_Display_GetWidth(const TinyCLR_Display_Provider* self) {
-    return AT91_Display_GetWidth();;
-}
+TinyCLR_Display_DataFormat dataFormats[] = { TinyCLR_Display_DataFormat::Rgb565 };
 
-int32_t AT91_Display_GetHeight(const TinyCLR_Display_Provider* self) {
-    return AT91_Display_GetHeight();
-}
+TinyCLR_Result AT91_Display_GetCapabilities(const TinyCLR_Display_Provider* self, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount) {
+    type = TinyCLR_Display_InterfaceType::Parallel;
+    supportedDataFormatCount = SIZEOF_ARRAY(dataFormats);
+    supportedDataFormats = dataFormats;
 
-TinyCLR_Display_InterfaceType AT91_Display_GetType(const TinyCLR_Display_Provider* self) {
-    return TinyCLR_Display_InterfaceType::Parallel;
+    return TinyCLR_Result::Success;
 }
 
 const TinyCLR_Api_Info* AT91_Display_GetApi() {
@@ -1370,12 +1404,13 @@ const TinyCLR_Api_Info* AT91_Display_GetApi() {
     displayProvider.Index = 0;
     displayProvider.Acquire = &AT91_Display_Acquire;
     displayProvider.Release = &AT91_Display_Release;
-    displayProvider.SetLcdConfiguration = &AT91_Display_SetLcdConfiguration;
+    displayProvider.Enable = &AT91_Display_Enable;
+    displayProvider.Disable = &AT91_Display_Disable;
+    displayProvider.SetConfiguration = &AT91_Display_SetConfiguration;
+    displayProvider.GetConfiguration = &AT91_Display_GetConfiguration;
+    displayProvider.GetCapabilities = &AT91_Display_GetCapabilities;
     displayProvider.DrawBuffer = &AT91_Display_DrawBuffer;
     displayProvider.WriteString = &AT91_Display_WriteString;
-    displayProvider.GetWidth = &AT91_Display_GetWidth;
-    displayProvider.GetHeight = &AT91_Display_GetHeight;
-    displayProvider.GetType = &AT91_Display_GetType;
 
     displayApi.Author = "GHI Electronics, LLC";
     displayApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.DisplayProvider";
