@@ -15,6 +15,10 @@
 
 #include "LPC24.h"
 
+void LPC24_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
+
+}
+
 #define MEM_MAP_REG 0xE01FC040 // memory maping register
 
 // manually filled in

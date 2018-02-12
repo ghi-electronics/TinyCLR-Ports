@@ -17,6 +17,9 @@
 #include "STM32F4.h"
 #include <stdio.h>
 
+void STM32F4_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
+
+}
 
 #ifndef FLASH
 #define FLASH               ((FLASH_TypeDef *) FLASH_R_BASE)

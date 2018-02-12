@@ -15,6 +15,10 @@
 #include <TinyCLR.h>
 #include <Device.h>
 
+void LPC24_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider) {
+
+}
+
 static int32_t lpc24_deviceId = 0;
 
 int32_t LPC24_Startup_GetDeviceId() {

@@ -16,6 +16,11 @@
 #include <stdio.h>
 
 #include "LPC17.h"
+
+void LPC17_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
+
+}
+
 /*
 //-------- <<< Use Configuration Wizard in Context Menu >>> ------------------
 */

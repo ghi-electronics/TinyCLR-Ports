@@ -27,6 +27,9 @@
 #define CHARIZE2(c) #c
 #define CHARIZE(c) (CHARIZE2(c)[0])
 
+void AT91_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider);
+void AT91_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider);
+
 //
 //  PERIPHERAL ID DEFINITIONS FOR AT91SAM9X35
 //

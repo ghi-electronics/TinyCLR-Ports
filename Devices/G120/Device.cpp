@@ -28,6 +28,9 @@
 #define G120E_DETECT2_STATE TinyCLR_Gpio_PinValue::Low
 #define G120E_DETECT3_STATE TinyCLR_Gpio_PinValue::Low
 
+void LPC17_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider) {
+
+}
 
 static int32_t lpc178_deviceId = -1;
 

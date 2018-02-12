@@ -20,6 +20,10 @@
 
 #include "AT91.h"
 
+void AT91_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
+
+}
+
 extern "C" {
     extern int HeapBegin;
     extern int HeapEnd;

@@ -394,6 +394,9 @@ void LPC17_Startup_GetHeap(uint8_t*& start, size_t& length);
 void LPC17_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index);
 void LPC17_Startup_GetRunApp(bool& runApp);
 
+void LPC17_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider);
+void LPC17_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider);
+
 extern const TinyCLR_Api_Provider* apiProvider;
 
 //System Control Block

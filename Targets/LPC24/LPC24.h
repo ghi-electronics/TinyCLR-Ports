@@ -148,6 +148,9 @@ struct LPC24_Gpio_PinConfiguration {
 #define INPUT(pinMode) { LPC24_Gpio_Direction::Input, LPC24_Gpio_PinMode::pinMode, LPC24_Gpio_PinFunction::PinFunction0, true }
 #define DEFAULT() { LPC24_Gpio_Direction::Input, LPC24_Gpio_PinMode::Inactive, LPC24_Gpio_PinFunction::PinFunction0, false }
 
+void LPC24_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider);
+void LPC24_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider);
+
 extern const TinyCLR_Api_Provider* apiProvider;
 
 void LPC24_Gpio_Reset();

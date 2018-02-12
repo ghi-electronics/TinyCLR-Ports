@@ -66,6 +66,9 @@ void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 #ifdef INCLUDE_USBCLIENT
     apiProvider->Add(apiProvider, TARGET(_UsbClient_GetApi)());
 #endif
+
+    TARGET(_Startup_OnSoftReset)(apiProvider);
+    TARGET(_Startup_OnSoftResetDevice)(apiProvider);
 }
 
 int main() {
