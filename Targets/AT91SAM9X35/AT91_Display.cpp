@@ -1336,9 +1336,9 @@ TinyCLR_Result AT91_Display_SetLcdConfiguration(const TinyCLR_Display_Provider* 
     return  TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result AT91_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data, TinyCLR_Display_Format dataFormat) {
+TinyCLR_Result AT91_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data, TinyCLR_Display_DataFormat dataFormat) {
     switch (dataFormat) {
-    case TinyCLR_Display_Format::Rgb565:
+    case TinyCLR_Display_DataFormat::Rgb565:
         AT91_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
         return TinyCLR_Result::Success;
     }
