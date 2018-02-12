@@ -17,8 +17,10 @@
 #include "STM32F4.h"
 #include <stdio.h>
 
-void STM32F4_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
+#include "../../Drivers/SPIDisplay/SPIDisplay.h"
 
+void STM32F4_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
+    apiProvider->Add(apiProvider, SPIDisplay_GetApi());
 }
 
 #ifndef FLASH

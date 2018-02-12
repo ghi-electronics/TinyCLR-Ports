@@ -17,8 +17,10 @@
 
 #include "LPC17.h"
 
-void LPC17_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
+#include "../../Drivers/SPIDisplay/SPIDisplay.h"
 
+void LPC17_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
+    apiProvider->Add(apiProvider, SPIDisplay_GetApi());
 }
 
 /*
