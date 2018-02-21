@@ -70,7 +70,7 @@
 
 #define INCLUDE_PWM
 #define STM32F4_PWM_PINS {/*          0                          1                        2                        3                       */\
-                          /* TIM1  */ { { PIN(E,  9), AF(1)   }, { PIN(E, 11), AF(1)   }, { PIN(E, 13), AF(1)   }, { PIN(E, 14), AF(1)   } },\
+                          /* TIM1  */ { { PIN(E,  9), AF(1)   }, { PIN(E, 11), AF(1)   }, { PIN(A, 10), AF(1)   }, { PIN(E, 14), AF(1)   } },\
                           /* TIM2  */ { { PIN(A, 15), AF(1)   }, { PIN(B,  3), AF(1)   }, { PIN(B, 10), AF(1)   }, { PIN(B, 11), AF(1)   } },\
                           /* TIM3  */ { { PIN(B,  4), AF(2)   }, { PIN(B,  5), AF(2)   }, { PIN(B,  0), AF(2)   }, { PIN(B,  1), AF(2)   } },\
                           /* TIM4  */ { { PIN(D, 12), AF(2)   }, { PIN(D, 13), AF(2)   }, { PIN(D, 14), AF(2)   }, { PIN(D, 15), AF(2)   } },\
@@ -92,8 +92,8 @@
 #define STM32F4_SPI_MOSI_PINS { { PIN(B, 5), AF(5) }, { PIN(C,  3), AF(5) } }
 
 #define INCLUDE_UART
-#define STM32F4_UART_DEFAULT_TX_BUFFER_SIZE  { 256, 256, 256, 256 }
-#define STM32F4_UART_DEFAULT_RX_BUFFER_SIZE  { 512, 512, 512, 512 }
+#define STM32F4_UART_DEFAULT_TX_BUFFER_SIZE  { 256, 256, 256, 256, 256, 256, 256, 256 }
+#define STM32F4_UART_DEFAULT_RX_BUFFER_SIZE  { 512, 512, 512, 512, 512, 512, 512, 512 }
 #define STM32F4_UART_TX_PINS  { { PIN(B,  6), AF(7)   }, { PIN(A,  2), AF(7)  }, { PIN(D,  8), AF(8)  }, { PIN(A, 0), AF(8)   }, { PIN_NONE , AF_NONE }, { PIN(C, 6), AF(8)   }, { PIN(E, 8), AF(8)   }, { PIN(E, 1), AF(8)   } }
 #define STM32F4_UART_RX_PINS  { { PIN(B,  7), AF(7)   }, { PIN(A,  3), AF(7)  }, { PIN(D,  9), AF(8)  }, { PIN(A, 1), AF(8)   }, { PIN_NONE , AF_NONE }, { PIN(C, 7), AF(8)   }, { PIN(E, 7), AF(8)   }, { PIN(E, 0), AF(8)   } }
 #define STM32F4_UART_CTS_PINS { { PIN_NONE  , AF_NONE }, { PIN(A,  0), AF(7)  }, { PIN_NONE , AF_NONE }, { PIN_NONE , AF_NONE }, { PIN_NONE , AF_NONE }, { PIN_NONE , AF_NONE }, { PIN_NONE , AF_NONE }, { PIN_NONE , AF_NONE } }
