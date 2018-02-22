@@ -213,10 +213,8 @@ void STM32F4_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 #endif
 #endif
 
-#pragma arm section code = "SectionForBootstrapOperations"
-
 extern "C" {
-    void __section("SectionForBootstrapOperations") SystemInit() {
+    void SystemInit() {
         // enable FPU coprocessors (CP10, CP11)
         SCB->CPACR |= 0x3 << 2 * 10 | 0x3 << 2 * 11; // full access
 
