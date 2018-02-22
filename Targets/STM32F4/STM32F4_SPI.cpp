@@ -505,23 +505,11 @@ TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Provider* self) {
 }
 
 int32_t STM32F4_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self) {
-    int32_t controller = (self->Index);
-
-    if (controller > 0 && controller < 3)
-        return  STM32F4_APB1_CLOCK_HZ / 256;
-    else
-        return STM32F4_APB2_CLOCK_HZ / 256;
-    return 1;
+    return ((self->Index > 0 && self->Index < 3) ? (STM32F4_APB1_CLOCK_HZ / 256) : (STM32F4_APB2_CLOCK_HZ / 256));
 }
 
 int32_t STM32F4_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self) {
-    int32_t controller = (self->Index);
-
-    if (controller > 0 && controller < 3)
-        return  STM32F4_APB1_CLOCK_HZ >> 1;
-    else
-        return STM32F4_APB2_CLOCK_HZ >> 1;
-
+    return ((self->Index > 0 && self->Index < 3) ? (STM32F4_APB1_CLOCK_HZ >> 1) : (STM32F4_APB2_CLOCK_HZ >> 1));
 }
 
 int32_t STM32F4_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self) {
