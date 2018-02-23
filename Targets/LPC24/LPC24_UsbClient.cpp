@@ -974,7 +974,7 @@ int UsbClient_Driver::Write(int controller, int usbStream, const char* Data, siz
 
                 WaitLoopCnt = 0;
             }
-            else {
+            if (Packet64 == nullptr || ((int32_t)(State->Queues[endpoint]->size()) > LPC24_USB_VECTOR_MAX_SIZE)) {
                 // a 64-byte USB packet takes less than 50uSec
                 // according to the timing calculations of the USB Chief
                 // this is way too short to bother with a call
