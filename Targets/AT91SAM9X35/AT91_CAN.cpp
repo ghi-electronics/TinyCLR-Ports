@@ -1281,8 +1281,7 @@ void CopyMessageFromMailBoxToBuffer(uint8_t channel, uint32_t dwMsr) {
     }
 
     if (canController[channel].can_rx_count > (canController[channel].can_rxBufferSize - 3)) {
-        auto interop = (const TinyCLR_Interop_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider);
-        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::ReadBufferFull);
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ReadBufferFull);
     }
 
     // initialize destination pointer
@@ -1313,9 +1312,7 @@ void CopyMessageFromMailBoxToBuffer(uint8_t channel, uint32_t dwMsr) {
         canController[channel].can_rx_in = 0;
     }
 
-    auto interop = (const TinyCLR_Interop_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider);
-
-    canController[channel].messageReceivedEventHandler(interop, canController[channel].provider, canController[channel].can_rx_count);
+    canController[channel].messageReceivedEventHandler(canController[channel].provider, canController[channel].can_rx_count);
 }
 
 void CAN_ProccessMailbox(uint8_t channel) {
@@ -1367,15 +1364,13 @@ void CAN_ProccessMailbox(uint8_t channel) {
 }
 
 void CAN_ErrorHandler(sCand *pCand, uint32_t dwErrS, int32_t channel) {
-    auto interop = (const TinyCLR_Interop_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider);
-
     if (dwErrS & CAN_SR_BOFF) // BusOff is higher priority
     {
-        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::BusOff);
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::BusOff);
 
     }
     else if (dwErrS & CAN_SR_ERRP) {
-        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::Passive);
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::Passive);
     }
 }
 
@@ -1426,9 +1421,7 @@ void AT91_Can_RxInterruptHandler(void *param) {
     }
     /* Timer overflow */
     if (dwSr & CAN_SR_TOVF) {
-        auto interop = (const TinyCLR_Interop_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider);
-
-        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::ReadBufferOverrun);
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ReadBufferOverrun);
     }
 }
 

@@ -2299,9 +2299,7 @@ void CAN_ISR_Rx(int32_t channel) {
         else
             C2CMR = 0x04; // release receive buffer
 
-        auto interop = (const TinyCLR_Interop_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider);
-
-        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::ReadBufferFull);
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ReadBufferFull);
 
         return;
     }
@@ -2354,9 +2352,7 @@ void CAN_ISR_Rx(int32_t channel) {
         canController[channel].can_rx_in = 0;
     }
 
-    auto interop = (const TinyCLR_Interop_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider);
-
-    canController[channel].messageReceivedEventHandler(interop, canController[channel].provider, canController[channel].can_rx_count);
+    canController[channel].messageReceivedEventHandler(canController[channel].provider, canController[channel].can_rx_count);
 }
 void LPC24_Can_RxInterruptHandler(void *param) {
     uint32_t status = CANRxSR;
@@ -2364,8 +2360,6 @@ void LPC24_Can_RxInterruptHandler(void *param) {
     int32_t channel;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
-
-    auto interop = (const TinyCLR_Interop_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider);
 
     if (status & (1 << 8)) {
         channel = 0;
@@ -2375,14 +2369,14 @@ void LPC24_Can_RxInterruptHandler(void *param) {
         CAN_ISR_Rx(channel);
 
         if (c1 & (1 << 3)) {
-            canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::ReadBufferOverrun);
+            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ReadBufferOverrun);
         }
         if (c1 & (1 << 5)) {
-            canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::Passive);
+            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::Passive);
         }
         if (c1 & (1 << 7)) {
             C1MOD = 1;    // Reset CAN
-            canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::BusOff);
+            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::BusOff);
         }
 
     }
@@ -2394,14 +2388,14 @@ void LPC24_Can_RxInterruptHandler(void *param) {
         CAN_ISR_Rx(channel);
 
         if (c2 & (1 << 3)) {
-            canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::ReadBufferOverrun);
+            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ReadBufferOverrun);
         }
         if (c2 & (1 << 5)) {
-            canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::Passive);
+            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::Passive);
         }
         if (c2 & (1 << 7)) {
             C2MOD = 1;    // Reset CAN
-            canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::BusOff);
+            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::BusOff);
         }
     }
 }
