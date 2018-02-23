@@ -478,11 +478,11 @@ void LPC24_UsbClient_Reset();
 void LPC24_UsbClient_PinConfiguration();
 TinyCLR_Result LPC24_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self);
 TinyCLR_Result LPC24_UsbClient_Release(const TinyCLR_UsbClient_Provider* self);
-TinyCLR_Result LPC24_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t & stream, TinyCLR_UsbClient_StreamMode mode);
-TinyCLR_Result LPC24_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t stream);
-TinyCLR_Result LPC24_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int32_t stream, const uint8_t* data, size_t& length);
-TinyCLR_Result LPC24_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int32_t stream, uint8_t* data, size_t& length);
-TinyCLR_Result LPC24_UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, int32_t stream);
+TinyCLR_Result LPC24_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t & pipe, TinyCLR_UsbClient_PipeMode mode);
+TinyCLR_Result LPC24_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t pipe);
+TinyCLR_Result LPC24_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int32_t pipe, const uint8_t* data, size_t& length);
+TinyCLR_Result LPC24_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int32_t pipe, uint8_t* data, size_t& length);
+TinyCLR_Result LPC24_UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, int32_t pipe);
 TinyCLR_Result LPC24_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_DataReceivedHandler handler);
 
 TinyCLR_Result LPC24_UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Provider* self, const void* descriptor, int32_t length);
