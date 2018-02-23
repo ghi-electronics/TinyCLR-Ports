@@ -986,29 +986,27 @@ ITStatus CAN_GetITStatus(CAN_TypeDef* CANx, uint32_t CAN_IT) {
 bool CAN_ErrorHandler(uint8_t channel) {
     CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
 
-    auto interop = (const TinyCLR_Interop_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider);
-
     if (CAN_GetITStatus(CANx, CAN_IT_FF0)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_FF0);
-        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::ReadBufferFull);
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ReadBufferFull);
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_FOV0)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_FOV0);
-        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::ReadBufferOverrun);
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ReadBufferOverrun);
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_BOF)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_BOF);
-        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::BusOff);
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::BusOff);
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_EPV)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_EPV);
-        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::Passive);
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::Passive);
 
         return true;
     }
@@ -1018,13 +1016,13 @@ bool CAN_ErrorHandler(uint8_t channel) {
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_ERR)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_ERR);
-        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::Passive);
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::Passive);
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_EWG)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_EWG);
-        canController[channel].errorEventHandler(interop, canController[channel].provider, TinyCLR_Can_Error::Passive);
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::Passive);
     }
 
 
@@ -1191,9 +1189,7 @@ void STM32_Can_RxInterruptHandler(int32_t channel) {
         canController[channel].can_rx_in = 0;
     }
 
-    auto interop = (const TinyCLR_Interop_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider);
-
-    canController[channel].messageReceivedEventHandler(interop, canController[channel].provider, canController[channel].can_rx_count);
+    canController[channel].messageReceivedEventHandler(canController[channel].provider, canController[channel].can_rx_count);
 
     return;
 }
