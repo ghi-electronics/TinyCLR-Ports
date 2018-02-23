@@ -21,15 +21,11 @@
 #define STM32F4_FLASH               ((FLASH_TypeDef *) FLASH_R_BASE)
 #endif
 
-typedef uint16_t CHIP_WORD;
-
 struct STM32F4_Flash_Deployment {
     uint32_t id;
     uint32_t address;
     uint32_t size;
 };
-
-#define FLASH_CR_PSIZE_BITS FLASH_CR_PSIZE_0 // 16 bit programming
 
 #if STM32F4_SUPPLY_VOLTAGE_MV < 2100
 #error 16 bit Flash programming not allowed for voltages below 2.1V
@@ -83,12 +79,12 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Read(const T
     if (STM32F4_Flash_GetSectorSizeForAddress(self, address, bytePerSector) != TinyCLR_Result::Success)
         return TinyCLR_Result::IndexOutOfRange;
 
-    CHIP_WORD* ChipAddress = (CHIP_WORD *)address;
-    CHIP_WORD* EndAddress = (CHIP_WORD *)(address + length);
-    CHIP_WORD *pBuf = (CHIP_WORD *)buffer;
+    uint32_t* addressStart = reinterpret_cast<uint32_t*>(address);
+    uint32_t* addressEnd = reinterpret_cast<uint32_t*>(address + length);
+    uint32_t* pBuf = (uint32_t*)buffer;
 
-    while (ChipAddress < EndAddress) {
-        *pBuf++ = *ChipAddress++;
+    while (addressStart < addressEnd) {
+        *pBuf++ = *addressStart++;
     }
 
     return TinyCLR_Result::Success;
@@ -106,25 +102,25 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Write(const 
         STM32F4_FLASH->KEYR = STM32F4_FLASH_KEY2;
     }
 
-    CHIP_WORD* ChipAddress = (CHIP_WORD *)address;
-    CHIP_WORD* EndAddress = (CHIP_WORD *)(address + length);
-    CHIP_WORD *pBuf = (CHIP_WORD *)buffer;
+    uint32_t* addressStart = reinterpret_cast<uint32_t*>(address);
+    uint32_t* addressEnd = reinterpret_cast<uint32_t*>(address + length);
+    uint32_t* pBuf = (uint32_t*)buffer;
 
     // enable programming
-    STM32F4_FLASH->CR = FLASH_CR_PG | FLASH_CR_PSIZE_BITS;
+    STM32F4_FLASH->CR = FLASH_CR_PG | FLASH_CR_PSIZE_1;
 
-    while (ChipAddress < EndAddress) {
-        if (*ChipAddress != *pBuf) {
+    while (addressStart < addressEnd) {
+        if (*addressStart != *pBuf) {
             // write data
-            *ChipAddress = *pBuf;
+            *addressStart = *pBuf;
             // wait for completion
             while (STM32F4_FLASH->SR & FLASH_SR_BSY);
             // check
-            if (*ChipAddress != *pBuf) {
+            if (*addressStart != *pBuf) {
                 return TinyCLR_Result::InvalidOperation;
             }
         }
-        ChipAddress++;
+        addressStart++;
         pBuf++;
     }
 
@@ -137,22 +133,19 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Write(const 
 TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_IsSectorErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
     if (sector >= SIZEOF_ARRAY(deploymentSectors)) return TinyCLR_Result::IndexOutOfRange;
 
-    uint32_t address = deploymentSectors[sector].address;
-    size_t length = deploymentSectors[sector].size;
-
-    CHIP_WORD* ChipAddress = (CHIP_WORD *)address;
-    CHIP_WORD* EndAddress = (CHIP_WORD *)(address + length);
+    uint32_t* addressStart = reinterpret_cast<uint32_t*>(deploymentSectors[sector].address);
+    uint32_t* addressEnd = reinterpret_cast<uint32_t*>(deploymentSectors[sector].address + deploymentSectors[sector].size);
 
     erased = true;
 
-    while (ChipAddress < EndAddress) {
-        if (*ChipAddress != (CHIP_WORD)-1) {
+    while (addressStart < addressEnd) {
+        if (*addressStart != 0xFFFFFFFF) {
             erased = false;
 
             break;
         }
 
-        ChipAddress++;
+        addressStart++;
     }
 
     return TinyCLR_Result::Success;
@@ -163,7 +156,7 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_EraseSector(
 
     uint32_t num = deploymentSectors[sector].id;
 
-    if (num > 11) num +=4;
+    if (num > 11) num += 4;
 
     if (STM32F4_FLASH->CR & FLASH_CR_LOCK) { // unlock
         STM32F4_FLASH->KEYR = STM32F4_FLASH_KEY1;
@@ -197,7 +190,6 @@ TinyCLR_Result STM32F4_Flash_Release(const TinyCLR_Deployment_Provider* self) {
     // UnInitialize Flash can be here
     return TinyCLR_Result::Success;
 }
-
 
 TinyCLR_Result STM32F4_Flash_GetSectorSizeForAddress(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size) {
     int32_t sectors = SIZEOF_ARRAY(deploymentSectors);

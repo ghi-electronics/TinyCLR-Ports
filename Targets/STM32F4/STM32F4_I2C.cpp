@@ -404,24 +404,24 @@ TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Provider* self) {
 
     STM32F4_GpioInternal_ConfigurePin(sda.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::OpenDrain, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::PullUp, sda.alternateFunction);
     STM32F4_GpioInternal_ConfigurePin(scl.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::OpenDrain, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::PullUp, scl.alternateFunction);
+
+    RCC->APB1ENR |= (port_id == 0 ? RCC_APB1ENR_I2C1EN : port_id == 1 ? RCC_APB1ENR_I2C2EN : RCC_APB1ENR_I2C3EN);
+
+    RCC->APB1RSTR = (port_id == 0 ? RCC_APB1RSTR_I2C1RST : port_id == 1 ? RCC_APB1RSTR_I2C2RST : RCC_APB1RSTR_I2C3RST);
+
     switch (port_id) {
     case 0:
-        RCC->APB1ENR |= RCC_APB1ENR_I2C1EN; // enable I2C clock
-        RCC->APB1RSTR = RCC_APB1RSTR_I2C1RST; // reset I2C peripheral
         STM32F4_InterruptInternal_Activate(I2C1_EV_IRQn, (uint32_t*)&STM32F4_I2C1_EV_Interrupt, 0);
         STM32F4_InterruptInternal_Activate(I2C1_ER_IRQn, (uint32_t*)&STM32F4_I2C1_ER_Interrupt, 0);
         break;
 
     case 1:
-        RCC->APB1ENR |= RCC_APB1ENR_I2C2EN; // enable I2C clock
-        RCC->APB1RSTR = RCC_APB1RSTR_I2C2RST; // reset I2C peripheral
+
         STM32F4_InterruptInternal_Activate(I2C2_EV_IRQn, (uint32_t*)&STM32F4_I2C2_EV_Interrupt, 0);
         STM32F4_InterruptInternal_Activate(I2C2_ER_IRQn, (uint32_t*)&STM32F4_I2C2_ER_Interrupt, 0);
         break;
 
     case 2:
-        RCC->APB1ENR |= RCC_APB1ENR_I2C3EN; // enable I2C clock
-        RCC->APB1RSTR = RCC_APB1RSTR_I2C3RST; // reset I2C peripheral
         STM32F4_InterruptInternal_Activate(I2C3_EV_IRQn, (uint32_t*)&STM32F4_I2C3_EV_Interrupt, 0);
         STM32F4_InterruptInternal_Activate(I2C3_ER_IRQn, (uint32_t*)&STM32F4_I2C3_ER_Interrupt, 0);
         break;
@@ -449,32 +449,12 @@ TinyCLR_Result STM32F4_I2c_Release(const TinyCLR_I2c_Provider* self) {
     auto& scl = g_STM32F4_I2c_Scl_Pins[port_id];
     auto& sda = g_STM32F4_I2c_Sda_Pins[port_id];
 
-    switch (port_id) {
-    case 0:
-        STM32F4_InterruptInternal_Deactivate(I2C1_EV_IRQn);
-        STM32F4_InterruptInternal_Deactivate(I2C1_ER_IRQn);
+    STM32F4_InterruptInternal_Deactivate(port_id == 0 ? I2C1_EV_IRQn : port_id == 1 ? I2C2_EV_IRQn : I2C3_EV_IRQn);
+    STM32F4_InterruptInternal_Deactivate(port_id == 0 ? I2C1_ER_IRQn : port_id == 1 ? I2C2_ER_IRQn : I2C3_ER_IRQn);
 
-        I2Cx->CR1 = 0; // disable peripheral
-        RCC->APB1ENR &= ~RCC_APB1ENR_I2C1EN; // disable I2C clock
-        break;
+    I2Cx->CR1 = 0; // disable peripheral
 
-    case 1:
-        STM32F4_InterruptInternal_Deactivate(I2C2_EV_IRQn);
-        STM32F4_InterruptInternal_Deactivate(I2C2_ER_IRQn);
-
-        I2Cx->CR1 = 0; // disable peripheral
-        RCC->APB1ENR &= ~RCC_APB1ENR_I2C2EN; // disable I2C clock
-        break;
-
-    case 2:
-        STM32F4_InterruptInternal_Deactivate(I2C3_EV_IRQn);
-        STM32F4_InterruptInternal_Deactivate(I2C3_ER_IRQn);
-
-        I2Cx->CR1 = 0; // disable peripheral
-        RCC->APB1ENR &= ~RCC_APB1ENR_I2C3EN; // disable I2C clock
-
-        break;
-    }
+    RCC->APB1ENR &= (port_id == 0 ? ~RCC_APB1ENR_I2C1EN : port_id == 1 ? ~RCC_APB1ENR_I2C2EN : ~RCC_APB1ENR_I2C3EN);
 
     STM32F4_GpioInternal_ClosePin(sda.number);
     STM32F4_GpioInternal_ClosePin(scl.number);

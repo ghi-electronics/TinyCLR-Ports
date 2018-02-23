@@ -237,93 +237,67 @@ void STM32F4_Uart_IrqTx(int portNum) {
     }
 }
 
+void STM32F4_Uart_InterruptHandler(int8_t uartIndex, uint16_t sr) {
+    if (sr & (USART_SR_RXNE | USART_SR_ORE))
+        STM32F4_Uart_IrqRx(uartIndex);
+
+    if (sr & USART_SR_TXE)
+        STM32F4_Uart_IrqTx(uartIndex);
+}
+
 void STM32F4_Uart_Interrupt0(void* param) {
     uint16_t sr = USART1->SR;
 
-    if (sr & (USART_SR_RXNE | USART_SR_ORE))
-        STM32F4_Uart_IrqRx(0);
-
-    if (sr & USART_SR_TXE)
-        STM32F4_Uart_IrqTx(0);
+    STM32F4_Uart_InterruptHandler(0, sr);
 }
 
 void STM32F4_Uart_Interrupt1(void* param) {
     uint16_t sr = USART2->SR;
 
-    if (sr & (USART_SR_RXNE | USART_SR_ORE))
-        STM32F4_Uart_IrqRx(1);
-
-    if (sr & USART_SR_TXE)
-        STM32F4_Uart_IrqTx(1);
+    STM32F4_Uart_InterruptHandler(1, sr);
 }
 
 #if !defined(STM32F401xE) && !defined(STM32F411xE)
 void STM32F4_Uart_Interrupt2(void* param) {
     uint16_t sr = USART3->SR;
 
-    if (sr & (USART_SR_RXNE | USART_SR_ORE))
-        STM32F4_Uart_IrqRx(2);
-
-    if (sr & USART_SR_TXE)
-        STM32F4_Uart_IrqTx(2);
+    STM32F4_Uart_InterruptHandler(2, sr);
 }
 
 void STM32F4_Uart_Interrupt3(void* param) {
     uint16_t sr = UART4->SR;
 
-    if (sr & (USART_SR_RXNE | USART_SR_ORE))
-        STM32F4_Uart_IrqRx(3);
-    if (sr & USART_SR_TXE)
-        STM32F4_Uart_IrqTx(3);
+    STM32F4_Uart_InterruptHandler(3, sr);
 }
 
 void STM32F4_Uart_Interrupt4(void* param) {
     uint16_t sr = UART5->SR;
 
-    if (sr & (USART_SR_RXNE | USART_SR_ORE))
-        STM32F4_Uart_IrqRx(4);
-    if (sr & USART_SR_TXE)
-        STM32F4_Uart_IrqTx(4);
+    STM32F4_Uart_InterruptHandler(4, sr);
 }
 
 void STM32F4_Uart_Interrupt5(void* param) {
     uint16_t sr = USART6->SR;
 
-    if (sr & (USART_SR_RXNE | USART_SR_ORE))
-        STM32F4_Uart_IrqRx(5);
-
-    if (sr & USART_SR_TXE)
-        STM32F4_Uart_IrqTx(5);
+    STM32F4_Uart_InterruptHandler(5, sr);
 }
 #ifdef UART7
 void STM32F4_Uart_Interrupt6(void* param) {
     uint16_t sr = UART7->SR;
 
-    if (sr & (USART_SR_RXNE | USART_SR_ORE))
-        STM32F4_Uart_IrqRx(6);
-
-    if (sr & USART_SR_TXE)
-        STM32F4_Uart_IrqTx(6);
+    STM32F4_Uart_InterruptHandler(6, sr);
 }
 #ifdef UART8
 void STM32F4_Uart_Interrupt7(void* param) {
     uint16_t sr = UART8->SR;
 
-    if (sr & (USART_SR_RXNE | USART_SR_ORE))
-        STM32F4_Uart_IrqRx(7);
-
-    if (sr & USART_SR_TXE)
-        STM32F4_Uart_IrqTx(7);
+    STM32F4_Uart_InterruptHandler(7, sr);
 }
 #ifdef UART9
 void STM32F4_Uart_Interrupt8(void* param) {
     uint16_t sr = UART9->SR;
 
-    if (sr & (USART_SR_RXNE | USART_SR_ORE))
-        STM32F4_Uart_IrqRx(8);
-
-    if (sr & USART_SR_TXE)
-        STM32F4_Uart_IrqTx(8);
+    STM32F4_Uart_InterruptHandler(8, sr);
 }
 #endif
 #endif
@@ -642,6 +616,7 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
     STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Tx_Pins[portNum].number);
     STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Cts_Pins[portNum].number);
     STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Rts_Pins[portNum].number);
+
     if (apiProvider != nullptr) {
         auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
@@ -730,10 +705,10 @@ TinyCLR_Result STM32F4_Uart_Read(const TinyCLR_Uart_Provider* self, uint8_t* buf
     length = std::min(g_UartController[portNum].rxBufferCount, length);
 
     while (i < length) {
-        buffer[i] = g_UartController[portNum].RxBuffer[g_UartController[portNum].rxBufferOut];
+        buffer[i++] = g_UartController[portNum].RxBuffer[g_UartController[portNum].rxBufferOut];
 
         g_UartController[portNum].rxBufferOut++;
-        i++;
+
         g_UartController[portNum].rxBufferCount--;
 
         if (g_UartController[portNum].rxBufferOut == g_UartController[portNum].rxBufferSize)
@@ -766,10 +741,10 @@ TinyCLR_Result STM32F4_Uart_Write(const TinyCLR_Uart_Provider* self, const uint8
 
     while (i < length) {
 
-        g_UartController[portNum].TxBuffer[g_UartController[portNum].txBufferIn] = buffer[i];
+        g_UartController[portNum].TxBuffer[g_UartController[portNum].txBufferIn] = buffer[i++];
 
         g_UartController[portNum].txBufferCount++;
-        i++;
+
         g_UartController[portNum].txBufferIn++;
 
         if (g_UartController[portNum].txBufferIn == g_UartController[portNum].txBufferSize)

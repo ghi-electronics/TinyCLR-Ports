@@ -32,8 +32,6 @@ struct STM32F4_Timer_Driver {
 
     TinyCLR_Time_TickCallback m_DequeuAndExecute;
 
-    static bool Initialize();
-    static bool UnInitialize();
     static void Reload(uint32_t value);
 
 };
@@ -71,18 +69,6 @@ STM32F4_Timer_Driver g_STM32F4_Timer_Driver;
 
 TinyCLR_Result STM32F4_Time_GetInitialTime(const TinyCLR_Time_Provider* self, int64_t& utcTime, int32_t& timeZoneOffsetMinutes) {
     return TinyCLR_Result::NotSupported;
-}
-
-uint32_t STM32F4_Time_GetSystemClock(const TinyCLR_Time_Provider* self) {
-    return STM32F4_SYSTEM_CLOCK_HZ;
-}
-
-uint32_t STM32F4_Time_GetTicksPerSecond(const TinyCLR_Time_Provider* self) {
-    return SLOW_CLOCKS_PER_SECOND;
-}
-
-uint32_t STM32F4_Time_GetSystemCycleClock(const TinyCLR_Time_Provider* self) {
-    return STM32F4_AHB_CLOCK_HZ;
 }
 
 uint64_t STM32F4_Time_GetTimeForProcessorTicks(const TinyCLR_Time_Provider* self, uint64_t ticks) {
@@ -178,9 +164,12 @@ extern "C" {
 TinyCLR_Result STM32F4_Time_Acquire(const TinyCLR_Time_Provider* self) {
     g_nextEvent = TIMER_IDLE_VALUE;
 
-    g_STM32F4_Timer_Driver.Initialize();
+    g_STM32F4_Timer_Driver.m_lastRead = 0;
 
+    g_STM32F4_Timer_Driver.m_currentTick = SysTick_LOAD_RELOAD_Msk;
     g_STM32F4_Timer_Driver.m_periodTicks = SysTick_LOAD_RELOAD_Msk;
+
+    SysTick_Config(g_STM32F4_Timer_Driver.m_periodTicks);
 
     g_STM32F4_Timer_Driver.Reload(g_STM32F4_Timer_Driver.m_periodTicks);
 
@@ -188,7 +177,7 @@ TinyCLR_Result STM32F4_Time_Acquire(const TinyCLR_Time_Provider* self) {
 }
 
 TinyCLR_Result STM32F4_Time_Release(const TinyCLR_Time_Provider* self) {
-    g_STM32F4_Timer_Driver.UnInitialize();
+    SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
 
     return TinyCLR_Result::Success;
 }
@@ -231,27 +220,11 @@ void STM32F4_Time_Delay(const TinyCLR_Time_Provider* self, uint64_t microseconds
 
 //******************** Profiler ********************
 
-bool STM32F4_Timer_Driver::Initialize() {
-    g_STM32F4_Timer_Driver.m_lastRead = 0;
-
-    g_STM32F4_Timer_Driver.m_currentTick = SysTick_LOAD_RELOAD_Msk;
-    g_STM32F4_Timer_Driver.m_periodTicks = SysTick_LOAD_RELOAD_Msk;
-
-    SysTick_Config(g_STM32F4_Timer_Driver.m_periodTicks);
-
-    return true;
-}
 void STM32F4_Timer_Driver::Reload(uint32_t value) {
     g_STM32F4_Timer_Driver.m_currentTick = value;
 
     SysTick->LOAD = (uint32_t)(g_STM32F4_Timer_Driver.m_currentTick - 1UL);
     SysTick->VAL = 0UL;
-}
-
-bool STM32F4_Timer_Driver::UnInitialize() {
-    SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
-
-    return true;
 }
 
 #ifdef __GNUC__

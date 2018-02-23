@@ -484,11 +484,7 @@ TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Provider* self) {
     auto& sclk = g_STM32F4_Spi_Sclk_Pins[controller];
     auto& miso = g_STM32F4_Spi_Miso_Pins[controller];
     auto& mosi = g_STM32F4_Spi_Mosi_Pins[controller];
-
-    STM32F4_GpioInternal_ConfigurePin(miso.number, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
-    STM32F4_GpioInternal_ConfigurePin(mosi.number, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
-    STM32F4_GpioInternal_ConfigurePin(sclk.number, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
-
+    
     STM32F4_GpioInternal_ClosePin(sclk.number);
     STM32F4_GpioInternal_ClosePin(miso.number);
     STM32F4_GpioInternal_ClosePin(mosi.number);
@@ -505,23 +501,11 @@ TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Provider* self) {
 }
 
 int32_t STM32F4_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self) {
-    int32_t controller = (self->Index);
-
-    if (controller > 0 && controller < 3)
-        return  STM32F4_APB1_CLOCK_HZ / 256;
-    else
-        return STM32F4_APB2_CLOCK_HZ / 256;
-    return 1;
+    return ((self->Index > 0 && self->Index < 3) ? (STM32F4_APB1_CLOCK_HZ / 256) : (STM32F4_APB2_CLOCK_HZ / 256));
 }
 
 int32_t STM32F4_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self) {
-    int32_t controller = (self->Index);
-
-    if (controller > 0 && controller < 3)
-        return  STM32F4_APB1_CLOCK_HZ >> 1;
-    else
-        return STM32F4_APB2_CLOCK_HZ >> 1;
-
+    return ((self->Index > 0 && self->Index < 3) ? (STM32F4_APB1_CLOCK_HZ >> 1) : (STM32F4_APB2_CLOCK_HZ >> 1));
 }
 
 int32_t STM32F4_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self) {
