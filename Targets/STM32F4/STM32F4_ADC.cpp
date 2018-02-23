@@ -39,10 +39,9 @@
 // Channels
 #define STM32F4_ADC_CHANNEL_NONE    0xFF
 
-static const uint8_t g_STM32F4_AD_Channel[18] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
-static const uint8_t g_STM32F4_AD_Pins[18] = STM32F4_ADC_PINS;
+#define STM32F4_AD_NUM 18  // number of channels
 
-#define STM32F4_AD_NUM SIZEOF_ARRAY(g_STM32F4_AD_Channel)  // number of channels
+static const uint8_t g_STM32F4_AD_Pins[] = STM32F4_ADC_PINS;
 
 static TinyCLR_Adc_Provider adcProvider;
 static TinyCLR_Api_Info adcApi;
@@ -78,31 +77,20 @@ const TinyCLR_Api_Info* STM32F4_Adc_GetApi() {
 }
 
 TinyCLR_Result STM32F4_Adc_Acquire(const TinyCLR_Adc_Provider* self) {
-    if (self == nullptr)
-        return TinyCLR_Result::ArgumentNull;
-
-    return TinyCLR_Result::Success;
+    return self == nullptr ? TinyCLR_Result::ArgumentNull : TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Adc_Release(const TinyCLR_Adc_Provider* self) {
-    if (self == nullptr)
-        return TinyCLR_Result::ArgumentNull;
-
-    return TinyCLR_Result::Success;
+    return self == nullptr ? TinyCLR_Result::ArgumentNull : TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t channel) {
-    int32_t chNum = g_STM32F4_AD_Channel[channel];
-
-    if (chNum >= STM32F4_AD_NUM)
-        return TinyCLR_Result::NotAvailable;
-
-    if (chNum <= 15 && !STM32F4_GpioInternal_OpenPin(g_STM32F4_AD_Pins[channel]))
+    if (channel <= 15 && !STM32F4_GpioInternal_OpenPin(g_STM32F4_AD_Pins[channel]))
         return TinyCLR_Result::SharingViolation;
 
     // init this channel if it's listed in the STM32F4_AD_CHANNELS array
     for (int i = 0; i < STM32F4_AD_NUM; i++) {
-        if (g_STM32F4_AD_Channel[i] == chNum) {
+        if (i == channel) {
             // valid channel
             if (!(RCC->APB2ENR & RCC_APB2ENR_ADCxEN)) { // not yet initialized
                 RCC->APB2ENR |= RCC_APB2ENR_ADCxEN; // enable AD clock
@@ -115,7 +103,7 @@ TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int3
             }
 
             // set pin as analog input if channel is not one of the internally connected
-            if (chNum <= 15) {
+            if (channel <= 15) {
                 STM32F4_GpioInternal_ConfigurePin(g_STM32F4_AD_Pins[channel], STM32F4_Gpio_PortMode::Analog, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
             }
 
@@ -129,29 +117,25 @@ TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int3
 }
 
 TinyCLR_Result STM32F4_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t channel) {
-    int chNum = g_STM32F4_AD_Channel[channel];
-
     // free GPIO pin if this channel is listed in the STM32F4_AD_CHANNELS array
     // and if it's not one of the internally connected ones as these channels don't take any GPIO pins
-    if (chNum <= 15 && chNum < STM32F4_AD_NUM)
+    if (channel <= 15 && channel < STM32F4_AD_NUM)
         STM32F4_GpioInternal_ClosePin(g_STM32F4_AD_Pins[channel]);
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t channel, int32_t& value) {
-    int chNum = g_STM32F4_AD_Channel[channel];
-
     // check if this channel is listed in the STM32F4_AD_CHANNELS array
     for (int i = 0; i < STM32F4_AD_NUM; i++) {
-        if (g_STM32F4_AD_Channel[i] == chNum) {
+        if (i == channel) {
             // valid channel
             int x = ADCx->DR; // clear EOC flag
 
-            ADCx->SQR3 = chNum; // select channel
+            ADCx->SQR3 = channel; // select channel
 
             // need to enable internal reference at ADC->CCR register to work with internally connected channels
-            if (chNum == 16 || chNum == 17) {
+            if (channel == 16 || channel == 17) {
                 ADC->CCR |= ADC_CCR_TSVREFE; // Enable internal reference to work with temperature sensor and VREFINT channels
             }
 
@@ -159,7 +143,7 @@ TinyCLR_Result STM32F4_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t c
             while (!(ADCx->SR & ADC_SR_EOC)); // wait for completion
 
             // disable internally reference
-            if (chNum == 16 || chNum == 17) {
+            if (channel == 16 || channel == 17) {
                 ADC->CCR &= ~ADC_CCR_TSVREFE;
             }
 
