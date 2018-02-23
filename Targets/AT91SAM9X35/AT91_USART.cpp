@@ -189,7 +189,7 @@ TinyCLR_Result AT91_Uart_SetWriteBufferSize(const TinyCLR_Uart_Provider* self, s
     return TinyCLR_Result::Success;
 }
 
-void AT91_Uart_PinConfiguration(int portNum, bool enable) {
+TinyCLR_Result AT91_Uart_PinConfiguration(int portNum, bool enable) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t txPin = AT91_Uart_GetTxPin(portNum);
@@ -213,6 +213,9 @@ void AT91_Uart_PinConfiguration(int portNum, bool enable) {
         AT91_Gpio_ConfigurePin(rxPin, AT91_Gpio_Direction::Input, rxPinMode, AT91_Gpio_ResistorMode::Inactive);
 
         if (g_UartController[portNum].handshakeEnable) {
+            if (ctsPin == PIN_NONE || rtsPin == PIN_NONE)
+                return TinyCLR_Result::NotSupported;
+
             AT91_Gpio_ConfigurePin(ctsPin, AT91_Gpio_Direction::Input, ctsPinMode, AT91_Gpio_ResistorMode::Inactive);
             AT91_Gpio_ConfigurePin(rtsPin, AT91_Gpio_Direction::Input, rtsPinMode, AT91_Gpio_ResistorMode::Inactive);
         }
@@ -228,6 +231,8 @@ void AT91_Uart_PinConfiguration(int portNum, bool enable) {
             AT91_Gpio_ConfigurePin(rtsPin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::Inactive);
         }
     }
+
+    return TinyCLR_Result::Success;
 }
 
 void AT91_Uart_SetErrorEvent(int32_t portNum, TinyCLR_Uart_Error error) {
@@ -367,7 +372,8 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, ui
 
     AT91_Interrupt_Activate(uartId, (uint32_t*)&AT91_Uart_InterruptHandler, (void*)(size_t)self->Index);
 
-    AT91_Uart_PinConfiguration(portNum, true);
+    if (AT91_Uart_PinConfiguration(portNum, true) == TinyCLR_Result::NotSupported)
+        return TinyCLR_Result::NotSupported;
 
     // Enable Transmitter
     uint32_t USMR = (AT91_USART::US_USMODE_NORMAL);

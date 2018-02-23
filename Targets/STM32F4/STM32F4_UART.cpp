@@ -517,7 +517,7 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
 
     g_UartController[portNum].portPtr->CR1 |= USART_CR1_UE; // start uart
 
-    return TinyCLR_Result::Success;
+    return ((cts.number == PIN_NONE || rts.number == PIN_NONE) && handshaking == TinyCLR_Uart_Handshake::RequestToSend) ? TinyCLR_Result::NotSupported : TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
