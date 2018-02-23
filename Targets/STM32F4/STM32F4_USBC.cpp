@@ -216,7 +216,7 @@ struct USB_PACKET64 {
 
 #define USB_NULL_ENDPOINT 0xFF
 
-struct USB_STREAM_MAP {
+struct USB_PIPE_MAP {
     uint8_t RxEP;
     uint8_t TxEP;
 };
@@ -239,9 +239,9 @@ struct USB_CONTROLLER_STATE {
     uint8_t                                                     MaxPacketSize[STM32F4_USB_QUEUE_SIZE];
     bool                                                        IsTxQueue[STM32F4_USB_QUEUE_SIZE];
 
-    /* Arbitrarily as many streams as endpoints since that is the maximum number of streams
+    /* Arbitrarily as many pipes as endpoints since that is the maximum number of pipes
        necessary to represent the maximum number of endpoints */
-    USB_STREAM_MAP                                              streams[STM32F4_USB_QUEUE_SIZE];
+    USB_PIPE_MAP                                              pipes[STM32F4_USB_QUEUE_SIZE];
 
     //--//
 
@@ -452,12 +452,12 @@ struct UsbClient_Driver {
     static bool Initialize(int controller);
     static bool Uninitialize(int controller);
 
-    static bool OpenStream(int controller, int32_t& stream, TinyCLR_UsbClient_StreamMode mode);
-    static bool CloseStream(int controller, int stream);
+    static bool OpenPipe(int controller, int32_t& pipe, TinyCLR_UsbClient_PipeMode mode);
+    static bool ClosePipe(int controller, int pipe);
 
-    static int  Write(int controller, int usbStream, const char* Data, size_t size);
-    static int  Read(int controller, int usbStream, char*       Data, size_t size);
-    static bool Flush(int controller, int usbStream);
+    static int  Write(int controller, int usbPipe, const char* Data, size_t size);
+    static int  Read(int controller, int usbPipe, char*       Data, size_t size);
+    static bool Flush(int controller, int usbPipe);
 
     static uint32_t SetEvent(int controller, uint32_t Event);
     static uint32_t ClearEvent(int controller, uint32_t Event);
@@ -1466,8 +1466,8 @@ bool UsbClient_Driver::Initialize(int controller) {
     State->Initialized = true;
 
     for (auto i = 0; i < STM32F4_USB_QUEUE_SIZE; i++) {
-        State->streams[i].RxEP = USB_NULL_ENDPOINT;
-        State->streams[i].TxEP = USB_NULL_ENDPOINT;
+        State->pipes[i].RxEP = USB_NULL_ENDPOINT;
+        State->pipes[i].TxEP = USB_NULL_ENDPOINT;
         State->MaxPacketSize[i] = MAX_EP_SIZE;
     }
 
@@ -1492,7 +1492,7 @@ bool UsbClient_Driver::Uninitialize(int controller) {
     return true;
 }
 
-bool UsbClient_Driver::OpenStream(int controller, int32_t& usbStream, TinyCLR_UsbClient_StreamMode mode) {
+bool UsbClient_Driver::OpenPipe(int controller, int32_t& usbPipe, TinyCLR_UsbClient_PipeMode mode) {
     USB_CONTROLLER_STATE * State = &STM32F4_UsbClient_ControllerState[controller].state;
 
     if (nullptr == State || !State->Initialized)     // If no such controller exists (or it is not initialized)
@@ -1502,15 +1502,15 @@ bool UsbClient_Driver::OpenStream(int controller, int32_t& usbStream, TinyCLR_Us
     int32_t readEp = USB_NULL_ENDPOINT;
 
     switch (mode) {
-    case TinyCLR_UsbClient_StreamMode::In:
+    case TinyCLR_UsbClient_PipeMode::In:
         // TODO
         return false;
 
-    case TinyCLR_UsbClient_StreamMode::Out:
+    case TinyCLR_UsbClient_PipeMode::Out:
         // TODO
         return false;
 
-    case TinyCLR_UsbClient_StreamMode::InOut:
+    case TinyCLR_UsbClient_PipeMode::InOut:
 
         for (auto i = 0; i < SIZEOF_ARRAY(STM32F4_UsbClient_EndpointMap); i++) {
             if ((STM32F4_UsbClient_EndpointMap[i] & ENDPOINT_INUSED_MASK)) // in used
@@ -1534,32 +1534,32 @@ bool UsbClient_Driver::OpenStream(int controller, int32_t& usbStream, TinyCLR_Us
                 break;
             }
         }
-        // Check the usbStream and the two endpoint numbers for validity (both endpoints cannot be zero)
+        // Check the usbPipe and the two endpoint numbers for validity (both endpoints cannot be zero)
         if ((readEp == USB_NULL_ENDPOINT && writeEp == USB_NULL_ENDPOINT)
             || (readEp != USB_NULL_ENDPOINT && (readEp < 1 || readEp >= STM32F4_USB_QUEUE_SIZE))
             || (writeEp != USB_NULL_ENDPOINT && (writeEp < 1 || writeEp >= STM32F4_USB_QUEUE_SIZE)))
             return false;
 
-        // The specified endpoints must not be in use by another stream
-        for (int stream = 0; stream < STM32F4_USB_QUEUE_SIZE; stream++) {
-            if (readEp != USB_NULL_ENDPOINT && (State->streams[stream].RxEP == readEp || State->streams[stream].TxEP == readEp))
+        // The specified endpoints must not be in use by another pipe
+        for (int pipe = 0; pipe < STM32F4_USB_QUEUE_SIZE; pipe++) {
+            if (readEp != USB_NULL_ENDPOINT && (State->pipes[pipe].RxEP == readEp || State->pipes[pipe].TxEP == readEp))
                 return false;
-            if (writeEp != USB_NULL_ENDPOINT && (State->streams[stream].RxEP == writeEp || State->streams[stream].TxEP == writeEp))
+            if (writeEp != USB_NULL_ENDPOINT && (State->pipes[pipe].RxEP == writeEp || State->pipes[pipe].TxEP == writeEp))
                 return false;
         }
 
-        for (usbStream = 0; usbStream < STM32F4_USB_QUEUE_SIZE; usbStream++) {
-            // The Stream must be currently closed
-            if (State->streams[usbStream].RxEP == USB_NULL_ENDPOINT && State->streams[usbStream].TxEP == USB_NULL_ENDPOINT)
+        for (usbPipe = 0; usbPipe < STM32F4_USB_QUEUE_SIZE; usbPipe++) {
+            // The Pipe must be currently closed
+            if (State->pipes[usbPipe].RxEP == USB_NULL_ENDPOINT && State->pipes[usbPipe].TxEP == USB_NULL_ENDPOINT)
                 break;
         }
 
-        if (usbStream == STM32F4_USB_QUEUE_SIZE)
+        if (usbPipe == STM32F4_USB_QUEUE_SIZE)
             return false; // full endpoint
 
-        // All tests pass, assign the endpoints to the stream
-        State->streams[usbStream].RxEP = readEp;
-        State->streams[usbStream].TxEP = writeEp;
+        // All tests pass, assign the endpoints to the pipe
+        State->pipes[usbPipe].RxEP = readEp;
+        State->pipes[usbPipe].TxEP = writeEp;
 
         TinyCLR_UsbClient_ConfigurationDescriptor *config = (TinyCLR_UsbClient_ConfigurationDescriptor *)UsbDefaultConfiguration.config;
         TinyCLR_UsbClient_EndpointDescriptor  *ep = (TinyCLR_UsbClient_EndpointDescriptor  *)(((uint8_t *)config) + USB_CONFIGURATION_DESCRIPTOR_LENGTH + sizeof(TinyCLR_UsbClient_DescriptorHeader) + sizeof(TinyCLR_UsbClient_InterfaceDescriptor));
@@ -1608,34 +1608,34 @@ bool UsbClient_Driver::OpenStream(int controller, int32_t& usbStream, TinyCLR_Us
     return true;
 }
 
-bool UsbClient_Driver::CloseStream(int controller, int usbStream) {
+bool UsbClient_Driver::ClosePipe(int controller, int usbPipe) {
     USB_CONTROLLER_STATE * State = &STM32F4_UsbClient_ControllerState[controller].state;
 
-    if (nullptr == State || !State->Initialized || usbStream >= STM32F4_USB_QUEUE_SIZE)
+    if (nullptr == State || !State->Initialized || usbPipe >= STM32F4_USB_QUEUE_SIZE)
         return false;
 
     int endpoint;
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    // Close the Rx stream
-    endpoint = State->streams[usbStream].RxEP;
+    // Close the Rx pipe
+    endpoint = State->pipes[usbPipe].RxEP;
     if (endpoint != USB_NULL_ENDPOINT && State->Queues[endpoint]) {
         State->Queues[endpoint]->clear(); // Clear the queue
         QueueBuffers[endpoint - 1] = std::vector< USB_PACKET64>();
     }
 
-    State->streams[usbStream].RxEP = USB_NULL_ENDPOINT;
+    State->pipes[usbPipe].RxEP = USB_NULL_ENDPOINT;
     //Free endpoint
     STM32F4_UsbClient_EndpointMap[endpoint] &= ~ENDPOINT_INUSED_MASK;
 
-    // Close the TX stream
-    endpoint = State->streams[usbStream].TxEP;
+    // Close the TX pipe
+    endpoint = State->pipes[usbPipe].TxEP;
     if (endpoint != USB_NULL_ENDPOINT && State->Queues[endpoint]) {
         State->Queues[endpoint]->clear(); // Clear the queue
         QueueBuffers[endpoint - 1] = std::vector< USB_PACKET64>();
     }
 
-    State->streams[usbStream].TxEP = USB_NULL_ENDPOINT;
+    State->pipes[usbPipe].TxEP = USB_NULL_ENDPOINT;
 
     //Free endpoint
     STM32F4_UsbClient_EndpointMap[endpoint] &= ~ENDPOINT_INUSED_MASK;
@@ -1643,13 +1643,13 @@ bool UsbClient_Driver::CloseStream(int controller, int usbStream) {
     return true;
 }
 
-int UsbClient_Driver::Write(int controller, int usbStream, const char* Data, size_t size) {
+int UsbClient_Driver::Write(int controller, int usbPipe, const char* Data, size_t size) {
     int endpoint;
     int totWrite = 0;
     USB_CONTROLLER_STATE * State = &STM32F4_UsbClient_ControllerState[controller].state;
 
     if (nullptr == State
-        || usbStream >= STM32F4_USB_QUEUE_SIZE
+        || usbPipe >= STM32F4_USB_QUEUE_SIZE
         || Data == nullptr
         || State->DeviceState != USB_DEVICE_STATE_CONFIGURED) {
         return -1;
@@ -1657,8 +1657,8 @@ int UsbClient_Driver::Write(int controller, int usbStream, const char* Data, siz
 
     if (size == 0) return 0;
 
-    endpoint = State->streams[usbStream].TxEP;
-    // If no Write side to stream (or if not yet open)
+    endpoint = State->pipes[usbPipe].TxEP;
+    // If no Write side to pipe (or if not yet open)
     if (endpoint == USB_NULL_ENDPOINT || State->Queues[endpoint] == nullptr) {
         return -1;
     }
@@ -1767,18 +1767,18 @@ int UsbClient_Driver::Write(int controller, int usbStream, const char* Data, siz
     }
 }
 
-int UsbClient_Driver::Read(int controller, int usbStream, char* Data, size_t size) {
+int UsbClient_Driver::Read(int controller, int usbPipe, char* Data, size_t size) {
     int endpoint;
     USB_CONTROLLER_STATE * State = &STM32F4_UsbClient_ControllerState[controller].state;
 
     if (nullptr == State
-        || usbStream >= STM32F4_USB_QUEUE_SIZE
+        || usbPipe >= STM32F4_USB_QUEUE_SIZE
         || State->DeviceState != USB_DEVICE_STATE_CONFIGURED) {
         return 0;
     }
 
-    endpoint = State->streams[usbStream].RxEP;
-    // If no Read side to stream (or if not yet open)
+    endpoint = State->pipes[usbPipe].RxEP;
+    // If no Read side to pipe (or if not yet open)
     if (endpoint == USB_NULL_ENDPOINT || State->Queues[endpoint] == nullptr) {
         return 0;
     }
@@ -1830,13 +1830,13 @@ int UsbClient_Driver::Read(int controller, int usbStream, char* Data, size_t siz
     }
 }
 
-bool UsbClient_Driver::Flush(int controller, int usbStream) {
+bool UsbClient_Driver::Flush(int controller, int usbPipe) {
     int endpoint;
     int retries = USB_FLUSH_RETRY_COUNT;
     int queueCnt;
     USB_CONTROLLER_STATE * State = &STM32F4_UsbClient_ControllerState[controller].state;
 
-    if (nullptr == State || usbStream >= STM32F4_USB_QUEUE_SIZE) {
+    if (nullptr == State || usbPipe >= STM32F4_USB_QUEUE_SIZE) {
         return false;
     }
 
@@ -1845,8 +1845,8 @@ bool UsbClient_Driver::Flush(int controller, int usbStream) {
         return true;
     }
 
-    endpoint = State->streams[usbStream].TxEP;
-    // If no Write side to stream (or if not yet open)
+    endpoint = State->pipes[usbPipe].TxEP;
+    // If no Write side to pipe (or if not yet open)
     if (endpoint == USB_NULL_ENDPOINT || State->Queues[endpoint] == nullptr) {
         return false;
     }
@@ -2533,12 +2533,12 @@ TinyCLR_Result STM32F4_UsbClient_Release(const TinyCLR_UsbClient_Provider* self)
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t& stream, TinyCLR_UsbClient_StreamMode mode) {
+TinyCLR_Result STM32F4_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t& pipe, TinyCLR_UsbClient_PipeMode mode) {
     int32_t controller = self->Index;
-    int32_t availableStream;
+    int32_t availablePipe;
 
-    if (UsbClient_Driver::OpenStream(controller, availableStream, mode) == true) {
-        stream = availableStream;
+    if (UsbClient_Driver::OpenPipe(controller, availablePipe, mode) == true) {
+        pipe = availablePipe;
 
         return TinyCLR_Result::Success;
     }
@@ -2546,31 +2546,31 @@ TinyCLR_Result STM32F4_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, in
     return TinyCLR_Result::NotAvailable;
 }
 
-TinyCLR_Result STM32F4_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t stream) {
+TinyCLR_Result STM32F4_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t pipe) {
     int32_t controller = self->Index;
 
-    UsbClient_Driver::CloseStream(controller, stream);
+    UsbClient_Driver::ClosePipe(controller, pipe);
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int32_t stream, const uint8_t* data, size_t& length) {
+TinyCLR_Result STM32F4_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int32_t pipe, const uint8_t* data, size_t& length) {
     int32_t controller = self->Index;
 
-    length = UsbClient_Driver::Write(controller, stream, (const char*)data, length);
+    length = UsbClient_Driver::Write(controller, pipe, (const char*)data, length);
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int32_t stream, uint8_t* data, size_t& length) {
+TinyCLR_Result STM32F4_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int32_t pipe, uint8_t* data, size_t& length) {
     int32_t controller = self->Index;
 
-    length = UsbClient_Driver::Read(controller, stream, (char*)data, length);
+    length = UsbClient_Driver::Read(controller, pipe, (char*)data, length);
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, int32_t stream) {
+TinyCLR_Result STM32F4_UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, int32_t pipe) {
     int32_t controller = self->Index;
 
-    UsbClient_Driver::Flush(controller, stream);
+    UsbClient_Driver::Flush(controller, pipe);
     return TinyCLR_Result::Success;
 }
 
@@ -2651,9 +2651,9 @@ const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi() {
     usbClientApi.Implementation = &usbClientProvider;
 
     for (auto controller = 0; controller < usbClientApi.Count; controller++) {
-        // Close all stream if any opened
-        for (auto stream = 0; stream < STM32F4_USB_QUEUE_SIZE; stream++) {
-            UsbClient_Driver::CloseStream(controller, stream);
+        // Close all pipe if any opened
+        for (auto pipe = 0; pipe < STM32F4_USB_QUEUE_SIZE; pipe++) {
+            UsbClient_Driver::ClosePipe(controller, pipe);
         }
 
         // Close controller
