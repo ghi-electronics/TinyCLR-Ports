@@ -2,6 +2,7 @@
 
 
 #include "../../Drivers/AT45DB321D_Flash/AT45DB321D_Flash.h"
+
 void AT91_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider) {
 
 }
