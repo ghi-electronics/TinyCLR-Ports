@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "LPC17.h"
+#include <Device.h>
 
 #define FLASH_BASE_ADDRESS                      0xF0000000 // This MUST be zero or you need to substract the base address before doing any process in the the flash draiver from the address.
 #define FLASH_SECTOR_SIZE                       (64*1024) //528 //(528*2) // 512 for FEZ Hydra || 1024 on original SAM
