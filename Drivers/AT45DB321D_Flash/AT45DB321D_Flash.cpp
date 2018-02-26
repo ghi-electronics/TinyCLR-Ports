@@ -62,8 +62,8 @@ struct AT45DB321D_Flash_Controller {
     uint8_t dataReadBuffer[FLASH_BLOCK_SIZE + 8];
     uint8_t dataWriteBuffer[FLASH_BLOCK_SIZE + 8];
 
-    TinyCLR_Spi_Provider* spiProvider;	
-	TinyCLR_Time_Provider* timeProvider;
+    TinyCLR_Spi_Provider* spiProvider;
+    TinyCLR_Time_Provider* timeProvider;
 };
 
 AT45DB321D_Flash_Controller g_AT45DB321D_Flash_Controller;
@@ -131,7 +131,7 @@ TinyCLR_Result __section("SectionForFlashOperations") AT45DB321D_Flash_Read(cons
         g_AT45DB321D_Flash_Controller.spiProvider->TransferFullDuplex(g_AT45DB321D_Flash_Controller.spiProvider, g_AT45DB321D_Flash_Controller.dataWriteBuffer, writeLength, g_AT45DB321D_Flash_Controller.dataReadBuffer, readLength);
 
         int32_t timeout;
-		
+
         for (timeout = 0; timeout < FLASH_ACCESS_TIMEOUT; timeout++) {
             if (AT45DB321D_Flash_GetStatus() & 0x80)
                 break;
@@ -164,8 +164,8 @@ TinyCLR_Result __section("SectionForFlashOperations") AT45DB321D_Flash_Read(cons
         g_AT45DB321D_Flash_Controller.spiProvider->TransferFullDuplex(g_AT45DB321D_Flash_Controller.spiProvider, g_AT45DB321D_Flash_Controller.dataWriteBuffer, writeLength, g_AT45DB321D_Flash_Controller.dataReadBuffer, readLength);
 
         int32_t timeout;
-		
-		for (timeout = 0; timeout < FLASH_ACCESS_TIMEOUT; timeout++) {
+
+        for (timeout = 0; timeout < FLASH_ACCESS_TIMEOUT; timeout++) {
             if (AT45DB321D_Flash_GetStatus() & 0x80)
                 break;
 
@@ -208,8 +208,8 @@ bool AT45DB321D_Flash_WriteSector(uint32_t pageNumber, uint8_t* dataBuffer) {
 
     g_AT45DB321D_Flash_Controller.spiProvider->TransferFullDuplex(g_AT45DB321D_Flash_Controller.spiProvider, g_AT45DB321D_Flash_Controller.dataWriteBuffer, writeLength, g_AT45DB321D_Flash_Controller.dataReadBuffer, readLength);
 
-    int32_t timeout;	
-	
+    int32_t timeout;
+
     for (timeout = 0; timeout < FLASH_ACCESS_TIMEOUT; timeout++) {
         if (AT45DB321D_Flash_GetStatus() & 0x80)
             return true;
@@ -337,8 +337,8 @@ TinyCLR_Result __section("SectionForFlashOperations") AT45DB321D_Flash_EraseBloc
 
     g_AT45DB321D_Flash_Controller.spiProvider->TransferFullDuplex(g_AT45DB321D_Flash_Controller.spiProvider, g_AT45DB321D_Flash_Controller.dataWriteBuffer, writeLength, g_AT45DB321D_Flash_Controller.dataReadBuffer, readLength);
 
-	int32_t timeout;
-	
+    int32_t timeout;
+
     for (timeout = 0; timeout < FLASH_ACCESS_TIMEOUT; timeout++) {
         if (AT45DB321D_Flash_GetStatus() & 0x80)
             return TinyCLR_Result::Success;
@@ -357,17 +357,17 @@ TinyCLR_Result AT45DB321D_Flash_Acquire(const TinyCLR_Deployment_Provider* self,
     size_t readLength;
 
     int32_t timeout;
-	
-	supportXIP = false;
-	
-	g_AT45DB321D_Flash_Controller.timeProvider = (TinyCLR_Time_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::TimeProvider);
-	
+
+    supportXIP = false;
+
+    g_AT45DB321D_Flash_Controller.timeProvider = (TinyCLR_Time_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::TimeProvider);
+
     g_AT45DB321D_Flash_Controller.spiProvider = (spiApi->Count > 1) ? spiProvider[AT45DB321D_SPI_MODULE] : reinterpret_cast<TinyCLR_Spi_Provider*>(&spiProvider[0]);
 
     g_AT45DB321D_Flash_Controller.spiProvider->Acquire(g_AT45DB321D_Flash_Controller.spiProvider);
 
     g_AT45DB321D_Flash_Controller.spiProvider->SetActiveSettings(g_AT45DB321D_Flash_Controller.spiProvider, AT45DB321D_SPI_CS, AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
-		
+
     AT45DB321D_Flash_Reset(self);
 
     g_AT45DB321D_Flash_Controller.dataWriteBuffer[0] = COMMAND_READID;
@@ -387,7 +387,7 @@ TinyCLR_Result AT45DB321D_Flash_Acquire(const TinyCLR_Deployment_Provider* self,
     if (FLASH_DEVICE_CODE != g_AT45DB321D_Flash_Controller.dataReadBuffer[2])
         return TinyCLR_Result::InvalidOperation;
 
-	for (timeout = 0; timeout < FLASH_ACCESS_TIMEOUT; timeout++) {
+    for (timeout = 0; timeout < FLASH_ACCESS_TIMEOUT; timeout++) {
         if (AT45DB321D_Flash_GetStatus() & 0x80)
             return TinyCLR_Result::Success;;
 
