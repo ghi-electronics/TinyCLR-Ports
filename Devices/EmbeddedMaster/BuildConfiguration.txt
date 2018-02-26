@@ -1,3 +1,4 @@
 TargetName:LPC24
 ImageGenParameters:0xB2C5A27D 0x1888FBFB 0x00004000 0x0007B000
 OptimizeLevel:-Ofast
+AdditionalDrivers:SPIDisplay,AT49BV322DT_Flash

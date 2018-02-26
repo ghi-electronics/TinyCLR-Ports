@@ -15,6 +15,8 @@
 #include <TinyCLR.h>
 #include <Device.h>
 
+#include "../../Drivers/AT49BV322DT_Flash/AT49BV322DT_Flash.h"
+
 void LPC24_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider) {
 
 }
@@ -133,3 +135,6 @@ LPC24_Gpio_Pin LPC24_Pwm_GetPins(int32_t controller, int32_t channel) {
     return g_lpc24_pwm_pins[controller][channel];
 }
 
+const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
+    return AT49BV322DT_Deployment_GetApi();
+}
