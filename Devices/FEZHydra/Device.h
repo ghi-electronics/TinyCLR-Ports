@@ -85,4 +85,8 @@
 #define AT91_DISPLAY_DATA_PINS { { PIN(C,9), PS(B) }, { PIN(C,10), PS(B) }, { PIN(C,11), PS(B) }, { PIN(C,12), PS(B) }, { PIN(C,13), PS(B) }, { PIN(C,15), PS(B) }, { PIN(C,16), PS(B) }, { PIN(C,17), PS(B) }, { PIN(C,18), PS(B) }, { PIN(C,19), PS(B) }, { PIN(C,20), PS(B) }, { PIN(C,21), PS(B) }, { PIN(C,22), PS(B) }, { PIN(C,23), PS(B) }, { PIN(C,24), PS(B) }, { PIN(C,25), PS(B) } }
 #define AT91_DISPLAY_ENABLE_PIN { PIN(C, 7), PS(A) }
 
+#define AT45DB321D_SPI_CS  PIN(A,28)
+#define AT45DB321D_SPI_MODULE 0
+#define AT45DB321D_SPI_CLOCK_HZ 20000000
+ 
 #include <AT91.h>

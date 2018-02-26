@@ -1,2 +1,2 @@
 TargetArchitecture:CortexM3
-AdditionalDrivers:SPIDisplay
+AdditionalTargetDrivers:SPIDisplay

@@ -1,2 +1,2 @@
 TargetArchitecture:CortexM4
-AdditionalDrivers:SPIDisplay
+AdditionalTargetDrivers:SPIDisplay

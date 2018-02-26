@@ -140,8 +140,12 @@ IF "%DoBuild%" == "1" (
 
     SET CompilePaths="%ScriptRoot%\Targets\%TargetName%", "%ScriptRoot%\Devices\%DeviceName%", "%ScriptRoot%\Main"
 
-    IF NOT "%AdditionalDrivers%" == "" (
-        FOR %%A IN (!AdditionalDrivers!) DO SET CompilePaths=!CompilePaths!, "%ScriptRoot%\Drivers\%%A"
+    IF NOT "%AdditionalTargetDrivers%" == "" (
+        FOR %%A IN (!AdditionalTargetDrivers!) DO SET CompilePaths=!CompilePaths!, "%ScriptRoot%\Drivers\%%A"
+    )
+
+    IF NOT "%AdditionalDeviceDrivers%" == "" (
+        FOR %%A IN (!AdditionalDeviceDrivers!) DO SET CompilePaths=!CompilePaths!, "%ScriptRoot%\Drivers\%%A"
     )
 
     FOR %%A IN (!CompilePaths!) DO (

@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <stdio.h>
 #include <string.h>
 
-#include "LPC17.h"
+#include "S25FL032_Flash.h"
+#include <Device.h>
 
 #define FLASH_BASE_ADDRESS                      0xF0000000 // This MUST be zero or you need to substract the base address before doing any process in the the flash draiver from the address.
 #define FLASH_SECTOR_SIZE                       (64*1024) //528 //(528*2) // 512 for FEZ Hydra || 1024 on original SAM
@@ -71,19 +71,19 @@ struct ST25_Flash_Controller {
 
 ST25_Flash_Controller g_ST25_Flash_Controller;
 
-const TinyCLR_Api_Info* LPC17_Deployment_GetApi() {
+const TinyCLR_Api_Info* S25FL032_Deployment_GetApi() {
     deploymentProvider.Parent = &deploymentApi;
     deploymentProvider.Index = 0;
-    deploymentProvider.Acquire = &LPC17_Flash_Acquire;
-    deploymentProvider.Release = &LPC17_Flash_Release;
-    deploymentProvider.Read = &LPC17_Flash_Read;
-    deploymentProvider.Write = &LPC17_Flash_Write;
-    deploymentProvider.EraseSector = &LPC17_Flash_EraseBlock;
-    deploymentProvider.IsSectorErased = &LPC17_Flash_IsBlockErased;
-    deploymentProvider.GetSectorMap = &LPC17_Flash_GetSectorMap;
+    deploymentProvider.Acquire = &S25FL032_Flash_Acquire;
+    deploymentProvider.Release = &S25FL032_Flash_Release;
+    deploymentProvider.Read = &S25FL032_Flash_Read;
+    deploymentProvider.Write = &S25FL032_Flash_Write;
+    deploymentProvider.EraseSector = &S25FL032_Flash_EraseBlock;
+    deploymentProvider.IsSectorErased = &S25FL032_Flash_IsBlockErased;
+    deploymentProvider.GetSectorMap = &S25FL032_Flash_GetSectorMap;
 
     deploymentApi.Author = "GHI Electronics, LLC";
-    deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.DeploymentProvider";
+    deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.S25FL032.DeploymentProvider";
     deploymentApi.Type = TinyCLR_Api_Type::DeploymentProvider;
     deploymentApi.Version = 0;
     deploymentApi.Count = 1;
@@ -92,14 +92,14 @@ const TinyCLR_Api_Info* LPC17_Deployment_GetApi() {
     return &deploymentApi;
 }
 
-bool __section("SectionForFlashOperations") LPC17_Flash_WriteEnable() {
+bool S25FL032_Flash_WriteEnable() {
     g_ST25_Flash_Controller.dataWriteBuffer[0] = COMMAND_WRITE_ENABLE;
     g_ST25_Flash_Controller.dataWriteBuffer[1] = 0x00;
 
     size_t writeLength = 1;
     size_t readLength = 0;
 
-    LPC17_Spi_TransferFullDuplex(g_ST25_Flash_Controller.provider, g_ST25_Flash_Controller.dataWriteBuffer, writeLength, g_ST25_Flash_Controller.dataReadBuffer, readLength);
+    g_ST25_Flash_Controller.provider->TransferFullDuplex(g_ST25_Flash_Controller.provider, g_ST25_Flash_Controller.dataWriteBuffer, writeLength, g_ST25_Flash_Controller.dataReadBuffer, readLength);
 
     g_ST25_Flash_Controller.dataWriteBuffer[0] = COMMAND_READ_STATUS_REGISTER;
     g_ST25_Flash_Controller.dataWriteBuffer[1] = 0x00;
@@ -107,7 +107,7 @@ bool __section("SectionForFlashOperations") LPC17_Flash_WriteEnable() {
     writeLength = 2;
     readLength = 2;
 
-    LPC17_Spi_TransferFullDuplex(g_ST25_Flash_Controller.provider, g_ST25_Flash_Controller.dataWriteBuffer, writeLength, g_ST25_Flash_Controller.dataReadBuffer, readLength);
+    g_ST25_Flash_Controller.provider->TransferFullDuplex(g_ST25_Flash_Controller.provider, g_ST25_Flash_Controller.dataWriteBuffer, writeLength, g_ST25_Flash_Controller.dataReadBuffer, readLength);
 
     if ((g_ST25_Flash_Controller.dataReadBuffer[1] & 0x2) != 0)
         return true;
@@ -115,14 +115,14 @@ bool __section("SectionForFlashOperations") LPC17_Flash_WriteEnable() {
         return false;
 }
 
-bool __section("SectionForFlashOperations") LPC17_Flash_WriteInProgress() {
+bool S25FL032_Flash_WriteInProgress() {
     g_ST25_Flash_Controller.dataWriteBuffer[0] = COMMAND_READ_STATUS_REGISTER;
     g_ST25_Flash_Controller.dataWriteBuffer[1] = 0x00;
 
     size_t writeLength = 2;
     size_t readLength = 2;
 
-    LPC17_Spi_TransferFullDuplex(g_ST25_Flash_Controller.provider, g_ST25_Flash_Controller.dataWriteBuffer, writeLength, g_ST25_Flash_Controller.dataReadBuffer, readLength);
+    g_ST25_Flash_Controller.provider->TransferFullDuplex(g_ST25_Flash_Controller.provider, g_ST25_Flash_Controller.dataWriteBuffer, writeLength, g_ST25_Flash_Controller.dataReadBuffer, readLength);
 
     if ((g_ST25_Flash_Controller.dataReadBuffer[1] & 0x1) != 0)
         return true;
@@ -130,10 +130,10 @@ bool __section("SectionForFlashOperations") LPC17_Flash_WriteInProgress() {
         return false;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") LPC17_Flash_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer) {
+TinyCLR_Result S25FL032_Flash_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    while (LPC17_Flash_WriteInProgress() == true);
+    while (S25FL032_Flash_WriteInProgress() == true);
 
     int32_t block = length / FLASH_SECTOR_SIZE;
     int32_t rest = length % FLASH_SECTOR_SIZE;
@@ -153,7 +153,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC17_Flash_Read(const Tin
         readLength = FLASH_SECTOR_SIZE + 4;
 
         // start to read
-        LPC17_Spi_TransferFullDuplex(g_ST25_Flash_Controller.provider, g_ST25_Flash_Controller.dataWriteBuffer, writeLength, g_ST25_Flash_Controller.dataReadBuffer, readLength);
+        g_ST25_Flash_Controller.provider->TransferFullDuplex(g_ST25_Flash_Controller.provider, g_ST25_Flash_Controller.dataWriteBuffer, writeLength, g_ST25_Flash_Controller.dataReadBuffer, readLength);
 
         // copy to buffer
         memcpy(&buffer[index], &g_ST25_Flash_Controller.dataReadBuffer[4], FLASH_SECTOR_SIZE);
@@ -174,7 +174,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC17_Flash_Read(const Tin
         readLength = rest + 4;
 
         // start to read
-        LPC17_Spi_TransferFullDuplex(g_ST25_Flash_Controller.provider, g_ST25_Flash_Controller.dataWriteBuffer, writeLength, g_ST25_Flash_Controller.dataReadBuffer, readLength);
+        g_ST25_Flash_Controller.provider->TransferFullDuplex(g_ST25_Flash_Controller.provider, g_ST25_Flash_Controller.dataWriteBuffer, writeLength, g_ST25_Flash_Controller.dataReadBuffer, readLength);
 
         // copy to buffer
         memcpy(&buffer[index], &g_ST25_Flash_Controller.dataReadBuffer[4], rest);
@@ -187,7 +187,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC17_Flash_Read(const Tin
     return index == length ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
 }
 
-bool __section("SectionForFlashOperations") LPC17_Flash_PageProgram(uint32_t byteAddress, uint32_t NumberOfBytesToWrite, const uint8_t * pointerToWriteBuffer) {
+bool S25FL032_Flash_PageProgram(uint32_t byteAddress, uint32_t NumberOfBytesToWrite, const uint8_t * pointerToWriteBuffer) {
 
     uint32_t addr = byteAddress - FLASH_BASE_ADDRESS;
     uint32_t addr_misalignment = addr % ALIGNMENT_WINDOW;
@@ -202,7 +202,7 @@ bool __section("SectionForFlashOperations") LPC17_Flash_PageProgram(uint32_t byt
         block_size = extended_size - addr_misalignment;
 
     while (block_cnt > 0) {
-        while (LPC17_Flash_WriteEnable() == false);
+        while (S25FL032_Flash_WriteEnable() == false);
 
         g_ST25_Flash_Controller.dataWriteBuffer[0] = COMMAND_PAGE_PROGRAMMING; //0x2
         g_ST25_Flash_Controller.dataWriteBuffer[1] = (uint8_t)(addr >> 16);
@@ -214,9 +214,9 @@ bool __section("SectionForFlashOperations") LPC17_Flash_PageProgram(uint32_t byt
         memcpy(&g_ST25_Flash_Controller.dataWriteBuffer[4], pointerToWriteBuffer + source_index, block_size);
 
         // Write cmd to Write
-        LPC17_Spi_Write(g_ST25_Flash_Controller.provider, g_ST25_Flash_Controller.dataWriteBuffer, actualWrite);
+        g_ST25_Flash_Controller.provider->Write(g_ST25_Flash_Controller.provider, g_ST25_Flash_Controller.dataWriteBuffer, actualWrite);
 
-        while (LPC17_Flash_WriteInProgress() == true);
+        while (S25FL032_Flash_WriteInProgress() == true);
 
         //-------------Next Round----------------//
         block_cnt--;
@@ -235,10 +235,10 @@ bool __section("SectionForFlashOperations") LPC17_Flash_PageProgram(uint32_t byt
         return false;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") LPC17_Flash_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer) {
+TinyCLR_Result S25FL032_Flash_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    bool result = LPC17_Flash_PageProgram(address, length, buffer);
+    bool result = S25FL032_Flash_PageProgram(address, length, buffer);
 
     return result == true ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
 }
@@ -255,12 +255,12 @@ bool __section("SectionForCodeReadOnlyRAM") CompareArrayValueToValue(uint32_t* p
     return true;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") LPC17_Flash_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
+TinyCLR_Result S25FL032_Flash_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t address = sectorAddress[sector];
 
-    LPC17_Flash_Read(&deploymentProvider, address, FLASH_SECTOR_SIZE, g_ST25_Flash_Controller.dataReadBuffer);
+    S25FL032_Flash_Read(&deploymentProvider, address, FLASH_SECTOR_SIZE, g_ST25_Flash_Controller.dataReadBuffer);
 
     uint32_t *ptr = (uint32_t*)&g_ST25_Flash_Controller.dataReadBuffer;
 
@@ -269,10 +269,10 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC17_Flash_IsBlockErased(
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") LPC17_Flash_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
+TinyCLR_Result S25FL032_Flash_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    while (LPC17_Flash_WriteEnable() == false);
+    while (S25FL032_Flash_WriteEnable() == false);
 
     uint32_t address = sectorAddress[sector];
 
@@ -283,15 +283,15 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC17_Flash_EraseBlock(con
 
     size_t writeLength = 4;
 
-    LPC17_Spi_Write(g_ST25_Flash_Controller.provider, g_ST25_Flash_Controller.dataWriteBuffer, writeLength);
+    g_ST25_Flash_Controller.provider->Write(g_ST25_Flash_Controller.provider, g_ST25_Flash_Controller.dataWriteBuffer, writeLength);
 
-    while (LPC17_Flash_WriteInProgress() == true);
+    while (S25FL032_Flash_WriteInProgress() == true);
 
     TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Flash_Acquire(const TinyCLR_Deployment_Provider* self, bool& supportXIP) {
-    const TinyCLR_Api_Info* spiApi = LPC17_Spi_GetApi();
+TinyCLR_Result S25FL032_Flash_Acquire(const TinyCLR_Deployment_Provider* self, bool& supportXIP) {
+    const TinyCLR_Api_Info* spiApi = CONCAT(DEVICE_TARGET, _Spi_GetApi)();
     TinyCLR_Spi_Provider** spiProvider = (TinyCLR_Spi_Provider**)spiApi->Implementation;
 
     supportXIP = false;
@@ -306,11 +306,11 @@ TinyCLR_Result LPC17_Flash_Acquire(const TinyCLR_Deployment_Provider* self, bool
 
     g_ST25_Flash_Controller.provider = spiProvider[SPI_MODULE];
 
-    LPC17_Spi_Acquire(g_ST25_Flash_Controller.provider);
+    g_ST25_Flash_Controller.provider->Acquire(g_ST25_Flash_Controller.provider);
 
-    LPC17_Spi_SetActiveSettings(g_ST25_Flash_Controller.provider, SPI_CS, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    g_ST25_Flash_Controller.provider->SetActiveSettings(g_ST25_Flash_Controller.provider, SPI_CS, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
-    LPC17_Spi_TransferFullDuplex(g_ST25_Flash_Controller.provider, g_ST25_Flash_Controller.dataWriteBuffer, writeLength, g_ST25_Flash_Controller.dataReadBuffer, readLength);
+    g_ST25_Flash_Controller.provider->TransferFullDuplex(g_ST25_Flash_Controller.provider, g_ST25_Flash_Controller.dataWriteBuffer, writeLength, g_ST25_Flash_Controller.dataReadBuffer, readLength);
 
     if (S25F_FLASH_MANUFACTURER_CODE != g_ST25_Flash_Controller.dataReadBuffer[1] && MX25L_FLASH_MANUFACTURER_CODE != g_ST25_Flash_Controller.dataReadBuffer[1]) {
 
@@ -325,18 +325,18 @@ TinyCLR_Result LPC17_Flash_Acquire(const TinyCLR_Deployment_Provider* self, bool
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Flash_Release(const TinyCLR_Deployment_Provider* self) {
+TinyCLR_Result S25FL032_Flash_Release(const TinyCLR_Deployment_Provider* self) {
     // UnInitialize Flash can be here
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Flash_GetBytesPerSector(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size) {
+TinyCLR_Result S25FL032_Flash_GetBytesPerSector(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size) {
     size = FLASH_SECTOR_SIZE;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
+TinyCLR_Result S25FL032_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
     for (auto i = 0; i < DEPLOYMENT_SECTOR_NUM; i++) {
         sectorAddress[i] = ((DEPLOYMENT_SECTOR_START + i) * FLASH_SECTOR_SIZE) | FLASH_BASE_ADDRESS;
         sectorSize[i] = FLASH_SECTOR_SIZE;
