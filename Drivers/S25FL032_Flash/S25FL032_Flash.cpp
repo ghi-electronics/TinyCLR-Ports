@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <string.h>
+
 #include "S25FL032_Flash.h"
 #include <Device.h>
 
@@ -90,7 +92,7 @@ const TinyCLR_Api_Info* S25FL032_Deployment_GetApi() {
     return &deploymentApi;
 }
 
-bool __section("SectionForFlashOperations") S25FL032_Flash_WriteEnable() {
+bool S25FL032_Flash_WriteEnable() {
     g_ST25_Flash_Controller.dataWriteBuffer[0] = COMMAND_WRITE_ENABLE;
     g_ST25_Flash_Controller.dataWriteBuffer[1] = 0x00;
 
@@ -113,7 +115,7 @@ bool __section("SectionForFlashOperations") S25FL032_Flash_WriteEnable() {
         return false;
 }
 
-bool __section("SectionForFlashOperations") S25FL032_Flash_WriteInProgress() {
+bool S25FL032_Flash_WriteInProgress() {
     g_ST25_Flash_Controller.dataWriteBuffer[0] = COMMAND_READ_STATUS_REGISTER;
     g_ST25_Flash_Controller.dataWriteBuffer[1] = 0x00;
 
@@ -128,7 +130,7 @@ bool __section("SectionForFlashOperations") S25FL032_Flash_WriteInProgress() {
         return false;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") S25FL032_Flash_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer) {
+TinyCLR_Result S25FL032_Flash_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     while (S25FL032_Flash_WriteInProgress() == true);
@@ -185,7 +187,7 @@ TinyCLR_Result __section("SectionForFlashOperations") S25FL032_Flash_Read(const 
     return index == length ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
 }
 
-bool __section("SectionForFlashOperations") S25FL032_Flash_PageProgram(uint32_t byteAddress, uint32_t NumberOfBytesToWrite, const uint8_t * pointerToWriteBuffer) {
+bool S25FL032_Flash_PageProgram(uint32_t byteAddress, uint32_t NumberOfBytesToWrite, const uint8_t * pointerToWriteBuffer) {
 
     uint32_t addr = byteAddress - FLASH_BASE_ADDRESS;
     uint32_t addr_misalignment = addr % ALIGNMENT_WINDOW;
@@ -233,7 +235,7 @@ bool __section("SectionForFlashOperations") S25FL032_Flash_PageProgram(uint32_t 
         return false;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") S25FL032_Flash_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer) {
+TinyCLR_Result S25FL032_Flash_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     bool result = S25FL032_Flash_PageProgram(address, length, buffer);
@@ -253,7 +255,7 @@ bool __section("SectionForCodeReadOnlyRAM") CompareArrayValueToValue(uint32_t* p
     return true;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") S25FL032_Flash_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
+TinyCLR_Result S25FL032_Flash_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t address = sectorAddress[sector];
@@ -267,7 +269,7 @@ TinyCLR_Result __section("SectionForFlashOperations") S25FL032_Flash_IsBlockEras
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") S25FL032_Flash_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
+TinyCLR_Result S25FL032_Flash_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     while (S25FL032_Flash_WriteEnable() == false);
