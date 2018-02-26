@@ -1,3 +1,4 @@
 TargetName:AT91SAM9RL64
 ImageGenParameters:0x73721954 0x6D5F426A 0x00008400 0x00262800
 OptimizeLevel:-Ofast
+AdditionalDrivers:SPIDisplay,AT45DB321D_Flash
