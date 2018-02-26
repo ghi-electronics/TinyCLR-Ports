@@ -289,7 +289,7 @@ TinyCLR_Result __section("SectionForFlashOperations") S25FL032_Flash_EraseBlock(
 }
 
 TinyCLR_Result S25FL032_Flash_Acquire(const TinyCLR_Deployment_Provider* self, bool& supportXIP) {
-    const TinyCLR_Api_Info* spiApi = CONCAT(DEVICE_TARGET,_Spi_GetApi)();
+    const TinyCLR_Api_Info* spiApi = CONCAT(DEVICE_TARGET, _Spi_GetApi)();
     TinyCLR_Spi_Provider** spiProvider = (TinyCLR_Spi_Provider**)spiApi->Implementation;
 
     supportXIP = false;
