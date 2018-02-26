@@ -136,7 +136,7 @@ TinyCLR_Result __section("SectionForFlashOperations") AT45DB321D_Flash_Read(cons
             if (AT45DB321D_Flash_GetStatus() & 0x80)
                 break;
 
-            g_AT45DB321D_Flash_Controller.timeProvider->Delay(nullptr, 1000);
+            g_AT45DB321D_Flash_Controller.timeProvider->Delay(reinterpret_cast<const TinyCLR_Time_Provider*>(g_AT45DB321D_Flash_Controller.timeProvider), 1000);
         }
 
         memcpy(&buffer[index], &g_AT45DB321D_Flash_Controller.dataReadBuffer[8], FLASH_PAGE_SIZE);
@@ -169,7 +169,7 @@ TinyCLR_Result __section("SectionForFlashOperations") AT45DB321D_Flash_Read(cons
             if (AT45DB321D_Flash_GetStatus() & 0x80)
                 break;
 
-            g_AT45DB321D_Flash_Controller.timeProvider->Delay(nullptr, 1000);
+            g_AT45DB321D_Flash_Controller.timeProvider->Delay(reinterpret_cast<const TinyCLR_Time_Provider*>(g_AT45DB321D_Flash_Controller.timeProvider), 1000);
         }
 
         memcpy(&buffer[index], &g_AT45DB321D_Flash_Controller.dataReadBuffer[8], rest);
@@ -214,7 +214,7 @@ bool AT45DB321D_Flash_WriteSector(uint32_t pageNumber, uint8_t* dataBuffer) {
         if (AT45DB321D_Flash_GetStatus() & 0x80)
             return true;
 
-        g_AT45DB321D_Flash_Controller.timeProvider->Delay(nullptr, 1000);
+        g_AT45DB321D_Flash_Controller.timeProvider->Delay(reinterpret_cast<const TinyCLR_Time_Provider*>(g_AT45DB321D_Flash_Controller.timeProvider), 1000);
     }
 
     return false;
@@ -343,15 +343,18 @@ TinyCLR_Result __section("SectionForFlashOperations") AT45DB321D_Flash_EraseBloc
         if (AT45DB321D_Flash_GetStatus() & 0x80)
             return TinyCLR_Result::Success;
 
-        g_AT45DB321D_Flash_Controller.timeProvider->Delay(nullptr, 1000);
+        g_AT45DB321D_Flash_Controller.timeProvider->Delay(reinterpret_cast<const TinyCLR_Time_Provider*>(g_AT45DB321D_Flash_Controller.timeProvider), 1000);
     }
 
     return TinyCLR_Result::InvalidOperation;
 }
 
 TinyCLR_Result AT45DB321D_Flash_Acquire(const TinyCLR_Deployment_Provider* self, bool& supportXIP) {
-    const TinyCLR_Api_Info* spiApi = CONCAT(DEVICE_TARGET,_Spi_GetApi)();;
+    const TinyCLR_Api_Info* spiApi = CONCAT(DEVICE_TARGET, _Spi_GetApi)();;
     TinyCLR_Spi_Provider** spiProvider = (TinyCLR_Spi_Provider**)spiApi->Implementation;
+
+    const TinyCLR_Api_Info* timeApi = CONCAT(DEVICE_TARGET, _Time_GetApi)();;
+    TinyCLR_Time_Provider** timeProvider = (TinyCLR_Time_Provider**)timeApi->Implementation;
 
     size_t writeLength;
     size_t readLength;
@@ -360,7 +363,7 @@ TinyCLR_Result AT45DB321D_Flash_Acquire(const TinyCLR_Deployment_Provider* self,
 
     supportXIP = false;
 
-    g_AT45DB321D_Flash_Controller.timeProvider = (TinyCLR_Time_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::TimeProvider);
+    g_AT45DB321D_Flash_Controller.timeProvider = reinterpret_cast<TinyCLR_Time_Provider*>(&timeProvider[0]);
 
     g_AT45DB321D_Flash_Controller.spiProvider = (spiApi->Count > 1) ? spiProvider[AT45DB321D_SPI_MODULE] : reinterpret_cast<TinyCLR_Spi_Provider*>(&spiProvider[0]);
 
@@ -391,7 +394,7 @@ TinyCLR_Result AT45DB321D_Flash_Acquire(const TinyCLR_Deployment_Provider* self,
         if (AT45DB321D_Flash_GetStatus() & 0x80)
             return TinyCLR_Result::Success;;
 
-        g_AT45DB321D_Flash_Controller.timeProvider->Delay(nullptr, 1000);
+        g_AT45DB321D_Flash_Controller.timeProvider->Delay(reinterpret_cast<const TinyCLR_Time_Provider*>(g_AT45DB321D_Flash_Controller.timeProvider), 1000);
     }
 
     return TinyCLR_Result::InvalidOperation;
