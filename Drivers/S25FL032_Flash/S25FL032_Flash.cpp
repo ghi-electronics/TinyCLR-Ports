@@ -13,9 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <stdio.h>
-#include <string.h>
-
 #include "S25FL032_Flash.h"
 #include <Device.h>
 
