@@ -1,2 +1,1 @@
 TargetArchitecture:CortexM3
-AdditionalDrivers:SPIDisplay,S25FL032_Flash
