@@ -1,2 +1,2 @@
-TargetName:STM32F4
+TargetName:STM32F4xx
 OptimizeLevel:-Os

@@ -1,4 +1,4 @@
-TargetName:LPC24
+TargetName:LPC23xx_LPC24xx
 ImageGenParameters:0x25FDC4C2 0x2D9D4574 0x00004000 0x0007A000
 OptimizeLevel:-Ofast
 AdditionalDeviceDrivers:AT49BV322DT_Flash
