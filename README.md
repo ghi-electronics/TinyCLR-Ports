@@ -15,10 +15,11 @@ Some targets and devices are maintained by GHI Electronics while others are main
 - USBizi
 
 ## Targets
-- LPC17
-- LPC24
-- STM32F4
-- AT91
+- STM32F4xx
+- LPC177x_LPC178x
+- LPC23xx_LPC24xx
+- AT91SAM9Rx64
+- AT91SAM9X35
 
 # Contributing
 In order to contribute to TinyCLR, you must sign a [GHI Electronics Contribution License Agreement (CLA)](http://files.ghielectronics.com/downloads/Documents/GHI%20Electronics%20Contribution%20License%20Agreement.pdf) before we can accept any pull request from you. This only needs to be done once for any project from GHI Electronics. You can read more about CLAs on their [wikipedia page](http://en.wikipedia.org/wiki/Contributor_License_Agreement).
