@@ -93,6 +93,7 @@
 #define INCLUDE_USBCLIENT
 #define TOTAL_USB_CONTROLLER            1
 #define LPC24_USB_QUEUE_SIZE 16
+#define LPC24_USB_FIFO_BUFFER_SIZE 32
 
 #define INCLUDE_DISPLAY
 #define LPC24_DISPLAY_CONTROLLER_PINS { { PIN(1, 20), PF(1) }, { PIN(1, 21), PF(1) }, { PIN(1, 22), PF(1) }, { PIN(1, 23), PF(1) }, { PIN(1, 24), PF(1) }, { PIN(1, 25), PF(1) }, { PIN(1, 26), PF(1) }, { /*PIN(1, 27)*/ PIN_NONE, PF(1) }, { PIN(1, 28), PF(1)}, { PIN(1, 29), PF(1) }, { PIN(2, 2), PF(3) }, { PIN(2, 3), PF(3) }, { PIN(2, 5), PF(3) }, { PIN(2, 6), PF(3) }, { PIN(2, 7), PF(3) }, { PIN(2, 8), PF(3) }, { PIN(2, 9), PF(3) }, { PIN(2, 12), PF(1) }, { PIN(2, 13), PF(1) } }
@@ -104,7 +105,5 @@
 #define INCLUDE_CAN
 #define LPC24_CAN_TX_PINS { { PIN(0, 1), PF(1) }, { PIN(0, 5), PF(2) } }
 #define LPC24_CAN_RX_PINS { { PIN(0, 0), PF(1) }, { PIN(0, 4), PF(2) } }
-
-#define LPC24_USB_VECTOR_MAX_SIZE 128
 
 #include <LPC24.h>

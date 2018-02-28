@@ -2495,8 +2495,12 @@ USB_PACKET64* STM32F4_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* State, int endpo
     USB_PACKET64* packet;
 
     if (usb_fifo_buffer_count[endpoint] == STM32F4_USB_FIFO_BUFFER_SIZE) {
+        disableRx = true;
+
         return nullptr;
     }
+
+    disableRx = false;
 
     packet = &State->Queues[endpoint][usb_fifo_buffer_in[endpoint]];
 
