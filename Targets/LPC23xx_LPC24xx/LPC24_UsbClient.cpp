@@ -13,8 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <vector>
-
 #if defined(__GNUC__)
 #define PACKED(x)       x __attribute__((packed))
 #elif defined(arm) || defined(__arm)
@@ -111,6 +109,10 @@
 #define USB_ENDPOINT_ATTRIBUTE_BULK 2
 #define USB_ENDPOINT_ATTRIBUTE_INTERRUPT 3
 
+static int usb_fifo_buffer_in[LPC24_USB_QUEUE_SIZE];
+static int usb_fifo_buffer_out[LPC24_USB_QUEUE_SIZE];
+static int usb_fifo_buffer_count[LPC24_USB_QUEUE_SIZE];
+
 #define USB_MAX_DATA_PACKET_SIZE 64
 
 struct USB_PACKET64 {
@@ -140,7 +142,7 @@ struct USB_CONTROLLER_STATE {
     const USB_DYNAMIC_CONFIGURATION*                            Configuration;
 
     /* Queues & MaxPacketSize must be initialized by the HAL */
-    std::vector<USB_PACKET64>                                   *Queues[LPC24_USB_QUEUE_SIZE];
+    USB_PACKET64                                                *Queues[LPC24_USB_QUEUE_SIZE];
     uint8_t                                                     CurrentPacketOffset[LPC24_USB_QUEUE_SIZE];
     uint8_t                                                     MaxPacketSize[LPC24_USB_QUEUE_SIZE];
     bool                                                        IsTxQueue[LPC24_USB_QUEUE_SIZE];
@@ -209,7 +211,7 @@ struct UsbClient_Driver {
 };
 
 extern USB_PACKET64* LPC24_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* State, int queue, bool& DisableRx);
-extern USB_PACKET64* LPC24_UsbClient_TxDequeue(USB_CONTROLLER_STATE* State, int queue, bool  Done);
+extern USB_PACKET64* LPC24_UsbClient_TxDequeue(USB_CONTROLLER_STATE* State, int queue);
 extern uint8_t LPC24_UsbClient_HandleSetConfiguration(USB_CONTROLLER_STATE* State, USB_SETUP_PACKET* Setup, bool DataPhase);
 extern uint8_t LPC24_UsbClient_ControlCallback(USB_CONTROLLER_STATE* State);
 extern void  LPC24_UsbClient_StateCallback(USB_CONTROLLER_STATE* State);
@@ -482,9 +484,6 @@ int8_t LPC24_UsbClient_EndpointMap[] = { ENDPOINT_INUSED_MASK,                  
                                                 ENDPOINT_DIR_IN_MASK | ENDPOINT_DIR_OUT_MASK,  // Endpoint 2
                                                 ENDPOINT_DIR_IN_MASK | ENDPOINT_DIR_OUT_MASK   // Endpoint 3
 };
-
-/* Queues for all data endpoints */
-static std::vector<USB_PACKET64> QueueBuffers[LPC24_USB_QUEUE_SIZE - 1];
 
 // Usb client driver
 
@@ -823,7 +822,6 @@ bool UsbClient_Driver::OpenPipe(int controller, int32_t& usbPipe, TinyCLR_UsbCli
                 idx = writeEp;
                 State->IsTxQueue[idx] = true;
             }
-
             else if (ep->bEndpointAddress == USB_ENDPOINT_DIRECTION_OUT) {
                 ep->bEndpointAddress |= readEp;
                 idx = readEp;
@@ -831,8 +829,16 @@ bool UsbClient_Driver::OpenPipe(int controller, int32_t& usbPipe, TinyCLR_UsbCli
             }
 
             if (idx > 0) {
-                QueueBuffers[idx - 1] = std::vector< USB_PACKET64>();
-                State->Queues[idx] = &QueueBuffers[idx - 1];
+                if (apiProvider != nullptr) {
+                    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+
+                    State->Queues[idx] = (USB_PACKET64*)memoryProvider->Allocate(memoryProvider, LPC24_USB_FIFO_BUFFER_SIZE * sizeof(USB_PACKET64));
+
+                    if (State->Queues[idx] == nullptr)
+                        return false;
+                }
+
+                usb_fifo_buffer_in[idx] = usb_fifo_buffer_out[idx] = usb_fifo_buffer_count[idx] = 0;
 
 
                 State->MaxPacketSize[idx] = ep->wMaxPacketSize;
@@ -869,8 +875,7 @@ bool UsbClient_Driver::ClosePipe(int controller, int usbPipe) {
     // Close the Rx pipe
     endpoint = State->pipes[usbPipe].RxEP;
     if (endpoint != USB_NULL_ENDPOINT && State->Queues[endpoint]) {
-        State->Queues[endpoint]->clear(); // Clear the queue
-        QueueBuffers[endpoint - 1] = std::vector< USB_PACKET64>();
+        usb_fifo_buffer_in[endpoint] = usb_fifo_buffer_out[endpoint] = usb_fifo_buffer_count[endpoint] = 0;
     }
 
     State->pipes[usbPipe].RxEP = USB_NULL_ENDPOINT;
@@ -879,9 +884,17 @@ bool UsbClient_Driver::ClosePipe(int controller, int usbPipe) {
 
     // Close the TX pipe
     endpoint = State->pipes[usbPipe].TxEP;
-    if (endpoint != USB_NULL_ENDPOINT && State->Queues[endpoint]) {
-        State->Queues[endpoint]->clear(); // Clear the queue
-        QueueBuffers[endpoint - 1] = std::vector< USB_PACKET64>();
+    if (endpoint != USB_NULL_ENDPOINT && State->Queues[endpoint] != nullptr) {
+        usb_fifo_buffer_in[endpoint] = usb_fifo_buffer_out[endpoint] = usb_fifo_buffer_count[endpoint] = 0;
+
+        if (apiProvider != nullptr) {
+            auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+
+            if (State->Queues[endpoint] != nullptr)
+                memoryProvider->Free(memoryProvider, State->Queues[endpoint]);
+
+            State->Queues[endpoint] = nullptr;
+        }
     }
 
     State->pipes[usbPipe].TxEP = USB_NULL_ENDPOINT;
@@ -936,17 +949,14 @@ int UsbClient_Driver::Write(int controller, int usbPipe, const char* Data, size_
         while (!Done) {
 
             USB_PACKET64* Packet64 = nullptr;
-            std::vector<USB_PACKET64>::iterator  packet;
+            if (usb_fifo_buffer_count[endpoint] < LPC24_USB_FIFO_BUFFER_SIZE) {
+                Packet64 = &State->Queues[endpoint][usb_fifo_buffer_in[endpoint]];
 
-            if ((int32_t)(State->Queues[endpoint]->size()) < ((int32_t)State->Queues[endpoint]->max_size())) {
-                USB_PACKET64 pkg;
+                usb_fifo_buffer_in[endpoint]++;
+                usb_fifo_buffer_count[endpoint]++;
 
-                State->Queues[endpoint]->push_back(pkg);
-                packet = State->Queues[endpoint]->end();
-
-                --packet;
-                Packet64 = &(*packet);
-
+                if (usb_fifo_buffer_in[endpoint] == LPC24_USB_FIFO_BUFFER_SIZE)
+                    usb_fifo_buffer_in[endpoint] = 0;
             }
 
             if (Packet64) {
@@ -974,7 +984,7 @@ int UsbClient_Driver::Write(int controller, int usbPipe, const char* Data, size_
 
                 WaitLoopCnt = 0;
             }
-            if (Packet64 == nullptr || ((int32_t)(State->Queues[endpoint]->size()) > LPC24_USB_VECTOR_MAX_SIZE)) {
+            if (Packet64 == nullptr) {
                 // a 64-byte USB packet takes less than 50uSec
                 // according to the timing calculations of the USB Chief
                 // this is way too short to bother with a call
@@ -989,7 +999,7 @@ int UsbClient_Driver::Write(int controller, int usbPipe, const char* Data, size_
                 if (WaitLoopCnt > 100) {
                     // if we were unable to send any data then no one is listening so lets
                     if (count == size) {
-                        State->Queues[endpoint]->clear();
+                        usb_fifo_buffer_in[endpoint] = usb_fifo_buffer_out[endpoint] = usb_fifo_buffer_count[endpoint] = 0;
                     }
 
                     return totWrite;
@@ -1055,10 +1065,16 @@ int UsbClient_Driver::Read(int controller, int usbPipe, char* Data, size_t size)
         while (count < size) {
             uint32_t max_move;
 
-            int32_t queu_size = (int32_t)(State->Queues[endpoint]->size());
-            if (queu_size > 0 && Packet64 == nullptr) {
-                std::vector<USB_PACKET64>::iterator  packet = State->Queues[endpoint]->begin();
-                Packet64 = &(*packet);
+            if (usb_fifo_buffer_count[endpoint] > 0) {
+                Packet64 = &State->Queues[endpoint][usb_fifo_buffer_out[endpoint]];
+
+                usb_fifo_buffer_count[endpoint]--;
+                usb_fifo_buffer_out[endpoint]++;
+
+                if (usb_fifo_buffer_out[endpoint] == LPC24_USB_FIFO_BUFFER_SIZE) {
+                    usb_fifo_buffer_out[endpoint] = 0;
+                }
+
             }
 
             if (!Packet64) {
@@ -1080,8 +1096,6 @@ int UsbClient_Driver::Read(int controller, int usbPipe, char* Data, size_t size)
             if (State->CurrentPacketOffset[endpoint] == Packet64->Size) {
                 State->CurrentPacketOffset[endpoint] = 0;
                 Packet64 = nullptr;
-
-                State->Queues[endpoint]->erase(State->Queues[endpoint]->begin());
 
                 LPC24_UsbClient_RxEnable(State, endpoint);
             }
@@ -1112,13 +1126,13 @@ bool UsbClient_Driver::Flush(int controller, int usbPipe) {
         return false;
     }
 
-    queueCnt = (int32_t)State->Queues[endpoint]->size();
+    queueCnt = usb_fifo_buffer_count[endpoint];
 
     // interrupts were disabled or USB interrupt was disabled for whatever reason, so force the flush
-    while ((int32_t)State->Queues[endpoint]->size() > 0 && retries > 0) {
+    while (usb_fifo_buffer_count[endpoint] > 0 && retries > 0) {
         LPC24_UsbClient_StartOutput(State, endpoint);
 
-        int cnt = (int32_t)State->Queues[endpoint]->size();
+        int cnt = usb_fifo_buffer_count[endpoint];
 
         if (queueCnt == cnt)
             LPC24_Time_Delay(nullptr, 100); // don't call Events_WaitForEventsXXX because it will turn off interrupts
@@ -1129,7 +1143,7 @@ bool UsbClient_Driver::Flush(int controller, int usbPipe) {
     }
 
     if (retries <= 0)
-        State->Queues[endpoint]->clear();
+        usb_fifo_buffer_in[endpoint] = usb_fifo_buffer_out[endpoint] = usb_fifo_buffer_count[endpoint] = 0;
 
     return true;
 }
@@ -1176,7 +1190,8 @@ void USB_ClearQueues(USB_CONTROLLER_STATE *State, bool ClrRxQueue, bool ClrTxQue
         for (int endpoint = 0; endpoint < LPC24_USB_QUEUE_SIZE; endpoint++) {
             if (State->Queues[endpoint] == nullptr || State->IsTxQueue[endpoint])
                 continue;
-            State->Queues[endpoint]->clear();
+
+            usb_fifo_buffer_in[endpoint] = usb_fifo_buffer_out[endpoint] = usb_fifo_buffer_count[endpoint] = 0;
 
             /* since this queue is now reset, we have room available for newly arrived packets */
             LPC24_UsbClient_RxEnable(State, endpoint);
@@ -1186,7 +1201,7 @@ void USB_ClearQueues(USB_CONTROLLER_STATE *State, bool ClrRxQueue, bool ClrTxQue
     if (ClrTxQueue) {
         for (int endpoint = 0; endpoint < LPC24_USB_QUEUE_SIZE; endpoint++) {
             if (State->Queues[endpoint] && State->IsTxQueue[endpoint])
-                State->Queues[endpoint]->clear();
+                usb_fifo_buffer_in[endpoint] = usb_fifo_buffer_out[endpoint] = usb_fifo_buffer_count[endpoint] = 0;
         }
     }
 }
@@ -1727,44 +1742,47 @@ USB_PACKET64* LPC24_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* State, int endpoin
     USB_DEBUG_ASSERT(State && (endpoint < LPC24_USB_QUEUE_SIZE));
     USB_DEBUG_ASSERT(State->Queues[endpoint] && !State->IsTxQueue[endpoint]);
 
-    std::vector<USB_PACKET64>::iterator  packet;
+    USB_PACKET64* packet;
 
-    USB_PACKET64 packet64;
-
-    int32_t max_size = (int32_t)State->Queues[endpoint]->max_size();
-    int32_t size = (int32_t)State->Queues[endpoint]->size();
-
-    if (size < max_size) {
-
-        State->Queues[endpoint]->push_back(packet64);
-
-        packet = State->Queues[endpoint]->end();
-        --packet;
-
-        DisableRx = ((int32_t)(State->Queues[endpoint]->size()) >= max_size);
-
-        UsbClient_Driver::SetEvent(State->ControllerNum, 1 << endpoint);
-
-        return &(*packet);
+    if (usb_fifo_buffer_count[endpoint] == LPC24_USB_FIFO_BUFFER_SIZE) {
+        DisableRx = true;
+        return nullptr;
     }
 
-    return nullptr;
+    DisableRx = false;
+
+    packet = &State->Queues[endpoint][usb_fifo_buffer_in[endpoint]];
+
+    usb_fifo_buffer_in[endpoint]++;
+    usb_fifo_buffer_count[endpoint]++;
+
+    UsbClient_Driver::SetEvent(State->ControllerNum, 1 << endpoint);
+
+    if (usb_fifo_buffer_in[endpoint] == LPC24_USB_FIFO_BUFFER_SIZE)
+        usb_fifo_buffer_in[endpoint] = 0;
+
+    return packet;
 }
 
-USB_PACKET64* LPC24_UsbClient_TxDequeue(USB_CONTROLLER_STATE* State, int endpoint, bool Done) {
+USB_PACKET64* LPC24_UsbClient_TxDequeue(USB_CONTROLLER_STATE* State, int endpoint) {
     USB_DEBUG_ASSERT(State && (endpoint < LPC24_USB_QUEUE_SIZE));
     USB_DEBUG_ASSERT(State->Queues[endpoint] && State->IsTxQueue[endpoint]);
 
-    std::vector<USB_PACKET64>::iterator  packet;
+    USB_PACKET64* packet;
 
-    if ((int32_t)(State->Queues[endpoint]->size()) > 0) {
-        packet = State->Queues[endpoint]->begin();
-
-        return &(*packet);
-    }
-    else {
+    if (usb_fifo_buffer_count[endpoint] == 0) {
         return nullptr;
     }
+
+    packet = &State->Queues[endpoint][usb_fifo_buffer_out[endpoint]];
+
+    usb_fifo_buffer_count[endpoint]--;
+    usb_fifo_buffer_out[endpoint]++;
+
+    if (usb_fifo_buffer_out[endpoint] == LPC24_USB_FIFO_BUFFER_SIZE)
+        usb_fifo_buffer_out[endpoint] = 0;
+
+    return packet;
 }
 
 // For Api
@@ -2531,10 +2549,7 @@ bool LPC24_USB_Driver::GetInterruptState() {
 //--//
 
 void LPC24_USB_Driver::ClearTxQueue(USB_CONTROLLER_STATE* State, int endpoint) {
-
-    while (nullptr != LPC24_UsbClient_TxDequeue(State, endpoint, true)) {
-        State->Queues[endpoint]->erase(State->Queues[endpoint]->begin());
-    }
+    usb_fifo_buffer_in[endpoint] = usb_fifo_buffer_out[endpoint] = usb_fifo_buffer_count[endpoint] = 0;
 }
 
 
@@ -2574,21 +2589,13 @@ void LPC24_USB_Driver::TxPacket(USB_CONTROLLER_STATE* State, int endpoint) {
 
     // transmit a packet on UsbPortNum, if there are no more packets to transmit, then die
     USB_PACKET64* Packet64;
-    bool done = false;
 
     for (;;) {
-        done = true;
-        Packet64 = LPC24_UsbClient_TxDequeue(State, endpoint, true);
+        Packet64 = LPC24_UsbClient_TxDequeue(State, endpoint);
 
         if (Packet64 == nullptr || Packet64->Size > 0) {
             break;
         }
-        else if (Packet64->Size == 0) {
-            if (done) {
-                State->Queues[endpoint]->erase(State->Queues[endpoint]->begin());
-            }
-        }
-
 
     }
 
@@ -2599,11 +2606,6 @@ void LPC24_USB_Driver::TxPacket(USB_CONTROLLER_STATE* State, int endpoint) {
         g_LPC24_USB_Driver.TxNeedZLPS[endpoint] = false;
         if (Packet64->Size == 64 && _appendZP)
             g_LPC24_USB_Driver.TxNeedZLPS[endpoint] = true;
-
-        if (done) {
-            State->Queues[endpoint]->erase(State->Queues[endpoint]->begin());
-        }
-
     }
     else {
         // send the zero length packet since we landed on the FIFO boundary before
