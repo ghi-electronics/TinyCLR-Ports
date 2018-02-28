@@ -837,6 +837,8 @@ bool UsbClient_Driver::OpenPipe(int controller, int32_t& usbPipe, TinyCLR_UsbCli
 
                     if (State->Queues[idx] == nullptr)
                         return false;
+                        
+                    memset(reinterpret_cast<uint8_t*>(State->Queues[idx]), 0x00, AT91_USB_FIFO_BUFFER_SIZE * sizeof(USB_PACKET64));
                 }
 
                 usb_fifo_buffer_in[idx] = usb_fifo_buffer_out[idx] = usb_fifo_buffer_count[idx] = 0;
