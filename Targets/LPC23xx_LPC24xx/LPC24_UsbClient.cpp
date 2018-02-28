@@ -833,7 +833,7 @@ bool UsbClient_Driver::OpenPipe(int controller, int32_t& usbPipe, TinyCLR_UsbCli
                     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
                     State->Queues[idx] = (USB_PACKET64*)memoryProvider->Allocate(memoryProvider, LPC24_USB_FIFO_BUFFER_SIZE * sizeof(USB_PACKET64));
-                    
+
                     if (State->Queues[idx] == nullptr)
                         return false;
                 }
@@ -1095,7 +1095,7 @@ int UsbClient_Driver::Read(int controller, int usbPipe, char* Data, size_t size)
             /* if we're done with this packet, move onto the next */
             if (State->CurrentPacketOffset[endpoint] == Packet64->Size) {
                 State->CurrentPacketOffset[endpoint] = 0;
-                Packet64 = nullptr;                
+                Packet64 = nullptr;
 
                 LPC24_UsbClient_RxEnable(State, endpoint);
             }
@@ -1129,7 +1129,7 @@ bool UsbClient_Driver::Flush(int controller, int usbPipe) {
     queueCnt = usb_fifo_buffer_count[endpoint];
 
     // interrupts were disabled or USB interrupt was disabled for whatever reason, so force the flush
-     while (usb_fifo_buffer_count[endpoint] > 0 && retries > 0) {
+    while (usb_fifo_buffer_count[endpoint] > 0 && retries > 0) {
         LPC24_UsbClient_StartOutput(State, endpoint);
 
         int cnt = usb_fifo_buffer_count[endpoint];
@@ -1190,7 +1190,7 @@ void USB_ClearQueues(USB_CONTROLLER_STATE *State, bool ClrRxQueue, bool ClrTxQue
         for (int endpoint = 0; endpoint < LPC24_USB_QUEUE_SIZE; endpoint++) {
             if (State->Queues[endpoint] == nullptr || State->IsTxQueue[endpoint])
                 continue;
-            
+
             usb_fifo_buffer_in[endpoint] = usb_fifo_buffer_out[endpoint] = usb_fifo_buffer_count[endpoint] = 0;
 
             /* since this queue is now reset, we have room available for newly arrived packets */
@@ -1750,7 +1750,7 @@ USB_PACKET64* LPC24_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* State, int endpoin
     }
 
     DisableRx = false;
-    
+
     packet = &State->Queues[endpoint][usb_fifo_buffer_in[endpoint]];
 
     usb_fifo_buffer_in[endpoint]++;
@@ -2588,9 +2588,9 @@ void LPC24_USB_Driver::TxPacket(USB_CONTROLLER_STATE* State, int endpoint) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     // transmit a packet on UsbPortNum, if there are no more packets to transmit, then die
-    USB_PACKET64* Packet64;    
+    USB_PACKET64* Packet64;
 
-    for (;;) {        
+    for (;;) {
         Packet64 = LPC24_UsbClient_TxDequeue(State, endpoint);
 
         if (Packet64 == nullptr || Packet64->Size > 0) {
