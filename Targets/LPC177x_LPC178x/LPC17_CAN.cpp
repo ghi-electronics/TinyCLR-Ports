@@ -2789,7 +2789,7 @@ TinyCLR_Result LPC17_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32
 TinyCLR_Result LPC17_Can_GetReadBufferSize(const TinyCLR_Can_Provider* self, size_t& size) {
     int32_t channel = self->Index;
 
-    size = canController[channel].can_rxBufferSize;
+    size = canController[channel].can_rxBufferSize == 0 ? g_LPC17_Can_defaultBuffersSize[channel] : canController[channel].can_rxBufferSize;
 
     return TinyCLR_Result::Success;
 }
@@ -2807,10 +2807,8 @@ TinyCLR_Result LPC17_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, siz
     }
 }
 
-TinyCLR_Result LPC17_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t& size) {
-    int32_t channel = self->Index;
-
-    size = canController[channel].can_txBufferSize;
+TinyCLR_Result LPC17_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t& size) {    
+    size = 1;
 
     return TinyCLR_Result::Success;
 }
