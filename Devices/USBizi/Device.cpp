@@ -52,14 +52,16 @@ void LPC24_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, si
 }
 
 void LPC24_Startup_GetRunApp(bool& runApp) {
-    TinyCLR_Gpio_PinValue value;
-    auto controller = static_cast<const TinyCLR_Gpio_Provider*>(LPC24_Gpio_GetApi()->Implementation);
-    controller->AcquirePin(controller, RUN_APP_PIN);
-    controller->SetDriveMode(controller, RUN_APP_PIN, RUN_APP_PULL);
-    controller->Read(controller, RUN_APP_PIN, value);
-    controller->ReleasePin(controller, RUN_APP_PIN);
+    // TinyCLR_Gpio_PinValue value;
+    // auto controller = static_cast<const TinyCLR_Gpio_Provider*>(LPC24_Gpio_GetApi()->Implementation);
+    // controller->AcquirePin(controller, RUN_APP_PIN);
+    // controller->SetDriveMode(controller, RUN_APP_PIN, RUN_APP_PULL);
+    // controller->Read(controller, RUN_APP_PIN, value);
+    // controller->ReleasePin(controller, RUN_APP_PIN);
 
-    runApp = value == RUN_APP_STATE;
+    // runApp = value == RUN_APP_STATE;
+	
+	runApp = true;
 }
 
 // UsbClient
