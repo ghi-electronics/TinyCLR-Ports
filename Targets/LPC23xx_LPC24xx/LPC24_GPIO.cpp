@@ -137,6 +137,8 @@ const TinyCLR_Api_Info* LPC24_Gpio_GetApi() {
     gpioApi.Count = 1;
     gpioApi.Implementation = &gpioProvider;
 
+    LPC24_Gpio_Reset();
+
     return &gpioApi;
 }
 
