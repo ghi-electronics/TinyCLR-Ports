@@ -102,7 +102,7 @@ const TinyCLR_Api_Info* LPC24_Uart_GetApi() {
 }
 
 TinyCLR_Result LPC24_Uart_GetReadBufferSize(const TinyCLR_Uart_Provider* self, size_t& size) {
-    size = g_UartController[self->Index].rxBufferSize;
+    size = g_UartController[self->Index].rxBufferSize == 0 ? g_LPC24_Uart_RxDefaultBuffersSize[self->Index] :  g_UartController[self->Index].rxBufferSize;
 
     return TinyCLR_Result::Success;
 }
@@ -131,7 +131,7 @@ TinyCLR_Result LPC24_Uart_SetReadBufferSize(const TinyCLR_Uart_Provider* self, s
 }
 
 TinyCLR_Result LPC24_Uart_GetWriteBufferSize(const TinyCLR_Uart_Provider* self, size_t& size) {
-    size = g_UartController[self->Index].txBufferSize;
+    size = g_UartController[self->Index].txBufferSize == 0 ? g_LPC24_Uart_TxDefaultBuffersSize[self->Index] : g_UartController[self->Index].txBufferSize;
 
     return TinyCLR_Result::Success;
 }
