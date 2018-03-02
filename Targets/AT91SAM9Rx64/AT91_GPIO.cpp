@@ -70,6 +70,8 @@ const TinyCLR_Api_Info* AT91_Gpio_GetApi() {
     gpioApi.Count = 1;
     gpioApi.Implementation = &gpioProvider;
 
+    AT91_Gpio_Reset();
+
     return &gpioApi;
 }
 
