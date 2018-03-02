@@ -113,6 +113,8 @@ TinyCLR_Result __section("SectionForFlashOperations") AT45DB321D_Flash_Read(cons
     size_t writeLength;
     size_t readLength;
 
+    g_AT45DB321D_Flash_Controller.spiProvider->SetActiveSettings(g_AT45DB321D_Flash_Controller.spiProvider, AT45DB321D_SPI_CS, AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+
     while (block > 0) {
         uint32_t pageNumber = (address % FLASH_PAGE_SIZE) | ((address / FLASH_PAGE_SIZE) << 10);
 
@@ -230,6 +232,8 @@ TinyCLR_Result __section("SectionForFlashOperations") AT45DB321D_Flash_Write(con
     uint32_t beginningBytes = FLASH_PAGE_SIZE - pageOffset;
     uint32_t remainingBytesPageSegmentSize = FLASH_PAGE_SIZE - pageOffset;
 
+    g_AT45DB321D_Flash_Controller.spiProvider->SetActiveSettings(g_AT45DB321D_Flash_Controller.spiProvider, AT45DB321D_SPI_CS, AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+
     if (pageOffset) {
         memset(AT45DB321D_Flash_BufferRW, 0xFF, FLASH_PAGE_SIZE);
 
@@ -325,6 +329,8 @@ TinyCLR_Result __section("SectionForFlashOperations") AT45DB321D_Flash_EraseBloc
     size_t readLength;
 
     uint32_t blockNumber = deploymentAddress[sector] / (FLASH_BLOCK_SIZE);
+
+    g_AT45DB321D_Flash_Controller.spiProvider->SetActiveSettings(g_AT45DB321D_Flash_Controller.spiProvider, AT45DB321D_SPI_CS, AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     g_AT45DB321D_Flash_Controller.dataWriteBuffer[0] = COMMAND_BLOCK_ERASE;
     g_AT45DB321D_Flash_Controller.dataWriteBuffer[1] = (blockNumber << 3u) >> 6u;
