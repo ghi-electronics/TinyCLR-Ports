@@ -136,7 +136,7 @@ const TinyCLR_Api_Info* STM32F4_Uart_GetApi() {
 }
 
 TinyCLR_Result STM32F4_Uart_GetReadBufferSize(const TinyCLR_Uart_Provider* self, size_t& size) {
-    size = g_UartController[self->Index].rxBufferSize;
+    size = g_UartController[self->Index].rxBufferSize == 0 ? g_STM32F4_Uart_RxDefaultBuffersSize[self->Index] :  g_UartController[self->Index].rxBufferSize;
 
     return TinyCLR_Result::Success;
 }
@@ -165,7 +165,7 @@ TinyCLR_Result STM32F4_Uart_SetReadBufferSize(const TinyCLR_Uart_Provider* self,
 }
 
 TinyCLR_Result STM32F4_Uart_GetWriteBufferSize(const TinyCLR_Uart_Provider* self, size_t& size) {
-    size = g_UartController[self->Index].txBufferSize;
+    size = g_UartController[self->Index].txBufferSize == 0 ? g_STM32F4_Uart_TxDefaultBuffersSize[self->Index] : g_UartController[self->Index].txBufferSize;
 
     return TinyCLR_Result::Success;
 }
