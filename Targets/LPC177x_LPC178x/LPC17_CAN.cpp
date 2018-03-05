@@ -2022,7 +2022,6 @@ struct LPC17_Can_Controller {
     uint32_t baudrate;
 
     LPC17_Can_Filter canDataFilter;
-
 };
 
 static const LPC17_Gpio_Pin g_LPC17_Can_Tx_Pins[] = LPC17_CAN_TX_PINS;
@@ -2523,9 +2522,9 @@ TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t
 
     uint32_t timeout = CAN_TRANSFER_TIMEOUT;
 
-    while (readyToSend == false && timeout > 0) {
+    while (readyToSend == false && timeout-- > 0) {
         LPC17_Can_IsWritingAllowed(self, readyToSend);
-        timeout--;
+        LPC17_Time_Delay(nullptr, 1);
     }
 
     if (timeout == 0)
@@ -2807,7 +2806,7 @@ TinyCLR_Result LPC17_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, siz
     }
 }
 
-TinyCLR_Result LPC17_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t& size) {    
+TinyCLR_Result LPC17_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t& size) {
     size = 1;
 
     return TinyCLR_Result::Success;

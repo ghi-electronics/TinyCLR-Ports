@@ -1046,7 +1046,6 @@ struct AT91_Can_Controller {
     sCandTransfer can_rx;
 
     AT91_Can_Filter canDataFilter;
-
 };
 
 static const AT91_Gpio_Pin g_AT91_Can_Tx_Pins[] = AT91_CAN_TX_PINS;
@@ -1385,6 +1384,8 @@ void CAN_ErrorHandler(sCand *pCand, uint32_t dwErrS, int32_t channel) {
 ******************************************************************************/
 
 void AT91_Can_RxInterruptHandler(void *param) {
+    DISABLE_INTERRUPTS_SCOPED(irq);
+
     int32_t channel = (int32_t)param;
 
     sCand *pCand = &canController[channel].cand;
@@ -1560,10 +1561,9 @@ TinyCLR_Result AT91_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t 
 
     uint32_t timeout = CAN_TRANSFER_TIMEOUT;
 
-    while (readyToSend == false && timeout > 0) {
+    while (readyToSend == false && timeout-- > 0) {
         AT91_Can_IsWritingAllowed(self, readyToSend);
         AT91_Time_Delay(nullptr, 1);
-        timeout--;
     }
 
     if (timeout == 0)

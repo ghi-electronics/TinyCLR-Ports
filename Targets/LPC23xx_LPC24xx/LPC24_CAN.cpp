@@ -2021,7 +2021,6 @@ struct LPC24_Can_Controller {
     uint32_t baudrate;
 
     LPC24_Can_Filter canDataFilter;
-
 };
 
 static const LPC24_Gpio_Pin g_LPC24_Can_Tx_Pins[] = LPC24_CAN_TX_PINS;
@@ -2521,9 +2520,9 @@ TinyCLR_Result LPC24_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t
 
     uint32_t timeout = CAN_TRANSFER_TIMEOUT;
 
-    while (readyToSend == false && timeout > 0) {
+    while (readyToSend == false && timeout-- > 0) {
         LPC24_Can_IsWritingAllowed(self, readyToSend);
-        timeout--;
+        LPC24_Time_Delay(nullptr, 1);
     }
 
     if (timeout == 0)
