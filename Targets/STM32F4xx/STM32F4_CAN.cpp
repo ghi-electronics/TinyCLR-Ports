@@ -302,9 +302,6 @@ struct STM32F4_Can_Controller {
 
     STM32F4_Can_Message *canRxMessagesFifo;
 
-    STM32F4_Can_TxMessage *txMessage;
-    STM32F4_Can_RxMessage *rxMessage;
-
     STM32F4_Can_InitTypeDef initTypeDef;
     STM32F4_Can_FilterInitTypeDef filterInitTypeDef;
 
@@ -1088,7 +1085,7 @@ TinyCLR_Result STM32F4_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, s
     }
 }
 
-TinyCLR_Result STM32F4_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t& size) {    
+TinyCLR_Result STM32F4_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t& size) {
     size = 1;
 
     return TinyCLR_Result::Success;
@@ -1119,25 +1116,27 @@ void STM32_Can_RxInterruptHandler(int32_t channel) {
 
     CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
 
+    STM32F4_Can_RxMessage rxMessage;
+
     uint32_t error = CAN_ErrorHandler(channel);
 
-    CAN_Receive(CANx, CAN_FIFO0, canController[channel].rxMessage);
+    CAN_Receive(CANx, CAN_FIFO0, &rxMessage);
 
     if (error)
         return;
 
-    len = canController[channel].rxMessage->DLC;
+    len = rxMessage.DLC;
 
-    if (canController[channel].rxMessage->IDE == CAN_Id_Standard) {
-        msgid = canController[channel].rxMessage->StdId;
+    if (rxMessage.IDE == CAN_Id_Standard) {
+        msgid = rxMessage.StdId;
         extendMode = false;
     }
     else {
-        msgid = canController[channel].rxMessage->ExtId;
+        msgid = rxMessage.ExtId;
         extendMode = true;
     }
 
-    rtrmode = (((canController[channel].rxMessage->RTR) & 0x02) != 0) ? true : false;
+    rtrmode = (((rxMessage.RTR) & 0x02) != 0) ? true : false;
 
     // Filter
     if (canController[channel].canDataFilter.groupFiltersSize || canController[channel].canDataFilter.matchFiltersSize) {
@@ -1174,9 +1173,9 @@ void STM32_Can_RxInterruptHandler(int32_t channel) {
 
     can_msg->remoteTransmissionRequest = rtrmode;
 
-    can_msg->DataA = canController[channel].rxMessage->Data[0] | (canController[channel].rxMessage->Data[1] << 8) | (canController[channel].rxMessage->Data[2] << 16) | (canController[channel].rxMessage->Data[3] << 24);
+    can_msg->DataA = rxMessage.Data[0] | (rxMessage.Data[1] << 8) | (rxMessage.Data[2] << 16) | (rxMessage.Data[3] << 24);
 
-    can_msg->DataB = canController[channel].rxMessage->Data[4] | (canController[channel].rxMessage->Data[5] << 8) | (canController[channel].rxMessage->Data[6] << 16) | (canController[channel].rxMessage->Data[7] << 24);
+    can_msg->DataB = rxMessage.Data[4] | (rxMessage.Data[5] << 8) | (rxMessage.Data[6] << 16) | (rxMessage.Data[7] << 24);
 
     can_msg->length = len;
 
@@ -1232,8 +1231,6 @@ TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Provider* self) {
     canController[channel].provider = self;
 
     canController[channel].canRxMessagesFifo = nullptr;
-    canController[channel].rxMessage = nullptr;
-    canController[channel].txMessage = nullptr;
 
     return TinyCLR_Result::Success;
 }
@@ -1261,18 +1258,6 @@ TinyCLR_Result STM32F4_Can_Release(const TinyCLR_Can_Provider* self) {
     STM32F4_GpioInternal_ClosePin(g_STM32F4_Can_Rx_Pins[channel].number);
 
     RCC->APB1ENR &= ((channel == 0) ? ~RCC_APB1ENR_CAN1EN : ~RCC_APB1ENR_CAN2EN);
-
-    if (canController[channel].txMessage != nullptr) {
-        memoryProvider->Free(memoryProvider, canController[channel].txMessage);
-
-        canController[channel].txMessage = nullptr;
-    }
-
-    if (canController[channel].rxMessage != nullptr) {
-        memoryProvider->Free(memoryProvider, canController[channel].rxMessage);
-
-        canController[channel].rxMessage = nullptr;
-    }
 
     if (canController[channel].canRxMessagesFifo != nullptr) {
         memoryProvider->Free(memoryProvider, canController[channel].canRxMessagesFifo);
@@ -1321,29 +1306,32 @@ TinyCLR_Result STM32F4_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32
 
     uint8_t txmailbox;
 
+    STM32F4_Can_TxMessage txMessage;
+
     /* Transmit Structure preparation */
-    canController[channel].txMessage->RTR = (isRemoteTransmissionRequest == true) ? 1 : 0;
+    txMessage.RTR = (isRemoteTransmissionRequest == true) ? 1 : 0;
 
     if (isExtendedId) {
-        canController[channel].txMessage->IDE = CAN_Id_Extended;
-        canController[channel].txMessage->ExtId = arbitrationId;
+        txMessage.IDE = CAN_Id_Extended;
+        txMessage.ExtId = arbitrationId;
     }
     else {
-        canController[channel].txMessage->IDE = CAN_Id_Standard;
-        canController[channel].txMessage->StdId = arbitrationId;
+        txMessage.IDE = CAN_Id_Standard;
+        txMessage.StdId = arbitrationId;
     }
-    canController[channel].txMessage->DLC = length & 0x0F;
+    txMessage.DLC = length & 0x0F;
 
-    canController[channel].txMessage->Data[0] = ((data32[0] >> 0) & 0xFF);
-    canController[channel].txMessage->Data[1] = ((data32[0] >> 8) & 0xFF);
-    canController[channel].txMessage->Data[2] = ((data32[0] >> 16) & 0xFF);
-    canController[channel].txMessage->Data[3] = ((data32[0] >> 24) & 0xFF);
-    canController[channel].txMessage->Data[4] = ((data32[1] >> 0) & 0xFF);
-    canController[channel].txMessage->Data[5] = ((data32[1] >> 8) & 0xFF);
-    canController[channel].txMessage->Data[6] = ((data32[1] >> 16) & 0xFF);
-    canController[channel].txMessage->Data[7] = ((data32[1] >> 24) & 0xFF);
+    txMessage.Data[0] = ((data32[0] >> 0) & 0xFF);
+    txMessage.Data[1] = ((data32[0] >> 8) & 0xFF);
+    txMessage.Data[2] = ((data32[0] >> 16) & 0xFF);
+    txMessage.Data[3] = ((data32[0] >> 24) & 0xFF);
+    txMessage.Data[4] = ((data32[1] >> 0) & 0xFF);
+    txMessage.Data[5] = ((data32[1] >> 8) & 0xFF);
+    txMessage.Data[6] = ((data32[1] >> 16) & 0xFF);
+    txMessage.Data[7] = ((data32[1] >> 24) & 0xFF);
 
-    txmailbox = CAN_Transmit(CANx, canController[channel].txMessage); // No mail box is ready
+    txmailbox = CAN_Transmit(CANx, &txMessage);
+
     if (txmailbox != CAN_TxStatus_NoMailBox) {
         while (CAN_TransmitStatus(CANx, txmailbox) != CAN_TxStatus_Ok && i < CAN_GetTransferTimeout()) {
             i++;
@@ -1404,27 +1392,6 @@ TinyCLR_Result STM32F4_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_
         canController[channel].canRxMessagesFifo = (STM32F4_Can_Message*)memoryProvider->Allocate(memoryProvider, canController[channel].can_rxBufferSize * sizeof(STM32F4_Can_Message));
 
     if (canController[channel].canRxMessagesFifo == nullptr) {
-        return TinyCLR_Result::OutOfMemory;
-    }
-
-    if (canController[channel].txMessage == nullptr)
-        canController[channel].txMessage = (STM32F4_Can_TxMessage*)memoryProvider->Allocate(memoryProvider, canController[channel].can_txBufferSize * sizeof(STM32F4_Can_TxMessage));
-
-    if (canController[channel].txMessage == nullptr) {
-        // Release if already allocated, avoid leak memory
-        memoryProvider->Free(memoryProvider, canController[channel].canRxMessagesFifo);
-
-        return TinyCLR_Result::OutOfMemory;
-    }
-
-    if (canController[channel].rxMessage == nullptr)
-        canController[channel].rxMessage = (STM32F4_Can_RxMessage*)memoryProvider->Allocate(memoryProvider, sizeof(STM32F4_Can_RxMessage));
-
-    if (canController[channel].rxMessage == nullptr) {
-        // Release if already allocated, avoid leak memory
-        memoryProvider->Free(memoryProvider, canController[channel].txMessage);
-        memoryProvider->Free(memoryProvider, canController[channel].canRxMessagesFifo);
-
         return TinyCLR_Result::OutOfMemory;
     }
 
