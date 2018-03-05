@@ -2023,6 +2023,7 @@ struct LPC17_Can_Controller {
 
     LPC17_Can_Filter canDataFilter;
 
+    TinyCLR_Time_Provider* timeProvider;
 };
 
 static const LPC17_Gpio_Pin g_LPC17_Can_Tx_Pins[] = LPC17_CAN_TX_PINS;
@@ -2523,9 +2524,9 @@ TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t
 
     uint32_t timeout = CAN_TRANSFER_TIMEOUT;
 
-    while (readyToSend == false && timeout > 0) {
+    while (readyToSend == false && timeout-- > 0) {
         LPC17_Can_IsWritingAllowed(self, readyToSend);
-        timeout--;
+        canController[channel].timeProvider->Delay(reinterpret_cast<const TinyCLR_Time_Provider*>(canController[channel].timeProvider), 1);
     }
 
     if (timeout == 0)
@@ -2601,6 +2602,11 @@ TinyCLR_Result LPC17_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_t 
     int32_t channel = self->Index;
 
     LPC17xx_SYSCON &SYSCON = *(LPC17xx_SYSCON *)(size_t)(LPC17xx_SYSCON::c_SYSCON_Base);
+
+    const TinyCLR_Api_Info* timeApi = CONCAT(DEVICE_TARGET, _Time_GetApi)();;
+    TinyCLR_Time_Provider** timeProvider = (TinyCLR_Time_Provider**)timeApi->Implementation;
+
+    canController[channel].timeProvider = reinterpret_cast<TinyCLR_Time_Provider*>(&timeProvider[0]);
 
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
@@ -2807,7 +2813,7 @@ TinyCLR_Result LPC17_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, siz
     }
 }
 
-TinyCLR_Result LPC17_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t& size) {    
+TinyCLR_Result LPC17_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t& size) {
     size = 1;
 
     return TinyCLR_Result::Success;

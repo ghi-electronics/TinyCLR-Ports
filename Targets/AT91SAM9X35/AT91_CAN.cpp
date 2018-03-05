@@ -1047,6 +1047,7 @@ struct AT91_Can_Controller {
 
     AT91_Can_Filter canDataFilter;
 
+    TinyCLR_Time_Provider* timeProvider;
 };
 
 static const AT91_Gpio_Pin g_AT91_Can_Tx_Pins[] = AT91_CAN_TX_PINS;
@@ -1562,10 +1563,9 @@ TinyCLR_Result AT91_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t 
 
     uint32_t timeout = CAN_TRANSFER_TIMEOUT;
 
-    while (readyToSend == false && timeout > 0) {
+    while (readyToSend == false && timeout-- > 0) {
         AT91_Can_IsWritingAllowed(self, readyToSend);
-        AT91_Time_Delay(nullptr, 1);
-        timeout--;
+        canController[channel].timeProvider->Delay(reinterpret_cast<const TinyCLR_Time_Provider*>(canController[channel].timeProvider), 1);
     }
 
     if (timeout == 0)
@@ -1651,6 +1651,11 @@ TinyCLR_Result AT91_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_t p
     int32_t channel = self->Index;
 
     uint32_t sourceClk;
+
+    const TinyCLR_Api_Info* timeApi = CONCAT(DEVICE_TARGET, _Time_GetApi)();;
+    TinyCLR_Time_Provider** timeProvider = (TinyCLR_Time_Provider**)timeApi->Implementation;
+
+    canController[channel].timeProvider = reinterpret_cast<TinyCLR_Time_Provider*>(&timeProvider[0]);
 
     canController[channel].cand.dwMck = AT91_SYSTEM_PERIPHERAL_CLOCK_HZ;
 
