@@ -17,8 +17,6 @@
 #include "STM32F4.h"
 #include <stdio.h>
 
-#include "../../Drivers/SPIDisplay/SPIDisplay.h"
-
 void STM32F4_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
     STM32F4_Gpio_Reset();
 }
