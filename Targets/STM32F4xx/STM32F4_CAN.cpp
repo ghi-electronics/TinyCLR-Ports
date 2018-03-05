@@ -318,9 +318,6 @@ struct STM32F4_Can_Controller {
     uint32_t baudrate;
 
     STM32F4_Can_Filter canDataFilter;
-
-    TinyCLR_Time_Provider* timeProvider;
-
 };
 
 static const STM32F4_Gpio_Pin g_STM32F4_Can_Tx_Pins[] = STM32F4_CAN_TX_PINS;
@@ -1285,7 +1282,7 @@ TinyCLR_Result STM32F4_Can_Reset(const TinyCLR_Can_Provider* self) {
 
     RCC->APB1RSTR |= ((channel == 0) ? RCC_APB1ENR_CAN1EN : RCC_APB1ENR_CAN2EN);
 
-    canController[channel].timeProvider->Delay(reinterpret_cast<const TinyCLR_Time_Provider*>(canController[channel].timeProvider), 1000);
+    STM32F4_Time_Delay(nullptr, 1000);
 
     RCC->APB1RSTR &= ((channel == 0) ? ~RCC_APB1ENR_CAN1EN : ~RCC_APB1ENR_CAN2EN);
 
@@ -1339,7 +1336,7 @@ TinyCLR_Result STM32F4_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32
     txmailbox = CAN_Transmit(CANx, &txMessage);
 
     while (CAN_TransmitStatus(CANx, txmailbox) != CAN_TxStatus_Ok && i++ < CAN_GetTransferTimeout())
-        canController[channel].timeProvider->Delay(reinterpret_cast<const TinyCLR_Time_Provider*>(canController[channel].timeProvider), 1);
+        STM32F4_Time_Delay(nullptr, 1);
 
     if (txmailbox == CAN_TxStatus_NoMailBox || i == CAN_GetTransferTimeout()) {
 
@@ -1389,11 +1386,6 @@ TinyCLR_Result STM32F4_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_
 
     CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
 
-    const TinyCLR_Api_Info* timeApi = CONCAT(DEVICE_TARGET, _Time_GetApi)();;
-    TinyCLR_Time_Provider** timeProvider = (TinyCLR_Time_Provider**)timeApi->Implementation;
-
-    canController[channel].timeProvider = reinterpret_cast<TinyCLR_Time_Provider*>(&timeProvider[0]);
-
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
     if (canController[channel].canRxMessagesFifo == nullptr)
@@ -1405,7 +1397,7 @@ TinyCLR_Result STM32F4_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_
 
     RCC->APB1RSTR |= ((channel == 0) ? RCC_APB1ENR_CAN1EN : RCC_APB1ENR_CAN2EN);
 
-    canController[channel].timeProvider->Delay(reinterpret_cast<const TinyCLR_Time_Provider*>(canController[channel].timeProvider), 1000);
+    STM32F4_Time_Delay(nullptr, 1000);
 
     RCC->APB1RSTR &= ((channel == 0) ? ~RCC_APB1ENR_CAN1EN : ~RCC_APB1ENR_CAN2EN);
 
