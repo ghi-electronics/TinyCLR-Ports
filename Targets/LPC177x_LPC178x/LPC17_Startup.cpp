@@ -18,16 +18,36 @@
 #include "LPC17.h"
 
 void LPC17_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
+#ifdef INCLUDE_ADC
     LPC17_Adc_Reset();
+#endif
+#ifdef INCLUDE_CAN
     LPC17_Can_Reset();
+#endif
+#ifdef INCLUDE_DAC
     LPC17_Dac_Reset();
+#endif
+#ifdef INCLUDE_DISPLAY
     LPC17_Display_Reset();
+#endif
+#ifdef INCLUDE_GPIO
     LPC17_Gpio_Reset();
+#endif
+#ifdef INCLUDE_I2C
     LPC17_I2c_Reset();
+#endif    
+#ifdef INCLUDE_PWM
     LPC17_Pwm_Reset();
+#endif
+#ifdef INCLUDE_SPI
     LPC17_Spi_Reset();
+#endif
+#ifdef INCLUDE_UART
     LPC17_Uart_Reset();
+#endif
+#ifdef INCLUDE_USBCLIENT 
     LPC17_UsbClient_Reset();
+#endif
 }
 
 /*
