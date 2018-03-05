@@ -67,8 +67,6 @@ const TinyCLR_Api_Info* AT91_Pwm_GetApi() {
     pwmApi.Count = TOTAL_PWM_CONTROLLER;
     pwmApi.Implementation = (pwmApi.Count > 1) ? pwmProviders : (TinyCLR_Pwm_Provider**)&pwmProviderDefs;
 
-    AT91_Pwm_Reset();
-
     return &pwmApi;
 }
 
