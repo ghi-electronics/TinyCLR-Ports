@@ -2223,7 +2223,7 @@ const TinyCLR_Api_Info* LPC24_Can_GetApi() {
         canProvider[i]->Index = i;
         canProvider[i]->Acquire = &LPC24_Can_Acquire;
         canProvider[i]->Release = &LPC24_Can_Release;
-        canProvider[i]->Reset = &LPC24_Can_Reset;
+        canProvider[i]->Reset = &LPC24_Can_SoftReset;
         canProvider[i]->WriteMessage = &LPC24_Can_WriteMessage;
         canProvider[i]->ReadMessage = &LPC24_Can_ReadMessage;
         canProvider[i]->SetBitTiming = &LPC24_Can_SetBitTiming;
@@ -2470,7 +2470,7 @@ TinyCLR_Result LPC24_Can_Release(const TinyCLR_Can_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Can_Reset(const TinyCLR_Can_Provider* self) {
+TinyCLR_Result LPC24_Can_SoftReset(const TinyCLR_Can_Provider* self) {
     int32_t channel = self->Index;
 
     canController[channel].can_rx_count = 0;
@@ -2822,5 +2822,10 @@ TinyCLR_Result LPC24_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, si
     canController[channel].can_txBufferSize = 1;
 
     return size == 1 ? TinyCLR_Result::Success : TinyCLR_Result::NotSupported;
+}
+
+void LPC24_Can_Reset() {
+    for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++)
+        LPC24_Can_Release(canProvider[i]);
 }
 #endif // INCLUDE_CAN

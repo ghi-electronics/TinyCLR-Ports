@@ -200,7 +200,7 @@ bool LPC24_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCLR_
 const TinyCLR_Api_Info* LPC24_Can_GetApi();
 TinyCLR_Result LPC24_Can_Acquire(const TinyCLR_Can_Provider* self);
 TinyCLR_Result LPC24_Can_Release(const TinyCLR_Can_Provider* self);
-TinyCLR_Result LPC24_Can_Reset(const TinyCLR_Can_Provider* self);
+TinyCLR_Result LPC24_Can_SoftReset(const TinyCLR_Can_Provider* self);
 TinyCLR_Result LPC24_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length);
 TinyCLR_Result LPC24_Can_ReadMessage(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length);
 TinyCLR_Result LPC24_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling);
@@ -218,6 +218,7 @@ TinyCLR_Result LPC24_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, siz
 TinyCLR_Result LPC24_Can_GetReadBufferSize(const TinyCLR_Can_Provider* self, size_t& size);
 TinyCLR_Result LPC24_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t& size);
 TinyCLR_Result LPC24_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t size);
+void LPC24_Can_Reset();
 
 //DAC
 const TinyCLR_Api_Info* LPC24_Dac_GetApi();

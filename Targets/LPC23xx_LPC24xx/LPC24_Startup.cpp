@@ -16,7 +16,20 @@
 #include "LPC24.h"
 
 void LPC24_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
+    LPC24_Adc_Reset();
+#if INCLUDE_CAN    
+    LPC24_Can_Reset();
+#endif    
+    LPC24_Dac_Reset();
+#if INCLUDE_DISPLAY    
+    LPC24_Display_Reset();
+#endif    
     LPC24_Gpio_Reset();
+    LPC24_I2c_Reset();
+    LPC24_Pwm_Reset();
+    LPC24_Spi_Reset();
+    LPC24_Uart_Reset();
+    LPC24_UsbClient_Reset();
 }
 
 #define MEM_MAP_REG 0xE01FC040 // memory maping register
