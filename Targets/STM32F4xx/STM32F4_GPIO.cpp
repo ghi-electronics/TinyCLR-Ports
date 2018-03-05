@@ -71,8 +71,6 @@ const TinyCLR_Api_Info* STM32F4_Gpio_GetApi() {
     gpioApi.Count = 1;
     gpioApi.Implementation = &gpioProvider;
 
-    STM32F4_Gpio_Reset();
-
     return &gpioApi;
 }
 
