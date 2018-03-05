@@ -962,6 +962,8 @@ const TinyCLR_Api_Info* LPC17_Display_GetApi() {
 }
 
 void LPC17_Display_Reset() {
+    LPC17_Display_Clear();
+
     LPC17_Display_Uninitialize();
 }
 

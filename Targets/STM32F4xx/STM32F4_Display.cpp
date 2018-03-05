@@ -1090,6 +1090,7 @@ const TinyCLR_Api_Info* STM32F4_Display_GetApi() {
 }
 
 void STM32F4_Display_Reset() {
+    STM32F4_Display_Clear();
     STM32F4_Display_Uninitialize();
 }
 
