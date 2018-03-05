@@ -64,6 +64,8 @@ const TinyCLR_Api_Info* STM32F4_Deployment_GetApi() {
     deploymentApi.Count = 1;
     deploymentApi.Implementation = &deploymentProvider;
 
+    STM32F4_Deplpoyment_Reset();
+
     return &deploymentApi;
 }
 
