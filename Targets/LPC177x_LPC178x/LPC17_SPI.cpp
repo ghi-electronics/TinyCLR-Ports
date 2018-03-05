@@ -462,8 +462,6 @@ const TinyCLR_Api_Info* LPC17_Spi_GetApi() {
     spiApi.Count = TOTAL_SPI_CONTROLLERS;
     spiApi.Implementation = spiProviders;
 
-    LPC17_Spi_Reset();
-
     return &spiApi;
 }
 

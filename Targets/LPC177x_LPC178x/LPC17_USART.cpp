@@ -264,13 +264,11 @@ const TinyCLR_Api_Info* LPC17_Uart_GetApi() {
     uartApi.Count = TOTAL_UART_CONTROLLERS;
     uartApi.Implementation = uartProviders;
 
-    LPC17_Uart_Reset();
-
     return &uartApi;
 }
 
 TinyCLR_Result LPC17_Uart_GetReadBufferSize(const TinyCLR_Uart_Provider* self, size_t& size) {
-    size = g_UartController[self->Index].rxBufferSize == 0 ? g_LPC17_Uart_RxDefaultBuffersSize[self->Index] :  g_UartController[self->Index].rxBufferSize;
+    size = g_UartController[self->Index].rxBufferSize == 0 ? g_LPC17_Uart_RxDefaultBuffersSize[self->Index] : g_UartController[self->Index].rxBufferSize;
 
     return TinyCLR_Result::Success;
 }

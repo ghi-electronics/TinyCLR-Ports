@@ -88,8 +88,6 @@ const TinyCLR_Api_Info* LPC17_Pwm_GetApi() {
         pwmProviders[i]->GetPinCount = &LPC17_Pwm_GetPinCount;
     }
 
-    LPC17_Pwm_Reset();
-
     pwmApi.Author = "GHI Electronics, LLC";
     pwmApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.PwmProvider";
     pwmApi.Type = TinyCLR_Api_Type::PwmProvider;
