@@ -16,9 +16,10 @@
 #include <Device.h>
 
 #include "../../Drivers/AT49BV322DT_Flash/AT49BV322DT_Flash.h"
+#include "../../Drivers/SPIDisplay/SPIDisplay.h"
 
 void LPC24_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider) {
-
+    apiProvider->Add(apiProvider, SPIDisplay_GetApi());
 }
 
 static int32_t lpc24_deviceId = 0;

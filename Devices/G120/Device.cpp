@@ -17,6 +17,7 @@
 #include <Device.h>
 
 #include "../../Drivers/S25FL032_Flash/S25FL032_Flash.h"
+#include "../../Drivers/SPIDisplay/SPIDisplay.h"
 
 // G120, G120E
 #define LPC17_G120                         1
@@ -31,7 +32,7 @@
 #define G120E_DETECT3_STATE TinyCLR_Gpio_PinValue::Low
 
 void LPC17_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider) {
-
+    apiProvider->Add(apiProvider, SPIDisplay_GetApi());
 }
 
 static int32_t lpc178_deviceId = -1;
