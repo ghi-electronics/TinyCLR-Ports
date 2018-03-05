@@ -20,10 +20,37 @@
 
 #include "AT91.h"
 
-#include "../../Drivers/SPIDisplay/SPIDisplay.h"
-
 void AT91_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
+#ifdef INCLUDE_ADC
+    AT91_Adc_Reset();
+#endif
+#ifdef INCLUDE_CAN
+    AT91_Can_Reset();
+#endif
+#ifdef INCLUDE_DAC
+    AT91_Dac_Reset();
+#endif
+#ifdef INCLUDE_DISPLAY
+    AT91_Display_Reset();
+#endif
+#ifdef INCLUDE_GPIO
     AT91_Gpio_Reset();
+#endif
+#ifdef INCLUDE_I2C
+    AT91_I2c_Reset();
+#endif    
+#ifdef INCLUDE_PWM
+    AT91_Pwm_Reset();
+#endif
+#ifdef INCLUDE_SPI
+    AT91_Spi_Reset();
+#endif
+#ifdef INCLUDE_UART
+    AT91_Uart_Reset();
+#endif
+#ifdef INCLUDE_USBCLIENT 
+    AT91_UsbClient_Reset();
+#endif
 }
 
 #define MEM_MAP_REG 0xE01FC040 // memory maping register

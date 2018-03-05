@@ -89,8 +89,6 @@ const TinyCLR_Api_Info* AT91_Uart_GetApi() {
     uartApi.Count = TOTAL_UART_CONTROLLERS;
     uartApi.Implementation = uartProviders;
 
-    AT91_Uart_Reset();
-
     return &uartApi;
 }
 

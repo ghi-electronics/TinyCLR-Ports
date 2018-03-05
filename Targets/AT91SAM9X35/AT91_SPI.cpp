@@ -45,8 +45,6 @@ static uint8_t spiProviderDefs[TOTAL_SPI_CONTROLLERS * sizeof(TinyCLR_Spi_Provid
 static TinyCLR_Spi_Provider* spiProviders[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Api_Info spiApi;
 
-void AT91_Spi_Reset();
-
 const TinyCLR_Api_Info* AT91_Spi_GetApi() {
     for (int i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         spiProviders[i] = (TinyCLR_Spi_Provider*)(spiProviderDefs + (i * sizeof(TinyCLR_Spi_Provider)));
@@ -71,8 +69,6 @@ const TinyCLR_Api_Info* AT91_Spi_GetApi() {
     spiApi.Version = 0;
     spiApi.Count = TOTAL_SPI_CONTROLLERS;
     spiApi.Implementation = spiProviders;
-
-    AT91_Spi_Reset();
 
     return &spiApi;
 }
@@ -380,7 +376,7 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Provider* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    int32_t controller = (self->Index);    
+    int32_t controller = (self->Index);
 
     if (controller == 0) // SPI0 is for serial flash
         return TinyCLR_Result::Success;

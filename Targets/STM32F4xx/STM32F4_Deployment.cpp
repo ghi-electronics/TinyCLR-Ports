@@ -64,10 +64,7 @@ const TinyCLR_Api_Info* STM32F4_Deployment_GetApi() {
     deploymentApi.Count = 1;
     deploymentApi.Implementation = &deploymentProvider;
 
-    for (int32_t i = 0; i < SIZEOF_ARRAY(deploymentSectors); i++) {
-        deploymentSectorAddress[i] = deploymentSectors[i].address;
-        deploymentSectorSize[i] = deploymentSectors[i].size;
-    }
+    STM32F4_Deplpoyment_Reset();
 
     return &deploymentApi;
 }
@@ -213,4 +210,11 @@ TinyCLR_Result STM32F4_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* sel
     count = SIZEOF_ARRAY(deploymentSectorAddress);
 
     return TinyCLR_Result::Success;
+}
+
+void STM32F4_Deplpoyment_Reset() {
+    for (int32_t i = 0; i < SIZEOF_ARRAY(deploymentSectors); i++) {
+        deploymentSectorAddress[i] = deploymentSectors[i].address;
+        deploymentSectorSize[i] = deploymentSectors[i].size;
+    }
 }

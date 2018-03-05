@@ -99,8 +99,6 @@ const TinyCLR_Api_Info* LPC17_I2c_GetApi() {
     i2cApi.Count = 1;
     i2cApi.Implementation = (i2cApi.Count > 1) ? i2cProviders : reinterpret_cast<TinyCLR_I2c_Provider**>(i2cProviderDefs);
 
-    LPC17_I2c_Reset();
-
     return &i2cApi;
 }
 

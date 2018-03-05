@@ -45,8 +45,6 @@ static uint8_t spiProviderDefs[TOTAL_SPI_CONTROLLERS * sizeof(TinyCLR_Spi_Provid
 static TinyCLR_Spi_Provider* spiProviders[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Api_Info spiApi;
 
-void AT91_Spi_Reset();
-
 const TinyCLR_Api_Info* AT91_Spi_GetApi() {
     for (int i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         spiProviders[i] = (TinyCLR_Spi_Provider*)(spiProviderDefs + (i * sizeof(TinyCLR_Spi_Provider)));
@@ -72,8 +70,6 @@ const TinyCLR_Api_Info* AT91_Spi_GetApi() {
     spiApi.Count = TOTAL_SPI_CONTROLLERS;
 
     spiApi.Implementation = (spiApi.Count > 1) ? spiProviders : reinterpret_cast<TinyCLR_Spi_Provider**>(spiProviderDefs);
-
-    AT91_Spi_Reset();
 
     return &spiApi;
 }

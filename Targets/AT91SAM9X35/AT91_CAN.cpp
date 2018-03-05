@@ -1188,7 +1188,7 @@ const TinyCLR_Api_Info* AT91_Can_GetApi() {
         canProvider[i]->Index = i;
         canProvider[i]->Acquire = &AT91_Can_Acquire;
         canProvider[i]->Release = &AT91_Can_Release;
-        canProvider[i]->Reset = &AT91_Can_Reset;
+        canProvider[i]->Reset = &AT91_Can_SoftReset;
         canProvider[i]->WriteMessage = &AT91_Can_WriteMessage;
         canProvider[i]->ReadMessage = &AT91_Can_ReadMessage;
         canProvider[i]->SetBitTiming = &AT91_Can_SetBitTiming;
@@ -1502,7 +1502,7 @@ TinyCLR_Result AT91_Can_Release(const TinyCLR_Can_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Can_Reset(const TinyCLR_Can_Provider* self) {
+TinyCLR_Result AT91_Can_SoftReset(const TinyCLR_Can_Provider* self) {
     int32_t channel = self->Index;
     volatile int32_t i;
 
@@ -1872,4 +1872,8 @@ TinyCLR_Result AT91_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, siz
     return size == 1 ? TinyCLR_Result::Success : TinyCLR_Result::NotSupported;
 }
 
+void AT91_Can_Reset() {
+    for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++)
+        AT91_Can_Release(canProvider[i]);
+}
 #endif // INCLUDE_CAN
