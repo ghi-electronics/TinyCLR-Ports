@@ -18,7 +18,19 @@
 #include <stdio.h>
 
 void STM32F4_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
+    STM32F4_Adc_Reset();
+    STM32F4_Can_Reset();
+    STM32F4_Dac_Reset();
+    STM32F4_Deplpoyment_Reset();
+#if INCLUDE_DISPLAY
+    STM32F4_Display_Reset();
+#endif
     STM32F4_Gpio_Reset();
+    STM32F4_I2c_Reset();
+    STM32F4_Pwm_Reset();
+    STM32F4_Spi_Reset();
+    STM32F4_Uart_Reset();
+    STM32F4_UsbClient_Reset();
 }
 
 #ifndef FLASH

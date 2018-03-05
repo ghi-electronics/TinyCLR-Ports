@@ -34,10 +34,6 @@ static const int TOTAL_SPI_CONTROLLERS = SIZEOF_ARRAY(g_STM32F4_Spi_Sclk_Pins);
 
 static ptr_SPI_TypeDef g_STM32_Spi_Port[TOTAL_SPI_CONTROLLERS];
 
-void STM32F4_Spi_Reset();
-
-// Pins
-
 struct SpiController {
     uint8_t *readBuffer;
     uint8_t *writeBuffer;
@@ -103,9 +99,6 @@ const TinyCLR_Api_Info* STM32F4_Spi_GetApi() {
 #endif
 #endif
 #endif
-
-    STM32F4_Spi_Reset();
-
     return &spiApi;
 }
 
@@ -484,7 +477,7 @@ TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Provider* self) {
     auto& sclk = g_STM32F4_Spi_Sclk_Pins[controller];
     auto& miso = g_STM32F4_Spi_Miso_Pins[controller];
     auto& mosi = g_STM32F4_Spi_Mosi_Pins[controller];
-    
+
     STM32F4_GpioInternal_ClosePin(sclk.number);
     STM32F4_GpioInternal_ClosePin(miso.number);
     STM32F4_GpioInternal_ClosePin(mosi.number);

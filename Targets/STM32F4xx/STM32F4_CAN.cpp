@@ -1023,7 +1023,6 @@ bool CAN_ErrorHandler(uint8_t channel) {
         canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::Passive);
     }
 
-
     return false;
 }
 
@@ -1035,7 +1034,7 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
         canProvider[i]->Index = i;
         canProvider[i]->Acquire = &STM32F4_Can_Acquire;
         canProvider[i]->Release = &STM32F4_Can_Release;
-        canProvider[i]->Reset = &STM32F4_Can_Reset;
+        canProvider[i]->Reset = &STM32F4_Can_SoftReset;
         canProvider[i]->WriteMessage = &STM32F4_Can_WriteMessage;
         canProvider[i]->ReadMessage = &STM32F4_Can_ReadMessage;
         canProvider[i]->SetBitTiming = &STM32F4_Can_SetBitTiming;
@@ -1271,7 +1270,7 @@ TinyCLR_Result STM32F4_Can_Release(const TinyCLR_Can_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_Reset(const TinyCLR_Can_Provider* self) {
+TinyCLR_Result STM32F4_Can_SoftReset(const TinyCLR_Can_Provider* self) {
     int32_t channel = self->Index;
 
     CAN_TypeDef* CANx = ((channel == 0) ? CAN1 : CAN2);
@@ -1591,4 +1590,9 @@ TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint
     return TinyCLR_Result::Success;;
 }
 
+void STM32F4_Can_Reset() {
+    for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
+        STM32F4_Can_Release(canProvider[i]);
+    }
+}
 #endif // INCLUDE_CAN

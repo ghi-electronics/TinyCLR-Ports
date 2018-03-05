@@ -1593,7 +1593,7 @@ bool UsbClient_Driver::OpenPipe(int controller, int32_t& usbPipe, TinyCLR_UsbCli
                     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
                     State->Queues[idx] = (USB_PACKET64*)memoryProvider->Allocate(memoryProvider, STM32F4_USB_FIFO_BUFFER_SIZE * sizeof(USB_PACKET64));
-                    
+
                     if (State->Queues[idx] == nullptr)
                         return false;
 
@@ -2679,6 +2679,10 @@ const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi() {
     usbClientApi.Count = 1;
     usbClientApi.Implementation = &usbClientProvider;
 
+    return &usbClientApi;
+}
+
+void STM32F4_UsbClient_Reset() {
     for (auto controller = 0; controller < usbClientApi.Count; controller++) {
         // Close all pipe if any opened
         for (auto pipe = 0; pipe < STM32F4_USB_QUEUE_SIZE; pipe++) {
@@ -2689,5 +2693,4 @@ const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi() {
         UsbClient_Driver::Uninitialize(controller);
     }
 
-    return &usbClientApi;
 }
