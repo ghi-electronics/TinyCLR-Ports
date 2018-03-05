@@ -1385,6 +1385,8 @@ void CAN_ErrorHandler(sCand *pCand, uint32_t dwErrS, int32_t channel) {
 ******************************************************************************/
 
 void AT91_Can_RxInterruptHandler(void *param) {
+    DISABLE_INTERRUPTS_SCOPED(irq);
+
     int32_t channel = (int32_t)param;
 
     sCand *pCand = &canController[channel].cand;
