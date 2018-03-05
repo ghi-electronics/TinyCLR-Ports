@@ -55,8 +55,6 @@ const TinyCLR_Api_Info* AT91_I2c_GetApi() {
     i2cApi.Count = 1;
     i2cApi.Implementation = (i2cApi.Count > 1) ? i2cProviders : reinterpret_cast<TinyCLR_I2c_Provider**>(i2cProviderDefs);
 
-    AT91_I2c_Reset();
-
     return &i2cApi;
 }
 

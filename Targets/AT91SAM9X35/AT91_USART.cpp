@@ -89,8 +89,6 @@ const TinyCLR_Api_Info* AT91_Uart_GetApi() {
     uartApi.Count = TOTAL_UART_CONTROLLERS;
     uartApi.Implementation = uartProviders;
 
-    AT91_Uart_Reset();
-
     return &uartApi;
 }
 
@@ -132,7 +130,7 @@ AT91_Gpio_PeripheralSelection AT91_Uart_GetCtsAlternateFunction(int32_t portNum)
 }
 
 TinyCLR_Result AT91_Uart_GetReadBufferSize(const TinyCLR_Uart_Provider* self, size_t& size) {
-    size = g_UartController[self->Index].rxBufferSize == 0 ? g_AT91_Uart_RxDefaultBuffersSize[self->Index] :  g_UartController[self->Index].rxBufferSize;
+    size = g_UartController[self->Index].rxBufferSize == 0 ? g_AT91_Uart_RxDefaultBuffersSize[self->Index] : g_UartController[self->Index].rxBufferSize;
 
     return TinyCLR_Result::Success;
 }
