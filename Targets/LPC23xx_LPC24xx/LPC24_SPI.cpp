@@ -692,15 +692,18 @@ TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Provider* self) {
     }
 
     // Check each pin single time make sure once fail not effect to other pins
-    LPC24_Gpio_EnableInputPin(clkPin, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-    LPC24_Gpio_EnableInputPin(misoPin, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-    LPC24_Gpio_EnableInputPin(mosiPin, TinyCLR_Gpio_PinDriveMode::InputPullDown);
+    LPC24_Gpio_Close(clkPin);
+    LPC24_Gpio_Close(misoPin);
+    LPC24_Gpio_Close(mosiPin);
 
     if (g_SpiController[controller].chipSelectLine != PIN_NONE) {
-        LPC24_Gpio_EnableInputPin(g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinDriveMode::InputPullDown);
+        LPC24_Gpio_Close(g_SpiController[controller].chipSelectLine);
 
         g_SpiController[controller].chipSelectLine = PIN_NONE;
     }
+
+    g_SpiController[controller].clockFrequency = 0;
+    g_SpiController[controller].dataBitLength = 0;
 
     g_SpiController[controller].isOpened = false;
 
