@@ -36,10 +36,15 @@ const TinyCLR_Api_Info* LPC17_Deployment_GetApi() {
     deploymentApi.Version = 0;
     deploymentApi.Count = 1;
     deploymentApi.Implementation = &deploymentProvider;
+
+    return &deploymentApi;
 }
 
 TinyCLR_Result LPC17_Deployment_Acquire(const TinyCLR_Deployment_Provider* self, bool& supportXIP) {
-    return S25FL032_Flash_Acquire(supportXIP);
+    const TinyCLR_Api_Info* spiApi = CONCAT(DEVICE_TARGET, _Spi_GetApi)();
+    TinyCLR_Spi_Provider** spiProvider = (TinyCLR_Spi_Provider**)spiApi->Implementation;
+
+    return S25FL032_Flash_Acquire(spiProvider[LPC17_DEPLOYMENT_SPI_PORT], LPC17_DEPLOYMENT_SPI_ENABLE_PIN, supportXIP);
 }
 
 TinyCLR_Result LPC17_Deployment_Release(const TinyCLR_Deployment_Provider* self) {
@@ -55,10 +60,14 @@ TinyCLR_Result LPC17_Deployment_Write(const TinyCLR_Deployment_Provider* self, u
 }
 
 TinyCLR_Result LPC17_Deployment_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
+    sector += LPC17_DEPLOYMENT_SECTOR_START;
+
     return S25FL032_Flash_EraseBlock(sector);
 }
 
 TinyCLR_Result LPC17_Deployment_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool& erased) {
+    sector += LPC17_DEPLOYMENT_SECTOR_START;
+
     return S25FL032_Flash_IsBlockErased(sector, erased);
 }
 
@@ -67,6 +76,12 @@ TinyCLR_Result LPC17_Deployment_GetBytesPerSector(const TinyCLR_Deployment_Provi
 }
 
 TinyCLR_Result LPC17_Deployment_GetSectorMap(const TinyCLR_Deployment_Provider* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
-    return S25FL032_Flash_GetSectorMap(addresses, sizes, count);
+    S25FL032_Flash_GetSectorMap(addresses, sizes, count);
+
+    addresses += LPC17_DEPLOYMENT_SECTOR_START;
+    sizes += LPC17_DEPLOYMENT_SECTOR_START;
+    count = LPC17_DEPLOYMENT_SECTOR_NUM;
+
+    return TinyCLR_Result::Success;
 }
 

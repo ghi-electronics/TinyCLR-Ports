@@ -18,13 +18,16 @@
 #include "S25FL032_Flash.h"
 #include <Device.h>
 
-TinyCLR_Spi_Provider* S25FL032_Flash_SpiProvider;
+#define SPI_CLOCK_RATE_HZ 20000000
 
-uint8_t S25FL032_Flash_DataReadBuffer[FLASH_SECTOR_SIZE + 4];
-uint8_t S25FL032_Flash_DataWriteBuffer[FLASH_SECTOR_SIZE + 4];
+const TinyCLR_Spi_Provider* S25FL032_Flash_SpiProvider;
+uint32_t S25FL032_Flash_SpiChipSelectLine;
 
-uint32_t S25FL032_Flash_SectorAddress[DEPLOYMENT_SECTOR_NUM];
-uint32_t S25FL032_Flash_SectorSize[DEPLOYMENT_SECTOR_NUM];
+uint8_t S25FL032_Flash_DataReadBuffer[S25FL032_FLASH_SECTOR_SIZE + 4];
+uint8_t S25FL032_Flash_DataWriteBuffer[S25FL032_FLASH_SECTOR_SIZE + 4];
+
+uint32_t S25FL032_Flash_SectorAddress[S25FL032_FLASH_SECTOR_NUM];
+uint32_t S25FL032_Flash_SectorSize[S25FL032_FLASH_SECTOR_NUM];
 
 bool S25FL032_Flash_WriteEnable() {
     S25FL032_Flash_DataWriteBuffer[0] = COMMAND_WRITE_ENABLE;
@@ -69,17 +72,17 @@ TinyCLR_Result S25FL032_Flash_Read(uint32_t address, size_t length, uint8_t* buf
 
     S25FL032_Flash_SpiProvider->Acquire(S25FL032_Flash_SpiProvider);
 
-    S25FL032_Flash_SpiProvider->SetActiveSettings(S25FL032_Flash_SpiProvider, SPI_CS, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    S25FL032_Flash_SpiProvider->SetActiveSettings(S25FL032_Flash_SpiProvider, S25FL032_Flash_SpiChipSelectLine, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     while (S25FL032_Flash_WriteInProgress() == true);
 
-    int32_t block = length / FLASH_SECTOR_SIZE;
-    int32_t rest = length % FLASH_SECTOR_SIZE;
+    int32_t block = length / S25FL032_FLASH_SECTOR_SIZE;
+    int32_t rest = length % S25FL032_FLASH_SECTOR_SIZE;
     int32_t index = 0;
-    size_t writeLength = FLASH_SECTOR_SIZE + 4;
-    size_t readLength = FLASH_SECTOR_SIZE + 4;
+    size_t writeLength = S25FL032_FLASH_SECTOR_SIZE + 4;
+    size_t readLength = S25FL032_FLASH_SECTOR_SIZE + 4;
 
-    address -= FLASH_BASE_ADDRESS;
+    address -= S25FL032_FLASH_BASE_ADDRESS;
 
     while (block > 0) {
         S25FL032_Flash_DataWriteBuffer[0] = COMMAND_READ_DATA;
@@ -87,17 +90,17 @@ TinyCLR_Result S25FL032_Flash_Read(uint32_t address, size_t length, uint8_t* buf
         S25FL032_Flash_DataWriteBuffer[2] = (uint8_t)((address) >> 8);
         S25FL032_Flash_DataWriteBuffer[3] = (uint8_t)((address) >> 0);
 
-        writeLength = FLASH_SECTOR_SIZE + 4;
-        readLength = FLASH_SECTOR_SIZE + 4;
+        writeLength = S25FL032_FLASH_SECTOR_SIZE + 4;
+        readLength = S25FL032_FLASH_SECTOR_SIZE + 4;
 
         // start to read
         S25FL032_Flash_SpiProvider->TransferFullDuplex(S25FL032_Flash_SpiProvider, S25FL032_Flash_DataWriteBuffer, writeLength, S25FL032_Flash_DataReadBuffer, readLength);
 
         // copy to buffer
-        memcpy(&buffer[index], &S25FL032_Flash_DataReadBuffer[4], FLASH_SECTOR_SIZE);
+        memcpy(&buffer[index], &S25FL032_Flash_DataReadBuffer[4], S25FL032_FLASH_SECTOR_SIZE);
 
-        address += FLASH_SECTOR_SIZE;
-        index += FLASH_SECTOR_SIZE;
+        address += S25FL032_FLASH_SECTOR_SIZE;
+        index += S25FL032_FLASH_SECTOR_SIZE;
         block--;
 
     }
@@ -129,7 +132,7 @@ TinyCLR_Result S25FL032_Flash_Read(uint32_t address, size_t length, uint8_t* buf
 
 TinyCLR_Result S25FL032_Flash_PageProgram(uint32_t byteAddress, uint32_t NumberOfBytesToWrite, const uint8_t * pointerToWriteBuffer) {
 
-    uint32_t addr = byteAddress - FLASH_BASE_ADDRESS;
+    uint32_t addr = byteAddress - S25FL032_FLASH_BASE_ADDRESS;
     uint32_t addr_misalignment = addr % ALIGNMENT_WINDOW;
     uint32_t extended_size = NumberOfBytesToWrite + addr_misalignment;
     uint32_t block_cnt = extended_size / ALIGNMENT_WINDOW + (extended_size % ALIGNMENT_WINDOW > 0 ? 1 : 0);
@@ -180,7 +183,7 @@ TinyCLR_Result S25FL032_Flash_Write(uint32_t address, size_t length, const uint8
 
     S25FL032_Flash_SpiProvider->Acquire(S25FL032_Flash_SpiProvider);
 
-    S25FL032_Flash_SpiProvider->SetActiveSettings(S25FL032_Flash_SpiProvider, SPI_CS, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    S25FL032_Flash_SpiProvider->SetActiveSettings(S25FL032_Flash_SpiProvider, S25FL032_Flash_SpiChipSelectLine, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     TinyCLR_Result result = S25FL032_Flash_PageProgram(address, length, buffer);
 
@@ -206,11 +209,11 @@ TinyCLR_Result S25FL032_Flash_IsBlockErased(uint32_t sector, bool &erased) {
 
     uint32_t address = S25FL032_Flash_SectorAddress[sector];
 
-    S25FL032_Flash_Read(address, FLASH_SECTOR_SIZE, S25FL032_Flash_DataReadBuffer);
+    S25FL032_Flash_Read(address, S25FL032_FLASH_SECTOR_SIZE, S25FL032_Flash_DataReadBuffer);
 
     uint32_t *ptr = (uint32_t*)& S25FL032_Flash_DataReadBuffer;
 
-    erased = CompareArrayValueToValue(ptr, 0xFFFFFFFF, FLASH_SECTOR_SIZE / 4);
+    erased = CompareArrayValueToValue(ptr, 0xFFFFFFFF, S25FL032_FLASH_SECTOR_SIZE / 4);
 
     return TinyCLR_Result::Success;
 }
@@ -220,16 +223,16 @@ TinyCLR_Result S25FL032_Flash_EraseBlock(uint32_t sector) {
 
     S25FL032_Flash_SpiProvider->Acquire(S25FL032_Flash_SpiProvider);
 
-    S25FL032_Flash_SpiProvider->SetActiveSettings(S25FL032_Flash_SpiProvider, SPI_CS, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    S25FL032_Flash_SpiProvider->SetActiveSettings(S25FL032_Flash_SpiProvider, S25FL032_Flash_SpiChipSelectLine, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     while (S25FL032_Flash_WriteEnable() == false);
 
     uint32_t address = S25FL032_Flash_SectorAddress[sector];
 
     S25FL032_Flash_DataWriteBuffer[0] = COMMAND_ERASE_SECTOR_64K;
-    S25FL032_Flash_DataWriteBuffer[1] = (uint8_t)((address - FLASH_BASE_ADDRESS) >> 16);
-    S25FL032_Flash_DataWriteBuffer[2] = (uint8_t)((address - FLASH_BASE_ADDRESS) >> 8);
-    S25FL032_Flash_DataWriteBuffer[3] = (uint8_t)((address - FLASH_BASE_ADDRESS) >> 0);
+    S25FL032_Flash_DataWriteBuffer[1] = (uint8_t)((address - S25FL032_FLASH_BASE_ADDRESS) >> 16);
+    S25FL032_Flash_DataWriteBuffer[2] = (uint8_t)((address - S25FL032_FLASH_BASE_ADDRESS) >> 8);
+    S25FL032_Flash_DataWriteBuffer[3] = (uint8_t)((address - S25FL032_FLASH_BASE_ADDRESS) >> 0);
 
     size_t writeLength = 4;
 
@@ -242,10 +245,7 @@ TinyCLR_Result S25FL032_Flash_EraseBlock(uint32_t sector) {
     TinyCLR_Result::Success;
 }
 
-TinyCLR_Result S25FL032_Flash_Acquire(bool& supportXIP) {
-    const TinyCLR_Api_Info* spiApi = CONCAT(DEVICE_TARGET, _Spi_GetApi)();
-    TinyCLR_Spi_Provider** spiProvider = (TinyCLR_Spi_Provider**)spiApi->Implementation;
-
+TinyCLR_Result S25FL032_Flash_Acquire(const TinyCLR_Spi_Provider* spiProvider, uint32_t chipSelectLine, bool& supportXIP) {
     supportXIP = false;
 
     S25FL032_Flash_DataWriteBuffer[0] = COMMAND_READID;
@@ -256,11 +256,12 @@ TinyCLR_Result S25FL032_Flash_Acquire(bool& supportXIP) {
     size_t writeLength = 4;
     size_t readLength = 4;
 
-    S25FL032_Flash_SpiProvider = spiProvider[SPI_MODULE];
+    S25FL032_Flash_SpiProvider = spiProvider;
+    S25FL032_Flash_SpiChipSelectLine = chipSelectLine;
 
     S25FL032_Flash_SpiProvider->Acquire(S25FL032_Flash_SpiProvider);
 
-    S25FL032_Flash_SpiProvider->SetActiveSettings(S25FL032_Flash_SpiProvider, SPI_CS, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    S25FL032_Flash_SpiProvider->SetActiveSettings(S25FL032_Flash_SpiProvider, S25FL032_Flash_SpiChipSelectLine, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     S25FL032_Flash_SpiProvider->TransferFullDuplex(S25FL032_Flash_SpiProvider, S25FL032_Flash_DataWriteBuffer, writeLength, S25FL032_Flash_DataReadBuffer, readLength);
 
@@ -285,20 +286,20 @@ TinyCLR_Result S25FL032_Flash_Release() {
 }
 
 TinyCLR_Result S25FL032_Flash_GetBytesPerSector(uint32_t address, int32_t& size) {
-    size = FLASH_SECTOR_SIZE;
+    size = S25FL032_FLASH_SECTOR_SIZE;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result S25FL032_Flash_GetSectorMap(const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
-    for (auto i = 0; i < DEPLOYMENT_SECTOR_NUM; i++) {
-        S25FL032_Flash_SectorAddress[i] = ((DEPLOYMENT_SECTOR_START + i) * FLASH_SECTOR_SIZE) | FLASH_BASE_ADDRESS;
-        S25FL032_Flash_SectorSize[i] = FLASH_SECTOR_SIZE;
+    for (auto i = 0; i < S25FL032_FLASH_SECTOR_NUM; i++) {
+        S25FL032_Flash_SectorAddress[i] = (i * S25FL032_FLASH_SECTOR_SIZE) | S25FL032_FLASH_BASE_ADDRESS;
+        S25FL032_Flash_SectorSize[i] = S25FL032_FLASH_SECTOR_SIZE;
     }
 
     addresses = S25FL032_Flash_SectorAddress;
     sizes = S25FL032_Flash_SectorSize;
-    count = DEPLOYMENT_SECTOR_NUM;
+    count = S25FL032_FLASH_SECTOR_NUM;
 
     return TinyCLR_Result::Success;
 }
