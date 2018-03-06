@@ -21,7 +21,7 @@ typedef void(*IAP)(uint32_t[], uint32_t[]);
 #define AT49BV322DT_FLASH_BASE_ADDRESS                      0x80000000
 #define AT49BV322DT_FLASH_SECTOR_SIZE                       (64*1024)
 
-#define GET_ADDR(addr)	(volatile uint16_t *)(AT49BV322DT_FLASH_BASE_ADDRESS | (addr<<1))
+#define AT49BV322DT_FLASH_GET_ADDR(addr)	(volatile uint16_t *)(AT49BV322DT_FLASH_BASE_ADDRESS | (addr<<1))
 
 #define AT49BV322DT_FLASH_SECTOR_NUM   (13)
 
@@ -56,11 +56,11 @@ TinyCLR_Result AT49BV322DT_Flash_Write(uint32_t address, size_t length, const ui
         if (*ip != 0xffff)
             return TinyCLR_Result::InvalidOperation;//not eased
 
-        ip = GET_ADDR(0x5555);
+        ip = AT49BV322DT_FLASH_GET_ADDR(0x5555);
         *ip = 0x00AA;
-        ip = GET_ADDR(0x2aaa);
+        ip = AT49BV322DT_FLASH_GET_ADDR(0x2aaa);
         *ip = 0x0055;
-        ip = GET_ADDR(0x5555);
+        ip = AT49BV322DT_FLASH_GET_ADDR(0x5555);
         *ip = 0x00A0;
 
         ip = (uint16_t*)(startAddress);
@@ -107,15 +107,15 @@ TinyCLR_Result AT49BV322DT_Flash_EraseBlock(uint32_t sector) {
     volatile uint16_t *ip;
     uint32_t address = g_AT49BV322DT_Flash_SectorAddress[sector];
 
-    ip = GET_ADDR(0x5555);
+    ip = AT49BV322DT_FLASH_GET_ADDR(0x5555);
     *ip = 0x00AA;
-    ip = GET_ADDR(0x2AAA);
+    ip = AT49BV322DT_FLASH_GET_ADDR(0x2AAA);
     *ip = 0x0055;
-    ip = GET_ADDR(0x5555);
+    ip = AT49BV322DT_FLASH_GET_ADDR(0x5555);
     *ip = 0x0080;
-    ip = GET_ADDR(0x5555);
+    ip = AT49BV322DT_FLASH_GET_ADDR(0x5555);
     *ip = 0x00AA;
-    ip = GET_ADDR(0x2AAA);
+    ip = AT49BV322DT_FLASH_GET_ADDR(0x2AAA);
     *ip = 0x0055;
 
     ip = (uint16_t*)(address);

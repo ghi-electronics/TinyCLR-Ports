@@ -6,13 +6,13 @@
 #define S25FL032_FLASH_SECTOR_NUM                   64
 
 //Command
-#define COMMAND_SIZE                                4
-#define COMMAND_READID                              0x9F
-#define COMMAND_READ_STATUS_REGISTER                0x05
-#define COMMAND_READ_DATA                           0x03
-#define COMMAND_WRITE_ENABLE                        0x06
-#define COMMAND_PAGE_PROGRAMMING                    0x02
-#define COMMAND_ERASE_SECTOR_64K                    0xD8
+#define S25FL032_FLASH_COMMAND_SIZE                                4
+#define S25FL032_FLASH_COMMAND_READID                              0x9F
+#define S25FL032_FLASH_COMMAND_READ_STATUS_REGISTER                0x05
+#define S25FL032_FLASH_COMMAND_READ_DATA                           0x03
+#define S25FL032_FLASH_COMMAND_WRITE_ENABLE                        0x06
+#define S25FL032_FLASH_COMMAND_PAGE_PROGRAMMING                    0x02
+#define S25FL032_FLASH_COMMAND_ERASE_SECTOR_64K                    0xD8
 
 // Buffer Size
 #define ALIGNMENT_WINDOW 256

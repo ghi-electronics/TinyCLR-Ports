@@ -30,7 +30,7 @@ uint32_t g_S25FL032_Flash_SectorAddress[S25FL032_FLASH_SECTOR_NUM];
 uint32_t g_S25FL032_Flash_SectorSize[S25FL032_FLASH_SECTOR_NUM];
 
 bool S25FL032_Flash_WriteEnable() {
-    g_S25FL032_Flash_DataWriteBuffer[0] = COMMAND_WRITE_ENABLE;
+    g_S25FL032_Flash_DataWriteBuffer[0] = S25FL032_FLASH_COMMAND_WRITE_ENABLE;
     g_S25FL032_Flash_DataWriteBuffer[1] = 0x00;
 
     size_t writeLength = 1;
@@ -38,7 +38,7 @@ bool S25FL032_Flash_WriteEnable() {
 
     g_S25FL032_Flash_SpiProvider->TransferFullDuplex(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_DataWriteBuffer, writeLength, g_S25FL032_Flash_DataReadBuffer, readLength);
 
-    g_S25FL032_Flash_DataWriteBuffer[0] = COMMAND_READ_STATUS_REGISTER;
+    g_S25FL032_Flash_DataWriteBuffer[0] = S25FL032_FLASH_COMMAND_READ_STATUS_REGISTER;
     g_S25FL032_Flash_DataWriteBuffer[1] = 0x00;
 
     writeLength = 2;
@@ -53,7 +53,7 @@ bool S25FL032_Flash_WriteEnable() {
 }
 
 bool S25FL032_Flash_WriteInProgress() {
-    g_S25FL032_Flash_DataWriteBuffer[0] = COMMAND_READ_STATUS_REGISTER;
+    g_S25FL032_Flash_DataWriteBuffer[0] = S25FL032_FLASH_COMMAND_READ_STATUS_REGISTER;
     g_S25FL032_Flash_DataWriteBuffer[1] = 0x00;
 
     size_t writeLength = 2;
@@ -83,7 +83,7 @@ TinyCLR_Result S25FL032_Flash_Read(uint32_t address, size_t length, uint8_t* buf
     size_t readLength = S25FL032_FLASH_SECTOR_SIZE + 4;
 
     while (block > 0) {
-        g_S25FL032_Flash_DataWriteBuffer[0] = COMMAND_READ_DATA;
+        g_S25FL032_Flash_DataWriteBuffer[0] = S25FL032_FLASH_COMMAND_READ_DATA;
         g_S25FL032_Flash_DataWriteBuffer[1] = (uint8_t)((address) >> 16);
         g_S25FL032_Flash_DataWriteBuffer[2] = (uint8_t)((address) >> 8);
         g_S25FL032_Flash_DataWriteBuffer[3] = (uint8_t)((address) >> 0);
@@ -104,7 +104,7 @@ TinyCLR_Result S25FL032_Flash_Read(uint32_t address, size_t length, uint8_t* buf
     }
 
     if (rest > 0) {
-        g_S25FL032_Flash_DataWriteBuffer[0] = COMMAND_READ_DATA;
+        g_S25FL032_Flash_DataWriteBuffer[0] = S25FL032_FLASH_COMMAND_READ_DATA;
         g_S25FL032_Flash_DataWriteBuffer[1] = (uint8_t)((address) >> 16);
         g_S25FL032_Flash_DataWriteBuffer[2] = (uint8_t)((address) >> 8);
         g_S25FL032_Flash_DataWriteBuffer[3] = (uint8_t)((address) >> 0);
@@ -145,7 +145,7 @@ TinyCLR_Result S25FL032_Flash_PageProgram(uint32_t byteAddress, uint32_t NumberO
     while (block_cnt > 0) {
         while (S25FL032_Flash_WriteEnable() == false);
 
-        g_S25FL032_Flash_DataWriteBuffer[0] = COMMAND_PAGE_PROGRAMMING; //0x2
+        g_S25FL032_Flash_DataWriteBuffer[0] = S25FL032_FLASH_COMMAND_PAGE_PROGRAMMING; //0x2
         g_S25FL032_Flash_DataWriteBuffer[1] = (uint8_t)(addr >> 16);
         g_S25FL032_Flash_DataWriteBuffer[2] = (uint8_t)(addr >> 8);
         g_S25FL032_Flash_DataWriteBuffer[3] = (uint8_t)(addr >> 0);
@@ -227,7 +227,7 @@ TinyCLR_Result S25FL032_Flash_EraseBlock(uint32_t sector) {
 
     uint32_t address = g_S25FL032_Flash_SectorAddress[sector];
 
-    g_S25FL032_Flash_DataWriteBuffer[0] = COMMAND_ERASE_SECTOR_64K;
+    g_S25FL032_Flash_DataWriteBuffer[0] = S25FL032_FLASH_COMMAND_ERASE_SECTOR_64K;
     g_S25FL032_Flash_DataWriteBuffer[1] = (uint8_t)((address) >> 16);
     g_S25FL032_Flash_DataWriteBuffer[2] = (uint8_t)((address) >> 8);
     g_S25FL032_Flash_DataWriteBuffer[3] = (uint8_t)((address) >> 0);
@@ -246,7 +246,7 @@ TinyCLR_Result S25FL032_Flash_EraseBlock(uint32_t sector) {
 TinyCLR_Result S25FL032_Flash_Acquire(const TinyCLR_Spi_Provider* spiProvider, uint32_t chipSelectLine, bool& supportXIP) {
     supportXIP = false;
 
-    g_S25FL032_Flash_DataWriteBuffer[0] = COMMAND_READID;
+    g_S25FL032_Flash_DataWriteBuffer[0] = S25FL032_FLASH_COMMAND_READID;
     g_S25FL032_Flash_DataWriteBuffer[1] = 0x00;
     g_S25FL032_Flash_DataWriteBuffer[2] = 0x00;
     g_S25FL032_Flash_DataWriteBuffer[3] = 0x00;
