@@ -785,6 +785,9 @@ TinyCLR_Result LPC17_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
 
     LPC17_Gpio_PinFunction clkMode, misoMode, mosiMode;
 
+    if (g_SpiController[controller].isOpened == true)
+        return TinyCLR_Result::Success;
+
     clkPin = g_lpc17_spi_sclk_pins[controller].number;
     misoPin = g_lpc17_spi_miso_pins[controller].number;
     mosiPin = g_lpc17_spi_mosi_pins[controller].number;
@@ -792,7 +795,6 @@ TinyCLR_Result LPC17_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
     clkMode = g_lpc17_spi_sclk_pins[controller].pinFunction;
     misoMode = g_lpc17_spi_miso_pins[controller].pinFunction;
     mosiMode = g_lpc17_spi_mosi_pins[controller].pinFunction;
-
 
     // Check each pin single time make sure once fail not effect to other pins
     if (!LPC17_Gpio_OpenPin(clkPin))
@@ -833,7 +835,7 @@ TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Provider* self) {
 
     int32_t controller = (self->Index);
 
-    if (controller == 1) // spi flash => can not reset or release during runing!
+    if (g_SpiController[controller].isOpened == false)
         return TinyCLR_Result::Success;
 
     int32_t clkPin = g_lpc17_spi_sclk_pins[controller].number;
@@ -846,7 +848,7 @@ TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Provider* self) {
         break;
 
     case 1:
-
+        LPC_SC->PCONP &= ~PCONP_PCSSP1;
         break;
 
     case 2:
@@ -864,6 +866,9 @@ TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Provider* self) {
 
         g_SpiController[controller].chipSelectLine = PIN_NONE;
     }
+
+    g_SpiController[controller].clockFrequency = 0;
+    g_SpiController[controller].dataBitLength = 0;
 
     g_SpiController[controller].isOpened = false;
 
@@ -911,8 +916,6 @@ TinyCLR_Result LPC17_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* 
 
 void LPC17_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        if (g_SpiController[i].isOpened == true) {
-            LPC17_Spi_Release(spiProviders[i]);
-        }
+        LPC17_Spi_Release(spiProviders[i]);
     }
 }
