@@ -785,9 +785,6 @@ TinyCLR_Result LPC17_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
 
     LPC17_Gpio_PinFunction clkMode, misoMode, mosiMode;
 
-    if (g_SpiController[controller].isOpened == true)
-        return TinyCLR_Result::Success;
-
     clkPin = g_lpc17_spi_sclk_pins[controller].number;
     misoPin = g_lpc17_spi_miso_pins[controller].number;
     mosiPin = g_lpc17_spi_mosi_pins[controller].number;
@@ -834,9 +831,6 @@ TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Provider* self) {
         return TinyCLR_Result::ArgumentNull;
 
     int32_t controller = (self->Index);
-
-    if (g_SpiController[controller].isOpened == false)
-        return TinyCLR_Result::Success;
 
     int32_t clkPin = g_lpc17_spi_sclk_pins[controller].number;
     int32_t misoPin = g_lpc17_spi_miso_pins[controller].number;
@@ -916,6 +910,7 @@ TinyCLR_Result LPC17_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* 
 
 void LPC17_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        LPC17_Spi_Release(spiProviders[i]);
+        if (g_SpiController[controller].isOpened)
+            LPC17_Spi_Release(spiProviders[i]);
     }
 }
