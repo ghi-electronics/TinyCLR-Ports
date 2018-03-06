@@ -52,6 +52,12 @@
 #define INCLUDE_ADC
 #define AT91_ADC_PINS { { PIN(A, 17), PS(A) }, { PIN(A, 18), PS(A) }, { PIN(A, 19), PS(A) }, { PIN(A, 20), PS(A) }, { PIN(D ,6), PS(A) }, { PIN(D, 7), PS(A) } }
 
+#define AT91_DEPLOYMENT_SECTOR_START 640
+#define AT91_DEPLOYMENT_SECTOR_END 1020
+#define AT91_DEPLOYMENT_SECTOR_NUM (AT91_DEPLOYMENT_SECTOR_END - AT91_DEPLOYMENT_SECTOR_START + 1)
+#define AT91_DEPLOYMENT_SPI_PORT 0
+#define AT91_DEPLOYMENT_SPI_ENABLE_PIN PIN(A,28)
+
 #define INCLUDE_I2C
 #define AT91_I2C_SCL_PINS { { PIN(A,24), PS(A) } }
 #define AT91_I2C_SDA_PINS { { PIN(A,23), PS(A) } }
@@ -86,8 +92,4 @@
 #define AT91_DISPLAY_DATA_PINS { { PIN(C,9), PS(B) }, { PIN(C,10), PS(B) }, { PIN(C,11), PS(B) }, { PIN(C,12), PS(B) }, { PIN(C,13), PS(B) }, { PIN(C,15), PS(B) }, { PIN(C,16), PS(B) }, { PIN(C,17), PS(B) }, { PIN(C,18), PS(B) }, { PIN(C,19), PS(B) }, { PIN(C,20), PS(B) }, { PIN(C,21), PS(B) }, { PIN(C,22), PS(B) }, { PIN(C,23), PS(B) }, { PIN(C,24), PS(B) }, { PIN(C,25), PS(B) } }
 #define AT91_DISPLAY_ENABLE_PIN { PIN(C, 7), PS(A) }
 
-#define AT45DB321D_SPI_CS  PIN(A,28)
-#define AT45DB321D_SPI_MODULE 0
-#define AT45DB321D_SPI_CLOCK_HZ 20000000
- 
 #include <AT91.h>
