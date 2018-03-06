@@ -46,13 +46,13 @@ static uint8_t data256[INTERNAL_FLASH_PROGRAM_SIZE_256];
 const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
     deploymentProvider.Parent = &deploymentApi;
     deploymentProvider.Index = 0;
-    deploymentProvider.Acquire = &LPC24_Flash_Acquire;
-    deploymentProvider.Release = &LPC24_Flash_Release;
-    deploymentProvider.Read = &LPC24_Flash_Read;
-    deploymentProvider.Write = &LPC24_Flash_Write;
-    deploymentProvider.EraseSector = &LPC24_Flash_EraseBlock;
-    deploymentProvider.IsSectorErased = &LPC24_Flash_IsBlockErased;
-    deploymentProvider.GetSectorMap = &LPC24_Flash_GetSectorMap;
+    deploymentProvider.Acquire = &LPC24_Deployment_Acquire;
+    deploymentProvider.Release = &LPC24_Deployment_Release;
+    deploymentProvider.Read = &LPC24_Deployment_Read;
+    deploymentProvider.Write = &LPC24_Deployment_Write;
+    deploymentProvider.EraseSector = &LPC24_Deployment_EraseBlock;
+    deploymentProvider.IsSectorErased = &LPC24_Deployment_IsBlockErased;
+    deploymentProvider.GetSectorMap = &LPC24_Deployment_GetSectorMap;
 
     deploymentApi.Author = "GHI Electronics, LLC";
     deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.DeploymentProvider";
@@ -64,7 +64,7 @@ const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
     return &deploymentApi;
 }
 
-int32_t __section("SectionForFlashOperations") LPC24_Flash_PrepaireSector(int32_t startsec, int32_t endsec) {
+int32_t __section("SectionForFlashOperations") LPC24_Deployment_PrepaireSector(int32_t startsec, int32_t endsec) {
 
     uint32_t command[3];
     uint32_t iap_result[2];
@@ -82,7 +82,7 @@ int32_t __section("SectionForFlashOperations") LPC24_Flash_PrepaireSector(int32_
     return iap_result[0];
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer) {
+TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint16_t* ChipAddress = (uint16_t *)address;
@@ -96,7 +96,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_Read(const Tin
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer) {
+TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t command[5];
@@ -123,7 +123,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_Write(const Ti
             if (endAddress > flashAddresses[endRegion])
                 break;
 
-        if (LPC24_Flash_PrepaireSector(startRegion, endRegion))
+        if (LPC24_Deployment_PrepaireSector(startRegion, endRegion))
             return TinyCLR_Result::InvalidOperation;
 
         memcpy(ptr, buffer, INTERNAL_FLASH_PROGRAM_SIZE_256);
@@ -159,7 +159,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_Write(const Ti
             if (endAddress > flashAddresses[endRegion])
                 break;
 
-        if (LPC24_Flash_PrepaireSector(startRegion, endRegion))
+        if (LPC24_Deployment_PrepaireSector(startRegion, endRegion))
             return TinyCLR_Result::InvalidOperation;
 
         memset(ptr, 0xFF, INTERNAL_FLASH_PROGRAM_SIZE_256);
@@ -181,7 +181,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_Write(const Ti
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
+TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t address = deploymentAddress[sector];
@@ -193,7 +193,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_IsBlockErased(
     while (address < endAddress) {
         uint16_t data;
 
-        LPC24_Flash_Read(self, address, 2, reinterpret_cast<uint8_t*>(&data));
+        LPC24_Deployment_Read(self, address, 2, reinterpret_cast<uint8_t*>(&data));
 
         if (data != 0xFFFF) {
             erased = false;
@@ -206,7 +206,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_IsBlockErased(
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
+TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t command[5];
@@ -221,7 +221,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_EraseBlock(con
         if (startAddress < flashAddresses[startRegion + 1])
             break;
 
-    if (LPC24_Flash_PrepaireSector(startRegion, startRegion))
+    if (LPC24_Deployment_PrepaireSector(startRegion, startRegion))
         return TinyCLR_Result::InvalidOperation;
 
     //erase
@@ -241,18 +241,18 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Flash_EraseBlock(con
     TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Flash_Acquire(const TinyCLR_Deployment_Provider* self, bool& supportXIP) {
+TinyCLR_Result LPC24_Deployment_Acquire(const TinyCLR_Deployment_Provider* self, bool& supportXIP) {
     supportXIP = true;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Flash_Release(const TinyCLR_Deployment_Provider* self) {
+TinyCLR_Result LPC24_Deployment_Release(const TinyCLR_Deployment_Provider* self) {
     // UnInitialize Flash can be here
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Flash_GetBytesPerSector(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size) {
+TinyCLR_Result LPC24_Deployment_GetBytesPerSector(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size) {
     size = 0;
 
     int32_t startRegion;
@@ -268,7 +268,7 @@ TinyCLR_Result LPC24_Flash_GetBytesPerSector(const TinyCLR_Deployment_Provider* 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
+TinyCLR_Result LPC24_Deployment_GetSectorMap(const TinyCLR_Deployment_Provider* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
     for (auto i = 0; i < DEPLOYMENT_SECTOR_NUM; i++) {
         deploymentAddress[i] = flashAddresses[DEPLOYMENT_SECTOR_START + i];
         deploymentSize[i] = flashSize[DEPLOYMENT_SECTOR_START + i];
@@ -281,7 +281,7 @@ TinyCLR_Result LPC24_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* self,
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Flash_Reset(const TinyCLR_Deployment_Provider* self) {
+TinyCLR_Result LPC24_Deployment_Reset(const TinyCLR_Deployment_Provider* self) {
     return TinyCLR_Result::Success;
 }
 

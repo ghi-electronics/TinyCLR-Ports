@@ -18,45 +18,17 @@
 
 typedef void(*IAP)(uint32_t[], uint32_t[]);
 
-#define FLASH_BASE_ADDRESS                      0x80000000
-#define FLASH_SECTOR_SIZE                       (64*1024)
+#define AT49BV322DT_FLASH_BASE_ADDRESS                      0x80000000
+#define AT49BV322DT_FLASH_SECTOR_SIZE                       (64*1024)
 
-#define GET_ADDR(addr)	(volatile uint16_t *)(FLASH_BASE_ADDRESS | (addr<<1))
+#define GET_ADDR(addr)	(volatile uint16_t *)(AT49BV322DT_FLASH_BASE_ADDRESS | (addr<<1))
 
-//Deployment
-#define DEPLOYMENT_SECTOR_START 3
-#define DEPLOYMENT_SECTOR_END   12
-#define DEPLOYMENT_SECTOR_NUM   (DEPLOYMENT_SECTOR_END - DEPLOYMENT_SECTOR_START + 1)
+#define AT49BV322DT_FLASH_SECTOR_NUM   (13)
 
-uint32_t deploymentAddress[DEPLOYMENT_SECTOR_NUM];
-uint32_t deploymentSize[DEPLOYMENT_SECTOR_NUM];
+uint32_t g_AT49BV322DT_Flash_SectorAddress[AT49BV322DT_FLASH_SECTOR_NUM];
+uint32_t g_AT49BV322DT_Flash_SectorSize[AT49BV322DT_FLASH_SECTOR_NUM];
 
-static TinyCLR_Deployment_Provider deploymentProvider;
-static TinyCLR_Api_Info deploymentApi;
-
-const TinyCLR_Api_Info* AT49BV322DT_Deployment_GetApi() {
-    deploymentProvider.Parent = &deploymentApi;
-    deploymentProvider.Index = 0;
-    deploymentProvider.Acquire = &AT49BV322DT_Flash_Acquire;
-    deploymentProvider.Release = &AT49BV322DT_Flash_Release;
-    deploymentProvider.Read = &AT49BV322DT_Flash_Read;
-    deploymentProvider.Write = &AT49BV322DT_Flash_Write;
-    deploymentProvider.EraseSector = &AT49BV322DT_Flash_EraseBlock;
-    deploymentProvider.IsSectorErased = &AT49BV322DT_Flash_IsBlockErased;
-    deploymentProvider.GetSectorMap = &AT49BV322DT_Flash_GetSectorMap;
-
-    deploymentApi.Author = "GHI Electronics, LLC";
-    deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT49BV322DT.DeploymentProvider";
-    deploymentApi.Type = TinyCLR_Api_Type::DeploymentProvider;
-    deploymentApi.Version = 0;
-    deploymentApi.Count = 1;
-    deploymentApi.Implementation = &deploymentProvider;
-
-    return &deploymentApi;
-}
-
-
-TinyCLR_Result AT49BV322DT_Flash_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer) {
+TinyCLR_Result AT49BV322DT_Flash_Read(uint32_t address, size_t length, uint8_t* buffer) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint16_t* ChipAddress = (uint16_t *)address;
@@ -71,7 +43,7 @@ TinyCLR_Result AT49BV322DT_Flash_Read(const TinyCLR_Deployment_Provider* self, u
 }
 
 
-TinyCLR_Result AT49BV322DT_Flash_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer) {
+TinyCLR_Result AT49BV322DT_Flash_Write(uint32_t address, size_t length, const uint8_t* buffer) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     volatile uint16_t *ip;
@@ -104,11 +76,11 @@ TinyCLR_Result AT49BV322DT_Flash_Write(const TinyCLR_Deployment_Provider* self, 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT49BV322DT_Flash_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased) {
+TinyCLR_Result AT49BV322DT_Flash_IsBlockErased(uint32_t sector, bool &erased) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    uint32_t address = deploymentAddress[sector];
-    int32_t size = deploymentSize[sector];
+    uint32_t address = g_AT49BV322DT_Flash_SectorAddress[sector];
+    int32_t size = g_AT49BV322DT_Flash_SectorSize[sector];
     uint32_t endAddress = address + size;
 
     erased = true;
@@ -116,7 +88,7 @@ TinyCLR_Result AT49BV322DT_Flash_IsBlockErased(const TinyCLR_Deployment_Provider
     while (address < endAddress) {
         uint16_t data;
 
-        AT49BV322DT_Flash_Read(self, address, 2, reinterpret_cast<uint8_t*>(&data));
+        AT49BV322DT_Flash_Read(address, 2, reinterpret_cast<uint8_t*>(&data));
 
         if (data != 0xFFFF) {
             erased = false;
@@ -129,11 +101,11 @@ TinyCLR_Result AT49BV322DT_Flash_IsBlockErased(const TinyCLR_Deployment_Provider
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT49BV322DT_Flash_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
+TinyCLR_Result AT49BV322DT_Flash_EraseBlock(uint32_t sector) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     volatile uint16_t *ip;
-    uint32_t address = deploymentAddress[sector];
+    uint32_t address = g_AT49BV322DT_Flash_SectorAddress[sector];
 
     ip = GET_ADDR(0x5555);
     *ip = 0x00AA;
@@ -155,36 +127,32 @@ TinyCLR_Result AT49BV322DT_Flash_EraseBlock(const TinyCLR_Deployment_Provider* s
     TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT49BV322DT_Flash_Acquire(const TinyCLR_Deployment_Provider* self, bool& supportXIP) {
+TinyCLR_Result AT49BV322DT_Flash_Acquire(bool& supportXIP) {
     supportXIP = true;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT49BV322DT_Flash_Release(const TinyCLR_Deployment_Provider* self) {
+TinyCLR_Result AT49BV322DT_Flash_Release() {
     // UnInitialize Flash can be here
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT49BV322DT_Flash_GetBytesPerSector(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size) {
-    size = FLASH_SECTOR_SIZE;
+TinyCLR_Result AT49BV322DT_Flash_GetBytesPerSector(uint32_t address, int32_t& size) {
+    size = AT49BV322DT_FLASH_SECTOR_SIZE;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT49BV322DT_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
-    for (auto i = 0; i < DEPLOYMENT_SECTOR_NUM; i++) {
-        deploymentAddress[i] = ((DEPLOYMENT_SECTOR_START + i) * FLASH_SECTOR_SIZE) | FLASH_BASE_ADDRESS;
-        deploymentSize[i] = FLASH_SECTOR_SIZE;
+TinyCLR_Result AT49BV322DT_Flash_GetSectorMap(const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
+    for (auto i = 0; i < AT49BV322DT_FLASH_SECTOR_NUM; i++) {
+        g_AT49BV322DT_Flash_SectorAddress[i] = (i * AT49BV322DT_FLASH_SECTOR_SIZE) | AT49BV322DT_FLASH_BASE_ADDRESS;
+        g_AT49BV322DT_Flash_SectorSize[i] = AT49BV322DT_FLASH_SECTOR_SIZE;
     }
 
-    addresses = deploymentAddress;
-    sizes = deploymentSize;
-    count = DEPLOYMENT_SECTOR_NUM;
+    addresses = g_AT49BV322DT_Flash_SectorAddress;
+    sizes = g_AT49BV322DT_Flash_SectorSize;
+    count = AT49BV322DT_FLASH_SECTOR_NUM;
 
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result AT49BV322DT_Flash_Reset(const TinyCLR_Deployment_Provider* self) {
     return TinyCLR_Result::Success;
 }
