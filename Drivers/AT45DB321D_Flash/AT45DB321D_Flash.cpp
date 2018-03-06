@@ -113,6 +113,8 @@ TinyCLR_Result __section("SectionForFlashOperations") AT45DB321D_Flash_Read(cons
     size_t writeLength;
     size_t readLength;
 
+    g_AT45DB321D_Flash_Controller.spiProvider->Acquire(g_AT45DB321D_Flash_Controller.spiProvider);
+
     g_AT45DB321D_Flash_Controller.spiProvider->SetActiveSettings(g_AT45DB321D_Flash_Controller.spiProvider, AT45DB321D_SPI_CS, AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     while (block > 0) {
@@ -181,6 +183,8 @@ TinyCLR_Result __section("SectionForFlashOperations") AT45DB321D_Flash_Read(cons
         block--;
     }
 
+    g_AT45DB321D_Flash_Controller.spiProvider->Release(g_AT45DB321D_Flash_Controller.spiProvider);
+
     return TinyCLR_Result::Success;
 }
 
@@ -232,6 +236,8 @@ TinyCLR_Result __section("SectionForFlashOperations") AT45DB321D_Flash_Write(con
     uint32_t beginningBytes = FLASH_PAGE_SIZE - pageOffset;
     uint32_t remainingBytesPageSegmentSize = FLASH_PAGE_SIZE - pageOffset;
 
+    g_AT45DB321D_Flash_Controller.spiProvider->Acquire(g_AT45DB321D_Flash_Controller.spiProvider);
+
     g_AT45DB321D_Flash_Controller.spiProvider->SetActiveSettings(g_AT45DB321D_Flash_Controller.spiProvider, AT45DB321D_SPI_CS, AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     if (pageOffset) {
@@ -278,6 +284,8 @@ TinyCLR_Result __section("SectionForFlashOperations") AT45DB321D_Flash_Write(con
     memcpy(AT45DB321D_Flash_BufferRW, &buffer[currentIndex], remainingBytes);
 
     AT45DB321D_Flash_WriteSector(pageNumber, AT45DB321D_Flash_BufferRW);
+
+    g_AT45DB321D_Flash_Controller.spiProvider->Release(g_AT45DB321D_Flash_Controller.spiProvider);
 
     TinyCLR_Result::Success;
 }
@@ -330,6 +338,8 @@ TinyCLR_Result __section("SectionForFlashOperations") AT45DB321D_Flash_EraseBloc
 
     uint32_t blockNumber = deploymentAddress[sector] / (FLASH_BLOCK_SIZE);
 
+    g_AT45DB321D_Flash_Controller.spiProvider->Acquire(g_AT45DB321D_Flash_Controller.spiProvider);
+
     g_AT45DB321D_Flash_Controller.spiProvider->SetActiveSettings(g_AT45DB321D_Flash_Controller.spiProvider, AT45DB321D_SPI_CS, AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     g_AT45DB321D_Flash_Controller.dataWriteBuffer[0] = COMMAND_BLOCK_ERASE;
@@ -351,6 +361,8 @@ TinyCLR_Result __section("SectionForFlashOperations") AT45DB321D_Flash_EraseBloc
 
         g_AT45DB321D_Flash_Controller.timeProvider->Delay(reinterpret_cast<const TinyCLR_Time_Provider*>(g_AT45DB321D_Flash_Controller.timeProvider), 1000);
     }
+
+    g_AT45DB321D_Flash_Controller.spiProvider->Release(g_AT45DB321D_Flash_Controller.spiProvider);
 
     return TinyCLR_Result::InvalidOperation;
 }
@@ -402,6 +414,8 @@ TinyCLR_Result AT45DB321D_Flash_Acquire(const TinyCLR_Deployment_Provider* self,
 
         g_AT45DB321D_Flash_Controller.timeProvider->Delay(reinterpret_cast<const TinyCLR_Time_Provider*>(g_AT45DB321D_Flash_Controller.timeProvider), 1000);
     }
+
+    g_AT45DB321D_Flash_Controller.spiProvider->Release(g_AT45DB321D_Flash_Controller.spiProvider);
 
     return TinyCLR_Result::InvalidOperation;
 }
