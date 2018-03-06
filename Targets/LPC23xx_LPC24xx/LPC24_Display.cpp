@@ -1036,6 +1036,7 @@ const TinyCLR_Api_Info* LPC24_Display_GetApi() {
 }
 
 void LPC24_Display_Reset() {
+    LPC24_Display_Clear();
     LPC24_Display_Uninitialize();
 }
 
