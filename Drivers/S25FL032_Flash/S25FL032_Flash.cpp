@@ -82,8 +82,6 @@ TinyCLR_Result S25FL032_Flash_Read(uint32_t address, size_t length, uint8_t* buf
     size_t writeLength = S25FL032_FLASH_SECTOR_SIZE + 4;
     size_t readLength = S25FL032_FLASH_SECTOR_SIZE + 4;
 
-    address -= S25FL032_FLASH_BASE_ADDRESS;
-
     while (block > 0) {
         S25FL032_Flash_DataWriteBuffer[0] = COMMAND_READ_DATA;
         S25FL032_Flash_DataWriteBuffer[1] = (uint8_t)((address) >> 16);
@@ -132,7 +130,7 @@ TinyCLR_Result S25FL032_Flash_Read(uint32_t address, size_t length, uint8_t* buf
 
 TinyCLR_Result S25FL032_Flash_PageProgram(uint32_t byteAddress, uint32_t NumberOfBytesToWrite, const uint8_t * pointerToWriteBuffer) {
 
-    uint32_t addr = byteAddress - S25FL032_FLASH_BASE_ADDRESS;
+    uint32_t addr = byteAddress;
     uint32_t addr_misalignment = addr % ALIGNMENT_WINDOW;
     uint32_t extended_size = NumberOfBytesToWrite + addr_misalignment;
     uint32_t block_cnt = extended_size / ALIGNMENT_WINDOW + (extended_size % ALIGNMENT_WINDOW > 0 ? 1 : 0);
@@ -230,9 +228,9 @@ TinyCLR_Result S25FL032_Flash_EraseBlock(uint32_t sector) {
     uint32_t address = S25FL032_Flash_SectorAddress[sector];
 
     S25FL032_Flash_DataWriteBuffer[0] = COMMAND_ERASE_SECTOR_64K;
-    S25FL032_Flash_DataWriteBuffer[1] = (uint8_t)((address - S25FL032_FLASH_BASE_ADDRESS) >> 16);
-    S25FL032_Flash_DataWriteBuffer[2] = (uint8_t)((address - S25FL032_FLASH_BASE_ADDRESS) >> 8);
-    S25FL032_Flash_DataWriteBuffer[3] = (uint8_t)((address - S25FL032_FLASH_BASE_ADDRESS) >> 0);
+    S25FL032_Flash_DataWriteBuffer[1] = (uint8_t)((address) >> 16);
+    S25FL032_Flash_DataWriteBuffer[2] = (uint8_t)((address) >> 8);
+    S25FL032_Flash_DataWriteBuffer[3] = (uint8_t)((address) >> 0);
 
     size_t writeLength = 4;
 
@@ -293,7 +291,7 @@ TinyCLR_Result S25FL032_Flash_GetBytesPerSector(uint32_t address, int32_t& size)
 
 TinyCLR_Result S25FL032_Flash_GetSectorMap(const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
     for (auto i = 0; i < S25FL032_FLASH_SECTOR_NUM; i++) {
-        S25FL032_Flash_SectorAddress[i] = (i * S25FL032_FLASH_SECTOR_SIZE) | S25FL032_FLASH_BASE_ADDRESS;
+        S25FL032_Flash_SectorAddress[i] = (i * S25FL032_FLASH_SECTOR_SIZE);
         S25FL032_Flash_SectorSize[i] = S25FL032_FLASH_SECTOR_SIZE;
     }
 

@@ -2,7 +2,6 @@
 
 #include <TinyCLR.h>
 
-#define S25FL032_FLASH_BASE_ADDRESS                 0xF0000000 
 #define S25FL032_FLASH_SECTOR_SIZE                  (64*1024) 
 #define S25FL032_FLASH_SECTOR_NUM                   64
 
