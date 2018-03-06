@@ -133,6 +133,8 @@ bool S25FL032_Flash_WriteInProgress() {
 TinyCLR_Result S25FL032_Flash_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
+    g_ST25_Flash_Controller.provider->Acquire(g_ST25_Flash_Controller.provider);
+
     g_ST25_Flash_Controller.provider->SetActiveSettings(g_ST25_Flash_Controller.provider, SPI_CS, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     while (S25FL032_Flash_WriteInProgress() == true);
@@ -185,6 +187,8 @@ TinyCLR_Result S25FL032_Flash_Read(const TinyCLR_Deployment_Provider* self, uint
         index += rest;
         rest = 0;
     }
+
+    g_ST25_Flash_Controller.provider->Release(g_ST25_Flash_Controller.provider);
 
     return index == length ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
 }
@@ -240,9 +244,13 @@ bool S25FL032_Flash_PageProgram(uint32_t byteAddress, uint32_t NumberOfBytesToWr
 TinyCLR_Result S25FL032_Flash_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
+    g_ST25_Flash_Controller.provider->Acquire(g_ST25_Flash_Controller.provider);
+
     g_ST25_Flash_Controller.provider->SetActiveSettings(g_ST25_Flash_Controller.provider, SPI_CS, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     bool result = S25FL032_Flash_PageProgram(address, length, buffer);
+
+    g_ST25_Flash_Controller.provider->Release(g_ST25_Flash_Controller.provider);
 
     return result == true ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
 }
@@ -276,6 +284,8 @@ TinyCLR_Result S25FL032_Flash_IsBlockErased(const TinyCLR_Deployment_Provider* s
 TinyCLR_Result S25FL032_Flash_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
+    g_ST25_Flash_Controller.provider->Acquire(g_ST25_Flash_Controller.provider);
+
     g_ST25_Flash_Controller.provider->SetActiveSettings(g_ST25_Flash_Controller.provider, SPI_CS, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     while (S25FL032_Flash_WriteEnable() == false);
@@ -292,6 +302,8 @@ TinyCLR_Result S25FL032_Flash_EraseBlock(const TinyCLR_Deployment_Provider* self
     g_ST25_Flash_Controller.provider->Write(g_ST25_Flash_Controller.provider, g_ST25_Flash_Controller.dataWriteBuffer, writeLength);
 
     while (S25FL032_Flash_WriteInProgress() == true);
+
+    g_ST25_Flash_Controller.provider->Release(g_ST25_Flash_Controller.provider);
 
     TinyCLR_Result::Success;
 }
@@ -327,6 +339,8 @@ TinyCLR_Result S25FL032_Flash_Acquire(const TinyCLR_Deployment_Provider* self, b
 
         return TinyCLR_Result::WrongType;
     }
+
+    g_ST25_Flash_Controller.provider->Release(g_ST25_Flash_Controller.provider);
 
     return TinyCLR_Result::Success;
 }
