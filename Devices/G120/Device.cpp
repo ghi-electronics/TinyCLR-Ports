@@ -16,7 +16,6 @@
 #include <LPC17.h>
 #include <Device.h>
 
-#include "../../Drivers/S25FL032_Flash/S25FL032_Flash.h"
 #include "../../Drivers/SPIDisplay/SPIDisplay.h"
 
 // G120, G120E
@@ -73,7 +72,7 @@ TinyCLR_Gpio_PinDriveMode LPC17_Startup_GetDebuggerSelectorPull() {
 
 
 TinyCLR_Gpio_PinValue LPC17_Startup_GetDebuggerSelectorUsbState() {
-     if (LPC17_Startup_GetDeviceId() == LPC17_G120)
+    if (LPC17_Startup_GetDeviceId() == LPC17_G120)
         return G120_DEBUGGER_SELECTOR_USB_STATE;
     else
         return G120E_DEBUGGER_SELECTOR_USB_STATE;
@@ -190,8 +189,4 @@ LPC17_Gpio_PinFunction LPC17_Uart_GetCtsAlternateFunction(int32_t portNum) {
         return g_lpc17_g120_uart_cts_pins[portNum].pinFunction;
     else
         return g_lpc17_g120e_uart_cts_pins[portNum].pinFunction;
-}
-
-const TinyCLR_Api_Info* LPC17_Deployment_GetApi() {
-    return S25FL032_Deployment_GetApi();
 }

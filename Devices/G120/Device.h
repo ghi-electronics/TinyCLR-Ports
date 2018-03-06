@@ -55,6 +55,13 @@
 #define INCLUDE_DAC
 #define LPC17_DAC_PINS { { PIN(0, 26), PF(2) } }
 
+#define LPC17_DEPLOYMENT_SECTOR_START 20
+#define LPC17_DEPLOYMENT_SECTOR_END 57
+#define LPC17_DEPLOYMENT_SECTOR_NUM (LPC17_DEPLOYMENT_SECTOR_END - LPC17_DEPLOYMENT_SECTOR_START + 1)
+
+#define LPC17_DEPLOYMENT_SPI_PORT 1
+#define LPC17_DEPLOYMENT_SPI_ENABLE_PIN PIN(4,27)
+
 #define INCLUDE_GPIO
 #define LPC17_GPIO_PINS {/*      0          1          2          3          4          5          6          7          8          9          10         11         12         13         14         15         16         17         18         19         20         21         22         23         24         25         26         27         28         29         30         31      */\
                          /*P0x*/ DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(),\
