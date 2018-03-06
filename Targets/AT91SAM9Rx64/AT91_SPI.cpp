@@ -374,9 +374,6 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Provider* self) {
 
     int32_t controller = (self->Index);
 
-    if (controller == 0) // SPI0 is for serial flash
-        return TinyCLR_Result::Success;;
-
     AT91_PMC &pmc = AT91::PMC();
 
     AT91_SPI &spi = AT91::SPI(controller);
@@ -385,6 +382,7 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Provider* self) {
 
     switch (controller) {
     case 0:
+        pmc.DisablePeriphClock(AT91C_ID_SPI0);
 
         break;
     }
@@ -395,15 +393,18 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Provider* self) {
     misoPin = g_at91_spi_miso_pins[controller].number;
     mosiPin = g_at91_spi_mosi_pins[controller].number;
 
-    AT91_Gpio_ConfigurePin(clkPin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::PullDown);
-    AT91_Gpio_ConfigurePin(misoPin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::PullDown);
-    AT91_Gpio_ConfigurePin(mosiPin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::PullDown);
+    AT91_Gpio_ClosePin(clkPin);
+    AT91_Gpio_ClosePin(misoPin);
+    AT91_Gpio_ClosePin(mosiPin);
 
     if (g_SpiController[controller].chipSelectLine != PIN_NONE) {
-        AT91_Gpio_EnableInputPin(g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinDriveMode::InputPullDown);
+        AT91_Gpio_ClosePin(g_SpiController[controller].chipSelectLine);
 
         g_SpiController[controller].chipSelectLine = PIN_NONE;
     }
+
+    g_SpiController[controller].clockFrequency = 0;
+    g_SpiController[controller].dataBitLength = 0;
 
     g_SpiController[controller].isOpened = false;
 
