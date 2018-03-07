@@ -43,16 +43,21 @@ TinyCLR_Result STM32F4_Rtc_Release(const TinyCLR_Rtc_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-uint32_t val;
-
 TinyCLR_Result STM32F4_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime& value) {
-    value.Year = val;
+    value.Year = 2010;
+    value.Month = 2;
+    value.DayOfYear = 33;
+    value.DayOfMonth = 2;
+    value.DayOfWeek = 0;
+    value.Hour = 13;
+    value.Minute = 14;
+    value.Second = 15;
+    value.Millisecond = 516;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime value) {
-    val = value.Year;
 
     return TinyCLR_Result::Success;
 }
