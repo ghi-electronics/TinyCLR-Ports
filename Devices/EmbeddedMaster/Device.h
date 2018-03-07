@@ -59,6 +59,10 @@
 #define INCLUDE_DAC
 #define LPC24_DAC_PINS { { PIN(0,26), PF(2)} }
 
+#define LPC24_DEPLOYMENT_SECTOR_START 3
+#define LPC24_DEPLOYMENT_SECTOR_END 12
+#define LPC24_DEPLOYMENT_SECTOR_NUM (LPC24_DEPLOYMENT_SECTOR_END - LPC24_DEPLOYMENT_SECTOR_START + 1)
+
 #define INCLUDE_I2C
 #define LPC24_I2C_SCL_PINS { { PIN(0, 28), PF(1) } }
 #define LPC24_I2C_SDA_PINS { { PIN(0, 27), PF(1) } }
@@ -88,7 +92,6 @@
 #define LPC2468_UART_RX_PINS              { { PIN(0, 3), PF(1)   }, { PIN(2, 1) , PF(2) }, { PIN(2,  9), PF(2)   }, { PIN(0, 26), PF(3)   } }
 #define LPC2468_UART_RTS_PINS             { { PIN_NONE , PF_NONE }, { PIN(2, 7) , PF(2) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } }
 #define LPC2468_UART_CTS_PINS             { { PIN_NONE , PF_NONE }, { PIN(2, 2) , PF(2) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } }
-
 
 #define INCLUDE_USBCLIENT
 #define TOTAL_USB_CONTROLLER            1
