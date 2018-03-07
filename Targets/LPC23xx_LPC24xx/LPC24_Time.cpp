@@ -178,7 +178,6 @@ static TinyCLR_Api_Info timeApi;
 const TinyCLR_Api_Info* LPC24_Time_GetApi() {
     timeProvider.Parent = &timeApi;
     timeProvider.Index = 0;
-    timeProvider.GetInitialTime = &LPC24_Time_GetInitialTime;
     timeProvider.GetTimeForProcessorTicks = &LPC24_Time_GetTimeForProcessorTicks;
     timeProvider.GetProcessorTicksForTime = &LPC24_Time_TimeToTicks;
     timeProvider.GetCurrentProcessorTicks = &LPC24_Time_GetCurrentTicks;
@@ -197,10 +196,6 @@ const TinyCLR_Api_Info* LPC24_Time_GetApi() {
     timeApi.Implementation = &timeProvider;
 
     return &timeApi;
-}
-
-TinyCLR_Result LPC24_Time_GetInitialTime(const TinyCLR_Time_Provider* self, int64_t& utcTime, int32_t& timeZoneOffsetMinutes) {
-    return TinyCLR_Result::NotSupported;
 }
 
 uint32_t LPC24_Time_GetSystemClock(const TinyCLR_Time_Provider* self) {

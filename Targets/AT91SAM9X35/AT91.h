@@ -1276,7 +1276,6 @@ struct AT91_TC {
 const TinyCLR_Api_Info* AT91_Time_GetApi();
 TinyCLR_Result AT91_Time_Acquire(const TinyCLR_Time_Provider* self);
 TinyCLR_Result AT91_Time_Release(const TinyCLR_Time_Provider* self);
-TinyCLR_Result AT91_Time_GetInitialTime(const TinyCLR_Time_Provider* self, int64_t& utcTime, int32_t& timeZoneOffsetMinutes);
 uint64_t AT91_Time_GetTimeForProcessorTicks(const TinyCLR_Time_Provider* self, uint64_t ticks);
 uint64_t AT91_Time_TimeToTicks(const TinyCLR_Time_Provider* self, uint64_t time);
 uint64_t AT91_Time_MillisecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t ticks);

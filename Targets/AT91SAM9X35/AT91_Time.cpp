@@ -214,7 +214,6 @@ static TinyCLR_Api_Info timeApi;
 const TinyCLR_Api_Info* AT91_Time_GetApi() {
     timeProvider.Parent = &timeApi;
     timeProvider.Index = 0;
-    timeProvider.GetInitialTime = &AT91_Time_GetInitialTime;
     timeProvider.GetTimeForProcessorTicks = &AT91_Time_GetTimeForProcessorTicks;
     timeProvider.GetProcessorTicksForTime = &AT91_Time_TimeToTicks;
     timeProvider.GetCurrentProcessorTicks = &AT91_Time_GetCurrentTicks;
@@ -249,10 +248,6 @@ void AT91_Time_InterruptHandler(void* Param) {
         //
         AT91_Time_SetCompare(provider, g_AT91_TIME_Driver.m_nextCompare);
     }
-}
-
-TinyCLR_Result AT91_Time_GetInitialTime(const TinyCLR_Time_Provider* self, int64_t& utcTime, int32_t& timeZoneOffsetMinutes) {
-    return TinyCLR_Result::NotSupported;
 }
 
 uint32_t AT91_Time_GetTicksPerSecond(const TinyCLR_Time_Provider* self) {

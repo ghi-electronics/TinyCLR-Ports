@@ -44,7 +44,6 @@ const TinyCLR_Api_Info* STM32F4_Time_GetApi() {
     timeProvider.Index = 0;
     timeProvider.Acquire = &STM32F4_Time_Acquire;
     timeProvider.Release = &STM32F4_Time_Release;
-    timeProvider.GetInitialTime = &STM32F4_Time_GetInitialTime;
     timeProvider.GetCurrentProcessorTicks = &STM32F4_Time_GetCurrentProcessorTicks;
     timeProvider.GetTimeForProcessorTicks = &STM32F4_Time_GetTimeForProcessorTicks;
     timeProvider.GetProcessorTicksForTime = &STM32F4_Time_GetProcessorTicksForTime;
@@ -66,10 +65,6 @@ const TinyCLR_Api_Info* STM32F4_Time_GetApi() {
 static uint64_t g_nextEvent;   // tick time of next event to be scheduled
 
 STM32F4_Timer_Driver g_STM32F4_Timer_Driver;
-
-TinyCLR_Result STM32F4_Time_GetInitialTime(const TinyCLR_Time_Provider* self, int64_t& utcTime, int32_t& timeZoneOffsetMinutes) {
-    return TinyCLR_Result::NotSupported;
-}
 
 uint64_t STM32F4_Time_GetTimeForProcessorTicks(const TinyCLR_Time_Provider* self, uint64_t ticks) {
     ticks *= (10000000 / SLOW_CLOCKS_TEN_MHZ_GCD);

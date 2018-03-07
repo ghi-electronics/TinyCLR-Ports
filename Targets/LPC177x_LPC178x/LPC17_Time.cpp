@@ -43,7 +43,6 @@ static TinyCLR_Api_Info timeApi;
 const TinyCLR_Api_Info* LPC17_Time_GetApi() {
     timeProvider.Parent = &timeApi;
     timeProvider.Index = 0;
-    timeProvider.GetInitialTime = &LPC17_Time_GetInitialTime;
     timeProvider.GetTimeForProcessorTicks = &LPC17_Time_GetTimeForProcessorTicks;
     timeProvider.GetProcessorTicksForTime = &LPC17_Time_GetProcessorTicksForTime;
     timeProvider.GetCurrentProcessorTicks = &LPC17_Time_GetCurrentTicks;
@@ -67,10 +66,6 @@ const TinyCLR_Api_Info* LPC17_Time_GetApi() {
 static uint64_t g_nextEvent;   // tick time of next event to be scheduled
 
 LPC17_Timer_Driver g_LPC17_Timer_Driver;
-
-TinyCLR_Result LPC17_Time_GetInitialTime(const TinyCLR_Time_Provider* self, int64_t& utcTime, int32_t& timeZoneOffsetMinutes) {
-    return TinyCLR_Result::NotSupported;
-}
 
 uint32_t LPC17_Time_GetSystemClock(const TinyCLR_Time_Provider* self) {
     return LPC17_SYSTEM_CLOCK_HZ;

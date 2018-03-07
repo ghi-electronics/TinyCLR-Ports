@@ -328,7 +328,6 @@ void LPC17_I2c_StopTransaction(int32_t portId);
 const TinyCLR_Api_Info* LPC17_Time_GetApi();
 TinyCLR_Result LPC17_Time_Acquire(const TinyCLR_Time_Provider* self);
 TinyCLR_Result LPC17_Time_Release(const TinyCLR_Time_Provider* self);
-TinyCLR_Result LPC17_Time_GetInitialTime(const TinyCLR_Time_Provider* self, int64_t& utcTime, int32_t& timeZoneOffsetMinutes);
 uint64_t LPC17_Time_GetTimeForProcessorTicks(const TinyCLR_Time_Provider* self, uint64_t ticks);
 uint64_t LPC17_Time_GetProcessorTicksForTime(const TinyCLR_Time_Provider* self, uint64_t time);
 uint64_t LPC17_Time_MillisecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t ticks);
