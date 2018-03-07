@@ -793,7 +793,6 @@ TinyCLR_Result LPC17_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
     misoMode = g_lpc17_spi_miso_pins[controller].pinFunction;
     mosiMode = g_lpc17_spi_mosi_pins[controller].pinFunction;
 
-
     // Check each pin single time make sure once fail not effect to other pins
     if (!LPC17_Gpio_OpenPin(clkPin))
         return TinyCLR_Result::SharingViolation;
@@ -833,9 +832,6 @@ TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Provider* self) {
 
     int32_t controller = (self->Index);
 
-    if (controller == 1) // spi flash => can not reset or release during runing!
-        return TinyCLR_Result::Success;
-
     int32_t clkPin = g_lpc17_spi_sclk_pins[controller].number;
     int32_t misoPin = g_lpc17_spi_miso_pins[controller].number;
     int32_t mosiPin = g_lpc17_spi_mosi_pins[controller].number;
@@ -846,7 +842,7 @@ TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Provider* self) {
         break;
 
     case 1:
-
+        LPC_SC->PCONP &= ~PCONP_PCSSP1;
         break;
 
     case 2:
@@ -864,6 +860,9 @@ TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Provider* self) {
 
         g_SpiController[controller].chipSelectLine = PIN_NONE;
     }
+
+    g_SpiController[controller].clockFrequency = 0;
+    g_SpiController[controller].dataBitLength = 0;
 
     g_SpiController[controller].isOpened = false;
 
@@ -911,8 +910,7 @@ TinyCLR_Result LPC17_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* 
 
 void LPC17_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        if (g_SpiController[i].isOpened == true) {
+        if (g_SpiController[i].isOpened)
             LPC17_Spi_Release(spiProviders[i]);
-        }
     }
 }

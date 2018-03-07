@@ -109,9 +109,9 @@
 #define USB_ENDPOINT_ATTRIBUTE_BULK 2
 #define USB_ENDPOINT_ATTRIBUTE_INTERRUPT 3
 
-static int usb_fifo_buffer_in[LPC24_USB_QUEUE_SIZE];
-static int usb_fifo_buffer_out[LPC24_USB_QUEUE_SIZE];
-static int usb_fifo_buffer_count[LPC24_USB_QUEUE_SIZE];
+static uint8_t usb_fifo_buffer_in[LPC24_USB_QUEUE_SIZE];
+static uint8_t usb_fifo_buffer_out[LPC24_USB_QUEUE_SIZE];
+static uint8_t usb_fifo_buffer_count[LPC24_USB_QUEUE_SIZE];
 
 #define USB_MAX_DATA_PACKET_SIZE 64
 
@@ -2881,16 +2881,9 @@ void LPC24_USB_Driver::EP_TxISR(uint32_t endpoint) {
 
 }
 
-static int testRX_cnt = 0;
-
 void LPC24_USB_Driver::EP_RxISR(uint32_t endpoint) {
     bool          DisableRx;
 
-    testRX_cnt++;
-
-    if (testRX_cnt >= 5) {
-        testRX_cnt = testRX_cnt + 0;
-    }
     USB_PACKET64* Packet64 = LPC24_UsbClient_RxEnqueue(g_LPC24_USB_Driver.pUsbControllerState, endpoint, DisableRx);
 
     /* copy packet in, making sure that Packet64->Buffer is never overflowed */
