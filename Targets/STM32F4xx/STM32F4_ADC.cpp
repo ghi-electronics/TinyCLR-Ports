@@ -16,7 +16,7 @@
 
 #include "STM32F4.h"
 
-#define STM32F4_AD_SAMPLE_TIME 2   // sample time = 28 cycles
+#define STM32F4_AD_SAMPLE_TIME 4   // sample time = 84 cycles
 
 #define STM32F4_ADC 1
 
@@ -123,27 +123,37 @@ TinyCLR_Result STM32F4_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int3
 
 TinyCLR_Result STM32F4_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t channel, int32_t& value) {
     // check if this channel is listed in the STM32F4_AD_CHANNELS array
+    const int MAX_SAMPLE_TIMES = 5;
+
+    int samples = MAX_SAMPLE_TIMES;
+
+    value = 0;
+
     for (int i = 0; i < STM32F4_AD_NUM; i++) {
-        if (i == channel) {
-            // valid channel
-            int x = ADCx->DR; // clear EOC flag
+        if (i == channel) { // valid channel
+            while (samples-- > 0) {
 
-            ADCx->SQR3 = channel; // select channel
+                int x = ADCx->DR; // clear EOC flag
 
-            // need to enable internal reference at ADC->CCR register to work with internally connected channels
-            if (channel == 16 || channel == 17) {
-                ADC->CCR |= ADC_CCR_TSVREFE; // Enable internal reference to work with temperature sensor and VREFINT channels
+                ADCx->SQR3 = channel; // select channel
+
+                // need to enable internal reference at ADC->CCR register to work with internally connected channels
+                if (channel == 16 || channel == 17) {
+                    ADC->CCR |= ADC_CCR_TSVREFE; // Enable internal reference to work with temperature sensor and VREFINT channels
+                }
+
+                ADCx->CR2 |= ADC_CR2_SWSTART; // start AD
+                while (!(ADCx->SR & ADC_SR_EOC)); // wait for completion
+
+                // disable internally reference
+                if (channel == 16 || channel == 17) {
+                    ADC->CCR &= ~ADC_CCR_TSVREFE;
+                }
+
+                value += (ADCx->DR) & 0xFFF; // read result
             }
 
-            ADCx->CR2 |= ADC_CR2_SWSTART; // start AD
-            while (!(ADCx->SR & ADC_SR_EOC)); // wait for completion
-
-            // disable internally reference
-            if (channel == 16 || channel == 17) {
-                ADC->CCR &= ~ADC_CCR_TSVREFE;
-            }
-
-            value = ADCx->DR; // read result
+            value /= MAX_SAMPLE_TIMES;
 
             return TinyCLR_Result::Success;
         }
