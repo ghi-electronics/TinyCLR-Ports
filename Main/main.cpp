@@ -55,6 +55,11 @@ void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
     apiProvider->Add(apiProvider, TARGET(_Pwm_GetApi)());
 #endif
 
+#ifdef INCLUDE_RTC
+    apiProvider->Add(apiProvider, TARGET(_Rtc_GetApi)());
+    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::RtcProvider, TARGET(_Rtc_GetApi)()->Name);
+#endif
+
 #ifdef INCLUDE_SPI
     apiProvider->Add(apiProvider, TARGET(_Spi_GetApi)());
 #endif
