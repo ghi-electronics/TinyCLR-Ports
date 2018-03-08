@@ -146,34 +146,34 @@ extern const TinyCLR_Api_Provider* apiProvider;
 struct AT91_PMC {
     static const uint32_t c_Base = AT91C_BASE_PMC;
 
-    /****/ volatile uint32_t PMC_SCER;                // System Clock Enable Register
+    volatile uint32_t PMC_SCER;                // System Clock Enable Register
 
-    /****/ volatile uint32_t PMC_SCDR;                // System Clock Disable Register
+    volatile uint32_t PMC_SCDR;                // System Clock Disable Register
 
-    /****/ volatile uint32_t PMC_SCSR;                // System Clock Status Register
+    volatile uint32_t PMC_SCSR;                // System Clock Status Register
 
-    /****/ volatile uint32_t Reserved0[1];            //
+    volatile uint32_t Reserved0[1];
 
-    /****/ volatile uint32_t PMC_PCER;                // Peripheral Clock Enable Register
+    volatile uint32_t PMC_PCER;                // Peripheral Clock Enable Register
 
-    /****/ volatile uint32_t PMC_PCDR;                // Peripheral Clock Disable Register
+    volatile uint32_t PMC_PCDR;                // Peripheral Clock Disable Register
 
-    /****/ volatile uint32_t PMC_PCSR;                // Peripheral Clock Status Register
+    volatile uint32_t PMC_PCSR;                // Peripheral Clock Status Register
 
-    /****/ volatile uint32_t PMC_CKGR_UCKR;            // UTMI Clock Register
+    volatile uint32_t PMC_CKGR_UCKR;            // UTMI Clock Register
 
-    /****/ volatile uint32_t PMC_CKGR_MOR;            // Main Oscillator Register
+    volatile uint32_t PMC_CKGR_MOR;            // Main Oscillator Register
     static const    uint32_t CKGR_MOSCEN = (0x1 << 0);       // (CKGR) Main Oscillator Enable
     static const    uint32_t CKGR_OSCBYPASS = (0x1 << 1);       // (CKGR) Main Oscillator Bypass
     static const    uint32_t CKGR_OSCOUNT = (0xFF << 8);      // (CKGR) Main Oscillator Start-up Time
 
 
-    /****/ volatile uint32_t PMC_CKGR_MCFR;  // Main Clock  Frequency Register
+    volatile uint32_t PMC_CKGR_MCFR;  // Main Clock  Frequency Register
     static const    uint32_t CKGR_MAINF = (0xFFFF << 0);     // (CKGR) Main Clock Frequency
     static const    uint32_t CKGR_MAINRDY = (0x1 << 16);       // (CKGR) Main Clock Ready
 
 
-    /****/ volatile uint32_t PMC_CKGR_PLLAR;  // PLL Register
+    volatile uint32_t PMC_CKGR_PLLAR;  // PLL Register
 
 
     static const    uint32_t CKGR_DIV = (0xFF << 0);     // (CKGR) Divider Selected
@@ -191,9 +191,9 @@ struct AT91_PMC {
     static const    uint32_t CKGR_USBDIV_1 = (0x1 << 28);     // (CKGR) Divider output is PLL clock output divided by 2
     static const    uint32_t CKGR_USBDIV_2 = (0x2 << 28);     // (CKGR) Divider output is PLL clock output divided by 4
 
-    /****/ volatile uint32_t Reserved1[1];            //
+    volatile uint32_t Reserved1[1];
 
-    /****/ volatile uint32_t PMC_MCKR;  // Master Clock Register
+    volatile uint32_t PMC_MCKR;  // Master Clock Register
     static const    uint32_t PMC_CSS = (0x3 << 0);   //  (PMC) Programmable Clock Selection
     static const    uint32_t PMC_CSS_SLOW_CLK = (0x0);         //  (PMC) Slow Clock is selected
     static const    uint32_t PMC_CSS_MAIN_CLK = (0x1);         //  (PMC) Main Clock is selected
@@ -212,13 +212,13 @@ struct AT91_PMC {
     static const    uint32_t PMC_MDIV_2 = (0x1 << 8);   //  (PMC) The processor clock is twice as fast as the master clock
     static const    uint32_t PMC_MDIV_3 = (0x2 << 8);   //  (PMC) The processor clock is four times faster than the master clock
 
-    /****/ volatile uint32_t Reserved3[3];  // TQD: Just a note PMC_USB and PMC_SMD are in here
+    volatile uint32_t Reserved3[3];  // TQD: Just a note PMC_USB and PMC_SMD are in here
 
-    /****/ volatile uint32_t PMC_PCKR[2];   // Programmable Clock Register
+    volatile uint32_t PMC_PCKR[2];   // Programmable Clock Register
 
-    /****/ volatile uint32_t Reserved4[6];  //
+    volatile uint32_t Reserved4[6];
 
-    /****/ volatile uint32_t PMC_IER;   // Interrupt Enable Register
+    volatile uint32_t PMC_IER;   // Interrupt Enable Register
     static const    uint32_t PMC_MOSCS = (0x1 << 0);       // (PMC) MOSC Status/Enable/Disable/Mask
     static const    uint32_t PMC_LOCKA = (0x1 << 1);       // (PMC) PLL Status/Enable/Disable/Mask =(SAM9 Only);
     static const    uint32_t PMC_LOCK = (0x1 << 2);       // (PMC) PLL Status/Enable/Disable/Mask
@@ -228,15 +228,15 @@ struct AT91_PMC {
     static const    uint32_t PMC_PCK2RDY = (0x1 << 10);       // (PMC) PCK2_RDY Status/Enable/Disable/Mask
     static const    uint32_t PMC_PCK3RDY = (0x1 << 11);       // (PMC) PCK3_RDY Status/Enable/Disable/Mask
     static const    uint32_t PMC_LOCKU = (0x1 << 6);           //(PMC) USB clock locked
-    /****/ volatile uint32_t PMC_IDR;   // Interrupt Disable Register
+    volatile uint32_t PMC_IDR;   // Interrupt Disable Register
 
-    /****/ volatile uint32_t PMC_SR;    // Status Register
+    volatile uint32_t PMC_SR;    // Status Register
 
-    /****/ volatile uint32_t PMC_IMR;   // Interrupt Mask Register
+    volatile uint32_t PMC_IMR;   // Interrupt Mask Register
 
-    /****/ volatile uint32_t Reserved5[3]; // Reserved
+    volatile uint32_t Reserved5[3]; // Reserved
 
-    /****/ volatile uint32_t PMC_PLLICPR; // Charge Pump Current Register
+    volatile uint32_t PMC_PLLICPR; // Charge Pump Current Register
     static const    uint32_t PMC_PLLICPR__PLLA = (0x1 << 0);
     static const    uint32_t PMC_PLLICPR__PLLB = (0x1 << 16);
 
@@ -306,82 +306,134 @@ size_t AT91_Cache_GetUncachableAddress(size_t address);
 // AT91_GPIO
 //
 struct AT91_PIO {
-
-
     static const uint32_t c_Base = AT91C_BASE_PIOA;
 
     static const uint32_t c_Base_Offset = 0x200;
 
+    volatile uint32_t PIO_PER;       /**< \brief (Pio Offset: 0x0000) PIO Enable Register */
 
-    /****/ volatile uint32_t PIO_PER;   // PIO Enable Register
+    volatile uint32_t PIO_PDR;       /**< \brief (Pio Offset: 0x0004) PIO Disable Register */
 
-    /****/ volatile uint32_t PIO_PDR;   // PIO Disable Register
+    volatile uint32_t PIO_PSR;       /**< \brief (Pio Offset: 0x0008) PIO Status Register */
 
-    /****/ volatile uint32_t PIO_PSR;   // PIO Status Register
+    volatile uint32_t Reserved1[1];
 
-    /****/ volatile uint32_t Reserved0[1];  //
+    volatile uint32_t PIO_OER;       /**< \brief (Pio Offset: 0x0010) Output Enable Register */
 
-    /****/ volatile uint32_t PIO_OER;   // Output Enable Register
+    volatile uint32_t PIO_ODR;       /**< \brief (Pio Offset: 0x0014) Output Disable Register */
 
-    /****/ volatile uint32_t PIO_ODR;   // Output Disable Registerr
+    volatile uint32_t PIO_OSR;       /**< \brief (Pio Offset: 0x0018) Output Status Register */
 
-    /****/ volatile uint32_t PIO_OSR;   // Output Status Register
+    volatile uint32_t Reserved2[1];
 
-    /****/ volatile uint32_t Reserved1[1];  //
+    volatile uint32_t PIO_IFER;      /**< \brief (Pio Offset: 0x0020) Glitch Input Filter Enable Register */
 
-    /****/ volatile uint32_t PIO_IFER;  // Input Filter Enable Register
+    volatile uint32_t PIO_IFDR;      /**< \brief (Pio Offset: 0x0024) Glitch Input Filter Disable Register */
 
-    /****/ volatile uint32_t PIO_IFDR;  // Input Filter Disable Register
+    volatile uint32_t PIO_IFSR;      /**< \brief (Pio Offset: 0x0028) Glitch Input Filter Status Register */
 
-    /****/ volatile uint32_t PIO_IFSR;  // Input Filter Status Register
+    volatile uint32_t Reserved3[1];
 
-    /****/ volatile uint32_t Reserved2[1];  //
+    volatile uint32_t PIO_SODR;      /**< \brief (Pio Offset: 0x0030) Set Output Data Register */
 
-    /****/ volatile uint32_t PIO_SODR;  // Set Output Data Register
+    volatile uint32_t PIO_CODR;      /**< \brief (Pio Offset: 0x0034) Clear Output Data Register */
 
-    /****/ volatile uint32_t PIO_CODR;  // Clear Output Data Register
+    volatile uint32_t PIO_ODSR;      /**< \brief (Pio Offset: 0x0038) Output Data Status Register */
 
-    /****/ volatile uint32_t PIO_ODSR;  // Output Data Status Register
+    volatile uint32_t PIO_PDSR;      /**< \brief (Pio Offset: 0x003C) Pin Data Status Register */
 
-    /****/ volatile uint32_t PIO_PDSR;  // Pin Data Status Register
+    volatile uint32_t PIO_IER;       /**< \brief (Pio Offset: 0x0040) Interrupt Enable Register */
 
-    /****/ volatile uint32_t PIO_IER;   // Interrupt Enable Register
+    volatile uint32_t PIO_IDR;       /**< \brief (Pio Offset: 0x0044) Interrupt Disable Register */
 
-    /****/ volatile uint32_t PIO_IDR;   // Interrupt Disable Register
+    volatile uint32_t PIO_IMR;       /**< \brief (Pio Offset: 0x0048) Interrupt Mask Register */
 
-    /****/ volatile uint32_t PIO_IMR;   // Interrupt Mask Register
+    volatile uint32_t PIO_ISR;       /**< \brief (Pio Offset: 0x004C) Interrupt Status Register */
 
-    /****/ volatile uint32_t PIO_ISR;   // Interrupt Status Register
+    volatile uint32_t PIO_MDER;      /**< \brief (Pio Offset: 0x0050) Multi-driver Enable Register */
 
-    /****/ volatile uint32_t PIO_MDER;  // Multi-driver Enable Register
+    volatile uint32_t PIO_MDDR;      /**< \brief (Pio Offset: 0x0054) Multi-driver Disable Register */
 
-    /****/ volatile uint32_t PIO_MDDR;  // Multi-driver Disable Register
+    volatile uint32_t PIO_MDSR;      /**< \brief (Pio Offset: 0x0058) Multi-driver Status Register */
 
-    /****/ volatile uint32_t PIO_MDSR;  // Multi-driver Status Register
+    volatile uint32_t Reserved4[1];
 
-    /****/ volatile uint32_t Reserved3[1];  //
+    volatile uint32_t PIO_PUDR;      /**< \brief (Pio Offset: 0x0060) Pull-up Disable Register */
 
-    /****/ volatile uint32_t PIO_PPUDR;     // Pull-up Disable Register
+    volatile uint32_t PIO_PUER;      /**< \brief (Pio Offset: 0x0064) Pull-up Enable Register */
 
-    /****/ volatile uint32_t PIO_PPUER;     // Pull-up Enable Register
+    volatile uint32_t PIO_PUSR;      /**< \brief (Pio Offset: 0x0068) Pad Pull-up Status Register */
 
-    /****/ volatile uint32_t PIO_PPUSR;     // Pull-up Status Register
+    volatile uint32_t Reserved5[1];
 
-    /****/ volatile uint32_t Reserved4[1];  //
+    volatile uint32_t PIO_ABCDSR[2]; /**< \brief (Pio Offset: 0x0070) Peripheral Select Register */
 
-    /****/ volatile uint32_t PIO_ASR;   // Select A Register
+    volatile uint32_t Reserved6[2];
 
-    /****/ volatile uint32_t PIO_BSR;   // Select B Register
+    volatile uint32_t PIO_IFSCDR;    /**< \brief (Pio Offset: 0x0080) Input Filter Slow Clock Disable Register */
 
-    /****/ volatile uint32_t PIO_ABSR;  // AB Select Status Register
+    volatile uint32_t PIO_IFSCER;    /**< \brief (Pio Offset: 0x0084) Input Filter Slow Clock Enable Register */
 
-    /****/ volatile uint32_t Reserved5[9];  //
+    volatile uint32_t PIO_IFSCSR;    /**< \brief (Pio Offset: 0x0088) Input Filter Slow Clock Status Register */
 
-    /****/ volatile uint32_t PIO_OWER;  // Output Write Enable Register
+    volatile uint32_t PIO_SCDR;      /**< \brief (Pio Offset: 0x008C) Slow Clock Divider Debouncing Register */
 
-    /****/ volatile uint32_t PIO_OWDR;  // Output Write Disable Register
+    volatile uint32_t PIO_PPDDR;     /**< \brief (Pio Offset: 0x0090) Pad Pull-down Disable Register */
 
-    /****/ volatile uint32_t PIO_OWSR;  // Output Write Status Register
+    volatile uint32_t PIO_PPDER;     /**< \brief (Pio Offset: 0x0094) Pad Pull-down Enable Register */
+
+    volatile uint32_t PIO_PPDSR;     /**< \brief (Pio Offset: 0x0098) Pad Pull-down Status Register */
+
+    volatile uint32_t Reserved7[1];
+
+    volatile uint32_t PIO_OWER;      /**< \brief (Pio Offset: 0x00A0) Output Write Enable */
+
+    volatile uint32_t PIO_OWDR;      /**< \brief (Pio Offset: 0x00A4) Output Write Disable */
+
+    volatile uint32_t PIO_OWSR;      /**< \brief (Pio Offset: 0x00A8) Output Write Status Register */
+
+    volatile uint32_t Reserved8[1];
+    volatile uint32_t PIO_AIMER;     /**< \brief (Pio Offset: 0x00B0) Additional Interrupt Modes Enable Register */
+
+    volatile uint32_t PIO_AIMDR;     /**< \brief (Pio Offset: 0x00B4) Additional Interrupt Modes Disables Register */
+
+    volatile uint32_t PIO_AIMMR;     /**< \brief (Pio Offset: 0x00B8) Additional Interrupt Modes Mask Register */
+
+    volatile uint32_t Reserved9[1];
+
+    volatile uint32_t PIO_ESR;       /**< \brief (Pio Offset: 0x00C0) Edge Select Register */
+
+    volatile uint32_t PIO_LSR;       /**< \brief (Pio Offset: 0x00C4) Level Select Register */
+
+    volatile uint32_t PIO_ELSR;      /**< \brief (Pio Offset: 0x00C8) Edge/Level Status Register */
+
+    volatile uint32_t Reserved10[1];
+
+    volatile uint32_t PIO_FELLSR;    /**< \brief (Pio Offset: 0x00D0) Falling Edge/Low Level Select Register */
+
+    volatile uint32_t PIO_REHLSR;    /**< \brief (Pio Offset: 0x00D4) Rising Edge/ High Level Select Register */
+
+    volatile uint32_t PIO_FRLHSR;    /**< \brief (Pio Offset: 0x00D8) Fall/Rise - Low/High Status Register */
+
+    volatile uint32_t Reserved11[1];
+
+    volatile uint32_t PIO_LOCKSR;    /**< \brief (Pio Offset: 0x00E0) Lock Status */
+
+    volatile uint32_t PIO_WPMR;      /**< \brief (Pio Offset: 0x00E4) Write Protect Mode Register */
+
+    volatile uint32_t PIO_WPSR;      /**< \brief (Pio Offset: 0x00E8) Write Protect Status Register */
+
+    volatile uint32_t Reserved12[5];
+
+    volatile uint32_t PIO_SCHMITT;   /**< \brief (Pio Offset: 0x0100) Schmitt Trigger Register */
+
+    volatile uint32_t Reserved13[3];
+
+    volatile uint32_t PIO_DELAYR;    /**< \brief (Pio Offset: 0x0110) IO Delay Register */
+
+    volatile uint32_t PIO_DRIVER1;   /**< \brief (Pio Offset: 0x0114) I/O Drive Register 1 */
+
+    volatile uint32_t PIO_DRIVER2;   /**< \brief (Pio Offset: 0x0118) I/O Drive Register 2 */
 };
 
 // --//
@@ -586,12 +638,12 @@ struct AT91_SPI {
 
     static const uint32_t c_MAX_SPI = 2;
 
-    /****/ volatile uint32_t SPI_CR;         // Control Register
+    volatile uint32_t SPI_CR;         // Control Register
     static const    uint32_t SPI_CR_ENABLE_SPI = (0x1 << 0); // enable SPI
     static const    uint32_t SPI_CR_DISABLE_SPI = (0x1 << 1); // disable SPI
     static const    uint32_t SPI_CR_SW_RESET = (0x1 << 7); // Software reset SPI
 
-    /****/ volatile uint32_t SPI_MR;         // Mode Register
+    volatile uint32_t SPI_MR;         // Mode Register
     static const    uint32_t SPI_MR_MSTR = (0x1 << 0); // 1--Master mode\0--Slave mode
     static const    uint32_t SPI_MR_PS = (0x1 << 1); // peripheral select 1--varable\0--fixed
     static const    uint32_t SPI_MR_MODFDIS = (0x1 << 4); // peripheral select 1--varable\0--fixed
@@ -600,11 +652,11 @@ struct AT91_SPI {
     static const    uint32_t SPI_MR_CS2 = (0x3 << 16);
     static const    uint32_t SPI_MR_CS3 = (0x7 << 16);
 
-    /****/ volatile uint32_t SPI_RDR;        // Receive Data Register
+    volatile uint32_t SPI_RDR;        // Receive Data Register
 
-    /****/ volatile uint32_t SPI_TDR;        // Transmit Data Register
+    volatile uint32_t SPI_TDR;        // Transmit Data Register
 
-    /****/ volatile uint32_t SPI_SR;         // Status Register
+    volatile uint32_t SPI_SR;         // Status Register
     static const    uint32_t SPI_SR_RDRF = (0x1 << 0); // RDR full
     static const    uint32_t SPI_SR_TDRE = (0x1 << 1); // TDR empty
     static const    uint32_t SPI_SR_RXBUFF = (0x1 << 6); // receive buffer full
@@ -613,12 +665,12 @@ struct AT91_SPI {
     static const    uint32_t SPI_SR_TXEMPTY = (0x1 << 9); // transmit register and internal shifters are empty
     static const    uint32_t SPI_SR_SPIENS = (0x1 << 16); // SPI enable status
 
-    /****/ volatile uint32_t SPI_IER;        // Interrupt Enable Register
-    /****/ volatile uint32_t SPI_IDR;        // Interrupt Disable Register
-    /****/ volatile uint32_t SPI_IMR;        // Interrupt MaskRegister
-    /****/ volatile uint32_t Reserved1[4];
+    volatile uint32_t SPI_IER;        // Interrupt Enable Register
+    volatile uint32_t SPI_IDR;        // Interrupt Disable Register
+    volatile uint32_t SPI_IMR;        // Interrupt MaskRegister
+    volatile uint32_t Reserved1[4];
 
-    /****/ volatile uint32_t SPI_CSR0;       // Chip Select Register 0
+    volatile uint32_t SPI_CSR0;       // Chip Select Register 0
     static const    uint32_t SPI_CSR_CPOL = (0x1 << 0); // clock polarity
     static const    uint32_t SPI_CSR_NCPHA = (0x1 << 1); // clock phase
     static const    uint32_t SPI_CSR_BITS_MASK = (0xF << 4); // bits per transfer
@@ -631,9 +683,9 @@ struct AT91_SPI {
     static const    uint32_t SPI_CSR_DLYBCT_MASK = ((uint32_t)0xFF << 24); // delay between transfer
     static const    uint32_t SPI_CSR_DLYBCT_SHIFT = (24);     // delay between transfer
 
-    /****/ volatile uint32_t SPI_CSR1;       // Chip Select Register 1
-    /****/ volatile uint32_t SPI_CSR2;       // Chip Select Register 2
-    /****/ volatile uint32_t SPI_CSR3;       // Chip Select Register 3
+    volatile uint32_t SPI_CSR1;       // Chip Select Register 1
+    volatile uint32_t SPI_CSR2;       // Chip Select Register 2
+    volatile uint32_t SPI_CSR3;       // Chip Select Register 3
 
     __inline static uint32_t ConvertClockRateToDivisor(uint32_t clockKHz) {
         uint32_t mckKHz = AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 1000;
@@ -685,7 +737,7 @@ struct AT91_USART {
     static const uint32_t c_MAX_BAUDRATE = ((AT91_SYSTEM_PERIPHERAL_CLOCK_HZ * 10) / 16);
     static const uint32_t c_MIN_BAUDRATE = 0;
 
-    /****/ volatile uint32_t US_CR;          // Control Register
+    volatile uint32_t US_CR;          // Control Register
     static const    uint32_t US_RSTRX = ((unsigned int)0x1 << 2); // (DBGU) Reset Receiver
     static const    uint32_t US_RSTTX = ((unsigned int)0x1 << 3); //  (DBGU) Reset Transmitter
     static const    uint32_t US_RXEN = ((unsigned int)0x1 << 4); //  (DBGU) Receiver Enable
@@ -705,7 +757,7 @@ struct AT91_USART {
     static const    uint32_t US_RTSEN = ((unsigned int)0x1 << 18); //  (USART) Request to Send enable
     static const    uint32_t US_RTSDIS = ((unsigned int)0x1 << 19); //  (USART) Request to Send Disable
 
-    /****/ volatile uint32_t US_MR;          // Mode Register
+    volatile uint32_t US_MR;          // Mode Register
     static const    uint32_t US_USMODE = ((unsigned int)0xF << 0); //  (USART) Usart mode
     static const    uint32_t     US_USMODE_NORMAL = ((unsigned int)0x0); //  (USART) Normal
     static const    uint32_t     US_USMODE_RS485 = ((unsigned int)0x1); //  (USART) RS485
@@ -751,7 +803,7 @@ struct AT91_USART {
     static const    uint32_t     US_CHMODE_LOCAL = (0x2 << 14); // = (DBGU); Local Loopback: Transmitter Output Signal is connected to Receiver Input Signal.
     static const    uint32_t     US_CHMODE_REMOTE = (0x3 << 14); // = (DBGU); Remote Loopback: RXD pin is internally connected to TXD pin.
 
-    /****/ volatile uint32_t US_IER;         // Interrupt Enable Register
+    volatile uint32_t US_IER;         // Interrupt Enable Register
     static const    uint32_t US_RXBRK = ((unsigned int)0x1 << 2); //  (USART) Break Received/End of Break
     static const    uint32_t US_TIMEOUT = ((unsigned int)0x1 << 8); //  (USART) Receiver Time-out
     static const    uint32_t US_ITERATION = ((unsigned int)0x1 << 10); //  (USART) Max number of Repetitions Reached
@@ -773,66 +825,66 @@ struct AT91_USART {
     static const    uint32_t US_COMM_TX = (0x1 << 30); // = (DBGU); COMM_TX Interrupt
     static const    uint32_t US_COMM_RX = ((uint32_t)0x1 << 31); // = (DBGU); COMM_RX Interrupt
 
-    /****/ volatile uint32_t US_IDR;         // Interrupt Disable Register
+    volatile uint32_t US_IDR;         // Interrupt Disable Register
 
-    /****/ volatile uint32_t US_IMR;         // Interrupt Mask Register
+    volatile uint32_t US_IMR;         // Interrupt Mask Register
 
-    /****/ volatile uint32_t US_CSR;         // Channel Status Register
+    volatile uint32_t US_CSR;         // Channel Status Register
     static const    uint32_t US_RI = ((unsigned int)0x1 << 20); //  (USART) Image of RI Input
     static const    uint32_t US_DSR = ((unsigned int)0x1 << 21); //  (USART) Image of DSR Input
     static const    uint32_t US_DCD = ((unsigned int)0x1 << 22); //  (USART) Image of DCD Input
     static const    uint32_t US_CTS = ((unsigned int)0x1 << 23); //  (USART) Image of CTS Input
 
-    /****/ volatile uint32_t US_RHR;         // Receiver Holding Register
+    volatile uint32_t US_RHR;         // Receiver Holding Register
 
-    /****/ volatile uint32_t US_THR;         // Transmitter Holding Register
+    volatile uint32_t US_THR;         // Transmitter Holding Register
 
-    /****/ volatile uint32_t US_BRGR;        // Baud Rate Generator Register
+    volatile uint32_t US_BRGR;        // Baud Rate Generator Register
 
-    /****/ volatile uint32_t US_RTOR;        // Receiver Time-out Register
+    volatile uint32_t US_RTOR;        // Receiver Time-out Register
 
-    /****/ volatile uint32_t US_TTGR;        // Transmitter Time-guard Register
+    volatile uint32_t US_TTGR;        // Transmitter Time-guard Register
 
-    /****/ volatile uint32_t Reserved0[5];   //
+    volatile uint32_t Reserved0[5];   //
 
-    /****/ volatile uint32_t US_FIDI;        // FI_DI_Ratio Register
+    volatile uint32_t US_FIDI;        // FI_DI_Ratio Register
 
-    /****/ volatile uint32_t US_NER;         // Nb Errors Register
+    volatile uint32_t US_NER;         // Nb Errors Register
 
-    /****/ volatile uint32_t Reserved1[1];   //
+    volatile uint32_t Reserved1[1];   //
 
-    /****/ volatile uint32_t US_IF;          // IRDA_FILTER Register
+    volatile uint32_t US_IF;          // IRDA_FILTER Register
 
 #if defined(PLATFORM_ARM_SAM9RL64_ANY)
 
-    /****/ volatile uint32_t US_MAN;          // Manchester Encoder Decoder Register
+    volatile uint32_t US_MAN;          // Manchester Encoder Decoder Register
 
-    /****/ volatile uint32_t Reserved2[43];
+    volatile uint32_t Reserved2[43];
 
 #else
-    /****/ volatile uint32_t Reserved2[44];
+    volatile uint32_t Reserved2[44];
 
 #endif
 
-    /****/ volatile uint32_t US_RPR;         // Receive Pointer Register
+    volatile uint32_t US_RPR;         // Receive Pointer Register
 
-    /****/ volatile uint32_t US_RCR;         // Receive Counter Register
+    volatile uint32_t US_RCR;         // Receive Counter Register
 
-    /****/ volatile uint32_t US_TPR;         // Transmit Pointer Register
+    volatile uint32_t US_TPR;         // Transmit Pointer Register
 
-    /****/ volatile uint32_t US_TCR;         // Transmit Counter Register
+    volatile uint32_t US_TCR;         // Transmit Counter Register
 
-    /****/ volatile uint32_t US_RNPR;        // Receive Next Pointer Register
+    volatile uint32_t US_RNPR;        // Receive Next Pointer Register
 
-    /****/ volatile uint32_t US_RNCR;        // Receive Next Counter Register
+    volatile uint32_t US_RNCR;        // Receive Next Counter Register
 
-    /****/ volatile uint32_t US_TNPR;        // Transmit Next Pointer Register
+    volatile uint32_t US_TNPR;        // Transmit Next Pointer Register
 
-    /****/ volatile uint32_t US_TNCR;        // Transmit Next Counter Register
+    volatile uint32_t US_TNCR;        // Transmit Next Counter Register
 
-    /****/ volatile uint32_t US_PTCR;        // PDC Transfer Control Register
+    volatile uint32_t US_PTCR;        // PDC Transfer Control Register
 
-    /****/ volatile uint32_t US_PTSR;        // PDC Transfer Status Register
+    volatile uint32_t US_PTSR;        // PDC Transfer Status Register
 };
 
 const TinyCLR_Api_Info* AT91_Uart_GetApi();
@@ -889,7 +941,7 @@ TinyCLR_Result AT91_Deployment_GetSectorMap(const TinyCLR_Deployment_Provider* s
 struct AT91_AIC {
     static const uint32_t c_Base = AT91C_BASE_AIC;
 
-    /****/ volatile uint32_t AIC_SMR[32];    // Source Mode Register
+    volatile uint32_t AIC_SMR[32];    // Source Mode Register
     static const    uint32_t AIC_PRIOR = (0x7 << 0); // (AIC) Priority Level
     static const    uint32_t AIC_PRIOR_LOWEST = (0x0); // (AIC) Lowest priority level
     static const    uint32_t AIC_PRIOR_HIGHEST = (0x7); // (AIC) Highest priority level
@@ -903,49 +955,49 @@ struct AT91_AIC {
 
 
 
-    /****/ volatile uint32_t AIC_SVR[32];    // Source Vector Register
+    volatile uint32_t AIC_SVR[32];    // Source Vector Register
 
-    /****/ volatile uint32_t AIC_IVR;        // IRQ Vector Register
+    volatile uint32_t AIC_IVR;        // IRQ Vector Register
 
-    /****/ volatile uint32_t AIC_FVR;        // FIQ Vector Register
+    volatile uint32_t AIC_FVR;        // FIQ Vector Register
 
-    /****/ volatile uint32_t AIC_ISR;        // Interrupt Status Register
+    volatile uint32_t AIC_ISR;        // Interrupt Status Register
 
-    /****/ volatile uint32_t AIC_IPR;        // Interrupt Pending Register
+    volatile uint32_t AIC_IPR;        // Interrupt Pending Register
 
-    /****/ volatile uint32_t AIC_IMR;        // Interrupt Mask Register
+    volatile uint32_t AIC_IMR;        // Interrupt Mask Register
 
-    /****/ volatile uint32_t AIC_CISR;       // Core Interrupt Status Register
+    volatile uint32_t AIC_CISR;       // Core Interrupt Status Register
     static const    uint32_t AIC_NFIQ = (0x1 << 0); // (AIC) NFIQ Status
     static const    uint32_t AIC_NIRQ = (0x1 << 1); // (AIC) NIRQ Status
 
-    /****/ volatile uint32_t Reserved6[2];
+    volatile uint32_t Reserved6[2];
 
-    /****/ volatile uint32_t AIC_IECR;       // Interrupt Enable Command Register
+    volatile uint32_t AIC_IECR;       // Interrupt Enable Command Register
 
-    /****/ volatile uint32_t AIC_IDCR;       // Interrupt Disable Command Register
+    volatile uint32_t AIC_IDCR;       // Interrupt Disable Command Register
     static const    uint32_t AIC_IDCR_DIABLE_ALL = 0xFFFFFFFF; // disable all
 
-    /****/ volatile uint32_t AIC_ICCR;       // Interrupt Clear Command Register
+    volatile uint32_t AIC_ICCR;       // Interrupt Clear Command Register
     static const    uint32_t AIC_ICCR_CLEAR_ALL = 0xFFFFFFFF; // clear all
 
-    /****/ volatile uint32_t AIC_ISCR;       // Interrupt Set Command Register
+    volatile uint32_t AIC_ISCR;       // Interrupt Set Command Register
 
-    /****/ volatile uint32_t AIC_EOICR;      // End of Interrupt Command Register
+    volatile uint32_t AIC_EOICR;      // End of Interrupt Command Register
 
-    /****/ volatile uint32_t AIC_SPU;        // Spurious Vector Register
+    volatile uint32_t AIC_SPU;        // Spurious Vector Register
 
-    /****/ volatile uint32_t AIC_DCR;        // Debug Control Register (Protect)
+    volatile uint32_t AIC_DCR;        // Debug Control Register (Protect)
     static const    uint32_t AIC_DCR_PROT = (0x1 << 0); // (AIC) Protection Mode
     static const    uint32_t AIC_DCR_GMSK = (0x1 << 1); // (AIC) General Mask
 
-    /****/ volatile uint32_t Reserved7[1];
+    volatile uint32_t Reserved7[1];
 
-    /****/ volatile uint32_t AIC_FFER;       // Fast Forcing Enable Register
+    volatile uint32_t AIC_FFER;       // Fast Forcing Enable Register
 
-    /****/ volatile uint32_t AIC_FFDR;       // Fast Forcing Disable Register
+    volatile uint32_t AIC_FFDR;       // Fast Forcing Disable Register
 
-    /****/ volatile uint32_t AIC_FFSR;       // Fast Forcing Status Register
+    volatile uint32_t AIC_FFSR;       // Fast Forcing Status Register
 
 
     bool IsInterruptPending() {
@@ -1049,7 +1101,7 @@ struct AT91_I2C {
 
     //--//
 
-    /****/ volatile uint32_t TWI_CR;         // Control Register
+    volatile uint32_t TWI_CR;         // Control Register
     static const    uint32_t TWI_CR_START = (0x1 << 0); // send START condition
     static const    uint32_t TWI_CR_STOP = (0x1 << 1); // send STOP condition
     static const    uint32_t TWI_CR_MSEN = (0x1 << 2); // Enable Master Transfer
@@ -1062,7 +1114,7 @@ struct AT91_I2C {
 
     static const    uint32_t TWI_CR_SWRST = (0x1 << 7); // Softwre Reset
 
-    /****/ volatile uint32_t TWI_MMR;           // Master Mode Register
+    volatile uint32_t TWI_MMR;           // Master Mode Register
     static const    uint32_t TWI_MMR_IADRSZ_0 = (0x0 << 8);  // No internal device address
     static const    uint32_t TWI_MMR_IADRSZ_1 = (0x1 << 8);  // One byte device address
     static const    uint32_t TWI_MMR_IADRSZ_2 = (0x2 << 8);  // Two bytes device address
@@ -1071,51 +1123,51 @@ struct AT91_I2C {
     static const    uint32_t TWI_MMR_DADR_MASK = 0x00FF0000;  // Subordinate device address mask
     static const    uint32_t TWI_MMR_DADR_SHIFT = 16;           // subordinate address position
 
-    /****/ volatile uint32_t Reserved0[1];
+    volatile uint32_t Reserved0[1];
 
-    /****/ volatile uint32_t TWI_IADR;           // Internal address register
+    volatile uint32_t TWI_IADR;           // Internal address register
     static const    uint32_t TWI_IADR_MASK_0 = 0x00000000; // No internal device address
     static const    uint32_t TWI_IADR_MASK_1 = 0x000000FF; // One byte device address
     static const    uint32_t TWI_IADR_MASK_2 = 0x0000FFFF; // Two bytes device address
     static const    uint32_t TWI_IADR_MASK_3 = 0x00FFFFFF; // Three bytes device address
 
-    /****/ volatile uint32_t TWI_CWGR;           // Clock waveform generator Register
+    volatile uint32_t TWI_CWGR;           // Clock waveform generator Register
     static const    uint32_t TWI_CWGR_CLDIV_MASK = 0x000000FF; // Clock Low Divider
     static const    uint32_t TWI_CWGR_CHDIV_MASK = 0x0000FF00; // Clock High Divider
     static const    uint32_t TWI_CWGR_CHDIV_SHIFT = 8;         // Clock High Divider shift
     static const    uint32_t TWI_CWGR_CKDIV_MASK = 0x00070000; // Clock Divider
     static const    uint32_t TWI_CWGR_CKDIV_SHIFT = 16;         // Clock Divider shift
 
-    /****/ volatile uint32_t Reserved1[3];
+    volatile uint32_t Reserved1[3];
 
-    /****/ volatile uint32_t TWI_SR;             // Status Register
+    volatile uint32_t TWI_SR;             // Status Register
     static const    uint32_t TWI_SR_TXCOMP = (0x1 << 0); // holding and shift register are empty and STOP condition has been sent
     static const    uint32_t TWI_SR_RXRDY = (0x1 << 1); // Data moved from shifter since last read
     static const    uint32_t TWI_SR_TXRDY = (0x1 << 2); // Data moved to shifter
     static const    uint32_t TWI_SR_NACK = (0x1 << 8); // No acknoledge received
 
-    /****/ volatile uint32_t TWI_IER;            // Interrupt Enable Register
+    volatile uint32_t TWI_IER;            // Interrupt Enable Register
     static const    uint32_t TWI_IER_TXCOMP = (0x1 << 0); // Transmission completed
     static const    uint32_t TWI_IER_RXRDY = (0x1 << 1); // receive holding register ready
     static const    uint32_t TWI_IER_TXRDY = (0x1 << 2); // transmit holding register ready
     static const    uint32_t TWI_IER_NACK = (0x1 << 8); // No acknoledge received
 
-    /****/ volatile uint32_t TWI_IDR;            // Interrupt Disable Register
+    volatile uint32_t TWI_IDR;            // Interrupt Disable Register
     static const    uint32_t TWI_IDR_TXCOMP = (0x1 << 0); // Transmission completed
     static const    uint32_t TWI_IDR_RXRDY = (0x1 << 1); // receive holding register ready
     static const    uint32_t TWI_IDR_TXRDY = (0x1 << 2); // transmit holding register ready
     static const    uint32_t TWI_IDR_NACK = (0x1 << 8); // No acknoledge received
 
-    /****/ volatile uint32_t TWI_IMR;            // Interrupt Mask Register
+    volatile uint32_t TWI_IMR;            // Interrupt Mask Register
     static const    uint32_t TWI_IMR_TXCOMP = (0x1 << 0); // Transmission completed
     static const    uint32_t TWI_IMR_RXRDY = (0x1 << 1); // receive holding register ready
     static const    uint32_t TWI_IMR_TXRDY = (0x1 << 2); // transmit holding register ready
     static const    uint32_t TWI_IMR_NACK = (0x1 << 8); // No acknoledge received
 
-    /****/ volatile uint32_t TWI_RHR;            // Receive Holding Register
+    volatile uint32_t TWI_RHR;            // Receive Holding Register
     static const    uint32_t TWI_RHR_RXDATA_MASK = 0x000000FF; // data mask
 
-    /****/ volatile uint32_t TWI_THR;            // Receive Holding Register
+    volatile uint32_t TWI_THR;            // Receive Holding Register
     static const    uint32_t TWI_THR_TXDATA_MASK = 0x000000FF; // data mask
 };
 //
@@ -1140,12 +1192,12 @@ struct AT91_TC {
 
     static const uint32_t c_Base = AT91C_BASE_TC0;
 
-    /****/ volatile uint32_t TC_CCR;    // Channel Control Register
+    volatile uint32_t TC_CCR;    // Channel Control Register
     static const    uint32_t TC_CLKEN = (0x1 << 0);// (TC) Counter Clock Enable Command
     static const    uint32_t TC_CLKDIS = (0x1 << 1);// (TC)Counter Clock Disable Command
     static const    uint32_t TC_SWTRG = (0x1 << 2);// (TC)Software Trigger Command
 
-    /****/ volatile uint32_t TC_CMR;    // Channel Mode Register (Capture Mode / Waveform Mode)
+    volatile uint32_t TC_CMR;    // Channel Mode Register (Capture Mode / Waveform Mode)
     static const    uint32_t TC_CLKS = (0x7 << 0);// (TC)Clock Selection
     static const    uint32_t     TC_CLKS_TIMER_DIV1_CLOCK = (0x0);// (TC)Clock selected: TIMER_DIV1_CLOCK
     static const    uint32_t     TC_CLKS_TIMER_DIV2_CLOCK = (0x1);// (TC)Clock selected: TIMER_DIV2_CLOCK
@@ -1240,17 +1292,17 @@ struct AT91_TC {
     static const    uint32_t     TC_BSWTRG_CLEAR = ((uint32_t)0x2 << 30);// (TC)Effect: clear
     static const    uint32_t     TC_BSWTRG_TOGGLE = ((uint32_t)0x3 << 30);// (TC)Effect: toggle
 
-    /****/ volatile uint32_t Reserved0[2];
+    volatile uint32_t Reserved0[2];
 
-    /****/ volatile uint32_t TC_CV;     // Counter Value
+    volatile uint32_t TC_CV;     // Counter Value
 
-    /****/ volatile uint32_t TC_RA;     // Register A
+    volatile uint32_t TC_RA;     // Register A
 
-    /****/ volatile uint32_t TC_RB;     // Register B
+    volatile uint32_t TC_RB;     // Register B
 
-    /****/ volatile uint32_t TC_RC;     // Register C
+    volatile uint32_t TC_RC;     // Register C
 
-    /****/ volatile uint32_t TC_SR;     // Status Register
+    volatile uint32_t TC_SR;     // Status Register
     static const    uint32_t TC_COVFS = (0x1 << 0);// (TC)Counter Overflow
     static const    uint32_t TC_LOVRS = (0x1 << 1);// (TC)Load Overrun
     static const    uint32_t TC_CPAS = (0x1 << 2);// (TC)RA Compare
@@ -1263,11 +1315,11 @@ struct AT91_TC {
     static const    uint32_t TC_MTIOA = (0x1 << 17);// (TC)TIOA Mirror
     static const    uint32_t TC_MTIOB = (0x1 << 18);// (TC)TIOA Mirror
 
-    /****/ volatile uint32_t TC_IER;    // Interrupt Enable Register
+    volatile uint32_t TC_IER;    // Interrupt Enable Register
 
-    /****/ volatile uint32_t TC_IDR;    // Interrupt Disable Register
+    volatile uint32_t TC_IDR;    // Interrupt Disable Register
 
-    /****/ volatile uint32_t TC_IMR;    // Interrupt Mask Register
+    volatile uint32_t TC_IMR;    // Interrupt Mask Register
 };
 
 //
@@ -1335,12 +1387,12 @@ struct AT91_WATCHDOG {
 
     //--//
 
-    /****/ volatile uint32_t WTDG_CR;
+    volatile uint32_t WTDG_CR;
     static const    uint32_t WCR__KEY_mask = 0xFF000000;
     static const    uint32_t WCR__KEY = 0xA5000000;
     static const    uint32_t WCR__RESTART = 0x00000001;
 
-    /****/ volatile uint32_t WTDG_MR;
+    volatile uint32_t WTDG_MR;
     static const    uint32_t WMR_WDV_mask = 0x00000FFF;
     static const    uint32_t WMR_WDFIEN = 0x00001000;
     static const    uint32_t WMR_WDRSTEN = 0x00002000;
@@ -1353,7 +1405,7 @@ struct AT91_WATCHDOG {
     static const    uint32_t WMR_WDIDLEHLT = 0x20000000;
 
 
-    /****/ volatile uint32_t WTDG_SR;
+    volatile uint32_t WTDG_SR;
     static const    uint32_t WSR__WDUNF = 0x00000001;
     static const    uint32_t WSR__WDERR = 0x00000002;
 };

@@ -230,7 +230,7 @@ bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_P
         switch (pinDir) {
         case AT91_Gpio_Direction::Output:
 
-            pioX.PIO_PPUDR = bitmask;	// Disable the pull up resistor
+            pioX.PIO_PUDR = bitmask;	// Disable the pull up resistor
             PIO_PPDDR(port) = bitmask;	// Disable the pull-down resistor
 
             pioX.PIO_OER = bitmask; // Enable Output
@@ -241,33 +241,32 @@ bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_P
             pioX.PIO_ODR = bitmask; // Disable Output
 
             if (filter == AT91_Gpio_Filter::Enable) {
-                // TODO
+                pioX.PIO_IFER = bitmask;
             }
             else {
-                // TODO
+                pioX.PIO_IFDR = bitmask;
             }
 
             if (filterSlowClock == AT91_Gpio_FilterSlowClock::Enable) {
-                // TO DO
+                pioX.PIO_IFSCER = bitmask;
             }
             else {
-                // TO DO
+                pioX.PIO_IFSCDR = bitmask;
             }
-
 
             switch (resistorMode) {
             case AT91_Gpio_ResistorMode::Inactive:
-                pioX.PIO_PPUDR = bitmask;	// Disable the pull up resistor
+                pioX.PIO_PUDR = bitmask;	// Disable the pull up resistor
                 PIO_PPDDR(port) = bitmask;	// Disable the pull-down resistor
                 break;
 
             case AT91_Gpio_ResistorMode::PullUp:
                 PIO_PPDDR(port) = bitmask;	// Disable the pull-down resistor first.
-                pioX.PIO_PPUER = bitmask;	// Enable the pull up resistor
+                pioX.PIO_PUER = bitmask;	// Enable the pull up resistor
                 break;
 
             case AT91_Gpio_ResistorMode::PullDown:
-                pioX.PIO_PPUDR = bitmask;	// Disable the pull up resistor first.
+                pioX.PIO_PUDR = bitmask;	// Disable the pull up resistor first.
                 PIO_PPDER(port) = bitmask;	// Enables the pull-down resistor
                 break;
             }
@@ -276,33 +275,33 @@ bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_P
     }
     else {
         if (resistorMode == AT91_Gpio_ResistorMode::Inactive)
-            pioX.PIO_PPUDR = bitmask;         // Disable the pull up resistor
+            pioX.PIO_PUDR = bitmask;         // Disable the pull up resistor
         else if (resistorMode == AT91_Gpio_ResistorMode::PullUp)
-            pioX.PIO_PPUER = bitmask;            // Enable the pull up resistor
+            pioX.PIO_PUER = bitmask;            // Enable the pull up resistor
 
         switch (peripheralSelection) {
         case AT91_Gpio_PeripheralSelection::PeripheralA:
             pioX.PIO_PDR = bitmask;
-            pioX.PIO_ASR &= ~bitmask; // Writes a zero to bit that is masked
-            pioX.PIO_BSR &= ~bitmask; // Writes a zero to bit that is masked
+            pioX.PIO_ABCDSR[0] &= ~bitmask; // Writes a zero to bit that is masked
+            pioX.PIO_ABCDSR[1] &= ~bitmask; // Writes a zero to bit that is masked
             break;
 
         case AT91_Gpio_PeripheralSelection::PeripheralB:
             pioX.PIO_PDR = bitmask;
-            pioX.PIO_ASR |= bitmask;
-            pioX.PIO_BSR &= ~bitmask;
+            pioX.PIO_ABCDSR[0] |= bitmask;
+            pioX.PIO_ABCDSR[1] &= ~bitmask;
             break;
 
         case AT91_Gpio_PeripheralSelection::PeripheralC:
             pioX.PIO_PDR = bitmask;
-            pioX.PIO_ASR &= ~bitmask;
-            pioX.PIO_BSR |= bitmask;
+            pioX.PIO_ABCDSR[0] &= ~bitmask;
+            pioX.PIO_ABCDSR[1] |= bitmask;
             break;
 
         case AT91_Gpio_PeripheralSelection::PeripheralD:
             pioX.PIO_PDR = bitmask;
-            pioX.PIO_ASR |= bitmask;
-            pioX.PIO_BSR |= bitmask;
+            pioX.PIO_ABCDSR[0] |= bitmask;
+            pioX.PIO_ABCDSR[1] |= bitmask;
             break;
         }
 
