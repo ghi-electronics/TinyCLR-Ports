@@ -670,9 +670,7 @@ TinyCLR_Result STM32F4_Uart_Read(const TinyCLR_Uart_Provider* self, uint8_t* buf
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (g_UartController[portNum].isOpened == false || g_UartController[self->Index].rxBufferSize == 0) {
-        length = 0;
-
+    if (g_UartController[portNum].isOpened == false) {
         return TinyCLR_Result::NotAvailable;
     }
 
@@ -698,9 +696,7 @@ TinyCLR_Result STM32F4_Uart_Write(const TinyCLR_Uart_Provider* self, const uint8
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (g_UartController[portNum].isOpened == false || g_UartController[self->Index].txBufferSize == 0) {
-        length = 0;
-
+    if (g_UartController[portNum].isOpened == false) {
         return TinyCLR_Result::NotAvailable;
     }
 
