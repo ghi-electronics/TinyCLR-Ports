@@ -485,7 +485,7 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
 
     if (g_UartController[portNum].txBufferSize == 0) {
         if (STM32F4_Uart_SetWriteBufferSize(self, g_STM32F4_Uart_TxDefaultBuffersSize[portNum]) != TinyCLR_Result::Success)
-            return TinyCLR_Result::OutOfMemory; 
+            return TinyCLR_Result::OutOfMemory;
     }
 
     if (g_UartController[portNum].rxBufferSize == 0) {
