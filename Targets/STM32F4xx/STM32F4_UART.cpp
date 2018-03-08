@@ -483,30 +483,14 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
 
     g_UartController[portNum].isOpened = true;
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
-
     if (g_UartController[portNum].txBufferSize == 0) {
-        g_UartController[portNum].txBufferSize = g_STM32F4_Uart_TxDefaultBuffersSize[portNum];
-
-        g_UartController[self->Index].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_UartController[portNum].txBufferSize);
-
-        if (g_UartController[self->Index].TxBuffer == nullptr) {
-            g_UartController[self->Index].txBufferSize = 0;
-
-            return TinyCLR_Result::OutOfMemory;
-        }
+        if (STM32F4_Uart_SetWriteBufferSize(self, g_STM32F4_Uart_TxDefaultBuffersSize[portNum]) != TinyCLR_Result::Success)
+            return TinyCLR_Result::OutOfMemory; 
     }
 
     if (g_UartController[portNum].rxBufferSize == 0) {
-        g_UartController[portNum].rxBufferSize = g_STM32F4_Uart_RxDefaultBuffersSize[portNum];
-
-        g_UartController[self->Index].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_UartController[portNum].rxBufferSize);
-
-        if (g_UartController[self->Index].RxBuffer == nullptr) {
-            g_UartController[self->Index].rxBufferSize = 0;
-
+        if (STM32F4_Uart_SetReadBufferSize(self, g_STM32F4_Uart_RxDefaultBuffersSize[portNum]) != TinyCLR_Result::Success)
             return TinyCLR_Result::OutOfMemory;
-        }
     }
 
     STM32F4_Uart_TxBufferEmptyInterruptEnable(portNum, true);
