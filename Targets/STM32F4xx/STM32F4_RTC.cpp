@@ -122,22 +122,19 @@ TinyCLR_Result STM32F4_Rtc_ExitInitializeMode() {
     RTC->ISR &= (uint32_t)~RTC_ISR_INIT;
 }
 
-void STM32F4_Rtc_EnableWriteProtection() {
-    RTC->WPR = 0xFF;
-}
-
-void STM32F4_Rtc_DisableWriteProtection() {
-    RTC->WPR = 0xCA;
-    RTC->WPR = 0x53;
+void STM32F4_Rtc_SetWriteProtection(bool set) {
+    if (set)
+        RTC->WPR = 0xFF;
+    else {
+        RTC->WPR = 0xCA;
+        RTC->WPR = 0x53;
+    }
 }
 
 TinyCLR_Result STM32F4_Rtc_WaitForSynchro() {
-
     int32_t timeout = 0xFFFFFF;
     /* Disable the write protection for RTC registers */
-    // RTC->WPR = 0xCA;
-    // RTC->WPR = 0x53;
-    STM32F4_Rtc_DisableWriteProtection();
+    STM32F4_Rtc_SetWriteProtection(false);
 
     /* Clear RSF flag */
     RTC->ISR &= (uint32_t)RTC_RSF_MASK;
@@ -146,11 +143,9 @@ TinyCLR_Result STM32F4_Rtc_WaitForSynchro() {
     while (((RTC->ISR & RTC_ISR_RSF) == 0) && (timeout-- > 0));
 
     /* Enable the write protection for RTC registers */
-    //RTC->WPR = 0xFF;
-    STM32F4_Rtc_EnableWriteProtection();
+    STM32F4_Rtc_SetWriteProtection(true);
 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
-
 }
 
 TinyCLR_Result STM32F4_Rtc_Configuration() {
@@ -195,11 +190,8 @@ TinyCLR_Result STM32F4_Rtc_Configuration() {
 }
 
 TinyCLR_Result STM32F4_Rtc_Initialize() {
-
     /* Disable the write protection for RTC registers */
-    //RTC->WPR = 0xCA;
-    //RTC->WPR = 0x53;
-    STM32F4_Rtc_DisableWriteProtection();
+    STM32F4_Rtc_SetWriteProtection(false);
 
     if (STM32F4_Rtc_EnterInitializeMode() != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
@@ -217,29 +209,12 @@ TinyCLR_Result STM32F4_Rtc_Initialize() {
     STM32F4_Rtc_ExitInitializeMode();
 
     /* Enable the write protection for RTC registers */
-    //RTC->WPR = 0xFF;
-    STM32F4_Rtc_EnableWriteProtection();
+    STM32F4_Rtc_SetWriteProtection(true);
 
     return TinyCLR_Result::Success;
 }
 
-uint32_t STM32F4_Rtc_ReadBackupRegister() {
-    /* Read the specified register */
-    return (*(reinterpret_cast<uint32_t *>(RTC_BASE + 0x50 + (RTC_BKP_DR0 * 4))));
-
-}
-
-void STM32F4_Rtc_WriteBackupRegister(uint32_t value) {
-    /* Write the specified register */
-    *(reinterpret_cast<uint32_t *>(RTC_BASE + 0x50 + (RTC_BKP_DR0 * 4))) = value;
-
-}
-
 TinyCLR_Result STM32F4_Rtc_Acquire(const TinyCLR_Rtc_Provider* self) {
-    if (STM32F4_Rtc_ReadBackupRegister() == RTC_BKP_VALUE) {
-
-    }
-
     if (STM32F4_Rtc_Configuration() != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
 
@@ -256,16 +231,6 @@ TinyCLR_Result STM32F4_Rtc_Release(const TinyCLR_Rtc_Provider* self) {
 TinyCLR_Result STM32F4_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime& value) {
     uint32_t  time;
     uint32_t  date;
-
-    // value.Year = 2010;
-    // value.Month = 2;
-    // value.DayOfYear = 33;
-    // value.DayOfMonth = 2;
-    // value.DayOfWeek = 0;
-    // value.Hour = 13;
-    // value.Minute = 14;
-    // value.Second = 15;
-    // value.Millisecond = 516;
 
     /* Get the RTC_TR register */
     time = (uint32_t)(RTC->TR & RTC_TR_RESERVED_MASK);
@@ -303,13 +268,13 @@ TinyCLR_Result STM32F4_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_
         ((uint32_t)STM32F4_Rtc_ByteToBcd2(value.Minute) << 8) | \
         ((uint32_t)STM32F4_Rtc_ByteToBcd2(value.Second)));
 
-    date = (((uint32_t)STM32F4_Rtc_ByteToBcd2(value.Year) << 16) | \
+    date = (((uint32_t)STM32F4_Rtc_ByteToBcd2(value.Year - 1980) << 16) | \
         ((uint32_t)STM32F4_Rtc_ByteToBcd2(value.Month) << 8) | \
         ((uint32_t)STM32F4_Rtc_ByteToBcd2(value.DayOfMonth)) | \
         ((uint32_t)value.DayOfWeek << 13));
 
     /* Disable the write protection for RTC registers */
-    STM32F4_Rtc_DisableWriteProtection();
+    STM32F4_Rtc_SetWriteProtection(false);
 
     /* Set Initialization mode */
     if (STM32F4_Rtc_EnterInitializeMode() != TinyCLR_Result::Success)
@@ -326,9 +291,7 @@ TinyCLR_Result STM32F4_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_
     STM32F4_Rtc_WaitForSynchro();
 
     /* Enable the write protection for RTC registers */
-    STM32F4_Rtc_EnableWriteProtection();
-
-    STM32F4_Rtc_WriteBackupRegister(RTC_BKP_VALUE);
+    STM32F4_Rtc_SetWriteProtection(true);
 
     return TinyCLR_Result::Success;
 }
