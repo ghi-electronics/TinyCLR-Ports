@@ -71,6 +71,8 @@
 
 #define RTC_BKP_VALUE   0x32F2
 
+#define RTC_TIMEOUT 0xFFFFFF
+
 static TinyCLR_Rtc_Provider rtcProvider;
 static TinyCLR_Api_Info timeApi;
 
@@ -105,21 +107,22 @@ uint8_t STM32F4_Rtc_Bcd2ToByte(uint8_t value) {
     return ((((uint8_t)(value & (uint8_t)0xF0) >> (uint8_t)0x4) * 10) + (value & (uint8_t)0x0F));
 }
 
-TinyCLR_Result STM32F4_Rtc_EnterInitializeMode() {
-    int timeout = 0xFFFFFF;
-    /* Check if the Initialization mode is set */
-    if ((RTC->ISR & RTC_ISR_INITF) == 0) {
-        /* Set the Initialization mode */
-        RTC->ISR |= RTC_INIT_MASK;
-        /* Wait till RTC is in INIT state and if Time out is reached exit */
-        while ((timeout-- > 0) && ((RTC->ISR & RTC_ISR_INITF) == 0));
+TinyCLR_Result STM32F4_Rtc_SetInitializeMode(bool set) {
+    int timeout = RTC_TIMEOUT;
+    if (set) {
+        /* Check if the Initialization mode is set */
+        if ((RTC->ISR & RTC_ISR_INITF) == 0) {
+            /* Set the Initialization mode */
+            RTC->ISR |= RTC_INIT_MASK;
+            /* Wait till RTC is in INIT state and if Time out is reached exit */
+            while ((timeout-- > 0) && ((RTC->ISR & RTC_ISR_INITF) == 0));
+        }
     }
+    else {
+         RTC->ISR &= (uint32_t)~RTC_ISR_INIT;
+    }
+
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
-
-}
-
-TinyCLR_Result STM32F4_Rtc_ExitInitializeMode() {
-    RTC->ISR &= (uint32_t)~RTC_ISR_INIT;
 }
 
 void STM32F4_Rtc_SetWriteProtection(bool set) {
@@ -132,7 +135,7 @@ void STM32F4_Rtc_SetWriteProtection(bool set) {
 }
 
 TinyCLR_Result STM32F4_Rtc_WaitForSynchro() {
-    int32_t timeout = 0xFFFFFF;
+    int32_t timeout = RTC_TIMEOUT;
     /* Disable the write protection for RTC registers */
     STM32F4_Rtc_SetWriteProtection(false);
 
@@ -169,7 +172,7 @@ TinyCLR_Result STM32F4_Rtc_Configuration() {
     uint32_t flag_mask = RCC_FLAG_LSERDY & RCC_FLAG_MASK;
     uint32_t status_reg = RCC->BDCR;
 
-    int timeout = 0xFFFFFF;
+    int timeout = RTC_TIMEOUT;
 
     while ((status_reg & ((uint32_t)1 << flag_mask)) == (uint32_t)RESET && timeout-- > 0) {
         status_reg = RCC->BDCR;
@@ -193,7 +196,7 @@ TinyCLR_Result STM32F4_Rtc_Initialize() {
     /* Disable the write protection for RTC registers */
     STM32F4_Rtc_SetWriteProtection(false);
 
-    if (STM32F4_Rtc_EnterInitializeMode() != TinyCLR_Result::Success)
+    if (STM32F4_Rtc_SetInitializeMode(true) != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
 
     /* Clear RTC CR FMT Bit */
@@ -206,7 +209,7 @@ TinyCLR_Result STM32F4_Rtc_Initialize() {
     RTC->PRER |= (uint32_t)(0x7F << 16);
 
     /* Exit Initialization mode */
-    STM32F4_Rtc_ExitInitializeMode();
+    STM32F4_Rtc_SetInitializeMode(false);
 
     /* Enable the write protection for RTC registers */
     STM32F4_Rtc_SetWriteProtection(true);
@@ -277,7 +280,7 @@ TinyCLR_Result STM32F4_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_
     STM32F4_Rtc_SetWriteProtection(false);
 
     /* Set Initialization mode */
-    if (STM32F4_Rtc_EnterInitializeMode() != TinyCLR_Result::Success)
+    if (STM32F4_Rtc_SetInitializeMode(true) != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
 
     /* Set the RTC_TR register */
@@ -286,7 +289,7 @@ TinyCLR_Result STM32F4_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_
     /* Set the RTC_DR register */
     RTC->DR = (uint32_t)(date & RTC_DR_RESERVED_MASK);
 
-    STM32F4_Rtc_ExitInitializeMode();
+    STM32F4_Rtc_SetInitializeMode(false);
 
     STM32F4_Rtc_WaitForSynchro();
 
