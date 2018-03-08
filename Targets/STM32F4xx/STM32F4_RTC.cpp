@@ -119,7 +119,7 @@ TinyCLR_Result STM32F4_Rtc_SetInitializeMode(bool set) {
         }
     }
     else {
-         RTC->ISR &= (uint32_t)~RTC_ISR_INIT;
+        RTC->ISR &= ~RTC_ISR_INIT;
     }
 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
@@ -140,7 +140,7 @@ TinyCLR_Result STM32F4_Rtc_WaitForSynchro() {
     STM32F4_Rtc_SetWriteProtection(false);
 
     /* Clear RSF flag */
-    RTC->ISR &= (uint32_t)RTC_RSF_MASK;
+    RTC->ISR &= RTC_RSF_MASK;
 
     /* Wait the registers to be synchronised */
     while (((RTC->ISR & RTC_ISR_RSF) == 0) && (timeout-- > 0));
@@ -174,7 +174,7 @@ TinyCLR_Result STM32F4_Rtc_Configuration() {
 
     int timeout = RTC_TIMEOUT;
 
-    while ((status_reg & ((uint32_t)1 << flag_mask)) == (uint32_t)RESET && timeout-- > 0) {
+    while ((status_reg & (1 << flag_mask)) == RESET && timeout-- > 0) {
         status_reg = RCC->BDCR;
     }
 
@@ -200,13 +200,13 @@ TinyCLR_Result STM32F4_Rtc_Initialize() {
         return TinyCLR_Result::InvalidOperation;
 
     /* Clear RTC CR FMT Bit */
-    RTC->CR &= ((uint32_t)~(RTC_CR_FMT));
+    RTC->CR &= ~(RTC_CR_FMT);
     /* Set RTC_CR register */
-    RTC->CR |= ((uint32_t)(RTC_HourFormat_24));
+    RTC->CR |= RTC_HourFormat_24;
 
     /* Configure the RTC PRER */
-    RTC->PRER = (uint32_t)(0xFF);
-    RTC->PRER |= (uint32_t)(0x7F << 16);
+    RTC->PRER = 0xFF;
+    RTC->PRER |= 0x7F << 16;
 
     /* Exit Initialization mode */
     STM32F4_Rtc_SetInitializeMode(false);
@@ -236,29 +236,29 @@ TinyCLR_Result STM32F4_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_
     uint32_t  date;
 
     /* Get the RTC_TR register */
-    time = (uint32_t)(RTC->TR & RTC_TR_RESERVED_MASK);
+    time = RTC->TR & RTC_TR_RESERVED_MASK;
 
-    uint8_t hour = (uint8_t)((time & (RTC_TR_HT | RTC_TR_HU)) >> 16);
-    uint8_t minute = (uint8_t)((time & (RTC_TR_MNT | RTC_TR_MNU)) >> 8);
-    uint8_t second = (uint8_t)(time & (RTC_TR_ST | RTC_TR_SU));
+    uint8_t hour = static_cast<uint8_t>((time & (RTC_TR_HT | RTC_TR_HU)) >> 16);
+    uint8_t minute = static_cast<uint8_t>((time & (RTC_TR_MNT | RTC_TR_MNU)) >> 8);
+    uint8_t second = static_cast<uint8_t>(time & (RTC_TR_ST | RTC_TR_SU));
 
-    value.Hour = (uint8_t)STM32F4_Rtc_Bcd2ToByte(hour);
-    value.Minute = (uint8_t)STM32F4_Rtc_Bcd2ToByte(minute);
-    value.Second = (uint8_t)STM32F4_Rtc_Bcd2ToByte(second);
+    value.Hour = STM32F4_Rtc_Bcd2ToByte(hour);
+    value.Minute = STM32F4_Rtc_Bcd2ToByte(minute);
+    value.Second = STM32F4_Rtc_Bcd2ToByte(second);
     value.Millisecond = 0;
 
     /* Get the RTC_TR register */
-    date = (uint32_t)(RTC->DR & RTC_DR_RESERVED_MASK);
+    date = RTC->DR & RTC_DR_RESERVED_MASK;
 
-    uint8_t year = (uint8_t)((date & (RTC_DR_YT | RTC_DR_YU)) >> 16);
-    uint8_t month = (uint8_t)((date & (RTC_DR_MT | RTC_DR_MU)) >> 8);
-    uint8_t day_of_month = (uint8_t)(date & (RTC_DR_DT | RTC_DR_DU));
-    uint8_t day_of_week = (uint8_t)((date & (RTC_DR_WDU)) >> 13);
+    uint8_t year = static_cast<uint8_t>((date & (RTC_DR_YT | RTC_DR_YU)) >> 16);
+    uint8_t month = static_cast<uint8_t>((date & (RTC_DR_MT | RTC_DR_MU)) >> 8);
+    uint8_t day_of_month = static_cast<uint8_t>(date & (RTC_DR_DT | RTC_DR_DU));
+    uint8_t day_of_week = static_cast<uint8_t>((date & (RTC_DR_WDU)) >> 13);
 
-    value.Year = (uint8_t)STM32F4_Rtc_Bcd2ToByte(year) + 1980;
-    value.Month = (uint8_t)STM32F4_Rtc_Bcd2ToByte(month);
-    value.DayOfMonth = (uint8_t)STM32F4_Rtc_Bcd2ToByte(day_of_month);
-    value.DayOfWeek = (uint8_t)STM32F4_Rtc_Bcd2ToByte(day_of_week);
+    value.Year = STM32F4_Rtc_Bcd2ToByte(year) + 1980;
+    value.Month = STM32F4_Rtc_Bcd2ToByte(month);
+    value.DayOfMonth = STM32F4_Rtc_Bcd2ToByte(day_of_month);
+    value.DayOfWeek = STM32F4_Rtc_Bcd2ToByte(day_of_week);
 
     return TinyCLR_Result::Success;
 }
@@ -267,14 +267,8 @@ TinyCLR_Result STM32F4_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_
     uint32_t  time;
     uint32_t  date;
 
-    time = (uint32_t)(((uint32_t)STM32F4_Rtc_ByteToBcd2(value.Hour) << 16) | \
-        ((uint32_t)STM32F4_Rtc_ByteToBcd2(value.Minute) << 8) | \
-        ((uint32_t)STM32F4_Rtc_ByteToBcd2(value.Second)));
-
-    date = (((uint32_t)STM32F4_Rtc_ByteToBcd2(value.Year - 1980) << 16) | \
-        ((uint32_t)STM32F4_Rtc_ByteToBcd2(value.Month) << 8) | \
-        ((uint32_t)STM32F4_Rtc_ByteToBcd2(value.DayOfMonth)) | \
-        ((uint32_t)value.DayOfWeek << 13));
+    time = (STM32F4_Rtc_ByteToBcd2(value.Hour) << 16) | (STM32F4_Rtc_ByteToBcd2(value.Minute) << 8) | (STM32F4_Rtc_ByteToBcd2(value.Second));
+    date = (STM32F4_Rtc_ByteToBcd2(value.Year - 1980) << 16) | (STM32F4_Rtc_ByteToBcd2(value.Month) << 8) | (STM32F4_Rtc_ByteToBcd2(value.DayOfMonth)) | (value.DayOfWeek << 13);
 
     /* Disable the write protection for RTC registers */
     STM32F4_Rtc_SetWriteProtection(false);
@@ -284,10 +278,10 @@ TinyCLR_Result STM32F4_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_
         return TinyCLR_Result::InvalidOperation;
 
     /* Set the RTC_TR register */
-    RTC->TR = (uint32_t)(time & RTC_TR_RESERVED_MASK);
+    RTC->TR = time & RTC_TR_RESERVED_MASK;
 
     /* Set the RTC_DR register */
-    RTC->DR = (uint32_t)(date & RTC_DR_RESERVED_MASK);
+    RTC->DR = date & RTC_DR_RESERVED_MASK;
 
     STM32F4_Rtc_SetInitializeMode(false);
 
