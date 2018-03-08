@@ -585,13 +585,6 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
 #endif
 #endif
 #endif
-    g_UartController[portNum].txBufferCount = 0;
-    g_UartController[portNum].txBufferIn = 0;
-    g_UartController[portNum].txBufferOut = 0;
-
-    g_UartController[portNum].rxBufferCount = 0;
-    g_UartController[portNum].rxBufferIn = 0;
-    g_UartController[portNum].rxBufferOut = 0;
 
     STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Rx_Pins[portNum].number);
     STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Tx_Pins[portNum].number);
