@@ -36,6 +36,13 @@ const TinyCLR_Api_Info* LPC17_Rtc_GetApi() {
 }
 
 TinyCLR_Result LPC17_Rtc_Acquire(const TinyCLR_Rtc_Provider* self) {
+    LPC_SC->PCONP |= PCONP_PCRTC;
+
+    if (LPC_RTC->CCR != 1) {
+        LPC_RTC->CCR = 0;
+        LPC_RTC->CCR = 1;
+    }
+
     return TinyCLR_Result::Success;
 }
 
@@ -44,40 +51,38 @@ TinyCLR_Result LPC17_Rtc_Release(const TinyCLR_Rtc_Provider* self) {
 }
 
 TinyCLR_Result LPC17_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime& value) {
-    uint32_t  time;
-    uint32_t  date;
+    if (LPC_RTC->CCR != 1) {
+        TinyCLR_Result::InvalidOperation;
+    }
 
-    /* Get the RTC_TR register */
-    time = 0;
-
-    uint8_t hour = static_cast<uint8_t>(0);
-    uint8_t minute = static_cast<uint8_t>(0);
-    uint8_t second = static_cast<uint8_t>(0);
-
-    value.Hour = 0;
-    value.Minute = 0;
-    value.Second = 0;
+    value.Hour = LPC_RTC->HOUR;
+    value.Minute = LPC_RTC->MIN;
+    value.Second = LPC_RTC->SEC;
     value.Millisecond = 0;
 
-    /* Get the RTC_TR register */
-    date = 0;
 
-    uint8_t year = static_cast<uint8_t>(0);
-    uint8_t month = static_cast<uint8_t>(0);
-    uint8_t day_of_month = static_cast<uint8_t>(0);
-    uint8_t day_of_week = static_cast<uint8_t>(0);
-
-    value.Year = 1980;
-    value.Month = 0;
-    value.DayOfMonth = 0;
-    value.DayOfWeek = 0;
+    value.Year = LPC_RTC->YEAR;
+    value.Month = LPC_RTC->MONTH;
+    value.DayOfMonth = LPC_RTC->DOM;
+    value.DayOfWeek = LPC_RTC->DOW;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC17_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime value) {
-    uint32_t  time;
-    uint32_t  date;
+    if (LPC_RTC->CCR != 1) {
+        TinyCLR_Result::InvalidOperation;
+    }
+
+    LPC_RTC->YEAR = value.Year;
+    LPC_RTC->MONTH = value.Month;
+    LPC_RTC->DOM = value.DayOfMonth;
+    LPC_RTC->DOW = value.DayOfWeek;
+    LPC_RTC->HOUR = value.Hour;
+    LPC_RTC->MIN = value.Minute;
+    LPC_RTC->SEC = value.Second;
+
+    LPC_RTC->CIIR = 0;
 
     return TinyCLR_Result::Success;
 }
