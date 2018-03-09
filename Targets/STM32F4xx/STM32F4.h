@@ -192,6 +192,15 @@ int32_t STM32F4_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self);
 void STM32F4_Pwm_Reset();
 
 ////////////////////////////////////////////////////////////////////////////////
+//RTC
+////////////////////////////////////////////////////////////////////////////////
+const TinyCLR_Api_Info* STM32F4_Rtc_GetApi();
+TinyCLR_Result STM32F4_Rtc_Acquire(const TinyCLR_Rtc_Provider* self);
+TinyCLR_Result STM32F4_Rtc_Release(const TinyCLR_Rtc_Provider* self);
+TinyCLR_Result STM32F4_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime& value);
+TinyCLR_Result STM32F4_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime value);
+
+////////////////////////////////////////////////////////////////////////////////
 //SPI
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F4_Spi_GetApi();
