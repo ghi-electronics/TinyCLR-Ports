@@ -267,6 +267,13 @@ double LPC24_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self);
 double LPC24_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self);
 int32_t LPC24_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self);
 
+//RTC
+const TinyCLR_Api_Info* LPC24_Rtc_GetApi();
+TinyCLR_Result LPC24_Rtc_Acquire(const TinyCLR_Rtc_Provider* self);
+TinyCLR_Result LPC24_Rtc_Release(const TinyCLR_Rtc_Provider* self);
+TinyCLR_Result LPC24_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime& value);
+TinyCLR_Result LPC24_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime value);
+
 //SPI
 const TinyCLR_Api_Info* LPC24_Spi_GetApi();
 void LPC24_Spi_Reset();
