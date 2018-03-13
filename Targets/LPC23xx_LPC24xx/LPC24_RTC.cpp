@@ -70,7 +70,7 @@ TinyCLR_Result LPC24_Rtc_Release(const TinyCLR_Rtc_Provider* self) {
 }
 
 TinyCLR_Result LPC24_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime& value) {
-    int32_t* rtc_ccr_reg = reinterpret_cast<uint32_t*>(RTC_CCR);
+    uint32_t* rtc_ccr_reg = reinterpret_cast<uint32_t*>(RTC_CCR);
 
     if (*rtc_ccr_reg != (1 | (1 << 4))) {
         TinyCLR_Result::InvalidOperation;
@@ -81,11 +81,24 @@ TinyCLR_Result LPC24_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_Da
     value.Second = *(reinterpret_cast<uint32_t*>(RTC_SEC));
     value.Millisecond = 0;
 
-
     value.Year = *(reinterpret_cast<uint32_t*>(RTC_YEAR));
     value.Month = *(reinterpret_cast<uint32_t*>(RTC_MONTH));
     value.DayOfMonth = *(reinterpret_cast<uint32_t*>(RTC_DOM));
     value.DayOfWeek = *(reinterpret_cast<uint32_t*>(RTC_DOW));
+
+    if ((value.Year < 1601) || (value.Year > 3000) ||
+        (value.Month < 1) || (value.Month > 12) ||
+        (value.DayOfMonth < 1) || (value.DayOfMonth > 31)) {
+        value.Hour = 0;
+        value.Minute = 0;
+        value.Second = 0;
+        value.Millisecond = 0;
+
+        value.Year = 1980;
+        value.Month = 1;
+        value.DayOfMonth = 1;
+        value.DayOfWeek = 3;
+    }
 
     return TinyCLR_Result::Success;
 }
@@ -94,6 +107,12 @@ TinyCLR_Result LPC24_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_Da
     uint32_t* rtc_ccr_reg = reinterpret_cast<uint32_t*>(RTC_CCR);
     if (*rtc_ccr_reg != (1 | (1 << 4))) {
         TinyCLR_Result::InvalidOperation;
+    }
+
+    if ((value.Year < 1601) || (value.Year > 3000) ||
+        (value.Month < 1) || (value.Month > 12) ||
+        (value.DayOfMonth < 1) || (value.DayOfMonth > 31)) {
+        TinyCLR_Result::ArgumentInvalid;
     }
 
     *(reinterpret_cast<uint32_t*>(RTC_YEAR)) = value.Year;
