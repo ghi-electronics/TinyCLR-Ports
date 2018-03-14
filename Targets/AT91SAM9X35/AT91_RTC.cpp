@@ -15,7 +15,7 @@
 #include "AT91.h"
 
 
-#define AT91_RTC_TIMR_A     (0x0)
+#define AT91_RTC_TIMR_AM    (0x0)
 #define AT91_RTC_TIMR_PM    (0x1)
 
 #define AT91C_PMC_CSS   (0x3 << 0)
