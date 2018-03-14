@@ -71,6 +71,8 @@
 #define TOTAL_PWM_CONTROLLER 4
 #define AT91_PWM_PINS { { { PIN(C,18), PS(C) } }, { { PIN(C,19), PS(C) } }, { { PIN(C,20), PS(C) } }, { { PIN(C,21), PS(C) } } }
 
+#define INCLUDE_RTC
+
 #define INCLUDE_SPI
 #define TOTAL_SPI_CONTROLLERS 2
 #define AT91_SPI_MISO_PINS { { PIN(A,11), PS(A) }, { PIN(A,21), PS(B) } }

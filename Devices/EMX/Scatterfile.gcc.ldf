@@ -81,12 +81,12 @@ SECTIONS
     ER_RLP_BEGIN 0xA0F00000 : ALIGN(0x8)
     {
         * (SectionForRlpBegin)
-    }>IRAM
+    }>SDRAM
     
     ER_RLP_END 0xA1000000 - 0x08: 
     {
         * (SectionForRlpEnd)
-    }>IRAM
+    }>SDRAM
 
     ER_STACK_BOTTOM 0x40001000 : ALIGN(0x8)
     {

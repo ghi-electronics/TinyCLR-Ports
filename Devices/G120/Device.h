@@ -81,6 +81,8 @@
 #define LPC17_G120_PWM_PINS  { { { PIN(1,  2), PF(3) }, { PIN(1,  3), PF(3) }, { PIN(1,  5), PF(3) }, { PIN(1,  6), PF(3) }, { PIN(1,  7), PF(3) }, { PIN(1, 11), PF(3) } }, { { PIN(3, 24), PF(2) }, { PIN(3, 25), PF(2) }, { PIN(3, 26), PF(2) }, { PIN(2,  3), PF(1) }, { PIN(2,  4), PF(1) }, { PIN(2,  5), PF(1) } } }
 #define LPC17_G120E_PWM_PINS { { { PIN(3, 16), PF(2) }, { PIN(3, 17), PF(2) }, { PIN(3, 18), PF(2) }, { PIN(3, 19), PF(2) }, { PIN(3, 20), PF(2) }, { PIN(3, 21), PF(2) } }, { { PIN(3, 24), PF(2) }, { PIN(3, 25), PF(2) }, { PIN(3, 26), PF(2) }, { PIN(3, 27), PF(2) }, { PIN(3, 28), PF(2) }, { PIN(3, 29), PF(2) } } }
 
+#define INCLUDE_RTC
+
 #define INCLUDE_SPI
 #define TOTAL_SPI_CONTROLLERS 3
 #define LPC17_SPI_SCLK_PINS { { PIN(0, 15), PF(2) }, { PIN(0,  7), PF(2) }, { PIN(1,  0), PF(4) } }
