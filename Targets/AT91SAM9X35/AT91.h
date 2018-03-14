@@ -634,7 +634,6 @@ TinyCLR_Result AT91_Rtc_Release(const TinyCLR_Rtc_Provider* self);
 TinyCLR_Result AT91_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime& value);
 TinyCLR_Result AT91_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime value);
 
-
 //SPI
 //////////////////////////////////////////////////////////////////////////////
 // AT91_SPI
