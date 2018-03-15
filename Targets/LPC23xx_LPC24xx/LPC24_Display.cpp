@@ -427,8 +427,7 @@ uint32_t* LPC24_Display_GetFrameBuffer();
 static TinyCLR_Display_Provider displayProvider;
 static TinyCLR_Api_Info displayApi;
 
-
-#define AHBCFG1		(*(volatile unsigned *)0xe01fc188)
+#define AHBCFG1     (*(volatile unsigned *)0XE01FC188)
 
 bool LPC24_Display_Initialize() {
     int32_t i;
@@ -480,9 +479,6 @@ bool LPC24_Display_Initialize() {
     }
 
     LPC24XX::SYSCON().LCD_CFG = (divider - 1); //config.PixelClockDivider - 1;
-    LPC24XX::PCB().PINSEL11 = (5 << 1) | 1;//LCD only config
-    // configure GPIO
-    LPC24XX::PCB().PINSEL10 = 0;// no ETM trace
 
     LCDC.LCD_UPBASE = (uint32_t)&m_LPC24_Display_VituralRam[0];
 
@@ -680,6 +676,9 @@ bool  LPC24_Display_SetPinConfiguration() {
         return false;
     }
 
+    LPC24XX::PCB().PINSEL11 = (5 << 1) | 1; //LCD only config
+    LPC24XX::PCB().PINSEL10 = 0; // no ETM trace
+
     for (auto i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins); i++)
         if (g_Display_ControllerPins[i].number != PIN_NONE)
             LPC24_Gpio_ConfigurePin(g_Display_ControllerPins[i].number, LPC24_Gpio_Direction::Input, g_Display_ControllerPins[i].pinFunction, LPC24_Gpio_PinMode::Inactive);
@@ -690,35 +689,6 @@ bool  LPC24_Display_SetPinConfiguration() {
             LPC24_Gpio_EnableOutputPin(g_Display_EnablePin.number, m_LPC24_DisplayOutputEnablePolarity);
         else
             LPC24_Gpio_ConfigurePin(g_Display_EnablePin.number, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
-
-    /*
-        LPC24_Gpio_ConfigurePin(1 * 32 + 20, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 51
-        LPC24_Gpio_ConfigurePin(1 * 32 + 21, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 52
-        LPC24_Gpio_ConfigurePin(1 * 32 + 22, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 53
-        LPC24_Gpio_ConfigurePin(1 * 32 + 23, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 54
-        LPC24_Gpio_ConfigurePin(1 * 32 + 24, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 55
-        LPC24_Gpio_ConfigurePin(1 * 32 + 25, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 56
-        LPC24_Gpio_ConfigurePin(1 * 32 + 26, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 57
-        //LPC24_Gpio_ConfigurePin(1*32 + 27, TinyCLR_Gpio_PinDriveMode::Input,  LPC24_Gpio_PinFunction::PinFunction1); // 58
-        LPC24_Gpio_ConfigurePin(1 * 32 + 28, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 59
-        LPC24_Gpio_ConfigurePin(1 * 32 + 29, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // 60
-        LPC24_Gpio_ConfigurePin(2 * 32 + 2, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive); // 61
-        LPC24_Gpio_ConfigurePin(2 * 32 + 3, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive); // 62
-
-        if (m_LPC24_DisplayOutputEnableIsFixed)
-            LPC24_Gpio_EnableOutputPin(2 * 32 + 4, m_LPC24_DisplayOutputEnablePolarity);
-        else
-            LPC24_Gpio_ConfigurePin(2 * 32 + 4, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
-
-        LPC24_Gpio_ConfigurePin(2 * 32 + 5, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
-        LPC24_Gpio_ConfigurePin(2 * 32 + 6, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
-        LPC24_Gpio_ConfigurePin(2 * 32 + 7, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
-        LPC24_Gpio_ConfigurePin(2 * 32 + 8, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
-        LPC24_Gpio_ConfigurePin(2 * 32 + 9, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
-        LPC24_Gpio_ConfigurePin(2 * 32 + 12, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive);
-        LPC24_Gpio_ConfigurePin(2 * 32 + 13, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive);
-
-    */
 
     return true;
 }
@@ -798,7 +768,7 @@ void LPC24_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height,
     case LPC24xx_LCD_Rotation::rotateNormal_0:
 
         if (xOffset == 0 && yOffset == 0 &&
-            width == screenWidth &&    height == screenHeight) {
+            width == screenWidth && height == screenHeight) {
             LPC24_Display_MemCopy(to, from, (screenWidth*screenHeight * 2));
         }
         else {
