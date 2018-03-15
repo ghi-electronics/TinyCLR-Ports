@@ -162,8 +162,12 @@ TinyCLR_Result STM32F4_Rtc_Configuration() {
     /* Reset LSEON bit */
     *(reinterpret_cast<uint32_t *>(BDCR_ADDRESS)) = RCC_LSE_OFF;
 
+    STM32F4_Time_Delay(nullptr, 1000);
+
     /* Reset LSEBYP bit */
     *(reinterpret_cast<uint32_t *>(BDCR_ADDRESS)) = RCC_LSE_OFF;
+
+    STM32F4_Time_Delay(nullptr, 1000);
 
     /* Set LSEON bit */
     *(reinterpret_cast<uint32_t *>(BDCR_ADDRESS)) = RCC_LSE_ON;
