@@ -199,6 +199,16 @@ double LPC24_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self) {
     // update actual period and duration, after few boudary changes base on current system clock
     periodInNanoSeconds = ((uint64_t)(periodTicks * 1000)) / ((uint64_t)((SYSTEM_CLOCK_HZ / 1000000)));
 
+    // make sure out frequency <= in frequency
+    if (periodInNanoSeconds > 0) {
+        double freq_out = (double)(1000000000 / periodInNanoSeconds);
+
+        while (freq_out > frequency) {
+            periodInNanoSeconds++;
+            freq_out = (double)(1000000000 / periodInNanoSeconds);
+        }
+    }
+
     switch (scale) {
     case PWM_MILLISECONDS:
         period = periodInNanoSeconds / 1000000;
@@ -298,9 +308,6 @@ TinyCLR_Result LPC24_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, in
 
     if (0 == ((highTicks - 3) % 10))
         highTicks += 1;
-
-    periodTicks -= 1;
-    highTicks -= 1;
 
     if ((int)periodTicks < 0)
         periodTicks = 0;
