@@ -291,6 +291,16 @@ TinyCLR_Result LPC17_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, in
         return TinyCLR_Result::InvalidOperation;
     }
 
+    // make sure out frequency <= in frequency
+    if (periodInNanoSeconds > 0) {
+        double freq_out = (double)(1000000000 / periodInNanoSeconds);
+
+        while (freq_out > frequency) {
+            periodInNanoSeconds++;
+            freq_out = (double)(1000000000 / periodInNanoSeconds);
+        }
+    }
+
     uint32_t periodTicks = (uint64_t)(((LPC17_SYSTEM_CLOCK_HZ / 2) / 1000000)) * periodInNanoSeconds / 1000;
     uint32_t highTicks = (uint64_t)(((LPC17_SYSTEM_CLOCK_HZ / 2) / 1000000)) * durationInNanoSeconds / 1000;
 
@@ -313,13 +323,13 @@ TinyCLR_Result LPC17_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, in
     if (invertPolarity)
         highTicks = periodTicks - highTicks;
 
-    if (period == 0 || duration == 0) {
+    if (periodInNanoSeconds == 0 || durationInNanoSeconds == 0) {
         LPC17_Gpio_EnableOutputPin(g_PwmController[self->Index].gpioPin[pin].number, false);
         g_PwmController[self->Index].outputEnabled[pin] = true;
 
         return TinyCLR_Result::Success;
     }
-    else if (duration >= period) {
+    else if (durationInNanoSeconds >= periodInNanoSeconds) {
         LPC17_Gpio_EnableOutputPin(g_PwmController[self->Index].gpioPin[pin].number, true);
         g_PwmController[self->Index].outputEnabled[pin] = true;
 
