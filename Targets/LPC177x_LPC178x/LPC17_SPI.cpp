@@ -718,7 +718,7 @@ TinyCLR_Result LPC17_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int
 
     while ((g_SpiController[controller].clockFrequency > 0) && (freq_out > g_SpiController[controller].clockFrequency)) {
         CPSDVSR++;
-        if (CPSDVSR >= 255) {
+        if (CPSDVSR >= 254) {
 
             SCR++;
 
