@@ -192,6 +192,7 @@ double LPC17_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self) {
     // update actual period and duration, after few boudary changes base on current system clock
     periodInNanoSeconds = ((uint64_t)(periodTicks * 1000)) / ((uint64_t)(((LPC17_SYSTEM_CLOCK_HZ / 2) / 1000000)));
 
+    // make sure out frequency <= in frequency
     if (periodInNanoSeconds > 0) {
         double freq_out = (double)(1000000000 / periodInNanoSeconds);
 
@@ -200,7 +201,6 @@ double LPC17_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self) {
             freq_out = (double)(1000000000 / periodInNanoSeconds);
         }
     }
-
 
     switch (scale) {
     case PWM_MILLISECONDS:
