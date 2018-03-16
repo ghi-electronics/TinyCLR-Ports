@@ -698,8 +698,12 @@ struct AT91_SPI {
         uint32_t mckKHz = AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 1000;
         uint32_t divisor = mckKHz / clockKHz;
 
-        if (mckKHz / divisor > clockKHz)
+        while ((divisor > 0) && ((mckKHz / divisor) > clockKHz)) {
             divisor++;
+
+            if (divisor > 0xFF)
+                break;
+        }
 
         if (divisor > 0xFF)
             divisor = 0xFF;
