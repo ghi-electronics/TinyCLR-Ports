@@ -102,9 +102,17 @@ const TinyCLR_Api_Info* STM32F4_Spi_GetApi() {
     return &spiApi;
 }
 
+void STM32F4_Spi_DelayOneClock(int32_t controller) {
+    uint32_t delay = (1000000 / (g_SpiController[controller].clockFrequency / 1000)) / 1000;
+
+    STM32F4_Time_Delay(nullptr, delay);
+}
+
 bool STM32F4_Spi_Transaction_Start(int32_t controller) {
 
     STM32F4_GpioInternal_WritePin(g_SpiController[controller].chipSelectLine, false);
+
+    STM32F4_Spi_DelayOneClock(controller);
 
     return true;
 }
@@ -113,6 +121,8 @@ bool STM32F4_Spi_Transaction_Stop(int32_t controller) {
     ptr_SPI_TypeDef spi = g_STM32_Spi_Port[controller];
 
     while (spi->SR & SPI_SR_BSY); // wait for completion
+
+    STM32F4_Spi_DelayOneClock(controller);
 
     STM32F4_GpioInternal_WritePin(g_SpiController[controller].chipSelectLine, true);
 
