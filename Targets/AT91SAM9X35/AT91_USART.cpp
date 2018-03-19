@@ -355,8 +355,13 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, ui
 
     // Define the baud rate divisor register
     {
-        uint64_t dwMasterClock = AT91_SYSTEM_PERIPHERAL_CLOCK_HZ;
-        uint32_t baud_value = ((dwMasterClock * 10) / (baudRate * 16));
+        uint64_t dwMasterClock = AT91_SYSTEM_PERIPHERAL_CLOCK_HZ * 10;
+        uint32_t baud_value = ((dwMasterClock) / (baudRate * 16));
+
+        while ((baud_value > 0) && (baud_value * (baudRate * 16) > dwMasterClock)) {
+            baud_value--;
+        }
+
         if ((baud_value % 10) >= 5)
             baud_value = (baud_value / 10) + 1;
         else
