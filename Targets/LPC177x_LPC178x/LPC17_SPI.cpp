@@ -704,22 +704,33 @@ TinyCLR_Result LPC17_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int
     CPSDVSR = divider / (SCR + 1); // This is X
     CPSDVSR *= 2;
 
-    if (SCR > 255) {
-
+    if (SCR > 255)
         SCR = 255;
 
-    }
-
-    if (CPSDVSR <= 2) {
-
+    if (CPSDVSR <= 2)
         CPSDVSR = 2;
 
-    }
-
-    if (CPSDVSR >= 255) {
-
+    if (CPSDVSR >= 255)
         CPSDVSR = 254;
 
+    // Ensure that out frequency is smaller than input value
+    uint32_t freq_out = (LPC17xx_SPI::c_SPI_Clk_KHz * 1000) / (CPSDVSR * (SCR + 1));
+
+    while ((g_SpiController[controller].clockFrequency > 0) && (freq_out > g_SpiController[controller].clockFrequency)) {
+        CPSDVSR++;
+        if (CPSDVSR >= 254) {
+
+            SCR++;
+
+            if (SCR > 255) {
+                SCR = 255;
+                break;
+            }
+            else {
+                CPSDVSR = 2;
+            }
+        }
+        freq_out = (LPC17xx_SPI::c_SPI_Clk_KHz * 1000) / (CPSDVSR * (SCR + 1));
     }
 
     SPI.SSPxCPSR = CPSDVSR; // An even number between 2 and 254

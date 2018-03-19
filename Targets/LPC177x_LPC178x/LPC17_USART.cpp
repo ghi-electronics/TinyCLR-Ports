@@ -546,32 +546,6 @@ TinyCLR_Result LPC17_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-void LPC17_Uart_SetClock(int32_t portNum, int32_t pclkSel) {
-    pclkSel &= 0x03;
-    LPC17xx_SYSCON &SYSCON = *(LPC17xx_SYSCON *)(size_t)(LPC17xx_SYSCON::c_SYSCON_Base);
-
-    switch (portNum) {
-    case 0:
-        SYSCON.PCLKSEL0 &= ~(0x03 << 6);
-        SYSCON.PCLKSEL0 |= (pclkSel << 6);
-        break;
-
-    case 1:
-        SYSCON.PCLKSEL0 &= ~(0x03 << 8);
-        SYSCON.PCLKSEL0 |= (pclkSel << 8);
-        break;
-
-    case 2:
-        SYSCON.PCLKSEL1 &= ~(0x03 << 16);
-        SYSCON.PCLKSEL1 |= (pclkSel << 16);
-        break;
-
-    case 3:
-        SYSCON.PCLKSEL1 &= ~(0x03 << 18);
-        SYSCON.PCLKSEL1 |= (pclkSel << 18);
-        break;
-    }
-}
 TinyCLR_Result LPC17_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, uint32_t baudRate, uint32_t dataBits, TinyCLR_Uart_Parity parity, TinyCLR_Uart_StopBitCount stopBits, TinyCLR_Uart_Handshake handshaking) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -582,34 +556,10 @@ TinyCLR_Result LPC17_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
 
     uint32_t     divisor;
 
-    uint32_t fdr;
+    divisor = ((LPC17xx_USART::c_ClockRate / (baudRate * 16)));
 
-    switch (baudRate) {
-
-    case 9600: LPC17_Uart_SetClock(portNum, 0); fdr = 0x54; divisor = 217; break;
-
-    case 14400: LPC17_Uart_SetClock(portNum, 0); fdr = 81; divisor = 217; break;
-
-    case 19200: LPC17_Uart_SetClock(portNum, 0); fdr = 177; divisor = 179; break;
-
-    case 38400: LPC17_Uart_SetClock(portNum, 0); fdr = 131; divisor = 71; break;
-
-    case 57600: LPC17_Uart_SetClock(portNum, 0); fdr = 213; divisor = 47; break;
-
-    case 115200: LPC17_Uart_SetClock(portNum, 0); fdr = 117; divisor = 19; break;
-
-    case 230400: LPC17_Uart_SetClock(portNum, 0); fdr = 229; divisor = 12; break;
-
-    case 460800: LPC17_Uart_SetClock(portNum, 1); fdr = 229; divisor = 6; break;
-
-    case 921600: LPC17_Uart_SetClock(portNum, 1); fdr = 229; divisor = 3; break;
-
-    default:
-        LPC17_Uart_SetClock(portNum, 1);
-        divisor = ((LPC17xx_USART::c_ClockRate / (baudRate * 16)));
-        fdr = 0x10;
-        break;
-
+    while (LPC17xx_USART::c_ClockRate / (divisor * 16) > baudRate) {
+        divisor++;
     }
 
     // CWS: Disable interrupts
@@ -619,9 +569,9 @@ TinyCLR_Result LPC17_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
     USARTC.UART_LCR |= LPC17xx_USART::UART_LCR_DLAB;                              // prepare to access Divisor
     USARTC.SEL1.DLL.UART_DLL = divisor & 0xFF;      //GET_LSB(divisor);                                                      // Set baudrate.
     USARTC.SEL2.DLM.UART_DLM = (divisor >> 8) & 0xFF; // GET_MSB(divisor);
-    USARTC.UART_LCR &= ~LPC17xx_USART::UART_LCR_DLAB;                                              // prepare to access RBR, THR, IER
+    USARTC.UART_LCR &= ~LPC17xx_USART::UART_LCR_DLAB; // prepare to access RBR, THR, IER
     // CWS: Set port for 8 bit, 1 stop, no parity
-    USARTC.UART_FDR = fdr;
+    USARTC.UART_FDR = 0x10; // DIVADDVAL = 0, MULVAL = 1, DLM = 0
 
     // DataBit range 5-8
     if (5 <= dataBits && dataBits <= 8) {

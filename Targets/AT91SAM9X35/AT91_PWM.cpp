@@ -130,6 +130,115 @@ void AT91_Pwm_GetScaleFactor(double frequency, uint32_t& period, uint32_t& scale
     }
 }
 
+double AT91_Pwm_GetMaxPeriod(uint32_t divider) {
+    switch (divider) {
+    case 1024:
+        return 503308801.0;
+    case 512:
+        return 251654401.0;
+    case 256:
+        return 125827200.0;
+    case 128:
+        return 62913600.0;
+    case 64:
+        return 31456800.0;
+    case 32:
+        return 15728400.0;
+    case 16:
+        return 7864200.0;
+    case 8:
+        return 3932100.0;
+    case 4:
+        return 1966050.0;
+    case 2:
+        return 983025.0;
+    case 1:
+        return 491513.0;
+    }
+}
+
+void AT91_Pwm_GetDivider(uint32_t period, uint32_t& divider, uint32_t& registerDividerFlag) {
+    if (period > 503308801) {
+        divider = 0;
+        registerDividerFlag = 0;
+    }
+    else if (period > 251654401) {
+        divider = 1024;
+        registerDividerFlag = 0xA;
+    }
+    else if (period > 125827200) {
+        divider = 512;
+        registerDividerFlag = 0x9;
+    }
+    else if (period > 62913600) {
+        divider = 256;
+        registerDividerFlag = 0x8;
+    }
+    else if (period > 31456800) {
+        divider = 128;
+        registerDividerFlag = 0x7;
+    }
+    else if (period > 15728400) {
+        divider = 64;
+        registerDividerFlag = 0x6;
+    }
+    else if (period > 7864200) {
+        divider = 32;
+        registerDividerFlag = 0x5;
+    }
+    else if (period > 3932100) {
+        divider = 16;
+        registerDividerFlag = 0x4;
+    }
+    else if (period > 1966050) {
+        divider = 8;
+        registerDividerFlag = 0x3;
+    }
+    else if (period > 983025) {
+        divider = 4;
+        registerDividerFlag = 0x2;
+    }
+    else if (period > 491513) {
+        divider = 2;
+        registerDividerFlag = 0x1;
+    }
+    else if (period >= 40) // Absoulute minimum for the PWM Counter
+    {
+        divider = 1;
+        registerDividerFlag = 0x0;
+    }
+    else {
+        divider = 0;
+        registerDividerFlag = 0;
+    }
+}
+uint32_t AT91_Pwm_GetPeriod(const TinyCLR_Pwm_Provider* self, uint32_t period, uint32_t divider) {
+    // make sure out frequency <= in frequency
+    double d = divider * 7.6;
+    double p = (double)period;
+    double mck_clk = (double)AT91_SYSTEM_PERIPHERAL_CLOCK_HZ;
+    double freq_out = (double)(mck_clk / (p / (d)));
+    double frequency = g_PwmController[self->Index].frequency;
+
+    if ((p > 0) && (freq_out > frequency)) {
+
+        while (freq_out > frequency) {
+            p += d;
+
+            if (p >= AT91_Pwm_GetMaxPeriod(divider)) {
+                break;
+            }
+
+            freq_out = (double)(mck_clk / (p / (d)));
+        }
+
+        // Update new period
+        period = (volatile unsigned long)p;
+    }
+
+    return period;
+}
+
 double AT91_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self) {
     uint32_t period = 0;
     uint32_t scale = 0;
@@ -157,6 +266,15 @@ double AT91_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self) {
         break;
     }
 
+    // make sure out frequency <= in frequency
+    uint32_t divider;
+    uint32_t registerDividerFlag;
+
+    AT91_Pwm_GetDivider(convertedPeriod, divider, registerDividerFlag);
+
+    if (divider > 0)
+        convertedPeriod = AT91_Pwm_GetPeriod(self, convertedPeriod, divider);
+
     if (convertedPeriod > 503308801)
         convertedPeriod = 503308801; // max period
     else if (convertedPeriod < 40)
@@ -174,15 +292,13 @@ double AT91_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self) {
         break;
 
     case PWM_NANOSECONDS:
-        convertedPeriod = period;
-
+        period = convertedPeriod;
         break;
     }
 
     frequency = (double)(scale / period);
 
     return frequency;
-
 }
 
 TinyCLR_Result AT91_Pwm_EnablePin(const TinyCLR_Pwm_Provider* self, int32_t pin) {
@@ -219,7 +335,6 @@ double AT91_Pwm_GetMinFrequency(const TinyCLR_Pwm_Provider* self) {
 
 TinyCLR_Result AT91_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int32_t pin, double dutyCycle, bool invertPolarity) {
     uint32_t period = 0;
-    uint32_t duration = 0;
     uint32_t scale = 0;
 
     uint32_t convertedPeriod = 0;
@@ -233,76 +348,26 @@ TinyCLR_Result AT91_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int
 
     AT91_Pwm_GetScaleFactor(frequency, period, scale);
 
-    duration = (uint32_t)(dutyCycle * period);
-
     switch (scale) {
     case PWM_MILLISECONDS:
         convertedPeriod = (period * 1000000);
-        convertedDuration = (duration * 1000000);
         break;
 
     case PWM_MICROSECONDS:
         convertedPeriod = (period * 1000);
-        convertedDuration = (duration * 1000);
         break;
 
     case PWM_NANOSECONDS:
         convertedPeriod = period;
-        convertedDuration = duration;
         break;
     }
 
-    if (convertedPeriod > 503308801) {
-        return TinyCLR_Result::InvalidOperation;
-    }
-    else if (convertedPeriod > 251654401) {
-        divider = 1024;
-        registerDividerFlag = 0xA;
-    }
-    else if (convertedPeriod > 125827200) {
-        divider = 512;
-        registerDividerFlag = 0x9;
-    }
-    else if (convertedPeriod > 62913600) {
-        divider = 256;
-        registerDividerFlag = 0x8;
-    }
-    else if (convertedPeriod > 31456800) {
-        divider = 128;
-        registerDividerFlag = 0x7;
-    }
-    else if (convertedPeriod > 15728400) {
-        divider = 64;
-        registerDividerFlag = 0x6;
-    }
-    else if (convertedPeriod > 7864200) {
-        divider = 32;
-        registerDividerFlag = 0x5;
-    }
-    else if (convertedPeriod > 3932100) {
-        divider = 16;
-        registerDividerFlag = 0x4;
-    }
-    else if (convertedPeriod > 1966050) {
-        divider = 8;
-        registerDividerFlag = 0x3;
-    }
-    else if (convertedPeriod > 983025) {
-        divider = 4;
-        registerDividerFlag = 0x2;
-    }
-    else if (convertedPeriod > 491513) {
-        divider = 2;
-        registerDividerFlag = 0x1;
-    }
-    else if (convertedPeriod >= 40) // Absoulute minimum for the PWM Counter
-    {
-        divider = 1;
-        registerDividerFlag = 0x0;
-    }
-    else {
-        return TinyCLR_Result::InvalidOperation;
-    }
+    AT91_Pwm_GetDivider(convertedPeriod, divider, registerDividerFlag);
+
+    if (divider > 0)
+        convertedPeriod = AT91_Pwm_GetPeriod(self, convertedPeriod, divider);
+
+    convertedDuration = (uint32_t)(dutyCycle * convertedPeriod);
 
     // Flips the pulse
     if (invertPolarity == 0)

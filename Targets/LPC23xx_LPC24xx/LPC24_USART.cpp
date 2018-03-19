@@ -100,7 +100,7 @@ const TinyCLR_Api_Info* LPC24_Uart_GetApi() {
 }
 
 TinyCLR_Result LPC24_Uart_GetReadBufferSize(const TinyCLR_Uart_Provider* self, size_t& size) {
-    size = g_UartController[self->Index].rxBufferSize == 0 ? g_LPC24_Uart_RxDefaultBuffersSize[self->Index] :  g_UartController[self->Index].rxBufferSize;
+    size = g_UartController[self->Index].rxBufferSize == 0 ? g_LPC24_Uart_RxDefaultBuffersSize[self->Index] : g_UartController[self->Index].rxBufferSize;
 
     return TinyCLR_Result::Success;
 }
@@ -391,51 +391,36 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
     LPC24XX_USART& USARTC = LPC24XX::UART(portNum);
 
     uint32_t divisor;
-    uint32_t fdr;
     bool   fRet = true;
+    uint32_t uart_clock;
 
-    switch (baudRate) {
-
-    case 2400: LPC24_Uart_SetClock(portNum, 0); fdr = 0x41; divisor = 0x177; break;
-
-    case 4800: LPC24_Uart_SetClock(portNum, 0); fdr = 0xE3; divisor = 0xC1; break;
-
-    case 9600: LPC24_Uart_SetClock(portNum, 0); fdr = 0xC7; divisor = 0x4A; break;
-
-    case 14400: LPC24_Uart_SetClock(portNum, 0); fdr = 0xA1; divisor = 0x47; break;
-
-    case 19200: LPC24_Uart_SetClock(portNum, 0); fdr = 0xC7; divisor = 0x25; break;
-
-    case 38400: LPC24_Uart_SetClock(portNum, 0); fdr = 0xB3; divisor = 0x17; break;
-
-    case 57600: LPC24_Uart_SetClock(portNum, 0); fdr = 0x92; divisor = 0x10; break;
-
-    case 115200: LPC24_Uart_SetClock(portNum, 0); fdr = 0x92; divisor = 0x08; break;
-
-    case 230400: LPC24_Uart_SetClock(portNum, 0); fdr = 0x92; divisor = 0x04; break;
-
-    case 460800: LPC24_Uart_SetClock(portNum, 1); fdr = 0x92; divisor = 0x08; break;
-
-    case 921600: LPC24_Uart_SetClock(portNum, 1); fdr = 0x92; divisor = 0x04; break;
-
-    default:
+    if (baudRate >= 460800) {
+        uart_clock = LPC24XX_USART::c_ClockRate;
         LPC24_Uart_SetClock(portNum, 1);
-        divisor = ((LPC24XX_USART::c_ClockRate / (baudRate * 16)));
-        fdr = 0x10;
+    }
+    else {
+        uart_clock = LPC24XX_USART::c_ClockRate / 4;
+        LPC24_Uart_SetClock(portNum, 0);
+    }
 
+    divisor = ((uart_clock / (baudRate * 16)));
+
+    while ((uart_clock / (divisor * 16)) > baudRate) {
+        divisor++;
     }
 
     // CWS: Disable interrupts
     USARTC.UART_LCR = 0; // prepare to Init UART
-    USARTC.SEL2.IER.UART_IER &= ~(LPC24XX_USART::UART_IER_INTR_ALL_SET);          // Disable all UART interrupts
-    /* CWS: Set baud rate to baudRate bps */
-    USARTC.UART_LCR |= LPC24XX_USART::UART_LCR_DLAB;                                          // prepare to access Divisor
-    USARTC.SEL1.DLL.UART_DLL = divisor & 0xFF;      //GET_LSB(divisor);                                                      // Set baudrate.
-    USARTC.SEL2.DLM.UART_DLM = (divisor >> 8) & 0xFF; // GET_MSB(divisor);
-    USARTC.UART_LCR &= ~LPC24XX_USART::UART_LCR_DLAB;                                              // prepare to access RBR, THR, IER
-    // CWS: Set port for 8 bit, 1 stop, no parity
+    USARTC.SEL2.IER.UART_IER &= ~(LPC24XX_USART::UART_IER_INTR_ALL_SET); // Disable all UART interrupts
 
-    USARTC.UART_FDR = fdr;
+    /* CWS: Set baud rate to baudRate bps */
+    USARTC.UART_LCR |= LPC24XX_USART::UART_LCR_DLAB; // prepare to access Divisor
+    USARTC.SEL1.DLL.UART_DLL = divisor & 0xFF; //GET_LSB(divisor);
+    USARTC.SEL2.DLM.UART_DLM = (divisor >> 8) & 0xFF; // GET_MSB(divisor);
+    USARTC.UART_LCR &= ~LPC24XX_USART::UART_LCR_DLAB; // prepare to access RBR, THR, IER
+
+    // CWS: Set port for 8 bit, 1 stop, no parity
+    USARTC.UART_FDR = 0x10; // DIVADDVAL = 0, MULVAL = 1, DLM = 0;
 
     // DataBit range 5-8
     if (5 <= dataBits && dataBits <= 8) {
