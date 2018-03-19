@@ -366,6 +366,9 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
     //  baudrate
     uint16_t div = (uint16_t)((clk + (baudRate >> 1)) / baudRate); // rounded
 
+    while ((clk / div) > baudRate)
+        div++;
+
     g_UartController[portNum].portPtr->BRR = div;
 
     // control
