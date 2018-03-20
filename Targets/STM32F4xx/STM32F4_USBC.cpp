@@ -209,6 +209,8 @@ static int usb_fifo_buffer_in[STM32F4_USB_QUEUE_SIZE];
 static int usb_fifo_buffer_out[STM32F4_USB_QUEUE_SIZE];
 static int usb_fifo_buffer_count[STM32F4_USB_QUEUE_SIZE];
 
+void STM32F4_UsbClient_ClearEndpoints(int32_t endpoint);
+
 #define USB_MAX_DATA_PACKET_SIZE 64
 
 struct USB_PACKET64 {
@@ -1186,7 +1188,7 @@ bool STM32F4_UsbClient_StartOutput(USB_CONTROLLER_STATE* State, int ep) {
 
     /* if the halt feature for this endpoint is set, then just clear all the characters */
     if (State->EndpointStatus[ep] & USB_STATUS_ENDPOINT_HALT) {
-        usb_fifo_buffer_in[ep] = usb_fifo_buffer_out[ep] = usb_fifo_buffer_count[ep] = 0;
+        STM32F4_UsbClient_ClearEndpoints(ep);
 
         return true;
     }
@@ -1248,7 +1250,7 @@ void STM32F4_UsbClient_ProtectPins(int controller, bool On) {
         // clear USB Txbuffer
         for (int ep = 1; ep < State->EndpointCount; ep++) {
             if (State->Queues[ep] && State->IsTxQueue[ep]) {
-                usb_fifo_buffer_in[ep] = usb_fifo_buffer_out[ep] = usb_fifo_buffer_count[ep] = 0;
+                STM32F4_UsbClient_ClearEndpoints(ep);
             }
         }
 
@@ -1590,7 +1592,7 @@ bool UsbClient_Driver::OpenPipe(int controller, int32_t& usbPipe, TinyCLR_UsbCli
                 memset(reinterpret_cast<uint8_t*>(State->Queues[idx]), 0x00, STM32F4_USB_FIFO_BUFFER_SIZE * sizeof(USB_PACKET64));
             }
 
-            usb_fifo_buffer_in[idx] = usb_fifo_buffer_out[idx] = usb_fifo_buffer_count[idx] = 0;
+            STM32F4_UsbClient_ClearEndpoints(idx);
 
             epType |= (ep->bmAttributes & 3) << (idx * 2);
             State->MaxPacketSize[idx] = ep->wMaxPacketSize;
@@ -1620,7 +1622,7 @@ bool UsbClient_Driver::ClosePipe(int controller, int usbPipe) {
     // Close the Rx pipe
     endpoint = State->pipes[usbPipe].RxEP;
     if (endpoint != USB_NULL_ENDPOINT && State->Queues[endpoint]) {
-        usb_fifo_buffer_in[endpoint] = usb_fifo_buffer_out[endpoint] = usb_fifo_buffer_count[endpoint] = 0;
+        STM32F4_UsbClient_ClearEndpoints(endpoint);
     }
 
     State->pipes[usbPipe].RxEP = USB_NULL_ENDPOINT;
@@ -1630,7 +1632,7 @@ bool UsbClient_Driver::ClosePipe(int controller, int usbPipe) {
     // Close the TX pipe
     endpoint = State->pipes[usbPipe].TxEP;
     if (endpoint != USB_NULL_ENDPOINT && State->Queues[endpoint] != nullptr) {
-        usb_fifo_buffer_in[endpoint] = usb_fifo_buffer_out[endpoint] = usb_fifo_buffer_count[endpoint] = 0;
+        STM32F4_UsbClient_ClearEndpoints(endpoint);
 
         if (apiProvider != nullptr) {
             auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
@@ -1736,7 +1738,7 @@ int UsbClient_Driver::Write(int controller, int usbPipe, const char* Data, size_
                 if (WaitLoopCnt > 100) {
                     // if we were unable to send any data then no one is listening so lets
                     if (count == size) {
-                        usb_fifo_buffer_in[endpoint] = usb_fifo_buffer_out[endpoint] = usb_fifo_buffer_count[endpoint] = 0;
+                        STM32F4_UsbClient_ClearEndpoints(endpoint);
                     }
 
                     return totWrite;
@@ -1874,7 +1876,7 @@ bool UsbClient_Driver::Flush(int controller, int usbPipe) {
     }
 
     if (retries <= 0)
-        usb_fifo_buffer_in[endpoint] = usb_fifo_buffer_out[endpoint] = usb_fifo_buffer_count[endpoint] = 0;
+        STM32F4_UsbClient_ClearEndpoints(endpoint);
 
     return true;
 }
@@ -1916,7 +1918,7 @@ void USB_ClearQueues(USB_CONTROLLER_STATE *State, bool ClrRxQueue, bool ClrTxQue
             if (State->Queues[endpoint] == nullptr || State->IsTxQueue[endpoint])
                 continue;
 
-            usb_fifo_buffer_in[endpoint] = usb_fifo_buffer_out[endpoint] = usb_fifo_buffer_count[endpoint] = 0;
+            STM32F4_UsbClient_ClearEndpoints(endpoint);
 
             /* since this queue is now reset, we have room available for newly arrived packets */
             STM32F4_UsbClient_RxEnable(State, endpoint);
@@ -1926,7 +1928,7 @@ void USB_ClearQueues(USB_CONTROLLER_STATE *State, bool ClrRxQueue, bool ClrTxQue
     if (ClrTxQueue) {
         for (int endpoint = 0; endpoint < STM32F4_USB_QUEUE_SIZE; endpoint++) {
             if (State->Queues[endpoint] && State->IsTxQueue[endpoint])
-                usb_fifo_buffer_in[endpoint] = usb_fifo_buffer_out[endpoint] = usb_fifo_buffer_count[endpoint] = 0;
+                STM32F4_UsbClient_ClearEndpoints(endpoint);
         }
     }
 }
@@ -2671,4 +2673,8 @@ void STM32F4_UsbClient_Reset() {
         UsbClient_Driver::Uninitialize(controller);
     }
 
+}
+
+void STM32F4_UsbClient_ClearEndpoints(int32_t endpoint) {
+    usb_fifo_buffer_in[endpoint] = usb_fifo_buffer_out[endpoint] = usb_fifo_buffer_count[endpoint] = 0;
 }
