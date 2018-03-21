@@ -15,9 +15,10 @@
 
 #include "LPC24.h"
 
+#define TIMER_IDLE_VALUE  0x0000FFFFFFFFFFFFFull
+
 #define CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS 3
 #define  LPC24_TIME_OVERFLOW_FLAG 0x80000000
-
 
 #define CLOCK_COMMON_FACTOR                  1000000 // GCD(SYSTEM_CLOCK_HZ, 1M)
 #define SLOW_CLOCKS_PER_SECOND               18000000 // SYSTEM_CLOCK_HZ MHz
@@ -330,7 +331,7 @@ TinyCLR_Result LPC24_Time_Acquire(const TinyCLR_Time_Provider* self) {
     int32_t timer = self->Index;
 
     g_LPC24_Timer_Controller.m_lastRead = 0;
-    g_LPC24_Timer_Controller.m_nextCompare = 0x0000FFFFFFFFFFFFull;
+    g_LPC24_Timer_Controller.m_nextCompare = TIMER_IDLE_VALUE;
 
     if (!LPC24_Timer_Controller::Initialize(timer, (uint32_t*)&LPC24_Time_InterruptHandler, (void*)self))
         return TinyCLR_Result::InvalidOperation;
