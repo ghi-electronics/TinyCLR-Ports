@@ -15,7 +15,7 @@
 
 #include "LPC17.h"
 
-#define TIMER_IDLE_VALUE  0x0000FFFFFFFFFFFFull
+#define TIMER_IDLE_VALUE  0x0000FFFFFFFFFFFFFull
 
 #define SLOW_CLOCKS_PER_SECOND LPC17_AHB_CLOCK_HZ
 #define SLOW_CLOCKS_TEN_MHZ_GCD           1000000   // GCD(SLOW_CLOCKS_PER_SECOND, 10M)
@@ -66,18 +66,6 @@ const TinyCLR_Api_Info* LPC17_Time_GetApi() {
 static uint64_t g_nextEvent;   // tick time of next event to be scheduled
 
 LPC17_Timer_Driver g_LPC17_Timer_Driver;
-
-uint32_t LPC17_Time_GetSystemClock(const TinyCLR_Time_Provider* self) {
-    return LPC17_SYSTEM_CLOCK_HZ;
-}
-
-uint32_t LPC17_Time_GetTicksPerSecond(const TinyCLR_Time_Provider* self) {
-    return SLOW_CLOCKS_PER_SECOND;
-}
-
-uint32_t LPC17_Time_GetSystemCycleClock(const TinyCLR_Time_Provider* self) {
-    return LPC17_AHB_CLOCK_HZ;
-}
 
 uint64_t LPC17_Time_GetTimeForProcessorTicks(const TinyCLR_Time_Provider* self, uint64_t ticks) {
     ticks *= (10000000 / SLOW_CLOCKS_TEN_MHZ_GCD);
@@ -132,16 +120,31 @@ TinyCLR_Result LPC17_Time_SetCompare(const TinyCLR_Time_Provider* self, uint64_t
 
     g_nextEvent = processorTicks;
 
-    if (processorTicks == TIMER_IDLE_VALUE) {
-        g_LPC17_Timer_Driver.m_periodTicks = SysTick_LOAD_RELOAD_Msk;
-        g_LPC17_Timer_Driver.Reload(SysTick_LOAD_RELOAD_Msk);
+    if (g_nextEvent >= TIMER_IDLE_VALUE) {
+        if (ticks >= TIMER_IDLE_VALUE) {
+            uint32_t diffOverflow = g_nextEvent - ticks;
+
+            g_LPC17_Timer_Driver.m_lastRead = 0;
+
+            g_LPC17_Timer_Driver.m_currentTick = diffOverflow;
+            g_LPC17_Timer_Driver.m_periodTicks = diffOverflow;
+
+            SysTick_Config(g_LPC17_Timer_Driver.m_periodTicks);
+
+            g_LPC17_Timer_Driver.Reload(g_LPC17_Timer_Driver.m_periodTicks);
+
+        }
+        else {
+            g_LPC17_Timer_Driver.m_periodTicks = SysTick_LOAD_RELOAD_Msk;
+            g_LPC17_Timer_Driver.Reload(SysTick_LOAD_RELOAD_Msk);
+        }
     }
     else {
-        if (ticks >= processorTicks) { // missed event
+        if (ticks >= g_nextEvent) { // missed event
             g_LPC17_Timer_Driver.m_DequeuAndExecute();
         }
         else {
-            g_LPC17_Timer_Driver.m_periodTicks = (processorTicks - ticks);
+            g_LPC17_Timer_Driver.m_periodTicks = (g_nextEvent - ticks);
 
             if (g_LPC17_Timer_Driver.m_periodTicks >= SysTick_LOAD_RELOAD_Msk) {
                 g_LPC17_Timer_Driver.Reload(SysTick_LOAD_RELOAD_Msk);
