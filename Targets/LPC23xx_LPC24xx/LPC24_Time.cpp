@@ -269,8 +269,14 @@ TinyCLR_Result LPC24_Time_SetCompare(const TinyCLR_Time_Provider* self, uint64_t
 
     g_LPC24_Timer_Controller.m_nextCompare = processorTicks;
 
-    uint32_t highComp = (uint32_t)(processorTicks >> 32);
-    uint32_t lowComp = (uint32_t)processorTicks;
+    if (g_LPC24_Timer_Controller.m_nextCompare >= TIMER_IDLE_VALUE && g_LPC24_Timer_Controller.m_lastRead >= TIMER_IDLE_VALUE) {
+        g_LPC24_Timer_Controller.m_nextCompare = g_LPC24_Timer_Controller.m_nextCompare > g_LPC24_Timer_Controller.m_lastRead ? (g_LPC24_Timer_Controller.m_nextCompare - g_LPC24_Timer_Controller.m_lastRead) : 0;
+
+        g_LPC24_Timer_Controller.m_lastRead = 0;
+    }
+
+    uint32_t highComp = (uint32_t)(g_LPC24_Timer_Controller.m_nextCompare >> 32);
+    uint32_t lowComp = (uint32_t)g_LPC24_Timer_Controller.m_nextCompare;
 
     uint32_t highRead = (uint32_t)(g_LPC24_Timer_Controller.m_lastRead >> 32);
     uint32_t lowRead = (uint32_t)g_LPC24_Timer_Controller.m_lastRead;

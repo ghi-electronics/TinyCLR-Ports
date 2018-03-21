@@ -120,12 +120,12 @@ TinyCLR_Result STM32F4_Time_SetNextTickCallbackTime(const TinyCLR_Time_Provider*
 
     if (g_nextEvent >= TIMER_IDLE_VALUE) {
         if (ticks >= TIMER_IDLE_VALUE) {
-            uint32_t diffOverflow = g_nextEvent - ticks;
+            g_nextEvent = g_nextEvent > ticks ? (g_nextEvent - ticks) : 0;
 
             g_STM32F4_Timer_Driver.m_lastRead = 0;
 
-            g_STM32F4_Timer_Driver.m_currentTick = diffOverflow;
-            g_STM32F4_Timer_Driver.m_periodTicks = diffOverflow;
+            g_STM32F4_Timer_Driver.m_currentTick = g_nextEvent;
+            g_STM32F4_Timer_Driver.m_periodTicks = g_nextEvent;
 
             SysTick_Config(g_STM32F4_Timer_Driver.m_periodTicks);
 

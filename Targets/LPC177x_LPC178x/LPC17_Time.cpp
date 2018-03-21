@@ -122,12 +122,12 @@ TinyCLR_Result LPC17_Time_SetCompare(const TinyCLR_Time_Provider* self, uint64_t
 
     if (g_nextEvent >= TIMER_IDLE_VALUE) {
         if (ticks >= TIMER_IDLE_VALUE) {
-            uint32_t diffOverflow = g_nextEvent - ticks;
+            g_nextEvent = g_nextEvent > ticks ? (g_nextEvent - ticks) : 0;
 
             g_LPC17_Timer_Driver.m_lastRead = 0;
 
-            g_LPC17_Timer_Driver.m_currentTick = diffOverflow;
-            g_LPC17_Timer_Driver.m_periodTicks = diffOverflow;
+            g_LPC17_Timer_Driver.m_currentTick = g_nextEvent;
+            g_LPC17_Timer_Driver.m_periodTicks = g_nextEvent;
 
             SysTick_Config(g_LPC17_Timer_Driver.m_periodTicks);
 
