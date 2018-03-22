@@ -16,7 +16,7 @@
 
 #include "STM32F4.h"
 
-#define TIMER_IDLE_VALUE  0x0000FFFFFFFFFFFFull
+#define TIMER_IDLE_VALUE  0x0000FFFFFFFFFFFFFull
 
 #define SLOW_CLOCKS_PER_SECOND STM32F4_AHB_CLOCK_HZ
 #define SLOW_CLOCKS_TEN_MHZ_GCD           1000000   // GCD(SLOW_CLOCKS_PER_SECOND, 10M)
@@ -106,7 +106,7 @@ uint64_t STM32F4_Time_GetCurrentProcessorTicks(const TinyCLR_Time_Provider* self
     g_STM32F4_Timer_Driver.m_currentTick = ticks;
     g_STM32F4_Timer_Driver.m_lastRead += tick_spent;
 
-    return (uint64_t)(g_STM32F4_Timer_Driver.m_lastRead & TIMER_IDLE_VALUE);
+    return (uint64_t)(g_STM32F4_Timer_Driver.m_lastRead);
 }
 
 TinyCLR_Result STM32F4_Time_SetNextTickCallbackTime(const TinyCLR_Time_Provider* self, uint64_t processorTicks) {
@@ -118,16 +118,31 @@ TinyCLR_Result STM32F4_Time_SetNextTickCallbackTime(const TinyCLR_Time_Provider*
 
     g_nextEvent = processorTicks;
 
-    if (processorTicks == TIMER_IDLE_VALUE) {
-        g_STM32F4_Timer_Driver.m_periodTicks = SysTick_LOAD_RELOAD_Msk;
-        g_STM32F4_Timer_Driver.Reload(SysTick_LOAD_RELOAD_Msk);
+    if (g_nextEvent >= TIMER_IDLE_VALUE) {
+        if (ticks >= TIMER_IDLE_VALUE) {
+            g_nextEvent = g_nextEvent > ticks ? (g_nextEvent - ticks) : 0;
+
+            g_STM32F4_Timer_Driver.m_lastRead = 0;
+
+            g_STM32F4_Timer_Driver.m_currentTick = g_nextEvent;
+            g_STM32F4_Timer_Driver.m_periodTicks = g_nextEvent;
+
+            SysTick_Config(g_STM32F4_Timer_Driver.m_periodTicks);
+
+            g_STM32F4_Timer_Driver.Reload(g_STM32F4_Timer_Driver.m_periodTicks);
+
+        }
+        else {
+            g_STM32F4_Timer_Driver.m_periodTicks = SysTick_LOAD_RELOAD_Msk;
+            g_STM32F4_Timer_Driver.Reload(SysTick_LOAD_RELOAD_Msk);
+        }
     }
     else {
-        if (ticks >= processorTicks) { // missed event
+        if (ticks >= g_nextEvent) { // missed event
             g_STM32F4_Timer_Driver.m_DequeuAndExecute();
         }
         else {
-            g_STM32F4_Timer_Driver.m_periodTicks = (processorTicks - ticks);
+            g_STM32F4_Timer_Driver.m_periodTicks = (g_nextEvent - ticks);
 
             if (g_STM32F4_Timer_Driver.m_periodTicks >= SysTick_LOAD_RELOAD_Msk) {
                 g_STM32F4_Timer_Driver.Reload(SysTick_LOAD_RELOAD_Msk);

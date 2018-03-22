@@ -15,6 +15,8 @@
 
 #include "AT91.h"
 
+#define TIMER_IDLE_VALUE  0x0000FFFFFFFFFFFFFull
+
 #define AT91_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS 4
 
 #define SLOW_CLOCKS_PER_SECOND              (AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 128)
@@ -314,25 +316,37 @@ TinyCLR_Result AT91_Time_SetCompare(const TinyCLR_Time_Provider* self, uint64_t 
 
     bool fForceInterrupt = false;
 
-    uint64_t CntrValue = AT91_Time_GetCurrentTicks(self);
+    uint64_t ticks = AT91_Time_GetCurrentTicks(self);
 
-    if (processorTicks <= CntrValue) {
+    if (g_AT91_TIME_Driver.m_nextCompare >= TIMER_IDLE_VALUE && ticks >= TIMER_IDLE_VALUE) {
+        // Calculate next compare after overflow
+        if (g_AT91_TIME_Driver.m_nextCompare > processorTicks)
+            g_AT91_TIME_Driver.m_nextCompare = g_AT91_TIME_Driver.m_nextCompare - processorTicks;
+        else
+            g_AT91_TIME_Driver.m_nextCompare = 0;
+
+        // Reset current tick
+        g_AT91_TIME_Driver.m_lastRead = 0;
+        ticks = AT91_Time_GetCurrentTicks(self);
+    }
+
+    if (ticks >= g_AT91_TIME_Driver.m_nextCompare) {
         fForceInterrupt = true;
     }
     else {
         uint32_t diff;
 
-        if ((processorTicks - CntrValue) > AT91_TIMER_Driver::c_MaxTimerValue) {
+        if ((g_AT91_TIME_Driver.m_nextCompare - ticks) > AT91_TIMER_Driver::c_MaxTimerValue) {
             diff = AT91_TIMER_Driver::c_MaxTimerValue;
         }
         else {
-            diff = (uint32_t)(processorTicks - CntrValue);
+            diff = (uint32_t)(g_AT91_TIME_Driver.m_nextCompare - ticks);
         }
 
         AT91_TIMER_Driver::SetCompare(AT91_TIMER_Driver::c_SystemTimer,
             (uint16_t)(AT91_TIMER_Driver::ReadCounter(AT91_TIMER_Driver::c_SystemTimer) + diff));
 
-        if (AT91_Time_GetCurrentTicks(self) > processorTicks) {
+        if (AT91_Time_GetCurrentTicks(self) > g_AT91_TIME_Driver.m_nextCompare) {
             fForceInterrupt = true;
         }
     }
