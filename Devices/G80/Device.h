@@ -60,11 +60,11 @@
 
 #define INCLUDE_GPIO
 #define STM32F4_GPIO_PINS {/*      0          1          2          3          4          5          6          7          8          9          10         11         12         13         14         15      */\
-                           /*PAx*/ DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(),\
-                           /*PBx*/ DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(),\
-                           /*PCx*/ DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(),\
-                           /*PDx*/ DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(),\
-                           /*PEx*/ DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(),\
+                           /*PAx*/ DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false),\
+                           /*PBx*/ DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false),\
+                           /*PCx*/ DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false),\
+                           /*PDx*/ DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false),\
+                           /*PEx*/ DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false), DEFAULT(false),\
                           }
 
 #define INCLUDE_I2C
