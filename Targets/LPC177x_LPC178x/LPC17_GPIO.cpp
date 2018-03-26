@@ -42,11 +42,11 @@ const char IOCON_Type[] = { 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'W', 'W', 'W', 'D
                             'D', 'D', 'I', 'I', 'D' };
 
 
-static const LPC17_Gpio_PinConfiguration pins[] = LPC17_GPIO_PINS;
+static const LPC17_Gpio_PinConfiguration g_lpc17_pins[] = LPC17_GPIO_PINS;
 
 #define LPC17_Gpio_PinReserved                 1
 #define LPC17_Gpio_DebounceDefaultMilisecond   20
-#define LPC17_Gpio_MaxPins                     SIZEOF_ARRAY(pins)
+#define LPC17_Gpio_MaxPins                     SIZEOF_ARRAY(g_lpc17_pins)
 
 struct LPC17_Int_State {
     uint8_t                                     pin;      // pin number
@@ -438,15 +438,23 @@ int32_t LPC17_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self) {
 }
 
 void LPC17_Gpio_Reset() {
-
     uint32_t* GPIO_Port_0_INT_RisingEdge_Register = GPIO_INT_RisingEdge(0);
     uint32_t* GPIO_Port_0_INT_FallingEdge_Register = GPIO_INT_FallingEdge(0);
     uint32_t* GPIO_Port_2_INT_RisingEdge_Register = GPIO_INT_RisingEdge(2);
     uint32_t* GPIO_Port_2_INT_FallingEdge_Register = GPIO_INT_FallingEdge(2);
 
     for (auto pin = 0; pin < LPC17_Gpio_GetPinCount(&gpioProvider); pin++) {
+        auto& p = g_lpc17_pins[pin];
+
         g_pinReserved[pin] = 0;
         LPC17_Gpio_SetDebounceTimeout(&gpioProvider, pin, LPC17_Gpio_DebounceDefaultMilisecond);
+
+        if (p.apply) {
+            LPC17_Gpio_ConfigurePin(pin, p.direction, p.pinFunction, p.resistorMode, p.hysteresis, p.inputPolarity, p.slewRate, p.outputType);
+
+            if (p.direction == LPC17_Gpio_Direction::Output)
+                LPC17_Gpio_WritePin(pin, p.outputDirection);
+        }
     }
 
     *GPIO_Port_0_INT_RisingEdge_Register = 0x0;

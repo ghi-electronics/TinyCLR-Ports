@@ -464,8 +464,17 @@ void AT91_Gpio_Reset() {
     }
 
     for (auto pin = 0; pin < AT91_Gpio_GetPinCount(&gpioProvider); pin++) {
+        auto& p = g_at91_pins[pin];
+
         g_pinReserved[pin] = false;
         AT91_Gpio_SetDebounceTimeout(&gpioProvider, pin, AT91_Gpio_DebounceDefaultMilisecond);
+
+        if (p.apply) {
+            AT91_Gpio_ConfigurePin(pin, p.direction, p.peripheralSelection, p.resistorMode);
+
+            if (p.direction == AT91_Gpio_Direction::Output)
+                AT91_Gpio_WritePin(pin, p.outputDirection);
+        }
     }
 
     AT91_Interrupt_Activate(AT91C_ID_PIOA_PIOB, (uint32_t*)&AT91_Gpio_InterruptHandler, nullptr);

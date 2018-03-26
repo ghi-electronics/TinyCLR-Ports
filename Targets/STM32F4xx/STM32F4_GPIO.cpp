@@ -16,9 +16,9 @@
 
 #include "STM32F4.h"
 
-static const STM32F4_Gpio_PinConfiguration pins[] = STM32F4_GPIO_PINS;
+static const STM32F4_Gpio_PinConfiguration g_stm32f4_pins[] = STM32F4_GPIO_PINS;
 
-static const int STM32F4_Gpio_MaxPins = SIZEOF_ARRAY(pins);
+static const int STM32F4_Gpio_MaxPins = SIZEOF_ARRAY(g_stm32f4_pins);
 
 #define STM32F4_Gpio_DebounceDefaultMilisecond     20
 #define STM32F4_Gpio_MaxInt                     16
@@ -389,7 +389,7 @@ int32_t STM32F4_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self) {
 void STM32F4_Gpio_Reset() {
 
     for (int i = 0; i < STM32F4_Gpio_MaxPins; i++) {
-        auto& p = pins[i];
+        auto& p = g_stm32f4_pins[i];
 
         g_pinReserved[i] = 0;
         STM32F4_Gpio_SetDebounceTimeout(nullptr, i, STM32F4_Gpio_DebounceDefaultMilisecond);

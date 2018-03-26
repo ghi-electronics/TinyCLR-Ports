@@ -135,6 +135,7 @@ struct LPC24_Gpio_PinConfiguration {
     LPC24_Gpio_Direction pinDirection;
     LPC24_Gpio_PinMode pinMode;
     LPC24_Gpio_PinFunction pinFunction;
+    bool outputDirection;
     bool apply;
 };
 
@@ -143,10 +144,10 @@ struct LPC24_Gpio_PinConfiguration {
 #define PF(num) (CONCAT(LPC24_Gpio_PinFunction::PinFunction, num))
 #define PF_NONE LPC24_Gpio_PinFunction::PinFunction0
 
-#define INIT(direction, pinMode, apply) { LPC24_Gpio_Direction::direction, LPC24_Gpio_PinMode::pinMode, LPC24_Gpio_PinFunction::PinFunction0, apply }
+#define INIT(direction, pinMode, pinFunction, outputDirection, apply) { LPC24_Gpio_Direction::direction, LPC24_Gpio_PinMode::pinMode, LPC24_Gpio_PinFunction::pinFunction, outputDirection, apply }
 #define ALTFUN(direction, pinMode, pinFunction) { LPC24_Gpio_Direction::direction, LPC24_Gpio_PinMode::pinMode, LPC24_Gpio_PinFunction::pinFunction, true }
 #define INPUT(pinMode) { LPC24_Gpio_Direction::Input, LPC24_Gpio_PinMode::pinMode, LPC24_Gpio_PinFunction::PinFunction0, true }
-#define DEFAULT() { LPC24_Gpio_Direction::Input, LPC24_Gpio_PinMode::Inactive, LPC24_Gpio_PinFunction::PinFunction0, false }
+#define DEFAULT() INIT(Input, Inactive, PinFunction0, false, false)
 
 void LPC24_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider);
 void LPC24_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider);
