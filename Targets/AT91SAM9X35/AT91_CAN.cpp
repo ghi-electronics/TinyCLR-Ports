@@ -1046,6 +1046,8 @@ struct AT91_Can_Controller {
     sCandTransfer can_rx;
 
     AT91_Can_Filter canDataFilter;
+
+    bool isOpened;
 };
 
 static const AT91_Gpio_Pin g_AT91_Can_Tx_Pins[] = AT91_CAN_TX_PINS;
@@ -1460,6 +1462,8 @@ TinyCLR_Result AT91_Can_Acquire(const TinyCLR_Can_Provider* self) {
 
     CAN_DisableIt(canController[channel].cand.pHw, 0xFFFFFFFF);
 
+    canController[channel].isOpened = true;
+
     return TinyCLR_Result::Success;
 }
 
@@ -1498,6 +1502,8 @@ TinyCLR_Result AT91_Can_Release(const TinyCLR_Can_Provider* self) {
 
     CAN_DisableExplicitFilters(channel);
     CAN_DisableGroupFilters(channel);
+
+    canController[channel].isOpened = false;
 
     return TinyCLR_Result::Success;
 }
@@ -1873,7 +1879,12 @@ TinyCLR_Result AT91_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, siz
 }
 
 void AT91_Can_Reset() {
-    for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++)
-        AT91_Can_Release(canProvider[i]);
+    for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
+        if (canController[i].isOpened)
+            AT91_Can_Release(canProvider[i]);
+
+        canController[i].isOpened = false;
+    }
+
 }
 #endif // INCLUDE_CAN

@@ -616,10 +616,13 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
 
 void STM32F4_Uart_Reset() {
     for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        if (g_UartController[i].isOpened)
+            STM32F4_Uart_Release(uartProviders[i]);
+
         g_UartController[i].txBufferSize = 0;
         g_UartController[i].rxBufferSize = 0;
 
-        STM32F4_Uart_Release(uartProviders[i]);
+        g_UartController[i].isOpened = false;
     }
 }
 

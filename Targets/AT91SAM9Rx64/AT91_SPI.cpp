@@ -437,8 +437,10 @@ TinyCLR_Result AT91_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* s
 
 void AT91_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        if (g_SpiController[i].isOpened == true) {
+        if (g_SpiController[i].isOpened) {
             AT91_Spi_Release(spiProviders[i]);
         }
+
+        g_SpiController[i].isOpened = false;
     }
 }

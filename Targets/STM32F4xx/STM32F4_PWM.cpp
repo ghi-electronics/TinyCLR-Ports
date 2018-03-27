@@ -47,7 +47,7 @@ typedef  TIM_TypeDef* ptr_TIM_TypeDef;
 
 struct PwmController {
     ptr_TIM_TypeDef     timerdef;
-    STM32F4_Gpio_Pin         gpioPin[PWM_PER_CONTROLLER];
+    STM32F4_Gpio_Pin    gpioPin[PWM_PER_CONTROLLER];
 
     bool                invert[PWM_PER_CONTROLLER];
     bool                isOpened[PWM_PER_CONTROLLER];
@@ -442,6 +442,8 @@ void STM32F4_Pwm_ResetController(int32_t controller) {
             STM32F4_Pwm_DisablePin(pwmProviders[controller], p);
             STM32F4_Pwm_ReleasePin(pwmProviders[controller], p);
         }
+
+        g_PwmController[controller].isOpened[p] = false;
     }
 
     g_PwmController[controller].theoryFreq = 0.0;

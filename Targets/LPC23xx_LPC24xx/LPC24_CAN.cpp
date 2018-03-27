@@ -2021,6 +2021,8 @@ struct LPC24_Can_Controller {
     uint32_t baudrate;
 
     LPC24_Can_Filter canDataFilter;
+
+    bool isOpened;
 };
 
 static const LPC24_Gpio_Pin g_LPC24_Can_Tx_Pins[] = LPC24_CAN_TX_PINS;
@@ -2433,6 +2435,8 @@ TinyCLR_Result LPC24_Can_Acquire(const TinyCLR_Can_Provider* self) {
 
     CAN_SetACCF(ACCF_BYPASS);
 
+    canController[channel].isOpened = true;
+
     return TinyCLR_Result::Success;
 }
 
@@ -2466,6 +2470,8 @@ TinyCLR_Result LPC24_Can_Release(const TinyCLR_Can_Provider* self) {
 
     CAN_DisableExplicitFilters(channel);
     CAN_DisableGroupFilters(channel);
+
+    canController[channel].isOpened = false;
 
     return TinyCLR_Result::Success;
 }
@@ -2825,7 +2831,11 @@ TinyCLR_Result LPC24_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, si
 }
 
 void LPC24_Can_Reset() {
-    for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++)
-        LPC24_Can_Release(canProvider[i]);
+    for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
+        if (canController[i].isOpened)
+            LPC24_Can_Release(canProvider[i]);
+
+        canController[i].isOpened = false;
+    }
 }
 #endif // INCLUDE_CAN

@@ -30,9 +30,11 @@ static I2C_TypeDef* g_STM32_I2c_Port[TOTAL_I2C_CONTROLLERS];
 
 struct STM32F4_I2c_Configuration {
 
-    int32_t                  address;
-    uint8_t                  clockRate;     // primary clock factor to generate the i2c clock
-    uint8_t                  clockRate2;   // additional clock factors, if more than one is needed for the clock (optional)
+    int32_t     address;
+    uint8_t     clockRate;
+    uint8_t     clockRate2;
+
+    bool        isOpened;
 };
 struct STM32F4_I2c_Transaction {
     bool                        isReadTransaction;
@@ -423,6 +425,8 @@ TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Provider* self) {
 
     I2Cx->CR1 = I2C_CR1_PE; // enable peripheral
 
+    g_I2cConfiguration[port_id].isOpened = true;
+
     return TinyCLR_Result::Success;
 }
 
@@ -446,12 +450,16 @@ TinyCLR_Result STM32F4_I2c_Release(const TinyCLR_I2c_Provider* self) {
     STM32F4_GpioInternal_ClosePin(sda.number);
     STM32F4_GpioInternal_ClosePin(scl.number);
 
+    g_I2cConfiguration[port_id].isOpened = false;
+
     return TinyCLR_Result::Success;
 }
 
 void STM32F4_I2c_Reset() {
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
-        STM32F4_I2c_Release(i2cProvider[i]);
+        if (g_I2cConfiguration[i].isOpened)
+            STM32F4_I2c_Release(i2cProvider[i]);
+
         g_I2cConfiguration[i].address = 0;
         g_I2cConfiguration[i].clockRate = 0;
         g_I2cConfiguration[i].clockRate2 = 0;
@@ -461,5 +469,7 @@ void STM32F4_I2c_Reset() {
 
         g_WriteI2cTransactionAction[i].bytesToTransfer = 0;
         g_WriteI2cTransactionAction[i].bytesTransferred = 0;
+
+        g_I2cConfiguration[i].isOpened = false;
     }
 }

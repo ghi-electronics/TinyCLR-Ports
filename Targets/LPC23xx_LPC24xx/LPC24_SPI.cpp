@@ -760,5 +760,7 @@ void LPC24_Spi_Reset() {
         if (g_SpiController[i].isOpened == true) {
             LPC24_Spi_Release(spiProviders[i]);
         }
+
+        g_SpiController[i].isOpened = false;
     }
 }

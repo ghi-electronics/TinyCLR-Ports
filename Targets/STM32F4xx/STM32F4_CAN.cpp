@@ -318,6 +318,8 @@ struct STM32F4_Can_Controller {
     uint32_t baudrate;
 
     STM32F4_Can_Filter canDataFilter;
+
+    bool isOpened;
 };
 
 static const STM32F4_Gpio_Pin g_STM32F4_Can_Tx_Pins[] = STM32F4_CAN_TX_PINS;
@@ -1234,6 +1236,8 @@ TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Provider* self) {
 
     canController[channel].canRxMessagesFifo = nullptr;
 
+    canController[channel].isOpened = true;
+
     return TinyCLR_Result::Success;
 }
 
@@ -1266,6 +1270,8 @@ TinyCLR_Result STM32F4_Can_Release(const TinyCLR_Can_Provider* self) {
 
         canController[channel].canRxMessagesFifo = nullptr;
     }
+
+    canController[channel].isOpened = false;
 
     return TinyCLR_Result::Success;
 }
@@ -1592,7 +1598,10 @@ TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint
 
 void STM32F4_Can_Reset() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
-        STM32F4_Can_Release(canProvider[i]);
+        if (canController[i].isOpened)
+            STM32F4_Can_Release(canProvider[i]);
+
+        canController[i].isOpened = false;
     }
 }
 #endif // INCLUDE_CAN

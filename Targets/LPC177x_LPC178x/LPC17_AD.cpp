@@ -223,18 +223,17 @@
 #define AD0STAT_ADINT 0x10000
 #define AD0STAT_ADINT_BIT 16
 
-#define LPC17xx_ADC_DataRegisterShiftBits	4
-#define LPC17xx_ADC_BitRegisterMask			0xFFF
+#define LPC17xx_ADC_DataRegisterShiftBits    4
+#define LPC17xx_ADC_BitRegisterMask	         0xFFF
 
-struct LPC17xx_ADC {
-    static const uint32_t c_ADC_Base = 0x40034010;
-
-};
+#define LPC17_ADC_BASE 0x40034010
 
 static const LPC17_Gpio_Pin g_lpc17_adc_pins[] = LPC17_ADC_PINS;
 
 static TinyCLR_Adc_Provider adcProvider;
 static TinyCLR_Api_Info adcApi;
+
+bool g_lpc17_adc_isOpened[SIZEOF_ARRAY(g_lpc17_adc_pins)];
 
 const TinyCLR_Api_Info* LPC17_Adc_GetApi() {
     adcProvider.Parent = &adcApi;
@@ -292,11 +291,15 @@ TinyCLR_Result LPC17_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_
         (1 << 16) | // Burst Mode set
         (1 << 21); // Set convertion operation to opperational
 
+    g_lpc17_adc_isOpened[channel] = true;
+
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC17_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t channel) {
     LPC17_Gpio_ClosePin(g_lpc17_adc_pins[channel].number);
+
+    g_lpc17_adc_isOpened[channel] = false;
 
     return TinyCLR_Result::Success;
 }
@@ -313,7 +316,7 @@ TinyCLR_Result LPC17_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t cha
     for (auto i = 0; i < 5; i++) {
         LPC17_Time_Delay(nullptr, 5);
 
-        result = ((*((uint32_t*)(LPC17xx_ADC::c_ADC_Base) + channel)) >> LPC17xx_ADC_DataRegisterShiftBits) & LPC17xx_ADC_BitRegisterMask;
+        result = ((*((uint32_t*)(LPC17_ADC_BASE)+channel)) >> LPC17xx_ADC_DataRegisterShiftBits) & LPC17xx_ADC_BitRegisterMask;
 
         value += result;
     }
@@ -354,7 +357,11 @@ bool LPC17_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCLR_
 
 void LPC17_Adc_Reset() {
     LPC_SC->PCONP &= ~PCONP_PCAD;
+
     for (auto ch = 0; ch < SIZEOF_ARRAY(g_lpc17_adc_pins); ch++) {
-        LPC17_Adc_ReleaseChannel(&adcProvider, ch);
+        if (g_lpc17_adc_isOpened[ch])
+            LPC17_Adc_ReleaseChannel(&adcProvider, ch);
+
+        g_lpc17_adc_isOpened[ch] = false;
     }
 }

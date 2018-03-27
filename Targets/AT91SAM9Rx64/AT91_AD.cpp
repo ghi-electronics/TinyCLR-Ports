@@ -55,6 +55,8 @@ const TinyCLR_Api_Info *AT91_Adc_GetApi() {
 
 static const AT91_Gpio_Pin g_at91_adc_pins[] = AT91_ADC_PINS;
 
+bool g_at91_adc_isOpened[SIZEOF_ARRAY(g_at91_adc_pins)];
+
 int32_t AT91_Adc_GetControllerCount() {
     return SIZEOF_ARRAY(g_at91_adc_pins);
 }
@@ -111,11 +113,14 @@ TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Provider *self, int32_t
     TOUCHSCREEN_ADC_CONTROLLER_MODE_REGISTER = (1 << 6) | (63 << 8) | (0xf << 24);
     TOUCHSCREEN_ADC_CONTROLLER_TRIGGER_REGISTER = 6;
 
+    g_at91_adc_isOpened[channel] = true;
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Adc_ReleaseChannel(const TinyCLR_Adc_Provider *self, int32_t channel) {
     AT91_Gpio_ClosePin(AT91_Adc_GetPin(channel));
+
+    g_at91_adc_isOpened[channel] = false;
 
     return TinyCLR_Result::Success;
 }
@@ -210,6 +215,9 @@ bool AT91_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider *self, TinyCLR_A
 
 void AT91_Adc_Reset() {
     for (auto ch = 0; ch < AT91_Adc_GetControllerCount(); ch++) {
-        AT91_Adc_ReleaseChannel(&adcProvider, ch);
+        if (g_at91_adc_isOpened[ch])
+            AT91_Adc_ReleaseChannel(&adcProvider, ch);
+
+        g_at91_adc_isOpened[ch] = false;
     }
 }

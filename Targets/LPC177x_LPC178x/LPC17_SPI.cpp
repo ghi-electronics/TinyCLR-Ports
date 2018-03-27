@@ -923,5 +923,7 @@ void LPC17_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         if (g_SpiController[i].isOpened)
             LPC17_Spi_Release(spiProviders[i]);
+
+        g_SpiController[i].isOpened = false;
     }
 }

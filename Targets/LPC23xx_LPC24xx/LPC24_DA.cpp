@@ -28,6 +28,8 @@ static TinyCLR_Api_Info dacApi;
 
 static const LPC24_Gpio_Pin g_LPC24_Dac_Pins[] = LPC24_DAC_PINS;
 
+bool g_LPC24_Dac_IsOpened[SIZEOF_ARRAY(g_LPC24_Dac_Pins)];
+
 const TinyCLR_Api_Info* LPC24_Dac_GetApi() {
     dacProvider.Parent = &dacApi;
     dacProvider.Index = 0;
@@ -76,6 +78,8 @@ TinyCLR_Result LPC24_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_
 
     DACR = (0 << 6); // This sets the initial starting voltage at 0
 
+    g_LPC24_Dac_IsOpened[channel] = true;
+
     return TinyCLR_Result::Success;
 }
 
@@ -84,6 +88,8 @@ TinyCLR_Result LPC24_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_
         return TinyCLR_Result::ArgumentOutOfRange;
 
     LPC24_Gpio_ClosePin(g_LPC24_Dac_Pins[channel].number);
+
+    g_LPC24_Dac_IsOpened[channel] = false;
 
     return TinyCLR_Result::Success;
 }
@@ -123,7 +129,10 @@ int32_t LPC24_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self) {
 
 void LPC24_Dac_Reset() {
     for (auto ch = 0; ch < LPC24_Dac_GetChannelCount(&dacProvider); ch++) {
-        LPC24_Dac_ReleaseChannel(&dacProvider, ch);
+        if (g_LPC24_Dac_IsOpened[ch])
+            LPC24_Dac_ReleaseChannel(&dacProvider, ch);
+
+        g_LPC24_Dac_IsOpened[ch] = false;
     }
 }
 

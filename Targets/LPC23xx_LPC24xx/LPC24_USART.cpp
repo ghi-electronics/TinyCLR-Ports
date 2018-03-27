@@ -791,10 +791,15 @@ TinyCLR_Result LPC24_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Provider*
 
 void LPC24_Uart_Reset() {
     for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        if (g_UartController[i].isOpened)
+            LPC24_Uart_Release(uartProviders[i]);
+
         g_UartController[i].txBufferSize = 0;
         g_UartController[i].rxBufferSize = 0;
 
-        LPC24_Uart_Release(uartProviders[i]);
+        g_UartController[i].isOpened = false;
+
+
     }
 }
 
