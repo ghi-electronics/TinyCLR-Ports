@@ -200,6 +200,6 @@ bool STM32F4_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCL
 void STM32F4_Adc_Reset() {
     for (auto i = 0; i < STM32F4_AD_NUM; i++) {
         if (g_STM32F4_AD_OpenFlag[i])
-            STM32F4_Adc_ReleaseChannel(&adcProvider, i);        
+            STM32F4_Adc_ReleaseChannel(&adcProvider, i);
     }
 }
