@@ -35,7 +35,7 @@ static TinyCLR_Api_Info dacApi;
 
 static const LPC17_Gpio_Pin g_lpc17_dac_pins[] = LPC17_DAC_PINS;
 
-bool g_Lpc17_DacOpened = false;
+bool g_lpc17_dac_isOpened[SIZEOF_ARRAY(g_lpc17_dac_pins)];
 
 const TinyCLR_Api_Info* LPC17_Dac_GetApi() {
     dacProvider.Parent = &dacApi;
@@ -85,7 +85,7 @@ TinyCLR_Result LPC17_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_
 
     DACR = (0 << 6); // This sets the initial starting voltage at 0
 
-    g_Lpc17_DacOpened = true;
+    g_lpc17_dac_isOpened[channel] = true;
 
     return TinyCLR_Result::Success;
 }
@@ -94,13 +94,11 @@ TinyCLR_Result LPC17_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_
     if (channel >= SIZEOF_ARRAY(g_lpc17_dac_pins))
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    if (g_Lpc17_DacOpened) {
-        DACR = (0 << 6); // This sets the initial starting voltage at 0
+    DACR = (0 << 6); // This sets the initial starting voltage at 0
 
-        LPC17_Gpio_ClosePin(g_lpc17_dac_pins[channel].number);
+    LPC17_Gpio_ClosePin(g_lpc17_dac_pins[channel].number);
 
-        g_Lpc17_DacOpened = false;
-    }
+    g_lpc17_dac_isOpened[channel] = false;
 
     return TinyCLR_Result::Success;
 }
@@ -140,7 +138,8 @@ int32_t LPC17_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self) {
 
 void LPC17_Dac_Reset() {
     for (auto ch = 0; ch < LPC17_Dac_GetChannelCount(&dacProvider); ch++) {
-        LPC17_Dac_ReleaseChannel(&dacProvider, ch);
+        if (g_lpc17_dac_isOpened[ch])
+            LPC17_Dac_ReleaseChannel(&dacProvider, ch);
     }
 }
 
