@@ -92,9 +92,9 @@
 
 // Driver
 #define LPC24_Gpio_DebounceDefaultMilisecond   20
-#define LPC24_Gpio_MaxPins                     SIZEOF_ARRAY(g_lpc24_gpio_pinConfiguration)
+#define LPC24_Gpio_MaxPins                     SIZEOF_ARRAY(g_lpc24_pins)
 
-static const LPC24_Gpio_PinConfiguration g_lpc24_gpio_pinConfiguration[] = LPC24_GPIO_PINS;
+static const LPC24_Gpio_PinConfiguration g_lpc24_pins[] = LPC24_GPIO_PINS;
 struct LPC24_Int_State {
     uint8_t                                     pin;      // pin number
     uint32_t                                    debounce; // debounce
@@ -463,7 +463,16 @@ void LPC24_Gpio_Reset() {
     SCS_BASE |= (1 << 0); // Enable for port 0 and 1
 
     for (auto pin = 0; pin < LPC24_Gpio_GetPinCount(&gpioProvider); pin++) {
+        auto& p = g_lpc24_pins[pin];
+
         g_pinReserved[pin] = false;
         LPC24_Gpio_SetDebounceTimeout(&gpioProvider, pin, LPC24_Gpio_DebounceDefaultMilisecond);
+
+        if (p.apply) {
+            LPC24_Gpio_ConfigurePin(pin, p.pinDirection, p.pinFunction, p.pinMode);
+
+            if (p.pinDirection == LPC24_Gpio_Direction::Output)
+                LPC24_Gpio_WritePin(pin, p.outputDirection);
+        }
     }
 }
