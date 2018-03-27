@@ -16,6 +16,7 @@ Some targets and devices are maintained by GHI Electronics while others are main
 
 ## Targets
 - STM32F4xx
+- STM32F7xx
 - LPC177x_LPC178x
 - LPC23xx_LPC24xx
 - AT91SAM9Rx64
