@@ -1,0 +1,9 @@
+InstructionType:THUMB2FP
+MCpu:cortex-m7
+FloatCompileArguments:-mfloat-abi=hard -mfpu=fpv4-sp-d16
+AdditionalIncludes:-I"!ScriptRoot!\CMSIS\CMSIS\Include"
+AdditionalDefines:-DPLATFORM_ARM_CORTEX_M7 -D__CORTEX_M7F -DCORTEX_M7 -DCOMPILE_THUMB2
+AdditionalAssemblerArguments:--defsym COMPILE_THUMB2=1 -mthumb
+AdditionalCompilerArguments:-mthumb
+GccLibrary:!GccDirectory!\arm-none-eabi\lib\thumb\v7e-m\fpv4-sp\hard
+NeedCmsis:1
