@@ -619,7 +619,7 @@ void STM32F4_Uart_Reset() {
         g_UartController[i].txBufferSize = 0;
         g_UartController[i].rxBufferSize = 0;
 
-        if (g_UartController[portNum].isOpened)
+        if (g_UartController[i].isOpened)
             STM32F4_Uart_Release(uartProviders[i]);
     }
 }
