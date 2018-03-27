@@ -26,6 +26,8 @@
 static TinyCLR_Adc_Provider adcProvider;
 static TinyCLR_Api_Info adcApi;
 
+uint32_t g_lpc24_adc_isOpened;
+
 const TinyCLR_Api_Info* LPC24_Adc_GetApi() {
     adcProvider.Parent = &adcApi;
     adcProvider.Index = 0;
@@ -90,11 +92,16 @@ TinyCLR_Result LPC24_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_
         (0 << 17) |//10 bits
         (1 << 21);//operational
 
+    g_lpc24_adc_isOpened |= (1 << channel);
+
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t channel) {
     LPC24_Gpio_ConfigurePin(LPC24_Adc_GetPin(channel), LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::Inactive);
+
+    g_lpc24_adc_isOpened &= ~(1 << channel);
+
     return TinyCLR_Result::Success;
 }
 
@@ -151,8 +158,11 @@ bool LPC24_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCLR_
 
 void LPC24_Adc_Reset() {
     for (auto ch = 0; ch < LPC24_Adc_GetControllerCount(); ch++) {
-        LPC24_Adc_ReleaseChannel(&adcProvider, ch);
+        if (g_lpc24_adc_isOpened & (1 << ch))
+            LPC24_Adc_ReleaseChannel(&adcProvider, ch);
     }
+
+    g_lpc24_adc_isOpened = 0;
 
     LPC24XX::SYSCON().PCONP &= ~(PCONP_PCAD);
 
