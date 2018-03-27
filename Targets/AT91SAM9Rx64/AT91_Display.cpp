@@ -1140,7 +1140,9 @@ const TinyCLR_Api_Info* AT91_Display_GetApi() {
 
 void AT91_Display_Reset() {
     AT91_Display_Clear();
-    AT91_Display_Uninitialize();
+
+    if (m_AT91_DisplayEnable)
+        AT91_Display_Uninitialize();
 }
 
 #endif // INCLUDE_DISPLAY

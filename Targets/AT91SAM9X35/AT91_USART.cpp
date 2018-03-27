@@ -692,7 +692,8 @@ void AT91_Uart_Reset() {
         g_UartController[i].txBufferSize = 0;
         g_UartController[i].rxBufferSize = 0;
 
-        AT91_Uart_Release(uartProviders[i]);
+        if (g_UartController[portNum].isOpened)
+            AT91_Uart_Release(uartProviders[i]);
     }
 }
 

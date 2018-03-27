@@ -431,7 +431,8 @@ TinyCLR_Result AT91_I2c_Release(const TinyCLR_I2c_Provider* self) {
 
 void AT91_I2c_Reset() {
     for (auto i = 0; i < SIZEOF_ARRAY(g_i2c_scl_pins); i++) {
-        AT91_I2c_Release(i2cProviders[i]);
+        if (g_I2cConfiguration[i].isOpened)
+            AT91_I2c_Release(i2cProviders[i]);
 
         g_I2cConfiguration[i].address = 0;
         g_I2cConfiguration[i].clockRate = 0;
