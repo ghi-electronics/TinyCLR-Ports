@@ -361,5 +361,7 @@ void LPC17_Adc_Reset() {
     for (auto ch = 0; ch < SIZEOF_ARRAY(g_lpc17_adc_pins); ch++) {
         if (g_lpc17_adc_isOpened[ch])
             LPC17_Adc_ReleaseChannel(&adcProvider, ch);
+
+        g_lpc17_adc_isOpened[ch] = false;
     }
 }

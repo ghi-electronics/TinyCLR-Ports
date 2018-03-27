@@ -2827,8 +2827,11 @@ TinyCLR_Result LPC17_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, si
 }
 
 void LPC17_Can_Reset() {
-    for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++)
+    for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
         if (canController[i].isOpened)
             LPC17_Can_Release(canProvider[i]);
+
+        canController[i].isOpened = false;
+    }
 }
 #endif // INCLUDE_CAN

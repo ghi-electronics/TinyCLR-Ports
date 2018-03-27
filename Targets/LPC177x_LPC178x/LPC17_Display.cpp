@@ -966,5 +966,7 @@ void LPC17_Display_Reset() {
 
     if (m_LPC17_DisplayEnable)
         LPC17_Display_Uninitialize();
+
+    m_LPC17_DisplayEnable = false;
 }
 

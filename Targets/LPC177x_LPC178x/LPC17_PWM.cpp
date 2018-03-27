@@ -437,6 +437,8 @@ void LPC17_Pwm_ResetController(int32_t controller) {
                 LPC17_Pwm_DisablePin(pwmProviders[controller], p);
                 LPC17_Pwm_ReleasePin(pwmProviders[controller], p);
             }
+
+            g_PwmController[controller].isOpened[p] = false;
         }
     }
 }

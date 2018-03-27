@@ -140,6 +140,8 @@ void LPC17_Dac_Reset() {
     for (auto ch = 0; ch < LPC17_Dac_GetChannelCount(&dacProvider); ch++) {
         if (g_lpc17_dac_isOpened[ch])
             LPC17_Dac_ReleaseChannel(&dacProvider, ch);
+
+        g_lpc17_dac_isOpened[ch] = false;
     }
 }
 
