@@ -454,6 +454,8 @@ void LPC24_Pwm_ResetController(int32_t controller) {
                 LPC24_Pwm_DisablePin(pwmProviders[controller], p);
                 LPC24_Pwm_ReleasePin(pwmProviders[controller], p);
             }
+
+            g_PwmController[controller].isOpened[p] = false;
         }
     }
 }

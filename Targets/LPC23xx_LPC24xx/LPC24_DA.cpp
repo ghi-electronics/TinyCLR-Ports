@@ -131,6 +131,8 @@ void LPC24_Dac_Reset() {
     for (auto ch = 0; ch < LPC24_Dac_GetChannelCount(&dacProvider); ch++) {
         if (g_LPC24_Dac_IsOpened[ch])
             LPC24_Dac_ReleaseChannel(&dacProvider, ch);
+
+        g_LPC24_Dac_IsOpened[ch] = false;
     }
 }
 

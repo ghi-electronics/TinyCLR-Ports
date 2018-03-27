@@ -1010,6 +1010,8 @@ void LPC24_Display_Reset() {
 
     if (m_LPC24_DisplayEnable)
         LPC24_Display_Uninitialize();
+
+    m_LPC24_DisplayEnable = false;
 }
 
 #endif // INCLUDE_DISPLAY
