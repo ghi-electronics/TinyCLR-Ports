@@ -469,5 +469,7 @@ void STM32F4_I2c_Reset() {
 
         g_WriteI2cTransactionAction[i].bytesToTransfer = 0;
         g_WriteI2cTransactionAction[i].bytesTransferred = 0;
+
+        g_I2cConfiguration[i].isOpened = false;
     }
 }

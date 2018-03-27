@@ -201,5 +201,7 @@ void STM32F4_Adc_Reset() {
     for (auto i = 0; i < STM32F4_AD_NUM; i++) {
         if (g_STM32F4_AD_IsOpened[i])
             STM32F4_Adc_ReleaseChannel(&adcProvider, i);
+
+        g_STM32F4_AD_IsOpened[i] = false;
     }
 }

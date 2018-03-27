@@ -442,6 +442,8 @@ void STM32F4_Pwm_ResetController(int32_t controller) {
             STM32F4_Pwm_DisablePin(pwmProviders[controller], p);
             STM32F4_Pwm_ReleasePin(pwmProviders[controller], p);
         }
+
+        g_PwmController[controller].isOpened[p] = false;
     }
 
     g_PwmController[controller].theoryFreq = 0.0;

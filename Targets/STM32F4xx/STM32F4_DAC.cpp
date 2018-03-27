@@ -144,6 +144,8 @@ void STM32F4_Dac_Reset() {
     for (auto i = 0; i < STM32F4_Dac_GetChannelCount(&dacProvider); i++) {
         if (g_STM32F4_DA_IsOpened[i])
             STM32F4_Dac_ReleaseChannel(&dacProvider, i);
+
+        g_STM32F4_DA_IsOpened[i] = false;
     }
 }
 #endif

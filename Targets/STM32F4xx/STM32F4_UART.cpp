@@ -621,6 +621,8 @@ void STM32F4_Uart_Reset() {
 
         if (g_UartController[i].isOpened)
             STM32F4_Uart_Release(uartProviders[i]);
+
+        g_UartController[i].isOpened = false;
     }
 }
 

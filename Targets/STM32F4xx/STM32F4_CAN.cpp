@@ -1600,6 +1600,8 @@ void STM32F4_Can_Reset() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
         if (canController[i].isOpened)
             STM32F4_Can_Release(canProvider[i]);
+
+        canController[i].isOpened = false;
     }
 }
 #endif // INCLUDE_CAN

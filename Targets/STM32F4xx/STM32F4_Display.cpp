@@ -852,7 +852,7 @@ void STM32F4_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t heigh
     case STM32F4xx_LCD_Rotation::rotateNormal_0:
 
         if (xOffset == 0 && yOffset == 0 &&
-            width == screenWidth &&    height == screenHeight) {
+            width == screenWidth && height == screenHeight) {
             STM32F4_Display_MemCopy(to, from, (screenWidth*screenHeight * 2));
         }
         else {
@@ -1094,6 +1094,8 @@ void STM32F4_Display_Reset() {
 
     if (m_STM32F4_DisplayEnable)
         STM32F4_Display_Uninitialize();
+
+    m_STM32F4_DisplayEnable = false;
 }
 
 #endif //INCLUDE_DISPLAY
