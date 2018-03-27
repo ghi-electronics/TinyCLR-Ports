@@ -1427,6 +1427,8 @@ void AT91_Display_Reset() {
 
     if (m_AT91_DisplayEnable)
         AT91_Display_Uninitialize();
+
+    m_AT91_DisplayEnable = false;
 }
 
 #endif // INCLUDE_DISPLAY

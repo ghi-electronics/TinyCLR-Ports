@@ -217,5 +217,7 @@ void AT91_Adc_Reset() {
     for (auto ch = 0; ch < AT91_Adc_GetControllerCount(); ch++) {
         if (g_at91_adc_isOpened[ch])
             AT91_Adc_ReleaseChannel(&adcProvider, ch);
+
+        g_at91_adc_isOpened[ch] = false;
     }
 }

@@ -446,6 +446,8 @@ void AT91_Pwm_ResetController(int32_t controller) {
                 AT91_Pwm_DisablePin(pwmProviders[controller], p);
                 AT91_Pwm_ReleasePin(pwmProviders[controller], p);
             }
+
+            g_PwmController[controller].isOpened[p] = false;
         }
     }
 }
