@@ -34,7 +34,7 @@ struct STM32F4_I2c_Configuration {
     uint8_t     clockRate;
     uint8_t     clockRate2;
 
-    bool        openFlag;
+    bool        isOpened;
 };
 struct STM32F4_I2c_Transaction {
     bool                        isReadTransaction;
@@ -425,7 +425,7 @@ TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Provider* self) {
 
     I2Cx->CR1 = I2C_CR1_PE; // enable peripheral
 
-    g_I2cConfiguration[port_id].openFlag = true;
+    g_I2cConfiguration[port_id].isOpened = true;
 
     return TinyCLR_Result::Success;
 }
@@ -450,14 +450,14 @@ TinyCLR_Result STM32F4_I2c_Release(const TinyCLR_I2c_Provider* self) {
     STM32F4_GpioInternal_ClosePin(sda.number);
     STM32F4_GpioInternal_ClosePin(scl.number);
 
-    g_I2cConfiguration[port_id].openFlag = false;
+    g_I2cConfiguration[port_id].isOpened = false;
 
     return TinyCLR_Result::Success;
 }
 
 void STM32F4_I2c_Reset() {
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
-        if (g_I2cConfiguration[i].openFlag)
+        if (g_I2cConfiguration[i].isOpened)
             STM32F4_I2c_Release(i2cProvider[i]);
 
         g_I2cConfiguration[i].address = 0;

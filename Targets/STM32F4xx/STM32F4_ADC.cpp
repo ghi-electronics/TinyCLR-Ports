@@ -46,7 +46,7 @@ static const uint8_t g_STM32F4_AD_Pins[] = STM32F4_ADC_PINS;
 static TinyCLR_Adc_Provider adcProvider;
 static TinyCLR_Api_Info adcApi;
 
-bool g_STM32F4_AD_OpenFlag[STM32F4_AD_NUM];
+bool g_STM32F4_AD_IsOpened[STM32F4_AD_NUM];
 
 const TinyCLR_Api_Info* STM32F4_Adc_GetApi() {
     adcProvider.Parent = &adcApi;
@@ -105,7 +105,7 @@ TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int3
                 STM32F4_GpioInternal_ConfigurePin(g_STM32F4_AD_Pins[channel], STM32F4_Gpio_PortMode::Analog, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
             }
 
-            g_STM32F4_AD_OpenFlag[i] = true;
+            g_STM32F4_AD_IsOpened[i] = true;
 
             return TinyCLR_Result::Success;
 
@@ -122,7 +122,7 @@ TinyCLR_Result STM32F4_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int3
     if (channel <= 15 && channel < STM32F4_AD_NUM)
         STM32F4_GpioInternal_ClosePin(g_STM32F4_AD_Pins[channel]);
 
-    g_STM32F4_AD_OpenFlag[channel] = false;
+    g_STM32F4_AD_IsOpened[channel] = false;
 
     return TinyCLR_Result::Success;
 }
@@ -199,7 +199,7 @@ bool STM32F4_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCL
 
 void STM32F4_Adc_Reset() {
     for (auto i = 0; i < STM32F4_AD_NUM; i++) {
-        if (g_STM32F4_AD_OpenFlag[i])
+        if (g_STM32F4_AD_IsOpened[i])
             STM32F4_Adc_ReleaseChannel(&adcProvider, i);
     }
 }
