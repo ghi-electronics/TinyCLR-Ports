@@ -734,15 +734,41 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Provider* self) {
 
 
 
-    USARTC.SEL2.IER.UART_IER &= ~(LPC17xx_USART::UART_IER_INTR_ALL_SET);         // Disable all UART interrupt
+    if (g_UartController[portNum].isOpened == true) {
+        USARTC.SEL2.IER.UART_IER &= ~(LPC17xx_USART::UART_IER_INTR_ALL_SET);         // Disable all UART interrupt
+                // CWS: Disable interrupts
+        USARTC.SEL3.FCR.UART_FCR = 0;
+        USARTC.UART_LCR = 0; // prepare to Init UART
 
-    // CWS: Disable interrupts
-    USARTC.SEL3.FCR.UART_FCR = 0;
-    USARTC.UART_LCR = 0; // prepare to Init UART
+        if (g_UartController[portNum].handshakeEnable) {
+            USARTC.UART_MCR &= ~((1 << 6) | (1 << 7));
+            USARTC.SEL2.IER.UART_IER &= ~((1 << 7) | (1 << 3));
+        }
 
-    if (g_UartController[portNum].handshakeEnable) {
-        USARTC.UART_MCR &= ~((1 << 6) | (1 << 7));
-        USARTC.SEL2.IER.UART_IER &= ~((1 << 7) | (1 << 3));
+        g_UartController[portNum].txBufferCount = 0;
+        g_UartController[portNum].txBufferIn = 0;
+        g_UartController[portNum].txBufferOut = 0;
+
+        g_UartController[portNum].rxBufferCount = 0;
+        g_UartController[portNum].rxBufferIn = 0;
+        g_UartController[portNum].rxBufferOut = 0;
+        if (apiProvider != nullptr) {
+            auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+
+            if (g_UartController[self->Index].txBufferSize != 0) {
+                memoryProvider->Free(memoryProvider, g_UartController[self->Index].TxBuffer);
+
+                g_UartController[self->Index].txBufferSize = 0;
+            }
+
+            if (g_UartController[self->Index].rxBufferSize != 0) {
+                memoryProvider->Free(memoryProvider, g_UartController[self->Index].RxBuffer);
+
+                g_UartController[self->Index].rxBufferSize = 0;
+            }
+        }
+
+        LPC17_Uart_PinConfiguration(portNum, false);
     }
 
     // Disable to save power
@@ -758,34 +784,6 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Provider* self) {
 
     case 4: LPC_SC->PCONP &= ~PCONP_PCUART4; break;
     }
-
-
-    g_UartController[portNum].txBufferCount = 0;
-    g_UartController[portNum].txBufferIn = 0;
-    g_UartController[portNum].txBufferOut = 0;
-
-    g_UartController[portNum].rxBufferCount = 0;
-    g_UartController[portNum].rxBufferIn = 0;
-    g_UartController[portNum].rxBufferOut = 0;
-    if (apiProvider != nullptr) {
-        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
-
-        if (g_UartController[self->Index].txBufferSize != 0) {
-            memoryProvider->Free(memoryProvider, g_UartController[self->Index].TxBuffer);
-
-            g_UartController[self->Index].txBufferSize = 0;
-        }
-
-        if (g_UartController[self->Index].rxBufferSize != 0) {
-            memoryProvider->Free(memoryProvider, g_UartController[self->Index].RxBuffer);
-
-            g_UartController[self->Index].rxBufferSize = 0;
-        }
-    }
-
-    if (g_UartController[portNum].isOpened == true)
-        LPC17_Uart_PinConfiguration(portNum, false);
-
 
     g_UartController[portNum].isOpened = false;
     g_UartController[portNum].handshakeEnable = false;
