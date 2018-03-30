@@ -437,8 +437,6 @@ TinyCLR_Result STM32F4_I2c_Release(const TinyCLR_I2c_Provider* self) {
     int32_t port_id = self->Index;
 
     auto& I2Cx = g_STM32_I2c_Port[port_id];
-    auto& scl = g_STM32F4_I2c_Scl_Pins[port_id];
-    auto& sda = g_STM32F4_I2c_Sda_Pins[port_id];
 
     STM32F4_InterruptInternal_Deactivate(port_id == 0 ? I2C1_EV_IRQn : port_id == 1 ? I2C2_EV_IRQn : I2C3_EV_IRQn);
     STM32F4_InterruptInternal_Deactivate(port_id == 0 ? I2C1_ER_IRQn : port_id == 1 ? I2C2_ER_IRQn : I2C3_ER_IRQn);
@@ -447,8 +445,13 @@ TinyCLR_Result STM32F4_I2c_Release(const TinyCLR_I2c_Provider* self) {
 
     RCC->APB1ENR &= (port_id == 0 ? ~RCC_APB1ENR_I2C1EN : port_id == 1 ? ~RCC_APB1ENR_I2C2EN : ~RCC_APB1ENR_I2C3EN);
 
-    STM32F4_GpioInternal_ClosePin(sda.number);
-    STM32F4_GpioInternal_ClosePin(scl.number);
+    if (g_I2cConfiguration[port_id].isOpened) {
+        auto& scl = g_STM32F4_I2c_Scl_Pins[port_id];
+        auto& sda = g_STM32F4_I2c_Sda_Pins[port_id];
+
+        STM32F4_GpioInternal_ClosePin(sda.number);
+        STM32F4_GpioInternal_ClosePin(scl.number);
+    }
 
     g_I2cConfiguration[port_id].isOpened = false;
 
@@ -457,8 +460,8 @@ TinyCLR_Result STM32F4_I2c_Release(const TinyCLR_I2c_Provider* self) {
 
 void STM32F4_I2c_Reset() {
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
-        if (g_I2cConfiguration[i].isOpened)
-            STM32F4_I2c_Release(i2cProvider[i]);
+
+        STM32F4_I2c_Release(i2cProvider[i]);
 
         g_I2cConfiguration[i].address = 0;
         g_I2cConfiguration[i].clockRate = 0;

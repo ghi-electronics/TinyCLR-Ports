@@ -484,18 +484,20 @@ TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Provider* self) {
 #endif
     }
 
-    auto& sclk = g_STM32F4_Spi_Sclk_Pins[controller];
-    auto& miso = g_STM32F4_Spi_Miso_Pins[controller];
-    auto& mosi = g_STM32F4_Spi_Mosi_Pins[controller];
+    if (g_SpiController[controller].isOpened) {
+        auto& sclk = g_STM32F4_Spi_Sclk_Pins[controller];
+        auto& miso = g_STM32F4_Spi_Miso_Pins[controller];
+        auto& mosi = g_STM32F4_Spi_Mosi_Pins[controller];
 
-    STM32F4_GpioInternal_ClosePin(sclk.number);
-    STM32F4_GpioInternal_ClosePin(miso.number);
-    STM32F4_GpioInternal_ClosePin(mosi.number);
+        STM32F4_GpioInternal_ClosePin(sclk.number);
+        STM32F4_GpioInternal_ClosePin(miso.number);
+        STM32F4_GpioInternal_ClosePin(mosi.number);
 
-    if (g_SpiController[controller].chipSelectLine != PIN_NONE) {
-        STM32F4_GpioInternal_ClosePin(g_SpiController[controller].chipSelectLine);
+        if (g_SpiController[controller].chipSelectLine != PIN_NONE) {
+            STM32F4_GpioInternal_ClosePin(g_SpiController[controller].chipSelectLine);
 
-        g_SpiController[controller].chipSelectLine = PIN_NONE;
+            g_SpiController[controller].chipSelectLine = PIN_NONE;
+        }
     }
 
     g_SpiController[controller].isOpened = false;
@@ -529,8 +531,7 @@ TinyCLR_Result STM32F4_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider
 
 void STM32F4_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        if (g_SpiController[i].isOpened)
-            STM32F4_Spi_Release(spiProviders[i]);
+        STM32F4_Spi_Release(spiProviders[i]);
 
         g_SpiController[i].isOpened = false;
     }
