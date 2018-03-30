@@ -405,34 +405,33 @@ TinyCLR_Result AT91_I2c_Release(const TinyCLR_I2c_Provider* self) {
     AT91_I2C& I2C = AT91::I2C(portId);
 
     I2C.TWI_CR = AT91_I2C::TWI_CR_SWRST;
-    if (g_I2cConfiguration[portId].isOpened) {
+
+    AT91_Interrupt_Disable(portId == 0 ? AT91C_ID_TWI0 : AT91C_ID_TWI1);
+
+    AT91_PMC &pmc = AT91::PMC();
+    pmc.DisablePeriphClock(portId == 0 ? AT91C_ID_TWI0 : AT91C_ID_TWI1);
+
+    // disable
+    I2C.TWI_CR = AT91_I2C::TWI_CR_MSDIS;
+
+    // disable all the interrupt
+    I2C.TWI_IDR = AT91_I2C::TWI_IDR_NACK | AT91_I2C::TWI_IDR_RXRDY | AT91_I2C::TWI_IDR_TXCOMP | AT91_I2C::TWI_IDR_TXRDY;
 
 
-        AT91_Interrupt_Disable(portId == 0 ? AT91C_ID_TWI0 : AT91C_ID_TWI1);
 
-        AT91_PMC &pmc = AT91::PMC();
-        pmc.DisablePeriphClock(portId == 0 ? AT91C_ID_TWI0 : AT91C_ID_TWI1);
-
-        // disable
-        I2C.TWI_CR = AT91_I2C::TWI_CR_MSDIS;
-
-        // disable all the interrupt
-        I2C.TWI_IDR = AT91_I2C::TWI_IDR_NACK | AT91_I2C::TWI_IDR_RXRDY | AT91_I2C::TWI_IDR_TXCOMP | AT91_I2C::TWI_IDR_TXRDY;
-
-
-        g_I2cConfiguration[portId].isOpened = false;
-
+    if (g_I2cConfiguration[self->Index].isOpened) {
         AT91_Gpio_ClosePin(g_i2c_sda_pins[self->Index].number);
         AT91_Gpio_ClosePin(g_i2c_scl_pins[self->Index].number);
     }
+
+    g_I2cConfiguration[portId].isOpened = false;
 
     return TinyCLR_Result::Success;
 }
 
 void AT91_I2c_Reset() {
     for (auto i = 0; i < SIZEOF_ARRAY(g_i2c_scl_pins); i++) {
-        if (g_I2cConfiguration[i].isOpened)
-            AT91_I2c_Release(i2cProviders[i]);
+        AT91_I2c_Release(i2cProviders[i]);
 
         g_I2cConfiguration[i].address = 0;
         g_I2cConfiguration[i].clockRate = 0;

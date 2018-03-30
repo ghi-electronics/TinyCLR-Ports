@@ -445,12 +445,13 @@ void LPC24_Pwm_ResetController(int32_t controller) {
             g_PwmController[pwmProviders[controller]->Index].invert[p] = false;
             g_PwmController[pwmProviders[controller]->Index].frequency = 0.0;
             g_PwmController[pwmProviders[controller]->Index].dutyCycle[p] = 0.0;
-            if (g_PwmController[controller].isOpened[p] == true) {
-                if (controller == 0)
-                    PWM0PCR &= ~(1 << (9 + (g_PwmController[controller].match[p])));
-                if (controller == 1)
-                    PWM1PCR &= ~(1 << (9 + (g_PwmController[controller].match[p])));
 
+            if (controller == 0)
+                PWM0PCR &= ~(1 << (9 + (g_PwmController[controller].match[p])));
+            if (controller == 1)
+                PWM1PCR &= ~(1 << (9 + (g_PwmController[controller].match[p])));
+
+            if (g_PwmController[controller].isOpened[p] == true) {
                 LPC24_Pwm_DisablePin(pwmProviders[controller], p);
                 LPC24_Pwm_ReleasePin(pwmProviders[controller], p);
             }

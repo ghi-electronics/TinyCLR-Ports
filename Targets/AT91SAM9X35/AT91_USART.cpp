@@ -492,7 +492,8 @@ TinyCLR_Result AT91_Uart_Release(const TinyCLR_Uart_Provider* self) {
 
     AT91_Interrupt_Disable(uartId);
 
-    AT91_Uart_PinConfiguration(portNum, false);
+    if (g_UartController[portNum].isOpened)
+        AT91_Uart_PinConfiguration(portNum, false);
 
     pmc.DisablePeriphClock(uartId);
 
@@ -689,8 +690,7 @@ TinyCLR_Result AT91_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Provider* 
 
 void AT91_Uart_Reset() {
     for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
-        if (g_UartController[i].isOpened)
-            AT91_Uart_Release(uartProviders[i]);
+        AT91_Uart_Release(uartProviders[i]);
 
         g_UartController[i].txBufferSize = 0;
         g_UartController[i].rxBufferSize = 0;

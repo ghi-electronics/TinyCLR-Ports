@@ -119,7 +119,8 @@ TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Provider *self, int32_t
 }
 
 TinyCLR_Result AT91_Adc_ReleaseChannel(const TinyCLR_Adc_Provider *self, int32_t channel) {
-    AT91_Gpio_ClosePin(AT91_Adc_GetPin(channel));
+    if (g_at91_adc_isOpened[channel])
+        AT91_Gpio_ClosePin(AT91_Adc_GetPin(channel));
 
     g_at91_adc_isOpened[channel] = false;
 
@@ -217,8 +218,7 @@ bool AT91_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider *self, TinyCLR_A
 
 void AT91_Adc_Reset() {
     for (auto ch = 0; ch < AT91_Adc_GetControllerCount(); ch++) {
-        if (g_at91_adc_isOpened[ch])
-            AT91_Adc_ReleaseChannel(&adcProvider, ch);
+        AT91_Adc_ReleaseChannel(&adcProvider, ch);
 
         g_at91_adc_isOpened[ch] = false;
     }

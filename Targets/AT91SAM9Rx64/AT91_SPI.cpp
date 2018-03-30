@@ -386,23 +386,23 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Provider* self) {
 
         break;
     }
+    if (g_SpiController[controller].isOpened) {
+        uint32_t clkPin, misoPin, mosiPin;
 
-    uint32_t clkPin, misoPin, mosiPin;
+        clkPin = g_at91_spi_sclk_pins[controller].number;
+        misoPin = g_at91_spi_miso_pins[controller].number;
+        mosiPin = g_at91_spi_mosi_pins[controller].number;
 
-    clkPin = g_at91_spi_sclk_pins[controller].number;
-    misoPin = g_at91_spi_miso_pins[controller].number;
-    mosiPin = g_at91_spi_mosi_pins[controller].number;
+        AT91_Gpio_ClosePin(clkPin);
+        AT91_Gpio_ClosePin(misoPin);
+        AT91_Gpio_ClosePin(mosiPin);
 
-    AT91_Gpio_ClosePin(clkPin);
-    AT91_Gpio_ClosePin(misoPin);
-    AT91_Gpio_ClosePin(mosiPin);
+        if (g_SpiController[controller].chipSelectLine != PIN_NONE) {
+            AT91_Gpio_ClosePin(g_SpiController[controller].chipSelectLine);
 
-    if (g_SpiController[controller].chipSelectLine != PIN_NONE) {
-        AT91_Gpio_ClosePin(g_SpiController[controller].chipSelectLine);
-
-        g_SpiController[controller].chipSelectLine = PIN_NONE;
+            g_SpiController[controller].chipSelectLine = PIN_NONE;
+        }
     }
-
     g_SpiController[controller].clockFrequency = 0;
     g_SpiController[controller].dataBitLength = 0;
 
@@ -437,9 +437,8 @@ TinyCLR_Result AT91_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* s
 
 void AT91_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        if (g_SpiController[i].isOpened) {
-            AT91_Spi_Release(spiProviders[i]);
-        }
+        AT91_Spi_Release(spiProviders[i]);
+
 
         g_SpiController[i].isOpened = false;
     }
