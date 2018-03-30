@@ -50,7 +50,6 @@ const TinyCLR_Api_Info* STM32F4_Time_GetApi() {
     timeProvider.SetCallback = &STM32F4_Time_SetTickCallback;
     timeProvider.ScheduleCallback = &STM32F4_Time_SetNextTickCallbackTime;
     timeProvider.Delay = &STM32F4_Time_Delay;
-    timeProvider.DelayNoInterrupt = &STM32F4_Time_DelayNoInterrupt;
 
     timeApi.Author = "GHI Electronics, LLC";
     timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.NativeTimeProvider";

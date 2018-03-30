@@ -50,7 +50,6 @@ const TinyCLR_Api_Info* LPC17_Time_GetApi() {
     timeProvider.ScheduleCallback = &LPC17_Time_SetCompare;
     timeProvider.Acquire = &LPC17_Time_Acquire;
     timeProvider.Release = &LPC17_Time_Release;
-    timeProvider.DelayNoInterrupt = &LPC17_Time_DelayNoInterrupt;
     timeProvider.Delay = &LPC17_Time_Delay;
 
     timeApi.Author = "GHI Electronics, LLC";
