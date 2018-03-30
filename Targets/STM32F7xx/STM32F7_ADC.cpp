@@ -132,7 +132,7 @@ TinyCLR_Result STM32F7_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int3
 
     // free GPIO pin if this channel is listed in the STM32F7_AD_CHANNELS array
     // and if it's not one of the internally connected ones as these channels don't take any GPIO pins
-    if (chNum < STM32F7_AD_NUM)
+    if (chNum < STM32F7_AD_NUM && g_STM32F7_AD_IsOpened[chNum])
         STM32F7_GpioInternal_ClosePin(STM32F7_Adc_GetPinForChannel(channel));
 
     g_STM32F7_AD_IsOpened[chNum] = false;
@@ -204,8 +204,7 @@ bool STM32F7_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCL
 
 void STM32F7_Adc_Reset() {
     for (auto i = 0; i < STM32F7_AD_NUM; i++) {
-        if (g_STM32F7_AD_IsOpened[i])
-            STM32F7_Adc_ReleaseChannel(&adcProvider, i);
+        STM32F7_Adc_ReleaseChannel(&adcProvider, i);
 
         g_STM32F7_AD_IsOpened[i] = false;
     }

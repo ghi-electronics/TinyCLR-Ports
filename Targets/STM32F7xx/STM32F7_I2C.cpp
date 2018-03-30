@@ -502,8 +502,6 @@ TinyCLR_Result STM32F7_I2c_Release(const TinyCLR_I2c_Provider* self) {
         return TinyCLR_Result::ArgumentNull;
 
     auto& I2Cx = g_STM32_I2c_Port[self->Index];
-    auto& scl = g_STM32F7_I2c_Scl_Pins[self->Index];
-    auto& sda = g_STM32F7_I2c_Sda_Pins[self->Index];
 
     STM32F7_I2c_InterruptDisable(I2Cx, I2C_CR1_ERRIE | I2C_CR1_TCIE | I2C_CR1_STOPIE | I2C_CR1_NACKIE | I2C_CR1_TXIE | I2C_CR1_RXIE); // disable interrupts
     switch (self->Index) {
@@ -527,9 +525,13 @@ TinyCLR_Result STM32F7_I2c_Release(const TinyCLR_I2c_Provider* self) {
     // TODO other ports
         break;
     }
+    if (g_I2cConfiguration[self->Index].isOpened) {
+        auto& scl = g_STM32F7_I2c_Scl_Pins[self->Index];
+        auto& sda = g_STM32F7_I2c_Sda_Pins[self->Index];
 
-    STM32F7_GpioInternal_ClosePin(sda.number);
-    STM32F7_GpioInternal_ClosePin(scl.number);
+        STM32F7_GpioInternal_ClosePin(sda.number);
+        STM32F7_GpioInternal_ClosePin(scl.number);
+    }
 
     g_I2cConfiguration[self->Index].isOpened = false;
 
@@ -538,8 +540,8 @@ TinyCLR_Result STM32F7_I2c_Release(const TinyCLR_I2c_Provider* self) {
 
 void STM32F7_I2c_Reset() {
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
-        if (g_I2cConfiguration[i].isOpened)
-            STM32F7_I2c_Release(i2cProvider[i]);
+
+        STM32F7_I2c_Release(i2cProvider[i]);
 
         g_I2cConfiguration[i].address = 0;
         g_I2cConfiguration[i].clockRate = 0;
