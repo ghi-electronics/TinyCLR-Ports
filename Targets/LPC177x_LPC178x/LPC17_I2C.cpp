@@ -417,13 +417,13 @@ TinyCLR_Result LPC17_I2c_Release(const TinyCLR_I2c_Provider* self) {
 
     int32_t portId = self->Index;
 
+    LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(portId == 0 ? LPC17xx_I2C::c_I2C0_Base : ((portId == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
+
+    LPC17_Interrupt_Deactivate(portId == 0 ? I2C0_IRQn : (portId == 1 ? I2C1_IRQn : I2C2_IRQn));
+
+    I2C.I2CONCLR = (LPC17xx_I2C::AA | LPC17xx_I2C::SI | LPC17xx_I2C::STO | LPC17xx_I2C::STA | LPC17xx_I2C::I2EN);
+
     if (g_I2cConfiguration[portId].isOpened) {
-        LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(portId == 0 ? LPC17xx_I2C::c_I2C0_Base : ((portId == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
-
-        LPC17_Interrupt_Deactivate(portId == 0 ? I2C0_IRQn : (portId == 1 ? I2C1_IRQn : I2C2_IRQn));
-
-        I2C.I2CONCLR = (LPC17xx_I2C::AA | LPC17xx_I2C::SI | LPC17xx_I2C::STO | LPC17xx_I2C::STA | LPC17xx_I2C::I2EN);
-
         LPC17_Gpio_ClosePin(g_i2c_sda_pins[self->Index].number);
         LPC17_Gpio_ClosePin(g_i2c_scl_pins[self->Index].number);
     }
@@ -435,8 +435,7 @@ TinyCLR_Result LPC17_I2c_Release(const TinyCLR_I2c_Provider* self) {
 
 void LPC17_I2c_Reset() {
     for (auto i = 0; i < SIZEOF_ARRAY(g_i2c_scl_pins); i++) {
-        if (g_I2cConfiguration[i].isOpened)
-            LPC17_I2c_Release(i2cProviders[i]);
+        LPC17_I2c_Release(i2cProviders[i]);
 
         g_I2cConfiguration[i].address = 0;
         g_I2cConfiguration[i].clockRate = 0;

@@ -732,37 +732,33 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Provider* self) {
 
     LPC17xx_USART& USARTC = LPC17xx_USART::UART(portNum);
 
-    if (g_UartController[portNum].isOpened == true) {
-
-        USARTC.SEL2.IER.UART_IER &= ~(LPC17xx_USART::UART_IER_INTR_ALL_SET);         // Disable all UART interrupt
-
-        // CWS: Disable interrupts
-        USARTC.SEL3.FCR.UART_FCR = 0;
-        USARTC.UART_LCR = 0; // prepare to Init UART
-
-        if (g_UartController[portNum].handshakeEnable) {
-            USARTC.UART_MCR &= ~((1 << 6) | (1 << 7));
-            USARTC.SEL2.IER.UART_IER &= ~((1 << 7) | (1 << 3));
-        }
-
-        LPC17_Uart_PinConfiguration(portNum, false);
-
-        // Disable to save power
-        switch (portNum) {
-
-        case 0: LPC_SC->PCONP &= ~PCONP_PCUART0; break;
-
-        case 1: LPC_SC->PCONP &= ~PCONP_PCUART1; break;
-
-        case 2: LPC_SC->PCONP &= ~PCONP_PCUART2; break;
-
-        case 3: LPC_SC->PCONP &= ~PCONP_PCUART3; break;
-
-        case 4: LPC_SC->PCONP &= ~PCONP_PCUART4; break;
-        }
 
 
+    USARTC.SEL2.IER.UART_IER &= ~(LPC17xx_USART::UART_IER_INTR_ALL_SET);         // Disable all UART interrupt
+
+    // CWS: Disable interrupts
+    USARTC.SEL3.FCR.UART_FCR = 0;
+    USARTC.UART_LCR = 0; // prepare to Init UART
+
+    if (g_UartController[portNum].handshakeEnable) {
+        USARTC.UART_MCR &= ~((1 << 6) | (1 << 7));
+        USARTC.SEL2.IER.UART_IER &= ~((1 << 7) | (1 << 3));
     }
+
+    // Disable to save power
+    switch (portNum) {
+
+    case 0: LPC_SC->PCONP &= ~PCONP_PCUART0; break;
+
+    case 1: LPC_SC->PCONP &= ~PCONP_PCUART1; break;
+
+    case 2: LPC_SC->PCONP &= ~PCONP_PCUART2; break;
+
+    case 3: LPC_SC->PCONP &= ~PCONP_PCUART3; break;
+
+    case 4: LPC_SC->PCONP &= ~PCONP_PCUART4; break;
+    }
+
 
     g_UartController[portNum].txBufferCount = 0;
     g_UartController[portNum].txBufferIn = 0;
@@ -786,6 +782,10 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Provider* self) {
             g_UartController[self->Index].rxBufferSize = 0;
         }
     }
+
+    if (g_UartController[portNum].isOpened == true)
+        LPC17_Uart_PinConfiguration(portNum, false);
+
 
     g_UartController[portNum].isOpened = false;
     g_UartController[portNum].handshakeEnable = false;
@@ -973,8 +973,7 @@ TinyCLR_Result LPC17_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Provider*
 
 void LPC17_Uart_Reset() {
     for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
-        if (g_UartController[i].isOpened)
-            LPC17_Uart_Release(uartProviders[i]);
+        LPC17_Uart_Release(uartProviders[i]);
 
         g_UartController[i].txBufferSize = 0;
         g_UartController[i].rxBufferSize = 0;

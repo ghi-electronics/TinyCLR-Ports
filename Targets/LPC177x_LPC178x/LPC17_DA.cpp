@@ -96,7 +96,8 @@ TinyCLR_Result LPC17_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_
 
     DACR = (0 << 6); // This sets the initial starting voltage at 0
 
-    LPC17_Gpio_ClosePin(g_lpc17_dac_pins[channel].number);
+    if (g_lpc17_dac_isOpened[channel])
+        LPC17_Gpio_ClosePin(g_lpc17_dac_pins[channel].number);
 
     g_lpc17_dac_isOpened[channel] = false;
 
@@ -138,8 +139,7 @@ int32_t LPC17_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self) {
 
 void LPC17_Dac_Reset() {
     for (auto ch = 0; ch < LPC17_Dac_GetChannelCount(&dacProvider); ch++) {
-        if (g_lpc17_dac_isOpened[ch])
-            LPC17_Dac_ReleaseChannel(&dacProvider, ch);
+        LPC17_Dac_ReleaseChannel(&dacProvider, ch);
 
         g_lpc17_dac_isOpened[ch] = false;
     }

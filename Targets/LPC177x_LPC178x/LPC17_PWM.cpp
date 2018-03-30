@@ -428,12 +428,13 @@ void LPC17_Pwm_ResetController(int32_t controller) {
             g_PwmController[controller].frequency = 0.0;
             g_PwmController[controller].dutyCycle[p] = 0.0;
 
-            if (g_PwmController[controller].isOpened[p] == true) {
-                if (controller == 0)
-                    PWM0PCR &= ~(1 << (9 + (g_PwmController[controller].match[p])));
-                if (controller == 1)
-                    PWM1PCR &= ~(1 << (9 + (g_PwmController[controller].match[p])));
 
+            if (controller == 0)
+                PWM0PCR &= ~(1 << (9 + (g_PwmController[controller].match[p])));
+            if (controller == 1)
+                PWM1PCR &= ~(1 << (9 + (g_PwmController[controller].match[p])));
+
+            if (g_PwmController[controller].isOpened[p] == true) {
                 LPC17_Pwm_DisablePin(pwmProviders[controller], p);
                 LPC17_Pwm_ReleasePin(pwmProviders[controller], p);
             }
