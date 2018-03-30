@@ -409,18 +409,18 @@ void LPC24_I2c_StopTransaction(int32_t portId);
 
 // Time
 const TinyCLR_Api_Info* LPC24_Time_GetApi();
-TinyCLR_Result LPC24_Time_Acquire(const TinyCLR_Time_Provider* self);
-TinyCLR_Result LPC24_Time_Release(const TinyCLR_Time_Provider* self);
-uint64_t LPC24_Time_GetTimeForProcessorTicks(const TinyCLR_Time_Provider* self, uint64_t ticks);
-uint64_t LPC24_Time_TimeToTicks(const TinyCLR_Time_Provider* self, uint64_t time);
-uint64_t LPC24_Time_MillisecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t ticks);
-uint64_t LPC24_Time_MicrosecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t microseconds);
-uint64_t LPC24_Time_GetCurrentTicks(const TinyCLR_Time_Provider* self);
-TinyCLR_Result LPC24_Time_SetCompare(const TinyCLR_Time_Provider* self, uint64_t processorTicks);
-TinyCLR_Result LPC24_Time_SetCompareCallback(const TinyCLR_Time_Provider* self, TinyCLR_Time_TickCallback callback);
-void LPC24_Time_DelayNoInterrupt(const TinyCLR_Time_Provider* self, uint64_t microseconds);
-void LPC24_Time_Delay(const TinyCLR_Time_Provider* self, uint64_t microseconds);
-void LPC24_Time_GetDriftParameters(const TinyCLR_Time_Provider* self, int32_t* a, int32_t* b, int64_t* c);
+TinyCLR_Result LPC24_Time_Acquire(const TinyCLR_NativeTime_Provider* self);
+TinyCLR_Result LPC24_Time_Release(const TinyCLR_NativeTime_Provider* self);
+uint64_t LPC24_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Provider* self, uint64_t ticks);
+uint64_t LPC24_Time_TimeToTicks(const TinyCLR_NativeTime_Provider* self, uint64_t time);
+uint64_t LPC24_Time_MillisecondsToTicks(const TinyCLR_NativeTime_Provider* self, uint64_t ticks);
+uint64_t LPC24_Time_MicrosecondsToTicks(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds);
+uint64_t LPC24_Time_GetCurrentTicks(const TinyCLR_NativeTime_Provider* self);
+TinyCLR_Result LPC24_Time_SetCompare(const TinyCLR_NativeTime_Provider* self, uint64_t processorTicks);
+TinyCLR_Result LPC24_Time_SetCompareCallback(const TinyCLR_NativeTime_Provider* self, TinyCLR_NativeTime_Callback callback);
+void LPC24_Time_DelayNoInterrupt(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds);
+void LPC24_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds);
+void LPC24_Time_GetDriftParameters(const TinyCLR_NativeTime_Provider* self, int32_t* a, int32_t* b, int64_t* c);
 
 // Power
 const TinyCLR_Api_Info* LPC24_Power_GetApi();

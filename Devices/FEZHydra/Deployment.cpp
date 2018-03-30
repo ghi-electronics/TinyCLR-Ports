@@ -45,9 +45,9 @@ TinyCLR_Result AT91_Deployment_Acquire(const TinyCLR_Deployment_Provider* self, 
     TinyCLR_Spi_Provider** spiProvider = (TinyCLR_Spi_Provider**)spiApi->Implementation;
 
     const TinyCLR_Api_Info* timeApi = CONCAT(DEVICE_TARGET, _Time_GetApi)();;
-    TinyCLR_Time_Provider** timeProvider = (TinyCLR_Time_Provider**)timeApi->Implementation;
+    TinyCLR_NativeTime_Provider** timeProvider = (TinyCLR_NativeTime_Provider**)timeApi->Implementation;
 
-    return AT45DB321D_Flash_Acquire(reinterpret_cast<const TinyCLR_Spi_Provider*>(&spiProvider[0]), reinterpret_cast<const TinyCLR_Time_Provider*>(&timeProvider[0]), AT91_DEPLOYMENT_SPI_ENABLE_PIN, supportXIP);
+    return AT45DB321D_Flash_Acquire(reinterpret_cast<const TinyCLR_Spi_Provider*>(&spiProvider[0]), reinterpret_cast<const TinyCLR_NativeTime_Provider*>(&timeProvider[0]), AT91_DEPLOYMENT_SPI_ENABLE_PIN, supportXIP);
 }
 
 TinyCLR_Result AT91_Deployment_Release(const TinyCLR_Deployment_Provider* self) {

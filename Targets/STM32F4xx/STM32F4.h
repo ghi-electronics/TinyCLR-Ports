@@ -65,15 +65,15 @@ void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep
 //Time
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F4_Time_GetApi();
-TinyCLR_Result STM32F4_Time_Acquire(const TinyCLR_Time_Provider* self);
-TinyCLR_Result STM32F4_Time_Release(const TinyCLR_Time_Provider* self);
-uint64_t STM32F4_Time_GetCurrentProcessorTicks(const TinyCLR_Time_Provider* self);
-uint64_t STM32F4_Time_GetTimeForProcessorTicks(const TinyCLR_Time_Provider* self, uint64_t ticks);
-uint64_t STM32F4_Time_GetProcessorTicksForTime(const TinyCLR_Time_Provider* self, uint64_t time);
-TinyCLR_Result STM32F4_Time_SetTickCallback(const TinyCLR_Time_Provider* self, TinyCLR_Time_TickCallback callback);
-TinyCLR_Result STM32F4_Time_SetNextTickCallbackTime(const TinyCLR_Time_Provider* self, uint64_t processorTicks);
-void STM32F4_Time_Delay(const TinyCLR_Time_Provider* self, uint64_t microseconds);
-void STM32F4_Time_DelayNoInterrupt(const TinyCLR_Time_Provider* self, uint64_t microseconds);
+TinyCLR_Result STM32F4_Time_Acquire(const TinyCLR_NativeTime_Provider* self);
+TinyCLR_Result STM32F4_Time_Release(const TinyCLR_NativeTime_Provider* self);
+uint64_t STM32F4_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Provider* self);
+uint64_t STM32F4_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Provider* self, uint64_t ticks);
+uint64_t STM32F4_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Provider* self, uint64_t time);
+TinyCLR_Result STM32F4_Time_SetTickCallback(const TinyCLR_NativeTime_Provider* self, TinyCLR_NativeTime_Callback callback);
+TinyCLR_Result STM32F4_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Provider* self, uint64_t processorTicks);
+void STM32F4_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds);
+void STM32F4_Time_DelayNoInterrupt(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds);
 
 ////////////////////////////////////////////////////////////////////////////////
 //Startup

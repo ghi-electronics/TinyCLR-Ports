@@ -35,7 +35,7 @@ struct LPC24_Timer_Controller {
     uint64_t m_lastRead;
     uint64_t m_nextCompare;
 
-    TinyCLR_Time_TickCallback m_DequeuAndExecute;
+    TinyCLR_NativeTime_Callback m_DequeuAndExecute;
 
     static bool   Initialize(uint32_t timer, uint32_t* ISR, void* ISR_Param);
     static bool   Uninitialize(uint32_t timer);
@@ -147,7 +147,7 @@ uint32_t __section("SectionForFlashOperations") LPC24_Timer_Controller::ReadCoun
 //--//
 
 void LPC24_Time_InterruptHandler(void* Param) {
-    TinyCLR_Time_Provider *provider = (TinyCLR_Time_Provider*)Param;
+    TinyCLR_NativeTime_Provider *provider = (TinyCLR_NativeTime_Provider*)Param;
 
     int32_t timer = 0;
 
@@ -173,25 +173,25 @@ void LPC24_Time_InterruptHandler(void* Param) {
     }
 }
 
-static TinyCLR_Time_Provider timeProvider;
+static TinyCLR_NativeTime_Provider timeProvider;
 static TinyCLR_Api_Info timeApi;
 
 const TinyCLR_Api_Info* LPC24_Time_GetApi() {
     timeProvider.Parent = &timeApi;
     timeProvider.Index = 0;
-    timeProvider.GetTimeForProcessorTicks = &LPC24_Time_GetTimeForProcessorTicks;
-    timeProvider.GetProcessorTicksForTime = &LPC24_Time_TimeToTicks;
-    timeProvider.GetCurrentProcessorTicks = &LPC24_Time_GetCurrentTicks;
-    timeProvider.SetTickCallback = &LPC24_Time_SetCompareCallback;
-    timeProvider.SetNextTickCallbackTime = &LPC24_Time_SetCompare;
+    timeProvider.ConvertNativeTimeToSystemTime = &LPC24_Time_GetTimeForProcessorTicks;
+    timeProvider.ConvertSystemTimeToNativeTime = &LPC24_Time_TimeToTicks;
+    timeProvider.GetNativeTime = &LPC24_Time_GetCurrentTicks;
+    timeProvider.SetCallback = &LPC24_Time_SetCompareCallback;
+    timeProvider.ScheduleCallback = &LPC24_Time_SetCompare;
     timeProvider.Acquire = &LPC24_Time_Acquire;
     timeProvider.Release = &LPC24_Time_Release;
     timeProvider.DelayNoInterrupt = &LPC24_Time_DelayNoInterrupt;
     timeProvider.Delay = &LPC24_Time_Delay;
 
     timeApi.Author = "GHI Electronics, LLC";
-    timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.TimeProvider";
-    timeApi.Type = TinyCLR_Api_Type::TimeProvider;
+    timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.NativeTimeProvider";
+    timeApi.Type = TinyCLR_Api_Type::NativeTimeProvider;
     timeApi.Version = 0;
     timeApi.Count = 1;
     timeApi.Implementation = &timeProvider;
@@ -199,37 +199,37 @@ const TinyCLR_Api_Info* LPC24_Time_GetApi() {
     return &timeApi;
 }
 
-uint32_t LPC24_Time_GetSystemClock(const TinyCLR_Time_Provider* self) {
+uint32_t LPC24_Time_GetSystemClock(const TinyCLR_NativeTime_Provider* self) {
     return SYSTEM_CLOCK_HZ;
 }
 
-uint32_t LPC24_Time_GetTicksPerSecond(const TinyCLR_Time_Provider* self) {
+uint32_t LPC24_Time_GetTicksPerSecond(const TinyCLR_NativeTime_Provider* self) {
     return SLOW_CLOCKS_PER_SECOND;
 }
 
-uint32_t LPC24_Time_GetSystemCycleClock(const TinyCLR_Time_Provider* self) {
+uint32_t LPC24_Time_GetSystemCycleClock(const TinyCLR_NativeTime_Provider* self) {
     return LPC24_AHB_CLOCK_HZ;
 }
 
-uint64_t LPC24_Time_GetTimeForProcessorTicks(const TinyCLR_Time_Provider* self, uint64_t ticks) {
+uint64_t LPC24_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Provider* self, uint64_t ticks) {
     ticks *= (10000000 / SLOW_CLOCKS_TEN_MHZ_GCD);
     ticks /= (SLOW_CLOCKS_PER_SECOND / SLOW_CLOCKS_TEN_MHZ_GCD);
 
     return ticks;
 }
 
-uint64_t LPC24_Time_TimeToTicks(const TinyCLR_Time_Provider* self, uint64_t time) {
+uint64_t LPC24_Time_TimeToTicks(const TinyCLR_NativeTime_Provider* self, uint64_t time) {
     return LPC24_Time_MicrosecondsToTicks(self, time / 10);
 }
 
-uint64_t LPC24_Time_MillisecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t ticks) {
+uint64_t LPC24_Time_MillisecondsToTicks(const TinyCLR_NativeTime_Provider* self, uint64_t ticks) {
     ticks *= (SLOW_CLOCKS_PER_SECOND / SLOW_CLOCKS_MILLISECOND_GCD);
     ticks /= (1000 / SLOW_CLOCKS_MILLISECOND_GCD);
 
     return ticks;
 }
 
-uint64_t LPC24_Time_MicrosecondsToTicks(const TinyCLR_Time_Provider* self, uint64_t microseconds) {
+uint64_t LPC24_Time_MicrosecondsToTicks(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds) {
 #if 1000000 <= SLOW_CLOCKS_PER_SECOND
     return microseconds * (SLOW_CLOCKS_PER_SECOND / 1000000);
 #else
@@ -237,7 +237,7 @@ uint64_t LPC24_Time_MicrosecondsToTicks(const TinyCLR_Time_Provider* self, uint6
 #endif
 }
 
-uint64_t LPC24_Time_GetCurrentTicks(const TinyCLR_Time_Provider* self) {
+uint64_t LPC24_Time_GetCurrentTicks(const TinyCLR_NativeTime_Provider* self) {
     int32_t timer = 0;
 
     if (self != nullptr)
@@ -259,7 +259,7 @@ uint64_t LPC24_Time_GetCurrentTicks(const TinyCLR_Time_Provider* self) {
     return (uint64_t)resHigh << 32 | value;
 }
 
-TinyCLR_Result LPC24_Time_SetCompare(const TinyCLR_Time_Provider* self, uint64_t processorTicks) {
+TinyCLR_Result LPC24_Time_SetCompare(const TinyCLR_NativeTime_Provider* self, uint64_t processorTicks) {
     int32_t timer = 0;
 
     if (self != nullptr)
@@ -333,7 +333,7 @@ TinyCLR_Result LPC24_Time_SetCompare(const TinyCLR_Time_Provider* self, uint64_t
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Time_Acquire(const TinyCLR_Time_Provider* self) {
+TinyCLR_Result LPC24_Time_Acquire(const TinyCLR_NativeTime_Provider* self) {
     int32_t timer = self->Index;
 
     g_LPC24_Timer_Controller.m_lastRead = 0;
@@ -349,7 +349,7 @@ TinyCLR_Result LPC24_Time_Acquire(const TinyCLR_Time_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Time_Release(const TinyCLR_Time_Provider* self) {
+TinyCLR_Result LPC24_Time_Release(const TinyCLR_NativeTime_Provider* self) {
     int32_t timer = self->Index;
 
     if (LPC24_Timer_Controller::Uninitialize(timer) == false)
@@ -358,7 +358,7 @@ TinyCLR_Result LPC24_Time_Release(const TinyCLR_Time_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Time_SetCompareCallback(const TinyCLR_Time_Provider* self, TinyCLR_Time_TickCallback callback) {
+TinyCLR_Result LPC24_Time_SetCompareCallback(const TinyCLR_NativeTime_Provider* self, TinyCLR_NativeTime_Callback callback) {
     if (g_LPC24_Timer_Controller.m_DequeuAndExecute != nullptr)
         return TinyCLR_Result::InvalidOperation;
 
@@ -367,7 +367,7 @@ TinyCLR_Result LPC24_Time_SetCompareCallback(const TinyCLR_Time_Provider* self, 
     return TinyCLR_Result::Success;
 }
 
-void LPC24_Time_DelayNoInterrupt(const TinyCLR_Time_Provider* self, uint64_t microseconds) {
+void LPC24_Time_DelayNoInterrupt(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint64_t current = LPC24_Time_GetCurrentTicks(self);
@@ -382,7 +382,7 @@ void LPC24_Time_DelayNoInterrupt(const TinyCLR_Time_Provider* self, uint64_t mic
 
 extern "C" void IDelayLoop(int32_t iterations);
 
-void LPC24_Time_Delay(const TinyCLR_Time_Provider* self, uint64_t microseconds) {
+void LPC24_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds) {
 
     // iterations must be signed so that negative iterations will result in the minimum delay
 
