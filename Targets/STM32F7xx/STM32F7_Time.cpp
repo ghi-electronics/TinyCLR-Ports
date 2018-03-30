@@ -51,7 +51,7 @@ const TinyCLR_Api_Info* STM32F7_Time_GetApi() {
     timeProvider.ConvertSystemTimeToNativeTime = &STM32F7_Time_GetProcessorTicksForTime;
     timeProvider.SetCallback = &STM32F7_Time_SetTickCallback;
     timeProvider.ScheduleCallback = &STM32F7_Time_SetNextTickCallbackTime;
-    timeProvider.Delay = &STM32F7_Time_Delay;
+    timeProvider.WaitMicroseconds = &STM32F7_Time_Delay;
 
     timeApi.Author = "GHI Electronics, LLC";
     timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.NativeTimeProvider";

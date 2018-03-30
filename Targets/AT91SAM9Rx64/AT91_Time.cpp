@@ -223,7 +223,7 @@ const TinyCLR_Api_Info* AT91_Time_GetApi() {
     timeProvider.ScheduleCallback = &AT91_Time_SetCompare;
     timeProvider.Acquire = &AT91_Time_Acquire;
     timeProvider.Release = &AT91_Time_Release;
-    timeProvider.Delay = &AT91_Time_Delay;
+    timeProvider.WaitMicroseconds = &AT91_Time_Delay;
 
     timeApi.Author = "GHI Electronics, LLC";
     timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.NativeTimeProvider";
