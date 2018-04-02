@@ -2823,6 +2823,8 @@ TinyCLR_Result LPC24_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, si
 
 void LPC24_Can_Reset() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
+        canController[i].canRxMessagesFifo = nullptr;
+
         LPC24_Can_Release(canProvider[i]);
 
         canController[i].isOpened = false;
