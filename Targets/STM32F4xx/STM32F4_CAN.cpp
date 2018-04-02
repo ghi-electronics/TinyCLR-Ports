@@ -1589,6 +1589,8 @@ TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint
 
 void STM32F4_Can_Reset() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
+        canController[i].canRxMessagesFifo = nullptr;
+
         STM32F4_Can_Release(canProvider[i]);
 
         canController[i].isOpened = false;

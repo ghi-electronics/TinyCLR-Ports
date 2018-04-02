@@ -690,10 +690,10 @@ TinyCLR_Result AT91_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Provider* 
 
 void AT91_Uart_Reset() {
     for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
-        AT91_Uart_Release(uartProviders[i]);
-
         g_UartController[i].txBufferSize = 0;
         g_UartController[i].rxBufferSize = 0;
+
+        AT91_Uart_Release(uartProviders[i]);
 
         g_UartController[i].isOpened = false;
     }

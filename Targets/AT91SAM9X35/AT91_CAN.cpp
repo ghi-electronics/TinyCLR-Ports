@@ -1871,6 +1871,8 @@ TinyCLR_Result AT91_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, siz
 
 void AT91_Can_Reset() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
+        canController[i].canRxMessagesFifo = nullptr;
+
         AT91_Can_Release(canProvider[i]);
 
         canController[i].isOpened = false;
