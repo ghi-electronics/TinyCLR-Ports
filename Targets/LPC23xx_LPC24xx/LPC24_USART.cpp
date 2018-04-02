@@ -552,13 +552,9 @@ TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Provider* self) {
 
     LPC24XX_USART& USARTC = LPC24XX::UART(portNum);
 
-    if (g_UartController[portNum].isOpened == true) {
+    LPC24_Interrupt_Disable(LPC24XX_USART::getIntNo(portNum));
 
-
-        LPC24_Interrupt_Disable(LPC24XX_USART::getIntNo(portNum));
-
-        LPC24_Uart_PinConfiguration(portNum, false);
-
+    if (g_UartController[portNum].isOpened) {
         if (g_UartController[portNum].handshakeEnable) {
             USARTC.UART_MCR &= ~((1 << 6) | (1 << 7));
         }
@@ -567,6 +563,7 @@ TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Provider* self) {
         USARTC.UART_LCR = 0; // prepare to Init UART
         USARTC.SEL2.IER.UART_IER &= ~(LPC24XX_USART::UART_IER_INTR_ALL_SET);         // Disable all UART interrupt
 
+        LPC24_Uart_PinConfiguration(portNum, false);
     }
 
     g_UartController[portNum].txBufferCount = 0;
@@ -791,15 +788,12 @@ TinyCLR_Result LPC24_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Provider*
 
 void LPC24_Uart_Reset() {
     for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
-        if (g_UartController[i].isOpened)
-            LPC24_Uart_Release(uartProviders[i]);
+        LPC24_Uart_Release(uartProviders[i]);
 
         g_UartController[i].txBufferSize = 0;
         g_UartController[i].rxBufferSize = 0;
 
         g_UartController[i].isOpened = false;
-
-
     }
 }
 

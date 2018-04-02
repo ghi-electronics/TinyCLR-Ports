@@ -2451,20 +2451,6 @@ TinyCLR_Result LPC17_Can_Release(const TinyCLR_Can_Provider* self) {
 
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-    TinyCLR_Result releasePin = LPC17_Gpio_ReleasePin(nullptr, g_LPC17_Can_Tx_Pins[channel].number);
-
-    if (releasePin != TinyCLR_Result::Success)
-        return releasePin;
-
-    releasePin = LPC17_Gpio_ReleasePin(nullptr, g_LPC17_Can_Rx_Pins[channel].number);
-
-    if (releasePin != TinyCLR_Result::Success)
-        return releasePin;
-
-    // free pin
-    LPC17_Gpio_ClosePin(g_LPC17_Can_Tx_Pins[channel].number);
-    LPC17_Gpio_ClosePin(g_LPC17_Can_Rx_Pins[channel].number);
-
     if (canController[channel].canRxMessagesFifo != nullptr) {
         memoryProvider->Free(memoryProvider, canController[channel].canRxMessagesFifo);
 
@@ -2473,6 +2459,11 @@ TinyCLR_Result LPC17_Can_Release(const TinyCLR_Can_Provider* self) {
 
     CAN_DisableExplicitFilters(channel);
     CAN_DisableGroupFilters(channel);
+
+    if (canController[channel].isOpened) {
+        LPC17_Gpio_ClosePin(g_LPC17_Can_Tx_Pins[channel].number);
+        LPC17_Gpio_ClosePin(g_LPC17_Can_Rx_Pins[channel].number);
+    }
 
     canController[channel].isOpened = false;
 
@@ -2828,8 +2819,7 @@ TinyCLR_Result LPC17_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, si
 
 void LPC17_Can_Reset() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
-        if (canController[i].isOpened)
-            LPC17_Can_Release(canProvider[i]);
+        LPC17_Can_Release(canProvider[i]);
 
         canController[i].isOpened = false;
     }

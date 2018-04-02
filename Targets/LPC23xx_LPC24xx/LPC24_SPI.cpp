@@ -687,10 +687,6 @@ TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Provider* self) {
 
     int32_t controller = (self->Index);
 
-    int32_t clkPin = g_lpc24_spi_sclk_pins[controller].number;
-    int32_t misoPin = g_lpc24_spi_miso_pins[controller].number;
-    int32_t mosiPin = g_lpc24_spi_mosi_pins[controller].number;
-
     switch (controller) {
     case 0:
         LPC24XX::SYSCON().PCONP &= ~PCONP_PCSSP0;
@@ -702,15 +698,20 @@ TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Provider* self) {
 
     }
 
-    // Check each pin single time make sure once fail not effect to other pins
-    LPC24_Gpio_ClosePin(clkPin);
-    LPC24_Gpio_ClosePin(misoPin);
-    LPC24_Gpio_ClosePin(mosiPin);
+    if (g_SpiController[controller].isOpened == true) {
+        int32_t clkPin = g_lpc24_spi_sclk_pins[controller].number;
+        int32_t misoPin = g_lpc24_spi_miso_pins[controller].number;
+        int32_t mosiPin = g_lpc24_spi_mosi_pins[controller].number;
 
-    if (g_SpiController[controller].chipSelectLine != PIN_NONE) {
-        LPC24_Gpio_ClosePin(g_SpiController[controller].chipSelectLine);
+        LPC24_Gpio_ClosePin(clkPin);
+        LPC24_Gpio_ClosePin(misoPin);
+        LPC24_Gpio_ClosePin(mosiPin);
 
-        g_SpiController[controller].chipSelectLine = PIN_NONE;
+        if (g_SpiController[controller].chipSelectLine != PIN_NONE) {
+            LPC24_Gpio_ClosePin(g_SpiController[controller].chipSelectLine);
+
+            g_SpiController[controller].chipSelectLine = PIN_NONE;
+        }
     }
 
     g_SpiController[controller].clockFrequency = 0;
@@ -757,9 +758,7 @@ TinyCLR_Result LPC24_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* 
 
 void LPC24_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        if (g_SpiController[i].isOpened == true) {
-            LPC24_Spi_Release(spiProviders[i]);
-        }
+        LPC24_Spi_Release(spiProviders[i]);
 
         g_SpiController[i].isOpened = false;
     }

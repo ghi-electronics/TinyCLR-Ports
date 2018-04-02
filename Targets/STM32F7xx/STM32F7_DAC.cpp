@@ -100,13 +100,13 @@ TinyCLR_Result STM32F7_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int3
         DAC->CR &= ~DAC_CR_EN1; // disable channel 1
     }
 
-    // free pin
-    STM32F7_GpioInternal_ClosePin(STM32F7_DAC_FIRST_PIN + channel);
-
     if ((DAC->CR & (DAC_CR_EN1 | DAC_CR_EN2)) == 0) { // all channels off
         // disable DA clock
         RCC->APB1ENR &= ~RCC_APB1ENR_DACEN;
     }
+
+    if (g_stm32f7_dac_isOpened[STM32F7_DAC_FIRST_PIN + channel])
+        STM32F7_GpioInternal_ClosePin(STM32F7_DAC_FIRST_PIN + channel);
 
     g_stm32f7_dac_isOpened[channel] = false;
 
@@ -142,8 +142,7 @@ int32_t STM32F7_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self) {
 
 void STM32F7_Dac_Reset() {
     for (auto i = 0; i < STM32F7_Dac_GetChannelCount(&dacProvider); i++) {
-        if (g_stm32f7_dac_isOpened[i])
-            STM32F7_Dac_ReleaseChannel(&dacProvider, i);
+        STM32F7_Dac_ReleaseChannel(&dacProvider, i);
 
         g_stm32f7_dac_isOpened[i] = false;
     }

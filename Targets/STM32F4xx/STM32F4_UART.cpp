@@ -588,12 +588,6 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
 #endif
 #endif
 #endif
-
-    STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Rx_Pins[portNum].number);
-    STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Tx_Pins[portNum].number);
-    STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Cts_Pins[portNum].number);
-    STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Rts_Pins[portNum].number);
-
     if (apiProvider != nullptr) {
         auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
@@ -609,6 +603,14 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
             g_UartController[self->Index].rxBufferSize = 0;
         }
     }
+
+    if (g_UartController[portNum].isOpened) {
+        STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Rx_Pins[portNum].number);
+        STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Tx_Pins[portNum].number);
+        STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Cts_Pins[portNum].number);
+        STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Rts_Pins[portNum].number);
+    }
+
     g_UartController[portNum].isOpened = false;
 
     return TinyCLR_Result::Success;
@@ -616,8 +618,7 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
 
 void STM32F4_Uart_Reset() {
     for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
-        if (g_UartController[i].isOpened)
-            STM32F4_Uart_Release(uartProviders[i]);
+        STM32F4_Uart_Release(uartProviders[i]);
 
         g_UartController[i].txBufferSize = 0;
         g_UartController[i].rxBufferSize = 0;

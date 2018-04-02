@@ -843,10 +843,6 @@ TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Provider* self) {
 
     int32_t controller = (self->Index);
 
-    int32_t clkPin = g_lpc17_spi_sclk_pins[controller].number;
-    int32_t misoPin = g_lpc17_spi_miso_pins[controller].number;
-    int32_t mosiPin = g_lpc17_spi_mosi_pins[controller].number;
-
     switch (controller) {
     case 0:
         LPC_SC->PCONP &= ~PCONP_PCSSP0;
@@ -861,19 +857,24 @@ TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Provider* self) {
         break;
     }
 
-    // Check each pin single time make sure once fail not effect to other pins
-    LPC17_Gpio_ClosePin(clkPin);
-    LPC17_Gpio_ClosePin(misoPin);
-    LPC17_Gpio_ClosePin(mosiPin);
-
-    if (g_SpiController[controller].chipSelectLine != PIN_NONE) {
-        LPC17_Gpio_ClosePin(g_SpiController[controller].chipSelectLine);
-
-        g_SpiController[controller].chipSelectLine = PIN_NONE;
-    }
-
     g_SpiController[controller].clockFrequency = 0;
     g_SpiController[controller].dataBitLength = 0;
+
+    if (g_SpiController[controller].isOpened) {
+        int32_t clkPin = g_lpc17_spi_sclk_pins[controller].number;
+        int32_t misoPin = g_lpc17_spi_miso_pins[controller].number;
+        int32_t mosiPin = g_lpc17_spi_mosi_pins[controller].number;
+
+        LPC17_Gpio_ClosePin(clkPin);
+        LPC17_Gpio_ClosePin(misoPin);
+        LPC17_Gpio_ClosePin(mosiPin);
+
+        if (g_SpiController[controller].chipSelectLine != PIN_NONE) {
+            LPC17_Gpio_ClosePin(g_SpiController[controller].chipSelectLine);
+
+            g_SpiController[controller].chipSelectLine = PIN_NONE;
+        }
+    }
 
     g_SpiController[controller].isOpened = false;
 
@@ -921,8 +922,7 @@ TinyCLR_Result LPC17_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* 
 
 void LPC17_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        if (g_SpiController[i].isOpened)
-            LPC17_Spi_Release(spiProviders[i]);
+        LPC17_Spi_Release(spiProviders[i]);
 
         g_SpiController[i].isOpened = false;
     }

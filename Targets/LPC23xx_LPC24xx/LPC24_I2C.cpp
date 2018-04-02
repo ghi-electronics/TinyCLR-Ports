@@ -373,14 +373,13 @@ TinyCLR_Result LPC24_I2c_Release(const TinyCLR_I2c_Provider* self) {
 
     int32_t portId = self->Index;
 
-    if (g_I2cConfiguration[portId].isOpened) {
+    LPC24XX_I2C& I2C = LPC24XX::I2C(portId);
 
-        LPC24XX_I2C& I2C = LPC24XX::I2C(portId);
+    LPC24_Interrupt_Deactivate(portId == 0 ? LPC24XX_VIC::c_IRQ_INDEX_I2C0 : (portId == 1 ? LPC24XX_VIC::c_IRQ_INDEX_I2C1 : LPC24XX_VIC::c_IRQ_INDEX_I2C2));
 
-        LPC24_Interrupt_Deactivate(portId == 0 ? LPC24XX_VIC::c_IRQ_INDEX_I2C0 : (portId == 1 ? LPC24XX_VIC::c_IRQ_INDEX_I2C1 : LPC24XX_VIC::c_IRQ_INDEX_I2C2));
+    I2C.I2CONCLR = (LPC24XX_I2C::AA | LPC24XX_I2C::SI | LPC24XX_I2C::STO | LPC24XX_I2C::STA | LPC24XX_I2C::I2EN);
 
-        I2C.I2CONCLR = (LPC24XX_I2C::AA | LPC24XX_I2C::SI | LPC24XX_I2C::STO | LPC24XX_I2C::STA | LPC24XX_I2C::I2EN);
-
+    if (g_I2cConfiguration[self->Index].isOpened) {
         LPC24_Gpio_ClosePin(g_i2c_scl_pins[self->Index].number);
         LPC24_Gpio_ClosePin(g_i2c_sda_pins[self->Index].number);
     }
@@ -392,8 +391,7 @@ TinyCLR_Result LPC24_I2c_Release(const TinyCLR_I2c_Provider* self) {
 
 void LPC24_I2c_Reset() {
     for (auto i = 0; i < SIZEOF_ARRAY(g_i2c_scl_pins); i++) {
-        if (g_I2cConfiguration[i].isOpened)
-            LPC24_I2c_Release(i2cProviders[i]);
+        LPC24_I2c_Release(i2cProviders[i]);
 
         g_I2cConfiguration[i].address = 0;
         g_I2cConfiguration[i].clockRate = 0;

@@ -1252,26 +1252,17 @@ TinyCLR_Result STM32F7_Can_Release(const TinyCLR_Can_Provider* self) {
 
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-    TinyCLR_Result releasePin = STM32F7_Gpio_ReleasePin(nullptr, g_STM32F7_Can_Tx_Pins[channel].number);
-
-    if (releasePin != TinyCLR_Result::Success)
-        return releasePin;
-
-    releasePin = STM32F7_Gpio_ReleasePin(nullptr, g_STM32F7_Can_Rx_Pins[channel].number);
-
-    if (releasePin != TinyCLR_Result::Success)
-        return releasePin;
-
-    // free pin
-    STM32F7_GpioInternal_ClosePin(g_STM32F7_Can_Tx_Pins[channel].number);
-    STM32F7_GpioInternal_ClosePin(g_STM32F7_Can_Rx_Pins[channel].number);
-
     RCC->APB1ENR &= ((channel == 0) ? ~RCC_APB1ENR_CAN1EN : ~RCC_APB1ENR_CAN2EN);
 
     if (canController[channel].canRxMessagesFifo != nullptr) {
         memoryProvider->Free(memoryProvider, canController[channel].canRxMessagesFifo);
 
         canController[channel].canRxMessagesFifo = nullptr;
+    }
+
+    if (canController[channel].isOpened) {
+        STM32F7_GpioInternal_ClosePin(g_STM32F7_Can_Tx_Pins[channel].number);
+        STM32F7_GpioInternal_ClosePin(g_STM32F7_Can_Rx_Pins[channel].number);
     }
 
     canController[channel].isOpened = false;
@@ -1601,8 +1592,7 @@ TinyCLR_Result STM32F7_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint
 
 void STM32F7_Can_Reset() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
-        if (canController[i].isOpened)
-            STM32F7_Can_Release(canProvider[i]);
+        STM32F7_Can_Release(canProvider[i]);
 
         canController[i].isOpened = false;
     }

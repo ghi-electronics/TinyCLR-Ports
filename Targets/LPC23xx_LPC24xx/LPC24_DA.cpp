@@ -87,7 +87,8 @@ TinyCLR_Result LPC24_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_
     if (channel >= LPC24_Dac_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    LPC24_Gpio_ClosePin(g_LPC24_Dac_Pins[channel].number);
+    if (g_LPC24_Dac_IsOpened[channel])
+        LPC24_Gpio_ClosePin(g_LPC24_Dac_Pins[channel].number);
 
     g_LPC24_Dac_IsOpened[channel] = false;
 
@@ -129,8 +130,7 @@ int32_t LPC24_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self) {
 
 void LPC24_Dac_Reset() {
     for (auto ch = 0; ch < LPC24_Dac_GetChannelCount(&dacProvider); ch++) {
-        if (g_LPC24_Dac_IsOpened[ch])
-            LPC24_Dac_ReleaseChannel(&dacProvider, ch);
+        LPC24_Dac_ReleaseChannel(&dacProvider, ch);
 
         g_LPC24_Dac_IsOpened[ch] = false;
     }

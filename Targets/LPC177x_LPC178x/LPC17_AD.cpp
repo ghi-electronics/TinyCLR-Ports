@@ -297,7 +297,8 @@ TinyCLR_Result LPC17_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_
 }
 
 TinyCLR_Result LPC17_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t channel) {
-    LPC17_Gpio_ClosePin(g_lpc17_adc_pins[channel].number);
+    if (g_lpc17_adc_isOpened[channel])
+        LPC17_Gpio_ClosePin(g_lpc17_adc_pins[channel].number);
 
     g_lpc17_adc_isOpened[channel] = false;
 
@@ -359,8 +360,7 @@ void LPC17_Adc_Reset() {
     LPC_SC->PCONP &= ~PCONP_PCAD;
 
     for (auto ch = 0; ch < SIZEOF_ARRAY(g_lpc17_adc_pins); ch++) {
-        if (g_lpc17_adc_isOpened[ch])
-            LPC17_Adc_ReleaseChannel(&adcProvider, ch);
+        LPC17_Adc_ReleaseChannel(&adcProvider, ch);
 
         g_lpc17_adc_isOpened[ch] = false;
     }
