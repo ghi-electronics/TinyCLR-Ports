@@ -31,8 +31,6 @@ struct LPC17_Timer_Driver {
 
     TinyCLR_NativeTime_Callback m_DequeuAndExecute;
 
-    static bool Initialize();
-    static bool UnInitialize();
     static void Reload(uint32_t value);
 
 };
@@ -43,13 +41,13 @@ static TinyCLR_Api_Info timeApi;
 const TinyCLR_Api_Info* LPC17_Time_GetApi() {
     timeProvider.Parent = &timeApi;
     timeProvider.Index = 0;
-    timeProvider.ConvertNativeTimeToSystemTime = &LPC17_Time_GetTimeForProcessorTicks;
-    timeProvider.ConvertSystemTimeToNativeTime = &LPC17_Time_GetProcessorTicksForTime;
-    timeProvider.GetNativeTime = &LPC17_Time_GetCurrentTicks;
-    timeProvider.SetCallback = &LPC17_Time_SetCompareCallback;
-    timeProvider.ScheduleCallback = &LPC17_Time_SetCompare;
     timeProvider.Acquire = &LPC17_Time_Acquire;
     timeProvider.Release = &LPC17_Time_Release;
+    timeProvider.GetNativeTime = &LPC17_Time_GetCurrentProcessorTicks;
+    timeProvider.ConvertNativeTimeToSystemTime = &LPC17_Time_GetTimeForProcessorTicks;
+    timeProvider.ConvertSystemTimeToNativeTime = &LPC17_Time_GetProcessorTicksForTime;
+    timeProvider.SetCallback = &LPC17_Time_SetTickCallback;
+    timeProvider.ScheduleCallback = &LPC17_Time_SetNextTickCallbackTime;
     timeProvider.WaitMicroseconds = &LPC17_Time_Delay;
 
     timeApi.Author = "GHI Electronics, LLC";
@@ -81,10 +79,9 @@ uint64_t LPC17_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Provider* 
 #else
     return time / (1000000 / SLOW_CLOCKS_PER_SECOND);
 #endif
-
 }
 
-uint64_t LPC17_Time_GetCurrentTicks(const TinyCLR_NativeTime_Provider* self) {
+uint64_t LPC17_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Provider* self) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t tick_spent;
@@ -107,15 +104,15 @@ uint64_t LPC17_Time_GetCurrentTicks(const TinyCLR_NativeTime_Provider* self) {
     g_LPC17_Timer_Driver.m_currentTick = ticks;
     g_LPC17_Timer_Driver.m_lastRead += tick_spent;
 
-    return (uint64_t)(g_LPC17_Timer_Driver.m_lastRead & TIMER_IDLE_VALUE);
+    return (uint64_t)(g_LPC17_Timer_Driver.m_lastRead);
 }
 
-TinyCLR_Result LPC17_Time_SetCompare(const TinyCLR_NativeTime_Provider* self, uint64_t processorTicks) {
+TinyCLR_Result LPC17_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Provider* self, uint64_t processorTicks) {
     uint64_t ticks;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    ticks = LPC17_Time_GetCurrentTicks(self);
+    ticks = LPC17_Time_GetCurrentProcessorTicks(self);
 
     g_nextEvent = processorTicks;
 
@@ -162,11 +159,11 @@ extern "C" {
     void SysTick_Handler(void *param) {
         INTERRUPT_STARTED_SCOPED(isr);
 
-        if (LPC17_Time_GetCurrentTicks(nullptr) >= g_nextEvent) { // handle event
+        if (LPC17_Time_GetCurrentProcessorTicks(nullptr) >= g_nextEvent) { // handle event
             g_LPC17_Timer_Driver.m_DequeuAndExecute();
         }
         else {
-            LPC17_Time_SetCompare(nullptr, g_nextEvent);
+            LPC17_Time_SetNextTickCallbackTime(nullptr, g_nextEvent);
         }
     }
 
@@ -175,39 +172,29 @@ extern "C" {
 TinyCLR_Result LPC17_Time_Acquire(const TinyCLR_NativeTime_Provider* self) {
     g_nextEvent = TIMER_IDLE_VALUE;
 
-    g_LPC17_Timer_Driver.Initialize();
+    g_LPC17_Timer_Driver.m_lastRead = 0;
 
+    g_LPC17_Timer_Driver.m_currentTick = SysTick_LOAD_RELOAD_Msk;
     g_LPC17_Timer_Driver.m_periodTicks = SysTick_LOAD_RELOAD_Msk;
+
+    SysTick_Config(g_LPC17_Timer_Driver.m_periodTicks);
 
     g_LPC17_Timer_Driver.Reload(g_LPC17_Timer_Driver.m_periodTicks);
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC17_Time_Release(const TinyCLR_NativeTime_Provider* self) {
-    g_LPC17_Timer_Driver.UnInitialize();
+    SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Time_SetCompareCallback(const TinyCLR_NativeTime_Provider* self, TinyCLR_NativeTime_Callback callback) {
+TinyCLR_Result LPC17_Time_SetTickCallback(const TinyCLR_NativeTime_Provider* self, TinyCLR_NativeTime_Callback callback) {
     if (g_LPC17_Timer_Driver.m_DequeuAndExecute != nullptr) return TinyCLR_Result::InvalidOperation;
 
     g_LPC17_Timer_Driver.m_DequeuAndExecute = callback;
 
     return TinyCLR_Result::Success;
-}
-
-void LPC17_Time_DelayNoInterrupt(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds) {
-    DISABLE_INTERRUPTS_SCOPED(irq);
-
-    uint64_t current = LPC17_Time_GetCurrentTicks(self);
-    uint64_t maxDiff = LPC17_Time_GetProcessorTicksForTime(self, microseconds * 10);
-
-    if (maxDiff <= CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS) maxDiff = 0;
-    else maxDiff -= CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS;
-
-    while (((int32_t)(LPC17_Time_GetCurrentTicks(self) - current)) <= maxDiff);
-
 }
 
 extern "C" void IDelayLoop(int32_t iterations);
@@ -227,16 +214,6 @@ void LPC17_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microsec
 
 //******************** Profiler ********************
 
-bool LPC17_Timer_Driver::Initialize() {
-    g_LPC17_Timer_Driver.m_lastRead = 0;
-
-    g_LPC17_Timer_Driver.m_currentTick = SysTick_LOAD_RELOAD_Msk;
-    g_LPC17_Timer_Driver.m_periodTicks = SysTick_LOAD_RELOAD_Msk;
-
-    SysTick_Config(g_LPC17_Timer_Driver.m_periodTicks);
-
-    return true;
-}
 void LPC17_Timer_Driver::Reload(uint32_t value) {
     g_LPC17_Timer_Driver.m_currentTick = value;
 
@@ -244,11 +221,6 @@ void LPC17_Timer_Driver::Reload(uint32_t value) {
     SysTick->VAL = 0UL;
 }
 
-bool LPC17_Timer_Driver::UnInitialize() {
-    SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
-
-    return true;
-}
 #ifdef __GNUC__
 asm volatile (
     ".syntax unified\n\t"

@@ -131,8 +131,8 @@ void LPC17_Gpio_InterruptHandler(void* param) {
             *GPIO_Port_Interrupt_ClearRegister |= (0x1 << pin); // Clear this pin's IRQ
 
             if (state->debounce) {
-                if ((LPC17_Time_GetCurrentTicks(nullptr) - state->lastDebounceTicks) >= g_debounceTicksPin[state->pin]) {
-                    state->lastDebounceTicks = LPC17_Time_GetCurrentTicks(nullptr);
+                if ((LPC17_Time_GetCurrentProcessorTicks(nullptr) - state->lastDebounceTicks) >= g_debounceTicksPin[state->pin]) {
+                    state->lastDebounceTicks = LPC17_Time_GetCurrentProcessorTicks(nullptr);
                 }
                 else {
                     executeIsr = false;
@@ -170,7 +170,7 @@ TinyCLR_Result LPC17_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* se
         state->pin = (uint8_t)pin;
         state->debounce = LPC17_Gpio_GetDebounceTimeout(self, pin);
         state->ISR = ISR;
-        state->lastDebounceTicks = LPC17_Time_GetCurrentTicks(nullptr);
+        state->lastDebounceTicks = LPC17_Time_GetCurrentProcessorTicks(nullptr);
 
         *GPIO_Port_X_Interrupt_RisingEdgeRegister |= pinMask;
         *GPIO_Port_X_Interrupt_FallingEdgeRegister |= pinMask;

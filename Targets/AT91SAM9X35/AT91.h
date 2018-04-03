@@ -1344,10 +1344,10 @@ uint64_t AT91_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Provider* s
 uint64_t AT91_Time_TimeToTicks(const TinyCLR_NativeTime_Provider* self, uint64_t time);
 uint64_t AT91_Time_MillisecondsToTicks(const TinyCLR_NativeTime_Provider* self, uint64_t ticks);
 uint64_t AT91_Time_MicrosecondsToTicks(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds);
-uint64_t AT91_Time_GetCurrentTicks(const TinyCLR_NativeTime_Provider* self);
-TinyCLR_Result AT91_Time_SetCompare(const TinyCLR_NativeTime_Provider* self, uint64_t processorTicks);
-TinyCLR_Result AT91_Time_SetCompareCallback(const TinyCLR_NativeTime_Provider* self, TinyCLR_NativeTime_Callback callback);
-void AT91_Time_DelayNoInterrupt(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds);
+uint64_t AT91_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Provider* self);
+TinyCLR_Result AT91_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Provider* self, uint64_t processorTicks);
+TinyCLR_Result AT91_Time_SetTickCallback(const TinyCLR_NativeTime_Provider* self, TinyCLR_NativeTime_Callback callback);
+void AT91_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds);
 void AT91_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds);
 void AT91_Time_GetDriftParameters(const TinyCLR_NativeTime_Provider* self, int32_t* a, int32_t* b, int64_t* c);
 

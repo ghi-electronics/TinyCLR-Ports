@@ -158,7 +158,7 @@ void LPC24_Time_InterruptHandler(void* Param) {
         LPC24_Timer_Controller::ResetCompareHit(timer);
     }
 
-    g_LPC24_Timer_Controller.m_lastRead = LPC24_Time_GetCurrentTicks(provider);
+    g_LPC24_Timer_Controller.m_lastRead = LPC24_Time_GetCurrentProcessorTicks(provider);
 
     if (g_LPC24_Timer_Controller.m_lastRead >= g_LPC24_Timer_Controller.m_nextCompare) {
         // this also schedules the next one, if there is one
@@ -169,7 +169,7 @@ void LPC24_Time_InterruptHandler(void* Param) {
         // Because we are limited in the resolution of timer,
         // resetting the compare will properly configure the next interrupt.
         //
-        LPC24_Time_SetCompare(provider, g_LPC24_Timer_Controller.m_nextCompare);
+        LPC24_Time_SetNextTickCallbackTime(provider, g_LPC24_Timer_Controller.m_nextCompare);
     }
 }
 
@@ -181,9 +181,9 @@ const TinyCLR_Api_Info* LPC24_Time_GetApi() {
     timeProvider.Index = 0;
     timeProvider.ConvertNativeTimeToSystemTime = &LPC24_Time_GetTimeForProcessorTicks;
     timeProvider.ConvertSystemTimeToNativeTime = &LPC24_Time_TimeToTicks;
-    timeProvider.GetNativeTime = &LPC24_Time_GetCurrentTicks;
-    timeProvider.SetCallback = &LPC24_Time_SetCompareCallback;
-    timeProvider.ScheduleCallback = &LPC24_Time_SetCompare;
+    timeProvider.GetNativeTime = &LPC24_Time_GetCurrentProcessorTicks;
+    timeProvider.SetCallback = &LPC24_Time_SetTickCallback;
+    timeProvider.ScheduleCallback = &LPC24_Time_SetNextTickCallbackTime;
     timeProvider.Acquire = &LPC24_Time_Acquire;
     timeProvider.Release = &LPC24_Time_Release;
     timeProvider.WaitMicroseconds = &LPC24_Time_Delay;
@@ -236,7 +236,7 @@ uint64_t LPC24_Time_MicrosecondsToTicks(const TinyCLR_NativeTime_Provider* self,
 #endif
 }
 
-uint64_t LPC24_Time_GetCurrentTicks(const TinyCLR_NativeTime_Provider* self) {
+uint64_t LPC24_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Provider* self) {
     int32_t timer = 0;
 
     if (self != nullptr)
@@ -258,7 +258,7 @@ uint64_t LPC24_Time_GetCurrentTicks(const TinyCLR_NativeTime_Provider* self) {
     return (uint64_t)resHigh << 32 | value;
 }
 
-TinyCLR_Result LPC24_Time_SetCompare(const TinyCLR_NativeTime_Provider* self, uint64_t processorTicks) {
+TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Provider* self, uint64_t processorTicks) {
     int32_t timer = 0;
 
     if (self != nullptr)
@@ -357,26 +357,13 @@ TinyCLR_Result LPC24_Time_Release(const TinyCLR_NativeTime_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Time_SetCompareCallback(const TinyCLR_NativeTime_Provider* self, TinyCLR_NativeTime_Callback callback) {
+TinyCLR_Result LPC24_Time_SetTickCallback(const TinyCLR_NativeTime_Provider* self, TinyCLR_NativeTime_Callback callback) {
     if (g_LPC24_Timer_Controller.m_DequeuAndExecute != nullptr)
         return TinyCLR_Result::InvalidOperation;
 
     g_LPC24_Timer_Controller.m_DequeuAndExecute = callback;
 
     return TinyCLR_Result::Success;
-}
-
-void LPC24_Time_DelayNoInterrupt(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds) {
-    DISABLE_INTERRUPTS_SCOPED(irq);
-
-    uint64_t current = LPC24_Time_GetCurrentTicks(self);
-    uint64_t maxDiff = LPC24_Time_MicrosecondsToTicks(self, microseconds);
-
-    if (maxDiff <= CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS) maxDiff = 0;
-    else maxDiff -= CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS;
-
-    while (((int32_t)(LPC24_Time_GetCurrentTicks(self) - current)) <= maxDiff);
-
 }
 
 extern "C" void IDelayLoop(int32_t iterations);
