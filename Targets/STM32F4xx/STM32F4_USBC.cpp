@@ -1141,7 +1141,7 @@ bool STM32F4_UsbClient_Initialize(int controller) {
         OTG->GCCFG |= OTG_GCCFG_NOVBUSSENS; // disable vbus sense
     }
 
-    STM32F4_Time_DelayNoInterrupt(nullptr, 1000); // asure host recognizes reattach
+    STM32F4_Time_Delay(nullptr, 1000); // asure host recognizes reattach
 
     // setup hardware
     STM32F4_UsbClient_ProtectPins(controller, true);
@@ -1434,9 +1434,6 @@ bool UsbClient_Driver::Initialize(int controller) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (State == nullptr)
-        return false;
-
     // Init UsbDefaultConfiguration
     memset(&UsbDefaultConfiguration, 0, sizeof(USB_DYNAMIC_CONFIGURATION));
 
@@ -1490,7 +1487,7 @@ bool UsbClient_Driver::Uninitialize(int controller) {
     State->Initialized = false;
 
     // for soft reboot allow the USB to be off for at least 100ms
-    STM32F4_Time_DelayNoInterrupt(nullptr, 100000); // 100ms
+    STM32F4_Time_Delay(nullptr, 100000); // 100ms
 
     return true;
 }
@@ -1613,7 +1610,7 @@ bool UsbClient_Driver::OpenPipe(int controller, int32_t& usbPipe, TinyCLR_UsbCli
 bool UsbClient_Driver::ClosePipe(int controller, int usbPipe) {
     USB_CONTROLLER_STATE * State = &STM32F4_UsbClient_ControllerState[controller].state;
 
-    if (nullptr == State || !State->Initialized || usbPipe >= STM32F4_USB_QUEUE_SIZE)
+    if (!State->Initialized || usbPipe >= STM32F4_USB_QUEUE_SIZE)
         return false;
 
     int endpoint;
@@ -1657,8 +1654,7 @@ int UsbClient_Driver::Write(int controller, int usbPipe, const char* Data, size_
     int totWrite = 0;
     USB_CONTROLLER_STATE * State = &STM32F4_UsbClient_ControllerState[controller].state;
 
-    if (nullptr == State
-        || usbPipe >= STM32F4_USB_QUEUE_SIZE
+    if (usbPipe >= STM32F4_USB_QUEUE_SIZE
         || Data == nullptr
         || State->DeviceState != USB_DEVICE_STATE_CONFIGURED) {
         return -1;
@@ -1778,8 +1774,7 @@ int UsbClient_Driver::Read(int controller, int usbPipe, char* Data, size_t size)
     int endpoint;
     USB_CONTROLLER_STATE * State = &STM32F4_UsbClient_ControllerState[controller].state;
 
-    if (nullptr == State
-        || usbPipe >= STM32F4_USB_QUEUE_SIZE
+    if (usbPipe >= STM32F4_USB_QUEUE_SIZE
         || State->DeviceState != USB_DEVICE_STATE_CONFIGURED) {
         return 0;
     }
