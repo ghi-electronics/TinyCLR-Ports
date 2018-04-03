@@ -199,19 +199,6 @@ TinyCLR_Result STM32F4_Time_SetTickCallback(const TinyCLR_NativeTime_Provider* s
     return TinyCLR_Result::Success;
 }
 
-void STM32F4_Time_DelayNoInterrupt(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds) {
-    DISABLE_INTERRUPTS_SCOPED(irq);
-
-    uint64_t current = STM32F4_Time_GetCurrentProcessorTicks(self);
-    uint64_t maxDiff = STM32F4_Time_GetProcessorTicksForTime(self, microseconds * 10);
-
-    if (maxDiff <= CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS) maxDiff = 0;
-    else maxDiff -= CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS;
-
-    while (((int32_t)(STM32F4_Time_GetCurrentProcessorTicks(self) - current)) <= maxDiff);
-
-}
-
 extern "C" void IDelayLoop(int32_t iterations);
 
 void STM32F4_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds) {
