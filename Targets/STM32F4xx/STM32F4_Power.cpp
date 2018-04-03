@@ -39,42 +39,19 @@ const TinyCLR_Api_Info* STM32F4_Power_GetApi() {
 
 void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level) {
     switch (level) {
+    case TinyCLR_Power_SleepLevel::Hibernate:
+        //TODO
+        return;
 
-        case TinyCLR_Power_SleepLevel::Hibernate: // stop
-            SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
-            PWR->CR |= PWR_CR_CWUF | PWR_CR_FPDS | PWR_CR_LPDS; // low power deepsleep
+    case TinyCLR_Power_SleepLevel::Off:
+        // TODO
+        return;
 
-            __WFI(); // stop clocks and wait for external interrupt
-#if STM32F4_EXT_CRYSTAL_CLOCK_HZ != 0
-            RCC->CR |= RCC_CR_HSEON;             // HSE on
-#endif
-            SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;  // reset deepsleep
+    default:
+        PWR->CR |= PWR_CR_CWUF;
 
-            while (!(RCC->CR & RCC_CR_HSERDY));
-
-            RCC->CR |= RCC_CR_PLLON;             // pll on
-
-            while (!(RCC->CR & RCC_CR_PLLRDY));
-
-            RCC->CFGR |= RCC_CFGR_SW_PLL;        // sysclk = pll out
-#if STM32F4_EXT_CRYSTAL_CLOCK_HZ != 0
-            RCC->CR &= ~RCC_CR_HSION;            // HSI off
-#endif
-
-            return;
-
-        case TinyCLR_Power_SleepLevel::Off: // standby
-            SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
-            PWR->CR |= PWR_CR_CWUF | PWR_CR_PDDS; // power down deepsleep
-
-            __WFI(); // soft power off, never returns
-            return;
-
-        default: // sleep
-            PWR->CR |= PWR_CR_CWUF;
-
-            __WFI(); // sleep and wait for interrupt
-            return;
+        __WFI(); // sleep and wait for interrupt
+        return;
     }
 }
 
