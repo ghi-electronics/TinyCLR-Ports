@@ -209,7 +209,7 @@ TinyCLR_Result STM32F4_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* sel
     sizes = deploymentSectorSize;
     count = SIZEOF_ARRAY(deploymentSectorAddress);
 
-    return TinyCLR_Result::Success;
+    return count > 0 ? TinyCLR_Result::Success : TinyCLR_Result::NotImplemented;
 }
 
 void STM32F4_Deplpoyment_Reset() {
