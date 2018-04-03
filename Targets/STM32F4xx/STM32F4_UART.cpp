@@ -661,11 +661,10 @@ bool STM32F4_Uart_TxHandshakeEnabledState(int portNum) {
 TinyCLR_Result STM32F4_Uart_Flush(const TinyCLR_Uart_Provider* self) {
     int32_t portNum = self->Index;
 
-    if (g_UartController[portNum].isOpened == false)
-        return TinyCLR_Result::NotAvailable;
-
-    while (g_UartController[portNum].txBufferCount > 0) {
-        STM32F4_Time_Delay(nullptr, 1);
+    if (g_UartController[portNum].isOpened) {
+        while (g_UartController[portNum].txBufferCount > 0) {
+            STM32F4_Time_Delay(nullptr, 1);
+        }
     }
 
     return TinyCLR_Result::Success;
