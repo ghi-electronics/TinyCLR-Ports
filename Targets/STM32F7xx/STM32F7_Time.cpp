@@ -225,14 +225,14 @@ void STM32F7_Timer_Driver::Reload(uint32_t value) {
 #ifdef __GNUC__
 asm volatile (
     ".syntax unified\n\t"
-    ".arch armv7-m\n\t"
+    ".cpu cortex-m7\n\t"
     ".thumb\n\t"
     ".global  IDelayLoop\n\t"
     "@AREA ||i.IDelayLoop||, CODE, READONLY @ void IDelayLoop(UINT32 count)\n\t"
     ".section i.IDelayLoop, \"ax\", %progbits\n\t"
     ".thumb_func\n\t"
     "IDelayLoop:\n\t"
-    "subs    r0, r0, #1          @@ 1 cycle\n\t"
+    "subs    r0, r0, #2          @@ 1 cycle\n\t"
     "bgt     IDelayLoop          @@ 3 cycles taken, 1 cycle not taken.\n\t"
     "bx lr                       @@ 3 cycles\n\t"
     );
