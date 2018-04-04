@@ -1221,7 +1221,7 @@ const TinyCLR_Api_Info* AT91_Can_GetApi() {
 }
 
 uint32_t AT91_Can_GetLocalTime() {
-    return AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentTicks(nullptr));
+    return AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr));
 }
 
 bool CAN_RxInitialize(int8_t channel) {

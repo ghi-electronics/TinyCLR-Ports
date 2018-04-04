@@ -732,7 +732,7 @@ bool UsbClient_Driver::Uninitialize(int controller) {
     State->Initialized = false;
 
     // for soft reboot allow the USB to be off for at least 100ms
-    LPC24_Time_DelayNoInterrupt(nullptr, 100000); // 100ms
+    LPC24_Time_Delay(nullptr, 100000); // 100ms
 
     return true;
 }
@@ -836,7 +836,7 @@ bool UsbClient_Driver::OpenPipe(int controller, int32_t& usbPipe, TinyCLR_UsbCli
 
                     if (State->Queues[idx] == nullptr)
                         return false;
-                    
+
                     memset(reinterpret_cast<uint8_t*>(State->Queues[idx]), 0x00, LPC24_USB_FIFO_BUFFER_SIZE * sizeof(USB_PACKET64));
                 }
 

@@ -32,8 +32,6 @@ struct STM32F7_Timer_Driver {
 
     TinyCLR_NativeTime_Callback m_DequeuAndExecute;
 
-    static bool Initialize();
-    static bool UnInitialize();
     static void Reload(uint32_t value);
 
 };
@@ -175,16 +173,19 @@ extern "C" {
 TinyCLR_Result STM32F7_Time_Acquire(const TinyCLR_NativeTime_Provider* self) {
     g_nextEvent = TIMER_IDLE_VALUE;
 
-    g_STM32F7_Timer_Driver.Initialize();
+    g_STM32F7_Timer_Driver.m_lastRead = 0;
 
+    g_STM32F7_Timer_Driver.m_currentTick = SysTick_LOAD_RELOAD_Msk;
     g_STM32F7_Timer_Driver.m_periodTicks = SysTick_LOAD_RELOAD_Msk;
+
+    SysTick_Config(g_STM32F7_Timer_Driver.m_periodTicks);
 
     g_STM32F7_Timer_Driver.Reload(g_STM32F7_Timer_Driver.m_periodTicks);
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F7_Time_Release(const TinyCLR_NativeTime_Provider* self) {
-    g_STM32F7_Timer_Driver.UnInitialize();
+    SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
 
     return TinyCLR_Result::Success;
 }
@@ -195,19 +196,6 @@ TinyCLR_Result STM32F7_Time_SetTickCallback(const TinyCLR_NativeTime_Provider* s
     g_STM32F7_Timer_Driver.m_DequeuAndExecute = callback;
 
     return TinyCLR_Result::Success;
-}
-
-void STM32F7_Time_DelayNoInterrupt(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds) {
-    DISABLE_INTERRUPTS_SCOPED(irq);
-
-    uint64_t current = STM32F7_Time_GetCurrentProcessorTicks(self);
-    uint64_t maxDiff = STM32F7_Time_GetProcessorTicksForTime(self, microseconds * 10);
-
-    if (maxDiff <= CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS) maxDiff = 0;
-    else maxDiff -= CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS;
-
-    while (((int32_t)(STM32F7_Time_GetCurrentProcessorTicks(self) - current)) <= maxDiff);
-
 }
 
 extern "C" void IDelayLoop(int32_t iterations);
@@ -227,27 +215,13 @@ void STM32F7_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t micros
 
 //******************** Profiler ********************
 
-bool STM32F7_Timer_Driver::Initialize() {
-    g_STM32F7_Timer_Driver.m_lastRead = 0;
-
-    g_STM32F7_Timer_Driver.m_currentTick = SysTick_LOAD_RELOAD_Msk;
-    g_STM32F7_Timer_Driver.m_periodTicks = SysTick_LOAD_RELOAD_Msk;
-
-    SysTick_Config(g_STM32F7_Timer_Driver.m_periodTicks);
-
-    return true;
-}
 void STM32F7_Timer_Driver::Reload(uint32_t value) {
     g_STM32F7_Timer_Driver.m_currentTick = value;
 
     SysTick->LOAD = (uint32_t)(g_STM32F7_Timer_Driver.m_currentTick - 1UL);
     SysTick->VAL = 0UL;
 }
-bool STM32F7_Timer_Driver::UnInitialize() {
-    SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
 
-    return true;
-}
 #ifdef __GNUC__
 asm volatile (
     ".syntax unified\n\t"

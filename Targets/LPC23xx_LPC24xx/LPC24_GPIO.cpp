@@ -172,8 +172,8 @@ void LPC24_Gpio_InterruptHandler(void* param) {
             CLEAR_PIN_INTERRUPT(port, pin); // Clear this pin's IRQ
 
             if (state->debounce) {
-                if ((LPC24_Time_GetCurrentTicks(nullptr) - state->lastDebounceTicks) >= g_debounceTicksPin[state->pin]) {
-                    state->lastDebounceTicks = LPC24_Time_GetCurrentTicks(nullptr);
+                if ((LPC24_Time_GetCurrentProcessorTicks(nullptr) - state->lastDebounceTicks) >= g_debounceTicksPin[state->pin]) {
+                    state->lastDebounceTicks = LPC24_Time_GetCurrentProcessorTicks(nullptr);
                 }
                 else {
                     executeIsr = false;
@@ -207,7 +207,7 @@ TinyCLR_Result LPC24_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* se
         state->pin = (uint8_t)pin;
         state->debounce = LPC24_Gpio_GetDebounceTimeout(self, pin);
         state->ISR = ISR;
-        state->lastDebounceTicks = LPC24_Time_GetCurrentTicks(nullptr);
+        state->lastDebounceTicks = LPC24_Time_GetCurrentProcessorTicks(nullptr);
 
         SET_PIN_INTERRUPT_RISING_EDGE(GET_PORT(pin), GET_PIN(pin));
         SET_PIN_INTERRUPT_FALLING_EDGE(GET_PORT(pin), GET_PIN(pin));

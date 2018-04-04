@@ -2257,7 +2257,7 @@ const TinyCLR_Api_Info* LPC17_Can_GetApi() {
 }
 
 uint32_t LPC17_Can_GetLocalTime() {
-    return LPC17_Time_GetTimeForProcessorTicks(nullptr, LPC17_Time_GetCurrentTicks(nullptr));
+    return LPC17_Time_GetTimeForProcessorTicks(nullptr, LPC17_Time_GetCurrentProcessorTicks(nullptr));
 }
 
 /******************************************************************************
