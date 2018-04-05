@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if defined(__GNUC__)
+// GCC ARM linker does not link to some variable below if optimize mode.
+#pragma GCC optimize 0
+#endif
+
 #include "AT91.h"
 
 #define AT91_RTC_TIMR_AM    (0x0)
@@ -76,7 +81,7 @@ uint32_t AT91_Rtc_BinaryCodedDecimalCombine(uint32_t tens, uint32_t ones) {
 
 TinyCLR_Result AT91_Rtc_Acquire(const TinyCLR_Rtc_Provider* self) {
     if ((PMC_MCKR & AT91C_PMC_CSS) != 0) {
-        uint32_t dumpReg = SCKCR_SCKCR;
+        volatile uint32_t dumpReg = SCKCR_SCKCR;
 
         //Enable the 32,768 Hz oscillator by setting the bit OSC32EN to 1.
         SCKCR_SCKCR |= (1 << 1);
