@@ -12,6 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if defined(__GNUC__)
+// GCC ARM linker does not link to some variable below if optimize mode.
+#pragma GCC optimize 0
+#endif
+
 #include "AT91.h"
 
 
@@ -78,7 +83,7 @@ uint32_t AT91_Rtc_BinaryCodedDecimalCombine(uint32_t tens, uint32_t ones) {
 
 TinyCLR_Result AT91_Rtc_Acquire(const TinyCLR_Rtc_Provider* self) {
     if ((PMC_MCKR & AT91C_PMC_CSS) != 0) {
-        uint32_t dumpReg = SCKCR_SCKCR;
+        volatile uint32_t dumpReg = SCKCR_SCKCR;
 
         //Enable the 32,768 Hz oscillator by setting the bit OSC32EN to 1.
         SCKCR_SCKCR |= (1 << 1);
@@ -219,17 +224,17 @@ TinyCLR_Result AT91_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_Dat
     AT91_Rtc_BinaryCodedDecimalExtract(value.Hour, tens, ones);
     timeRegister = (uint32_t)((AT91_RTC_TIMR_AM << 22) | (tens << 20) | (ones << 16));
     RTC_TIMR = timeRegister;
-    
+
     // Add value.Minute
     AT91_Rtc_BinaryCodedDecimalExtract(value.Minute, tens, ones);
     timeRegister = (uint32_t)((tens << 12) | (ones << 8));
     RTC_TIMR |= timeRegister;
-    
+
     // Add value.Second
     AT91_Rtc_BinaryCodedDecimalExtract(value.Second, tens, ones);
     timeRegister = (uint32_t)((tens << 4) | ones);
     RTC_TIMR |= timeRegister;
-    
+
     // Clear Status Register
     RTC_SCCR |= 1 << 2;
     RTC_CR &= ~((1 << 0) | (1 << 1));
