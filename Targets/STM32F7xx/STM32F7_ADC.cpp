@@ -21,9 +21,9 @@
 #define RCC_APB2ENR_ADCxEN RCC_APB2ENR_ADC1EN
 #define STM32F7_ADC_CHANNEL_NONE    0xFF
 #define STM32F7_ADC_PINS { PIN(A, 0), PIN(A, 1), PIN(A, 2), PIN(A, 3), PIN(A, 4), PIN(A, 5), PIN(A, 6), PIN(A, 7), PIN(B, 0), PIN(B, 1), PIN(C, 0), PIN(C, 1), PIN(C, 2),PIN(C, 3), PIN(C, 4), PIN(C, 5), PIN_NONE, PIN_NONE}
-#define STM32F7_AD_NUM SIZEOF_ARRAY(g_STM32F7_AD_Channel)
 
-static const uint8_t g_STM32F7_AD_Channel[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 12, 13, 14, 15, 16, 17 };
+#define STM32F7_AD_NUM 18 // number of channels
+
 static const uint32_t g_STM32F7_AD_Pins[] = STM32F7_ADC_PINS;
 
 static TinyCLR_Adc_Provider adcProvider;
@@ -58,49 +58,20 @@ const TinyCLR_Api_Info* STM32F7_Adc_GetApi() {
 }
 
 TinyCLR_Result STM32F7_Adc_Acquire(const TinyCLR_Adc_Provider* self) {
-    if (self == nullptr)
-        return TinyCLR_Result::ArgumentNull;
-
-    return TinyCLR_Result::Success;
+    return self == nullptr ? TinyCLR_Result::ArgumentNull : TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F7_Adc_Release(const TinyCLR_Adc_Provider* self) {
-    if (self == nullptr)
-        return TinyCLR_Result::ArgumentNull;
-
-    return TinyCLR_Result::Success;
-}
-
-int32_t STM32F7_Adc_GetPinForChannel(int32_t channel) {
-    // return GPIO pin
-    // for internally connected channels this is PIN_NONE as these don't take any GPIO pins
-    int chNum = g_STM32F7_AD_Channel[channel];
-
-    if (chNum >= STM32F7_AD_NUM)
-        return PIN_NONE;
-
-    for (int i = 0; i < STM32F7_AD_NUM; i++) {
-        if (g_STM32F7_AD_Channel[i] == chNum) {
-            return (int32_t)g_STM32F7_AD_Pins[chNum];
-        }
-    }
-
-    // channel not available
-    return PIN_NONE;
+    return self == nullptr ? TinyCLR_Result::ArgumentNull : TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F7_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t channel) {
-    int32_t chNum = g_STM32F7_AD_Channel[channel];
-
-    if (chNum >= STM32F7_AD_NUM)
-        return TinyCLR_Result::NotAvailable;
-
-    if (!STM32F7_GpioInternal_OpenPin(STM32F7_Adc_GetPinForChannel(channel)))
+    if (channel <= 15 && !STM32F7_GpioInternal_OpenPin(g_STM32F7_AD_Pins[channel]))
         return TinyCLR_Result::SharingViolation;
 
     // init this channel if it's listed in the STM32F7_AD_CHANNELS array
     for (int i = 0; i < STM32F7_AD_NUM; i++) {
-        if (g_STM32F7_AD_Channel[i] == chNum) {
+        if (i == channel) {
             // valid channel
             if (!(RCC->APB2ENR & RCC_APB2ENR_ADCxEN)) { // not yet initialized
                 RCC->APB2ENR |= RCC_APB2ENR_ADCxEN; // enable AD clock
@@ -113,13 +84,14 @@ TinyCLR_Result STM32F7_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int3
             }
 
             // set pin as analog input if channel is not one of the internally connected
-            if (chNum <= 15) {
-                STM32F7_GpioInternal_ConfigurePin(STM32F7_Adc_GetPinForChannel(channel), STM32F7_Gpio_PortMode::Analog, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, STM32F7_Gpio_AlternateFunction::AF0);
-
-                g_STM32F7_AD_IsOpened[chNum] = true;
-
-                return TinyCLR_Result::Success;
+            if (channel <= 15) {
+                STM32F7_GpioInternal_ConfigurePin(g_STM32F7_AD_Pins[channel], STM32F7_Gpio_PortMode::Analog, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, STM32F7_Gpio_AlternateFunction::AF0);
             }
+
+            g_STM32F7_AD_IsOpened[i] = true;
+
+            return TinyCLR_Result::Success;
+
         }
     }
 
@@ -128,31 +100,29 @@ TinyCLR_Result STM32F7_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int3
 }
 
 TinyCLR_Result STM32F7_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t channel) {
-    int chNum = g_STM32F7_AD_Channel[channel];
-
     // free GPIO pin if this channel is listed in the STM32F7_AD_CHANNELS array
     // and if it's not one of the internally connected ones as these channels don't take any GPIO pins
-    if (chNum < STM32F7_AD_NUM && g_STM32F7_AD_IsOpened[chNum])
-        STM32F7_GpioInternal_ClosePin(STM32F7_Adc_GetPinForChannel(channel));
+    if (channel <= 15 && channel < STM32F7_AD_NUM)
+        if (g_STM32F7_AD_IsOpened[channel])
+            STM32F7_GpioInternal_ClosePin(g_STM32F7_AD_Pins[channel]);
 
-    g_STM32F7_AD_IsOpened[chNum] = false;
+    g_STM32F7_AD_IsOpened[channel] = false;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F7_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t channel, int32_t& value) {
-    int chNum = g_STM32F7_AD_Channel[channel];
-
     // check if this channel is listed in the STM32F7_AD_CHANNELS array
+    value = 0;
+
     for (int i = 0; i < STM32F7_AD_NUM; i++) {
-        if (g_STM32F7_AD_Channel[i] == chNum) {
-            // valid channel
+        if (i == channel) { // valid channel
             int x = ADCx->DR; // clear EOC flag
 
-            ADCx->SQR3 = chNum; // select channel
+            ADCx->SQR3 = channel; // select channel
 
             // need to enable internal reference at ADC->CCR register to work with internally connected channels
-            if (chNum == 16 || chNum == 17) {
+            if (channel == 16 || channel == 17) {
                 ADC->CCR |= ADC_CCR_TSVREFE; // Enable internal reference to work with temperature sensor and VREFINT channels
             }
 
@@ -160,11 +130,11 @@ TinyCLR_Result STM32F7_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t c
             while (!(ADCx->SR & ADC_SR_EOC)); // wait for completion
 
             // disable internally reference
-            if (chNum == 16 || chNum == 17) {
+            if (channel == 16 || channel == 17) {
                 ADC->CCR &= ~ADC_CCR_TSVREFE;
             }
 
-            value = ADCx->DR; // read result
+            value = (ADCx->DR) & 0xFFF; // read result
 
             return TinyCLR_Result::Success;
         }
