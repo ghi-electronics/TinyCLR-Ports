@@ -238,10 +238,16 @@ void AT91_Uart_SetErrorEvent(int32_t portNum, TinyCLR_Uart_Error error) {
         g_UartController[portNum].errorEventHandler(g_UartController[portNum].provider, error);
 }
 
-void AT91_Uart_ReceiveData(int32_t portNum) {
+void AT91_Uart_ReceiveData(int32_t portNum, uint32_t sr) {
     AT91_USART &usart = AT91::USART(portNum);
 
     uint8_t rxdata = usart.US_RHR;
+
+    if (g_UartController[portNum].rxBufferCount == g_UartController[portNum].rxBufferSize) {
+        AT91_Uart_SetErrorEvent(portNum, TinyCLR_Uart_Error::ReceiveFull);
+
+        return;
+    }
 
     g_UartController[portNum].RxBuffer[g_UartController[portNum].rxBufferIn++] = rxdata;
 
@@ -252,6 +258,15 @@ void AT91_Uart_ReceiveData(int32_t portNum) {
 
     if (g_UartController[portNum].dataReceivedEventHandler != nullptr)
         g_UartController[portNum].dataReceivedEventHandler(g_UartController[portNum].provider, 1);
+
+    if (sr & AT91_USART::US_OVRE)
+        AT91_Uart_SetErrorEvent(portNum, TinyCLR_Uart_Error::BufferOverrun);
+
+    if (sr & AT91_USART::US_FRAME)
+        AT91_Uart_SetErrorEvent(portNum, TinyCLR_Uart_Error::Frame);
+
+    if (sr & AT91_USART::US_PARE)
+        AT91_Uart_SetErrorEvent(portNum, TinyCLR_Uart_Error::ReceiveParity);
 
 }
 
@@ -286,7 +301,7 @@ void AT91_Uart_InterruptHandler(void *param) {
     uint32_t status = usart.US_CSR;
 
     if (status & AT91_USART::US_RXRDY) {
-        AT91_Uart_ReceiveData(portNum);
+        AT91_Uart_ReceiveData(portNum, status);
     }
 
     if (status & AT91_USART::US_TXRDY) {
