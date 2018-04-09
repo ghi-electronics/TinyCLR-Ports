@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
 #include "AT91.h"
 
 
@@ -22,24 +23,24 @@
 
 // Real Time Clock Register
 #define AT91C_BASE_RTC  0xFFFFFEB0
-#define RTC_CR          (*(reinterpret_cast<uint32_t*>(AT91C_BASE_RTC + 0x00)))
-#define RTC_TIMR        (*(reinterpret_cast<uint32_t*>(AT91C_BASE_RTC + 0x08)))
-#define RTC_CALR        (*(reinterpret_cast<uint32_t*>(AT91C_BASE_RTC + 0x0C)))
-#define RTC_TIMALR      (*(reinterpret_cast<uint32_t*>(AT91C_BASE_RTC + 0x10)))
-#define RTC_CALALR      (*(reinterpret_cast<uint32_t*>(AT91C_BASE_RTC + 0x14)))
-#define RTC_SR          (*(reinterpret_cast<uint32_t*>(AT91C_BASE_RTC + 0x18)))
-#define RTC_SCCR        (*(reinterpret_cast<uint32_t*>(AT91C_BASE_RTC + 0x1C)))
-#define RTC_VER         (*(reinterpret_cast<uint32_t*>(AT91C_BASE_RTC + 0x2C)))
+#define RTC_CR          (*(reinterpret_cast<volatile uint32_t*>(AT91C_BASE_RTC + 0x00)))
+#define RTC_TIMR        (*(reinterpret_cast<volatile uint32_t*>(AT91C_BASE_RTC + 0x08)))
+#define RTC_CALR        (*(reinterpret_cast<volatile uint32_t*>(AT91C_BASE_RTC + 0x0C)))
+#define RTC_TIMALR      (*(reinterpret_cast<volatile uint32_t*>(AT91C_BASE_RTC + 0x10)))
+#define RTC_CALALR      (*(reinterpret_cast<volatile uint32_t*>(AT91C_BASE_RTC + 0x14)))
+#define RTC_SR          (*(reinterpret_cast<volatile uint32_t*>(AT91C_BASE_RTC + 0x18)))
+#define RTC_SCCR        (*(reinterpret_cast<volatile uint32_t*>(AT91C_BASE_RTC + 0x1C)))
+#define RTC_VER         (*(reinterpret_cast<volatile uint32_t*>(AT91C_BASE_RTC + 0x2C)))
 
 // Real TimeOut
 #define RTC_TIMEOUT     (0x00FFFFFF)
 
 //Slow Clock Configuration Register
-#define SCKCR_SCKCR     (*(reinterpret_cast<uint32_t*>(AT91C_BASE_SCKCR + 0x0)))
+#define SCKCR_SCKCR     (*(reinterpret_cast<volatile uint32_t*>(AT91C_BASE_SCKCR + 0x0)))
 
 //Power Manager Control Register
-#define PMC_MCKR        (*(reinterpret_cast<uint32_t*>(AT91C_BASE_PMC + 0x0030)))
-#define PMC_SR          (*(reinterpret_cast<uint32_t*>(AT91C_BASE_PMC + 0x0068)))
+#define PMC_MCKR        (*(reinterpret_cast<volatile uint32_t*>(AT91C_BASE_PMC + 0x0030)))
+#define PMC_SR          (*(reinterpret_cast<volatile uint32_t*>(AT91C_BASE_PMC + 0x0068)))
 
 static TinyCLR_Rtc_Provider rtcProvider;
 static TinyCLR_Api_Info timeApi;
@@ -78,7 +79,7 @@ uint32_t AT91_Rtc_BinaryCodedDecimalCombine(uint32_t tens, uint32_t ones) {
 
 TinyCLR_Result AT91_Rtc_Acquire(const TinyCLR_Rtc_Provider* self) {
     if ((PMC_MCKR & AT91C_PMC_CSS) != 0) {
-        uint32_t dumpReg = SCKCR_SCKCR;
+        volatile uint32_t dumpReg = SCKCR_SCKCR;
 
         //Enable the 32,768 Hz oscillator by setting the bit OSC32EN to 1.
         SCKCR_SCKCR |= (1 << 1);
@@ -219,17 +220,17 @@ TinyCLR_Result AT91_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_Dat
     AT91_Rtc_BinaryCodedDecimalExtract(value.Hour, tens, ones);
     timeRegister = (uint32_t)((AT91_RTC_TIMR_AM << 22) | (tens << 20) | (ones << 16));
     RTC_TIMR = timeRegister;
-    
+
     // Add value.Minute
     AT91_Rtc_BinaryCodedDecimalExtract(value.Minute, tens, ones);
     timeRegister = (uint32_t)((tens << 12) | (ones << 8));
     RTC_TIMR |= timeRegister;
-    
+
     // Add value.Second
     AT91_Rtc_BinaryCodedDecimalExtract(value.Second, tens, ones);
     timeRegister = (uint32_t)((tens << 4) | ones);
     RTC_TIMR |= timeRegister;
-    
+
     // Clear Status Register
     RTC_SCCR |= 1 << 2;
     RTC_CR &= ~((1 << 0) | (1 << 1));
