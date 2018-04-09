@@ -82,6 +82,9 @@ TinyCLR_Result LPC24_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_
     if (LPC24_Adc_GetPin(channel) == PIN_NONE)
         return TinyCLR_Result::ArgumentInvalid;
 
+    if (!LPC24_Gpio_OpenPin(LPC24_Adc_GetPin(channel)))
+        return  TinyCLR_Result::SharingViolation;
+
     LPC24XX::SYSCON().PCONP |= PCONP_PCAD;
 
     LPC24_Gpio_ConfigurePin(LPC24_Adc_GetPin(channel), LPC24_Gpio_Direction::Input, LPC24_Adc_GetPinFunction(channel), LPC24_Gpio_PinMode::Inactive);
@@ -98,8 +101,10 @@ TinyCLR_Result LPC24_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_
 }
 
 TinyCLR_Result LPC24_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t channel) {
-    if (g_lpc24_adc_isOpened & (1 << channel))
-        LPC24_Gpio_ConfigurePin(LPC24_Adc_GetPin(channel), LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::Inactive);
+    if (g_lpc24_adc_isOpened & (1 << channel)) {
+        LPC24_Gpio_ClosePin(LPC24_Adc_GetPin(channel));
+
+    }
 
     g_lpc24_adc_isOpened &= ~(1 << channel);
 

@@ -533,10 +533,6 @@ TinyCLR_Result STM32F7_Spi_Release(const TinyCLR_Spi_Provider* self) {
         auto& miso = g_STM32F7_Spi_Miso_Pins[controller];
         auto& mosi = g_STM32F7_Spi_Mosi_Pins[controller];
 
-        STM32F7_GpioInternal_ConfigurePin(miso.number, STM32F7_Gpio_PortMode::Input, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, STM32F7_Gpio_AlternateFunction::AF0);
-        STM32F7_GpioInternal_ConfigurePin(mosi.number, STM32F7_Gpio_PortMode::Input, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, STM32F7_Gpio_AlternateFunction::AF0);
-        STM32F7_GpioInternal_ConfigurePin(sclk.number, STM32F7_Gpio_PortMode::Input, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, STM32F7_Gpio_AlternateFunction::AF0);
-
         STM32F7_GpioInternal_ClosePin(sclk.number);
         STM32F7_GpioInternal_ClosePin(miso.number);
         STM32F7_GpioInternal_ClosePin(mosi.number);

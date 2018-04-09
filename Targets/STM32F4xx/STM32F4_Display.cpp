@@ -109,42 +109,42 @@ typedef struct {
   * @}
   */
 
-/** @defgroup LTDC_HS_POLARITY LTDC HS POLARITY
-* @{
-*/
+  /** @defgroup LTDC_HS_POLARITY LTDC HS POLARITY
+  * @{
+  */
 #define LTDC_HSPOLARITY_AL                ((uint32_t)0x00000000)                /*!< Horizontal Synchronization is active low. */
 #define LTDC_HSPOLARITY_AH                LTDC_GCR_HSPOL                        /*!< Horizontal Synchronization is active high. */
-/**
-* @}
-*/
+  /**
+  * @}
+  */
 
-/** @defgroup LTDC_VS_POLARITY LTDC VS POLARITY
-* @{
-*/
+  /** @defgroup LTDC_VS_POLARITY LTDC VS POLARITY
+  * @{
+  */
 #define LTDC_VSPOLARITY_AL                ((uint32_t)0x00000000)                /*!< Vertical Synchronization is active low. */
 #define LTDC_VSPOLARITY_AH                LTDC_GCR_VSPOL                        /*!< Vertical Synchronization is active high. */
-/**
-* @}
-*/
+  /**
+  * @}
+  */
 
-/** @defgroup LTDC_DE_POLARITY LTDC DE POLARITY
-* @{
-*/
+  /** @defgroup LTDC_DE_POLARITY LTDC DE POLARITY
+  * @{
+  */
 #define LTDC_DEPOLARITY_AL                ((uint32_t)0x00000000)                /*!< Data Enable, is active low. */
 #define LTDC_DEPOLARITY_AH                LTDC_GCR_DEPOL                        /*!< Data Enable, is active high. */
-/**
-* @}
-*/
+  /**
+  * @}
+  */
 
-/** @defgroup LTDC_PC_POLARITY LTDC PC POLARITY
-* @{
-*/
+  /** @defgroup LTDC_PC_POLARITY LTDC PC POLARITY
+  * @{
+  */
 #define LTDC_PCPOLARITY_IPC               ((uint32_t)0x00000000)                /*!< input pixel clock. */
 #define LTDC_PCPOLARITY_IIPC              LTDC_GCR_PCPOL                        /*!< inverted input pixel clock. */
 
-/** @defgroup LTDC_Pixelformat LTDC Pixel format
-* @{
-*/
+  /** @defgroup LTDC_Pixelformat LTDC Pixel format
+  * @{
+  */
 #define LTDC_PIXEL_FORMAT_ARGB8888                  ((uint32_t)0x00000000)      /*!< ARGB8888 LTDC pixel format */
 #define LTDC_PIXEL_FORMAT_RGB888                    ((uint32_t)0x00000001)      /*!< RGB888 LTDC pixel format   */
 #define LTDC_PIXEL_FORMAT_RGB565                    ((uint32_t)0x00000002)      /*!< RGB565 LTDC pixel format   */
@@ -153,27 +153,27 @@ typedef struct {
 #define LTDC_PIXEL_FORMAT_L8                        ((uint32_t)0x00000005)      /*!< L8 LTDC pixel format       */
 #define LTDC_PIXEL_FORMAT_AL44                      ((uint32_t)0x00000006)      /*!< AL44 LTDC pixel format     */
 #define LTDC_PIXEL_FORMAT_AL88                      ((uint32_t)0x00000007)      /*!< AL88 LTDC pixel format     */
-/**
-* @}
-*/
+  /**
+  * @}
+  */
 
-/** @defgroup LTDC_BlendingFactor1 LTDC Blending Factor1
-* @{
-*/
+  /** @defgroup LTDC_BlendingFactor1 LTDC Blending Factor1
+  * @{
+  */
 #define LTDC_BLENDING_FACTOR1_CA                       ((uint32_t)0x00000400)   /*!< Blending factor : Cte Alpha */
 #define LTDC_BLENDING_FACTOR1_PAxCA                    ((uint32_t)0x00000600)   /*!< Blending factor : Cte Alpha x Pixel Alpha*/
-/**
-* @}
-*/
+  /**
+  * @}
+  */
 
-/** @defgroup LTDC_BlendingFactor2 LTDC Blending Factor2
-* @{
-*/
+  /** @defgroup LTDC_BlendingFactor2 LTDC Blending Factor2
+  * @{
+  */
 #define LTDC_BLENDING_FACTOR2_CA                       ((uint32_t)0x00000005)   /*!< Blending factor : Cte Alpha */
 #define LTDC_BLENDING_FACTOR2_PAxCA                    ((uint32_t)0x00000007)   /*!< Blending factor : Cte Alpha x Pixel Alpha*/
-/**
-* @}
-*/
+  /**
+  * @}
+  */
 
 #define LTDC_LAYER(__HANDLE__, __LAYER__)         ((LTDC_Layer_TypeDef *)((uint32_t)(((uint32_t)((__HANDLE__)->Instance)) + 0x84 + (0x80*(__LAYER__)))))
 
@@ -349,7 +349,7 @@ STM32F4xx_LCD_Rotation m_STM32F4_Display_CurrentRotation = STM32F4xx_LCD_Rotatio
 
 bool STM32F4_Display_Initialize();
 bool STM32F4_Display_Uninitialize();
-bool STM32F4_Display_SetPinConfiguration();
+bool STM32F4_Display_SetPinConfiguration(bool enable);
 
 void STM32F4_Display_WriteFormattedChar(uint8_t c);
 void STM32F4_Display_WriteChar(uint8_t c, int32_t row, int32_t col);
@@ -507,13 +507,56 @@ bool STM32F4_Display_Initialize() {
     static LTDC_HandleTypeDef hltdc_F;
     LTDC_LayerCfgTypeDef      pLayerCfg;
 
+    const uint32_t STM32F4_DISPLAY_CLOCKDIVS[4] = { 2, 4, 8, 16 };
+
+    uint32_t pll_saiIn;
+    uint32_t pll_saiQ;
+    uint32_t pll_saiP;
+    uint32_t pll_saiR;
+
+    uint32_t div;
+    uint32_t clockMHz;
     RCC->CR &= ~(RCC_CR_PLLSAION);
+
+    pll_saiQ = (RCC->PLLSAICFGR >> 24) & 0x0F;
+    pll_saiP = (RCC->PLLSAICFGR >> 16) & 0x03;
+
+    pll_saiR = 2;
+
+    div = 0;
+
+    pll_saiIn = STM32F4_SYSTEM_CLOCK_HZ / 1000000; // In MHz
+
+    while (true) {
+        clockMHz = (pll_saiIn / pll_saiR) / STM32F4_DISPLAY_CLOCKDIVS[div];
+
+        if (clockMHz > (STM32F4_Display_GetPixelClockDivider() / 1000)) {
+            pll_saiR++;
+
+            if (pll_saiR > 7) {
+                pll_saiR = 7;
+                div++;
+            }
+
+            if (div > 3) {
+                // clk is not in range, set default
+                // 216 / 5 / STM32F4_DISPLAY_CLOCKDIVS[div] = 216 / 5 / 4 = 10.8MHz
+                div = 1;
+                pll_saiR = 5;
+                break;
+            }
+        }
+        else {
+            // Found good clk
+            break;
+        }
+    }
 
     STM32F4_Time_Delay(nullptr, 0x10000);
 
-    RCC->PLLSAICFGR = ((0xC0) << 6) | ((0) << 16) | ((0x4) << 24) | ((0x5) << 28);
+    RCC->PLLSAICFGR = ((pll_saiIn) << 6) | ((pll_saiP) << 16) | ((pll_saiQ) << 24) | ((pll_saiR) << 28);
 
-    MODIFY_REG(RCC->DCKCFGR, RCC_DCKCFGR_PLLSAIDIVR, (uint32_t)(0x00010000));
+    MODIFY_REG(RCC->DCKCFGR1, RCC_DCKCFGR1_PLLSAIDIVR, (uint32_t)(div << 16));
 
     RCC->CR |= (RCC_CR_PLLSAION);
 
@@ -605,13 +648,11 @@ bool STM32F4_Display_Initialize() {
     /* Configure the Layer*/
     STM32F4_Ltdc_LayerConfiguration(&hltdc_F, &pLayerCfg, 1);
 
-    m_STM32F4_DisplayEnable = true;
-
     return true;
 }
 
 bool STM32F4_Display_Uninitialize() {
-    m_STM32F4_DisplayEnable = false;
+    RCC->APB2ENR &= ~RCC_APB2ENR_LTDCEN;
 
     return true;
 }
@@ -758,25 +799,50 @@ const STM32F4_Gpio_Pin g_Display_ControllerPins[] = STM32F4_DISPLAY_CONTROLLER_P
 const STM32F4_Gpio_Pin g_Display_BacklightPin = STM32F4_DISPLAY_BACKLIGHT_PIN;
 const STM32F4_Gpio_Pin g_Display_EnablePin = STM32F4_DISPLAY_ENABLE_PIN;
 
-bool  STM32F4_Display_SetPinConfiguration() {
-    for (int32_t i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins); i++) {
-        STM32F4_GpioInternal_ConfigurePin(g_Display_ControllerPins[i].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, g_Display_ControllerPins[i].alternateFunction);
-    }
+bool STM32F4_Display_SetPinConfiguration(bool enable) {
+    if (enable) {
+        for (int32_t i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins); i++) {
+            if (!STM32F4_GpioInternal_OpenPin(g_Display_ControllerPins[i].number)) {
+                return false;
+            }
 
-    if (m_STM32F4_DisplayOutputEnableIsFixed) {
-        STM32F4_GpioInternal_ConfigurePin(g_Display_EnablePin.number, STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
-        STM32F4_GpioInternal_WritePin(g_Display_EnablePin.number, m_STM32F4_DisplayOutputEnablePolarity);
+            STM32F4_GpioInternal_ConfigurePin(g_Display_ControllerPins[i].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, g_Display_ControllerPins[i].alternateFunction);
+        }
+
+        if (!STM32F4_GpioInternal_OpenPin(g_Display_EnablePin.number)) {
+            return false;
+        }
+
+        if (m_STM32F4_DisplayOutputEnableIsFixed) {
+            STM32F4_GpioInternal_ConfigurePin(g_Display_EnablePin.number, STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
+            STM32F4_GpioInternal_WritePin(g_Display_EnablePin.number, m_STM32F4_DisplayOutputEnablePolarity);
+        }
+        else {
+            STM32F4_GpioInternal_ConfigurePin(g_Display_EnablePin.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, g_Display_EnablePin.alternateFunction);
+        }
+
+        if (g_Display_BacklightPin.number != PIN_NONE) {
+            if (!STM32F4_GpioInternal_OpenPin(g_Display_BacklightPin.number)) {
+                return false;
+            }
+
+            STM32F4_GpioInternal_ConfigurePin(g_Display_BacklightPin.number, STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, g_Display_BacklightPin.alternateFunction);
+            STM32F4_GpioInternal_WritePin(g_Display_BacklightPin.number, true);
+        }
     }
     else {
-        STM32F4_GpioInternal_ConfigurePin(g_Display_EnablePin.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, g_Display_EnablePin.alternateFunction);
-    }
+        for (int32_t i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins); i++) {
+            STM32F4_GpioInternal_ClosePin(g_Display_ControllerPins[i].number);
+        }
 
-    // backlight D7
-    STM32F4_GpioInternal_ConfigurePin(g_Display_BacklightPin.number, STM32F4_Gpio_PortMode::GeneralPurposeOutput, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, g_Display_BacklightPin.alternateFunction);
-    STM32F4_GpioInternal_WritePin(g_Display_BacklightPin.number, true);
+        STM32F4_GpioInternal_ClosePin(g_Display_EnablePin.number);
+
+        STM32F4_GpioInternal_ClosePin(g_Display_BacklightPin.number);
+    }
 
     return true;
 }
+
 uint32_t* STM32F4_Display_GetFrameBuffer() {
     return (uint32_t*)m_STM32F4_Display_VituralRam;
 }
@@ -962,25 +1028,39 @@ TinyCLR_Result STM32F4_Display_Acquire(const TinyCLR_Display_Provider* self) {
 
     m_STM32F4_Display_VituralRam = (uint16_t*)VIDEO_RAM_ADDRESS;
 
+    if (!STM32F4_Display_SetPinConfiguration(true)) {
+        return TinyCLR_Result::SharingViolation;
+    }
+
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Display_Release(const TinyCLR_Display_Provider* self) {
-    if (STM32F4_Display_Uninitialize())
-        return TinyCLR_Result::Success;
+    STM32F4_Display_Uninitialize();
 
-    return  TinyCLR_Result::InvalidOperation;
+    STM32F4_Display_SetPinConfiguration(false);
+
+    m_STM32F4_DisplayEnable = false;
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Display_Enable(const TinyCLR_Display_Provider* self) {
-    if (STM32F4_Display_SetPinConfiguration() && STM32F4_Display_Initialize())
+    if (m_STM32F4_DisplayEnable || STM32F4_Display_Initialize()) {
+        m_STM32F4_DisplayEnable = true;
+
         return TinyCLR_Result::Success;
+    }
 
     return TinyCLR_Result::InvalidOperation;
 }
 
 TinyCLR_Result STM32F4_Display_Disable(const TinyCLR_Display_Provider* self) {
-    return TinyCLR_Result::NotSupported;
+    STM32F4_Display_Uninitialize();
+
+    m_STM32F4_DisplayEnable = false;
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Display_SetConfiguration(const TinyCLR_Display_Provider* self, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration) {
@@ -1093,7 +1173,7 @@ void STM32F4_Display_Reset() {
     STM32F4_Display_Clear();
 
     if (m_STM32F4_DisplayEnable)
-        STM32F4_Display_Uninitialize();
+        STM32F4_Display_Release(&displayProvider);
 
     m_STM32F4_DisplayEnable = false;
 }

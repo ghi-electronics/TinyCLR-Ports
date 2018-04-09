@@ -51,6 +51,7 @@ struct UartController {
     USART_TypeDef_Ptr                   portPtr;
 
     bool                                isOpened;
+    bool                                handshaking;
 
     TinyCLR_Uart_ErrorReceivedHandler   errorEventHandler;
     TinyCLR_Uart_DataReceivedHandler    dataReceivedEventHandler;
@@ -323,6 +324,8 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
     g_UartController[portNum].portPtr = g_STM32F4_Uart_Ports[portNum];
     g_UartController[portNum].provider = self;
 
+    g_UartController[portNum].handshaking = false;
+
     return TinyCLR_Result::Success;
 }
 
@@ -414,6 +417,8 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
     switch (handshaking) {
     case TinyCLR_Uart_Handshake::RequestToSend:
         ctrl_cr3 = USART_CR3_CTSE | USART_CR3_RTSE;
+
+        g_UartController[portNum].handshaking = true;
         break;
 
     case TinyCLR_Uart_Handshake::XOnXOff:
@@ -607,8 +612,11 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Provider* self) {
     if (g_UartController[portNum].isOpened) {
         STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Rx_Pins[portNum].number);
         STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Tx_Pins[portNum].number);
-        STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Cts_Pins[portNum].number);
-        STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Rts_Pins[portNum].number);
+
+        if (g_UartController[portNum].handshaking) {
+            STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Cts_Pins[portNum].number);
+            STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Rts_Pins[portNum].number);
+        }
     }
 
     g_UartController[portNum].isOpened = false;
