@@ -103,6 +103,9 @@ TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Provider *self, int32_t
         return TinyCLR_Result::ArgumentInvalid;
 
     if (channel >= 0 && channel <= AT91_Adc_GetControllerCount() && AT91_Gpio_OpenPin(AT91_Adc_GetPin(channel))) {
+        if (!AT91_Gpio_OpenPin(AT91_Adc_GetPin(channel)))
+            return  TinyCLR_Result::SharingViolation;
+
         AT91_Gpio_ConfigurePin(AT91_Adc_GetPin(channel), AT91_Gpio_Direction::Input, AT91_Adc_GetPeripheralSelection(channel), AT91_Gpio_ResistorMode::Inactive);
     }
     else {
