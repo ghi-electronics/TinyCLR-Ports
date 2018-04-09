@@ -321,6 +321,12 @@ TinyCLR_Result LPC24_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
+    int32_t txPin = LPC24_Uart_GetTxPin(portNum);
+    int32_t rxPin = LPC24_Uart_GetRxPin(portNum);
+
+    if (g_UartController[portNum].isOpened || !LPC24_Gpio_OpenPin(txPin) || !LPC24_Gpio_OpenPin(rxPin))
+        return TinyCLR_Result::SharingViolation;
+
     g_UartController[portNum].txBufferCount = 0;
     g_UartController[portNum].txBufferIn = 0;
     g_UartController[portNum].txBufferOut = 0;
@@ -536,7 +542,6 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, u
 
     LPC24_Interrupt_Activate(LPC24XX_USART::getIntNo(portNum), (uint32_t*)&LPC24_Uart_InterruptHandler, (void*)self->Index);
     LPC24_Interrupt_Enable(LPC24XX_USART::getIntNo(portNum));
-
 
     LPC24_Uart_PinConfiguration(portNum, true);
 

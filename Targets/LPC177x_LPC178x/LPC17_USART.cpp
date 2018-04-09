@@ -512,6 +512,12 @@ TinyCLR_Result LPC17_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
+    int32_t txPin = LPC17_Uart_GetTxPin(portNum);
+    int32_t rxPin = LPC17_Uart_GetRxPin(portNum);
+
+    if (g_UartController[portNum].isOpened || !LPC17_Gpio_OpenPin(txPin) || !LPC17_Gpio_OpenPin(rxPin))
+        return TinyCLR_Result::SharingViolation;
+
     g_UartController[portNum].txBufferCount = 0;
     g_UartController[portNum].txBufferIn = 0;
     g_UartController[portNum].txBufferOut = 0;
@@ -536,12 +542,6 @@ TinyCLR_Result LPC17_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
     case 4: LPC_SC->PCONP |= PCONP_PCUART4; break;
 
     }
-
-    int32_t txPin = LPC17_Uart_GetTxPin(portNum);
-    int32_t rxPin = LPC17_Uart_GetRxPin(portNum);
-
-    if (!LPC17_Gpio_OpenPin(txPin) || !LPC17_Gpio_OpenPin(rxPin))
-        return TinyCLR_Result::SharingViolation;
 
     return TinyCLR_Result::Success;
 }
