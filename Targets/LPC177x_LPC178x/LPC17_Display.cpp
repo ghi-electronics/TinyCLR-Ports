@@ -376,7 +376,7 @@ LPC17xx_LCD_Rotation m_LPC17_Display_CurrentRotation = LPC17xx_LCD_Rotation::rot
 
 bool LPC17_Display_Initialize();
 bool LPC17_Display_Uninitialize();
-bool LPC17_Display_SetPinConfiguration();
+bool LPC17_Display_SetPinConfiguration(bool enable);
 
 void LPC17_Display_WriteFormattedChar(uint8_t c);
 void LPC17_Display_WriteChar(uint8_t c, int32_t row, int32_t col);

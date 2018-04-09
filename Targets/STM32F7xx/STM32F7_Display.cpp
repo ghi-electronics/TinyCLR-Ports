@@ -347,7 +347,7 @@ STM32F7xx_LCD_Rotation m_STM32F7_Display_CurrentRotation = STM32F7xx_LCD_Rotatio
 
 bool STM32F7_Display_Initialize();
 bool STM32F7_Display_Uninitialize();
-bool STM32F7_Display_SetPinConfiguration();
+bool STM32F7_Display_SetPinConfiguration(bool enable);
 
 void STM32F7_Display_WriteFormattedChar(uint8_t c);
 void STM32F7_Display_WriteChar(uint8_t c, int32_t row, int32_t col);
