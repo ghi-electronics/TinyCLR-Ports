@@ -3,7 +3,7 @@
 // Copyright GHI Electronics, LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 // You may obtain a copy of the License at
 //
 //     http://www.apache.org/licenses/LICENSE-2.0
@@ -309,6 +309,9 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
+    if (g_UartController[portNum].isOpened || !STM32F4_GpioInternal_OpenPin(g_STM32F4_Uart_Rx_Pins[portNum].number) || !STM32F4_GpioInternal_OpenPin(g_STM32F4_Uart_Tx_Pins[portNum].number))
+        return TinyCLR_Result::SharingViolation;
+
     g_UartController[portNum].txBufferCount = 0;
     g_UartController[portNum].txBufferIn = 0;
     g_UartController[portNum].txBufferOut = 0;
@@ -320,10 +323,7 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Provider* self) {
     g_UartController[portNum].portPtr = g_STM32F4_Uart_Ports[portNum];
     g_UartController[portNum].provider = self;
 
-    if (STM32F4_GpioInternal_OpenPin(g_STM32F4_Uart_Rx_Pins[portNum].number) && STM32F4_GpioInternal_OpenPin(g_STM32F4_Uart_Tx_Pins[portNum].number))
-        return TinyCLR_Result::Success;
-
-    return TinyCLR_Result::SharingViolation;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, uint32_t baudRate, uint32_t dataBits, TinyCLR_Uart_Parity parity, TinyCLR_Uart_StopBitCount stopBits, TinyCLR_Uart_Handshake handshaking) {
