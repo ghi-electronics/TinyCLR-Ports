@@ -790,7 +790,7 @@ AT91_LCD_Rotation m_AT91_Display_CurrentRotation = AT91_LCD_Rotation::rotateNorm
 
 bool AT91_Display_Initialize();
 bool AT91_Display_Uninitialize();
-bool AT91_Display_SetPinConfiguration();
+bool AT91_Display_SetPinConfiguration(bool enable);
 
 void AT91_Display_WriteFormattedChar(uint8_t c);
 void AT91_Display_WriteChar(uint8_t c, int32_t row, int32_t col);
@@ -841,41 +841,16 @@ void AT91_Display_SetBaseLayerDMA() {
 
 static const AT91_Gpio_Pin g_at91_display_pins[] = AT91_DISPLAY_CONTROLLER_PINS;
 static const AT91_Gpio_Pin g_at91_display_enable_pin = AT91_DISPLAY_ENABLE_PIN;
+static const AT91_Gpio_Pin g_at91_display_backlight_pin = AT91_DISPLAY_BACKLIGHT_PIN;
 
 bool AT91_Display_Initialize() {
 
     AT91SAM9X35_LCDC *lcd = (AT91SAM9X35_LCDC*)AT91C_BASE_LCDC;
     AT91_PMC &pmc = AT91::PMC();
 
-    if (m_AT91_DisplayWidth == 0) {
-        for (uint32_t pin = 0; pin < SIZEOF_ARRAY(g_at91_display_pins); pin++) {
-            AT91_Gpio_EnableInputPin(g_at91_display_pins[pin].number, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-        }
-
-        AT91_Gpio_EnableInputPin(g_at91_display_enable_pin.number, TinyCLR_Gpio_PinDriveMode::InputPullDown);
-
+    if (m_AT91_DisplayPixelClockRateKHz == 0) {
         return false;
     }
-
-    if (m_AT91_DisplayPixelClockRateKHz == 0) {
-        return true;
-    }
-    // ******** Enable the LCD Pins ********
-// Enable GPIO C clock
-    pmc.EnablePeriphClock(AT91C_ID_LCDC);
-
-    // Set LCD pins
-    for (uint32_t pin = 0; pin < SIZEOF_ARRAY(g_at91_display_pins); pin++) {
-        AT91_Gpio_ConfigurePin(g_at91_display_pins[pin].number, AT91_Gpio_Direction::Input, g_at91_display_pins[pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-    }
-
-    if (m_AT91_DisplayOutputEnableIsFixed) {
-        AT91_Gpio_EnableOutputPin(g_at91_display_enable_pin.number, m_AT91_DisplayOutputEnablePolarity);
-    }
-    else {
-        AT91_Gpio_ConfigurePin(g_at91_display_enable_pin.number, AT91_Gpio_Direction::Input, g_at91_display_enable_pin.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-    }
-
     // Enable the LCD clock
     pmc.EnablePeriphClock(AT91C_ID_LCDC);
     *((volatile uint32_t*)0xFFFFFC00) = 1 << 3; // Accessing PMC_SCER register to enable system clock.
@@ -951,16 +926,18 @@ bool AT91_Display_Initialize() {
 
 
     AT91_Display_Clear();
-    m_AT91_DisplayEnable = true;
 
     return true;
 }
 
 bool AT91_Display_Uninitialize() {
-    int32_t i;
+    AT91_PMC &pmc = AT91::PMC();
 
-    if (m_AT91_DisplayEnable == false)
-        return true;
+    AT91SAM9X35_LCDC *lcd = (AT91SAM9X35_LCDC*)AT91C_BASE_LCDC;
+
+    lcd->LCDC_LCDEN &= ~(LCDC_LCDEN_CLKEN | LCDC_LCDEN_PWMEN);
+
+    pmc.DisablePeriphClock(AT91C_ID_LCDC);
 
     m_AT91_DisplayEnable = false;
 
@@ -1105,7 +1082,42 @@ void AT91_Display_Clear() {
     memset((uint32_t*)m_AT91_Display_VituralRam, 0, VIDEO_RAM_SIZE);
 }
 
-bool  AT91_Display_SetPinConfiguration() {
+bool AT91_Display_SetPinConfiguration(bool enable) {
+    if (enable) {
+        for (uint32_t pin = 0; pin < SIZEOF_ARRAY(g_at91_display_pins); pin++) {
+            if (!AT91_Gpio_OpenPin(g_at91_display_pins[pin].number))
+                return false;
+
+            AT91_Gpio_ConfigurePin(g_at91_display_pins[pin].number, AT91_Gpio_Direction::Input, g_at91_display_pins[pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+        }
+
+        if (!AT91_Gpio_OpenPin(g_at91_display_enable_pin.number))
+            return false;
+
+        if (m_AT91_DisplayOutputEnableIsFixed) {
+            AT91_Gpio_EnableOutputPin(g_at91_display_enable_pin.number, m_AT91_DisplayOutputEnablePolarity);
+        }
+        else {
+            AT91_Gpio_ConfigurePin(g_at91_display_enable_pin.number, AT91_Gpio_Direction::Input, g_at91_display_enable_pin.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+        }
+
+        if (g_at91_display_backlight_pin.number != PIN_NONE) {
+            if (!AT91_Gpio_OpenPin(g_at91_display_backlight_pin.number))
+                return false;
+
+            AT91_Gpio_EnableOutputPin(g_at91_display_backlight_pin.number, true);
+        }
+    }
+    else {
+
+        for (int32_t i = 0; i < SIZEOF_ARRAY(g_at91_display_pins); i++) {
+            AT91_Gpio_ClosePin(g_at91_display_pins[i].number);
+        }
+
+        AT91_Gpio_ClosePin(g_at91_display_enable_pin.number);
+
+        AT91_Gpio_ClosePin(g_at91_display_backlight_pin.number);
+    }
 
     return true;
 }
@@ -1295,25 +1307,39 @@ TinyCLR_Result AT91_Display_Acquire(const TinyCLR_Display_Provider* self) {
 
     m_AT91_Display_VituralRam = (uint16_t*)m_AT91_Display_ReservedVitualRamLocation;
 
+    if (!AT91_Display_SetPinConfiguration(true)) {
+        return TinyCLR_Result::SharingViolation;
+    }
+
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Display_Release(const TinyCLR_Display_Provider* self) {
-    if (AT91_Display_Uninitialize())
-        return TinyCLR_Result::Success;
+    AT91_Display_Uninitialize();
 
-    return  TinyCLR_Result::InvalidOperation;
+    AT91_Display_SetPinConfiguration(false);
+
+    m_AT91_DisplayEnable = false;
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Display_Enable(const TinyCLR_Display_Provider* self) {
-    if (AT91_Display_SetPinConfiguration() && AT91_Display_Initialize())
+    if (m_AT91_DisplayEnable || AT91_Display_Initialize()) {
+        m_AT91_DisplayEnable = true;
+
         return TinyCLR_Result::Success;
+    }
 
     return TinyCLR_Result::InvalidOperation;
 }
 
 TinyCLR_Result AT91_Display_Disable(const TinyCLR_Display_Provider* self) {
-    return TinyCLR_Result::NotSupported;
+    AT91_Display_Uninitialize();
+
+    m_AT91_DisplayEnable = false;
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Display_SetConfiguration(const TinyCLR_Display_Provider* self, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration) {
@@ -1426,7 +1452,7 @@ void AT91_Display_Reset() {
     AT91_Display_Clear();
 
     if (m_AT91_DisplayEnable)
-        AT91_Display_Uninitialize();
+        AT91_Display_Release(&displayProvider);
 
     m_AT91_DisplayEnable = false;
 }
