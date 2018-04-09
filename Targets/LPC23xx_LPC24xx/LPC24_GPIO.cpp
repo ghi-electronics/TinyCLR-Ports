@@ -141,14 +141,10 @@ const TinyCLR_Api_Info* LPC24_Gpio_GetApi() {
 }
 
 TinyCLR_Result LPC24_Gpio_Acquire(const TinyCLR_Gpio_Provider* self) {
-    LPC24_Gpio_Reset();
-
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Gpio_Release(const TinyCLR_Gpio_Provider* self) {
-    LPC24_Gpio_Reset();
-
     return TinyCLR_Result::Success;
 }
 

@@ -74,14 +74,10 @@ const TinyCLR_Api_Info* AT91_Gpio_GetApi() {
 }
 
 TinyCLR_Result AT91_Gpio_Acquire(const TinyCLR_Gpio_Provider* self) {
-    AT91_Gpio_Reset();
-
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Gpio_Release(const TinyCLR_Gpio_Provider* self) {
-    AT91_Gpio_Reset();
-
     return TinyCLR_Result::Success;
 }
 

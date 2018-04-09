@@ -73,14 +73,10 @@ const TinyCLR_Api_Info* STM32F4_Gpio_GetApi() {
 }
 
 TinyCLR_Result STM32F4_Gpio_Acquire(const TinyCLR_Gpio_Provider* self) {
-    STM32F4_Gpio_Reset();
-
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Gpio_Release(const TinyCLR_Gpio_Provider* self) {
-    STM32F4_Gpio_Reset();
-
     return TinyCLR_Result::Success;
 }
 

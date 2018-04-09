@@ -94,14 +94,10 @@ const TinyCLR_Api_Info* LPC17_Gpio_GetApi() {
 }
 
 TinyCLR_Result LPC17_Gpio_Acquire(const TinyCLR_Gpio_Provider* self) {
-    LPC17_Gpio_Reset();
-
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC17_Gpio_Release(const TinyCLR_Gpio_Provider* self) {
-    LPC17_Gpio_Reset();
-
     return TinyCLR_Result::Success;
 }
 
