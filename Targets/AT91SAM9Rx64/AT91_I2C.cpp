@@ -417,8 +417,6 @@ TinyCLR_Result AT91_I2c_Release(const TinyCLR_I2c_Provider* self) {
     // disable all the interrupt
     I2C.TWI_IDR = AT91_I2C::TWI_IDR_NACK | AT91_I2C::TWI_IDR_RXRDY | AT91_I2C::TWI_IDR_TXCOMP | AT91_I2C::TWI_IDR_TXRDY;
 
-
-
     if (g_I2cConfiguration[self->Index].isOpened) {
         AT91_Gpio_ClosePin(g_i2c_sda_pins[self->Index].number);
         AT91_Gpio_ClosePin(g_i2c_scl_pins[self->Index].number);
