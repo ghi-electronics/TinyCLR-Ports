@@ -1171,6 +1171,10 @@ bool STM32F4_UsbClient_Uninitialize(int controller) {
 
     RCC->AHB2ENR &= ~RCC_AHB2ENR_OTGFSEN;
 
+    USB_CONTROLLER_STATE *State = &STM32F4_UsbClient_ControllerState[controller].state;
+
+    State->CurrentState = USB_DEVICE_STATE_UNINITIALIZED;
+
     return true;
 }
 

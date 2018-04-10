@@ -177,8 +177,6 @@ struct USB_CONTROLLER_STATE {
     uint8_t*                                                    ResidualData;
     uint16_t                                                    ResidualCount;
     uint16_t                                                    Expected;
-
-    bool                                                        Configured;
 };
 
 // USB 2.0 request packet from host
@@ -308,7 +306,6 @@ extern void  LPC17_UsbClient_StateCallback(USB_CONTROLLER_STATE* State);
 
 
 bool LPC17_UsbClient_Initialize(int controller);
-bool LPC17_UsbClient_SoftReset(int controller);
 bool LPC17_UsbClient_Uninitialize(int controller);
 bool LPC17_UsbClient_StartOutput(USB_CONTROLLER_STATE* State, int endpoint);
 bool LPC17_UsbClient_RxEnable(USB_CONTROLLER_STATE* State, int endpoint);
@@ -652,9 +649,6 @@ bool UsbClient_Driver::Initialize(int controller) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (State == nullptr)
-        return false;
-
     // Init UsbDefaultConfiguration
     memset(&UsbDefaultConfiguration, 0, sizeof(USB_DYNAMIC_CONFIGURATION));
 
@@ -675,9 +669,6 @@ bool UsbClient_Driver::Initialize(int controller) {
 
     UsbDefaultConfiguration.endList = (TinyCLR_UsbClient_DescriptorHeader*)&usbDescriptorHeader;
 
-    if (State->Configured)
-        return true;
-
     // Init Usb State
     memset(State, 0, sizeof(USB_CONTROLLER_STATE));
 
@@ -688,7 +679,6 @@ bool UsbClient_Driver::Initialize(int controller) {
     State->EndpointCount = LPC17_USB_QUEUE_SIZE;
     State->PacketSize = 64;
     State->Initialized = true;
-    State->Configured = false;
 
     for (auto i = 0; i < LPC17_USB_QUEUE_SIZE; i++) {
         State->pipes[i].RxEP = USB_NULL_ENDPOINT;
@@ -701,12 +691,6 @@ bool UsbClient_Driver::Initialize(int controller) {
 
 bool UsbClient_Driver::Uninitialize(int controller) {
     USB_CONTROLLER_STATE *State = &UsbControllerState[controller];
-
-    if (State == nullptr)
-        return false;
-
-    if (State->Configured)
-        return true;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -840,11 +824,6 @@ bool UsbClient_Driver::OpenPipe(int controller, int32_t& usbPipe, TinyCLR_UsbCli
     if (State->CurrentState == USB_DEVICE_STATE_UNINITIALIZED) {
         LPC17_UsbClient_Initialize(controller);
     }
-    else if (State->Configured) {
-        LPC17_UsbClient_SoftReset(controller);
-    }
-
-    State->Configured = true;
 
     return true;
 }
@@ -1922,8 +1901,6 @@ const TinyCLR_Api_Info* LPC17_UsbClient_GetApi() {
     usbClientApi.Version = 0;
     usbClientApi.Count = 1;
     usbClientApi.Implementation = &usbClientProvider;
-
-    LPC17_UsbClient_SoftReset(usbClientProvider.Index);
 
     return &usbClientApi;
 }
@@ -4610,7 +4587,6 @@ struct LPC17xx_USB_Driver {
 
     uint8_t                   PreviousDeviceState;
     uint8_t                   RxExpectedToggle[c_Used_Endpoints];
-    bool                    PinsProtected;
     bool                    FirstDescriptorPacket;
 
 #if defined(USB_METRIC_COUNTING)
@@ -4990,7 +4966,6 @@ bool LPC17xx_USB_Driver::Initialize(int Controller) {
     }
 
     g_LPC17xx_USB_Driver.pUsbControllerState = &State;
-    g_LPC17xx_USB_Driver.PinsProtected = true;
 
     State.EndpointStatus = &g_LPC17xx_USB_Driver.EndpointStatus[0];
     State.EndpointCount = c_Used_Endpoints;
@@ -4998,7 +4973,7 @@ bool LPC17xx_USB_Driver::Initialize(int Controller) {
 
     State.FirstGetDescriptor = true;
 
-    ProtectPins(Controller, false);
+    ProtectPins(Controller, true);
 
     return true;
 }
@@ -5006,14 +4981,17 @@ bool LPC17xx_USB_Driver::Initialize(int Controller) {
 bool LPC17xx_USB_Driver::Uninitialize(int Controller) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    ProtectPins(Controller, true);
+    ProtectPins(Controller, false);
 
     g_LPC17xx_USB_Driver.pUsbControllerState = nullptr;
 
-    //LPC17_Interrupt_Deactivate( LPC17xx_AITC::c_IRQ_INDEX_USB_CLIENT );
     LPC17_Interrupt_Deactivate(USB_IRQn);
 
     memset(UsbControllerState, 0, sizeof(USB_CONTROLLER_STATE));
+
+    USB_CONTROLLER_STATE  &State = UsbControllerState[Controller];
+
+    State.CurrentState = USB_DEVICE_STATE_UNINITIALIZED;
 
     return true;
 }
@@ -5094,12 +5072,6 @@ void LPC17xx_USB_Driver::ClearTxQueue(USB_CONTROLLER_STATE* State, int endpoint)
     usb_fifo_buffer_in[endpoint] = usb_fifo_buffer_out[endpoint] = usb_fifo_buffer_count[endpoint] = 0;
 }
 
-
-bool LPC17_UsbClient_SoftReset(int controller) {
-    LPC17_Interrupt_Activate(USB_IRQn, (uint32_t*)&LPC17xx_USB_Driver::Global_ISR, 0);
-
-    return true;
-}
 //--//
 void LPC17xx_USB_Driver::StartHardware() {
     //   PCONP |= 0x80000000;
@@ -5517,38 +5489,23 @@ bool LPC17xx_USB_Driver::ProtectPins(int Controller, bool On) {
     // Initialized yet?
     if (State) {
         if (On) {
-            if (!g_LPC17xx_USB_Driver.PinsProtected) {
-                // Disable the USB com, state change from Not protected to Protected
-                g_LPC17xx_USB_Driver.PinsProtected = true;
+            State->DeviceState = USB_DEVICE_STATE_ATTACHED;
 
-                USB_Reset();
-                USB_DeviceAddress = 0;
+            LPC17_UsbClient_StateCallback(State);
 
-                StopHardware();
-            }
+            StartHardware();
         }
         else {
-            if (g_LPC17xx_USB_Driver.PinsProtected) {
-                // Ready for USB to enable, state change from Protected to Not protected
-                g_LPC17xx_USB_Driver.PinsProtected = false;
+            USB_Reset();
 
-                // enable the clock,
-                // set USB to attached/powered
-                // set the device to a known state- Attached before it is set to the powered state (USB specf 9.1.1)
-                //CPU_GPIO_EnableInputPin(LPC17xx_USB::c_USBC_GPION_DET, false, nullptr, GPIO_INT_NONE, RESISTOR_DISABLED);
-                //CPU_GPIO_EnableOutputPin(LPC17xx_USB::c_USBC_GPIOX_EN, false);       // Don't signal the host yet
-                State->DeviceState = USB_DEVICE_STATE_ATTACHED;
+            USB_DeviceAddress = 0;
 
-                LPC17_UsbClient_StateCallback(State);
-
-                StartHardware();
-            }
+            StopHardware();
         }
 
         return true;
     }
-    else {
-        return false;
-    }
+
+    return false;
 }
 
