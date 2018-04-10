@@ -2621,8 +2621,6 @@ bool AT91_USBHS_Driver::Initialize(int Controller) {
 bool AT91_USBHS_Driver::Uninitialize(int Controller) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    USB_CONTROLLER_STATE  &State = UsbControllerState[Controller];
-
     AT91_PMC_DisableUTMIBIAS();
     AT91_PMC_DisableUSBClock();
 
@@ -2631,6 +2629,10 @@ bool AT91_USBHS_Driver::Uninitialize(int Controller) {
     AT91_Interrupt_Deactivate(AT91C_ID_UDPHS);
 
     g_AT91_USBHS_Driver.pUsbControllerState = nullptr;
+
+    memset(UsbControllerState, 0, sizeof(USB_CONTROLLER_STATE));
+
+    USB_CONTROLLER_STATE  &State = UsbControllerState[Controller];
 
     State.CurrentState = USB_DEVICE_STATE_UNINITIALIZED;
 

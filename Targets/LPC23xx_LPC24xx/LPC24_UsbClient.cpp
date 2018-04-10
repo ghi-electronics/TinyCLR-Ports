@@ -2429,10 +2429,13 @@ bool LPC24_USB_Driver::Uninitialize(int Controller) {
 
     g_LPC24_USB_Driver.pUsbControllerState = nullptr;
 
-    //LPC24_Interrupt_Deactivate( LPC24_AITC::c_IRQ_INDEX_USB_CLIENT );
     LPC24_Interrupt_Deactivate(USB_IRQn);
 
     memset(UsbControllerState, 0, sizeof(USB_CONTROLLER_STATE));
+
+    USB_CONTROLLER_STATE  &State = UsbControllerState[Controller];
+
+    State.CurrentState = USB_DEVICE_STATE_UNINITIALIZED;
 
     return true;
 }
