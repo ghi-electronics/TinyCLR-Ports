@@ -188,7 +188,7 @@ TinyCLR_Result STM32F7_Uart_SetWriteBufferSize(const TinyCLR_Uart_Provider* self
     return TinyCLR_Result::Success;
 }
 
-void STM32F7_Uart_IrqRx(int portNum) {
+void STM32F7_Uart_IrqRx(int portNum, uint16_t sr) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint8_t data = (uint8_t)(g_UartController[portNum].portPtr->RDR); // read RX data
@@ -209,6 +209,17 @@ void STM32F7_Uart_IrqRx(int portNum) {
 
     if (g_UartController[portNum].dataReceivedEventHandler != nullptr)
         g_UartController[portNum].dataReceivedEventHandler(g_UartController[portNum].provider, 1);
+
+    if (g_UartController[portNum].errorEventHandler != nullptr) {
+        if (sr & USART_ISR_ORE)
+            g_UartController[portNum].errorEventHandler(g_UartController[portNum].provider, TinyCLR_Uart_Error::BufferOverrun);
+
+        if (sr & USART_ISR_FE)
+            g_UartController[portNum].errorEventHandler(g_UartController[portNum].provider, TinyCLR_Uart_Error::Frame);
+
+        if (sr & USART_ISR_PE)
+            g_UartController[portNum].errorEventHandler(g_UartController[portNum].provider, TinyCLR_Uart_Error::ReceiveParity);
+    }
 }
 
 void STM32F7_Uart_IrqTx(int portNum) {
@@ -232,83 +243,61 @@ void STM32F7_Uart_IrqTx(int portNum) {
     }
 }
 
+void STM32F7_Uart_InterruptHandler(int8_t portNum, uint16_t sr) {
+    if (sr & USART_ISR_RXNE)
+        STM32F7_Uart_IrqRx(portNum, sr);
+
+    if (sr & USART_ISR_TXE)
+        STM32F7_Uart_IrqTx(portNum);
+}
+
 void STM32F7_Uart_Interrupt0(void* param) {
     uint16_t sr = USART1->ISR;
 
-    if (sr & (USART_ISR_RXNE | USART_ISR_ORE))
-        STM32F7_Uart_IrqRx(0);
-
-    if (sr & USART_ISR_TXE)
-        STM32F7_Uart_IrqTx(0);
+    STM32F7_Uart_InterruptHandler(0, sr);
 }
 
 void STM32F7_Uart_Interrupt1(void* param) {
     uint16_t sr = USART2->ISR;
 
-    if (sr & (USART_ISR_RXNE | USART_ISR_ORE))
-        STM32F7_Uart_IrqRx(1);
-
-    if (sr & USART_ISR_TXE)
-        STM32F7_Uart_IrqTx(1);
+    STM32F7_Uart_InterruptHandler(1, sr);
 }
 
 #if !defined(STM32F401xE) && !defined(STM32F411xE)
 void STM32F7_Uart_Interrupt2(void* param) {
     uint16_t sr = USART3->ISR;
 
-    if (sr & (USART_ISR_RXNE | USART_ISR_ORE))
-        STM32F7_Uart_IrqRx(2);
-
-    if (sr & USART_ISR_TXE)
-        STM32F7_Uart_IrqTx(2);
+    STM32F7_Uart_InterruptHandler(2, sr);
 }
 
 void STM32F7_Uart_Interrupt3(void* param) {
     uint16_t sr = UART4->ISR;
 
-    if (sr & (USART_ISR_RXNE | USART_ISR_ORE))
-        STM32F7_Uart_IrqRx(3);
-    if (sr & USART_ISR_TXE)
-        STM32F7_Uart_IrqTx(3);
+    STM32F7_Uart_InterruptHandler(3, sr);
 }
 
 void STM32F7_Uart_Interrupt4(void* param) {
     uint16_t sr = UART5->ISR;
 
-    if (sr & (USART_ISR_RXNE | USART_ISR_ORE))
-        STM32F7_Uart_IrqRx(4);
-    if (sr & USART_ISR_TXE)
-        STM32F7_Uart_IrqTx(4);
+    STM32F7_Uart_InterruptHandler(4, sr);
 }
 
 void STM32F7_Uart_Interrupt5(void* param) {
     uint16_t sr = USART6->ISR;
 
-    if (sr & (USART_ISR_RXNE | USART_ISR_ORE))
-        STM32F7_Uart_IrqRx(5);
-
-    if (sr & USART_ISR_TXE)
-        STM32F7_Uart_IrqTx(5);
+    STM32F7_Uart_InterruptHandler(5, sr);
 }
 
 void STM32F7_Uart_Interrupt6(void* param) {
     uint16_t sr = UART7->ISR;
 
-    if (sr & (USART_ISR_RXNE | USART_ISR_ORE))
-        STM32F7_Uart_IrqRx(6);
-
-    if (sr & USART_ISR_TXE)
-        STM32F7_Uart_IrqTx(6);
+    STM32F7_Uart_InterruptHandler(6, sr);
 }
 
 void STM32F7_Uart_Interrupt7(void* param) {
     uint16_t sr = UART8->ISR;
 
-    if (sr & (USART_ISR_RXNE | USART_ISR_ORE))
-        STM32F7_Uart_IrqRx(7);
-
-    if (sr & USART_ISR_TXE)
-        STM32F7_Uart_IrqTx(7);
+    STM32F7_Uart_InterruptHandler(7, sr);
 }
 #endif
 

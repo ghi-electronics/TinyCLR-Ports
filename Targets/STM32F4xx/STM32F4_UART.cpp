@@ -191,7 +191,7 @@ TinyCLR_Result STM32F4_Uart_SetWriteBufferSize(const TinyCLR_Uart_Provider* self
     return TinyCLR_Result::Success;
 }
 
-void STM32F4_Uart_IrqRx(int portNum) {
+void STM32F4_Uart_IrqRx(int portNum, uint16_t sr) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint8_t data = (uint8_t)(g_UartController[portNum].portPtr->DR); // read RX data
@@ -212,6 +212,17 @@ void STM32F4_Uart_IrqRx(int portNum) {
 
     if (g_UartController[portNum].dataReceivedEventHandler != nullptr)
         g_UartController[portNum].dataReceivedEventHandler(g_UartController[portNum].provider, 1);
+
+    if (g_UartController[portNum].errorEventHandler != nullptr) {
+        if (sr & USART_SR_ORE)
+            g_UartController[portNum].errorEventHandler(g_UartController[portNum].provider, TinyCLR_Uart_Error::BufferOverrun);
+
+        if (sr & USART_SR_FE)
+            g_UartController[portNum].errorEventHandler(g_UartController[portNum].provider, TinyCLR_Uart_Error::Frame);
+
+        if (sr & USART_SR_PE)
+            g_UartController[portNum].errorEventHandler(g_UartController[portNum].provider, TinyCLR_Uart_Error::ReceiveParity);
+    }
 }
 
 void STM32F4_Uart_IrqTx(int portNum) {
@@ -235,12 +246,12 @@ void STM32F4_Uart_IrqTx(int portNum) {
     }
 }
 
-void STM32F4_Uart_InterruptHandler(int8_t uartIndex, uint16_t sr) {
-    if (sr & (USART_SR_RXNE | USART_SR_ORE))
-        STM32F4_Uart_IrqRx(uartIndex);
+void STM32F4_Uart_InterruptHandler(int8_t portNum, uint16_t sr) {
+    if (sr & USART_SR_RXNE)
+        STM32F4_Uart_IrqRx(portNum, sr);
 
     if (sr & USART_SR_TXE)
-        STM32F4_Uart_IrqTx(uartIndex);
+        STM32F4_Uart_IrqTx(portNum);
 }
 
 void STM32F4_Uart_Interrupt0(void* param) {
