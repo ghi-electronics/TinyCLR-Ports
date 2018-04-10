@@ -309,7 +309,6 @@ extern void  AT91_UsbClient_StateCallback(USB_CONTROLLER_STATE* State);
 
 
 bool AT91_UsbClient_Initialize(int controller);
-bool AT91_UsbClient_SoftReset(int controller);
 bool AT91_UsbClient_Uninitialize(int controller);
 bool AT91_UsbClient_StartOutput(USB_CONTROLLER_STATE* State, int endpoint);
 bool AT91_UsbClient_RxEnable(USB_CONTROLLER_STATE* State, int endpoint);
@@ -506,7 +505,7 @@ uint8_t USB_LanguageDescriptor[USB_LANGUAGE_DESCRIPTOR_SIZE] =
 };
 
 // Device descriptor
-const TinyCLR_UsbClient_DeviceDescriptor _deviceDescriptor = {
+TinyCLR_UsbClient_DeviceDescriptor deviceDescriptor = {
 
     {
         USB_DEVICE_DESCRIPTOR_MARKER,
@@ -531,7 +530,7 @@ const TinyCLR_UsbClient_DeviceDescriptor _deviceDescriptor = {
 
 
 // Configuration descriptor
-const TinyCLR_UsbClient_ConfigurationDescriptor _configDescriptor = {
+TinyCLR_UsbClient_ConfigurationDescriptor configDescriptor = {
     {
         USB_CONFIGURATION_DESCRIPTOR_MARKER,
         0,
@@ -578,7 +577,7 @@ const TinyCLR_UsbClient_ConfigurationDescriptor _configDescriptor = {
 };
 
 // Manufacturer name string descriptor header
-const TinyCLR_UsbClient_StringDescriptorHeader _stringManufacturerDescriptorHeader = {
+TinyCLR_UsbClient_StringDescriptorHeader stringManufacturerDescriptorHeader = {
         {
             USB_STRING_DESCRIPTOR_MARKER,
             MANUFACTURER_NAME_INDEX,
@@ -590,7 +589,7 @@ const TinyCLR_UsbClient_StringDescriptorHeader _stringManufacturerDescriptorHead
 };
 
 // Product name string descriptor header
-const TinyCLR_UsbClient_StringDescriptorHeader _stringProductNameDescriptorHeader = {
+TinyCLR_UsbClient_StringDescriptorHeader stringProductNameDescriptorHeader = {
     {
         USB_STRING_DESCRIPTOR_MARKER,
         PRODUCT_NAME_INDEX,
@@ -602,7 +601,7 @@ const TinyCLR_UsbClient_StringDescriptorHeader _stringProductNameDescriptorHeade
 };
 
 // String 4 descriptor header (display name)
-const TinyCLR_UsbClient_StringDescriptorHeader _stringDisplayNameDescriptorHeader = {
+TinyCLR_UsbClient_StringDescriptorHeader stringDisplayNameDescriptorHeader = {
     {
         USB_STRING_DESCRIPTOR_MARKER,
         USB_DISPLAY_STRING_NUM,
@@ -614,7 +613,7 @@ const TinyCLR_UsbClient_StringDescriptorHeader _stringDisplayNameDescriptorHeade
 };
 
 // String 5 descriptor header (friendly name)
-const TinyCLR_UsbClient_StringDescriptorHeader _stringFriendlyNameDescriptorHeader = {
+TinyCLR_UsbClient_StringDescriptorHeader stringFriendlyNameDescriptorHeader = {
     {
         USB_STRING_DESCRIPTOR_MARKER,
         USB_FRIENDLY_STRING_NUM,
@@ -635,7 +634,7 @@ TinyCLR_UsbClient_XCompatibleOsId AT91_UsbClient_XCompatibleOsId;
 TinyCLR_UsbClient_XPropertiesOsWinUsb AT91_UsbClient_XPropertiesOsWinUsb;
 
 // End of configuration marker
-TinyCLR_UsbClient_DescriptorHeader usbDescriptorHeader = {
+const TinyCLR_UsbClient_DescriptorHeader usbDescriptorHeader = {
     USB_END_DESCRIPTOR_MARKER,
     0,
     0
@@ -647,33 +646,14 @@ USB_DYNAMIC_CONFIGURATION UsbDefaultConfiguration;
 TinyCLR_UsbClient_DataReceivedHandler UsbClient_Driver::DataReceivedHandler;
 TinyCLR_UsbClient_OsExtendedPropertyHandler UsbClient_Driver::OsExtendedPropertyHandler;
 
-TinyCLR_UsbClient_DeviceDescriptor deviceDescriptor;
-TinyCLR_UsbClient_ConfigurationDescriptor configDescriptor;
-TinyCLR_UsbClient_StringDescriptorHeader stringManufacturerDescriptorHeader;
-TinyCLR_UsbClient_StringDescriptorHeader stringProductNameDescriptorHeader;
-TinyCLR_UsbClient_StringDescriptorHeader stringDisplayNameDescriptorHeader;
-TinyCLR_UsbClient_StringDescriptorHeader stringFriendlyNameDescriptorHeader;
-
 bool UsbClient_Driver::Initialize(int controller) {
 
     USB_CONTROLLER_STATE *State = &UsbControllerState[controller];
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (State == nullptr)
-        return false;
-
     // Init UsbDefaultConfiguration
     memset(&UsbDefaultConfiguration, 0, sizeof(USB_DYNAMIC_CONFIGURATION));
-
-
-
-    memcpy((uint8_t*)&deviceDescriptor, (uint8_t*)&_deviceDescriptor, sizeof(TinyCLR_UsbClient_DeviceDescriptor));
-    memcpy((uint8_t*)&configDescriptor, (uint8_t*)&_configDescriptor, sizeof(TinyCLR_UsbClient_ConfigurationDescriptor));
-    memcpy((uint8_t*)&stringManufacturerDescriptorHeader, (uint8_t*)&_stringManufacturerDescriptorHeader, sizeof(TinyCLR_UsbClient_StringDescriptorHeader));
-    memcpy((uint8_t*)&stringProductNameDescriptorHeader, (uint8_t*)&_stringProductNameDescriptorHeader, sizeof(TinyCLR_UsbClient_StringDescriptorHeader));
-    memcpy((uint8_t*)&stringDisplayNameDescriptorHeader, (uint8_t*)&_stringDisplayNameDescriptorHeader, sizeof(TinyCLR_UsbClient_StringDescriptorHeader));
-    memcpy((uint8_t*)&stringFriendlyNameDescriptorHeader, (uint8_t*)&_stringFriendlyNameDescriptorHeader, sizeof(TinyCLR_UsbClient_StringDescriptorHeader));
 
     configDescriptor.epWrite.bEndpointAddress = USB_ENDPOINT_DIRECTION_IN;
     configDescriptor.epRead.bEndpointAddress = USB_ENDPOINT_DIRECTION_OUT;
@@ -692,9 +672,6 @@ bool UsbClient_Driver::Initialize(int controller) {
 
     UsbDefaultConfiguration.endList = (TinyCLR_UsbClient_DescriptorHeader*)&usbDescriptorHeader;
 
-    if (State->Configured)
-        return true;
-
     // Init Usb State
     memset(State, 0, sizeof(USB_CONTROLLER_STATE));
 
@@ -705,7 +682,6 @@ bool UsbClient_Driver::Initialize(int controller) {
     State->EndpointCount = AT91_USB_QUEUE_SIZE;
     State->PacketSize = 64;
     State->Initialized = true;
-    State->Configured = false;
 
     for (auto i = 0; i < AT91_USB_QUEUE_SIZE; i++) {
         State->pipes[i].RxEP = USB_NULL_ENDPOINT;
@@ -718,12 +694,6 @@ bool UsbClient_Driver::Initialize(int controller) {
 
 bool UsbClient_Driver::Uninitialize(int controller) {
     USB_CONTROLLER_STATE *State = &UsbControllerState[controller];
-
-    if (State == nullptr)
-        return false;
-
-    if (State->Configured)
-        return true;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -856,11 +826,6 @@ bool UsbClient_Driver::OpenPipe(int controller, int32_t& usbPipe, TinyCLR_UsbCli
     if (State->CurrentState == USB_DEVICE_STATE_UNINITIALIZED) {
         AT91_UsbClient_Initialize(controller);
     }
-    else if (State->Configured) {
-        AT91_UsbClient_SoftReset(controller);
-    }
-
-    State->Configured = true;
 
     return true;
 }
@@ -886,7 +851,7 @@ bool UsbClient_Driver::ClosePipe(int controller, int usbPipe) {
 
     // Close the TX pipe
     endpoint = State->pipes[usbPipe].TxEP;
-    if (endpoint != USB_NULL_ENDPOINT && State->Queues[endpoint]) {
+    if (endpoint != USB_NULL_ENDPOINT && State->Queues[endpoint] != nullptr) {
         usb_fifo_buffer_in[endpoint] = usb_fifo_buffer_out[endpoint] = usb_fifo_buffer_count[endpoint] = 0;
 
         if (apiProvider != nullptr) {
@@ -1939,8 +1904,6 @@ const TinyCLR_Api_Info* AT91_UsbClient_GetApi() {
     usbClientApi.Count = 1;
     usbClientApi.Implementation = &usbClientProvider;
 
-    AT91_UsbClient_SoftReset(usbClientProvider.Index);
-
     return &usbClientApi;
 }
 
@@ -2571,12 +2534,14 @@ bool AT91_USBHS_Driver::ProtectPins(int Controller, bool On) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (On) {
-        if (!g_AT91_USBHS_Driver.PinsProtected) {
-            // Disable the USB com, state change from Not protected to Protected
-            g_AT91_USBHS_Driver.PinsProtected = true;
+    if (State) {
+        if (On) {
+            AT91_UsbClient_VbusInterruptHandler(0, true, nullptr);
 
-            // clear USB Txbuffer
+            struct AT91_UDPHS *pUdp = (struct AT91_UDPHS *) AT91C_BASE_UDP;
+            pUdp->UDPHS_CTRL &= ~AT91C_UDPHS_DETACH; // attach*)
+        }
+        else {
             for (int ep = 0; ep < c_Used_Endpoints; ep++) {
                 if (State->Queues[ep] && State->IsTxQueue[ep])
                     ClearTxQueue(State, ep);
@@ -2591,19 +2556,11 @@ bool AT91_USBHS_Driver::ProtectPins(int Controller, bool On) {
             State->DeviceState = USB_DEVICE_STATE_DETACHED;
             AT91_UsbClient_StateCallback(State);
         }
-    }
-    else {
-        if (g_AT91_USBHS_Driver.PinsProtected) {
-            // Ready for USB to enable, state change from Protected to Not protected
-            g_AT91_USBHS_Driver.PinsProtected = false;
-            AT91_UsbClient_VbusInterruptHandler(0, true, nullptr);
 
-            struct AT91_UDPHS *pUdp = (struct AT91_UDPHS *) AT91C_BASE_UDP;
-            pUdp->UDPHS_CTRL &= ~AT91C_UDPHS_DETACH; // attach*)
-        }
+        return true;
     }
 
-    return true;
+    return false;
 
 }
 bool AT91_USBHS_Driver::Initialize(int Controller) {
@@ -2654,7 +2611,7 @@ bool AT91_USBHS_Driver::Initialize(int Controller) {
 
     State.FirstGetDescriptor = true;
 
-    ProtectPins(Controller, false);
+    ProtectPins(Controller, true);
 
     AT91_Time_Delay(nullptr, 100000); // 100ms
 
@@ -2664,22 +2621,23 @@ bool AT91_USBHS_Driver::Initialize(int Controller) {
 bool AT91_USBHS_Driver::Uninitialize(int Controller) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
+    USB_CONTROLLER_STATE  &State = UsbControllerState[Controller];
+
     AT91_PMC_DisableUTMIBIAS();
     AT91_PMC_DisableUSBClock();
 
-    ProtectPins(Controller, true);
+    ProtectPins(Controller, false);
 
     AT91_Interrupt_Deactivate(AT91C_ID_UDPHS);
 
     g_AT91_USBHS_Driver.pUsbControllerState = nullptr;
 
+    State.CurrentState = USB_DEVICE_STATE_UNINITIALIZED;
 
     return true;
 }
 
 bool AT91_USBHS_Driver::StartOutput(USB_CONTROLLER_STATE* State, int endpoint) {
-
-
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     struct AT91_UDPHS *pUdp = (struct AT91_UDPHS *) AT91C_BASE_UDP;
@@ -3029,12 +2987,9 @@ bool AT91_UsbClient_Initialize(int controller) {
 }
 
 bool AT91_UsbClient_Uninitialize(int controller) {
-    return  true; //AT91_USBHS_Driver::Uninitialize(controller);;
+    return AT91_USBHS_Driver::Uninitialize(controller);;
 }
 
-bool AT91_UsbClient_SoftReset(int controller) {
-    return AT91_Interrupt_Activate(AT91C_ID_UDPHS, (uint32_t*)&AT91_USBHS_Driver::AT91_UsbClent_InterruptHandler, nullptr);;
-}
 bool AT91_UsbClient_StartOutput(USB_CONTROLLER_STATE* State, int ep) {
     return AT91_USBHS_Driver::StartOutput(State, ep);
 }
