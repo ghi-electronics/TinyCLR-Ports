@@ -1359,70 +1359,11 @@ const TinyCLR_UsbClient_DescriptorHeader usbDescriptorHeader = {
 
 USB_DYNAMIC_CONFIGURATION UsbDefaultConfiguration;
 
-
 TinyCLR_UsbClient_DataReceivedHandler UsbClient_Driver::DataReceivedHandler;
 TinyCLR_UsbClient_OsExtendedPropertyHandler UsbClient_Driver::OsExtendedPropertyHandler;
 
-bool UsbClient_Driver::Initialize(int controller) {
-
-    USB_CONTROLLER_STATE *State = &STM32F4_UsbClient_ControllerState[controller].state;
-
-    DISABLE_INTERRUPTS_SCOPED(irq);
-
-    // Init UsbDefaultConfiguration
-    memset(&UsbDefaultConfiguration, 0, sizeof(USB_DYNAMIC_CONFIGURATION));
-
-    configDescriptor.epWrite.bEndpointAddress = USB_ENDPOINT_DIRECTION_IN;
-    configDescriptor.epRead.bEndpointAddress = USB_ENDPOINT_DIRECTION_OUT;
-
-    UsbDefaultConfiguration.device = (TinyCLR_UsbClient_DeviceDescriptor*)&deviceDescriptor;
-    UsbDefaultConfiguration.config = (TinyCLR_UsbClient_ConfigurationDescriptor*)&configDescriptor;
-
-    UsbDefaultConfiguration.manHeader = (TinyCLR_UsbClient_StringDescriptorHeader*)&stringManufacturerDescriptorHeader;
-    UsbDefaultConfiguration.prodHeader = (TinyCLR_UsbClient_StringDescriptorHeader*)&stringProductNameDescriptorHeader;
-    UsbDefaultConfiguration.displayStringHeader = (TinyCLR_UsbClient_StringDescriptorHeader*)&stringDisplayNameDescriptorHeader;
-    UsbDefaultConfiguration.friendlyStringHeader = (TinyCLR_UsbClient_StringDescriptorHeader*)&stringFriendlyNameDescriptorHeader;
-
-    UsbDefaultConfiguration.OS_String = (TinyCLR_UsbClient_OsStringDescriptor*)&STM32F4_UsbClient_OsStringDescriptor;
-    UsbDefaultConfiguration.OS_XCompatible_ID = (TinyCLR_UsbClient_XCompatibleOsId*)&STM32F4_UsbClient_XCompatibleOsId;
-    UsbDefaultConfiguration.OS_XProperty = (TinyCLR_UsbClient_XPropertiesOsWinUsb*)&STM32F4_UsbClient_XPropertiesOsWinUsb;
-
-    UsbDefaultConfiguration.endList = (TinyCLR_UsbClient_DescriptorHeader*)&usbDescriptorHeader;
-
-    // Init Usb State
-    memset(State, 0, sizeof(USB_CONTROLLER_STATE));
-
-    State->ControllerNum = controller;
-    State->Configuration = &UsbDefaultConfiguration;
-    State->CurrentState = USB_DEVICE_STATE_UNINITIALIZED;
-    State->DeviceStatus = USB_STATUS_DEVICE_SELF_POWERED;
-    State->EndpointCount = STM32F4_USB_FS_MAX_EP;
-    State->PacketSize = MAX_EP0_SIZE;
-    State->Initialized = true;
-
-    for (auto i = 0; i < STM32F4_USB_QUEUE_SIZE; i++) {
-        State->pipes[i].RxEP = USB_ENDPOINT_NULL;
-        State->pipes[i].TxEP = USB_ENDPOINT_NULL;
-        State->MaxPacketSize[i] = MAX_EP_SIZE;
-    }
-
-    return true;
-}
-
 bool UsbClient_Driver::Uninitialize(int controller) {
-    USB_CONTROLLER_STATE *State = &STM32F4_UsbClient_ControllerState[controller].state;
 
-    if (!State->Initialized)
-        return false;
-
-    DISABLE_INTERRUPTS_SCOPED(irq);
-
-    STM32F4_UsbClient_Uninitialize(controller);
-
-    State->Initialized = false;
-
-    // for soft reboot allow the USB to be off for at least 100ms
-    STM32F4_Time_Delay(nullptr, 100000); // 100ms
 
     return true;
 }
@@ -2299,14 +2240,65 @@ TinyCLR_Result STM32F4_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self)
 
     UsbClient_Driver::OsExtendedPropertyHandler(self, osStringDescriptor, xCompatibleOsId, xPropertiesOsWinUsb);
 
-    UsbClient_Driver::Initialize(controller);
+    USB_CONTROLLER_STATE *State = &STM32F4_UsbClient_ControllerState[controller].state;
+
+    DISABLE_INTERRUPTS_SCOPED(irq);
+
+    // Init UsbDefaultConfiguration
+    memset(&UsbDefaultConfiguration, 0, sizeof(USB_DYNAMIC_CONFIGURATION));
+
+    configDescriptor.epWrite.bEndpointAddress = USB_ENDPOINT_DIRECTION_IN;
+    configDescriptor.epRead.bEndpointAddress = USB_ENDPOINT_DIRECTION_OUT;
+
+    UsbDefaultConfiguration.device = (TinyCLR_UsbClient_DeviceDescriptor*)&deviceDescriptor;
+    UsbDefaultConfiguration.config = (TinyCLR_UsbClient_ConfigurationDescriptor*)&configDescriptor;
+
+    UsbDefaultConfiguration.manHeader = (TinyCLR_UsbClient_StringDescriptorHeader*)&stringManufacturerDescriptorHeader;
+    UsbDefaultConfiguration.prodHeader = (TinyCLR_UsbClient_StringDescriptorHeader*)&stringProductNameDescriptorHeader;
+    UsbDefaultConfiguration.displayStringHeader = (TinyCLR_UsbClient_StringDescriptorHeader*)&stringDisplayNameDescriptorHeader;
+    UsbDefaultConfiguration.friendlyStringHeader = (TinyCLR_UsbClient_StringDescriptorHeader*)&stringFriendlyNameDescriptorHeader;
+
+    UsbDefaultConfiguration.OS_String = (TinyCLR_UsbClient_OsStringDescriptor*)&STM32F4_UsbClient_OsStringDescriptor;
+    UsbDefaultConfiguration.OS_XCompatible_ID = (TinyCLR_UsbClient_XCompatibleOsId*)&STM32F4_UsbClient_XCompatibleOsId;
+    UsbDefaultConfiguration.OS_XProperty = (TinyCLR_UsbClient_XPropertiesOsWinUsb*)&STM32F4_UsbClient_XPropertiesOsWinUsb;
+
+    UsbDefaultConfiguration.endList = (TinyCLR_UsbClient_DescriptorHeader*)&usbDescriptorHeader;
+
+    // Init Usb State
+    memset(State, 0, sizeof(USB_CONTROLLER_STATE));
+
+    State->ControllerNum = controller;
+    State->Configuration = &UsbDefaultConfiguration;
+    State->CurrentState = USB_DEVICE_STATE_UNINITIALIZED;
+    State->DeviceStatus = USB_STATUS_DEVICE_SELF_POWERED;
+    State->EndpointCount = STM32F4_USB_FS_MAX_EP;
+    State->PacketSize = MAX_EP0_SIZE;
+    State->Initialized = true;
+
+    for (auto i = 0; i < STM32F4_USB_QUEUE_SIZE; i++) {
+        State->pipes[i].RxEP = USB_ENDPOINT_NULL;
+        State->pipes[i].TxEP = USB_ENDPOINT_NULL;
+        State->MaxPacketSize[i] = MAX_EP_SIZE;
+    }
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_UsbClient_Release(const TinyCLR_UsbClient_Provider* self) {
     int32_t controller = self->Index;
-    UsbClient_Driver::Uninitialize(controller);
+
+    USB_CONTROLLER_STATE *State = &STM32F4_UsbClient_ControllerState[controller].state;
+
+    if (State->Initialized) {
+        DISABLE_INTERRUPTS_SCOPED(irq);
+
+        STM32F4_UsbClient_Uninitialize(controller);
+
+        State->Initialized = false;
+
+        // for soft reboot allow the USB to be off for at least 100ms
+        STM32F4_Time_Delay(nullptr, 100000); // 100ms
+    }
 
     return TinyCLR_Result::Success;
 }
@@ -2575,16 +2567,11 @@ const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi() {
 }
 
 void STM32F4_UsbClient_Reset() {
-    for (auto controller = 0; controller < usbClientApi.Count; controller++) {
-        // Close all pipe if any opened
-        for (auto pipe = 0; pipe < STM32F4_USB_QUEUE_SIZE; pipe++) {
-            STM32F4_UsbClient_Close(&usbClientProvider, pipe);
-        }
-
-        // Close controller
-        UsbClient_Driver::Uninitialize(controller);
+    for (auto pipe = 0; pipe < STM32F4_USB_QUEUE_SIZE; pipe++) {
+        STM32F4_UsbClient_Close(&usbClientProvider, pipe);
     }
 
+    STM32F4_UsbClient_Release(&usbClientProvider);
 }
 
 void STM32F4_UsbClient_ClearEndpoints(int32_t endpoint) {
