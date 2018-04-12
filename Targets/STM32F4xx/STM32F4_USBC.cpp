@@ -35,9 +35,6 @@
 #define USB_SET_DESCRIPTOR       7
 #define USB_GET_CONFIGURATION    8
 #define USB_SET_CONFIGURATION    9
-#define USB_GET_INTERFACE       10
-#define USB_SET_INTERFACE       11
-#define USB_SYNCH_FRAME         12
 
 // USB 2.0 defined descriptor types
 #define USB_DEVICE_DESCRIPTOR_TYPE        1
@@ -47,34 +44,19 @@
 #define USB_ENDPOINT_DESCRIPTOR_TYPE      5
 
 // USB 2.0 host request type defines
-#define USB_SETUP_DIRECTION(n)          ((n) & 0x80)
-#define USB_SETUP_DIRECTION_DEVICE      0x00
-#define USB_SETUP_DIRECTION_HOST        0x80
-
-#define USB_SETUP_TYPE(n)        ((n) & 0x70)
-#define USB_SETUP_TYPE_STANDARD         0x00
-#define USB_SETUP_TYPE_CLASS            0x10
-#define USB_SETUP_TYPE_VENDOR           0x20
-#define USB_SETUP_TYPE_RESERVED         0x30
-
 #define USB_SETUP_RECIPIENT(n)          ((n) & 0x0F)
 #define USB_SETUP_RECIPIENT_DEVICE             0x00
 #define USB_SETUP_RECIPIENT_INTERFACE          0x01
 #define USB_SETUP_RECIPIENT_ENDPOINT           0x02
-#define USB_SETUP_RECIPIENT_OTHER              0x03
 
 // Local device status defines
-#define USB_STATUS_DEVICE_NONE           0x0000
 #define USB_STATUS_DEVICE_SELF_POWERED   0x0001
 #define USB_STATUS_DEVICE_REMOTE_WAKEUP  0x0002
 
-#define USB_STATUS_INTERFACE_NONE        0x0000
-
-#define USB_STATUS_ENDPOINT_NONE         0x0000
 #define USB_STATUS_ENDPOINT_HALT         0x0001
 
-#define USB_FEATURE_DEVICE_REMOTE_WAKEUP 0x0001
 #define USB_FEATURE_ENDPOINT_HALT        0x0000
+#define USB_FEATURE_DEVICE_REMOTE_WAKEUP 0x0001
 
 // Local device possible states
 #define USB_DEVICE_STATE_DETACHED       0
@@ -84,7 +66,6 @@
 #define USB_DEVICE_STATE_ADDRESS        4
 #define USB_DEVICE_STATE_CONFIGURED     5
 #define USB_DEVICE_STATE_SUSPENDED      6
-#define USB_DEVICE_STATE_NO_CONTROLLER  0xFE
 #define USB_DEVICE_STATE_UNINITIALIZED  0xFF
 
 // Possible responses to host requests
@@ -96,22 +77,15 @@
 #define USB_STATE_CONFIGURATION         5
 #define USB_STATE_REMOTE_WAKEUP         6
 
-#define USB_CURRENT_UNIT                2
-
 /////////////////////////////////////////////////////////////////////////
 // ATTENTION:
 // 2.0 is the lowest version that works with WinUSB on Windows 8!!!
 // use older values below if you do not care about that
-//
+/////////////////////////////////////////////////////////////////////////
 #define DEVICE_RELEASE_VERSION              0x0200
 
 //string descriptor
 #define USB_STRING_DESCRIPTOR_SIZE          32
-// NOTE: Having more than (probably) 32 characters causes the MFUSB KERNEL driver
-// to *CRASH* which, of course, causes Windows to crash
-
-// NOTE: If these two strings ( displayString, firendly )are not present, the MFUSB KERNEL driver will *CRASH*
-// which, of course, causes Windows to crash
 
 // index for the strings
 #define MANUFACTURER_NAME_INDEX             1
@@ -120,8 +94,7 @@
 
 // Configuration for extended descriptor
 #define OS_DESCRIPTOR_EX_VERSION            0x0100
-//
-/////////////////////////////////////////////////////////////////////////
+
 #define USB_DISPLAY_STRING_NUM     4
 #define USB_FRIENDLY_STRING_NUM    5
 
@@ -138,28 +111,14 @@ PACKED(struct) USB_SETUP_PACKET {
 };
 
 // USB 2.0 response structure lengths
-#define USB_STRING_DESCRIPTOR_MAX_LENGTH        126  // Maximum number of characters allowed in USB string descriptor
 #define USB_DEVICE_DESCRIPTOR_LENGTH             18
 #define USB_CONFIGURATION_DESCRIPTOR_LENGTH       9
 #define USB_STRING_DESCRIPTOR_HEADER_LENGTH       2
-// Sideshow descriptor lengths
-#define OS_DESCRIPTOR_STRING_SIZE                18
-#define OS_DESCRIPTOR_STRING_LENGTH               7
-#define USB_XCOMPATIBLE_OS_SIZE                  40
-#define USB_XPROPERTY_OS_SIZE_WINUSB     0x0000008E  // Size of this descriptor (78 bytes for guid + 40 bytes for the property name + 24 bytes for other fields = 142 bytes)
-#define USB_XCOMPATIBLE_OS_REQUEST                4
-#define USB_XPROPERTY_OS_REQUEST                  5
 
 /////////////////////////////////////////////////////////////////////////////////////
 // USB Configuration list structures
-// Dynamic USB controller configuration is implemented as a packed list of structures.
-// Each structure contains two parts: a header that describes the host request
-// the structure satisfies, and the exact byte by byte structure that satisfies
-// the host request.  The header also contains the size of the structure so that
-// the next structure in the list can be quickly located.
+/////////////////////////////////////////////////////////////////////////////////////
 
-// Marker values for the header portion of the USB configuration list structures.
-// These specify the type of host request that the structure satisfies
 #define USB_END_DESCRIPTOR_MARKER           0x00
 #define USB_DEVICE_DESCRIPTOR_MARKER        0x01
 #define USB_CONFIGURATION_DESCRIPTOR_MARKER 0x02
@@ -174,37 +133,14 @@ PACKED(struct) USB_SETUP_PACKET {
 // Endpoint Direction
 #define USB_ENDPOINT_DIRECTION_IN 0x80
 #define USB_ENDPOINT_DIRECTION_OUT 0x00
+#define USB_ENDPOINT_NULL 0xFF
 
 // Endpoint Attribute
-#define USB_ENDPOINT_ATTRIBUTE_ISOCHRONOUS 1
 #define USB_ENDPOINT_ATTRIBUTE_BULK 2
-#define USB_ENDPOINT_ATTRIBUTE_INTERRUPT 3
-
-// Generic Descriptor Header
-#define USB_REQUEST_TYPE_OUT       0x00
-#define USB_REQUEST_TYPE_IN        0x80
-#define USB_REQUEST_TYPE_STANDARD  0x00
-#define USB_REQUEST_TYPE_CLASS     0x20
-#define USB_REQUEST_TYPE_VENDOR    0x40
-#define USB_REQUEST_TYPE_DEVICE    0x00
-#define USB_REQUEST_TYPE_INTERFACE 0x01
-#define USB_REQUEST_TYPE_ENDPOINT  0x02
-
-//XProperties Os WinUsb
-#define EX_PROPERTY_DATA_TYPE__RESERVED                 0
-#define EX_PROPERTY_DATA_TYPE__REG_SZ                   1
-#define EX_PROPERTY_DATA_TYPE__REG_SZ_ENV               2
-#define EX_PROPERTY_DATA_TYPE__REG_BINARY               3
-#define EX_PROPERTY_DATA_TYPE__REG_DWORD_LITTLE_ENDIAN  4
-#define EX_PROPERTY_DATA_TYPE__REG_DWORD_BIG_ENDIAN     5
-#define EX_PROPERTY_DATA_TYPE__REG_LINK                 6
-#define EX_PROPERTY_DATA_TYPE__REG_MULTI_SZ             7
-
 
 PACKED(struct) USB_DYNAMIC_CONFIGURATION;
 
-//--//
-
+// usb fifo buffer
 static int usb_fifo_buffer_in[STM32F4_USB_QUEUE_SIZE];
 static int usb_fifo_buffer_out[STM32F4_USB_QUEUE_SIZE];
 static int usb_fifo_buffer_count[STM32F4_USB_QUEUE_SIZE];
@@ -217,8 +153,6 @@ struct USB_PACKET64 {
     uint32_t Size;
     uint8_t  Buffer[USB_MAX_DATA_PACKET_SIZE];
 };
-
-#define USB_NULL_ENDPOINT 0xFF
 
 struct USB_PIPE_MAP {
     uint8_t RxEP;
@@ -1332,7 +1266,7 @@ TinyCLR_UsbClient_ConfigurationDescriptor configDescriptor = {
     1,                                                  // Number of this configuration
     0,                                                  // Config descriptor string index (none)
     (USB_ATTRIBUTE_BASE | USB_ATTRIBUTE_SELF_POWER),    // Config attributes
-    (100 / USB_CURRENT_UNIT),                              // Device max current draw
+    50,                                                 // Device max current draw
 
     // Interface
     sizeof(TinyCLR_UsbClient_InterfaceDescriptor),
@@ -1470,12 +1404,12 @@ bool UsbClient_Driver::Initialize(int controller) {
     State->Initialized = true;
 
     for (auto i = 0; i < STM32F4_USB_QUEUE_SIZE; i++) {
-        State->pipes[i].RxEP = USB_NULL_ENDPOINT;
-        State->pipes[i].TxEP = USB_NULL_ENDPOINT;
+        State->pipes[i].RxEP = USB_ENDPOINT_NULL;
+        State->pipes[i].TxEP = USB_ENDPOINT_NULL;
         State->MaxPacketSize[i] = MAX_EP_SIZE;
     }
 
-    return State->Initialized;
+    return true;
 }
 
 bool UsbClient_Driver::Uninitialize(int controller) {
@@ -1502,8 +1436,8 @@ bool UsbClient_Driver::OpenPipe(int controller, int32_t& usbPipe, TinyCLR_UsbCli
     if (!State->Initialized)     // If no such controller exists (or it is not initialized)
         return false;
 
-    int32_t writeEp = USB_NULL_ENDPOINT;
-    int32_t readEp = USB_NULL_ENDPOINT;
+    int32_t writeEp = USB_ENDPOINT_NULL;
+    int32_t readEp = USB_ENDPOINT_NULL;
 
     if (mode != TinyCLR_UsbClient_PipeMode::InOut)
         return false;
@@ -1512,14 +1446,14 @@ bool UsbClient_Driver::OpenPipe(int controller, int32_t& usbPipe, TinyCLR_UsbCli
         if ((STM32F4_UsbClient_EndpointMap[i] & ENDPOINT_INUSED_MASK)) // in used
             continue;
 
-        if (writeEp == USB_NULL_ENDPOINT && ((STM32F4_UsbClient_EndpointMap[i] & ENDPOINT_DIR_IN_MASK) == ENDPOINT_DIR_IN_MASK)) {
+        if (writeEp == USB_ENDPOINT_NULL && ((STM32F4_UsbClient_EndpointMap[i] & ENDPOINT_DIR_IN_MASK) == ENDPOINT_DIR_IN_MASK)) {
             writeEp = i;
             STM32F4_UsbClient_EndpointMap[i] |= ENDPOINT_INUSED_MASK;
 
             continue;
         }
 
-        if (readEp == USB_NULL_ENDPOINT && ((STM32F4_UsbClient_EndpointMap[i] & ENDPOINT_DIR_OUT_MASK) == ENDPOINT_DIR_OUT_MASK)) {
+        if (readEp == USB_ENDPOINT_NULL && ((STM32F4_UsbClient_EndpointMap[i] & ENDPOINT_DIR_OUT_MASK) == ENDPOINT_DIR_OUT_MASK)) {
             readEp = i;
             STM32F4_UsbClient_EndpointMap[i] |= ENDPOINT_INUSED_MASK;
 
@@ -1531,22 +1465,22 @@ bool UsbClient_Driver::OpenPipe(int controller, int32_t& usbPipe, TinyCLR_UsbCli
         }
     }
     // Check the usbPipe and the two endpoint numbers for validity (both endpoints cannot be zero)
-    if ((readEp == USB_NULL_ENDPOINT && writeEp == USB_NULL_ENDPOINT)
-        || (readEp != USB_NULL_ENDPOINT && (readEp < 1 || readEp >= STM32F4_USB_QUEUE_SIZE))
-        || (writeEp != USB_NULL_ENDPOINT && (writeEp < 1 || writeEp >= STM32F4_USB_QUEUE_SIZE)))
+    if ((readEp == USB_ENDPOINT_NULL && writeEp == USB_ENDPOINT_NULL)
+        || (readEp != USB_ENDPOINT_NULL && (readEp < 1 || readEp >= STM32F4_USB_QUEUE_SIZE))
+        || (writeEp != USB_ENDPOINT_NULL && (writeEp < 1 || writeEp >= STM32F4_USB_QUEUE_SIZE)))
         return false;
 
     // The specified endpoints must not be in use by another pipe
     for (int pipe = 0; pipe < STM32F4_USB_QUEUE_SIZE; pipe++) {
-        if (readEp != USB_NULL_ENDPOINT && (State->pipes[pipe].RxEP == readEp || State->pipes[pipe].TxEP == readEp))
+        if (readEp != USB_ENDPOINT_NULL && (State->pipes[pipe].RxEP == readEp || State->pipes[pipe].TxEP == readEp))
             return false;
-        if (writeEp != USB_NULL_ENDPOINT && (State->pipes[pipe].RxEP == writeEp || State->pipes[pipe].TxEP == writeEp))
+        if (writeEp != USB_ENDPOINT_NULL && (State->pipes[pipe].RxEP == writeEp || State->pipes[pipe].TxEP == writeEp))
             return false;
     }
 
     for (usbPipe = 0; usbPipe < STM32F4_USB_QUEUE_SIZE; usbPipe++) {
         // The Pipe must be currently closed
-        if (State->pipes[usbPipe].RxEP == USB_NULL_ENDPOINT && State->pipes[usbPipe].TxEP == USB_NULL_ENDPOINT)
+        if (State->pipes[usbPipe].RxEP == USB_ENDPOINT_NULL && State->pipes[usbPipe].TxEP == USB_ENDPOINT_NULL)
             break;
     }
 
@@ -1622,17 +1556,17 @@ bool UsbClient_Driver::ClosePipe(int controller, int usbPipe) {
 
     // Close the Rx pipe
     endpoint = State->pipes[usbPipe].RxEP;
-    if (endpoint != USB_NULL_ENDPOINT && State->Queues[endpoint]) {
+    if (endpoint != USB_ENDPOINT_NULL && State->Queues[endpoint]) {
         STM32F4_UsbClient_ClearEndpoints(endpoint);
     }
 
-    State->pipes[usbPipe].RxEP = USB_NULL_ENDPOINT;
+    State->pipes[usbPipe].RxEP = USB_ENDPOINT_NULL;
     //Free endpoint
     STM32F4_UsbClient_EndpointMap[endpoint] &= ~ENDPOINT_INUSED_MASK;
 
     // Close the TX pipe
     endpoint = State->pipes[usbPipe].TxEP;
-    if (endpoint != USB_NULL_ENDPOINT && State->Queues[endpoint] != nullptr) {
+    if (endpoint != USB_ENDPOINT_NULL && State->Queues[endpoint] != nullptr) {
         STM32F4_UsbClient_ClearEndpoints(endpoint);
 
         if (apiProvider != nullptr) {
@@ -1645,7 +1579,7 @@ bool UsbClient_Driver::ClosePipe(int controller, int usbPipe) {
         }
     }
 
-    State->pipes[usbPipe].TxEP = USB_NULL_ENDPOINT;
+    State->pipes[usbPipe].TxEP = USB_ENDPOINT_NULL;
 
     //Free endpoint
     STM32F4_UsbClient_EndpointMap[endpoint] &= ~ENDPOINT_INUSED_MASK;
@@ -1668,7 +1602,7 @@ int UsbClient_Driver::Write(int controller, int usbPipe, const char* Data, size_
 
     endpoint = State->pipes[usbPipe].TxEP;
     // If no Write side to pipe (or if not yet open)
-    if (endpoint == USB_NULL_ENDPOINT || State->Queues[endpoint] == nullptr) {
+    if (endpoint == USB_ENDPOINT_NULL || State->Queues[endpoint] == nullptr) {
         return -1;
     }
     else {
@@ -1785,7 +1719,7 @@ int UsbClient_Driver::Read(int controller, int usbPipe, char* Data, size_t size)
 
     endpoint = State->pipes[usbPipe].RxEP;
     // If no Read side to pipe (or if not yet open)
-    if (endpoint == USB_NULL_ENDPOINT || State->Queues[endpoint] == nullptr) {
+    if (endpoint == USB_ENDPOINT_NULL || State->Queues[endpoint] == nullptr) {
         return 0;
     }
 
@@ -1857,7 +1791,7 @@ bool UsbClient_Driver::Flush(int controller, int usbPipe) {
 
     endpoint = State->pipes[usbPipe].TxEP;
     // If no Write side to pipe (or if not yet open)
-    if (endpoint == USB_NULL_ENDPOINT || State->Queues[endpoint] == nullptr) {
+    if (endpoint == USB_ENDPOINT_NULL || State->Queues[endpoint] == nullptr) {
         return false;
     }
 
@@ -2382,7 +2316,6 @@ uint8_t STM32F4_UsbClient_HandleSetConfiguration(USB_CONTROLLER_STATE* State, US
 const TinyCLR_UsbClient_DescriptorHeader * USB_FindRecord(USB_CONTROLLER_STATE* State, uint8_t marker, USB_SETUP_PACKET * setup) {
     bool Done = false;
 
-
     const TinyCLR_UsbClient_DescriptorHeader * header = (const TinyCLR_UsbClient_DescriptorHeader *)State->Configuration;
     TinyCLR_UsbClient_DescriptorHeader* ptr = (TinyCLR_UsbClient_DescriptorHeader*)(*(uint32_t*)header);
     TinyCLR_UsbClient_ConfigurationDescriptor *config;
@@ -2399,7 +2332,6 @@ const TinyCLR_UsbClient_DescriptorHeader * USB_FindRecord(USB_CONTROLLER_STATE* 
         const TinyCLR_UsbClient_GenericDescriptorHeader *generic = (TinyCLR_UsbClient_GenericDescriptorHeader *)ptr;
 
         //uint32_t *marker = (uint32_t*)*ptr;
-
 
         switch (ptr->marker) {
         case USB_DEVICE_DESCRIPTOR_MARKER:
@@ -2494,8 +2426,6 @@ USB_PACKET64* STM32F4_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* State, int endpo
         usb_fifo_buffer_in[endpoint] = 0;
 
     return packet;
-
-
 }
 
 USB_PACKET64* STM32F4_UsbClient_TxDequeue(USB_CONTROLLER_STATE* State, int endpoint) {
