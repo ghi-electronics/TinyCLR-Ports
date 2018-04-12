@@ -67,19 +67,23 @@ const TinyCLR_Api_Info* AT91_Uart_GetApi() {
         uartProviders[i]->SetPinChangedHandler = &AT91_Uart_SetPinChangedHandler;
         uartProviders[i]->SetErrorReceivedHandler = &AT91_Uart_SetErrorReceivedHandler;
         uartProviders[i]->SetDataReceivedHandler = &AT91_Uart_SetDataReceivedHandler;
-        uartProviders[i]->GetBreakSignalState = AT91_Uart_GetBreakSignalState;
-        uartProviders[i]->SetBreakSignalState = AT91_Uart_SetBreakSignalState;
-        uartProviders[i]->GetCarrierDetectState = AT91_Uart_GetCarrierDetectState;
-        uartProviders[i]->GetClearToSendState = AT91_Uart_GetClearToSendState;
-        uartProviders[i]->GetDataReadyState = AT91_Uart_GetDataReadyState;
-        uartProviders[i]->GetIsDataTerminalReadyEnabled = AT91_Uart_GetIsDataTerminalReadyEnabled;
-        uartProviders[i]->SetIsDataTerminalReadyEnabled = AT91_Uart_SetIsDataTerminalReadyEnabled;
-        uartProviders[i]->GetIsRequestToSendEnabled = AT91_Uart_GetIsRequestToSendEnabled;
-        uartProviders[i]->SetIsRequestToSendEnabled = AT91_Uart_SetIsRequestToSendEnabled;
-        uartProviders[i]->GetReadBufferSize = AT91_Uart_GetReadBufferSize;
-        uartProviders[i]->SetReadBufferSize = AT91_Uart_SetReadBufferSize;
-        uartProviders[i]->GetWriteBufferSize = AT91_Uart_GetWriteBufferSize;
-        uartProviders[i]->SetWriteBufferSize = AT91_Uart_SetWriteBufferSize;
+        uartProviders[i]->GetBreakSignalState = &AT91_Uart_GetBreakSignalState;
+        uartProviders[i]->SetBreakSignalState = &AT91_Uart_SetBreakSignalState;
+        uartProviders[i]->GetCarrierDetectState = &AT91_Uart_GetCarrierDetectState;
+        uartProviders[i]->GetClearToSendState = &AT91_Uart_GetClearToSendState;
+        uartProviders[i]->GetDataReadyState = &AT91_Uart_GetDataReadyState;
+        uartProviders[i]->GetIsDataTerminalReadyEnabled = &AT91_Uart_GetIsDataTerminalReadyEnabled;
+        uartProviders[i]->SetIsDataTerminalReadyEnabled = &AT91_Uart_SetIsDataTerminalReadyEnabled;
+        uartProviders[i]->GetIsRequestToSendEnabled = &AT91_Uart_GetIsRequestToSendEnabled;
+        uartProviders[i]->SetIsRequestToSendEnabled = &AT91_Uart_SetIsRequestToSendEnabled;
+        uartProviders[i]->GetReadBufferSize = &AT91_Uart_GetReadBufferSize;
+        uartProviders[i]->SetReadBufferSize = &AT91_Uart_SetReadBufferSize;
+        uartProviders[i]->GetWriteBufferSize = &AT91_Uart_GetWriteBufferSize;
+        uartProviders[i]->SetWriteBufferSize = &AT91_Uart_SetWriteBufferSize;
+        uartProviders[i]->GetUnreadCount = &AT91_Uart_GetUnreadCount;
+        uartProviders[i]->GetUnwrittenCount = &AT91_Uart_GetUnwrittenCount;
+        uartProviders[i]->ClearReadBuffer = &AT91_Uart_ClearReadBuffer;
+        uartProviders[i]->ClearWriteBuffer = &AT91_Uart_ClearWriteBuffer;
     }
 
     uartApi.Author = "GHI Electronics, LLC";
@@ -707,6 +711,30 @@ TinyCLR_Result AT91_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Provider* 
 
 TinyCLR_Result AT91_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Provider* self, bool state) {
     return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result AT91_Uart_GetUnreadCount(const TinyCLR_Uart_Provider* self, size_t& count) {
+    count = g_UartController[self->Index].rxBufferCount;
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result AT91_Uart_GetUnwrittenCount(const TinyCLR_Uart_Provider* self, size_t& count) {
+    count = g_UartController[self->Index].txBufferCount;
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result AT91_Uart_ClearReadBuffer(const TinyCLR_Uart_Provider* self) {
+    g_UartController[self->Index].rxBufferCount = g_UartController[self->Index].rxBufferIn = g_UartController[self->Index].rxBufferOut = 0;
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result AT91_Uart_ClearWriteBuffer(const TinyCLR_Uart_Provider* self) {
+    g_UartController[self->Index].txBufferCount = g_UartController[self->Index].txBufferIn = g_UartController[self->Index].txBufferOut = 0;
+
+    return TinyCLR_Result::Success;
 }
 
 void AT91_Uart_Reset() {

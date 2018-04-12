@@ -275,6 +275,10 @@ TinyCLR_Result LPC17_Uart_GetReadBufferSize(const TinyCLR_Uart_Provider* self, s
 TinyCLR_Result LPC17_Uart_SetReadBufferSize(const TinyCLR_Uart_Provider* self, size_t size);
 TinyCLR_Result LPC17_Uart_GetWriteBufferSize(const TinyCLR_Uart_Provider* self, size_t& size);
 TinyCLR_Result LPC17_Uart_SetWriteBufferSize(const TinyCLR_Uart_Provider* self, size_t size);
+TinyCLR_Result LPC17_Uart_GetUnreadCount(const TinyCLR_Uart_Provider* self, size_t& count);
+TinyCLR_Result LPC17_Uart_GetUnwrittenCount(const TinyCLR_Uart_Provider* self, size_t& count);
+TinyCLR_Result LPC17_Uart_ClearReadBuffer(const TinyCLR_Uart_Provider* self);
+TinyCLR_Result LPC17_Uart_ClearWriteBuffer(const TinyCLR_Uart_Provider* self);
 
 //Deployment
 const TinyCLR_Api_Info* LPC17_Deployment_GetApi();
