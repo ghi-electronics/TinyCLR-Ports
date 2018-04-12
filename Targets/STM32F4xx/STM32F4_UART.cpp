@@ -91,19 +91,23 @@ const TinyCLR_Api_Info* STM32F4_Uart_GetApi() {
         uartProviders[i]->SetPinChangedHandler = &STM32F4_Uart_SetPinChangedHandler;
         uartProviders[i]->SetErrorReceivedHandler = &STM32F4_Uart_SetErrorReceivedHandler;
         uartProviders[i]->SetDataReceivedHandler = &STM32F4_Uart_SetDataReceivedHandler;
-        uartProviders[i]->GetBreakSignalState = STM32F4_Uart_GetBreakSignalState;
-        uartProviders[i]->SetBreakSignalState = STM32F4_Uart_SetBreakSignalState;
-        uartProviders[i]->GetCarrierDetectState = STM32F4_Uart_GetCarrierDetectState;
-        uartProviders[i]->GetClearToSendState = STM32F4_Uart_GetClearToSendState;
-        uartProviders[i]->GetDataReadyState = STM32F4_Uart_GetDataReadyState;
-        uartProviders[i]->GetIsDataTerminalReadyEnabled = STM32F4_Uart_GetIsDataTerminalReadyEnabled;
-        uartProviders[i]->SetIsDataTerminalReadyEnabled = STM32F4_Uart_SetIsDataTerminalReadyEnabled;
-        uartProviders[i]->GetIsRequestToSendEnabled = STM32F4_Uart_GetIsRequestToSendEnabled;
-        uartProviders[i]->SetIsRequestToSendEnabled = STM32F4_Uart_SetIsRequestToSendEnabled;
-        uartProviders[i]->GetReadBufferSize = STM32F4_Uart_GetReadBufferSize;
-        uartProviders[i]->SetReadBufferSize = STM32F4_Uart_SetReadBufferSize;
-        uartProviders[i]->GetWriteBufferSize = STM32F4_Uart_GetWriteBufferSize;
-        uartProviders[i]->SetWriteBufferSize = STM32F4_Uart_SetWriteBufferSize;
+        uartProviders[i]->GetBreakSignalState = &STM32F4_Uart_GetBreakSignalState;
+        uartProviders[i]->SetBreakSignalState = &STM32F4_Uart_SetBreakSignalState;
+        uartProviders[i]->GetCarrierDetectState = &STM32F4_Uart_GetCarrierDetectState;
+        uartProviders[i]->GetClearToSendState = &STM32F4_Uart_GetClearToSendState;
+        uartProviders[i]->GetDataReadyState = &STM32F4_Uart_GetDataReadyState;
+        uartProviders[i]->GetIsDataTerminalReadyEnabled = &STM32F4_Uart_GetIsDataTerminalReadyEnabled;
+        uartProviders[i]->SetIsDataTerminalReadyEnabled = &STM32F4_Uart_SetIsDataTerminalReadyEnabled;
+        uartProviders[i]->GetIsRequestToSendEnabled = &STM32F4_Uart_GetIsRequestToSendEnabled;
+        uartProviders[i]->SetIsRequestToSendEnabled = &STM32F4_Uart_SetIsRequestToSendEnabled;
+        uartProviders[i]->GetReadBufferSize = &STM32F4_Uart_GetReadBufferSize;
+        uartProviders[i]->SetReadBufferSize = &STM32F4_Uart_SetReadBufferSize;
+        uartProviders[i]->GetWriteBufferSize = &STM32F4_Uart_GetWriteBufferSize;
+        uartProviders[i]->SetWriteBufferSize = &STM32F4_Uart_SetWriteBufferSize;
+        uartProviders[i]->GetUnreadDataCount = &STM32F4_Uart_GetUnreadDataCount;
+        uartProviders[i]->GetUnsendDataCount = &STM32F4_Uart_GetUnsendDataCount;
+        uartProviders[i]->ClearReadBuffer = &STM32F4_Uart_ClearReadBuffer;
+        uartProviders[i]->ClearSendBuffer = &STM32F4_Uart_ClearSendBuffer;
     }
 
     uartApi.Author = "GHI Electronics, LLC";
@@ -808,3 +812,28 @@ TinyCLR_Result STM32F4_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Provide
 TinyCLR_Result STM32F4_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Provider* self, bool state) {
     return TinyCLR_Result::NotImplemented;
 }
+
+TinyCLR_Result STM32F4_Uart_GetUnreadDataCount(const TinyCLR_Uart_Provider* self, size_t& count) {
+    count = g_UartController[self->Index].rxBufferCount;
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Uart_GetUnsendDataCount(const TinyCLR_Uart_Provider* self, size_t& count) {
+    count = g_UartController[self->Index].txBufferCount;
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Uart_ClearReadBuffer(const TinyCLR_Uart_Provider* self) {
+    g_UartController[self->Index].rxBufferCount = g_UartController[self->Index].rxBufferIn = g_UartController[self->Index].rxBufferOut = 0;
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Uart_ClearSendBuffer(const TinyCLR_Uart_Provider* self) {
+    g_UartController[self->Index].txBufferCount = g_UartController[self->Index].txBufferIn = g_UartController[self->Index].txBufferOut = 0;
+
+    return TinyCLR_Result::Success;
+}
+

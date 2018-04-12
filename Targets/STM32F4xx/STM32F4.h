@@ -242,6 +242,10 @@ TinyCLR_Result STM32F4_Uart_GetReadBufferSize(const TinyCLR_Uart_Provider* self,
 TinyCLR_Result STM32F4_Uart_SetReadBufferSize(const TinyCLR_Uart_Provider* self, size_t size);
 TinyCLR_Result STM32F4_Uart_GetWriteBufferSize(const TinyCLR_Uart_Provider* self, size_t& size);
 TinyCLR_Result STM32F4_Uart_SetWriteBufferSize(const TinyCLR_Uart_Provider* self, size_t size);
+TinyCLR_Result STM32F4_Uart_GetUnreadDataCount(const TinyCLR_Uart_Provider* self, size_t& count);
+TinyCLR_Result STM32F4_Uart_GetUnsendDataCount(const TinyCLR_Uart_Provider* self, size_t& count);
+TinyCLR_Result STM32F4_Uart_ClearReadBuffer(const TinyCLR_Uart_Provider* self);
+TinyCLR_Result STM32F4_Uart_ClearSendBuffer(const TinyCLR_Uart_Provider* self);
 void STM32F4_Uart_Reset();
 
 ////////////////////////////////////////////////////////////////////////////////
