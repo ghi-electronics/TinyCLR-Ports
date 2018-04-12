@@ -104,10 +104,10 @@ const TinyCLR_Api_Info* STM32F7_Uart_GetApi() {
         uartProviders[i]->SetReadBufferSize = STM32F7_Uart_SetReadBufferSize;
         uartProviders[i]->GetWriteBufferSize = STM32F7_Uart_GetWriteBufferSize;
         uartProviders[i]->SetWriteBufferSize = STM32F7_Uart_SetWriteBufferSize;
-        uartProviders[i]->GetUnreadDataCount = &STM32F7_Uart_GetUnreadDataCount;
-        uartProviders[i]->GetUnsendDataCount = &STM32F7_Uart_GetUnsendDataCount;
+        uartProviders[i]->GetUnreadCount = &STM32F7_Uart_GetUnreadCount;
+        uartProviders[i]->GetUnwrittenCount = &STM32F7_Uart_GetUnwrittenCount;
         uartProviders[i]->ClearReadBuffer = &STM32F7_Uart_ClearReadBuffer;
-        uartProviders[i]->ClearSendBuffer = &STM32F7_Uart_ClearSendBuffer;
+        uartProviders[i]->ClearWriteBuffer = &STM32F7_Uart_ClearWriteBuffer;
     }
 
     uartApi.Author = "GHI Electronics, LLC";
@@ -781,13 +781,13 @@ TinyCLR_Result STM32F7_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Provide
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result STM32F7_Uart_GetUnreadDataCount(const TinyCLR_Uart_Provider* self, size_t& count) {
+TinyCLR_Result STM32F7_Uart_GetUnreadCount(const TinyCLR_Uart_Provider* self, size_t& count) {
     count = g_UartController[self->Index].rxBufferCount;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Uart_GetUnsendDataCount(const TinyCLR_Uart_Provider* self, size_t& count) {
+TinyCLR_Result STM32F7_Uart_GetUnwrittenCount(const TinyCLR_Uart_Provider* self, size_t& count) {
     count = g_UartController[self->Index].txBufferCount;
 
     return TinyCLR_Result::Success;
@@ -799,7 +799,7 @@ TinyCLR_Result STM32F7_Uart_ClearReadBuffer(const TinyCLR_Uart_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Uart_ClearSendBuffer(const TinyCLR_Uart_Provider* self) {
+TinyCLR_Result STM32F7_Uart_ClearWriteBuffer(const TinyCLR_Uart_Provider* self) {
     g_UartController[self->Index].txBufferCount = g_UartController[self->Index].txBufferIn = g_UartController[self->Index].txBufferOut = 0;
 
     return TinyCLR_Result::Success;
