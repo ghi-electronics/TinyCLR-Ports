@@ -25,6 +25,10 @@
 #define PACKED(x) __packed x
 #endif
 
+///////////////////////////////////////////////////////////////////////////////////////////
+/// USB Debugger driver
+///////////////////////////////////////////////////////////////////////////////////////////
+
 // USB 2.0 host requests
 #define USB_GET_STATUS           0
 #define USB_CLEAR_FEATURE        1
@@ -76,11 +80,11 @@
 #define USB_STATE_CONFIGURATION         5
 #define USB_STATE_REMOTE_WAKEUP         6
 
-/////////////////////////////////////////////////////////////////////////
+
 // ATTENTION:
 // 2.0 is the lowest version that works with WinUSB on Windows 8!!!
 // use older values below if you do not care about that
-/////////////////////////////////////////////////////////////////////////
+
 #define DEVICE_RELEASE_VERSION              0x0200
 
 //string descriptor
@@ -105,9 +109,8 @@
 #define USB_CONFIGURATION_DESCRIPTOR_LENGTH       9
 #define USB_STRING_DESCRIPTOR_HEADER_LENGTH       2
 
-/////////////////////////////////////////////////////////////////////////////////////
+
 // USB Configuration list structures
-/////////////////////////////////////////////////////////////////////////////////////
 #define USB_END_DESCRIPTOR_MARKER           0x00
 #define USB_DEVICE_DESCRIPTOR_MARKER        0x01
 #define USB_CONFIGURATION_DESCRIPTOR_MARKER 0x02
@@ -125,11 +128,15 @@
 #define USB_ENDPOINT_NULL 0xFF
 
 // Endpoint Attribute
+#define ENDPOINT_INUSED_MASK        0x01
+#define ENDPOINT_DIR_IN_MASK        0x02
+#define ENDPOINT_DIR_OUT_MASK       0x04
+
 #define USB_ENDPOINT_ATTRIBUTE_BULK 2
 #define USB_MAX_DATA_PACKET_SIZE 64
 
-#define USB_MAX_EP_SIZE            64     // maximum control channel packet size
-#define USB_MAX_EP0_SIZE            8      // default control channel packet size
+#define USB_MAX_EP_SIZE            64 // maximum control channel packet size
+#define USB_MAX_EP0_SIZE            8 // default control channel packet size
 #define USB_FS_MAX_EP_COUNT         4 // OTG FS supports 4 endpoints
 
 // This version of the USB code supports only one language - which
@@ -147,8 +154,6 @@ PACKED(struct) USB_SETUP_PACKET {
     uint16_t wIndex;
     uint16_t wLength;
 };
-
-
 
 PACKED(struct) USB_DYNAMIC_CONFIGURATION;
 
@@ -337,15 +342,6 @@ PACKED(struct) TinyCLR_UsbClient_XPropertiesOsWinUsb {
     uint8_t  bPropertyData[78];
 };
 
-/////////////////////////////////////////////////////////////
-// The following structure defines the USB descriptor
-// for a basic device with a USB debug interface via the
-// WinUSB extended Compat ID.
-//
-// This USB configuration is always used to define the USB
-// configuration for TinyBooter.  It is also the default for
-// the runtime if there is no USB configuration in the Flash
-// configuration sector.
 PACKED(struct) USB_DYNAMIC_CONFIGURATION {
     TinyCLR_UsbClient_DeviceDescriptor                  *device;
     TinyCLR_UsbClient_ConfigurationDescriptor           *config;
@@ -359,37 +355,21 @@ PACKED(struct) USB_DYNAMIC_CONFIGURATION {
     TinyCLR_UsbClient_DescriptorHeader                  *endList;
 };
 
-extern uint8_t STM32F4_UsbClient_HandleSetConfiguration(USB_CONTROLLER_STATE* State, USB_SETUP_PACKET* Setup, bool DataPhase);
+USB_DYNAMIC_CONFIGURATION UsbDefaultConfiguration;
 
-extern USB_PACKET64* STM32F4_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* State, int queue, bool& disableRx);
-extern USB_PACKET64* STM32F4_UsbClient_TxDequeue(USB_CONTROLLER_STATE* State, int queue);
-
-extern uint8_t STM32F4_UsbClient_ControlCallback(USB_CONTROLLER_STATE* State);
-extern void  STM32F4_UsbClient_StateCallback(USB_CONTROLLER_STATE* State);
-
-void STM32F4_UsbClient_SetEvent(USB_CONTROLLER_STATE *State, uint32_t event);
-void STM32F4_UsbClient_ClearEvent(USB_CONTROLLER_STATE *State, uint32_t event);
-void STM32F4_UsbClient_ClearQueues(USB_CONTROLLER_STATE *State, bool ClrRxQueue, bool ClrTxQueue);
 const TinyCLR_UsbClient_DescriptorHeader * USB_FindRecord(USB_CONTROLLER_STATE* State, uint8_t marker, USB_SETUP_PACKET * iValue);
-
-void STM32F4_UsbClient_Interrupt(void* param);
-
-bool STM32F4_UsbClient_Initialize(int controller);
-bool STM32F4_UsbClient_Uninitialize(int controller);
-bool STM32F4_UsbClient_StartOutput(USB_CONTROLLER_STATE* State, int endpoint);
+void STM32F4_UsbClient_ClearEndpoints(int32_t endpoint);
 bool STM32F4_UsbClient_RxEnable(USB_CONTROLLER_STATE* State, int endpoint);
-void STM32F4_UsbClient_ProtectPins(int controller, bool On);
+
+TinyCLR_UsbClient_DataReceivedHandler STM32F4_UsbClient_DataReceivedHandler;
+TinyCLR_UsbClient_OsExtendedPropertyHandler STM32F4_UsbClient_OsExtendedPropertyHandler;
 
 // usb fifo buffer
 static int usb_fifo_buffer_in[STM32F4_USB_QUEUE_SIZE];
 static int usb_fifo_buffer_out[STM32F4_USB_QUEUE_SIZE];
 static int usb_fifo_buffer_count[STM32F4_USB_QUEUE_SIZE];
 
-void STM32F4_UsbClient_ClearEndpoints(int32_t endpoint);
 
-#define ENDPOINT_INUSED_MASK        0x01
-#define ENDPOINT_DIR_IN_MASK        0x02
-#define ENDPOINT_DIR_OUT_MASK       0x04
 
 static const STM32F4_Gpio_Pin g_STM32F4_Usb_Dm_Pins[] = STM32F4_USB_DM_PINS;
 static const STM32F4_Gpio_Pin g_STM32F4_Usb_Dp_Pins[] = STM32F4_USB_DP_PINS;
@@ -447,7 +427,6 @@ TinyCLR_UsbClient_DeviceDescriptor deviceDescriptor = {
     0,                                  // Serial number string index (none)
     1                                   // Number of configurations
 };
-
 
 // Configuration descriptor
 TinyCLR_UsbClient_ConfigurationDescriptor configDescriptor = {
@@ -559,11 +538,6 @@ const TinyCLR_UsbClient_DescriptorHeader usbDescriptorHeader = {
     0,
     0
 };
-
-USB_DYNAMIC_CONFIGURATION UsbDefaultConfiguration;
-
-TinyCLR_UsbClient_DataReceivedHandler STM32F4_UsbClient_DataReceivedHandler;
-TinyCLR_UsbClient_OsExtendedPropertyHandler STM32F4_UsbClient_OsExtendedPropertyHandler;
 
 void STM32F4_UsbClient_SetEvent(USB_CONTROLLER_STATE *State, uint32_t event) {
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -1155,6 +1129,10 @@ void STM32F4_UsbClient_ClearEndpoints(int32_t endpoint) {
 ///////////////////////////////////////////////////////////////////////////////////////////
 /// TinyCLR USBClient API
 ///////////////////////////////////////////////////////////////////////////////////////////
+bool STM32F4_UsbClient_Initialize(int controller);
+bool STM32F4_UsbClient_Uninitialize(int controller);
+bool STM32F4_UsbClient_StartOutput(USB_CONTROLLER_STATE* State, int endpoint);
+
 static TinyCLR_UsbClient_Provider usbClientProvider;
 static TinyCLR_Api_Info usbClientApi;
 
@@ -1258,7 +1236,6 @@ TinyCLR_Result STM32F4_UsbClient_Release(const TinyCLR_UsbClient_Provider* self)
 
 TinyCLR_Result STM32F4_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t& pipe, TinyCLR_UsbClient_PipeMode mode) {
     int32_t controller = self->Index;
-    int32_t availablePipe;
 
     USB_CONTROLLER_STATE * State = &STM32F4_UsbClient_ControllerState[controller].state;
 
@@ -1300,25 +1277,25 @@ TinyCLR_Result STM32F4_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, in
         return TinyCLR_Result::NotAvailable;
 
     // The specified endpoints must not be in use by another pipe
-    for (int pipe = 0; pipe < STM32F4_USB_QUEUE_SIZE; pipe++) {
-        if (readEp != USB_ENDPOINT_NULL && (State->pipes[pipe].RxEP == readEp || State->pipes[pipe].TxEP == readEp))
-            return TinyCLR_Result::NotAvailable;;
-        if (writeEp != USB_ENDPOINT_NULL && (State->pipes[pipe].RxEP == writeEp || State->pipes[pipe].TxEP == writeEp))
-            return TinyCLR_Result::NotAvailable;;
+    for (int i = 0; i < STM32F4_USB_QUEUE_SIZE; i++) {
+        if (readEp != USB_ENDPOINT_NULL && (State->pipes[i].RxEP == readEp || State->pipes[i].TxEP == readEp))
+            return TinyCLR_Result::NotAvailable;
+        if (writeEp != USB_ENDPOINT_NULL && (State->pipes[i].RxEP == writeEp || State->pipes[i].TxEP == writeEp))
+            return TinyCLR_Result::NotAvailable;
     }
 
-    for (availablePipe = 0; availablePipe < STM32F4_USB_QUEUE_SIZE; availablePipe++) {
+    for (pipe = 0; pipe < STM32F4_USB_QUEUE_SIZE; pipe++) {
         // The Pipe must be currently closed
-        if (State->pipes[availablePipe].RxEP == USB_ENDPOINT_NULL && State->pipes[availablePipe].TxEP == USB_ENDPOINT_NULL)
+        if (State->pipes[pipe].RxEP == USB_ENDPOINT_NULL && State->pipes[pipe].TxEP == USB_ENDPOINT_NULL)
             break;
     }
 
-    if (availablePipe == STM32F4_USB_QUEUE_SIZE)
-        return TinyCLR_Result::NotAvailable;; // full endpoint
+    if (pipe == STM32F4_USB_QUEUE_SIZE)
+        return TinyCLR_Result::NotAvailable;
 
     // All tests pass, assign the endpoints to the pipe
-    State->pipes[availablePipe].RxEP = readEp;
-    State->pipes[availablePipe].TxEP = writeEp;
+    State->pipes[pipe].RxEP = readEp;
+    State->pipes[pipe].TxEP = writeEp;
 
     TinyCLR_UsbClient_ConfigurationDescriptor *config = (TinyCLR_UsbClient_ConfigurationDescriptor *)UsbDefaultConfiguration.config;
     TinyCLR_UsbClient_EndpointDescriptor  *ep = (TinyCLR_UsbClient_EndpointDescriptor  *)(((uint8_t *)config) + USB_CONFIGURATION_DESCRIPTOR_LENGTH + sizeof(TinyCLR_UsbClient_DescriptorHeader) + sizeof(TinyCLR_UsbClient_InterfaceDescriptor));
@@ -1413,6 +1390,9 @@ TinyCLR_Result STM32F4_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, i
 
     //Free endpoint
     STM32F4_UsbClient_EndpointMap[endpoint] &= ~ENDPOINT_INUSED_MASK;
+
+    configDescriptor.epWrite.bEndpointAddress = USB_ENDPOINT_DIRECTION_IN;
+    configDescriptor.epRead.bEndpointAddress = USB_ENDPOINT_DIRECTION_OUT;
 
     return TinyCLR_Result::Success;
 }
@@ -1919,6 +1899,9 @@ typedef struct {
     __IO uint32_t DFIFO[USB_OTG_NUM_FIFOS][1024];
 }
 OTG_TypeDef;
+
+void STM32F4_UsbClient_ProtectPins(int controller, bool On);
+void STM32F4_UsbClient_Interrupt(void* param);
 
 bool STM32F4_UsbClient_Initialize(int controller) {
     if ((uint32_t)controller >= TOTAL_USB_CONTROLLERS)
