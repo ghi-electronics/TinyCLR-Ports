@@ -87,10 +87,10 @@ const TinyCLR_Api_Info* LPC24_Uart_GetApi() {
         uartProviders[i]->SetReadBufferSize = &LPC24_Uart_SetReadBufferSize;
         uartProviders[i]->GetWriteBufferSize = &LPC24_Uart_GetWriteBufferSize;
         uartProviders[i]->SetWriteBufferSize = &LPC24_Uart_SetWriteBufferSize;
-        uartProviders[i]->GetUnreadDataCount = &LPC24_Uart_GetUnreadDataCount;
-        uartProviders[i]->GetUnsendDataCount = &LPC24_Uart_GetUnsendDataCount;
+        uartProviders[i]->GetUnreadCount = &LPC24_Uart_GetUnreadCount;
+        uartProviders[i]->GetUnwrittenCount = &LPC24_Uart_GetUnwrittenCount;
         uartProviders[i]->ClearReadBuffer = &LPC24_Uart_ClearReadBuffer;
-        uartProviders[i]->ClearSendBuffer = &LPC24_Uart_ClearSendBuffer;
+        uartProviders[i]->ClearWriteBuffer = &LPC24_Uart_ClearWriteBuffer;
     }
 
     uartApi.Author = "GHI Electronics, LLC";
@@ -795,13 +795,13 @@ TinyCLR_Result LPC24_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Provider*
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result LPC24_Uart_GetUnreadDataCount(const TinyCLR_Uart_Provider* self, size_t& count) {
+TinyCLR_Result LPC24_Uart_GetUnreadCount(const TinyCLR_Uart_Provider* self, size_t& count) {
     count = g_UartController[self->Index].rxBufferCount;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Uart_GetUnsendDataCount(const TinyCLR_Uart_Provider* self, size_t& count) {
+TinyCLR_Result LPC24_Uart_GetUnwrittenCount(const TinyCLR_Uart_Provider* self, size_t& count) {
     count = g_UartController[self->Index].txBufferCount;
 
     return TinyCLR_Result::Success;
@@ -813,7 +813,7 @@ TinyCLR_Result LPC24_Uart_ClearReadBuffer(const TinyCLR_Uart_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Uart_ClearSendBuffer(const TinyCLR_Uart_Provider* self) {
+TinyCLR_Result LPC24_Uart_ClearWriteBuffer(const TinyCLR_Uart_Provider* self) {
     g_UartController[self->Index].txBufferCount = g_UartController[self->Index].txBufferIn = g_UartController[self->Index].txBufferOut = 0;
 
     return TinyCLR_Result::Success;
