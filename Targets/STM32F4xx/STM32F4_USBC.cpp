@@ -357,9 +357,9 @@ PACKED(struct) USB_DYNAMIC_CONFIGURATION {
 
 USB_DYNAMIC_CONFIGURATION UsbDefaultConfiguration;
 
-const TinyCLR_UsbClient_DescriptorHeader * USB_FindRecord(USB_CONTROLLER_STATE* State, uint8_t marker, USB_SETUP_PACKET * iValue);
+const TinyCLR_UsbClient_DescriptorHeader * USB_FindRecord(USB_CONTROLLER_STATE* usbState, uint8_t marker, USB_SETUP_PACKET * iValue);
 void STM32F4_UsbClient_ClearEndpoints(int32_t endpoint);
-bool STM32F4_UsbClient_RxEnable(USB_CONTROLLER_STATE* State, int endpoint);
+bool STM32F4_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int endpoint);
 
 TinyCLR_UsbClient_DataReceivedHandler STM32F4_UsbClient_DataReceivedHandler;
 TinyCLR_UsbClient_OsExtendedPropertyHandler STM32F4_UsbClient_OsExtendedPropertyHandler;
@@ -394,7 +394,7 @@ typedef struct {
 
 } STM32F4_UsbClient_State;
 
-/* State variables for the controllers */
+/* usbState variables for the controllers */
 static STM32F4_UsbClient_State STM32F4_UsbClient_ControllerState[TOTAL_USB_CONTROLLERS];
 
 uint8_t USB_LanguageDescriptor[USB_LANGUAGE_DESCRIPTOR_SIZE] =
@@ -539,98 +539,98 @@ const TinyCLR_UsbClient_DescriptorHeader usbDescriptorHeader = {
     0
 };
 
-void STM32F4_UsbClient_SetEvent(USB_CONTROLLER_STATE *State, uint32_t event) {
+void STM32F4_UsbClient_SetEvent(USB_CONTROLLER_STATE *usbState, uint32_t event) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    uint32_t old_event = State->event;
+    uint32_t old_event = usbState->event;
 
-    State->event |= event;
+    usbState->event |= event;
 
-    if (old_event != State->event) {
+    if (old_event != usbState->event) {
         STM32F4_UsbClient_DataReceivedHandler(nullptr);
     }
 }
 
-void STM32F4_UsbClient_ClearEvent(USB_CONTROLLER_STATE *State, uint32_t event) {
+void STM32F4_UsbClient_ClearEvent(USB_CONTROLLER_STATE *usbState, uint32_t event) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    State->event &= ~event;
+    usbState->event &= ~event;
 }
 
-void STM32F4_UsbClient_ClearQueues(USB_CONTROLLER_STATE *State, bool ClrRxQueue, bool ClrTxQueue) {
+void STM32F4_UsbClient_ClearQueues(USB_CONTROLLER_STATE *usbState, bool ClrRxQueue, bool ClrTxQueue) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (ClrRxQueue) {
         for (int endpoint = 0; endpoint < STM32F4_USB_QUEUE_SIZE; endpoint++) {
-            if (State->queues[endpoint] == nullptr || State->isTxQueue[endpoint])
+            if (usbState->queues[endpoint] == nullptr || usbState->isTxQueue[endpoint])
                 continue;
 
             STM32F4_UsbClient_ClearEndpoints(endpoint);
 
             /* since this queue is now reset, we have room available for newly arrived packets */
-            STM32F4_UsbClient_RxEnable(State, endpoint);
+            STM32F4_UsbClient_RxEnable(usbState, endpoint);
         }
     }
 
     if (ClrTxQueue) {
         for (int endpoint = 0; endpoint < STM32F4_USB_QUEUE_SIZE; endpoint++) {
-            if (State->queues[endpoint] && State->isTxQueue[endpoint])
+            if (usbState->queues[endpoint] && usbState->isTxQueue[endpoint])
                 STM32F4_UsbClient_ClearEndpoints(endpoint);
         }
     }
 }
 
-void STM32F4_UsbClient_StateCallback(USB_CONTROLLER_STATE* State) {
-    if (State->currentState != State->deviceState) {
+void STM32F4_UsbClient_StateCallback(USB_CONTROLLER_STATE* usbState) {
+    if (usbState->currentState != usbState->deviceState) {
         /* whenever we leave the configured state, re-initialize all of the queues */
         //Not necessary, as TxBuffer may hold any data and then send them out when it is configured again.
         // The RxQueue is clear when it is configured.
-        if (USB_DEVICE_STATE_CONFIGURED == State->currentState) {
-            STM32F4_UsbClient_ClearQueues(State, true, true);
+        if (USB_DEVICE_STATE_CONFIGURED == usbState->currentState) {
+            STM32F4_UsbClient_ClearQueues(usbState, true, true);
         }
 
-        State->currentState = State->deviceState;
+        usbState->currentState = usbState->deviceState;
 
-        switch (State->deviceState) {
+        switch (usbState->deviceState) {
         case USB_DEVICE_STATE_DETACHED:
-            State->residualCount = 0;
-            State->dataCallback = nullptr;
+            usbState->residualCount = 0;
+            usbState->dataCallback = nullptr;
 
             break;
         case USB_DEVICE_STATE_CONFIGURED:
             /* whenever we enter the configured state, re-initialize all of the RxQueues */
             /* Txqueue has stored some data to be transmitted */
-            STM32F4_UsbClient_ClearQueues(State, true, false);
+            STM32F4_UsbClient_ClearQueues(usbState, true, false);
             break;
         }
     }
 }
 
-void STM32F4_UsbClient_DataCallback(USB_CONTROLLER_STATE* State) {
-    uint32_t length = __min(State->packetSize, State->residualCount);
+void STM32F4_UsbClient_DataCallback(USB_CONTROLLER_STATE* usbState) {
+    uint32_t length = __min(usbState->packetSize, usbState->residualCount);
 
-    memcpy(State->ptrData, State->residualData, length);
+    memcpy(usbState->ptrData, usbState->residualData, length);
 
-    State->dataSize = length;
-    State->residualData += length;
-    State->residualCount -= length;
+    usbState->dataSize = length;
+    usbState->residualData += length;
+    usbState->residualCount -= length;
 
-    if (length == State->packetSize) {
-        State->expected -= length;
+    if (length == usbState->packetSize) {
+        usbState->expected -= length;
     }
     else {
-        State->expected = 0;
+        usbState->expected = 0;
     }
 
-    if (State->expected) {
-        State->dataCallback = STM32F4_UsbClient_DataCallback;
+    if (usbState->expected) {
+        usbState->dataCallback = STM32F4_UsbClient_DataCallback;
     }
     else {
-        State->dataCallback = nullptr;
+        usbState->dataCallback = nullptr;
     }
 }
 
-uint8_t STM32F4_UsbClient_HandleGetStatus(USB_CONTROLLER_STATE* State, USB_SETUP_PACKET* Setup) {
+uint8_t STM32F4_UsbClient_HandleGetStatus(USB_CONTROLLER_STATE* usbState, USB_SETUP_PACKET* Setup) {
     uint16_t* status;
     uint16_t  zero = 0;
 
@@ -640,17 +640,17 @@ uint8_t STM32F4_UsbClient_HandleGetStatus(USB_CONTROLLER_STATE* State, USB_SETUP
     }
 
     /* validate based on device state */
-    if (State->deviceState == USB_DEVICE_STATE_DEFAULT) {
+    if (usbState->deviceState == USB_DEVICE_STATE_DEFAULT) {
         return USB_STATE_STALL;
     }
 
     switch (USB_SETUP_RECIPIENT(Setup->bmRequestType)) {
     case USB_SETUP_RECIPIENT_DEVICE:
-        status = &State->deviceStatus;
+        status = &usbState->deviceStatus;
         break;
 
     case USB_SETUP_RECIPIENT_INTERFACE:
-        if (State->deviceState != USB_DEVICE_STATE_CONFIGURED) {
+        if (usbState->deviceState != USB_DEVICE_STATE_CONFIGURED) {
             return USB_STATE_STALL;
         }
 
@@ -658,18 +658,18 @@ uint8_t STM32F4_UsbClient_HandleGetStatus(USB_CONTROLLER_STATE* State, USB_SETUP
         break;
 
     case USB_SETUP_RECIPIENT_ENDPOINT:
-        if (State->deviceState == USB_DEVICE_STATE_ADDRESS && Setup->wIndex != 0) {
+        if (usbState->deviceState == USB_DEVICE_STATE_ADDRESS && Setup->wIndex != 0) {
             return USB_STATE_STALL;
         }
 
         /* bit 0x80 designates direction, which we don't utilize in this calculation */
         Setup->wIndex &= 0x7F;
 
-        if (Setup->wIndex >= State->endpointCount) {
+        if (Setup->wIndex >= usbState->endpointCount) {
             return USB_STATE_STALL;
         }
 
-        status = &State->endpointStatus[Setup->wIndex];
+        status = &usbState->endpointStatus[Setup->wIndex];
         break;
 
     default:
@@ -677,14 +677,14 @@ uint8_t STM32F4_UsbClient_HandleGetStatus(USB_CONTROLLER_STATE* State, USB_SETUP
     }
 
     /* send requested status to host */
-    State->residualData = (uint8_t*)status;
-    State->residualCount = 2;
-    State->dataCallback = STM32F4_UsbClient_DataCallback;
+    usbState->residualData = (uint8_t*)status;
+    usbState->residualCount = 2;
+    usbState->dataCallback = STM32F4_UsbClient_DataCallback;
 
     return USB_STATE_DATA;
 }
 
-uint8_t STM32F4_UsbClient_HandleClearFeature(USB_CONTROLLER_STATE* State, USB_SETUP_PACKET* Setup) {
+uint8_t STM32F4_UsbClient_HandleClearFeature(USB_CONTROLLER_STATE* usbState, USB_SETUP_PACKET* Setup) {
     TinyCLR_UsbClient_ConfigurationDescriptor * Config;
     uint8_t       retState;
 
@@ -694,7 +694,7 @@ uint8_t STM32F4_UsbClient_HandleClearFeature(USB_CONTROLLER_STATE* State, USB_SE
     }
 
     /* validate based on device state */
-    if (State->deviceState != USB_DEVICE_STATE_CONFIGURED) {
+    if (usbState->deviceState != USB_DEVICE_STATE_CONFIGURED) {
         return USB_STATE_STALL;
     }
 
@@ -705,10 +705,10 @@ uint8_t STM32F4_UsbClient_HandleClearFeature(USB_CONTROLLER_STATE* State, USB_SE
             return USB_STATE_STALL;
 
         // Locate the configuration descriptor
-        Config = (TinyCLR_UsbClient_ConfigurationDescriptor *)USB_FindRecord(State, USB_CONFIGURATION_DESCRIPTOR_MARKER, Setup);
+        Config = (TinyCLR_UsbClient_ConfigurationDescriptor *)USB_FindRecord(usbState, USB_CONFIGURATION_DESCRIPTOR_MARKER, Setup);
 
         if (Config && (Config->bmAttributes & USB_ATTRIBUTE_REMOTE_WAKEUP)) {
-            State->deviceStatus &= ~USB_STATUS_DEVICE_REMOTE_WAKEUP;
+            usbState->deviceStatus &= ~USB_STATUS_DEVICE_REMOTE_WAKEUP;
             retState = USB_STATE_REMOTE_WAKEUP;
         }
         else {
@@ -721,21 +721,21 @@ uint8_t STM32F4_UsbClient_HandleClearFeature(USB_CONTROLLER_STATE* State, USB_SE
         return USB_STATE_STALL;
 
     case USB_SETUP_RECIPIENT_ENDPOINT:
-        if (State->deviceState == USB_DEVICE_STATE_ADDRESS && Setup->wIndex != 0)
+        if (usbState->deviceState == USB_DEVICE_STATE_ADDRESS && Setup->wIndex != 0)
             return USB_STATE_STALL;
 
         /* bit 0x80 designates direction, which we dont utilize in this calculation */
         Setup->wIndex &= 0x7F;
 
-        if (Setup->wIndex == 0 || Setup->wIndex >= State->endpointCount)
+        if (Setup->wIndex == 0 || Setup->wIndex >= usbState->endpointCount)
             return USB_STATE_STALL;
 
         if (Setup->wValue != USB_FEATURE_ENDPOINT_HALT)
             return USB_STATE_STALL;
 
         /* clear the halt feature */
-        State->endpointStatus[Setup->wIndex] &= ~USB_STATUS_ENDPOINT_HALT;
-        State->endpointStatusChange = Setup->wIndex;
+        usbState->endpointStatus[Setup->wIndex] &= ~USB_STATUS_ENDPOINT_HALT;
+        usbState->endpointStatusChange = Setup->wIndex;
         retState = USB_STATE_STATUS;
         break;
 
@@ -744,14 +744,14 @@ uint8_t STM32F4_UsbClient_HandleClearFeature(USB_CONTROLLER_STATE* State, USB_SE
     }
 
     /* send zero-length packet to tell host we're done */
-    State->residualCount = 0;
-    State->dataCallback = STM32F4_UsbClient_DataCallback;
+    usbState->residualCount = 0;
+    usbState->dataCallback = STM32F4_UsbClient_DataCallback;
 
     /* notify lower layer of status change */
     return retState;
 }
 
-uint8_t STM32F4_UsbClient_HandleSetFeature(USB_CONTROLLER_STATE* State, USB_SETUP_PACKET* Setup) {
+uint8_t STM32F4_UsbClient_HandleSetFeature(USB_CONTROLLER_STATE* usbState, USB_SETUP_PACKET* Setup) {
     TinyCLR_UsbClient_ConfigurationDescriptor * Config;
     uint8_t       retState;
 
@@ -761,7 +761,7 @@ uint8_t STM32F4_UsbClient_HandleSetFeature(USB_CONTROLLER_STATE* State, USB_SETU
     }
 
     /* validate based on device state */
-    if (State->deviceState == USB_DEVICE_STATE_DEFAULT) {
+    if (usbState->deviceState == USB_DEVICE_STATE_DEFAULT) {
         return USB_STATE_STALL;
     }
 
@@ -772,12 +772,12 @@ uint8_t STM32F4_UsbClient_HandleSetFeature(USB_CONTROLLER_STATE* State, USB_SETU
             return USB_STATE_STALL;
         }
 
-        Config = (TinyCLR_UsbClient_ConfigurationDescriptor *)USB_FindRecord(State, USB_CONFIGURATION_DESCRIPTOR_MARKER, Setup);
+        Config = (TinyCLR_UsbClient_ConfigurationDescriptor *)USB_FindRecord(usbState, USB_CONFIGURATION_DESCRIPTOR_MARKER, Setup);
         if (Config == nullptr)        // If the configuration record could not be found
             return USB_STATE_STALL; // Something pretty serious is wrong
 
         if (Config->bmAttributes & USB_ATTRIBUTE_REMOTE_WAKEUP) {
-            State->deviceStatus |= USB_STATUS_DEVICE_REMOTE_WAKEUP;
+            usbState->deviceStatus |= USB_STATUS_DEVICE_REMOTE_WAKEUP;
         }
 
         retState = USB_STATE_REMOTE_WAKEUP;
@@ -788,14 +788,14 @@ uint8_t STM32F4_UsbClient_HandleSetFeature(USB_CONTROLLER_STATE* State, USB_SETU
         return USB_STATE_STALL;
 
     case USB_SETUP_RECIPIENT_ENDPOINT:
-        if (State->deviceState == USB_DEVICE_STATE_ADDRESS && Setup->wIndex != 0) {
+        if (usbState->deviceState == USB_DEVICE_STATE_ADDRESS && Setup->wIndex != 0) {
             return USB_STATE_STALL;
         }
 
         /* bit 0x80 designates direction, which we don't utilize in this calculation */
         Setup->wIndex &= 0x7F;
 
-        if (Setup->wIndex == 0 || Setup->wIndex >= State->endpointCount) {
+        if (Setup->wIndex == 0 || Setup->wIndex >= usbState->endpointCount) {
             return USB_STATE_STALL;
         }
 
@@ -804,8 +804,8 @@ uint8_t STM32F4_UsbClient_HandleSetFeature(USB_CONTROLLER_STATE* State, USB_SETU
         }
 
         /* set the halt feature */
-        State->endpointStatus[Setup->wIndex] |= USB_STATUS_ENDPOINT_HALT;
-        State->endpointStatusChange = Setup->wIndex;
+        usbState->endpointStatus[Setup->wIndex] |= USB_STATUS_ENDPOINT_HALT;
+        usbState->endpointStatusChange = Setup->wIndex;
         retState = USB_STATE_STATUS;
         break;
 
@@ -814,46 +814,46 @@ uint8_t STM32F4_UsbClient_HandleSetFeature(USB_CONTROLLER_STATE* State, USB_SETU
     }
 
     /* send zero-length packet to tell host we're done */
-    State->residualCount = 0;
-    State->dataCallback = STM32F4_UsbClient_DataCallback;
+    usbState->residualCount = 0;
+    usbState->dataCallback = STM32F4_UsbClient_DataCallback;
 
     /* notify lower layer of status change */
     return retState;
 }
 
-uint8_t STM32F4_UsbClient_HandleSetAddress(USB_CONTROLLER_STATE* State, USB_SETUP_PACKET* Setup) {
+uint8_t STM32F4_UsbClient_HandleSetAddress(USB_CONTROLLER_STATE* usbState, USB_SETUP_PACKET* Setup) {
     /* validate setup packet */
     if (Setup->wValue > 127 || Setup->wIndex != 0 || Setup->wLength != 0) {
         return USB_STATE_STALL;
     }
 
     /* validate based on device state */
-    if (State->deviceState >= USB_DEVICE_STATE_CONFIGURED) {
+    if (usbState->deviceState >= USB_DEVICE_STATE_CONFIGURED) {
         return USB_STATE_STALL;
     }
 
     /* set address */
-    State->address = Setup->wValue;
+    usbState->address = Setup->wValue;
 
     /* catch state changes */
-    if (State->address == 0) {
-        State->deviceState = USB_DEVICE_STATE_DEFAULT;
+    if (usbState->address == 0) {
+        usbState->deviceState = USB_DEVICE_STATE_DEFAULT;
     }
     else {
-        State->deviceState = USB_DEVICE_STATE_ADDRESS;
+        usbState->deviceState = USB_DEVICE_STATE_ADDRESS;
     }
 
-    STM32F4_UsbClient_StateCallback(State);
+    STM32F4_UsbClient_StateCallback(usbState);
 
     /* send zero-length packet to tell host we're done */
-    State->residualCount = 0;
-    State->dataCallback = STM32F4_UsbClient_DataCallback;
+    usbState->residualCount = 0;
+    usbState->dataCallback = STM32F4_UsbClient_DataCallback;
 
     /* notify hardware of address change */
     return USB_STATE_ADDRESS;
 }
 
-uint8_t STM32F4_UsbClient_HandleConfigurationRequests(USB_CONTROLLER_STATE* State, USB_SETUP_PACKET* Setup) {
+uint8_t STM32F4_UsbClient_HandleConfigurationRequests(USB_CONTROLLER_STATE* usbState, USB_SETUP_PACKET* Setup) {
     const TinyCLR_UsbClient_DescriptorHeader * header;
     uint8_t       type;
     uint8_t       DescriptorIndex;
@@ -861,58 +861,58 @@ uint8_t STM32F4_UsbClient_HandleConfigurationRequests(USB_CONTROLLER_STATE* Stat
     /* this request is valid regardless of device state */
     type = ((Setup->wValue & 0xFF00) >> 8);
     DescriptorIndex = (Setup->wValue & 0x00FF);
-    State->expected = Setup->wLength;
+    usbState->expected = Setup->wLength;
 
-    if (State->expected == 0) {
+    if (usbState->expected == 0) {
         // just return an empty Status packet
-        State->residualCount = 0;
-        State->dataCallback = STM32F4_UsbClient_DataCallback;
+        usbState->residualCount = 0;
+        usbState->dataCallback = STM32F4_UsbClient_DataCallback;
         return USB_STATE_DATA;
     }
 
     // The very first GET_DESCRIPTOR command out of reset should always return at most packetSize bytes.
     // After that, you can return as many as the host has asked.
-    if (State->deviceState <= USB_DEVICE_STATE_DEFAULT) {
-        if (State->firstGetDescriptor) {
-            State->firstGetDescriptor = false;
+    if (usbState->deviceState <= USB_DEVICE_STATE_DEFAULT) {
+        if (usbState->firstGetDescriptor) {
+            usbState->firstGetDescriptor = false;
 
-            State->expected = __min(State->expected, State->packetSize);
+            usbState->expected = __min(usbState->expected, usbState->packetSize);
         }
     }
 
-    State->residualData = nullptr;
-    State->residualCount = 0;
+    usbState->residualData = nullptr;
+    usbState->residualCount = 0;
 
     if (Setup->bRequest == USB_GET_DESCRIPTOR) {
         switch (type) {
         case USB_DEVICE_DESCRIPTOR_TYPE:
-            header = USB_FindRecord(State, USB_DEVICE_DESCRIPTOR_MARKER, Setup);
+            header = USB_FindRecord(usbState, USB_DEVICE_DESCRIPTOR_MARKER, Setup);
             if (header) {
                 const TinyCLR_UsbClient_DeviceDescriptor * device = (TinyCLR_UsbClient_DeviceDescriptor *)header;
-                State->residualData = (uint8_t *)&device->bLength;      // Start of the device descriptor
-                State->residualCount = __min(State->expected, device->bLength);
+                usbState->residualData = (uint8_t *)&device->bLength;      // Start of the device descriptor
+                usbState->residualCount = __min(usbState->expected, device->bLength);
             }
             break;
 
         case USB_CONFIGURATION_DESCRIPTOR_TYPE:
-            header = USB_FindRecord(State, USB_CONFIGURATION_DESCRIPTOR_MARKER, Setup);
+            header = USB_FindRecord(usbState, USB_CONFIGURATION_DESCRIPTOR_MARKER, Setup);
             if (header) {
                 const TinyCLR_UsbClient_ConfigurationDescriptor * Config = (TinyCLR_UsbClient_ConfigurationDescriptor *)header;
-                State->residualData = (uint8_t *)&Config->bLength;
-                State->residualCount = __min(State->expected, Config->wTotalLength);
+                usbState->residualData = (uint8_t *)&Config->bLength;
+                usbState->residualCount = __min(usbState->expected, Config->wTotalLength);
             }
             break;
 
         case USB_STRING_DESCRIPTOR_TYPE:
             if (DescriptorIndex == 0)        // If host is requesting the language list
             {
-                State->residualData = USB_LanguageDescriptor;
-                State->residualCount = __min(State->expected, USB_LANGUAGE_DESCRIPTOR_SIZE);
+                usbState->residualData = USB_LanguageDescriptor;
+                usbState->residualCount = __min(usbState->expected, USB_LANGUAGE_DESCRIPTOR_SIZE);
             }
-            else if (nullptr != (header = USB_FindRecord(State, USB_STRING_DESCRIPTOR_MARKER, Setup))) {
+            else if (nullptr != (header = USB_FindRecord(usbState, USB_STRING_DESCRIPTOR_MARKER, Setup))) {
                 const TinyCLR_UsbClient_StringDescriptorHeader * string = (TinyCLR_UsbClient_StringDescriptorHeader *)header;
-                State->residualData = (uint8_t *)&string->bLength;
-                State->residualCount = __min(State->expected, string->bLength);
+                usbState->residualData = (uint8_t *)&string->bLength;
+                usbState->residualCount = __min(usbState->expected, string->bLength);
             }
             break;
 
@@ -922,48 +922,48 @@ uint8_t STM32F4_UsbClient_HandleConfigurationRequests(USB_CONTROLLER_STATE* Stat
     }
 
     // If the request was not recognized, the generic types should be searched
-    if (State->residualData == nullptr) {
-        if (nullptr != (header = USB_FindRecord(State, USB_GENERIC_DESCRIPTOR_MARKER, Setup))) {
-            State->residualData = (uint8_t *)header;
-            State->residualData += sizeof(TinyCLR_UsbClient_GenericDescriptorHeader);       // ptrData is located right after the header
-            State->residualCount = __min(State->expected, header->size - sizeof(TinyCLR_UsbClient_GenericDescriptorHeader));
+    if (usbState->residualData == nullptr) {
+        if (nullptr != (header = USB_FindRecord(usbState, USB_GENERIC_DESCRIPTOR_MARKER, Setup))) {
+            usbState->residualData = (uint8_t *)header;
+            usbState->residualData += sizeof(TinyCLR_UsbClient_GenericDescriptorHeader);       // ptrData is located right after the header
+            usbState->residualCount = __min(usbState->expected, header->size - sizeof(TinyCLR_UsbClient_GenericDescriptorHeader));
         }
         else
             return USB_STATE_STALL;
     }
 
-    State->dataCallback = STM32F4_UsbClient_DataCallback;
+    usbState->dataCallback = STM32F4_UsbClient_DataCallback;
 
     return USB_STATE_DATA;
 }
 
-uint8_t STM32F4_UsbClient_HandleGetConfiguration(USB_CONTROLLER_STATE* State, USB_SETUP_PACKET* Setup) {
+uint8_t STM32F4_UsbClient_HandleGetConfiguration(USB_CONTROLLER_STATE* usbState, USB_SETUP_PACKET* Setup) {
     /* validate setup packet */
     if (Setup->wValue != 0 || Setup->wIndex != 0 || Setup->wLength != 1) {
         return USB_STATE_STALL;
     }
 
     /* validate based on device state */
-    if (State->deviceState == USB_DEVICE_STATE_DEFAULT) {
+    if (usbState->deviceState == USB_DEVICE_STATE_DEFAULT) {
         return USB_STATE_STALL;
     }
 
-    State->residualData = &State->configurationNum;
-    State->residualCount = 1;
-    State->expected = 1;
-    State->dataCallback = STM32F4_UsbClient_DataCallback;
+    usbState->residualData = &usbState->configurationNum;
+    usbState->residualCount = 1;
+    usbState->expected = 1;
+    usbState->dataCallback = STM32F4_UsbClient_DataCallback;
 
     return USB_STATE_DATA;
 }
 
-uint8_t STM32F4_UsbClient_HandleSetConfiguration(USB_CONTROLLER_STATE* State, USB_SETUP_PACKET* Setup, bool DataPhase) {
+uint8_t STM32F4_UsbClient_HandleSetConfiguration(USB_CONTROLLER_STATE* usbState, USB_SETUP_PACKET* Setup, bool DataPhase) {
     /* validate setup packet */
     if (Setup->wIndex != 0 || Setup->wLength != 0) {
         return USB_STATE_STALL;
     }
 
     /* validate based on device state */
-    if (State->deviceState == USB_DEVICE_STATE_DEFAULT) {
+    if (usbState->deviceState == USB_DEVICE_STATE_DEFAULT) {
         return USB_STATE_STALL;
     }
 
@@ -972,22 +972,22 @@ uint8_t STM32F4_UsbClient_HandleSetConfiguration(USB_CONTROLLER_STATE* State, US
         return USB_STATE_STALL;
     }
 
-    State->configurationNum = Setup->wValue;
+    usbState->configurationNum = Setup->wValue;
 
     /* catch state changes */
-    if (State->configurationNum == 0) {
-        State->deviceState = USB_DEVICE_STATE_ADDRESS;
+    if (usbState->configurationNum == 0) {
+        usbState->deviceState = USB_DEVICE_STATE_ADDRESS;
     }
     else {
-        State->deviceState = USB_DEVICE_STATE_CONFIGURED;
+        usbState->deviceState = USB_DEVICE_STATE_CONFIGURED;
     }
 
-    STM32F4_UsbClient_StateCallback(State);
+    STM32F4_UsbClient_StateCallback(usbState);
 
     if (DataPhase) {
         /* send zero-length packet to tell host we're done */
-        State->residualCount = 0;
-        State->dataCallback = STM32F4_UsbClient_DataCallback;
+        usbState->residualCount = 0;
+        usbState->dataCallback = STM32F4_UsbClient_DataCallback;
     }
 
     return USB_STATE_CONFIGURATION;
@@ -995,10 +995,10 @@ uint8_t STM32F4_UsbClient_HandleSetConfiguration(USB_CONTROLLER_STATE* State, US
 
 // Searches through the USB configuration records for the requested type
 // Returns a pointer to the header information if found and nullptr if not
-const TinyCLR_UsbClient_DescriptorHeader * USB_FindRecord(USB_CONTROLLER_STATE* State, uint8_t marker, USB_SETUP_PACKET * setup) {
+const TinyCLR_UsbClient_DescriptorHeader * USB_FindRecord(USB_CONTROLLER_STATE* usbState, uint8_t marker, USB_SETUP_PACKET * setup) {
     bool Done = false;
 
-    const TinyCLR_UsbClient_DescriptorHeader * header = (const TinyCLR_UsbClient_DescriptorHeader *)State->configuration;
+    const TinyCLR_UsbClient_DescriptorHeader * header = (const TinyCLR_UsbClient_DescriptorHeader *)usbState->configuration;
     TinyCLR_UsbClient_DescriptorHeader* ptr = (TinyCLR_UsbClient_DescriptorHeader*)(*(uint32_t*)header);
     TinyCLR_UsbClient_ConfigurationDescriptor *config;
 
@@ -1051,36 +1051,36 @@ const TinyCLR_UsbClient_DescriptorHeader * USB_FindRecord(USB_CONTROLLER_STATE* 
     return ptr;
 }
 
-uint8_t STM32F4_UsbClient_ControlCallback(USB_CONTROLLER_STATE* State) {
+uint8_t STM32F4_UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState) {
     USB_SETUP_PACKET* Setup;
 
-    if (State->dataSize == 0) {
+    if (usbState->dataSize == 0) {
         return USB_STATE_DONE;
     }
 
-    Setup = (USB_SETUP_PACKET*)State->ptrData;
+    Setup = (USB_SETUP_PACKET*)usbState->ptrData;
 
     switch (Setup->bRequest) {
     case USB_GET_STATUS:
-        return STM32F4_UsbClient_HandleGetStatus(State, Setup);
+        return STM32F4_UsbClient_HandleGetStatus(usbState, Setup);
     case USB_CLEAR_FEATURE:
-        return STM32F4_UsbClient_HandleClearFeature(State, Setup);
+        return STM32F4_UsbClient_HandleClearFeature(usbState, Setup);
     case USB_SET_FEATURE:
-        return STM32F4_UsbClient_HandleSetFeature(State, Setup);
+        return STM32F4_UsbClient_HandleSetFeature(usbState, Setup);
     case USB_SET_ADDRESS:
-        return STM32F4_UsbClient_HandleSetAddress(State, Setup);
+        return STM32F4_UsbClient_HandleSetAddress(usbState, Setup);
     case USB_GET_CONFIGURATION:
-        return STM32F4_UsbClient_HandleGetConfiguration(State, Setup);
+        return STM32F4_UsbClient_HandleGetConfiguration(usbState, Setup);
     case USB_SET_CONFIGURATION:
-        return STM32F4_UsbClient_HandleSetConfiguration(State, Setup, true);
+        return STM32F4_UsbClient_HandleSetConfiguration(usbState, Setup, true);
     default:
-        return STM32F4_UsbClient_HandleConfigurationRequests(State, Setup);
+        return STM32F4_UsbClient_HandleConfigurationRequests(usbState, Setup);
     }
 
     return USB_STATE_STALL;
 }
 
-USB_PACKET64* STM32F4_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* State, int endpoint, bool& disableRx) {
+USB_PACKET64* STM32F4_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* usbState, int endpoint, bool& disableRx) {
     USB_PACKET64* packet;
 
     if (usb_fifo_buffer_count[endpoint] == STM32F4_USB_FIFO_BUFFER_SIZE) {
@@ -1091,7 +1091,7 @@ USB_PACKET64* STM32F4_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* State, int endpo
 
     disableRx = false;
 
-    packet = &State->queues[endpoint][usb_fifo_buffer_in[endpoint]];
+    packet = &usbState->queues[endpoint][usb_fifo_buffer_in[endpoint]];
 
     usb_fifo_buffer_in[endpoint]++;
     usb_fifo_buffer_count[endpoint]++;
@@ -1099,19 +1099,19 @@ USB_PACKET64* STM32F4_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* State, int endpo
     if (usb_fifo_buffer_in[endpoint] == STM32F4_USB_FIFO_BUFFER_SIZE)
         usb_fifo_buffer_in[endpoint] = 0;
 
-    STM32F4_UsbClient_SetEvent(State, 1 << endpoint);
+    STM32F4_UsbClient_SetEvent(usbState, 1 << endpoint);
 
     return packet;
 }
 
-USB_PACKET64* STM32F4_UsbClient_TxDequeue(USB_CONTROLLER_STATE* State, int endpoint) {
+USB_PACKET64* STM32F4_UsbClient_TxDequeue(USB_CONTROLLER_STATE* usbState, int endpoint) {
     USB_PACKET64* packet;
 
     if (usb_fifo_buffer_count[endpoint] == 0) {
         return nullptr;
     }
 
-    packet = &State->queues[endpoint][usb_fifo_buffer_out[endpoint]];
+    packet = &usbState->queues[endpoint][usb_fifo_buffer_out[endpoint]];
 
     usb_fifo_buffer_count[endpoint]--;
     usb_fifo_buffer_out[endpoint]++;
@@ -1131,7 +1131,7 @@ void STM32F4_UsbClient_ClearEndpoints(int32_t endpoint) {
 ///////////////////////////////////////////////////////////////////////////////////////////
 bool STM32F4_UsbClient_Initialize(int controller);
 bool STM32F4_UsbClient_Uninitialize(int controller);
-bool STM32F4_UsbClient_StartOutput(USB_CONTROLLER_STATE* State, int endpoint);
+bool STM32F4_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int endpoint);
 
 static TinyCLR_UsbClient_Provider usbClientProvider;
 static TinyCLR_Api_Info usbClientApi;
@@ -1171,7 +1171,7 @@ TinyCLR_Result STM32F4_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self)
 
     STM32F4_UsbClient_OsExtendedPropertyHandler(self, osStringDescriptor, xCompatibleOsId, xPropertiesOsWinUsb);
 
-    USB_CONTROLLER_STATE *State = &STM32F4_UsbClient_ControllerState[controller].state;
+    USB_CONTROLLER_STATE *usbState = &STM32F4_UsbClient_ControllerState[controller].state;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -1195,21 +1195,21 @@ TinyCLR_Result STM32F4_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self)
 
     UsbDefaultConfiguration.endList = (TinyCLR_UsbClient_DescriptorHeader*)&usbDescriptorHeader;
 
-    // Init Usb State
-    memset(State, 0, sizeof(USB_CONTROLLER_STATE));
+    // Init Usb usbState
+    memset(usbState, 0, sizeof(USB_CONTROLLER_STATE));
 
-    State->controllerNum = controller;
-    State->configuration = &UsbDefaultConfiguration;
-    State->currentState = USB_DEVICE_STATE_UNINITIALIZED;
-    State->deviceStatus = USB_STATUS_DEVICE_SELF_POWERED;
-    State->endpointCount = USB_FS_MAX_EP_COUNT;
-    State->packetSize = USB_MAX_EP0_SIZE;
-    State->initialized = true;
+    usbState->controllerNum = controller;
+    usbState->configuration = &UsbDefaultConfiguration;
+    usbState->currentState = USB_DEVICE_STATE_UNINITIALIZED;
+    usbState->deviceStatus = USB_STATUS_DEVICE_SELF_POWERED;
+    usbState->endpointCount = USB_FS_MAX_EP_COUNT;
+    usbState->packetSize = USB_MAX_EP0_SIZE;
+    usbState->initialized = true;
 
     for (auto i = 0; i < STM32F4_USB_QUEUE_SIZE; i++) {
-        State->pipes[i].RxEP = USB_ENDPOINT_NULL;
-        State->pipes[i].TxEP = USB_ENDPOINT_NULL;
-        State->maxPacketSize[i] = USB_MAX_EP_SIZE;
+        usbState->pipes[i].RxEP = USB_ENDPOINT_NULL;
+        usbState->pipes[i].TxEP = USB_ENDPOINT_NULL;
+        usbState->maxPacketSize[i] = USB_MAX_EP_SIZE;
     }
 
     return TinyCLR_Result::Success;
@@ -1218,14 +1218,14 @@ TinyCLR_Result STM32F4_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self)
 TinyCLR_Result STM32F4_UsbClient_Release(const TinyCLR_UsbClient_Provider* self) {
     int32_t controller = self->Index;
 
-    USB_CONTROLLER_STATE *State = &STM32F4_UsbClient_ControllerState[controller].state;
+    USB_CONTROLLER_STATE *usbState = &STM32F4_UsbClient_ControllerState[controller].state;
 
-    if (State->initialized) {
+    if (usbState->initialized) {
         DISABLE_INTERRUPTS_SCOPED(irq);
 
         STM32F4_UsbClient_Uninitialize(controller);
 
-        State->initialized = false;
+        usbState->initialized = false;
 
         // for soft reboot allow the USB to be off for at least 100ms
         STM32F4_Time_Delay(nullptr, 100000); // 100ms
@@ -1237,9 +1237,9 @@ TinyCLR_Result STM32F4_UsbClient_Release(const TinyCLR_UsbClient_Provider* self)
 TinyCLR_Result STM32F4_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t& pipe, TinyCLR_UsbClient_PipeMode mode) {
     int32_t controller = self->Index;
 
-    USB_CONTROLLER_STATE * State = &STM32F4_UsbClient_ControllerState[controller].state;
+    USB_CONTROLLER_STATE * usbState = &STM32F4_UsbClient_ControllerState[controller].state;
 
-    if (!State->initialized)     // If no such controller exists (or it is not initialized)
+    if (!usbState->initialized)     // If no such controller exists (or it is not initialized)
         return TinyCLR_Result::NotAvailable;
 
     int32_t writeEp = USB_ENDPOINT_NULL;
@@ -1278,15 +1278,15 @@ TinyCLR_Result STM32F4_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, in
 
     // The specified endpoints must not be in use by another pipe
     for (int i = 0; i < STM32F4_USB_QUEUE_SIZE; i++) {
-        if (readEp != USB_ENDPOINT_NULL && (State->pipes[i].RxEP == readEp || State->pipes[i].TxEP == readEp))
+        if (readEp != USB_ENDPOINT_NULL && (usbState->pipes[i].RxEP == readEp || usbState->pipes[i].TxEP == readEp))
             return TinyCLR_Result::NotAvailable;
-        if (writeEp != USB_ENDPOINT_NULL && (State->pipes[i].RxEP == writeEp || State->pipes[i].TxEP == writeEp))
+        if (writeEp != USB_ENDPOINT_NULL && (usbState->pipes[i].RxEP == writeEp || usbState->pipes[i].TxEP == writeEp))
             return TinyCLR_Result::NotAvailable;
     }
 
     for (pipe = 0; pipe < STM32F4_USB_QUEUE_SIZE; pipe++) {
         // The Pipe must be currently closed
-        if (State->pipes[pipe].RxEP == USB_ENDPOINT_NULL && State->pipes[pipe].TxEP == USB_ENDPOINT_NULL)
+        if (usbState->pipes[pipe].RxEP == USB_ENDPOINT_NULL && usbState->pipes[pipe].TxEP == USB_ENDPOINT_NULL)
             break;
     }
 
@@ -1294,14 +1294,14 @@ TinyCLR_Result STM32F4_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, in
         return TinyCLR_Result::NotAvailable;
 
     // All tests pass, assign the endpoints to the pipe
-    State->pipes[pipe].RxEP = readEp;
-    State->pipes[pipe].TxEP = writeEp;
+    usbState->pipes[pipe].RxEP = readEp;
+    usbState->pipes[pipe].TxEP = writeEp;
 
     TinyCLR_UsbClient_ConfigurationDescriptor *config = (TinyCLR_UsbClient_ConfigurationDescriptor *)UsbDefaultConfiguration.config;
     TinyCLR_UsbClient_EndpointDescriptor  *ep = (TinyCLR_UsbClient_EndpointDescriptor  *)(((uint8_t *)config) + USB_CONFIGURATION_DESCRIPTOR_LENGTH + sizeof(TinyCLR_UsbClient_DescriptorHeader) + sizeof(TinyCLR_UsbClient_InterfaceDescriptor));
 
     uint8_t * end = ((uint8_t *)config) + config->header.size;
-    uint32_t epType = ((STM32F4_UsbClient_State*)State)->endpointType;
+    uint32_t epType = ((STM32F4_UsbClient_State*)usbState)->endpointType;
 
     while (((uint8_t *)ep) != nullptr && ((uint8_t *)ep) < end) {
         if (USB_ENDPOINT_DESCRIPTOR_TYPE != ep->bDescriptorType || sizeof(TinyCLR_UsbClient_EndpointDescriptor) != ep->bLength)
@@ -1312,39 +1312,39 @@ TinyCLR_Result STM32F4_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, in
         if (ep->bEndpointAddress == USB_ENDPOINT_DIRECTION_IN) {
             ep->bEndpointAddress |= writeEp;
             idx = writeEp;
-            State->isTxQueue[idx] = true;
+            usbState->isTxQueue[idx] = true;
         }
 
         else if (ep->bEndpointAddress == USB_ENDPOINT_DIRECTION_OUT) {
             ep->bEndpointAddress |= readEp;
             idx = readEp;
-            State->isTxQueue[idx] = false;
+            usbState->isTxQueue[idx] = false;
         }
 
         if (idx > 0) {
             if (apiProvider != nullptr) {
                 auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-                State->queues[idx] = (USB_PACKET64*)memoryProvider->Allocate(memoryProvider, STM32F4_USB_FIFO_BUFFER_SIZE * sizeof(USB_PACKET64));
+                usbState->queues[idx] = (USB_PACKET64*)memoryProvider->Allocate(memoryProvider, STM32F4_USB_FIFO_BUFFER_SIZE * sizeof(USB_PACKET64));
 
-                if (State->queues[idx] == nullptr)
+                if (usbState->queues[idx] == nullptr)
                     return TinyCLR_Result::ArgumentNull;;
 
-                memset(reinterpret_cast<uint8_t*>(State->queues[idx]), 0x00, STM32F4_USB_FIFO_BUFFER_SIZE * sizeof(USB_PACKET64));
+                memset(reinterpret_cast<uint8_t*>(usbState->queues[idx]), 0x00, STM32F4_USB_FIFO_BUFFER_SIZE * sizeof(USB_PACKET64));
             }
 
             STM32F4_UsbClient_ClearEndpoints(idx);
 
             epType |= (ep->bmAttributes & 3) << (idx * 2);
-            State->maxPacketSize[idx] = ep->wMaxPacketSize;
+            usbState->maxPacketSize[idx] = ep->wMaxPacketSize;
         }
 
         ep = (TinyCLR_UsbClient_EndpointDescriptor  *)(((uint8_t *)ep) + ep->bLength);
     }
 
-    ((STM32F4_UsbClient_State*)State)->endpointType = epType;
+    ((STM32F4_UsbClient_State*)usbState)->endpointType = epType;
 
-    if (State->currentState == USB_DEVICE_STATE_UNINITIALIZED) {
+    if (usbState->currentState == USB_DEVICE_STATE_UNINITIALIZED) {
         STM32F4_UsbClient_Initialize(controller);
     }
 
@@ -1354,39 +1354,39 @@ TinyCLR_Result STM32F4_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, in
 TinyCLR_Result STM32F4_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t pipe) {
     int32_t controller = self->Index;
 
-    USB_CONTROLLER_STATE * State = &STM32F4_UsbClient_ControllerState[controller].state;
+    USB_CONTROLLER_STATE * usbState = &STM32F4_UsbClient_ControllerState[controller].state;
 
-    if (!State->initialized || pipe >= STM32F4_USB_QUEUE_SIZE)
+    if (!usbState->initialized || pipe >= STM32F4_USB_QUEUE_SIZE)
         return TinyCLR_Result::NotAvailable;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     // Close the Rx pipe
-    int endpoint = State->pipes[pipe].RxEP;
-    if (endpoint != USB_ENDPOINT_NULL && State->queues[endpoint]) {
+    int endpoint = usbState->pipes[pipe].RxEP;
+    if (endpoint != USB_ENDPOINT_NULL && usbState->queues[endpoint]) {
         STM32F4_UsbClient_ClearEndpoints(endpoint);
     }
 
-    State->pipes[pipe].RxEP = USB_ENDPOINT_NULL;
+    usbState->pipes[pipe].RxEP = USB_ENDPOINT_NULL;
     //Free endpoint
     STM32F4_UsbClient_EndpointMap[endpoint] &= ~ENDPOINT_INUSED_MASK;
 
     // Close the TX pipe
-    endpoint = State->pipes[pipe].TxEP;
-    if (endpoint != USB_ENDPOINT_NULL && State->queues[endpoint] != nullptr) {
+    endpoint = usbState->pipes[pipe].TxEP;
+    if (endpoint != USB_ENDPOINT_NULL && usbState->queues[endpoint] != nullptr) {
         STM32F4_UsbClient_ClearEndpoints(endpoint);
 
         if (apiProvider != nullptr) {
             auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-            if (State->queues[endpoint] != nullptr)
-                memoryProvider->Free(memoryProvider, State->queues[endpoint]);
+            if (usbState->queues[endpoint] != nullptr)
+                memoryProvider->Free(memoryProvider, usbState->queues[endpoint]);
 
-            State->queues[endpoint] = nullptr;
+            usbState->queues[endpoint] = nullptr;
         }
     }
 
-    State->pipes[pipe].TxEP = USB_ENDPOINT_NULL;
+    usbState->pipes[pipe].TxEP = USB_ENDPOINT_NULL;
 
     //Free endpoint
     STM32F4_UsbClient_EndpointMap[endpoint] &= ~ENDPOINT_INUSED_MASK;
@@ -1400,18 +1400,18 @@ TinyCLR_Result STM32F4_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, i
 TinyCLR_Result STM32F4_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int32_t pipe, const uint8_t* data, size_t& length) {
     int32_t controller = self->Index;
 
-    USB_CONTROLLER_STATE * State = &STM32F4_UsbClient_ControllerState[controller].state;
+    USB_CONTROLLER_STATE * usbState = &STM32F4_UsbClient_ControllerState[controller].state;
 
     if (pipe >= STM32F4_USB_QUEUE_SIZE
         || data == nullptr
-        || State->deviceState != USB_DEVICE_STATE_CONFIGURED
+        || usbState->deviceState != USB_DEVICE_STATE_CONFIGURED
         || length == 0) {
         return TinyCLR_Result::ArgumentInvalid;
     }
 
-    int endpoint = State->pipes[pipe].TxEP;
+    int endpoint = usbState->pipes[pipe].TxEP;
     // If no Write side to pipe (or if not yet open)
-    if (endpoint == USB_ENDPOINT_NULL || State->queues[endpoint] == nullptr) {
+    if (endpoint == USB_ENDPOINT_NULL || usbState->queues[endpoint] == nullptr) {
         return TinyCLR_Result::NotAvailable;
     }
 
@@ -1433,7 +1433,7 @@ TinyCLR_Result STM32F4_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, i
         USB_PACKET64* Packet64 = nullptr;
 
         if (usb_fifo_buffer_count[endpoint] < STM32F4_USB_FIFO_BUFFER_SIZE) {
-            Packet64 = &State->queues[endpoint][usb_fifo_buffer_in[endpoint]];
+            Packet64 = &usbState->queues[endpoint][usb_fifo_buffer_in[endpoint]];
 
             usb_fifo_buffer_in[endpoint]++;
             usb_fifo_buffer_count[endpoint]++;
@@ -1445,8 +1445,8 @@ TinyCLR_Result STM32F4_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, i
         if (Packet64) {
             uint32_t max_move;
 
-            if (count > State->maxPacketSize[endpoint])
-                max_move = State->maxPacketSize[endpoint];
+            if (count > usbState->maxPacketSize[endpoint])
+                max_move = usbState->maxPacketSize[endpoint];
             else
                 max_move = count;
 
@@ -1455,7 +1455,7 @@ TinyCLR_Result STM32F4_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, i
             }
 
             // we are done when we send a non-full length packet
-            if (max_move < State->maxPacketSize[endpoint]) {
+            if (max_move < usbState->maxPacketSize[endpoint]) {
                 Done = true;
             }
 
@@ -1493,11 +1493,11 @@ TinyCLR_Result STM32F4_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, i
                 goto done_write;
             }
 
-            if (State->deviceState != USB_DEVICE_STATE_CONFIGURED) {
+            if (usbState->deviceState != USB_DEVICE_STATE_CONFIGURED) {
                 goto done_write;
             }
 
-            STM32F4_UsbClient_StartOutput(State, endpoint);
+            STM32F4_UsbClient_StartOutput(usbState, endpoint);
 
             irq.Release();
 
@@ -1508,8 +1508,8 @@ TinyCLR_Result STM32F4_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, i
     }
 
     // here we have a post-condition that IRQs are disabled for all paths through conditional block above
-    if (State->deviceState == USB_DEVICE_STATE_CONFIGURED) {
-        STM32F4_UsbClient_StartOutput(State, endpoint);
+    if (usbState->deviceState == USB_DEVICE_STATE_CONFIGURED) {
+        STM32F4_UsbClient_StartOutput(usbState, endpoint);
     }
 
 done_write:
@@ -1522,16 +1522,16 @@ TinyCLR_Result STM32F4_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, in
     int32_t controller = self->Index;
 
     int endpoint;
-    USB_CONTROLLER_STATE * State = &STM32F4_UsbClient_ControllerState[controller].state;
+    USB_CONTROLLER_STATE * usbState = &STM32F4_UsbClient_ControllerState[controller].state;
 
     if (pipe >= STM32F4_USB_QUEUE_SIZE
-        || State->deviceState != USB_DEVICE_STATE_CONFIGURED) {
+        || usbState->deviceState != USB_DEVICE_STATE_CONFIGURED) {
         return TinyCLR_Result::ArgumentInvalid;
     }
 
-    endpoint = State->pipes[pipe].RxEP;
+    endpoint = usbState->pipes[pipe].RxEP;
     // If no Read side to pipe (or if not yet open)
-    if (endpoint == USB_ENDPOINT_NULL || State->queues[endpoint] == nullptr) {
+    if (endpoint == USB_ENDPOINT_NULL || usbState->queues[endpoint] == nullptr) {
         return TinyCLR_Result::NotAvailable;
     }
 
@@ -1546,7 +1546,7 @@ TinyCLR_Result STM32F4_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, in
         uint32_t max_move;
 
         if (usb_fifo_buffer_count[endpoint] > 0) {
-            Packet64 = &State->queues[endpoint][usb_fifo_buffer_out[endpoint]];
+            Packet64 = &usbState->queues[endpoint][usb_fifo_buffer_out[endpoint]];
 
             usb_fifo_buffer_count[endpoint]--;
             usb_fifo_buffer_out[endpoint]++;
@@ -1557,26 +1557,26 @@ TinyCLR_Result STM32F4_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, in
         }
 
         if (!Packet64) {
-            STM32F4_UsbClient_ClearEvent(State, 1 << endpoint);
+            STM32F4_UsbClient_ClearEvent(usbState, 1 << endpoint);
             break;
         }
 
-        max_move = Packet64->Size - State->currentPacketOffset[endpoint];
+        max_move = Packet64->Size - usbState->currentPacketOffset[endpoint];
         if (remain < max_move) max_move = remain;
 
-        memcpy(ptr, &Packet64->Buffer[State->currentPacketOffset[endpoint]], max_move);
+        memcpy(ptr, &Packet64->Buffer[usbState->currentPacketOffset[endpoint]], max_move);
 
-        State->currentPacketOffset[endpoint] += max_move;
+        usbState->currentPacketOffset[endpoint] += max_move;
         ptr += max_move;
         count += max_move;
         remain -= max_move;
 
         /* if we're done with this packet, move onto the next */
-        if (State->currentPacketOffset[endpoint] == Packet64->Size) {
-            State->currentPacketOffset[endpoint] = 0;
+        if (usbState->currentPacketOffset[endpoint] == Packet64->Size) {
+            usbState->currentPacketOffset[endpoint] = 0;
             Packet64 = nullptr;
 
-            STM32F4_UsbClient_RxEnable(State, endpoint);
+            STM32F4_UsbClient_RxEnable(usbState, endpoint);
         }
     }
 
@@ -1592,20 +1592,20 @@ TinyCLR_Result STM32F4_UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, i
     int endpoint;
     int retries = USB_FLUSH_RETRY_COUNT;
     int queueCnt;
-    USB_CONTROLLER_STATE * State = &STM32F4_UsbClient_ControllerState[controller].state;
+    USB_CONTROLLER_STATE * usbState = &STM32F4_UsbClient_ControllerState[controller].state;
 
     if (pipe >= STM32F4_USB_QUEUE_SIZE) {
         return TinyCLR_Result::ArgumentInvalid;
     }
 
     /* not configured, no data can go in or out */
-    if (State->deviceState != USB_DEVICE_STATE_CONFIGURED) {
+    if (usbState->deviceState != USB_DEVICE_STATE_CONFIGURED) {
         return TinyCLR_Result::InvalidOperation;
     }
 
-    endpoint = State->pipes[pipe].TxEP;
+    endpoint = usbState->pipes[pipe].TxEP;
     // If no Write side to pipe (or if not yet open)
-    if (endpoint == USB_ENDPOINT_NULL || State->queues[endpoint] == nullptr) {
+    if (endpoint == USB_ENDPOINT_NULL || usbState->queues[endpoint] == nullptr) {
         return TinyCLR_Result::NotAvailable;
     }
 
@@ -1613,7 +1613,7 @@ TinyCLR_Result STM32F4_UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, i
 
     // interrupts were disabled or USB interrupt was disabled for whatever reason, so force the flush
     while (usb_fifo_buffer_count[endpoint] > 0 && retries > 0) {
-        STM32F4_UsbClient_StartOutput(State, endpoint);
+        STM32F4_UsbClient_StartOutput(usbState, endpoint);
 
         STM32F4_Time_Delay(nullptr, queueCnt == usb_fifo_buffer_count[endpoint] ? 100 : 0); // don't call Events_WaitForEventsXXX because it will turn off interrupts
 
@@ -1921,7 +1921,7 @@ bool STM32F4_UsbClient_Initialize(int controller) {
     // FS on AHB2
     RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN;
 
-    USB_CONTROLLER_STATE *State = &STM32F4_UsbClient_ControllerState[controller].state;
+    USB_CONTROLLER_STATE *usbState = &STM32F4_UsbClient_ControllerState[controller].state;
 
     OTG_TypeDef* OTG = OTG_FS;
 
@@ -1973,20 +1973,20 @@ bool STM32F4_UsbClient_Uninitialize(int controller) {
 
     RCC->AHB2ENR &= ~RCC_AHB2ENR_OTGFSEN;
 
-    USB_CONTROLLER_STATE *State = &STM32F4_UsbClient_ControllerState[controller].state;
+    USB_CONTROLLER_STATE *usbState = &STM32F4_UsbClient_ControllerState[controller].state;
 
-    State->currentState = USB_DEVICE_STATE_UNINITIALIZED;
+    usbState->currentState = USB_DEVICE_STATE_UNINITIALIZED;
 
     return true;
 }
 
-void STM32F4_UsbClient_ResetEvent(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State) {
+void STM32F4_UsbClient_ResetEvent(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* usbState) {
     // reset interrupts and FIFOs
     OTG->GINTSTS = 0xFFFFFFFF; // clear global interrupts
     OTG->GRXFSIZ = USB_RXFIFO_SIZE; // Rx Fifo
     OTG->DIEPTXF0 = (USB_TX0FIFO_SIZE << 16) | USB_RXFIFO_SIZE; // Tx Fifo 0
     uint32_t addr = USB_RXFIFO_SIZE + USB_TX0FIFO_SIZE;
-    for (int i = 0; i < State->endpointCount; i++) {
+    for (int i = 0; i < usbState->endpointCount; i++) {
         OTG->DIEPTXF[i] = (USB_TXnFIFO_SIZE << 16) | addr; // Tx Fifo i
         addr += USB_TXnFIFO_SIZE;
         OTG->DIEP[i].INT = 0xFF; // clear endpoint interrupts
@@ -2006,15 +2006,15 @@ void STM32F4_UsbClient_ResetEvent(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State)
 
     // configure data endpoints
     uint32_t intMask = 0x00010001; // ep0 interrupts;
-    uint32_t eptype = ((STM32F4_UsbClient_State*)State)->endpointType >> 2; // endpoint types (2 bits / endpoint)
+    uint32_t eptype = ((STM32F4_UsbClient_State*)usbState)->endpointType >> 2; // endpoint types (2 bits / endpoint)
     uint32_t i = 1, bit = 2;
     while (eptype) {
         uint32_t type = eptype & 3;
         if (type != 0) { // data endpoint
             uint32_t ctrl = OTG_DIEPCTL_SD0PID | OTG_DIEPCTL_USBAEP;
             ctrl |= type << 18; // endpoint type
-            ctrl |= State->maxPacketSize[i]; // packet size
-            if (State->isTxQueue[i]) { // Tx (in) endpoint
+            ctrl |= usbState->maxPacketSize[i]; // packet size
+            if (usbState->isTxQueue[i]) { // Tx (in) endpoint
                 ctrl |= OTG_DIEPCTL_SNAK; // disable tx endpoint
                 ctrl |= i << 22; // Tx FIFO number
                 OTG->DIEP[i].CTL = ctrl; // configure in endpoint
@@ -2023,7 +2023,7 @@ void STM32F4_UsbClient_ResetEvent(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State)
             else { // Rx (out) endpoint
                 // Rx endpoints must be enabled here
                 // Enabling after Set_Configuration does not work correctly
-                OTG->DOEP[i].TSIZ = OTG_DOEPTSIZ_PKTCNT_1 | State->maxPacketSize[i];
+                OTG->DOEP[i].TSIZ = OTG_DOEPTSIZ_PKTCNT_1 | usbState->maxPacketSize[i];
                 ctrl |= OTG_DOEPCTL_EPENA | OTG_DOEPCTL_CNAK; // enable rx endpoint
                 OTG->DOEP[i].CTL = ctrl; // configure out endpoint
                 intMask |= bit << 16; // enable out interrupt
@@ -2044,27 +2044,27 @@ void STM32F4_UsbClient_ResetEvent(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State)
     OTG->DCFG &= ~OTG_DCFG_DAD; // reset device address
 
     /* clear all flags */
-    STM32F4_UsbClient_ClearEvent(State, 0xFFFFFFFF); // clear all events on all endpoints
+    STM32F4_UsbClient_ClearEvent(usbState, 0xFFFFFFFF); // clear all events on all endpoints
 
-    State->firstGetDescriptor = true;
+    usbState->firstGetDescriptor = true;
 
-    State->deviceState = USB_DEVICE_STATE_DEFAULT;
-    State->address = 0;
-    STM32F4_UsbClient_StateCallback(State);
+    usbState->deviceState = USB_DEVICE_STATE_DEFAULT;
+    usbState->address = 0;
+    STM32F4_UsbClient_StateCallback(usbState);
 }
 
-void STM32F4_UsbClient_EndpointRxInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State, uint32_t ep, uint32_t count) {
+void STM32F4_UsbClient_EndpointRxInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* usbState, uint32_t ep, uint32_t count) {
     uint32_t* pd;
 
     bool disableRx = false;
 
     if (ep == 0) { // control endpoint
-        pd = (uint32_t*)((STM32F4_UsbClient_State*)State)->ep0Buffer;
-        State->ptrData = (uint8_t*)pd;
-        State->dataSize = count;
+        pd = (uint32_t*)((STM32F4_UsbClient_State*)usbState)->ep0Buffer;
+        usbState->ptrData = (uint8_t*)pd;
+        usbState->dataSize = count;
     }
     else { // data endpoint
-        USB_PACKET64* Packet64 = STM32F4_UsbClient_RxEnqueue(State, ep, disableRx);
+        USB_PACKET64* Packet64 = STM32F4_UsbClient_RxEnqueue(usbState, ep, disableRx);
 
         if (disableRx) return;
 
@@ -2079,7 +2079,7 @@ void STM32F4_UsbClient_EndpointRxInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STAT
     }
 }
 
-void STM32F4_UsbClient_EndpointInInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State, uint32_t ep) {
+void STM32F4_UsbClient_EndpointInInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* usbState, uint32_t ep) {
     uint32_t bits = OTG->DIEP[ep].INT;
     if (bits & OTG_DIEPINT_XFRC) { // transfer completed
         OTG->DIEP[ep].INT = OTG_DIEPINT_XFRC; // clear interrupt
@@ -2090,15 +2090,15 @@ void STM32F4_UsbClient_EndpointInInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STAT
         uint32_t count;
 
         if (ep == 0) { // control endpoint
-            if (State->dataCallback) { // data to send
-                State->dataCallback(State);  // this call can't fail
-                ps = (uint32_t*)State->ptrData;
-                count = State->dataSize;
+            if (usbState->dataCallback) { // data to send
+                usbState->dataCallback(usbState);  // this call can't fail
+                ps = (uint32_t*)usbState->ptrData;
+                count = usbState->dataSize;
             }
         }
-        else if (State->queues[ep] != 0 && State->isTxQueue[ep]) { // Tx data endpoint
+        else if (usbState->queues[ep] != 0 && usbState->isTxQueue[ep]) { // Tx data endpoint
 
-            USB_PACKET64* Packet64 = STM32F4_UsbClient_TxDequeue(State, ep);
+            USB_PACKET64* Packet64 = STM32F4_UsbClient_TxDequeue(usbState, ep);
 
             if (Packet64) {  // data to send
                 ps = (uint32_t*)Packet64->Buffer;
@@ -2124,19 +2124,19 @@ void STM32F4_UsbClient_EndpointInInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STAT
     }
 }
 
-void STM32F4_UsbClient_HandleSetup(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State) {
+void STM32F4_UsbClient_HandleSetup(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* usbState) {
     /* send last setup packet to the upper layer */
-    uint8_t result = STM32F4_UsbClient_ControlCallback(State);
+    uint8_t result = STM32F4_UsbClient_ControlCallback(usbState);
 
     switch (result) {
 
     case USB_STATE_ADDRESS:
         /* upper layer needs us to change the address */
-        OTG->DCFG |= State->address << 4; // set device address
+        OTG->DCFG |= usbState->address << 4; // set device address
         break;
 
     case USB_STATE_DONE:
-        State->dataCallback = 0;
+        usbState->dataCallback = 0;
         break;
 
     case USB_STATE_STALL:
@@ -2150,19 +2150,19 @@ void STM32F4_UsbClient_HandleSetup(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State
     }
 
     // check ep0 for replies
-    STM32F4_UsbClient_EndpointInInterrupt(OTG, State, 0);
+    STM32F4_UsbClient_EndpointInInterrupt(OTG, usbState, 0);
 
     // check all Tx endpoints after configuration setup
     if (result == USB_STATE_CONFIGURATION) {
-        for (int ep = 1; ep < State->endpointCount; ep++) {
-            if (State->queues[ep] && State->isTxQueue[ep]) {
-                STM32F4_UsbClient_EndpointInInterrupt(OTG, State, ep);
+        for (int ep = 1; ep < usbState->endpointCount; ep++) {
+            if (usbState->queues[ep] && usbState->isTxQueue[ep]) {
+                STM32F4_UsbClient_EndpointInInterrupt(OTG, usbState, ep);
             }
         }
     }
 }
 
-void STM32F4_UsbClient_EndpointOutInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* State, uint32_t ep) {
+void STM32F4_UsbClient_EndpointOutInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* usbState, uint32_t ep) {
     uint32_t bits = OTG->DOEP[ep].INT;
     if (bits & OTG_DOEPINT_XFRC) { // transfer completed
         OTG->DOEP[ep].INT = OTG_DOEPINT_XFRC; // clear interrupt
@@ -2174,14 +2174,14 @@ void STM32F4_UsbClient_EndpointOutInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STA
 
     if (ep == 0) { // control endpoint
         // enable endpoint
-        OTG->DOEP[0].TSIZ = OTG_DOEPTSIZ_STUPCNT | OTG_DOEPTSIZ_PKTCNT_1 | State->packetSize;
+        OTG->DOEP[0].TSIZ = OTG_DOEPTSIZ_STUPCNT | OTG_DOEPTSIZ_PKTCNT_1 | usbState->packetSize;
         OTG->DOEP[0].CTL |= OTG_DOEPCTL_EPENA | OTG_DOEPCTL_CNAK;
         // Handle Setup data in upper layer
-        STM32F4_UsbClient_HandleSetup(OTG, State);
+        STM32F4_UsbClient_HandleSetup(OTG, usbState);
     }
     else if (usb_fifo_buffer_count[ep] < STM32F4_USB_FIFO_BUFFER_SIZE) {
         // enable endpoint
-        OTG->DOEP[ep].TSIZ = OTG_DOEPTSIZ_PKTCNT_1 | State->maxPacketSize[ep];
+        OTG->DOEP[ep].TSIZ = OTG_DOEPTSIZ_PKTCNT_1 | usbState->maxPacketSize[ep];
         OTG->DOEP[ep].CTL |= OTG_DOEPCTL_EPENA | OTG_DOEPCTL_CNAK;
     }
     else {
@@ -2196,7 +2196,7 @@ void STM32F4_UsbClient_Interrupt(void* param) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     OTG_TypeDef* OTG = OTG_FS;
-    USB_CONTROLLER_STATE* State = &STM32F4_UsbClient_ControllerState[STM32F4_USB_FS_ID].state;
+    USB_CONTROLLER_STATE* usbState = &STM32F4_UsbClient_ControllerState[STM32F4_USB_FS_ID].state;
 
     uint32_t intPend = OTG->GINTSTS; // get pending bits
 
@@ -2208,7 +2208,7 @@ void STM32F4_UsbClient_Interrupt(void* param) {
         if (status == OTG_GRXSTSP_PKTSTS_PR // data received
             || status == OTG_GRXSTSP_PKTSTS_SR // setup received
             ) {
-            STM32F4_UsbClient_EndpointRxInterrupt(OTG, State, ep, count);
+            STM32F4_UsbClient_EndpointRxInterrupt(OTG, usbState, ep, count);
         }
         else {
             // others: nothing to do
@@ -2221,7 +2221,7 @@ void STM32F4_UsbClient_Interrupt(void* param) {
         int ep = 0;
         while (bits) {
             if (bits & 1)
-                STM32F4_UsbClient_EndpointInInterrupt(OTG, State, ep);
+                STM32F4_UsbClient_EndpointInInterrupt(OTG, usbState, ep);
             ep++;
             bits >>= 1;
         }
@@ -2232,7 +2232,7 @@ void STM32F4_UsbClient_Interrupt(void* param) {
         int ep = 0;
         while (bits) {
             if (bits & 1)
-                STM32F4_UsbClient_EndpointOutInterrupt(OTG, State, ep);
+                STM32F4_UsbClient_EndpointOutInterrupt(OTG, usbState, ep);
 
             ep++;
             bits >>= 1;
@@ -2240,16 +2240,16 @@ void STM32F4_UsbClient_Interrupt(void* param) {
     }
 
     if (intPend & OTG_GINTSTS_USBRST) { // reset
-        STM32F4_UsbClient_ResetEvent(OTG, State);
+        STM32F4_UsbClient_ResetEvent(OTG, usbState);
         OTG->GINTSTS = OTG_GINTSTS_USBRST; // clear interrupt
     }
     else {
         if (intPend & OTG_GINTSTS_USBSUSP) { // suspend
-            ((STM32F4_UsbClient_State*)State)->previousDeviceState = State->deviceState;
+            ((STM32F4_UsbClient_State*)usbState)->previousDeviceState = usbState->deviceState;
 
-            State->deviceState = USB_DEVICE_STATE_SUSPENDED;
+            usbState->deviceState = USB_DEVICE_STATE_SUSPENDED;
 
-            STM32F4_UsbClient_StateCallback(State);
+            STM32F4_UsbClient_StateCallback(usbState);
 
             OTG->GINTSTS = OTG_GINTSTS_USBSUSP; // clear interrupt
         }
@@ -2257,17 +2257,17 @@ void STM32F4_UsbClient_Interrupt(void* param) {
         if (intPend & OTG_GINTSTS_WKUPINT) { // wakeup
             OTG->DCTL &= ~OTG_DCTL_RWUSIG; // remove remote wakeup signaling
 
-            State->deviceState = ((STM32F4_UsbClient_State*)State)->previousDeviceState;
+            usbState->deviceState = ((STM32F4_UsbClient_State*)usbState)->previousDeviceState;
 
-            STM32F4_UsbClient_StateCallback(State);
+            STM32F4_UsbClient_StateCallback(usbState);
 
             OTG->GINTSTS = OTG_GINTSTS_WKUPINT; // clear interrupt
         }
     }
 }
 
-bool STM32F4_UsbClient_StartOutput(USB_CONTROLLER_STATE* State, int ep) {
-    if (State == 0 || ep >= State->endpointCount)
+bool STM32F4_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int ep) {
+    if (usbState == 0 || ep >= usbState->endpointCount)
         return false;
 
     OTG_TypeDef* OTG = OTG_FS;
@@ -2275,11 +2275,11 @@ bool STM32F4_UsbClient_StartOutput(USB_CONTROLLER_STATE* State, int ep) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     // If endpoint is not an output
-    if (State->queues[ep] == 0 || !State->isTxQueue[ep])
+    if (usbState->queues[ep] == 0 || !usbState->isTxQueue[ep])
         return false;
 
     /* if the halt feature for this endpoint is set, then just clear all the characters */
-    if (State->endpointStatus[ep] & USB_STATUS_ENDPOINT_HALT) {
+    if (usbState->endpointStatus[ep] & USB_STATUS_ENDPOINT_HALT) {
         STM32F4_UsbClient_ClearEndpoints(ep);
 
         return true;
@@ -2289,14 +2289,14 @@ bool STM32F4_UsbClient_StartOutput(USB_CONTROLLER_STATE* State, int ep) {
         STM32F4_UsbClient_Interrupt((void *)OTG);
     }
     // write first packet if not done yet
-    STM32F4_UsbClient_EndpointInInterrupt(OTG, State, ep);
+    STM32F4_UsbClient_EndpointInInterrupt(OTG, usbState, ep);
 
     return true;
 }
 
-bool STM32F4_UsbClient_RxEnable(USB_CONTROLLER_STATE* State, int ep) {
+bool STM32F4_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int ep) {
     // If this is not a legal Rx queue
-    if (State == 0 || State->queues[ep] == 0 || State->isTxQueue[ep])
+    if (usbState == 0 || usbState->queues[ep] == 0 || usbState->isTxQueue[ep])
         return false;
 
     OTG_TypeDef* OTG = OTG_FS;
@@ -2305,7 +2305,7 @@ bool STM32F4_UsbClient_RxEnable(USB_CONTROLLER_STATE* State, int ep) {
 
     // enable Rx
     if (!(OTG->DOEP[ep].CTL & OTG_DOEPCTL_EPENA)) {
-        OTG->DOEP[ep].TSIZ = OTG_DOEPTSIZ_PKTCNT_1 | State->maxPacketSize[ep];
+        OTG->DOEP[ep].TSIZ = OTG_DOEPTSIZ_PKTCNT_1 | usbState->maxPacketSize[ep];
         OTG->DOEP[ep].CTL |= OTG_DOEPCTL_EPENA | OTG_DOEPCTL_CNAK; // enable endpoint
     }
 
@@ -2313,7 +2313,7 @@ bool STM32F4_UsbClient_RxEnable(USB_CONTROLLER_STATE* State, int ep) {
 }
 
 void STM32F4_UsbClient_ProtectPins(int controller, bool On) {
-    USB_CONTROLLER_STATE *State = &STM32F4_UsbClient_ControllerState[controller].state;
+    USB_CONTROLLER_STATE *usbState = &STM32F4_UsbClient_ControllerState[controller].state;
 
     OTG_TypeDef* OTG = OTG_FS;
 
@@ -2340,8 +2340,8 @@ void STM32F4_UsbClient_ProtectPins(int controller, bool On) {
         OTG->DCTL |= OTG_DCTL_SDIS; // soft disconnect
 
         // clear USB Txbuffer
-        for (int ep = 1; ep < State->endpointCount; ep++) {
-            if (State->queues[ep] && State->isTxQueue[ep]) {
+        for (int ep = 1; ep < usbState->endpointCount; ep++) {
+            if (usbState->queues[ep] && usbState->isTxQueue[ep]) {
                 STM32F4_UsbClient_ClearEndpoints(ep);
             }
         }
@@ -2353,7 +2353,7 @@ void STM32F4_UsbClient_ProtectPins(int controller, bool On) {
             STM32F4_GpioInternal_ClosePin(id.number);
     }
 
-    State->deviceState = On ? USB_DEVICE_STATE_ATTACHED : USB_DEVICE_STATE_DETACHED;
+    usbState->deviceState = On ? USB_DEVICE_STATE_ATTACHED : USB_DEVICE_STATE_DETACHED;
 
-    STM32F4_UsbClient_StateCallback(State);
+    STM32F4_UsbClient_StateCallback(usbState);
 }
