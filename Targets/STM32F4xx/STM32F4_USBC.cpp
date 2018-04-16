@@ -2312,7 +2312,7 @@ bool STM32F4_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t ep) {
     return true;
 }
 
-void STM32F4_UsbClient_ProtectPins(int32_t controller, bool On) {
+void STM32F4_UsbClient_ProtectPins(int32_t controller, bool on) {
     USB_CONTROLLER_STATE *usbState = &STM32F4_UsbClient_ControllerState[controller].state;
 
     OTG_TypeDef* OTG = OTG_FS;
@@ -2323,7 +2323,7 @@ void STM32F4_UsbClient_ProtectPins(int32_t controller, bool On) {
     auto& dm = g_STM32F4_Usb_Dm_Pins[controller];
     auto& id = g_STM32F4_Usb_Id_Pins[controller];
 
-    if (On) {
+    if (on) {
 
         STM32F4_GpioInternal_ConfigurePin(dp.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, dp.alternateFunction);
         STM32F4_GpioInternal_ConfigurePin(dm.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, dm.alternateFunction);
@@ -2353,7 +2353,7 @@ void STM32F4_UsbClient_ProtectPins(int32_t controller, bool On) {
             STM32F4_GpioInternal_ClosePin(id.number);
     }
 
-    usbState->deviceState = On ? USB_DEVICE_STATE_ATTACHED : USB_DEVICE_STATE_DETACHED;
+    usbState->deviceState = on ? USB_DEVICE_STATE_ATTACHED : USB_DEVICE_STATE_DETACHED;
 
     STM32F4_UsbClient_StateCallback(usbState);
 }
