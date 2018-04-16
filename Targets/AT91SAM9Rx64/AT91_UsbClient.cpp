@@ -1900,9 +1900,6 @@ __inline void AT91_UsbClient_PmcEnableUsbClock(void) {
     (*(volatile uint32_t *)(AT91C_BASE_UDP + 0xE0)) |= 3; // Full Speed
 }
 
-__inline void AT91_UsbClient_PmcEnableUTMIBIAS(void) {
-    // TO DO
-}
 __inline void AT91_UsbClient_PmcDisableUsbClock(void) {
     (*(volatile uint32_t *)0xFFFFFC14) = 1 << AT91C_ID_UDP;
     (*(volatile uint32_t *)0xFFFFFC1C) &= ~AT91C_CKGR_UPLLEN_ENABLED;
@@ -2023,7 +2020,6 @@ void AT91_UsbClient_ResumeEvent(USB_CONTROLLER_STATE *usbState) {
 
     // TODO: will be replaced by PMC API
     AT91_UsbClient_PmcEnableUsbClock();
-    AT91_UsbClient_PmcEnableUTMIBIAS();
 
     usbState->deviceState = at91_UsbClientController[usbState->controllerNum].previousDeviceState;
 
@@ -2498,8 +2494,7 @@ bool AT91_UsbClient_Initialize(USB_CONTROLLER_STATE *usbState) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     // Enable USB device clock
-    AT91_UsbClient_PmcEnableUsbClock();
-    AT91_UsbClient_PmcEnableUTMIBIAS();
+    AT91_UsbClient_PmcEnableUsbClock();    
 
     // Enable the interrupt for  UDP
     AT91_Interrupt_Activate(AT91C_ID_UDP, (uint32_t*)&AT91_UsbClient_InterruptHandler, (void*)usbState);
