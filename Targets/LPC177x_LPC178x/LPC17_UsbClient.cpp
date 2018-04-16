@@ -357,15 +357,15 @@ USB_DYNAMIC_CONFIGURATION UsbDefaultConfiguration;
 
 const TinyCLR_UsbClient_DescriptorHeader * USB_FindRecord(USB_CONTROLLER_STATE* usbState, uint8_t marker, USB_SETUP_PACKET * iValue);
 void LPC17_UsbClient_ClearEndpoints(int32_t endpoint);
-bool LPC17_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int endpoint);
+bool LPC17_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
 
 TinyCLR_UsbClient_DataReceivedHandler LPC17_UsbClient_DataReceivedHandler;
 TinyCLR_UsbClient_OsExtendedPropertyHandler LPC17_UsbClient_OsExtendedPropertyHandler;
 
 // usb fifo buffer
-static int usb_fifo_buffer_in[LPC17_USB_QUEUE_SIZE];
-static int usb_fifo_buffer_out[LPC17_USB_QUEUE_SIZE];
-static int usb_fifo_buffer_count[LPC17_USB_QUEUE_SIZE];
+static int32_t usb_fifo_buffer_in[LPC17_USB_QUEUE_SIZE];
+static int32_t usb_fifo_buffer_out[LPC17_USB_QUEUE_SIZE];
+static int32_t usb_fifo_buffer_count[LPC17_USB_QUEUE_SIZE];
 
 int8_t LPC17_UsbClient_EndpointMap[] = { ENDPOINT_INUSED_MASK,                          // Endpoint 0
                                                 ENDPOINT_DIR_IN_MASK | ENDPOINT_DIR_OUT_MASK,  // Endpoint 1
@@ -542,7 +542,7 @@ void LPC17_UsbClient_ClearQueues(USB_CONTROLLER_STATE *usbState, bool ClrRxQueue
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (ClrRxQueue) {
-        for (int endpoint = 0; endpoint < LPC17_USB_QUEUE_SIZE; endpoint++) {
+        for (int32_t endpoint = 0; endpoint < LPC17_USB_QUEUE_SIZE; endpoint++) {
             if (usbState->Queues[endpoint] == nullptr || usbState->IsTxQueue[endpoint])
                 continue;
 
@@ -554,7 +554,7 @@ void LPC17_UsbClient_ClearQueues(USB_CONTROLLER_STATE *usbState, bool ClrRxQueue
     }
 
     if (ClrTxQueue) {
-        for (int endpoint = 0; endpoint < LPC17_USB_QUEUE_SIZE; endpoint++) {
+        for (int32_t endpoint = 0; endpoint < LPC17_USB_QUEUE_SIZE; endpoint++) {
             if (usbState->Queues[endpoint] && usbState->IsTxQueue[endpoint])
                 LPC17_UsbClient_ClearEndpoints(endpoint);
         }
@@ -1061,7 +1061,7 @@ uint8_t LPC17_UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState) {
     return USB_STATE_STALL;
 }
 
-USB_PACKET64* LPC17_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* usbState, int endpoint, bool& disableRx) {
+USB_PACKET64* LPC17_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* usbState, int32_t endpoint, bool& disableRx) {
     USB_PACKET64* packet;
 
     if (usb_fifo_buffer_count[endpoint] == LPC17_USB_FIFO_BUFFER_SIZE) {
@@ -1085,7 +1085,7 @@ USB_PACKET64* LPC17_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* usbState, int endp
     return packet;
 }
 
-USB_PACKET64* LPC17_UsbClient_TxDequeue(USB_CONTROLLER_STATE* usbState, int endpoint) {
+USB_PACKET64* LPC17_UsbClient_TxDequeue(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
     USB_PACKET64* packet;
 
     if (usb_fifo_buffer_count[endpoint] == 0) {
@@ -1110,9 +1110,9 @@ void LPC17_UsbClient_ClearEndpoints(int32_t endpoint) {
 ///////////////////////////////////////////////////////////////////////////////////////////
 /// TinyCLR USBClient API
 ///////////////////////////////////////////////////////////////////////////////////////////
-bool LPC17_UsbClient_Initialize(int controller, USB_CONTROLLER_STATE* usbState);
-bool LPC17_UsbClient_Uninitialize(int controller);
-bool LPC17_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int endpoint);
+bool LPC17_UsbClient_Initialize(int32_t controller, USB_CONTROLLER_STATE* usbState);
+bool LPC17_UsbClient_Uninitialize(int32_t controller);
+bool LPC17_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
 
 static TinyCLR_UsbClient_Provider usbClientProvider;
 static TinyCLR_Api_Info usbClientApi;
@@ -1257,7 +1257,7 @@ TinyCLR_Result LPC17_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int3
         return TinyCLR_Result::NotAvailable;
 
     // The specified endpoints must not be in use by another pipe
-    for (int i = 0; i < LPC17_USB_QUEUE_SIZE; i++) {
+    for (int32_t i = 0; i < LPC17_USB_QUEUE_SIZE; i++) {
         if (readEp != USB_ENDPOINT_NULL && (usbState->pipes[i].RxEP == readEp || usbState->pipes[i].TxEP == readEp))
             return TinyCLR_Result::NotAvailable;
         if (writeEp != USB_ENDPOINT_NULL && (usbState->pipes[i].RxEP == writeEp || usbState->pipes[i].TxEP == writeEp))
@@ -1341,7 +1341,7 @@ TinyCLR_Result LPC17_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     // Close the Rx pipe
-    int endpoint = usbState->pipes[pipe].RxEP;
+    int32_t endpoint = usbState->pipes[pipe].RxEP;
     if (endpoint != USB_ENDPOINT_NULL && usbState->Queues[endpoint]) {
         LPC17_UsbClient_ClearEndpoints(endpoint);
     }
@@ -1388,7 +1388,7 @@ TinyCLR_Result LPC17_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int
         return TinyCLR_Result::ArgumentInvalid;
     }
 
-    int endpoint = usbState->pipes[pipe].TxEP;
+    int32_t endpoint = usbState->pipes[pipe].TxEP;
     // If no Write side to pipe (or if not yet open)
     if (endpoint == USB_ENDPOINT_NULL || usbState->Queues[endpoint] == nullptr) {
         return TinyCLR_Result::NotAvailable;
@@ -1400,7 +1400,7 @@ TinyCLR_Result LPC17_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int
     uint32_t            count = length;
     bool                Done = false;
     uint32_t            WaitLoopCnt = 0;
-    int                 totWrite = 0;
+    int32_t                 totWrite = 0;
 
     // This loop packetizes the data and sends it out.  All packets sent have
     // the maximum length for the given endpoint except for the last packet which
@@ -1500,7 +1500,7 @@ done_write:
 TinyCLR_Result LPC17_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int32_t pipe, uint8_t* data, size_t& length) {
     int32_t controller = self->Index;
 
-    int endpoint;
+    int32_t endpoint;
     USB_CONTROLLER_STATE * usbState = &usbClientState[controller];
 
     if (pipe >= LPC17_USB_QUEUE_SIZE
@@ -1568,9 +1568,9 @@ TinyCLR_Result LPC17_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int3
 TinyCLR_Result LPC17_UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, int32_t pipe) {
     int32_t controller = self->Index;
 
-    int endpoint;
-    int retries = USB_FLUSH_RETRY_COUNT;
-    int queueCnt;
+    int32_t endpoint;
+    int32_t retries = USB_FLUSH_RETRY_COUNT;
+    int32_t queueCnt;
     USB_CONTROLLER_STATE * usbState = &usbClientState[controller];
 
     if (pipe >= LPC17_USB_QUEUE_SIZE) {
@@ -1816,9 +1816,9 @@ union EndpointConfiguration {
     struct {
         unsigned EE : 1;      // Endpoint enable (1 = enable)
         unsigned DE : 1;      // Double buffer enable (1 = double buffered)
-        unsigned MPS : 10;      // Maximum packet size (iso=1-1023, blk=8,16,32,64, int=1-64
+        unsigned MPS : 10;      // Maximum packet size (iso=1-1023, blk=8,16,32,64, int32_t=1-64
         unsigned ED : 1;      // Endpoint direction (1 = IN)
-        unsigned ET : 2;      // Endpoint type (1=iso, 2=blk, 3=int)
+        unsigned ET : 2;      // Endpoint type (1=iso, 2=blk, 3=int32_t)
         unsigned EN : 4;      // Endpoint number (1-15)
         unsigned AISN : 3;      // Alternate Interface number
         unsigned IN : 3;      // Interface number
@@ -1828,13 +1828,13 @@ union EndpointConfiguration {
 };
 
 static EndpointConfiguration EndpointInit[USB_MAX_EP_COUNT];     // Corresponds to endpoint configuration RAM at LPC17xx_USB::UDCCRx
-static int nacking_rx_OUT_data[USB_MAX_EP_COUNT];
+static int32_t nacking_rx_OUT_data[USB_MAX_EP_COUNT];
 
-bool LPC17_UsbClient_ProtectPins(int Controller, bool On);
+bool LPC17_UsbClient_ProtectPins(int32_t controller, bool On);
 void LPC17_UsbClient_InterruptHandler(void* param);
-void LPC17_UsbClient_TxPacket(USB_CONTROLLER_STATE* usbState, int endpoint);
-void LPC17_UsbClient_ProcessEP0(USB_CONTROLLER_STATE* usbState, int in, int setup);
-void LPC17_UsbClient_ProcessEndPoint(USB_CONTROLLER_STATE* usbState, int ep, int in);
+void LPC17_UsbClient_TxPacket(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
+void LPC17_UsbClient_ProcessEP0(USB_CONTROLLER_STATE* usbState, int32_t in, int32_t setup);
+void LPC17_UsbClient_ProcessEndPoint(USB_CONTROLLER_STATE* usbState, int32_t ep, int32_t in);
 void LPC17_UsbClient_Enpoint_TxInterruptHandler(USB_CONTROLLER_STATE* usbState, uint32_t endpoint);
 void LPC17_UsbClient_Enpoint_RxInterruptHandler(USB_CONTROLLER_STATE* usbState, uint32_t endpoint);
 void LPC17_UsbClient_ResetEvent(USB_CONTROLLER_STATE* usbState);
@@ -1843,7 +1843,7 @@ void LPC17_UsbClient_ResumeEvent(USB_CONTROLLER_STATE* usbState);
 void LPC17_UsbClient_ControlNext(USB_CONTROLLER_STATE* usbState);
 uint32_t LPC17_UsbClient_EPAdr(uint32_t EPNum, int8_t in);
 
-bool LPC17_UsbClient_Initialize(int controller, USB_CONTROLLER_STATE *usbState) {
+bool LPC17_UsbClient_Initialize(int32_t controller, USB_CONTROLLER_STATE *usbState) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -1851,7 +1851,7 @@ bool LPC17_UsbClient_Initialize(int controller, USB_CONTROLLER_STATE *usbState) 
 
     LPC17_Interrupt_Activate(USB_IRQn, (uint32_t*)&LPC17_UsbClient_InterruptHandler, 0);
 
-    for (int i = 0; i < USB_MAX_EP_COUNT; i++)
+    for (int32_t i = 0; i < USB_MAX_EP_COUNT; i++)
         EndpointInit[i].word = 0;       // All useable endpoints initialize to unused
 
     for (auto pipe = 0; pipe < USB_MAX_EP_COUNT; pipe++) {
@@ -1890,7 +1890,7 @@ bool LPC17_UsbClient_Initialize(int controller, USB_CONTROLLER_STATE *usbState) 
     return true;
 }
 
-bool LPC17_UsbClient_Uninitialize(int controller) {
+bool LPC17_UsbClient_Uninitialize(int32_t controller) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     LPC17_UsbClient_ProtectPins(controller, false);
@@ -1904,7 +1904,7 @@ bool LPC17_UsbClient_Uninitialize(int controller) {
     return true;
 }
 
-bool LPC17_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int endpoint) {
+bool LPC17_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
     int32_t m, n, val;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -1962,7 +1962,7 @@ bool LPC17_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int endpoint) {
     return true;
 }
 
-bool LPC17_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int endpoint) {
+bool LPC17_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
     if (endpoint >= USB_MAX_EP_COUNT)
         return false;
 
@@ -2116,8 +2116,8 @@ static void LPC17_UsbClient_SetStallEP(uint32_t EPNum, int8_t in) {
     LPC17_UsbClient_WrCmdDat(CMD_SET_EP_STAT(LPC17_UsbClient_EPAdr(EPNum, in)), DAT_WR_BYTE(EP_STAT_ST));
 }
 
-void LPC17_UsbClient_ProcessEndPoint(USB_CONTROLLER_STATE* usbState, int ep, int in) {
-    int val;
+void LPC17_UsbClient_ProcessEndPoint(USB_CONTROLLER_STATE* usbState, int32_t ep, int32_t in) {
+    int32_t val;
 
     if (in) {
         LPC17_UsbClient_Enpoint_TxInterruptHandler(usbState, ep);
@@ -2188,7 +2188,7 @@ void LPC17_UsbClient_StopHardware() {
     LPC17_UsbClient_Connect(false);
 }
 
-void LPC17_UsbClient_TxPacket(USB_CONTROLLER_STATE* usbState, int endpoint) {
+void LPC17_UsbClient_TxPacket(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     // transmit a packet on UsbPortNum, if there are no more packets to transmit, then die
@@ -2324,9 +2324,9 @@ isr_end:
     return;
 }
 
-void LPC17_UsbClient_ProcessEP0(USB_CONTROLLER_STATE *usbState, int in, int setup) {
+void LPC17_UsbClient_ProcessEP0(USB_CONTROLLER_STATE *usbState, int32_t in, int32_t setup) {
     uint32_t EP_INTR;
-    int i;
+    int32_t i;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -2385,7 +2385,7 @@ void LPC17_UsbClient_ProcessEP0(USB_CONTROLLER_STATE *usbState, int in, int setu
 
             // If the port is configured, then output any possible withheld data
             if (result == USB_STATE_CONFIGURATION) {
-                for (int ep = 0; ep < USB_MAX_EP_COUNT; ep++) {
+                for (int32_t ep = 0; ep < USB_MAX_EP_COUNT; ep++) {
                     if (usbState->IsTxQueue[ep])
                         LPC17_UsbClient_StartOutput(usbState, ep);
                 }
@@ -2405,7 +2405,7 @@ void LPC17_UsbClient_ProcessEP0(USB_CONTROLLER_STATE *usbState, int in, int setu
 
 void LPC17_UsbClient_Enpoint_TxInterruptHandler(USB_CONTROLLER_STATE *usbState, uint32_t endpoint) {
     uint32_t EP_INTR;
-    int val;
+    int32_t val;
 
     if (USBEpIntSt & (1 << LPC17_UsbClient_EPAdr(endpoint, 1)))//done sending?
     {
@@ -2466,7 +2466,7 @@ void LPC17_UsbClient_ResetEvent(USB_CONTROLLER_STATE *usbState) {
     // clear all flags
     LPC17_UsbClient_ClearEvent(usbState, 0xFFFFFFFF);
 
-    for (int ep = 0; ep < USB_MAX_EP_COUNT; ep++) {
+    for (int32_t ep = 0; ep < USB_MAX_EP_COUNT; ep++) {
         lcp17_UsbClientController[usbState->ControllerNum].txRunning[ep] = false;
         lcp17_UsbClientController[usbState->ControllerNum].txNeedZLPS[ep] = false;
     }
@@ -2476,7 +2476,7 @@ void LPC17_UsbClient_ResetEvent(USB_CONTROLLER_STATE *usbState) {
     LPC17_UsbClientControllerCallback(usbState);
 }
 
-bool LPC17_UsbClient_ProtectPins(int controller, bool On) {
+bool LPC17_UsbClient_ProtectPins(int32_t controller, bool On) {
     USB_CONTROLLER_STATE *usbState = lcp17_UsbClientController[controller].usbState;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
