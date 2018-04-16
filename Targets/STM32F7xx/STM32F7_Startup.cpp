@@ -294,9 +294,9 @@ extern "C" {
         while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL);
 
 
-    // minimal peripheral clocks
-#ifdef RCC_AHB1ENR_CCMDATARAMEN
-        RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN; // 64k RAM (CCM)
+        // minimal peripheral clocks
+#ifdef RCC_AHB1ENR_DTCMRAMEN
+        RCC->AHB1ENR |= RCC_AHB1ENR_DTCMRAMEN; // 64k RAM (CCM)
 #endif
 
         RCC->APB1ENR |= RCC_APB1ENR_PWREN;    // PWR clock used for sleep;
