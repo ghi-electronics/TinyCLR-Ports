@@ -276,7 +276,7 @@ extern "C" {
         // Rev A cannot be read from revision field (another rev A error!).
         // The wrong device field (411=F2) must be used instead!
         if ((DBGMCU->IDCODE & 0xFF) != 0x11) {
-            FLASH->ACR |= FLASH_ACR_PRFTEN;
+            FLASH->ACR = FLASH_ACR_PRFTEN | FLASH_ACR_LATENCY_BITS | FLASH_ACR_ARTEN;
         }
 
         // setup PLL
@@ -289,6 +289,9 @@ extern "C" {
             | RCC_CFGR_HPRE_DIV_BITS   // AHB clock
             | RCC_CFGR_PPRE1_DIV_BITS  // APB1 clock
             | RCC_CFGR_PPRE2_DIV_BITS; // APB2 clock
+            
+        // wait for PLL ready 
+        while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL);
 
 
     // minimal peripheral clocks
