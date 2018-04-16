@@ -201,6 +201,8 @@ struct USB_CONTROLLER_STATE {
     /* USB status information, used in
        GET_STATUS, SET_FEATURE, CLEAR_FEATURE */
     uint16_t                                                    deviceStatus;
+
+    uint16_t                                                    endpointType;
     uint16_t*                                                   endpointStatus;
     uint8_t                                                     endpointCount;
     uint8_t                                                     endpointStatusChange;
@@ -373,11 +375,11 @@ int8_t LPC17_UsbClient_EndpointMap[] = { ENDPOINT_INUSED_MASK,                  
                                                 ENDPOINT_DIR_IN_MASK | ENDPOINT_DIR_OUT_MASK   // Endpoint 3
 };
 
-#define TOTAL_USB_CONTROLLER 1
+#define TOTAL_USB_CONTROLLERS 1
 
 #define USB_USBCLIENT_ID 0
 
-USB_CONTROLLER_STATE usbClientState[TOTAL_USB_CONTROLLER];
+USB_CONTROLLER_STATE usbClientState[TOTAL_USB_CONTROLLERS];
 
 uint8_t USB_LanguageDescriptor[USB_LANGUAGE_DESCRIPTOR_SIZE] =
 {

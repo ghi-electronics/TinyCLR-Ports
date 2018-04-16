@@ -19,7 +19,6 @@
 #if defined(__GNUC__)
 #define PACKED(x)       x __attribute__((packed))
 #elif defined(arm) || defined(__arm)
-#define __section(x)
 #define PACKED(x)       __packed x
 #endif
 
@@ -201,6 +200,8 @@ struct USB_CONTROLLER_STATE {
     /* USB status information, used in
        GET_STATUS, SET_FEATURE, CLEAR_FEATURE */
     uint16_t                                                    deviceStatus;
+
+    uint16_t                                                    endpointType;
     uint16_t*                                                   endpointStatus;
     uint8_t                                                     endpointCount;
     uint8_t                                                     endpointStatusChange;
@@ -1187,7 +1188,7 @@ TinyCLR_Result AT91_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self) {
     for (auto i = 0; i < AT91_USB_QUEUE_SIZE; i++) {
         usbState->pipes[i].RxEP = USB_ENDPOINT_NULL;
         usbState->pipes[i].TxEP = USB_ENDPOINT_NULL;
-        usbState->maxPacketSize[i] = 64;
+        usbState->maxPacketSize[i] = USB_MAX_EP_SIZE;
     }
 
     return TinyCLR_Result::Success;
