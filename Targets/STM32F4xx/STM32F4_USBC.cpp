@@ -1911,6 +1911,7 @@ bool STM32F4_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState) {
     int32_t controller = usbState->controllerNum;
 
     usbClientController[controller].usbState = usbState;
+    usbClientController[controller].usbState->endpointStatus = &usbClientController[controller].endpointStatus[0];
 
     auto& dp = g_STM32F4_Usb_Dp_Pins[controller];
     auto& dm = g_STM32F4_Usb_Dm_Pins[controller];
