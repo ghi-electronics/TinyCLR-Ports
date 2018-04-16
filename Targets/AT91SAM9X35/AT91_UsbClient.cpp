@@ -1198,14 +1198,16 @@ TinyCLR_Result AT91_UsbClient_Release(const TinyCLR_UsbClient_Provider* self) {
 
     USB_CONTROLLER_STATE *usbState = &usbClientState[controller];
 
-    DISABLE_INTERRUPTS_SCOPED(irq);
+    if (usbState->initialized) {
+        DISABLE_INTERRUPTS_SCOPED(irq);
 
-    AT91_UsbClient_Uninitialize(usbState);
+        AT91_UsbClient_Uninitialize(usbState);
 
-    usbState->initialized = false;
+        usbState->initialized = false;
 
-    // for soft reboot allow the USB to be off for at least 100ms
-    AT91_Time_Delay(nullptr, 100000); // 100ms
+        // for soft reboot allow the USB to be off for at least 100ms
+        AT91_Time_Delay(nullptr, 100000); // 100ms
+    }
 
     return TinyCLR_Result::Success;
 }
