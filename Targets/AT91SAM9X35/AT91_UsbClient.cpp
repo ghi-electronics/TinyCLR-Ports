@@ -188,7 +188,7 @@ struct USB_CONTROLLER_STATE {
 
 
     /* used for transferring packets between upper & lower */
-    uint8_t*                                                    data;
+    uint8_t*                                                    ptrData;
     uint8_t                                                     dataSize;
 
     /* USB hardware information */
@@ -587,7 +587,7 @@ void AT91_UsbClient_StateCallback(USB_CONTROLLER_STATE* usbState) {
 void AT91_UsbClient_DataCallback(USB_CONTROLLER_STATE* usbState) {
     uint32_t length = __min(usbState->packetSize, usbState->residualCount);
 
-    memcpy(usbState->data, usbState->residualData, length);
+    memcpy(usbState->ptrData, usbState->residualData, length);
 
     usbState->dataSize = length;
     usbState->residualData += length;
@@ -1037,7 +1037,7 @@ uint8_t AT91_UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState) {
         return USB_STATE_DONE;
     }
 
-    Setup = (USB_SETUP_PACKET*)usbState->data;
+    Setup = (USB_SETUP_PACKET*)usbState->ptrData;
 
     switch (Setup->bRequest) {
     case USB_GET_STATUS:
@@ -2276,7 +2276,7 @@ void AT91_UsbClient_ControlNext(USB_CONTROLLER_STATE *usbState) {
             AT91_UsbClient_WriteEndPoint(0, (uint8_t*)NULL, 0);
         }
         else {
-            AT91_UsbClient_WriteEndPoint(0, usbState->data, usbState->dataSize);
+            AT91_UsbClient_WriteEndPoint(0, usbState->ptrData, usbState->dataSize);
 
             // special handling the USB driver set address test, cannot use the first descriptor as the ADDRESS state is handle in the hardware
             if (at91_UsbClientController[usbState->controllerNum].firstDescriptorPacket) {
@@ -2365,7 +2365,7 @@ void AT91_UsbClient_EndpointIsr(USB_CONTROLLER_STATE *usbState, uint32_t endpoin
                 pUdp->UDPHS_EPT[0].UDPHS_EPTCLRSTA = AT91C_UDPHS_RX_SETUP;
 
             /* send it to the upper layer */
-            usbState->data = &at91_UsbClientController[usbState->controllerNum].controlPacketBuffer[0];
+            usbState->ptrData = &at91_UsbClientController[usbState->controllerNum].controlPacketBuffer[0];
             usbState->dataSize = len;
 
             pUdp->UDPHS_EPT[0].UDPHS_EPTCTLENB = AT91C_UDPHS_TX_PK_RDY;
