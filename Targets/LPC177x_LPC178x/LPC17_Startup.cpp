@@ -46,7 +46,7 @@ void LPC17_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
     LPC17_Uart_Reset();
 #endif
 #ifdef INCLUDE_USBCLIENT 
-    LPC17_UsbClient_Reset();
+    UsbClient_Reset();
 #endif
 }
 

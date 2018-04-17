@@ -137,7 +137,7 @@ bool LPC17_Interrupt_InterruptState(uint32_t Irq_Index) {
     return (NVIC->ISPR[id >> 5] >> (id & 0x1F)) & 1;
 }
 
-bool LPC17_SmartPtr_IRQ::WasDisabled() {
+bool LPC17_SmartPtr_IRQ::IsDisabled() {
     return (m_state & DISABLED_MASK) == DISABLED_MASK;
 }
 
