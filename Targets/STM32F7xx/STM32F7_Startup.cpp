@@ -276,7 +276,7 @@ extern "C" {
         // Rev A cannot be read from revision field (another rev A error!).
         // The wrong device field (411=F2) must be used instead!
         if ((DBGMCU->IDCODE & 0xFF) != 0x11) {
-            FLASH->ACR |= FLASH_ACR_PRFTEN;
+            FLASH->ACR = FLASH_ACR_PRFTEN | FLASH_ACR_LATENCY_BITS | FLASH_ACR_ARTEN;
         }
 
         // setup PLL
@@ -289,11 +289,14 @@ extern "C" {
             | RCC_CFGR_HPRE_DIV_BITS   // AHB clock
             | RCC_CFGR_PPRE1_DIV_BITS  // APB1 clock
             | RCC_CFGR_PPRE2_DIV_BITS; // APB2 clock
+            
+        // wait for PLL ready 
+        while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL);
 
 
-    // minimal peripheral clocks
-#ifdef RCC_AHB1ENR_CCMDATARAMEN
-        RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN; // 64k RAM (CCM)
+        // minimal peripheral clocks
+#ifdef RCC_AHB1ENR_DTCMRAMEN
+        RCC->AHB1ENR |= RCC_AHB1ENR_DTCMRAMEN; // 64k RAM (CCM)
 #endif
 
         RCC->APB1ENR |= RCC_APB1ENR_PWREN;    // PWR clock used for sleep;
@@ -307,12 +310,7 @@ extern "C" {
         // remove Flash remap to Boot area to avoid problems with Monitor_Execute
         SYSCFG->MEMRMP = 1; // map System memory to Boot area
 
-
-#ifdef STM32F7_Enable_RTC
-        STM32F7_RTC_Initialize(); // enable RTC
-#endif
-
-    // GPIO port A to D is always present
+        // GPIO port A to D is always present
         RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN;
 
 #ifdef RCC_AHB1ENR_GPIOEEN
