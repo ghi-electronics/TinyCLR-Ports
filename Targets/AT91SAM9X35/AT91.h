@@ -1065,7 +1065,7 @@ public:
     AT91_SmartPtr_IRQ();
     ~AT91_SmartPtr_IRQ();
 
-    bool WasDisabled();
+    bool IsDisabled();
     void Acquire();
     void Release();
     void Probe();
@@ -1364,22 +1364,9 @@ TinyCLR_Result AT91_Power_Acquire(const TinyCLR_Power_Provider* self);
 TinyCLR_Result AT91_Power_Release(const TinyCLR_Power_Provider* self);
 
 //UsbClient
-const TinyCLR_Api_Info* AT91_UsbClient_GetApi();
-void AT91_UsbClient_Reset();
+const TinyCLR_Api_Info* UsbClient_GetApi();
+void UsbClient_Reset();
 void AT91_UsbClient_PinConfiguration();
-TinyCLR_Result AT91_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self);
-TinyCLR_Result AT91_UsbClient_Release(const TinyCLR_UsbClient_Provider* self);
-TinyCLR_Result AT91_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t & pipe, TinyCLR_UsbClient_PipeMode mode);
-TinyCLR_Result AT91_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t pipe);
-TinyCLR_Result AT91_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int32_t pipe, const uint8_t* data, size_t& length);
-TinyCLR_Result AT91_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int32_t pipe, uint8_t* data, size_t& length);
-TinyCLR_Result AT91_UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, int32_t pipe);
-TinyCLR_Result AT91_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_DataReceivedHandler handler);
-
-TinyCLR_Result AT91_UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Provider* self, const void* descriptor, int32_t length);
-TinyCLR_Result AT91_UsbClient_SetConfigDescriptor(const TinyCLR_UsbClient_Provider* self, const void* descriptor, int32_t length);
-TinyCLR_Result AT91_UsbClient_SetStringDescriptor(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_StringDescriptorType type, const wchar_t* value);
-TinyCLR_Result AT91_UsbClient_SetOsExtendedPropertyHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_OsExtendedPropertyHandler handler);
 
 // LCD
 void AT91_Display_Reset();
