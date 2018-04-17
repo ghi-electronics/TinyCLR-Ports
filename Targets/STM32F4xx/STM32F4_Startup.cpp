@@ -303,11 +303,7 @@ extern "C" {
         // remove Flash remap to Boot area to avoid problems with Monitor_Execute
         SYSCFG->MEMRMP = 1; // map System memory to Boot area
 
-#ifdef STM32F4_Enable_RTC
-        STM32F4_RTC_Initialize(); // enable RTC
-#endif
-
-    // GPIO port A to D is always present
+        // GPIO port A to D is always present
         RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN;
 
 #ifdef RCC_AHB1ENR_GPIOEEN
