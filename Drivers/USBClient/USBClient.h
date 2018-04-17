@@ -29,7 +29,6 @@
 ///////////////////////////////////////////////////////////////////////////////////////////
 /// USB Debugger driver
 ///////////////////////////////////////////////////////////////////////////////////////////
-
 // USB 2.0 host requests
 #define USB_GET_STATUS           0
 #define USB_CLEAR_FEATURE        1
@@ -177,14 +176,14 @@ struct USB_CONTROLLER_STATE {
     const USB_DYNAMIC_CONFIGURATION*                            configuration;
 
     /* queues & maxPacketSize must be initialized by the HAL */
-    USB_PACKET64                                   	            *queues[STM32F4_USB_QUEUE_SIZE];
-    uint8_t                                                     currentPacketOffset[STM32F4_USB_QUEUE_SIZE];
-    uint8_t                                                     maxPacketSize[STM32F4_USB_QUEUE_SIZE];
-    bool                                                        isTxQueue[STM32F4_USB_QUEUE_SIZE];
+    USB_PACKET64                                   	            *queues[CONCAT(DEVICE_TARGET, _USB_QUEUE_SIZE)];
+    uint8_t                                                     currentPacketOffset[CONCAT(DEVICE_TARGET, _USB_QUEUE_SIZE)];
+    uint8_t                                                     maxPacketSize[CONCAT(DEVICE_TARGET, _USB_QUEUE_SIZE)];
+    bool                                                        isTxQueue[CONCAT(DEVICE_TARGET, _USB_QUEUE_SIZE)];
 
     /* Arbitrarily as many pipes as endpoints since that is the maximum number of pipes
        necessary to represent the maximum number of endpoints */
-    USB_PIPE_MAP                                                pipes[STM32F4_USB_QUEUE_SIZE];
+    USB_PIPE_MAP                                                pipes[CONCAT(DEVICE_TARGET, _USB_QUEUE_SIZE)];
 
     /* used for transferring packets between upper & lower */
     uint8_t*                                                    ptrData;
@@ -368,14 +367,19 @@ TinyCLR_Result UsbClient_SetStringDescriptor(const TinyCLR_UsbClient_Provider* s
 TinyCLR_Result UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_DataReceivedHandler handler);
 TinyCLR_Result UsbClient_SetOsExtendedPropertyHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_OsExtendedPropertyHandler handler);
 
+const TinyCLR_UsbClient_DescriptorHeader * UsbClient_FindRecord(USB_CONTROLLER_STATE* usbState, uint8_t marker, USB_SETUP_PACKET * iValue);
+
 void UsbClient_ClearEvent(USB_CONTROLLER_STATE *usbState, uint32_t event);
 void UsbClient_StateCallback(USB_CONTROLLER_STATE* usbState);
-USB_PACKET64* UsbClient_RxEnqueue(USB_CONTROLLER_STATE* usbState, int32_t endpoint, bool& disableRx);
-USB_PACKET64* UsbClient_TxDequeue(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
-uint8_t UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState);
-int32_t UsbClient_GetBufferCount(int32_t endpoint);
 void UsbClient_ClearEndpoints(int32_t endpoint);
 
-// HAL
-bool STM32F4_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
+USB_PACKET64* UsbClient_RxEnqueue(USB_CONTROLLER_STATE* usbState, int32_t endpoint, bool& disableRx);
+USB_PACKET64* UsbClient_TxDequeue(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
 
+uint8_t UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState);
+int32_t UsbClient_GetBufferCount(int32_t endpoint);
+
+bool CONCAT(DEVICE_TARGET, _UsbClient_Initialize(USB_CONTROLLER_STATE* usbState));
+bool CONCAT(DEVICE_TARGET, _UsbClient_Uninitialize(USB_CONTROLLER_STATE* usbState));
+bool CONCAT(DEVICE_TARGET, _UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t endpoint));
+bool CONCAT(DEVICE_TARGET, _UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t endpoint));

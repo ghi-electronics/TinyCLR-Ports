@@ -19,9 +19,6 @@
 
 #define __min(a,b)  (((a) < (b)) ? (a) : (b))
 
-const TinyCLR_UsbClient_DescriptorHeader * UsbClient_FindRecord(USB_CONTROLLER_STATE* usbState, uint8_t marker, USB_SETUP_PACKET * iValue);
-
-
 TinyCLR_UsbClient_DataReceivedHandler UsbClient_DataReceivedHandler;
 TinyCLR_UsbClient_OsExtendedPropertyHandler UsbClient_OsExtendedPropertyHandler;
 
@@ -61,7 +58,7 @@ TinyCLR_UsbClient_DeviceDescriptor deviceDescriptor = {
     0,                                          // Device class (none)
     0,                                          // Device subclass (none)
     0,                                          // Device protocol (none)
-    CONCAT(DEVICE_TARGET, _USB_MAX_EP0_SIZE),   // Endpoint 0 size
+    CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT0_SIZE),   // Endpoint 0 size
     USB_DEBUGGER_VENDOR_ID,                     // Vendor ID
     USB_DEBUGGER_PRODUCT_ID,                    // Product ID
     DEVICE_RELEASE_VERSION,                     // Product version 1.00 (BCD)
@@ -106,7 +103,7 @@ TinyCLR_UsbClient_ConfigurationDescriptor configDescriptor = {
     USB_ENDPOINT_DESCRIPTOR_TYPE,
     USB_ENDPOINT_DIRECTION_IN,
     USB_ENDPOINT_ATTRIBUTE_BULK,
-    CONCAT(DEVICE_TARGET, _USB_MAX_EP_SIZE),                                // Endpoint 1 packet size
+    CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_SIZE),                                // Endpoint 1 packet size
     0 ,                                          // Endpoint 1 interval
 
     //Endpoint
@@ -114,7 +111,7 @@ TinyCLR_UsbClient_ConfigurationDescriptor configDescriptor = {
     USB_ENDPOINT_DESCRIPTOR_TYPE,
     USB_ENDPOINT_DIRECTION_OUT,
     USB_ENDPOINT_ATTRIBUTE_BULK,
-    CONCAT(DEVICE_TARGET, _USB_MAX_EP_SIZE),                                // Endpoint 1 packet size
+    CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_SIZE),                                // Endpoint 1 packet size
     0                                           // Endpoint 1 interval
 };
 
@@ -211,7 +208,7 @@ void UsbClient_ClearQueues(USB_CONTROLLER_STATE *usbState, bool ClrRxQueue, bool
             UsbClient_ClearEndpoints(endpoint);
 
             /* since this queue is now reset, we have room available for newly arrived packets */
-            STM32F4_UsbClient_RxEnable(usbState, endpoint);
+            CONCAT(DEVICE_TARGET, _UsbClient_RxEnable(usbState, endpoint));
         }
     }
 
@@ -776,10 +773,6 @@ int32_t UsbClient_GetBufferCount(int32_t endpoint) {
 ///////////////////////////////////////////////////////////////////////////////////////////
 /// TinyCLR USBClient API
 ///////////////////////////////////////////////////////////////////////////////////////////
-bool STM32F4_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState);
-bool STM32F4_UsbClient_Uninitialize(USB_CONTROLLER_STATE* usbState);
-bool STM32F4_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
-
 static TinyCLR_UsbClient_Provider usbClientProvider;
 static TinyCLR_Api_Info usbClientApi;
 
@@ -849,14 +842,14 @@ TinyCLR_Result UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self) {
     usbState->configuration = &UsbDefaultConfiguration;
     usbState->currentState = USB_DEVICE_STATE_UNINITIALIZED;
     usbState->deviceStatus = USB_STATUS_DEVICE_SELF_POWERED;
-    usbState->endpointCount = CONCAT(DEVICE_TARGET, _USB_MAX_EP_COUNT);
-    usbState->packetSize = CONCAT(DEVICE_TARGET, _USB_MAX_EP0_SIZE);
+    usbState->endpointCount = CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_COUNT);
+    usbState->packetSize = CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT0_SIZE);
     usbState->initialized = true;
 
     for (auto i = 0; i < CONCAT(DEVICE_TARGET, _USB_QUEUE_SIZE); i++) {
         usbState->pipes[i].RxEP = USB_ENDPOINT_NULL;
         usbState->pipes[i].TxEP = USB_ENDPOINT_NULL;
-        usbState->maxPacketSize[i] = CONCAT(DEVICE_TARGET, _USB_MAX_EP_SIZE);
+        usbState->maxPacketSize[i] = CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_SIZE);
     }
 
     return TinyCLR_Result::Success;
@@ -870,12 +863,12 @@ TinyCLR_Result UsbClient_Release(const TinyCLR_UsbClient_Provider* self) {
     if (usbState->initialized) {
         DISABLE_INTERRUPTS_SCOPED(irq);
 
-        STM32F4_UsbClient_Uninitialize(usbState);
+        CONCAT(DEVICE_TARGET, _UsbClient_Uninitialize(usbState));
 
         usbState->initialized = false;
 
         // for soft reboot allow the USB to be off for at least 100ms
-        STM32F4_Time_Delay(nullptr, 100000); // 100ms
+        CONCAT(DEVICE_TARGET, _Time_Delay(nullptr, 100000)); // 100ms
     }
 
     return TinyCLR_Result::Success;
@@ -992,7 +985,7 @@ TinyCLR_Result UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t& p
     usbState->endpointType = epType;
 
     if (usbState->currentState == USB_DEVICE_STATE_UNINITIALIZED) {
-        STM32F4_UsbClient_Initialize(usbState);
+        CONCAT(DEVICE_TARGET, _UsbClient_Initialize(usbState));
     }
 
     return TinyCLR_Result::Success;
@@ -1144,11 +1137,11 @@ TinyCLR_Result UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int32_t p
                 goto done_write;
             }
 
-            STM32F4_UsbClient_StartOutput(usbState, endpoint);
+            CONCAT(DEVICE_TARGET, _UsbClient_StartOutput(usbState, endpoint));
 
             irq.Release();
 
-            STM32F4_Time_Delay(nullptr, 50);
+            CONCAT(DEVICE_TARGET, _Time_Delay(nullptr, 50));
 
             irq.Acquire();
         }
@@ -1156,7 +1149,7 @@ TinyCLR_Result UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int32_t p
 
     // here we have a post-condition that IRQs are disabled for all paths through conditional block above
     if (usbState->deviceState == USB_DEVICE_STATE_CONFIGURED) {
-        STM32F4_UsbClient_StartOutput(usbState, endpoint);
+        CONCAT(DEVICE_TARGET, _UsbClient_StartOutput(usbState, endpoint));
     }
 
 done_write:
@@ -1223,7 +1216,7 @@ TinyCLR_Result UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int32_t pi
             usbState->currentPacketOffset[endpoint] = 0;
             Packet64 = nullptr;
 
-            STM32F4_UsbClient_RxEnable(usbState, endpoint);
+            CONCAT(DEVICE_TARGET, _UsbClient_RxEnable(usbState, endpoint));
         }
     }
 
@@ -1260,9 +1253,9 @@ TinyCLR_Result UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, int32_t p
 
     // interrupts were disabled or USB interrupt was disabled for whatever reason, so force the flush
     while (usb_fifo_buffer_count[endpoint] > 0 && retries > 0) {
-        STM32F4_UsbClient_StartOutput(usbState, endpoint);
+        CONCAT(DEVICE_TARGET, _UsbClient_StartOutput(usbState, endpoint));
 
-        STM32F4_Time_Delay(nullptr, queueCnt == usb_fifo_buffer_count[endpoint] ? 100 : 0); // don't call Events_WaitForEventsXXX because it will turn off interrupts
+        CONCAT(DEVICE_TARGET, _Time_Delay(nullptr, queueCnt == usb_fifo_buffer_count[endpoint] ? 100 : 0)); // don't call Events_WaitForEventsXXX because it will turn off interrupts
 
         retries = (queueCnt == usb_fifo_buffer_count[endpoint]) ? retries - 1 : USB_FLUSH_RETRY_COUNT;
 

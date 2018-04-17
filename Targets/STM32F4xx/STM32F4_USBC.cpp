@@ -141,12 +141,6 @@
 #define USB_OTG_NUM_FIFOS                8
 #define USB_OTG_NUM_CHANNELS            16
 
-#define USB_MAX_EP_SIZE            64 // maximum control channel packet size
-#define USB_MAX_EP0_SIZE            8 // default control channel packet size
-#define USB_FS_MAX_EP_COUNT         4 // OTG FS supports 4 endpoints
-
-
-
 typedef struct {
     // global registers
     __IO uint32_t GOTGCTL;
@@ -238,7 +232,7 @@ OTG_TypeDef;
 typedef struct {
     USB_CONTROLLER_STATE* usbState;
 
-    uint8_t     ep0Buffer[USB_MAX_EP_SIZE];
+    uint8_t     ep0Buffer[STM32F4_USB_MAX_ENDPOINT_SIZE];
     uint16_t    endpointStatus[STM32F4_USB_QUEUE_SIZE];
     uint8_t     previousDeviceState;
 
