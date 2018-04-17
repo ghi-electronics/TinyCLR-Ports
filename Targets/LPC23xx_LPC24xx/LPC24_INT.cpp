@@ -269,7 +269,7 @@ LPC24_SmartPtr_Interrupt::~LPC24_SmartPtr_Interrupt() { LPC24_Interrupt_Ended();
 LPC24_SmartPtr_IRQ::LPC24_SmartPtr_IRQ() { Disable(); }
 LPC24_SmartPtr_IRQ::~LPC24_SmartPtr_IRQ() { Restore(); }
 
-bool LPC24_SmartPtr_IRQ::WasDisabled() {
+bool LPC24_SmartPtr_IRQ::IsDisabled() {
     return (m_state & DISABLED_MASK) == DISABLED_MASK;
 }
 
