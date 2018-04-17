@@ -247,7 +247,7 @@ void STM32F4_UsbClient_ProtectPins(int32_t controller, bool On);
 void STM32F4_UsbClient_Interrupt(void* param);
 
 /* usbState variables for the controllers */
-static STM32F4_UsbClientController usbClientController[TOTAL_USB_CONTROLLERS];
+static STM32F4_UsbClientController usbClientController[STM32F4_TOTAL_USB_CONTROLLERS];
 
 bool STM32F4_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState) {
     if (usbState == nullptr)

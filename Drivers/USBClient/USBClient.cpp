@@ -35,7 +35,7 @@ int8_t UsbClient_EndpointMap[] = { ENDPOINT_INUSED_MASK,                        
                                             ENDPOINT_DIR_IN_MASK | ENDPOINT_DIR_OUT_MASK   // Endpoint 3
 };
 
-USB_CONTROLLER_STATE usbClient_State[TOTAL_USB_CONTROLLERS];
+USB_CONTROLLER_STATE usbClient_State[CONCAT(DEVICE_TARGET, _TOTAL_USB_CONTROLLERS)];
 
 uint8_t USB_LanguageDescriptor[USB_LANGUAGE_DESCRIPTOR_SIZE] =
 {
