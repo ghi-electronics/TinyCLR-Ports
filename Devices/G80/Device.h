@@ -105,8 +105,14 @@
 #define STM32F4_UART_RTS_PINS { { PIN_NONE  , AF_NONE }, { PIN(D, 4), AF(7) }, { PIN(D, 12), AF(7) }, { PIN_NONE , AF_NONE } }
 
 #define INCLUDE_USBCLIENT
+#define TOTAL_USB_CONTROLLERS 1
 #define STM32F4_USB_QUEUE_SIZE 16
 #define STM32F4_USB_FIFO_BUFFER_SIZE 64
+
+#define STM32F4_USB_MAX_EP_SIZE            64 // maximum control channel packet size
+#define STM32F4_USB_MAX_EP0_SIZE            8 // default control channel packet size
+#define STM32F4_USB_MAX_EP_COUNT         4 // OTG FS supports 4 endpoints
+
 #define STM32F4_USB_DM_PINS { { PIN(A, 11), AF(10) } }
 #define STM32F4_USB_DP_PINS { { PIN(A, 12), AF(10) } }
 #define STM32F4_USB_VB_PINS { { PIN(A,  9), AF(10) } }
