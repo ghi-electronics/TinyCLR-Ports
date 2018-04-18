@@ -142,6 +142,55 @@
 
 #define USB_LANGUAGE_DESCRIPTOR_SIZE 4
 
+
+// USB 2.0 defined descriptor types
+#define USB_DEVICE_DESCRIPTOR_TYPE        1
+#define USB_CONFIGURATION_DESCRIPTOR_TYPE 2
+#define USB_STRING_DESCRIPTOR_TYPE        3
+#define USB_INTERFACE_DESCRIPTOR_TYPE     4
+#define USB_ENDPOINT_DESCRIPTOR_TYPE      5
+
+#define USB_END_DESCRIPTOR_MARKER           0x00
+#define USB_DEVICE_DESCRIPTOR_MARKER        0x01
+#define USB_CONFIGURATION_DESCRIPTOR_MARKER 0x02
+#define USB_STRING_DESCRIPTOR_MARKER        0x03
+#define USB_GENERIC_DESCRIPTOR_MARKER       0xFF
+
+// Sideshow descriptor lengths
+#define OS_DESCRIPTOR_STRING_SIZE                18
+#define OS_DESCRIPTOR_STRING_LENGTH               7
+#define USB_XCOMPATIBLE_OS_SIZE                  40
+#define USB_XPROPERTY_OS_SIZE_WINUSB     0x0000008E  // Size of this descriptor (78 bytes for guid + 40 bytes for the property name + 24 bytes for other fields = 142 bytes)
+#define USB_XCOMPATIBLE_OS_REQUEST                4
+#define USB_XPROPERTY_OS_REQUEST                  5
+
+#define OS_DESCRIPTOR_STRING_INDEX        0xEE
+#define OS_DESCRIPTOR_STRING_VENDOR_CODE  0xA5
+
+
+// Generic Descriptor Header
+#define USB_REQUEST_TYPE_OUT       0x00
+#define USB_REQUEST_TYPE_IN        0x80
+#define USB_REQUEST_TYPE_STANDARD  0x00
+#define USB_REQUEST_TYPE_CLASS     0x20
+#define USB_REQUEST_TYPE_VENDOR    0x40
+#define USB_REQUEST_TYPE_DEVICE    0x00
+#define USB_REQUEST_TYPE_INTERFACE 0x01
+#define USB_REQUEST_TYPE_ENDPOINT  0x02
+
+//XProperties Os WinUsb
+#define EX_PROPERTY_DATA_TYPE__RESERVED                 0
+#define EX_PROPERTY_DATA_TYPE__REG_SZ                   1
+#define EX_PROPERTY_DATA_TYPE__REG_SZ_ENV               2
+#define EX_PROPERTY_DATA_TYPE__REG_BINARY               3
+#define EX_PROPERTY_DATA_TYPE__REG_DWORD_LITTLE_ENDIAN  4
+#define EX_PROPERTY_DATA_TYPE__REG_DWORD_BIG_ENDIAN     5
+#define EX_PROPERTY_DATA_TYPE__REG_LINK                 6
+#define EX_PROPERTY_DATA_TYPE__REG_MULTI_SZ             7
+
+// Configuration for extended descriptor
+#define OS_DESCRIPTOR_EX_VERSION            0x0100
+
 // USB 2.0 request packet from host
 PACKED(struct) USB_SETUP_PACKET {
     uint8_t bmRequestType;
@@ -150,8 +199,6 @@ PACKED(struct) USB_SETUP_PACKET {
     uint16_t wIndex;
     uint16_t wLength;
 };
-
-PACKED(struct) USB_DYNAMIC_CONFIGURATION;
 
 struct USB_PACKET64 {
     uint32_t Size;
@@ -167,13 +214,15 @@ struct USB_CONTROLLER_STATE;
 
 typedef void(*USB_NEXT_CALLBACK)(USB_CONTROLLER_STATE*);
 
+struct TinyCLR_UsbClient_Configuration;
+
 struct USB_CONTROLLER_STATE {
     bool                                                        initialized;
     uint8_t                                                     currentState;
     uint8_t                                                     controllerNum;
     uint32_t                                                    event;
 
-    const USB_DYNAMIC_CONFIGURATION*                            configuration;
+    const TinyCLR_UsbClient_Configuration*                            configuration;
 
     /* queues & maxPacketSize must be initialized by the HAL */
     USB_PACKET64                                   	            *queues[CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)];
@@ -340,17 +389,18 @@ PACKED(struct) TinyCLR_UsbClient_XPropertiesOsWinUsb {
     uint8_t  bPropertyData[78];
 };
 
-PACKED(struct) USB_DYNAMIC_CONFIGURATION {
-    TinyCLR_UsbClient_DeviceDescriptor                  *device;
-    TinyCLR_UsbClient_ConfigurationDescriptor           *config;
-    TinyCLR_UsbClient_StringDescriptorHeader            *manHeader;
-    TinyCLR_UsbClient_StringDescriptorHeader            *prodHeader;
-    TinyCLR_UsbClient_StringDescriptorHeader            *displayStringHeader;
-    TinyCLR_UsbClient_StringDescriptorHeader            *friendlyStringHeader;
-    TinyCLR_UsbClient_OsStringDescriptor                *OS_String;
-    TinyCLR_UsbClient_XCompatibleOsId                   *OS_XCompatible_ID;
-    TinyCLR_UsbClient_XPropertiesOsWinUsb               *OS_XProperty;
-    TinyCLR_UsbClient_DescriptorHeader                  *endList;
+
+PACKED(struct) TinyCLR_UsbClient_Configuration {
+    TinyCLR_UsbClient_DeviceDescriptor *deviceDescriptors;
+    TinyCLR_UsbClient_ConfigurationDescriptor *configDescriptors;
+    TinyCLR_UsbClient_StringDescriptorHeader *manufacturerHeader;
+    TinyCLR_UsbClient_StringDescriptorHeader *productHeader;
+    TinyCLR_UsbClient_StringDescriptorHeader *displayStringHeader;
+    TinyCLR_UsbClient_StringDescriptorHeader *friendlyStringHeader;
+    TinyCLR_UsbClient_OsStringDescriptor *OsStringDescriptor;
+    TinyCLR_UsbClient_XCompatibleOsId *OsXCompatibleId;
+    TinyCLR_UsbClient_XPropertiesOsWinUsb *OsXProperty;
+    TinyCLR_UsbClient_DescriptorHeader *endList;
 };
 
 const TinyCLR_Api_Info* UsbClient_GetApi();
@@ -365,7 +415,7 @@ TinyCLR_Result UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Provider* s
 TinyCLR_Result UsbClient_SetConfigDescriptor(const TinyCLR_UsbClient_Provider* self, const void* descriptor, int32_t length);
 TinyCLR_Result UsbClient_SetStringDescriptor(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_StringDescriptorType type, const wchar_t* value);
 TinyCLR_Result UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_DataReceivedHandler handler);
-TinyCLR_Result UsbClient_SetOsExtendedPropertyHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_OsExtendedPropertyHandler handler);
+//TinyCLR_Result UsbClient_SetOsExtendedPropertyHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_OsExtendedPropertyHandler handler);
 
 const TinyCLR_UsbClient_DescriptorHeader * UsbClient_FindRecord(USB_CONTROLLER_STATE* usbState, uint8_t marker, USB_SETUP_PACKET * iValue);
 
