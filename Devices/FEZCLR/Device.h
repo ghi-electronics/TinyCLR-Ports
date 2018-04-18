@@ -49,7 +49,7 @@
 #define STM32F4_EXT_CRYSTAL_CLOCK_HZ 8000000
 #define STM32F4_SUPPLY_VOLTAGE_MV 3300
 
-#define INCLUDE_ADC
+// #define INCLUDE_ADC
 
 #define INCLUDE_GPIO
 #define STM32F4_GPIO_PINS {/*      0          1          2          3          4          5          6          7          8          9          10         11         12         13         14         15      */\
@@ -85,8 +85,12 @@
 #define STM32F4_UART_RTS_PINS { { PIN_NONE  , AF_NONE }, { PIN(A, 1), AF(7) } }
 
 #define INCLUDE_USBCLIENT
+#define STM32F4_TOTAL_USB_CONTROLLERS 1
 #define STM32F4_USB_QUEUE_SIZE 16
 #define STM32F4_USB_FIFO_BUFFER_SIZE 16
+#define STM32F4_USB_MAX_ENDPOINT_SIZE 64
+#define STM32F4_USB_MAX_ENDPOINT0_SIZE 8
+#define STM32F4_USB_MAX_ENDPOINT_COUNT 4
 #define STM32F4_USB_DM_PINS { { PIN(A, 11), AF(10) } }
 #define STM32F4_USB_DP_PINS { { PIN(A, 12), AF(10) } }
 #define STM32F4_USB_VB_PINS { { PIN(A,  9), AF(10) } }
