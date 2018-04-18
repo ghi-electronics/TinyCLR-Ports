@@ -222,8 +222,8 @@ struct AT91_UsbClientController {
     uint16_t		endpointStatus[AT91_USB_MAX_ENDPOINT_COUNT];
 
     bool			firstDescriptorPacket;
-    bool			txRunning[AT91_USB_QUEUES_COUNT];
-    bool			txNeedZLPS[AT91_USB_QUEUES_COUNT];
+    bool			txRunning[AT91_USB_MAX_ENDPOINT_COUNT];
+    bool			txNeedZLPS[AT91_USB_MAX_ENDPOINT_COUNT];
 };
 
 AT91_UsbClientController at91_UsbClientController[AT91_TOTAL_USB_CONTROLLERS];

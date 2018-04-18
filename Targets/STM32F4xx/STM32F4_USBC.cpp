@@ -233,7 +233,7 @@ typedef struct {
     USB_CONTROLLER_STATE* usbState;
 
     uint8_t     ep0Buffer[STM32F4_USB_MAX_ENDPOINT_SIZE];
-    uint16_t    endpointStatus[STM32F4_USB_QUEUES_COUNT];
+    uint16_t    endpointStatus[STM32F4_USB_MAX_ENDPOINT_COUNT];
     uint8_t     previousDeviceState;
 
 } STM32F4_UsbClientController;
