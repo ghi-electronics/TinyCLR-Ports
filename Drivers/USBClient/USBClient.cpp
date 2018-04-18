@@ -766,8 +766,8 @@ void UsbClient_ClearEndpoints(int32_t endpoint) {
     usb_packet_fifo_in[endpoint] = usb_packet_fifo_out[endpoint] = usb_packet_fifo_count[endpoint] = 0;
 }
 
-int32_t UsbClient_GetBufferCount(int32_t endpoint) {
-    return usb_packet_fifo_count[endpoint];
+bool UsbClient_CanReceivePackage(int32_t endpoint) {
+    return usb_packet_fifo_count[endpoint] < CONCAT(DEVICE_TARGET, _USB_PACKET_FIFO_COUNT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////

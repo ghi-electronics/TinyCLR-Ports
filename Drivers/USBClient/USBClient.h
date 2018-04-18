@@ -377,7 +377,7 @@ USB_PACKET64* UsbClient_RxEnqueue(USB_CONTROLLER_STATE* usbState, int32_t endpoi
 USB_PACKET64* UsbClient_TxDequeue(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
 
 uint8_t UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState);
-int32_t UsbClient_GetBufferCount(int32_t endpoint);
+bool UsbClient_CanReceivePackage(int32_t endpoint);
 
 bool CONCAT(DEVICE_TARGET, _UsbClient_Initialize(USB_CONTROLLER_STATE* usbState));
 bool CONCAT(DEVICE_TARGET, _UsbClient_Uninitialize(USB_CONTROLLER_STATE* usbState));
