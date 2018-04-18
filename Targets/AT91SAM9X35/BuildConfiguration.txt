@@ -1,2 +1,2 @@
 TargetArchitecture:ARM9
-AdditionalTargetDrivers:SPIDisplay
+AdditionalTargetDrivers:SPIDisplay,USBClient

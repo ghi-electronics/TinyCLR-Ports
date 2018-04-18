@@ -27,6 +27,12 @@
 #define CHARIZE2(c) #c
 #define CHARIZE(c) (CHARIZE2(c)[0])
 
+#if defined(__GNUC__)
+#define PACKED(x) x __attribute__((packed))
+#elif defined(arm) || defined(__arm)
+#define PACKED(x) __packed x
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 //Deployment
 ////////////////////////////////////////////////////////////////////////////////
@@ -251,20 +257,8 @@ void STM32F4_Uart_Reset();
 ////////////////////////////////////////////////////////////////////////////////
 //USB Client
 ////////////////////////////////////////////////////////////////////////////////
-const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi();
-TinyCLR_Result STM32F4_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self);
-TinyCLR_Result STM32F4_UsbClient_Release(const TinyCLR_UsbClient_Provider* self);
-TinyCLR_Result STM32F4_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t& pipe, TinyCLR_UsbClient_PipeMode mode);
-TinyCLR_Result STM32F4_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t pipe);
-TinyCLR_Result STM32F4_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int32_t pipe, const uint8_t* data, size_t& length);
-TinyCLR_Result STM32F4_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int32_t pipe, uint8_t* data, size_t& length);
-TinyCLR_Result STM32F4_UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, int32_t pipe);
-TinyCLR_Result STM32F4_UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Provider* self, const void* descriptor, int32_t length);
-TinyCLR_Result STM32F4_UsbClient_SetConfigDescriptor(const TinyCLR_UsbClient_Provider* self, const void* descriptor, int32_t length);
-TinyCLR_Result STM32F4_UsbClient_SetStringDescriptor(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_StringDescriptorType type, const wchar_t* value);
-TinyCLR_Result STM32F4_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_DataReceivedHandler handler);
-TinyCLR_Result STM32F4_UsbClient_SetOsExtendedPropertyHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_OsExtendedPropertyHandler handler);
-void STM32F4_UsbClient_Reset();
+const TinyCLR_Api_Info* UsbClient_GetApi();
+void UsbClient_Reset();
 
 ////////////////////////////////////////////////////////////////////////////////
 //Interrupt Internal
