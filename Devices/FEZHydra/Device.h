@@ -85,9 +85,14 @@
 #define AT91_UART_CTS_PINS { { PIN_NONE , PS_NONE }, { PIN(A, 10), PS(A) }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } }
 
 #define INCLUDE_USBCLIENT
-#define TOTAL_USB_CONTROLLER 1
+#define AT91_TOTAL_USB_CONTROLLERS 1
 #define AT91_USB_QUEUE_SIZE 16
 #define AT91_USB_FIFO_BUFFER_SIZE 64
+#define AT91_USB_QUEUE_SIZE 16
+#define AT91_USB_FIFO_BUFFER_SIZE 64
+#define AT91_USB_MAX_ENDPOINT_SIZE 64
+#define AT91_USB_MAX_ENDPOINT0_SIZE 64
+#define AT91_USB_MAX_ENDPOINT_COUNT 16
 
 #define INCLUDE_DISPLAY
 #define AT91_DISPLAY_CONTROL_PINS { { PIN(C,1), PS(A) }, { PIN(C,3), PS(A) }, { PIN(C,4), PS(A) }, { PIN(C,5), PS(A) }, { PIN(C,6), PS(A) }, { PIN(C,9), PS(B) }, { PIN(C,10), PS(B) }, { PIN(C,11), PS(B) }, { PIN(C,12), PS(B) }, { PIN(C,13), PS(B) }, { PIN(C,15), PS(B) }, { PIN(C,16), PS(B) }, { PIN(C,17), PS(B) }, { PIN(C,18), PS(B) }, { PIN(C,19), PS(B) }, { PIN(C,20), PS(B) }, { PIN(C,21), PS(B) }, { PIN(C,22), PS(B) }, { PIN(C,23), PS(B) }, { PIN(C,24), PS(B) }, { PIN(C,25), PS(B) }  }
