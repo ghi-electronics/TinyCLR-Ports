@@ -176,14 +176,14 @@ struct USB_CONTROLLER_STATE {
     const USB_DYNAMIC_CONFIGURATION*                            configuration;
 
     /* queues & maxPacketSize must be initialized by the HAL */
-    USB_PACKET64                                   	            *queues[CONCAT(DEVICE_TARGET, _USB_QUEUE_SIZE)];
-    uint8_t                                                     currentPacketOffset[CONCAT(DEVICE_TARGET, _USB_QUEUE_SIZE)];
-    uint8_t                                                     maxPacketSize[CONCAT(DEVICE_TARGET, _USB_QUEUE_SIZE)];
-    bool                                                        isTxQueue[CONCAT(DEVICE_TARGET, _USB_QUEUE_SIZE)];
+    USB_PACKET64                                   	            *queues[CONCAT(DEVICE_TARGET, _USB_QUEUES_COUNT)];
+    uint8_t                                                     currentPacketOffset[CONCAT(DEVICE_TARGET, _USB_QUEUES_COUNT)];
+    uint8_t                                                     maxPacketSize[CONCAT(DEVICE_TARGET, _USB_QUEUES_COUNT)];
+    bool                                                        isTxQueue[CONCAT(DEVICE_TARGET, _USB_QUEUES_COUNT)];
 
     /* Arbitrarily as many pipes as endpoints since that is the maximum number of pipes
        necessary to represent the maximum number of endpoints */
-    USB_PIPE_MAP                                                pipes[CONCAT(DEVICE_TARGET, _USB_QUEUE_SIZE)];
+    USB_PIPE_MAP                                                pipes[CONCAT(DEVICE_TARGET, _USB_QUEUES_COUNT)];
 
     /* used for transferring packets between upper & lower */
     uint8_t*                                                    ptrData;

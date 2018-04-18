@@ -233,7 +233,7 @@ typedef struct {
     USB_CONTROLLER_STATE* usbState;
 
     uint8_t     ep0Buffer[STM32F4_USB_MAX_ENDPOINT_SIZE];
-    uint16_t    endpointStatus[STM32F4_USB_QUEUE_SIZE];
+    uint16_t    endpointStatus[STM32F4_USB_QUEUES_COUNT];
     uint8_t     previousDeviceState;
 
 } STM32F4_UsbClientController;
@@ -527,7 +527,7 @@ void STM32F4_UsbClient_EndpointOutInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STA
         // Handle Setup data in upper layer
         STM32F4_UsbClient_HandleSetup(OTG, usbState);
     }
-    else if (UsbClient_GetBufferCount(ep) < STM32F4_USB_FIFO_BUFFER_SIZE) {
+    else if (UsbClient_GetBufferCount(ep) < STM32F4_USB_PACKET_FIFO_COUNT) {
         // enable endpoint
         OTG->DOEP[ep].TSIZ = OTG_DOEPTSIZ_PKTCNT_1 | usbState->maxPacketSize[ep];
         OTG->DOEP[ep].CTL |= OTG_DOEPCTL_EPENA | OTG_DOEPCTL_CNAK;
