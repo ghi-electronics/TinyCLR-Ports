@@ -217,13 +217,13 @@ struct AT91_UDPHS_EPTFIFO {
 struct AT91_UsbClientController {
     USB_CONTROLLER_STATE *usbState;
 
-    uint8_t			controlPacketBuffer[AT91_USB_MAX_ENDPOINT0_SIZE];
+    uint8_t			controlPacketBuffer[AT91_USB_ENDPOINT0_SIZE];
     uint8_t			previousDeviceState;
-    uint16_t		endpointStatus[AT91_USB_MAX_ENDPOINT_COUNT];
+    uint16_t		endpointStatus[AT91_USB_ENDPOINT_COUNT];
 
     bool			firstDescriptorPacket;
-    bool			txRunning[AT91_USB_MAX_ENDPOINT_COUNT];
-    bool			txNeedZLPS[AT91_USB_MAX_ENDPOINT_COUNT];
+    bool			txRunning[AT91_USB_ENDPOINT_COUNT];
+    bool			txNeedZLPS[AT91_USB_ENDPOINT_COUNT];
 };
 
 AT91_UsbClientController at91_UsbClientController[AT91_TOTAL_USB_CONTROLLERS];
@@ -324,7 +324,7 @@ void AT91_UsbClient_ResetEvent(USB_CONTROLLER_STATE *usbState) {
     /* clear all flags */
     UsbClient_ClearEvent(usbState, 0xFFFFFFFF); // clear all events on all endpoints
 
-    for (int32_t ep = 0; ep < AT91_USB_MAX_ENDPOINT_COUNT; ep++) {
+    for (int32_t ep = 0; ep < AT91_USB_ENDPOINT_COUNT; ep++) {
         at91_UsbClientController[usbState->controllerNum].txRunning[ep] = false;
         at91_UsbClientController[usbState->controllerNum].txNeedZLPS[ep] = false;
     }
@@ -476,7 +476,7 @@ void AT91_UsbClient_VbusInterruptHandler(USB_CONTROLLER_STATE *usbState, int32_t
     else // VBus Low
     {
         // clear USB Txbuffer
-        for (int32_t ep = 0; ep < AT91_USB_MAX_ENDPOINT_COUNT; ep++) {
+        for (int32_t ep = 0; ep < AT91_USB_ENDPOINT_COUNT; ep++) {
             if (usbState->isTxQueue[ep] && usbState->queues[ep] != NULL)
                 UsbClient_ClearEndpoints(ep);
         }
@@ -503,7 +503,7 @@ bool AT91_UsbClient_ProtectPins(USB_CONTROLLER_STATE *usbState, bool On) {
             pUdp->UDPHS_CTRL &= ~AT91C_UDPHS_DETACH; // attach*)
         }
         else {
-            for (int32_t ep = 0; ep < AT91_USB_MAX_ENDPOINT_COUNT; ep++) {
+            for (int32_t ep = 0; ep < AT91_USB_ENDPOINT_COUNT; ep++) {
                 if (usbState->queues[ep] && usbState->isTxQueue[ep])
                     AT91_UsbClient_ClearTxQueue(usbState, ep);
 
@@ -742,7 +742,7 @@ void AT91_UsbClient_EndpointIsr(USB_CONTROLLER_STATE *usbState, uint32_t endpoin
                 AT91_UsbClient_ControlNext(usbState);
                 // If port is now configured, output any queued data
                 if (result == USB_STATE_CONFIGURATION) {
-                    for (int32_t ep = 1; ep < AT91_USB_MAX_ENDPOINT_COUNT; ep++) {
+                    for (int32_t ep = 1; ep < AT91_USB_ENDPOINT_COUNT; ep++) {
                         if (usbState->queues[ep] && usbState->isTxQueue[ep])
                             AT91_UsbClient_StartOutput(usbState, ep);
                     }
@@ -822,7 +822,7 @@ bool AT91_UsbClient_Initialize(USB_CONTROLLER_STATE *usbState) {
     pUdp->UDPHS_IEN |= AT91C_UDPHS_EPT_INT_0;
     pEp->UDPHS_EPTCFG |= 0x00000043; //configuration info for control ep
 
-    for (auto pipe = 0; pipe < AT91_USB_MAX_ENDPOINT_COUNT; pipe++) {
+    for (auto pipe = 0; pipe < AT91_USB_ENDPOINT_COUNT; pipe++) {
         auto idx = 0;
         if (usbState->pipes[pipe].RxEP != USB_ENDPOINT_NULL) {
             idx = usbState->pipes[pipe].RxEP;
@@ -842,7 +842,7 @@ bool AT91_UsbClient_Initialize(USB_CONTROLLER_STATE *usbState) {
     }
 
     usbState->endpointStatus = &at91_UsbClientController[usbState->controllerNum].endpointStatus[0];
-    usbState->endpointCount = AT91_USB_MAX_ENDPOINT_COUNT;
+    usbState->endpointCount = AT91_USB_ENDPOINT_COUNT;
     usbState->packetSize = AT91_UsbClient_EndpointAttr[0].Payload;
 
     usbState->firstGetDescriptor = true;

@@ -122,10 +122,10 @@
 struct LPC24_UsbClientController {
     USB_CONTROLLER_STATE *usbState;
 
-    uint8_t controlPacketBuffer[LPC24_USB_MAX_ENDPOINT_SIZE];
-    uint16_t endpointStatus[LPC24_USB_MAX_ENDPOINT_COUNT];
-    bool txRunning[LPC24_USB_MAX_ENDPOINT_COUNT];
-    bool txNeedZLPS[LPC24_USB_MAX_ENDPOINT_COUNT];
+    uint8_t controlPacketBuffer[LPC24_USB_ENDPOINT_SIZE];
+    uint16_t endpointStatus[LPC24_USB_ENDPOINT_COUNT];
+    bool txRunning[LPC24_USB_ENDPOINT_COUNT];
+    bool txNeedZLPS[LPC24_USB_ENDPOINT_COUNT];
 
     uint8_t previousDeviceState;
     bool firstDescriptorPacket;
@@ -148,8 +148,8 @@ union EndpointConfiguration {
     uint32_t word;
 };
 
-static EndpointConfiguration EndpointInit[LPC24_USB_MAX_ENDPOINT_COUNT];     // Corresponds to endpoint configuration RAM at LPC24xx_USB::UDCCRx
-static int32_t nacking_rx_OUT_data[LPC24_USB_MAX_ENDPOINT_COUNT];
+static EndpointConfiguration EndpointInit[LPC24_USB_ENDPOINT_COUNT];     // Corresponds to endpoint configuration RAM at LPC24xx_USB::UDCCRx
+static int32_t nacking_rx_OUT_data[LPC24_USB_ENDPOINT_COUNT];
 
 bool LPC24_UsbClient_ProtectPins(int32_t controller, bool On);
 void LPC24_UsbClient_InterruptHandler(void* param);
@@ -176,10 +176,10 @@ bool LPC24_UsbClient_Initialize(USB_CONTROLLER_STATE *usbState) {
 
     LPC24_Interrupt_Activate(USB_IRQn, (uint32_t*)&LPC24_UsbClient_InterruptHandler, 0);
 
-    for (int32_t i = 0; i < LPC24_USB_MAX_ENDPOINT_COUNT; i++)
+    for (int32_t i = 0; i < LPC24_USB_ENDPOINT_COUNT; i++)
         EndpointInit[i].word = 0;       // All useable endpoints initialize to unused
 
-    for (auto pipe = 0; pipe < LPC24_USB_MAX_ENDPOINT_COUNT; pipe++) {
+    for (auto pipe = 0; pipe < LPC24_USB_ENDPOINT_COUNT; pipe++) {
         auto idx = 0;
         if (usbState->pipes[pipe].RxEP != USB_ENDPOINT_NULL) {
             idx = usbState->pipes[pipe].RxEP;
@@ -205,8 +205,8 @@ bool LPC24_UsbClient_Initialize(USB_CONTROLLER_STATE *usbState) {
     }
 
     usbState->endpointStatus = &lcp17_UsbClientController[controller].endpointStatus[0];
-    usbState->endpointCount = LPC24_USB_MAX_ENDPOINT_COUNT;
-    usbState->packetSize = LPC24_USB_MAX_ENDPOINT_SIZE;
+    usbState->endpointCount = LPC24_USB_ENDPOINT_COUNT;
+    usbState->packetSize = LPC24_USB_ENDPOINT_SIZE;
 
     usbState->firstGetDescriptor = true;
 
@@ -287,7 +287,7 @@ bool LPC24_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t endpoin
 }
 
 bool LPC24_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
-    if (endpoint >= LPC24_USB_MAX_ENDPOINT_COUNT)
+    if (endpoint >= LPC24_USB_ENDPOINT_COUNT)
         return false;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -552,7 +552,7 @@ void LPC24_UsbClient_ControlNext(USB_CONTROLLER_STATE *usbState) {
         else {
             USB_WriteEP(CONTORL_EP_ADDR, usbState->ptrData, usbState->dataSize);
 
-            if (usbState->dataSize < LPC24_USB_MAX_ENDPOINT_SIZE) // If packet is less than full length
+            if (usbState->dataSize < LPC24_USB_ENDPOINT_SIZE) // If packet is less than full length
             {
                 usbState->dataCallback = nullptr; // Stop sending stuff if we're done
             }
@@ -704,7 +704,7 @@ void LPC24_UsbClient_ProcessEP0(USB_CONTROLLER_STATE *usbState, int32_t in, int3
 
             // If the port is configured, then output any possible withheld data
             if (result == USB_STATE_CONFIGURATION) {
-                for (int32_t ep = 0; ep < LPC24_USB_MAX_ENDPOINT_COUNT; ep++) {
+                for (int32_t ep = 0; ep < LPC24_USB_ENDPOINT_COUNT; ep++) {
                     if (usbState->isTxQueue[ep])
                         LPC24_UsbClient_StartOutput(usbState, ep);
                 }
@@ -785,7 +785,7 @@ void LPC24_UsbClient_ResetEvent(USB_CONTROLLER_STATE *usbState) {
     // clear all flags
     UsbClient_ClearEvent(usbState, 0xFFFFFFFF);
 
-    for (int32_t ep = 0; ep < LPC24_USB_MAX_ENDPOINT_COUNT; ep++) {
+    for (int32_t ep = 0; ep < LPC24_USB_ENDPOINT_COUNT; ep++) {
         lcp17_UsbClientController[usbState->controllerNum].txRunning[ep] = false;
         lcp17_UsbClientController[usbState->controllerNum].txNeedZLPS[ep] = false;
     }

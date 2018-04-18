@@ -23,9 +23,9 @@ TinyCLR_UsbClient_DataReceivedHandler UsbClient_DataReceivedHandler;
 TinyCLR_UsbClient_OsExtendedPropertyHandler UsbClient_OsExtendedPropertyHandler;
 
 // usb fifo buffer
-static int32_t usb_packet_fifo_in[CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_COUNT)];
-static int32_t usb_packet_fifo_out[CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_COUNT)];
-static int32_t usb_packet_fifo_count[CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_COUNT)];
+static int32_t usb_packet_fifo_in[CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)];
+static int32_t usb_packet_fifo_out[CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)];
+static int32_t usb_packet_fifo_count[CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)];
 
 USB_DYNAMIC_CONFIGURATION UsbDefaultConfiguration;
 
@@ -58,7 +58,7 @@ TinyCLR_UsbClient_DeviceDescriptor deviceDescriptor = {
     0,                                          // Device class (none)
     0,                                          // Device subclass (none)
     0,                                          // Device protocol (none)
-    CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT0_SIZE),   // Endpoint 0 size
+    CONCAT(DEVICE_TARGET, _USB_ENDPOINT0_SIZE),   // Endpoint 0 size
     USB_DEBUGGER_VENDOR_ID,                     // Vendor ID
     USB_DEBUGGER_PRODUCT_ID,                    // Product ID
     DEVICE_RELEASE_VERSION,                     // Product version 1.00 (BCD)
@@ -103,7 +103,7 @@ TinyCLR_UsbClient_ConfigurationDescriptor configDescriptor = {
     USB_ENDPOINT_DESCRIPTOR_TYPE,
     USB_ENDPOINT_DIRECTION_IN,
     USB_ENDPOINT_ATTRIBUTE_BULK,
-    CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_SIZE),                                // Endpoint 1 packet size
+    CONCAT(DEVICE_TARGET, _USB_ENDPOINT_SIZE),                                // Endpoint 1 packet size
     0 ,                                          // Endpoint 1 interval
 
     //Endpoint
@@ -111,7 +111,7 @@ TinyCLR_UsbClient_ConfigurationDescriptor configDescriptor = {
     USB_ENDPOINT_DESCRIPTOR_TYPE,
     USB_ENDPOINT_DIRECTION_OUT,
     USB_ENDPOINT_ATTRIBUTE_BULK,
-    CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_SIZE),                                // Endpoint 1 packet size
+    CONCAT(DEVICE_TARGET, _USB_ENDPOINT_SIZE),                                // Endpoint 1 packet size
     0                                           // Endpoint 1 interval
 };
 
@@ -201,7 +201,7 @@ void UsbClient_ClearQueues(USB_CONTROLLER_STATE *usbState, bool ClrRxQueue, bool
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (ClrRxQueue) {
-        for (int32_t endpoint = 0; endpoint < CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_COUNT); endpoint++) {
+        for (int32_t endpoint = 0; endpoint < CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT); endpoint++) {
             if (usbState->queues[endpoint] == nullptr || usbState->isTxQueue[endpoint])
                 continue;
 
@@ -213,7 +213,7 @@ void UsbClient_ClearQueues(USB_CONTROLLER_STATE *usbState, bool ClrRxQueue, bool
     }
 
     if (ClrTxQueue) {
-        for (int32_t endpoint = 0; endpoint < CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_COUNT); endpoint++) {
+        for (int32_t endpoint = 0; endpoint < CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT); endpoint++) {
             if (usbState->queues[endpoint] && usbState->isTxQueue[endpoint])
                 UsbClient_ClearEndpoints(endpoint);
         }
@@ -842,14 +842,14 @@ TinyCLR_Result UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self) {
     usbState->configuration = &UsbDefaultConfiguration;
     usbState->currentState = USB_DEVICE_STATE_UNINITIALIZED;
     usbState->deviceStatus = USB_STATUS_DEVICE_SELF_POWERED;
-    usbState->endpointCount = CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_COUNT);
-    usbState->packetSize = CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT0_SIZE);
+    usbState->endpointCount = CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT);
+    usbState->packetSize = CONCAT(DEVICE_TARGET, _USB_ENDPOINT0_SIZE);
     usbState->initialized = true;
 
-    for (auto i = 0; i < CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_COUNT); i++) {
+    for (auto i = 0; i < CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT); i++) {
         usbState->pipes[i].RxEP = USB_ENDPOINT_NULL;
         usbState->pipes[i].TxEP = USB_ENDPOINT_NULL;
-        usbState->maxPacketSize[i] = CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_SIZE);
+        usbState->maxPacketSize[i] = CONCAT(DEVICE_TARGET, _USB_ENDPOINT_SIZE);
     }
 
     return TinyCLR_Result::Success;
@@ -912,25 +912,25 @@ TinyCLR_Result UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t& p
     }
     // Check the usbPipe and the two endpoint numbers for validity (both endpoints cannot be zero)
     if ((readEp == USB_ENDPOINT_NULL && writeEp == USB_ENDPOINT_NULL)
-        || (readEp != USB_ENDPOINT_NULL && (readEp < 1 || readEp >= CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_COUNT)))
-        || (writeEp != USB_ENDPOINT_NULL && (writeEp < 1 || writeEp >= CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_COUNT))))
+        || (readEp != USB_ENDPOINT_NULL && (readEp < 1 || readEp >= CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)))
+        || (writeEp != USB_ENDPOINT_NULL && (writeEp < 1 || writeEp >= CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT))))
         return TinyCLR_Result::NotAvailable;
 
     // The specified endpoints must not be in use by another pipe
-    for (int32_t i = 0; i < CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_COUNT); i++) {
+    for (int32_t i = 0; i < CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT); i++) {
         if (readEp != USB_ENDPOINT_NULL && (usbState->pipes[i].RxEP == readEp || usbState->pipes[i].TxEP == readEp))
             return TinyCLR_Result::NotAvailable;
         if (writeEp != USB_ENDPOINT_NULL && (usbState->pipes[i].RxEP == writeEp || usbState->pipes[i].TxEP == writeEp))
             return TinyCLR_Result::NotAvailable;
     }
 
-    for (pipe = 0; pipe < CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_COUNT); pipe++) {
+    for (pipe = 0; pipe < CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT); pipe++) {
         // The Pipe must be currently closed
         if (usbState->pipes[pipe].RxEP == USB_ENDPOINT_NULL && usbState->pipes[pipe].TxEP == USB_ENDPOINT_NULL)
             break;
     }
 
-    if (pipe == CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_COUNT))
+    if (pipe == CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT))
         return TinyCLR_Result::NotAvailable;
 
     // All tests pass, assign the endpoints to the pipe
@@ -996,7 +996,7 @@ TinyCLR_Result UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t p
 
     USB_CONTROLLER_STATE * usbState = &usbClient_State[controller];
 
-    if (!usbState->initialized || pipe >= CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_COUNT))
+    if (!usbState->initialized || pipe >= CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT))
         return TinyCLR_Result::NotAvailable;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -1042,7 +1042,7 @@ TinyCLR_Result UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int32_t p
 
     USB_CONTROLLER_STATE * usbState = &usbClient_State[controller];
 
-    if (pipe >= CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_COUNT)
+    if (pipe >= CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)
         || data == nullptr
         || usbState->deviceState != USB_DEVICE_STATE_CONFIGURED
         || length == 0) {
@@ -1164,7 +1164,7 @@ TinyCLR_Result UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int32_t pi
     int32_t endpoint;
     USB_CONTROLLER_STATE * usbState = &usbClient_State[controller];
 
-    if (pipe >= CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_COUNT)
+    if (pipe >= CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)
         || usbState->deviceState != USB_DEVICE_STATE_CONFIGURED) {
         return TinyCLR_Result::ArgumentInvalid;
     }
@@ -1234,7 +1234,7 @@ TinyCLR_Result UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, int32_t p
     int32_t queueCnt;
     USB_CONTROLLER_STATE * usbState = &usbClient_State[controller];
 
-    if (pipe >= CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_COUNT)) {
+    if (pipe >= CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)) {
         return TinyCLR_Result::ArgumentInvalid;
     }
 
@@ -1319,7 +1319,7 @@ TinyCLR_Result UsbClient_SetStringDescriptor(const TinyCLR_UsbClient_Provider* s
 }
 
 void UsbClient_Reset() {
-    for (auto pipe = 0; pipe < CONCAT(DEVICE_TARGET, _USB_MAX_ENDPOINT_COUNT); pipe++) {
+    for (auto pipe = 0; pipe < CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT); pipe++) {
         UsbClient_Close(&usbClientProvider, pipe);
     }
 
