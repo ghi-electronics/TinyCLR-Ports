@@ -405,14 +405,14 @@ PACKED(struct) TinyCLR_UsbClient_XPropertiesOsWinUsb {
 
 
 PACKED(struct) TinyCLR_UsbClient_Configuration {
-    TinyCLR_UsbClient_DeviceDescriptor *deviceDescriptors;
+    TinyCLR_UsbClient_DeviceDescriptor *deviceDescriptor;
     
-    TinyCLR_UsbClient_ConfigurationDescriptor 
-    TinyCLR_UsbClient_InterfaceDescriptor *interfaceDescriptors;
+    TinyCLR_UsbClient_ConfigurationDescriptor *configurationDescriptor;
+    TinyCLR_UsbClient_InterfaceDescriptor *interfaceDescriptor;
     
-    TinyCLR_UsbClient_EndpointDescriptor    *endpointDescriptors;
+    TinyCLR_UsbClient_EndpointDescriptor    *endpointDescriptor;
     
-    TinyCLR_UsbClient_StringDescriptorHeader *stringDescriptors;
+    TinyCLR_UsbClient_StringDescriptorHeader *stringsDescriptor;
     
     TinyCLR_UsbClient_OsStringDescriptor *OsStringDescriptor;
     
