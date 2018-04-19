@@ -318,10 +318,10 @@ PACKED(struct) TinyCLR_UsbClient_EndpointDescriptor {
     uint8_t  bInterval;
 };
 
-PACKED(struct) TinyCLR_UsbClient_ClassDescriptorHeader {
-    uint8_t bLength;
-    uint8_t bDescriptorType;
-};
+// PACKED(struct) TinyCLR_UsbClient_ClassDescriptorHeader {
+    // uint8_t bLength;
+    // uint8_t bDescriptorType;
+// };
 
 PACKED(struct) TinyCLR_UsbClient_StringDescriptorHeader {
     TinyCLR_UsbClient_DescriptorHeader header;
@@ -343,10 +343,24 @@ PACKED(struct) TinyCLR_UsbClient_ConfigurationDescriptor {
     uint8_t  bmAttributes;
     uint8_t  bMaxPower;
 
-    TinyCLR_UsbClient_InterfaceDescriptor   itfc0;
-    TinyCLR_UsbClient_EndpointDescriptor    epWrite;
-    TinyCLR_UsbClient_EndpointDescriptor    epRead;
+    // TinyCLR_UsbClient_InterfaceDescriptor   itfc0;
+    // TinyCLR_UsbClient_EndpointDescriptor    epWrite;
+    // TinyCLR_UsbClient_EndpointDescriptor    epRead;
 };
+
+// PACKED(struct) TinyCLR_UsbClient_ConfigurationDescriptor_ {
+    // TinyCLR_UsbClient_DescriptorHeader header;
+
+    // uint8_t  bLength;
+    // uint8_t  bDescriptorType;
+    // uint16_t wTotalLength;
+    // uint8_t  bNumInterfaces;
+    // uint8_t  bConfigurationValue;
+    // uint8_t  iConfiguration;
+    // uint8_t  bmAttributes;
+    // uint8_t  bMaxPower;
+
+// };
 
 PACKED(struct) TinyCLR_UsbClient_OsStringDescriptor {
     TinyCLR_UsbClient_DescriptorHeader header;
@@ -392,16 +406,35 @@ PACKED(struct) TinyCLR_UsbClient_XPropertiesOsWinUsb {
 
 PACKED(struct) TinyCLR_UsbClient_Configuration {
     TinyCLR_UsbClient_DeviceDescriptor *deviceDescriptors;
-    TinyCLR_UsbClient_ConfigurationDescriptor *configDescriptors;
-    TinyCLR_UsbClient_StringDescriptorHeader *manufacturerHeader;
-    TinyCLR_UsbClient_StringDescriptorHeader *productHeader;
-    TinyCLR_UsbClient_StringDescriptorHeader *displayStringHeader;
-    TinyCLR_UsbClient_StringDescriptorHeader *friendlyStringHeader;
+    
+    TinyCLR_UsbClient_ConfigurationDescriptor 
+    TinyCLR_UsbClient_InterfaceDescriptor *interfaceDescriptors;
+    
+    TinyCLR_UsbClient_EndpointDescriptor    *endpointDescriptors;
+    
+    TinyCLR_UsbClient_StringDescriptorHeader *stringDescriptors;
+    
     TinyCLR_UsbClient_OsStringDescriptor *OsStringDescriptor;
+    
     TinyCLR_UsbClient_XCompatibleOsId *OsXCompatibleId;
-    TinyCLR_UsbClient_XPropertiesOsWinUsb *OsXProperty;
-    TinyCLR_UsbClient_DescriptorHeader *endList;
+    TinyCLR_UsbClient_XPropertiesOsWinUsb *OsXProperty;    
 };
+
+// PACKED(struct) TinyCLR_UsbClient_UsbDescriptors {
+    // TinyCLR_UsbClient_DeviceDescriptor *deviceDescriptors;
+    // TinyCLR_UsbClient_ConfigurationDescriptor_ *configurationsDescriptors;
+    
+    // TinyCLR_UsbClient_InterfaceDescriptor   *interfacesDescriptors;
+    // TinyCLR_UsbClient_EndpointDescriptor    *endpointsDescriptors;
+
+    // TinyCLR_UsbClient_StringDescriptorHeader *stringsDescriptor;
+   
+    // TinyCLR_UsbClient_OsStringDescriptor *OsStringDescriptor;
+    
+    // TinyCLR_UsbClient_XCompatibleOsId *OsXCompatibleId;
+    // TinyCLR_UsbClient_XPropertiesOsWinUsb *OsXProperty;    
+// };
+
 
 const TinyCLR_Api_Info* UsbClient_GetApi();
 TinyCLR_Result UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self);
