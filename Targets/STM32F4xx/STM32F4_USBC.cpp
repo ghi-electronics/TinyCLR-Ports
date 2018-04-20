@@ -141,6 +141,9 @@
 #define USB_OTG_NUM_FIFOS                8
 #define USB_OTG_NUM_CHANNELS            16
 
+#define STM32F4_USB_ENDPOINT_WRITE 1
+#define STM32F4_USB_ENDPOINT_READ 2
+
 typedef struct {
     // global registers
     __IO uint32_t GOTGCTL;
@@ -230,7 +233,7 @@ typedef struct {
 OTG_TypeDef;
 
 // Device descriptor
-TinyCLR_UsbClient_DeviceDescriptor UsbClient_DeviceDescriptor = {
+TinyCLR_UsbClient_DeviceDescriptor STM32F4_UsbClient_DeviceDescriptor = {
     {
         USB_DEVICE_DESCRIPTOR_MARKER,
         0,
@@ -253,7 +256,7 @@ TinyCLR_UsbClient_DeviceDescriptor UsbClient_DeviceDescriptor = {
 };
 
 // Configuration descriptor
-TinyCLR_UsbClient_ConfigurationDescriptor UsbClient_ConfigurationDescriptor = {
+TinyCLR_UsbClient_ConfigurationDescriptor STM32F4_UsbClient_ConfigurationDescriptor = {
     {
         USB_CONFIGURATION_DESCRIPTOR_MARKER,
         0,
@@ -273,7 +276,7 @@ TinyCLR_UsbClient_ConfigurationDescriptor UsbClient_ConfigurationDescriptor = {
 };
 
 // Interface Descriptor
-TinyCLR_UsbClient_InterfaceDescriptor UsbClient_InterfaceDescriptor = {
+TinyCLR_UsbClient_InterfaceDescriptor STM32F4_UsbClient_InterfaceDescriptor = {
     sizeof(TinyCLR_UsbClient_InterfaceDescriptor),
     USB_INTERFACE_DESCRIPTOR_TYPE,
     0,                                          // Interface number
@@ -286,11 +289,11 @@ TinyCLR_UsbClient_InterfaceDescriptor UsbClient_InterfaceDescriptor = {
 };
 
 // Endpoint Descriptors
-TinyCLR_UsbClient_EndpointDescriptor UsbClient_EndpointDescriptor[] = {
+TinyCLR_UsbClient_EndpointDescriptor STM32F4_UsbClient_EndpointDescriptor[] = {
     { // Endpoint
         sizeof(TinyCLR_UsbClient_EndpointDescriptor),
         USB_ENDPOINT_DESCRIPTOR_TYPE,
-        USB_ENDPOINT_DIRECTION_IN | 1,
+        USB_ENDPOINT_DIRECTION_IN | STM32F4_USB_ENDPOINT_WRITE,
         USB_ENDPOINT_ATTRIBUTE_BULK,
         CONCAT(DEVICE_TARGET, _USB_ENDPOINT_SIZE),                                // Endpoint 1 packet size
         0                                           // Endpoint 1 interval
@@ -300,7 +303,7 @@ TinyCLR_UsbClient_EndpointDescriptor UsbClient_EndpointDescriptor[] = {
         //Endpoint
        sizeof(TinyCLR_UsbClient_EndpointDescriptor),
        USB_ENDPOINT_DESCRIPTOR_TYPE,
-       USB_ENDPOINT_DIRECTION_OUT | 2,
+       USB_ENDPOINT_DIRECTION_OUT | STM32F4_USB_ENDPOINT_READ,
        USB_ENDPOINT_ATTRIBUTE_BULK,
        CONCAT(DEVICE_TARGET, _USB_ENDPOINT_SIZE),                                // Endpoint 1 packet size
        0
@@ -308,7 +311,7 @@ TinyCLR_UsbClient_EndpointDescriptor UsbClient_EndpointDescriptor[] = {
 
 };
 
-TinyCLR_UsbClient_StringDescriptorHeader UsbClient_StringDescriptor[] = {
+TinyCLR_UsbClient_StringDescriptorHeader STM32F4_UsbClient_StringDescriptor[] = {
     {
         {
             USB_STRING_DESCRIPTOR_MARKER,
@@ -359,7 +362,7 @@ TinyCLR_UsbClient_StringDescriptorHeader UsbClient_StringDescriptor[] = {
 };
 
 // OS Descriptor string for Extended OS Compat ID
-TinyCLR_UsbClient_OsStringDescriptor UsbClient_OsStringDescriptor = {
+TinyCLR_UsbClient_OsStringDescriptor STM32F4_UsbClient_OsStringDescriptor = {
     {
         USB_STRING_DESCRIPTOR_MARKER,
         OS_DESCRIPTOR_STRING_INDEX,
@@ -373,7 +376,7 @@ TinyCLR_UsbClient_OsStringDescriptor UsbClient_OsStringDescriptor = {
 };
 
 // OS Extended Compatible ID for WinUSB
-TinyCLR_UsbClient_XCompatibleOsId UsbClient_XCompatibleOsId = {
+TinyCLR_UsbClient_XCompatibleOsId STM32F4_UsbClient_XCompatibleOsId = {
     // Generic Descriptor header
     {
         {
@@ -400,7 +403,7 @@ TinyCLR_UsbClient_XCompatibleOsId UsbClient_XCompatibleOsId = {
 };
 
 // OS Extended Property
-TinyCLR_UsbClient_XPropertiesOsWinUsb UsbClient_XPropertiesOsWinUsb = {
+TinyCLR_UsbClient_XPropertiesOsWinUsb STM32F4_UsbClient_XPropertiesOsWinUsb = {
     // Generic Descriptor header
     {
         {
@@ -470,14 +473,14 @@ bool STM32F4_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState) {
     // Setup configuration
     memset((uint8_t*)&usbState->configuration, 0, sizeof(TinyCLR_UsbClient_Configuration));
 
-    usbState->configuration.deviceDescriptor = &UsbClient_DeviceDescriptor;
-    usbState->configuration.configurationDescriptor = &UsbClient_ConfigurationDescriptor;
-    usbState->configuration.interfaceDescriptor = &UsbClient_InterfaceDescriptor;
-    usbState->configuration.endpointDescriptor = UsbClient_EndpointDescriptor;
-    usbState->configuration.stringsDescriptor = UsbClient_StringDescriptor;
-    usbState->configuration.OsStringDescriptor = &UsbClient_OsStringDescriptor;
-    usbState->configuration.OsXCompatibleId = &UsbClient_XCompatibleOsId;
-    usbState->configuration.OsXProperty = &UsbClient_XPropertiesOsWinUsb;
+    usbState->configuration.deviceDescriptor = &STM32F4_UsbClient_DeviceDescriptor;
+    usbState->configuration.configurationDescriptor = &STM32F4_UsbClient_ConfigurationDescriptor;
+    usbState->configuration.interfaceDescriptor = &STM32F4_UsbClient_InterfaceDescriptor;
+    usbState->configuration.endpointDescriptor = STM32F4_UsbClient_EndpointDescriptor;
+    usbState->configuration.stringsDescriptor = STM32F4_UsbClient_StringDescriptor;
+    usbState->configuration.OsStringDescriptor = &STM32F4_UsbClient_OsStringDescriptor;
+    usbState->configuration.OsXCompatibleId = &STM32F4_UsbClient_XCompatibleOsId;
+    usbState->configuration.OsXProperty = &STM32F4_UsbClient_XPropertiesOsWinUsb;
     usbState->controllerNum = controller;
     usbState->packetFifoCount = STM32F4_USB_PACKET_FIFO_COUNT;
 
