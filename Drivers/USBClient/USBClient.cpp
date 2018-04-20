@@ -193,7 +193,7 @@ TinyCLR_UsbClient_StringDescriptorHeader UsbClient_StringDescriptor[] = {
     {
         {
             USB_STRING_DESCRIPTOR_MARKER,
-            PRODUCT_NAME_INDEX,
+            USB_FRIENDLY_STRING_NUM,
             sizeof(TinyCLR_UsbClient_StringDescriptorHeader)
         },
         USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
@@ -717,10 +717,12 @@ uint8_t UsbClient_HandleConfigurationRequests(USB_CONTROLLER_STATE* usbState, US
                 usbState->residualData = USB_LanguageDescriptor;
                 usbState->residualCount = __min(usbState->expected, USB_LANGUAGE_DESCRIPTOR_SIZE);
             }
-            else if (nullptr != (header = UsbClient_FindRecord(usbState, USB_STRING_DESCRIPTOR_MARKER, Setup))) {
-                const TinyCLR_UsbClient_StringDescriptorHeader * string = (TinyCLR_UsbClient_StringDescriptorHeader *)header;
-                usbState->residualData = (uint8_t *)&string->bLength;
-                usbState->residualCount = __min(usbState->expected, string->bLength);
+            else {
+                if (nullptr != (header = UsbClient_FindRecord(usbState, USB_STRING_DESCRIPTOR_MARKER, Setup))) {
+                    const TinyCLR_UsbClient_StringDescriptorHeader * string = (TinyCLR_UsbClient_StringDescriptorHeader *)header;
+                    usbState->residualData = (uint8_t *)&string->bLength;
+                    usbState->residualCount = __min(usbState->expected, string->bLength);
+                }
             }
             break;
 
