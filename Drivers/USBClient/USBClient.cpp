@@ -806,75 +806,26 @@ uint8_t UsbClient_HandleSetConfiguration(USB_CONTROLLER_STATE* usbState, USB_SET
 // Searches through the USB configuration records for the requested type
 // Returns a pointer to the header information if found and nullptr if not
 const TinyCLR_UsbClient_DescriptorHeader * UsbClient_FindRecord(USB_CONTROLLER_STATE* usbState, uint8_t marker, USB_SETUP_PACKET * setup) {
-    bool Done = false;
-/*
-    const TinyCLR_UsbClient_DescriptorHeader * header = (const TinyCLR_UsbClient_DescriptorHeader *)usbState->configuration;
-    TinyCLR_UsbClient_DescriptorHeader* ptr = (TinyCLR_UsbClient_DescriptorHeader*)(*(uint32_t*)header);
-    TinyCLR_UsbClient_ConfigurationDescriptor *config;
+    bool found = false;
 
-    // If there is no configuration for this controller
-    if (nullptr == header)
-        return header;
-
-    while (!Done) {
-        const uint8_t *next = (const uint8_t *)header;
-        ptr = (TinyCLR_UsbClient_DescriptorHeader*)(*(uint32_t*)header);
-        next += 4;      // Calculate address of next record
-
-        const TinyCLR_UsbClient_GenericDescriptorHeader *generic = (TinyCLR_UsbClient_GenericDescriptorHeader *)ptr;
-
-        switch (ptr->marker) {
-        case USB_DEVICE_DESCRIPTOR_MARKER:
-            if (ptr->marker == marker)
-                Done = true;
-            break;
-
-        case USB_CONFIGURATION_DESCRIPTOR_MARKER:
-            config = (TinyCLR_UsbClient_ConfigurationDescriptor *)UsbClient_DefaultConfiguration.configDescriptors;
-            if (config->header.marker == marker)
-                Done = true;
-            break;
-
-        case USB_STRING_DESCRIPTOR_MARKER:
-            // If String descriptor then the index is significant
-            if ((ptr->marker == marker) && (ptr->iValue == (setup->wValue & 0x00FF)))
-                Done = true;
-            break;
-        case USB_GENERIC_DESCRIPTOR_MARKER:
-            if (generic->bmRequestType == setup->bmRequestType &&
-                generic->bRequest == setup->bRequest &&
-                generic->wValue == setup->wValue &&
-                generic->wIndex == setup->wIndex) {
-                Done = true;
-            }
-            break;
-        default:
-            Done = true;
-            header = nullptr;
-            ptr = nullptr;
-            break;
-        }
-        if (!Done)
-            header = (const TinyCLR_UsbClient_DescriptorHeader *)next;    // Try next record
-    }
-*/
     TinyCLR_UsbClient_DescriptorHeader* ptr = nullptr;
-    
-    
     
     switch(marker) {
         case USB_DEVICE_DESCRIPTOR_MARKER:
             ptr = (TinyCLR_UsbClient_DescriptorHeader*)UsbClient_DefaultConfiguration.deviceDescriptor;
+            found = true;
         break; 
         
         case USB_CONFIGURATION_DESCRIPTOR_MARKER:
             ptr = (TinyCLR_UsbClient_DescriptorHeader*)UsbClient_DefaultConfiguration.configurationDescriptor;
+            found = true;
         break; 
         case USB_STRING_DESCRIPTOR_MARKER:
             ptr = (TinyCLR_UsbClient_DescriptorHeader*)UsbClient_DefaultConfiguration.stringsDescriptor;
            
             while ( ptr != nullptr && ptr->marker == USB_STRING_DESCRIPTOR_MARKER) {                
                 if (ptr->iValue == (setup->wValue & 0x00FF)) {
+                    found = true;
                     break;
                 }
 
@@ -884,46 +835,15 @@ const TinyCLR_UsbClient_DescriptorHeader * UsbClient_FindRecord(USB_CONTROLLER_S
                 ptr = (TinyCLR_UsbClient_DescriptorHeader*)next;
                
             }
-            
-            // UsbClient_DeviceDescriptor
-            
-            // ptr = (TinyCLR_UsbClient_DescriptorHeader*)UsbClient_DefaultConfiguration.stringDescriptor;
-            // while ( ptr != nullptr && ptr->marker == USB_STRING_DESCRIPTOR_MARKER) {                
-                // if (ptr->iValue == (setup->wValue & 0x00FF)) {
-                    // break;
-                // }
-
-                // ptr += ptr->size;
-               
-            // }
-            
+                                    
         break;
-        case USB_GENERIC_DESCRIPTOR_MARKER:
-            //ptr = (TinyCLR_UsbClient_DescriptorHeader*)UsbClient_DefaultConfiguration.OsStringDescriptor;
-            if (setup->wValue == 0x0600) { // QUALIFIER
-                return nullptr;
-            }
-            ptr = (TinyCLR_UsbClient_DescriptorHeader*)UsbClient_DefaultConfiguration.OsXCompatibleId;
-            while (ptr != nullptr && ptr->marker == USB_GENERIC_DESCRIPTOR_MARKER) {
-                TinyCLR_UsbClient_GenericDescriptorHeader *generic = (TinyCLR_UsbClient_GenericDescriptorHeader *)ptr;
-                
-                if (generic->bmRequestType == setup->bmRequestType &&
-                    generic->bRequest == setup->bRequest &&
-                    generic->wValue == setup->wValue &&
-                    generic->wIndex == setup->wIndex) {
-                    
-                    break;
-                }
-                
-                uint8_t* next = (uint8_t*)ptr;
-                
-                next += ptr->size;
-                ptr = (TinyCLR_UsbClient_DescriptorHeader*)next;
-            }
+        case USB_GENERIC_DESCRIPTOR_MARKER:           
+            ptr = (setup->wIndex == USB_XCOMPATIBLE_OS_REQUEST) ? (TinyCLR_UsbClient_DescriptorHeader*)UsbClient_DefaultConfiguration.OsXCompatibleId : (TinyCLR_UsbClient_DescriptorHeader*)UsbClient_DefaultConfiguration.OsXProperty;
+            found = true;             
         break;
     }
-    
-    return ptr;
+        
+    return found ? ptr : nullptr;
 }
 
 uint8_t UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState) {
