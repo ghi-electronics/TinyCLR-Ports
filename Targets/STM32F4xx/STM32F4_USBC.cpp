@@ -250,7 +250,14 @@ void STM32F4_UsbClient_Interrupt(void* param);
 /* usbState variables for the controllers */
 static STM32F4_UsbClientController usbClientController[STM32F4_TOTAL_USB_CONTROLLERS];
 
-extern void STM32F4_UsbClient_SetupConfiguration(TinyCLR_UsbClient_Configuration* configuration);
+void STM32F4_UsbClient_SetupConfiguration(TinyCLR_UsbClient_Configuration* configuration);
+
+const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi() {
+    return UsbClient_GetApi();
+}
+void STM32F4_UsbClient_Reset() {
+    return UsbClient_Reset();
+}
 
 bool STM32F4_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState) {
     if (usbState == nullptr)
