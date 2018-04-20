@@ -229,12 +229,212 @@ typedef struct {
 }
 OTG_TypeDef;
 
+// Device descriptor
+TinyCLR_UsbClient_DeviceDescriptor UsbClient_DeviceDescriptor = {
+    {
+        USB_DEVICE_DESCRIPTOR_MARKER,
+        0,
+        sizeof(TinyCLR_UsbClient_DeviceDescriptor)
+    },
+    USB_DEVICE_DESCRIPTOR_LENGTH,               // Length of device descriptor
+    USB_DEVICE_DESCRIPTOR_TYPE,                 // USB device descriptor type
+    0x0200,                                     // USB Version 2.00 (BCD) (2.0 required for Extended ID recognition)
+    0,                                          // Device class (none)
+    0,                                          // Device subclass (none)
+    0,                                          // Device protocol (none)
+    CONCAT(DEVICE_TARGET, _USB_ENDPOINT0_SIZE),   // Endpoint 0 size
+    USB_DEBUGGER_VENDOR_ID,                     // Vendor ID
+    USB_DEBUGGER_PRODUCT_ID,                    // Product ID
+    DEVICE_RELEASE_VERSION,                     // Product version 1.00 (BCD)
+    MANUFACTURER_NAME_INDEX,                    // Manufacturer name string index
+    PRODUCT_NAME_INDEX,                         // Product name string index
+    0,                                          // Serial number string index (none)
+    1                                           // Number of configurations
+};
+
+// Configuration descriptor
+TinyCLR_UsbClient_ConfigurationDescriptor UsbClient_ConfigurationDescriptor = {
+    {
+        USB_CONFIGURATION_DESCRIPTOR_MARKER,
+        0,
+        sizeof(TinyCLR_UsbClient_ConfigurationDescriptor)
+    },
+    USB_CONFIGURATION_DESCRIPTOR_LENGTH,
+    USB_CONFIGURATION_DESCRIPTOR_TYPE,
+    USB_CONFIGURATION_DESCRIPTOR_LENGTH
+        + sizeof(TinyCLR_UsbClient_InterfaceDescriptor)
+        + sizeof(TinyCLR_UsbClient_EndpointDescriptor)
+        + sizeof(TinyCLR_UsbClient_EndpointDescriptor),
+    1,                                                  // Number of interfaces
+    1,                                                  // Number of this configuration
+    0,                                                  // Config descriptor string index (none)
+    (USB_ATTRIBUTE_BASE | USB_ATTRIBUTE_SELF_POWER),    // Config attributes
+    50                                                     // Device max current draw
+};
+
+// Interface Descriptor
+TinyCLR_UsbClient_InterfaceDescriptor UsbClient_InterfaceDescriptor = {
+    sizeof(TinyCLR_UsbClient_InterfaceDescriptor),
+    USB_INTERFACE_DESCRIPTOR_TYPE,
+    0,                                          // Interface number
+    0,                                          // Alternate number (main)
+    2,                                          // Number of endpoints
+    0xFF,                                       // Interface class (vendor)
+    1,                                          // Interface subclass
+    1,                                          // Interface protocol
+    0 ,                                         // Interface descriptor string index (none)
+};
+
+// Endpoint Descriptors
+TinyCLR_UsbClient_EndpointDescriptor UsbClient_EndpointDescriptor[] = {
+    { // Endpoint
+        sizeof(TinyCLR_UsbClient_EndpointDescriptor),
+        USB_ENDPOINT_DESCRIPTOR_TYPE,
+        USB_ENDPOINT_DIRECTION_IN | 1,
+        USB_ENDPOINT_ATTRIBUTE_BULK,
+        CONCAT(DEVICE_TARGET, _USB_ENDPOINT_SIZE),                                // Endpoint 1 packet size
+        0                                           // Endpoint 1 interval
+    },
+
+    {
+        //Endpoint
+       sizeof(TinyCLR_UsbClient_EndpointDescriptor),
+       USB_ENDPOINT_DESCRIPTOR_TYPE,
+       USB_ENDPOINT_DIRECTION_OUT | 2,
+       USB_ENDPOINT_ATTRIBUTE_BULK,
+       CONCAT(DEVICE_TARGET, _USB_ENDPOINT_SIZE),                                // Endpoint 1 packet size
+       0
+   }
+
+};
+
+TinyCLR_UsbClient_StringDescriptorHeader UsbClient_StringDescriptor[] = {
+    {
+        {
+            USB_STRING_DESCRIPTOR_MARKER,
+            MANUFACTURER_NAME_INDEX,
+            sizeof(TinyCLR_UsbClient_StringDescriptorHeader)
+        },
+        USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
+        USB_STRING_DESCRIPTOR_TYPE,
+        CONCAT(L, DEVICE_MANUFACTURER)
+    },
+
+    {
+        {
+            USB_STRING_DESCRIPTOR_MARKER,
+            PRODUCT_NAME_INDEX,
+            sizeof(TinyCLR_UsbClient_StringDescriptorHeader)
+        },
+        USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
+        USB_STRING_DESCRIPTOR_TYPE,
+        CONCAT(L, DEVICE_NAME)
+
+    },
+
+    {
+        {
+            USB_STRING_DESCRIPTOR_MARKER,
+            USB_DISPLAY_STRING_NUM,
+            sizeof(TinyCLR_UsbClient_StringDescriptorHeader)
+        },
+        USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
+        USB_STRING_DESCRIPTOR_TYPE,
+        CONCAT(L, DEVICE_NAME)
+
+    },
+
+    {
+        {
+            USB_STRING_DESCRIPTOR_MARKER,
+            USB_FRIENDLY_STRING_NUM,
+            sizeof(TinyCLR_UsbClient_StringDescriptorHeader)
+        },
+        USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
+        USB_STRING_DESCRIPTOR_TYPE,
+        CONCAT(L, DEVICE_NAME)
+
+    }
+
+};
+
+// OS Descriptor string for Extended OS Compat ID
+TinyCLR_UsbClient_OsStringDescriptor UsbClient_OsStringDescriptor = {
+    {
+        USB_STRING_DESCRIPTOR_MARKER,
+        OS_DESCRIPTOR_STRING_INDEX,
+        sizeof(TinyCLR_UsbClient_DescriptorHeader) + OS_DESCRIPTOR_STRING_SIZE
+    },
+    OS_DESCRIPTOR_STRING_SIZE,
+    USB_STRING_DESCRIPTOR_TYPE,
+    { 'M', 'S', 'F', 'T', '1', '0', '0' },
+    OS_DESCRIPTOR_STRING_VENDOR_CODE,
+    0x00
+};
+
+// OS Extended Compatible ID for WinUSB
+TinyCLR_UsbClient_XCompatibleOsId UsbClient_XCompatibleOsId = {
+    // Generic Descriptor header
+    {
+        {
+            USB_GENERIC_DESCRIPTOR_MARKER,
+            0,
+            sizeof(TinyCLR_UsbClient_GenericDescriptorHeader) + USB_XCOMPATIBLE_OS_SIZE
+        },
+        USB_REQUEST_TYPE_IN | USB_REQUEST_TYPE_VENDOR,
+        OS_DESCRIPTOR_STRING_VENDOR_CODE,
+        0,                                              // Intfc # << 8 + Page #
+        USB_XCOMPATIBLE_OS_REQUEST                      // Extended Compatible OS ID request
+    },
+    USB_XCOMPATIBLE_OS_SIZE,                            // Size of this descriptor
+    OS_DESCRIPTOR_EX_VERSION,                           // Version 1.00 (BCD)
+    USB_XCOMPATIBLE_OS_REQUEST,                         // Extended Compatible OS ID response
+    1,                                                  // Only 1 function record
+    { 0, 0, 0, 0, 0, 0, 0 },                            // (padding)
+    // Extended Compatible OS ID function record
+    0,                                                  // Interface 0
+    1,                                                  // (reserved)
+    { 'W', 'I', 'N', 'U', 'S', 'B',  0,  0 },           // Compatible ID
+    {  0,   0,   0,   0,   0,   0,   0,  0 },           // Sub-compatible ID
+    { 0, 0, 0, 0, 0, 0 }                                // Padding
+};
+
+// OS Extended Property
+TinyCLR_UsbClient_XPropertiesOsWinUsb UsbClient_XPropertiesOsWinUsb = {
+    // Generic Descriptor header
+    {
+        {
+            USB_GENERIC_DESCRIPTOR_MARKER,
+            0,
+            sizeof(TinyCLR_UsbClient_GenericDescriptorHeader) + USB_XPROPERTY_OS_SIZE_WINUSB
+        },
+        USB_REQUEST_TYPE_IN | USB_REQUEST_TYPE_VENDOR | USB_REQUEST_TYPE_INTERFACE,
+        OS_DESCRIPTOR_STRING_VENDOR_CODE,
+        0,                                              // Intfc # << 8 + Page #
+        USB_XPROPERTY_OS_REQUEST                        // Extended Property OS ID request
+    },
+    USB_XPROPERTY_OS_SIZE_WINUSB,                       // Size of this descriptor (78 bytes for guid + 40 bytes for the property name + 24 bytes for other fields = 142 bytes)
+    OS_DESCRIPTOR_EX_VERSION,                           // Version 1.00 (BCD)
+    USB_XPROPERTY_OS_REQUEST,                           // Extended Compatible OS ID response
+    1,                                                  // Only 1 ex property record
+    // Extended Property OS ID function record
+    0x00000084,                                         // size in bytes
+    EX_PROPERTY_DATA_TYPE__REG_SZ,                      // data type (unicode string)
+    40,                                                 // name length
+    // property name (null -terminated unicode string: 'DeviceInterfaceGuid\0')
+    { 'D','\0', 'e','\0', 'v','\0', 'i','\0', 'c','\0', 'e','\0', 'I','\0', 'n','\0', 't','\0', 'e','\0', 'r','\0', 'f','\0', 'a','\0', 'c','\0', 'e','\0', 'G','\0', 'u','\0', 'i','\0', 'd','\0', '\0','\0' },
+    78,                                                 // data length
+    // data {C13BCFE9-5E84-4187-9BAA-45597FFCBB6F}
+    { '{','\0', 'C','\0', '1','\0', '3','\0', 'B','\0', 'C','\0', 'F','\0', 'E','\0', '9','\0', '-','\0', '5','\0', 'E','\0', '8','\0', '4','\0', '-','\0', '4','\0', '1','\0', '8','\0', '7','\0', '-','\0', '9','\0', 'B','\0', 'A','\0', 'A','\0', '-','\0', '4','\0', '5','\0', '5','\0', '9','\0', '7','\0', 'F','\0', 'F','\0', 'C','\0', 'B','\0', 'B','\0', '6','\0', 'F','\0', '}','\0', '\0','\0' }
+};
+
 typedef struct {
     USB_CONTROLLER_STATE* usbState;
 
     uint8_t     ep0Buffer[STM32F4_USB_ENDPOINT_SIZE];
     uint16_t    endpointStatus[STM32F4_USB_ENDPOINT_COUNT];
     uint8_t     previousDeviceState;
+    uint16_t    endpointType;
 
 } STM32F4_UsbClientController;
 
@@ -249,14 +449,13 @@ void STM32F4_UsbClient_Interrupt(void* param);
 /* usbState variables for the controllers */
 static STM32F4_UsbClientController usbClientController[STM32F4_TOTAL_USB_CONTROLLERS];
 
+#define USB_CONTROLLER_FS 0
+
 bool STM32F4_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState) {
     if (usbState == nullptr)
         return false;
 
-    int32_t controller = usbState->controllerNum;
-
-    usbClientController[controller].usbState = usbState;
-    usbClientController[controller].usbState->endpointStatus = &usbClientController[controller].endpointStatus[0];
+    int32_t controller = USB_CONTROLLER_FS;
 
     auto& dp = g_STM32F4_Usb_Dp_Pins[controller];
     auto& dm = g_STM32F4_Usb_Dm_Pins[controller];
@@ -267,6 +466,32 @@ bool STM32F4_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState) {
 
     if (STM32F4_USB_USE_ID_PIN(controller) && !STM32F4_GpioInternal_OpenPin(id.number))
         return false;
+
+    // Setup configuration
+    memset((uint8_t*)&usbState->configuration, 0, sizeof(TinyCLR_UsbClient_Configuration));
+
+    usbState->configuration.deviceDescriptor = &UsbClient_DeviceDescriptor;
+    usbState->configuration.configurationDescriptor = &UsbClient_ConfigurationDescriptor;
+    usbState->configuration.interfaceDescriptor = &UsbClient_InterfaceDescriptor;
+    usbState->configuration.endpointDescriptor = UsbClient_EndpointDescriptor;
+    usbState->configuration.stringsDescriptor = UsbClient_StringDescriptor;
+    usbState->configuration.OsStringDescriptor = &UsbClient_OsStringDescriptor;
+    usbState->configuration.OsXCompatibleId = &UsbClient_XCompatibleOsId;
+    usbState->configuration.OsXProperty = &UsbClient_XPropertiesOsWinUsb;
+    usbState->controllerNum = controller;
+    usbState->packetFifoCount = STM32F4_USB_PACKET_FIFO_COUNT;
+
+    usbClientController[controller].usbState = usbState;
+    usbClientController[controller].usbState->endpointStatus = &usbClientController[controller].endpointStatus[0];
+    usbClientController[controller].endpointType = 0;
+
+    for (auto i = 0; i < usbClientController[controller].usbState->configuration.interfaceDescriptor->bNumEndpoints; i++) {
+        TinyCLR_UsbClient_EndpointDescriptor  *ep = (TinyCLR_UsbClient_EndpointDescriptor*)&usbClientController[controller].usbState->configuration.endpointDescriptor[i];
+
+        auto idx = ep->bEndpointAddress & 0x0F;
+
+        usbClientController[controller].endpointType |= (ep->bmAttributes & 3) << (idx * 2);
+    }
 
     // enable USB clock
     // FS on AHB2
@@ -354,7 +579,7 @@ void STM32F4_UsbClient_ResetEvent(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* usbSta
 
     // configure data endpoints
     uint32_t intMask = 0x00010001; // ep0 interrupts;
-    uint32_t eptype = usbState->endpointType >> 2; // endpoint types (2 bits / endpoint)
+    uint32_t eptype = usbClientController[usbState->controllerNum].endpointType >> 2; // endpoint types (2 bits / endpoint)
     uint32_t i = 1, bit = 2;
     while (eptype) {
         uint32_t type = eptype & 3;
@@ -527,7 +752,7 @@ void STM32F4_UsbClient_EndpointOutInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STA
         // Handle Setup data in upper layer
         STM32F4_UsbClient_HandleSetup(OTG, usbState);
     }
-    else if (UsbClient_CanReceivePackage(ep)) {
+    else if (UsbClient_CanReceivePackage(usbState, ep)) {
         // enable endpoint
         OTG->DOEP[ep].TSIZ = OTG_DOEPTSIZ_PKTCNT_1 | usbState->maxPacketSize[ep];
         OTG->DOEP[ep].CTL |= OTG_DOEPCTL_EPENA | OTG_DOEPCTL_CNAK;

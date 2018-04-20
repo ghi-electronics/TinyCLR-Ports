@@ -26,15 +26,15 @@ static int32_t usb_packet_fifo_in[CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)];
 static int32_t usb_packet_fifo_out[CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)];
 static int32_t usb_packet_fifo_count[CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)];
 
-TinyCLR_UsbClient_Configuration UsbClient_DefaultConfiguration;
+//TinyCLR_UsbClient_Configuration UsbClient_DefaultConfiguration;
 
 uint8_t UsbClient_ControlDataBuffer[256];
 
-int8_t UsbClient_EndpointMap[] = { ENDPOINT_INUSED_MASK,                          // Endpoint 0
-                                            ENDPOINT_DIR_IN_MASK | ENDPOINT_DIR_OUT_MASK,  // Endpoint 1
-                                            ENDPOINT_DIR_IN_MASK | ENDPOINT_DIR_OUT_MASK,  // Endpoint 2
-                                            ENDPOINT_DIR_IN_MASK | ENDPOINT_DIR_OUT_MASK   // Endpoint 3
-};
+// int8_t UsbClient_EndpointMap[] = { ENDPOINT_INUSED_MASK,                          // Endpoint 0
+                                            // ENDPOINT_DIR_IN_MASK | ENDPOINT_DIR_OUT_MASK,  // Endpoint 1
+                                            // ENDPOINT_DIR_IN_MASK | ENDPOINT_DIR_OUT_MASK,  // Endpoint 2
+                                            // ENDPOINT_DIR_IN_MASK | ENDPOINT_DIR_OUT_MASK   // Endpoint 3
+// };
 
 USB_CONTROLLER_STATE usbClient_State[CONCAT(DEVICE_TARGET, _TOTAL_USB_CONTROLLERS)];
 
@@ -43,284 +43,6 @@ uint8_t USB_LanguageDescriptor[USB_LANGUAGE_DESCRIPTOR_SIZE] =
     USB_LANGUAGE_DESCRIPTOR_SIZE,
     USB_STRING_DESCRIPTOR_TYPE,
     0x09, 0x04                      // U.S. English
-};
-
-// Device descriptor
-TinyCLR_UsbClient_DeviceDescriptor UsbClient_DeviceDescriptor = {
-
-    {
-        USB_DEVICE_DESCRIPTOR_MARKER,
-        0,
-        sizeof(TinyCLR_UsbClient_DeviceDescriptor)
-    },
-    USB_DEVICE_DESCRIPTOR_LENGTH,               // Length of device descriptor
-    USB_DEVICE_DESCRIPTOR_TYPE,                 // USB device descriptor type
-    0x0200,                                     // USB Version 2.00 (BCD) (2.0 required for Extended ID recognition)
-    0,                                          // Device class (none)
-    0,                                          // Device subclass (none)
-    0,                                          // Device protocol (none)
-    CONCAT(DEVICE_TARGET, _USB_ENDPOINT0_SIZE),   // Endpoint 0 size
-    USB_DEBUGGER_VENDOR_ID,                     // Vendor ID
-    USB_DEBUGGER_PRODUCT_ID,                    // Product ID
-    DEVICE_RELEASE_VERSION,                     // Product version 1.00 (BCD)
-    MANUFACTURER_NAME_INDEX,                    // Manufacturer name string index
-    PRODUCT_NAME_INDEX,                         // Product name string index
-    0,                                          // Serial number string index (none)
-    1                                           // Number of configurations
-};
-
-
-// configuration descriptor
-TinyCLR_UsbClient_ConfigurationDescriptor UsbClient_ConfigurationDescriptor = {
-    {
-        USB_CONFIGURATION_DESCRIPTOR_MARKER,
-        0,
-        sizeof(TinyCLR_UsbClient_ConfigurationDescriptor)
-    },
-    USB_CONFIGURATION_DESCRIPTOR_LENGTH,
-    USB_CONFIGURATION_DESCRIPTOR_TYPE,
-    USB_CONFIGURATION_DESCRIPTOR_LENGTH
-        + sizeof(TinyCLR_UsbClient_InterfaceDescriptor)
-        + sizeof(TinyCLR_UsbClient_EndpointDescriptor)
-        + sizeof(TinyCLR_UsbClient_EndpointDescriptor),
-    1,                                                  // Number of interfaces
-    1,                                                  // Number of this configuration
-    0,                                                  // Config descriptor string index (none)
-    (USB_ATTRIBUTE_BASE | USB_ATTRIBUTE_SELF_POWER),    // Config attributes
-    50                                                     // Device max current draw
-};
-/*
-    // Interface
-    sizeof(TinyCLR_UsbClient_InterfaceDescriptor),
-    USB_INTERFACE_DESCRIPTOR_TYPE,
-    0,                                          // Interface number
-    0,                                          // Alternate number (main)
-    2,                                          // Number of endpoints
-    0xFF,                                       // Interface class (vendor)
-    1,                                          // Interface subclass
-    1,                                          // Interface protocol
-    0 ,                                          // Interface descriptor string index (none)
-
-    // Endpoint
-    sizeof(TinyCLR_UsbClient_EndpointDescriptor),
-    USB_ENDPOINT_DESCRIPTOR_TYPE,
-    USB_ENDPOINT_DIRECTION_IN,
-    USB_ENDPOINT_ATTRIBUTE_BULK,
-    CONCAT(DEVICE_TARGET, _USB_ENDPOINT_SIZE),                                // Endpoint 1 packet size
-    0 ,                                          // Endpoint 1 interval
-
-    //Endpoint
-    sizeof(TinyCLR_UsbClient_EndpointDescriptor),
-    USB_ENDPOINT_DESCRIPTOR_TYPE,
-    USB_ENDPOINT_DIRECTION_OUT,
-    USB_ENDPOINT_ATTRIBUTE_BULK,
-    CONCAT(DEVICE_TARGET, _USB_ENDPOINT_SIZE),                                // Endpoint 1 packet size
-    0                                           // Endpoint 1 interval
-};
-*/
-
-TinyCLR_UsbClient_InterfaceDescriptor UsbClient_InterfaceDescriptor = {
-    // Interface
-    sizeof(TinyCLR_UsbClient_InterfaceDescriptor),
-    USB_INTERFACE_DESCRIPTOR_TYPE,
-    0,                                          // Interface number
-    0,                                          // Alternate number (main)
-    2,                                          // Number of endpoints
-    0xFF,                                       // Interface class (vendor)
-    1,                                          // Interface subclass
-    1,                                          // Interface protocol
-    0 ,                                         // Interface descriptor string index (none)
-};
-
-TinyCLR_UsbClient_EndpointDescriptor UsbClient_EndpointDescriptor[] = {
-    { // Endpoint
-        sizeof(TinyCLR_UsbClient_EndpointDescriptor),
-        USB_ENDPOINT_DESCRIPTOR_TYPE,
-        USB_ENDPOINT_DIRECTION_IN,
-        USB_ENDPOINT_ATTRIBUTE_BULK,
-        CONCAT(DEVICE_TARGET, _USB_ENDPOINT_SIZE),                                // Endpoint 1 packet size
-        0                                           // Endpoint 1 interval
-    },
-    
-    {
-         //Endpoint
-        sizeof(TinyCLR_UsbClient_EndpointDescriptor),
-        USB_ENDPOINT_DESCRIPTOR_TYPE,
-        USB_ENDPOINT_DIRECTION_OUT,
-        USB_ENDPOINT_ATTRIBUTE_BULK,
-        CONCAT(DEVICE_TARGET, _USB_ENDPOINT_SIZE),                                // Endpoint 1 packet size
-        0                                         
-    }
-    
-};
-
-TinyCLR_UsbClient_StringDescriptorHeader UsbClient_StringDescriptor[] = {
-    {
-        {
-            USB_STRING_DESCRIPTOR_MARKER,
-            MANUFACTURER_NAME_INDEX,
-            sizeof(TinyCLR_UsbClient_StringDescriptorHeader)
-        },
-        USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
-        USB_STRING_DESCRIPTOR_TYPE,
-        CONCAT(L, DEVICE_MANUFACTURER)
-    },
-    
-    {
-        {
-            USB_STRING_DESCRIPTOR_MARKER,
-            PRODUCT_NAME_INDEX,
-            sizeof(TinyCLR_UsbClient_StringDescriptorHeader)
-        },
-        USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
-        USB_STRING_DESCRIPTOR_TYPE,
-        CONCAT(L, DEVICE_NAME)
-    
-    },
-    
-    {
-        {
-            USB_STRING_DESCRIPTOR_MARKER,
-            USB_DISPLAY_STRING_NUM,
-            sizeof(TinyCLR_UsbClient_StringDescriptorHeader)
-        },
-        USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
-        USB_STRING_DESCRIPTOR_TYPE,
-        CONCAT(L, DEVICE_NAME)
-    
-    },
-    
-    {
-        {
-            USB_STRING_DESCRIPTOR_MARKER,
-            USB_FRIENDLY_STRING_NUM,
-            sizeof(TinyCLR_UsbClient_StringDescriptorHeader)
-        },
-        USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
-        USB_STRING_DESCRIPTOR_TYPE,
-        CONCAT(L, DEVICE_NAME)
-    
-    }
-    
-};
-
-/*
-// Manufacturer name string descriptor header
-TinyCLR_UsbClient_StringDescriptorHeader UsbClient_ManufacturerDescriptor = {
-        {
-            USB_STRING_DESCRIPTOR_MARKER,
-            MANUFACTURER_NAME_INDEX,
-            sizeof(TinyCLR_UsbClient_StringDescriptorHeader)
-        },
-        USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
-        USB_STRING_DESCRIPTOR_TYPE,
-        CONCAT(L, DEVICE_MANUFACTURER)
-};
-
-// Product name string descriptor header
-TinyCLR_UsbClient_StringDescriptorHeader UsbClient_ProductNameDescriptor = {
-    {
-        USB_STRING_DESCRIPTOR_MARKER,
-        PRODUCT_NAME_INDEX,
-        sizeof(TinyCLR_UsbClient_StringDescriptorHeader)
-    },
-    USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
-    USB_STRING_DESCRIPTOR_TYPE,
-    CONCAT(L, DEVICE_NAME)
-};
-
-// String 4 descriptor header (display name)
-TinyCLR_UsbClient_StringDescriptorHeader UsbClient_DisplayNameDescriptor = {
-    {
-        USB_STRING_DESCRIPTOR_MARKER,
-        USB_DISPLAY_STRING_NUM,
-        sizeof(TinyCLR_UsbClient_StringDescriptorHeader)
-    },
-    USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
-    USB_STRING_DESCRIPTOR_TYPE,
-    CONCAT(L, DEVICE_NAME)
-};
-
-// String 5 descriptor header (friendly name)
-TinyCLR_UsbClient_StringDescriptorHeader UsbClient_FriendlyNameDescriptor = {
-    {
-        USB_STRING_DESCRIPTOR_MARKER,
-        USB_FRIENDLY_STRING_NUM,
-        sizeof(TinyCLR_UsbClient_StringDescriptorHeader)
-    },
-    USB_STRING_DESCRIPTOR_HEADER_LENGTH + (sizeof(wchar_t) * USB_STRING_DESCRIPTOR_SIZE),
-    USB_STRING_DESCRIPTOR_TYPE,
-    CONCAT(L, DEVICE_NAME)
-};
-*/
-// OS Descriptor string for Extended OS Compat ID
-TinyCLR_UsbClient_OsStringDescriptor UsbClient_OsStringDescriptor = {
-    {
-        USB_STRING_DESCRIPTOR_MARKER,
-        OS_DESCRIPTOR_STRING_INDEX,
-        sizeof(TinyCLR_UsbClient_DescriptorHeader) + OS_DESCRIPTOR_STRING_SIZE
-    },
-    OS_DESCRIPTOR_STRING_SIZE,
-    USB_STRING_DESCRIPTOR_TYPE,
-    { 'M', 'S', 'F', 'T', '1', '0', '0' },
-    OS_DESCRIPTOR_STRING_VENDOR_CODE,
-    0x00
-};
-
-// OS Extended Compatible ID for WinUSB
-TinyCLR_UsbClient_XCompatibleOsId UsbClient_XCompatibleOsId = {
-    // Generic Descriptor header
-    {
-        {
-            USB_GENERIC_DESCRIPTOR_MARKER,
-            0,
-            sizeof(TinyCLR_UsbClient_GenericDescriptorHeader) + USB_XCOMPATIBLE_OS_SIZE
-        },
-        USB_REQUEST_TYPE_IN | USB_REQUEST_TYPE_VENDOR,
-        OS_DESCRIPTOR_STRING_VENDOR_CODE,
-        0,                                              // Intfc # << 8 + Page #
-        USB_XCOMPATIBLE_OS_REQUEST                      // Extended Compatible OS ID request
-    },
-    USB_XCOMPATIBLE_OS_SIZE,                            // Size of this descriptor
-    OS_DESCRIPTOR_EX_VERSION,                           // Version 1.00 (BCD)
-    USB_XCOMPATIBLE_OS_REQUEST,                         // Extended Compatible OS ID response
-    1,                                                  // Only 1 function record
-    { 0, 0, 0, 0, 0, 0, 0 },                            // (padding)
-    // Extended Compatible OS ID function record
-    0,                                                  // Interface 0
-    1,                                                  // (reserved)
-    { 'W', 'I', 'N', 'U', 'S', 'B',  0,  0 },           // Compatible ID
-    {  0,   0,   0,   0,   0,   0,   0,  0 },           // Sub-compatible ID
-    { 0, 0, 0, 0, 0, 0 }                                // Padding
-};
-
-// OS Extended Property
-TinyCLR_UsbClient_XPropertiesOsWinUsb UsbClient_XPropertiesOsWinUsb = {
-    // Generic Descriptor header
-    {
-        {
-            USB_GENERIC_DESCRIPTOR_MARKER,
-            0,
-            sizeof(TinyCLR_UsbClient_GenericDescriptorHeader) + USB_XPROPERTY_OS_SIZE_WINUSB
-        },
-        USB_REQUEST_TYPE_IN | USB_REQUEST_TYPE_VENDOR | USB_REQUEST_TYPE_INTERFACE,
-        OS_DESCRIPTOR_STRING_VENDOR_CODE,
-        0,                                              // Intfc # << 8 + Page #
-        USB_XPROPERTY_OS_REQUEST                        // Extended Property OS ID request
-    },
-    USB_XPROPERTY_OS_SIZE_WINUSB,                       // Size of this descriptor (78 bytes for guid + 40 bytes for the property name + 24 bytes for other fields = 142 bytes)
-    OS_DESCRIPTOR_EX_VERSION,                           // Version 1.00 (BCD)
-    USB_XPROPERTY_OS_REQUEST,                           // Extended Compatible OS ID response
-    1,                                                  // Only 1 ex property record
-    // Extended Property OS ID function record
-    0x00000084,                                         // size in bytes
-    EX_PROPERTY_DATA_TYPE__REG_SZ,                      // data type (unicode string)
-    40,                                                 // name length
-    // property name (null -terminated unicode string: 'DeviceInterfaceGuid\0')
-    { 'D','\0', 'e','\0', 'v','\0', 'i','\0', 'c','\0', 'e','\0', 'I','\0', 'n','\0', 't','\0', 'e','\0', 'r','\0', 'f','\0', 'a','\0', 'c','\0', 'e','\0', 'G','\0', 'u','\0', 'i','\0', 'd','\0', '\0','\0' },
-    78,                                                 // data length
-    // data {C13BCFE9-5E84-4187-9BAA-45597FFCBB6F}
-    { '{','\0', 'C','\0', '1','\0', '3','\0', 'B','\0', 'C','\0', 'F','\0', 'E','\0', '9','\0', '-','\0', '5','\0', 'E','\0', '8','\0', '4','\0', '-','\0', '4','\0', '1','\0', '8','\0', '7','\0', '-','\0', '9','\0', 'B','\0', 'A','\0', 'A','\0', '-','\0', '4','\0', '5','\0', '5','\0', '9','\0', '7','\0', 'F','\0', 'F','\0', 'C','\0', 'B','\0', 'B','\0', '6','\0', 'F','\0', '}','\0', '\0','\0' }
 };
 
 
@@ -346,7 +68,7 @@ void UsbClient_ClearQueues(USB_CONTROLLER_STATE *usbState, bool ClrRxQueue, bool
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (ClrRxQueue) {
-        for (int32_t endpoint = 0; endpoint < CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT); endpoint++) {
+        for (int32_t endpoint = 0; endpoint < usbState->configuration.interfaceDescriptor->bNumEndpoints; endpoint++) {
             if (usbState->queues[endpoint] == nullptr || usbState->isTxQueue[endpoint])
                 continue;
 
@@ -358,7 +80,7 @@ void UsbClient_ClearQueues(USB_CONTROLLER_STATE *usbState, bool ClrRxQueue, bool
     }
 
     if (ClrTxQueue) {
-        for (int32_t endpoint = 0; endpoint < CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT); endpoint++) {
+        for (int32_t endpoint = 0; endpoint < usbState->configuration.interfaceDescriptor->bNumEndpoints; endpoint++) {
             if (usbState->queues[endpoint] && usbState->isTxQueue[endpoint])
                 UsbClient_ClearEndpoints(endpoint);
         }
@@ -687,27 +409,27 @@ uint8_t UsbClient_HandleConfigurationRequests(USB_CONTROLLER_STATE* usbState, US
                 //usbState->residualData = (uint8_t *)&Config->bLength;
                 //usbState->residualCount = __min(usbState->expected, Config->wTotalLength);
                 memcpy(UsbClient_ControlDataBuffer, (uint8_t *)&Config->bLength, sizeof(TinyCLR_UsbClient_DescriptorHeader) + offset);
-                
-                TinyCLR_UsbClient_InterfaceDescriptor* interface = UsbClient_DefaultConfiguration.interfaceDescriptor;
-                
-                
-                memcpy( (uint8_t *)&UsbClient_ControlDataBuffer[offset], (uint8_t *)UsbClient_DefaultConfiguration.interfaceDescriptor, sizeof(TinyCLR_UsbClient_InterfaceDescriptor) );
-                
+
+                TinyCLR_UsbClient_InterfaceDescriptor* interface = usbState->configuration.interfaceDescriptor;
+
+
+                memcpy((uint8_t *)&UsbClient_ControlDataBuffer[offset], (uint8_t *)usbState->configuration.interfaceDescriptor, sizeof(TinyCLR_UsbClient_InterfaceDescriptor));
+
                 offset += sizeof(TinyCLR_UsbClient_InterfaceDescriptor);
-                
-                
-                
-                for (auto i = 0; i < UsbClient_DefaultConfiguration.interfaceDescriptor->bNumEndpoints; i++) {
-                    memcpy( (uint8_t *)&UsbClient_ControlDataBuffer[offset], (uint8_t *)&UsbClient_DefaultConfiguration.endpointDescriptor[i], sizeof(TinyCLR_UsbClient_EndpointDescriptor) );
-                    offset+=sizeof(TinyCLR_UsbClient_EndpointDescriptor);
+
+
+
+                for (auto i = 0; i < usbState->configuration.interfaceDescriptor->bNumEndpoints; i++) {
+                    memcpy((uint8_t *)&UsbClient_ControlDataBuffer[offset], (uint8_t *)&usbState->configuration.endpointDescriptor[i], sizeof(TinyCLR_UsbClient_EndpointDescriptor));
+                    offset += sizeof(TinyCLR_UsbClient_EndpointDescriptor);
                 }
-                
-                
-                
-               // UsbClient_ControlDataBuffer
-               
-               usbState->residualData = (uint8_t *)UsbClient_ControlDataBuffer;
-               usbState->residualCount = __min(usbState->expected, Config->wTotalLength);
+
+
+
+                // UsbClient_ControlDataBuffer
+
+                usbState->residualData = (uint8_t *)UsbClient_ControlDataBuffer;
+                usbState->residualCount = __min(usbState->expected, Config->wTotalLength);
             }
             break;
 
@@ -809,40 +531,40 @@ const TinyCLR_UsbClient_DescriptorHeader * UsbClient_FindRecord(USB_CONTROLLER_S
     bool found = false;
 
     TinyCLR_UsbClient_DescriptorHeader* ptr = nullptr;
-    
-    switch(marker) {
-        case USB_DEVICE_DESCRIPTOR_MARKER:
-            ptr = (TinyCLR_UsbClient_DescriptorHeader*)UsbClient_DefaultConfiguration.deviceDescriptor;
-            found = true;
-        break; 
-        
-        case USB_CONFIGURATION_DESCRIPTOR_MARKER:
-            ptr = (TinyCLR_UsbClient_DescriptorHeader*)UsbClient_DefaultConfiguration.configurationDescriptor;
-            found = true;
-        break; 
-        case USB_STRING_DESCRIPTOR_MARKER:
-            ptr = (TinyCLR_UsbClient_DescriptorHeader*)UsbClient_DefaultConfiguration.stringsDescriptor;
-           
-            while ( ptr != nullptr && ptr->marker == USB_STRING_DESCRIPTOR_MARKER) {                
-                if (ptr->iValue == (setup->wValue & 0x00FF)) {
-                    found = true;
-                    break;
-                }
 
-                uint8_t* next = (uint8_t*)ptr;
-                
-                next += ptr->size;
-                ptr = (TinyCLR_UsbClient_DescriptorHeader*)next;
-               
-            }
-                                    
+    switch (marker) {
+    case USB_DEVICE_DESCRIPTOR_MARKER:
+        ptr = (TinyCLR_UsbClient_DescriptorHeader*)usbState->configuration.deviceDescriptor;
+        found = true;
         break;
-        case USB_GENERIC_DESCRIPTOR_MARKER:           
-            ptr = (setup->wIndex == USB_XCOMPATIBLE_OS_REQUEST) ? (TinyCLR_UsbClient_DescriptorHeader*)UsbClient_DefaultConfiguration.OsXCompatibleId : (TinyCLR_UsbClient_DescriptorHeader*)UsbClient_DefaultConfiguration.OsXProperty;
-            found = true;             
+
+    case USB_CONFIGURATION_DESCRIPTOR_MARKER:
+        ptr = (TinyCLR_UsbClient_DescriptorHeader*)usbState->configuration.configurationDescriptor;
+        found = true;
+        break;
+    case USB_STRING_DESCRIPTOR_MARKER:
+        ptr = (TinyCLR_UsbClient_DescriptorHeader*)usbState->configuration.stringsDescriptor;
+
+        while (ptr != nullptr && ptr->marker == USB_STRING_DESCRIPTOR_MARKER) {
+            if (ptr->iValue == (setup->wValue & 0x00FF)) {
+                found = true;
+                break;
+            }
+
+            uint8_t* next = (uint8_t*)ptr;
+
+            next += ptr->size;
+            ptr = (TinyCLR_UsbClient_DescriptorHeader*)next;
+
+        }
+
+        break;
+    case USB_GENERIC_DESCRIPTOR_MARKER:
+        ptr = (setup->wIndex == USB_XCOMPATIBLE_OS_REQUEST) ? (TinyCLR_UsbClient_DescriptorHeader*)usbState->configuration.OsXCompatibleId : (TinyCLR_UsbClient_DescriptorHeader*)usbState->configuration.OsXProperty;
+        found = true;
         break;
     }
-        
+
     return found ? ptr : nullptr;
 }
 
@@ -878,7 +600,7 @@ uint8_t UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState) {
 USB_PACKET64* UsbClient_RxEnqueue(USB_CONTROLLER_STATE* usbState, int32_t endpoint, bool& disableRx) {
     USB_PACKET64* packet;
 
-    if (usb_packet_fifo_count[endpoint] == CONCAT(DEVICE_TARGET, _USB_PACKET_FIFO_COUNT)) {
+    if (usb_packet_fifo_count[endpoint] == usbState->packetFifoCount) {
         disableRx = true;
 
         return nullptr;
@@ -891,7 +613,7 @@ USB_PACKET64* UsbClient_RxEnqueue(USB_CONTROLLER_STATE* usbState, int32_t endpoi
     usb_packet_fifo_in[endpoint]++;
     usb_packet_fifo_count[endpoint]++;
 
-    if (usb_packet_fifo_in[endpoint] == CONCAT(DEVICE_TARGET, _USB_PACKET_FIFO_COUNT))
+    if (usb_packet_fifo_in[endpoint] == usbState->packetFifoCount)
         usb_packet_fifo_in[endpoint] = 0;
 
     UsbClient_SetEvent(usbState, 1 << endpoint);
@@ -911,7 +633,7 @@ USB_PACKET64* UsbClient_TxDequeue(USB_CONTROLLER_STATE* usbState, int32_t endpoi
     usb_packet_fifo_count[endpoint]--;
     usb_packet_fifo_out[endpoint]++;
 
-    if (usb_packet_fifo_out[endpoint] == CONCAT(DEVICE_TARGET, _USB_PACKET_FIFO_COUNT))
+    if (usb_packet_fifo_out[endpoint] == usbState->packetFifoCount)
         usb_packet_fifo_out[endpoint] = 0;
 
     return packet;
@@ -921,8 +643,8 @@ void UsbClient_ClearEndpoints(int32_t endpoint) {
     usb_packet_fifo_in[endpoint] = usb_packet_fifo_out[endpoint] = usb_packet_fifo_count[endpoint] = 0;
 }
 
-bool UsbClient_CanReceivePackage(int32_t endpoint) {
-    return usb_packet_fifo_count[endpoint] < CONCAT(DEVICE_TARGET, _USB_PACKET_FIFO_COUNT);
+bool UsbClient_CanReceivePackage(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
+    return usb_packet_fifo_count[endpoint] < usbState->packetFifoCount;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -941,9 +663,6 @@ const TinyCLR_Api_Info* UsbClient_GetApi() {
     usbClientProvider.Write = &UsbClient_Write;
     usbClientProvider.Read = &UsbClient_Read;
     usbClientProvider.Flush = &UsbClient_Flush;
-    usbClientProvider.SetDeviceDescriptor = &UsbClient_SetDeviceDescriptor;
-    usbClientProvider.SetConfigDescriptor = &UsbClient_SetConfigDescriptor;
-    usbClientProvider.SetStringDescriptor = &UsbClient_SetStringDescriptor;
     usbClientProvider.SetDataReceivedHandler = &UsbClient_SetDataReceivedHandler;
 
     usbClientApi.Author = "GHI Electronics, LLC";
@@ -958,57 +677,16 @@ const TinyCLR_Api_Info* UsbClient_GetApi() {
 
 TinyCLR_Result UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self) {
     int32_t controller = self->Index;
-   
 
     USB_CONTROLLER_STATE *usbState = &usbClient_State[controller];
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    // Init UsbClient_DefaultConfiguration    
-    memset(&UsbClient_DefaultConfiguration, 0, sizeof(TinyCLR_UsbClient_Configuration));
-
-    // 0 write    
-    // 1 read
-    
-    //UsbClient_EndpointDescriptor[0].bEndpointAddress = USB_ENDPOINT_DIRECTION_IN;
-    //UsbClient_EndpointDescriptor[1].bEndpointAddress = USB_ENDPOINT_DIRECTION_OUT;
-
-    UsbClient_DefaultConfiguration.deviceDescriptor = (TinyCLR_UsbClient_DeviceDescriptor*)&UsbClient_DeviceDescriptor;
-    UsbClient_DefaultConfiguration.configurationDescriptor = (TinyCLR_UsbClient_ConfigurationDescriptor*)&UsbClient_ConfigurationDescriptor;
-    UsbClient_DefaultConfiguration.interfaceDescriptor = (TinyCLR_UsbClient_InterfaceDescriptor*)&UsbClient_InterfaceDescriptor;
-
-    UsbClient_DefaultConfiguration.endpointDescriptor = (TinyCLR_UsbClient_EndpointDescriptor*)UsbClient_EndpointDescriptor;
-    
-    UsbClient_DefaultConfiguration.endpointDescriptor[0].bEndpointAddress = USB_ENDPOINT_DIRECTION_IN;
-    UsbClient_DefaultConfiguration.endpointDescriptor[1].bEndpointAddress = USB_ENDPOINT_DIRECTION_OUT;
-    
-    UsbClient_DefaultConfiguration.stringsDescriptor = (TinyCLR_UsbClient_StringDescriptorHeader*)UsbClient_StringDescriptor;
-   
-    //UsbClient_DefaultConfiguration.manufacturerHeader = (TinyCLR_UsbClient_StringDescriptorHeader*)&UsbClient_ManufacturerDescriptor;    
-    //UsbClient_DefaultConfiguration.productHeader = (TinyCLR_UsbClient_StringDescriptorHeader*)&UsbClient_ProductNameDescriptor;
-    //UsbClient_DefaultConfiguration.displayStringHeader = (TinyCLR_UsbClient_StringDescriptorHeader*)&UsbClient_DisplayNameDescriptor;
-    //UsbClient_DefaultConfiguration.friendlyStringHeader = (TinyCLR_UsbClient_StringDescriptorHeader*)&UsbClient_FriendlyNameDescriptor;
-
-    UsbClient_DefaultConfiguration.OsStringDescriptor = (TinyCLR_UsbClient_OsStringDescriptor*)&UsbClient_OsStringDescriptor;
-    UsbClient_DefaultConfiguration.OsXCompatibleId = (TinyCLR_UsbClient_XCompatibleOsId*)&UsbClient_XCompatibleOsId;
-    UsbClient_DefaultConfiguration.OsXProperty = (TinyCLR_UsbClient_XPropertiesOsWinUsb*)&UsbClient_XPropertiesOsWinUsb;    
-    
-    // Init Usb usbState
     memset(usbState, 0, sizeof(USB_CONTROLLER_STATE));
 
-    usbState->controllerNum = controller;
-    usbState->configuration = &UsbClient_DefaultConfiguration;
     usbState->currentState = USB_DEVICE_STATE_UNINITIALIZED;
     usbState->deviceStatus = USB_STATUS_DEVICE_SELF_POWERED;
-    usbState->endpointCount = CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT);
-    usbState->packetSize = CONCAT(DEVICE_TARGET, _USB_ENDPOINT0_SIZE);
     usbState->initialized = true;
-
-    for (auto i = 0; i < CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT); i++) {
-        usbState->pipes[i].RxEP = USB_ENDPOINT_NULL;
-        usbState->pipes[i].TxEP = USB_ENDPOINT_NULL;
-        usbState->maxPacketSize[i] = CONCAT(DEVICE_TARGET, _USB_ENDPOINT_SIZE);
-    }
 
     return TinyCLR_Result::Success;
 }
@@ -1037,154 +715,72 @@ TinyCLR_Result UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t& p
 
     USB_CONTROLLER_STATE * usbState = &usbClient_State[controller];
 
-    if (!usbState->initialized)     // If no such controller exists (or it is not initialized)
+    if (!usbState->initialized)
         return TinyCLR_Result::NotAvailable;
 
-    int32_t writeEp = USB_ENDPOINT_NULL; //1
-    int32_t readEp = USB_ENDPOINT_NULL; //2
+    int32_t writeEp = USB_ENDPOINT_NULL;
+    int32_t readEp = USB_ENDPOINT_NULL;
 
     if (mode != TinyCLR_UsbClient_PipeMode::InOut)
         return TinyCLR_Result::NotSupported;
 
-    for (auto i = 0; i < SIZEOF_ARRAY(UsbClient_EndpointMap); i++) {
-        if ((UsbClient_EndpointMap[i] & ENDPOINT_INUSED_MASK)) // in used
-            continue;
+    if (usbState->currentState == USB_DEVICE_STATE_UNINITIALIZED) {
+        CONCAT(DEVICE_TARGET, _UsbClient_Initialize(usbState));
 
-        if (writeEp == USB_ENDPOINT_NULL && ((UsbClient_EndpointMap[i] & ENDPOINT_DIR_IN_MASK) == ENDPOINT_DIR_IN_MASK)) {
-            writeEp = i;
-            UsbClient_EndpointMap[i] |= ENDPOINT_INUSED_MASK;
+        usbState->endpointCount = usbState->configuration.interfaceDescriptor->bNumEndpoints;
+        usbState->packetSize = usbState->configuration.deviceDescriptor->bMaxPacketSize0;
 
-            continue;
-        }
-
-        if (readEp == USB_ENDPOINT_NULL && ((UsbClient_EndpointMap[i] & ENDPOINT_DIR_OUT_MASK) == ENDPOINT_DIR_OUT_MASK)) {
-            readEp = i;
-            UsbClient_EndpointMap[i] |= ENDPOINT_INUSED_MASK;
-
-            continue;
-        }
-
-        if (writeEp != 0 && readEp != 0) {
-            break;
+        for (auto i = 0; i < CONCAT(DEVICE_TARGET, _USB_PIPE_COUNT); i++) {
+            usbState->pipes[i].RxEP = USB_ENDPOINT_NULL;
+            usbState->pipes[i].TxEP = USB_ENDPOINT_NULL;
         }
     }
-    // Check the usbPipe and the two endpoint numbers for validity (both endpoints cannot be zero)
-    if ((readEp == USB_ENDPOINT_NULL && writeEp == USB_ENDPOINT_NULL)
-        || (readEp != USB_ENDPOINT_NULL && (readEp < 1 || readEp >= CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)))
-        || (writeEp != USB_ENDPOINT_NULL && (writeEp < 1 || writeEp >= CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT))))
-        return TinyCLR_Result::NotAvailable;
 
-    // The specified endpoints must not be in use by another pipe
-    for (int32_t i = 0; i < CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT); i++) {
-        if (readEp != USB_ENDPOINT_NULL && (usbState->pipes[i].RxEP == readEp || usbState->pipes[i].TxEP == readEp))
-            return TinyCLR_Result::NotAvailable;
-        if (writeEp != USB_ENDPOINT_NULL && (usbState->pipes[i].RxEP == writeEp || usbState->pipes[i].TxEP == writeEp))
-            return TinyCLR_Result::NotAvailable;
+    for (auto i = 0; i < usbState->configuration.interfaceDescriptor->bNumEndpoints; i++) {
+        TinyCLR_UsbClient_EndpointDescriptor  *ep = (TinyCLR_UsbClient_EndpointDescriptor*)&usbState->configuration.endpointDescriptor[i];
+
+        auto idx = 0;
+
+        if ((ep->bEndpointAddress & USB_ENDPOINT_DIRECTION_IN) == USB_ENDPOINT_DIRECTION_IN) {
+            writeEp = (ep->bEndpointAddress & (~USB_ENDPOINT_DIRECTION_IN));
+            idx = writeEp;
+            usbState->isTxQueue[idx] = true;
+        }
+        else if ((ep->bEndpointAddress & USB_ENDPOINT_DIRECTION_OUT) == USB_ENDPOINT_DIRECTION_OUT) {
+            readEp = (ep->bEndpointAddress & (~USB_ENDPOINT_DIRECTION_OUT));
+            idx = readEp;
+            usbState->isTxQueue[idx] = false;
+        }
+
+        if (idx > 0) {
+            if (apiProvider != nullptr) {
+                auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+
+                usbState->queues[idx] = (USB_PACKET64*)memoryProvider->Allocate(memoryProvider, usbState->packetFifoCount * sizeof(USB_PACKET64));
+
+                if (usbState->queues[idx] == nullptr)
+                    return TinyCLR_Result::ArgumentNull;;
+
+                memset(reinterpret_cast<uint8_t*>(usbState->queues[idx]), 0x00, usbState->packetFifoCount * sizeof(USB_PACKET64));
+            }
+
+            UsbClient_ClearEndpoints(idx);
+            usbState->maxPacketSize[idx] = ep->wMaxPacketSize;
+        }
     }
 
-    for (pipe = 0; pipe < CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT); pipe++) {
+    for (pipe = 0; pipe < CONCAT(DEVICE_TARGET, _USB_PIPE_COUNT); pipe++) {
         // The Pipe must be currently closed
         if (usbState->pipes[pipe].RxEP == USB_ENDPOINT_NULL && usbState->pipes[pipe].TxEP == USB_ENDPOINT_NULL)
             break;
     }
 
-    if (pipe == CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT))
+    if (pipe == CONCAT(DEVICE_TARGET, _USB_PIPE_COUNT))
         return TinyCLR_Result::NotAvailable;
 
     // All tests pass, assign the endpoints to the pipe
     usbState->pipes[pipe].RxEP = readEp;
     usbState->pipes[pipe].TxEP = writeEp;
-    
-/*
-    TinyCLR_UsbClient_ConfigurationDescriptor *config = (TinyCLR_UsbClient_ConfigurationDescriptor *)UsbClient_DefaultConfiguration.configDescriptors;
-    TinyCLR_UsbClient_EndpointDescriptor  *ep = (TinyCLR_UsbClient_EndpointDescriptor  *)(((uint8_t *)config) + USB_CONFIGURATION_DESCRIPTOR_LENGTH + sizeof(TinyCLR_UsbClient_DescriptorHeader) + sizeof(TinyCLR_UsbClient_InterfaceDescriptor));
-       
-    uint8_t * end = ((uint8_t *)config) + config->header.size;
-    uint32_t epType = usbState->endpointType;
-
-    while (((uint8_t *)ep) != nullptr && ((uint8_t *)ep) < end) {
-        if (USB_ENDPOINT_DESCRIPTOR_TYPE != ep->bDescriptorType || sizeof(TinyCLR_UsbClient_EndpointDescriptor) != ep->bLength)
-            break;
-
-        auto idx = 0;
-
-        if (ep->bEndpointAddress == USB_ENDPOINT_DIRECTION_IN) {
-            ep->bEndpointAddress |= writeEp;
-            idx = writeEp;
-            usbState->isTxQueue[idx] = true;
-        }
-
-        else if (ep->bEndpointAddress == USB_ENDPOINT_DIRECTION_OUT) {
-            ep->bEndpointAddress |= readEp;
-            idx = readEp;
-            usbState->isTxQueue[idx] = false;
-        }
-
-        if (idx > 0) {
-            if (apiProvider != nullptr) {
-                auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
-
-                usbState->queues[idx] = (USB_PACKET64*)memoryProvider->Allocate(memoryProvider, CONCAT(DEVICE_TARGET, _USB_PACKET_FIFO_COUNT) * sizeof(USB_PACKET64));
-
-                if (usbState->queues[idx] == nullptr)
-                    return TinyCLR_Result::ArgumentNull;;
-
-                memset(reinterpret_cast<uint8_t*>(usbState->queues[idx]), 0x00, CONCAT(DEVICE_TARGET, _USB_PACKET_FIFO_COUNT) * sizeof(USB_PACKET64));
-            }
-
-            UsbClient_ClearEndpoints(idx);
-
-            epType |= (ep->bmAttributes & 3) << (idx * 2);
-            usbState->maxPacketSize[idx] = ep->wMaxPacketSize;
-        }
-
-        ep = (TinyCLR_UsbClient_EndpointDescriptor  *)(((uint8_t *)ep) + ep->bLength);
-    }
-*/
-    uint32_t epType = usbState->endpointType;    
-    
-    for (auto i = 0; i < UsbClient_DefaultConfiguration.interfaceDescriptor->bNumEndpoints; i++) {
-        TinyCLR_UsbClient_EndpointDescriptor  *ep  = (TinyCLR_UsbClient_EndpointDescriptor*)&UsbClient_DefaultConfiguration.endpointDescriptor[i];
-        
-        auto idx = 0;
-        
-        if (ep->bEndpointAddress == USB_ENDPOINT_DIRECTION_IN) {
-            ep->bEndpointAddress |= writeEp;
-            idx = writeEp;
-            usbState->isTxQueue[idx] = true;
-        }
-
-        else if (ep->bEndpointAddress == USB_ENDPOINT_DIRECTION_OUT) {
-            ep->bEndpointAddress |= readEp;
-            idx = readEp;
-            usbState->isTxQueue[idx] = false;
-        }
-        
-        if (idx > 0) {
-            if (apiProvider != nullptr) {
-                auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
-
-                usbState->queues[idx] = (USB_PACKET64*)memoryProvider->Allocate(memoryProvider, CONCAT(DEVICE_TARGET, _USB_PACKET_FIFO_COUNT) * sizeof(USB_PACKET64));
-
-                if (usbState->queues[idx] == nullptr)
-                    return TinyCLR_Result::ArgumentNull;;
-
-                memset(reinterpret_cast<uint8_t*>(usbState->queues[idx]), 0x00, CONCAT(DEVICE_TARGET, _USB_PACKET_FIFO_COUNT) * sizeof(USB_PACKET64));
-            }
-
-            UsbClient_ClearEndpoints(idx);
-
-            epType |= (ep->bmAttributes & 3) << (idx * 2);
-            usbState->maxPacketSize[idx] = ep->wMaxPacketSize;
-        }
-        
-    }
-
-    usbState->endpointType = epType;
-
-    if (usbState->currentState == USB_DEVICE_STATE_UNINITIALIZED) {
-        CONCAT(DEVICE_TARGET, _UsbClient_Initialize(usbState));
-    }
 
     return TinyCLR_Result::Success;
 }
@@ -1194,7 +790,7 @@ TinyCLR_Result UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t p
 
     USB_CONTROLLER_STATE * usbState = &usbClient_State[controller];
 
-    if (!usbState->initialized || pipe >= CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT))
+    if (!usbState->initialized)
         return TinyCLR_Result::NotAvailable;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -1206,8 +802,6 @@ TinyCLR_Result UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t p
     }
 
     usbState->pipes[pipe].RxEP = USB_ENDPOINT_NULL;
-    //Free endpoint
-    UsbClient_EndpointMap[endpoint] &= ~ENDPOINT_INUSED_MASK;
 
     // Close the TX pipe
     endpoint = usbState->pipes[pipe].TxEP;
@@ -1226,15 +820,6 @@ TinyCLR_Result UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t p
 
     usbState->pipes[pipe].TxEP = USB_ENDPOINT_NULL;
 
-    //Free endpoint
-    UsbClient_EndpointMap[endpoint] &= ~ENDPOINT_INUSED_MASK;
-
-    // UsbClient_ConfigDescriptor.epWrite.bEndpointAddress = USB_ENDPOINT_DIRECTION_IN;
-    // UsbClient_ConfigDescriptor.epRead.bEndpointAddress = USB_ENDPOINT_DIRECTION_OUT;
-    
-    UsbClient_DefaultConfiguration.endpointDescriptor[0].bEndpointAddress = USB_ENDPOINT_DIRECTION_IN;
-    UsbClient_DefaultConfiguration.endpointDescriptor[1].bEndpointAddress = USB_ENDPOINT_DIRECTION_OUT;
-
     return TinyCLR_Result::Success;
 }
 
@@ -1243,8 +828,7 @@ TinyCLR_Result UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int32_t p
 
     USB_CONTROLLER_STATE * usbState = &usbClient_State[controller];
 
-    if (pipe >= CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)
-        || data == nullptr
+    if (data == nullptr
         || usbState->deviceState != USB_DEVICE_STATE_CONFIGURED
         || length == 0) {
         return TinyCLR_Result::ArgumentInvalid;
@@ -1273,13 +857,13 @@ TinyCLR_Result UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int32_t p
 
         USB_PACKET64* Packet64 = nullptr;
 
-        if (usb_packet_fifo_count[endpoint] < CONCAT(DEVICE_TARGET, _USB_PACKET_FIFO_COUNT)) {
+        if (usb_packet_fifo_count[endpoint] < usbState->packetFifoCount) {
             Packet64 = &usbState->queues[endpoint][usb_packet_fifo_in[endpoint]];
 
             usb_packet_fifo_in[endpoint]++;
             usb_packet_fifo_count[endpoint]++;
 
-            if (usb_packet_fifo_in[endpoint] == CONCAT(DEVICE_TARGET, _USB_PACKET_FIFO_COUNT))
+            if (usb_packet_fifo_in[endpoint] == usbState->packetFifoCount)
                 usb_packet_fifo_in[endpoint] = 0;
         }
 
@@ -1365,8 +949,7 @@ TinyCLR_Result UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int32_t pi
     int32_t endpoint;
     USB_CONTROLLER_STATE * usbState = &usbClient_State[controller];
 
-    if (pipe >= CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)
-        || usbState->deviceState != USB_DEVICE_STATE_CONFIGURED) {
+    if (usbState->deviceState != USB_DEVICE_STATE_CONFIGURED) {
         return TinyCLR_Result::ArgumentInvalid;
     }
 
@@ -1392,7 +975,7 @@ TinyCLR_Result UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int32_t pi
             usb_packet_fifo_count[endpoint]--;
             usb_packet_fifo_out[endpoint]++;
 
-            if (usb_packet_fifo_out[endpoint] == CONCAT(DEVICE_TARGET, _USB_PACKET_FIFO_COUNT)) {
+            if (usb_packet_fifo_out[endpoint] == usbState->packetFifoCount) {
                 usb_packet_fifo_out[endpoint] = 0;
             }
         }
@@ -1435,10 +1018,6 @@ TinyCLR_Result UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, int32_t p
     int32_t queueCnt;
     USB_CONTROLLER_STATE * usbState = &usbClient_State[controller];
 
-    if (pipe >= CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)) {
-        return TinyCLR_Result::ArgumentInvalid;
-    }
-
     /* not configured, no data can go in or out */
     if (usbState->deviceState != USB_DEVICE_STATE_CONFIGURED) {
         return TinyCLR_Result::InvalidOperation;
@@ -1473,48 +1052,6 @@ TinyCLR_Result UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider
     int32_t controller = self->Index;
 
     UsbClient_DataReceivedHandler = handler;
-
-    return TinyCLR_Result::Success;
-}
-
-// TinyCLR_Result UsbClient_SetOsExtendedPropertyHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_OsExtendedPropertyHandler handler) {
-    // int32_t controller = self->Index;
-
-    // UsbClient_OsExtendedPropertyHandler = handler;
-
-    // return TinyCLR_Result::Success;
-// }
-
-TinyCLR_Result UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Provider* self, const void* descriptor, int32_t length) {
-    //memcpy(&UsbClient_DeviceDescriptor, descriptor, length);
-
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result UsbClient_SetConfigDescriptor(const TinyCLR_UsbClient_Provider* self, const void* descriptor, int32_t length) {
-    //memcpy(&UsbClient_ConfigDescriptor, descriptor, length);
-
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result UsbClient_SetStringDescriptor(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_StringDescriptorType type, const wchar_t* value) {
-    // switch (type) {
-    // case TinyCLR_UsbClient_StringDescriptorType::ManufacturerName:
-        // memcpy(&UsbClient_ManufacturerDescriptor.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_ARRAY(UsbClient_ManufacturerDescriptor.stringDescriptor));
-        // break;
-
-    // case TinyCLR_UsbClient_StringDescriptorType::ProductName:
-        // memcpy(&UsbClient_ProductNameDescriptor.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_ARRAY(UsbClient_ManufacturerDescriptor.stringDescriptor));
-        // break;
-
-    // case TinyCLR_UsbClient_StringDescriptorType::DisplayName:
-        // memcpy(&UsbClient_DisplayNameDescriptor.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_ARRAY(UsbClient_ManufacturerDescriptor.stringDescriptor));
-        // break;
-
-    // case TinyCLR_UsbClient_StringDescriptorType::FriendlyName:
-        // memcpy(&UsbClient_FriendlyNameDescriptor.stringDescriptor, value, sizeof(wchar_t) * SIZEOF_ARRAY(UsbClient_ManufacturerDescriptor.stringDescriptor));
-        // break;
-    // }
 
     return TinyCLR_Result::Success;
 }
