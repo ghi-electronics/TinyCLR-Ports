@@ -80,68 +80,16 @@
 #define USB_STATE_CONFIGURATION         5
 #define USB_STATE_REMOTE_WAKEUP         6
 
-
-// ATTENTION:
-// 2.0 is the lowest version that works with WinUSB on Windows 8!!!
-// use older values below if you do not care about that
-
-#define DEVICE_RELEASE_VERSION              0x0200
-
-//string descriptor
-#define USB_STRING_DESCRIPTOR_SIZE          32
-
-// index for the strings
-#define MANUFACTURER_NAME_INDEX             1
-#define PRODUCT_NAME_INDEX                  2
-#define SERIAL_NUMBER_INDEX                 0
-
-// configuration for extended descriptor
-#define OS_DESCRIPTOR_EX_VERSION            0x0100
-
-#define USB_DISPLAY_STRING_NUM     4
-#define USB_FRIENDLY_STRING_NUM    5
-
-#define OS_DESCRIPTOR_STRING_INDEX        0xEE
-#define OS_DESCRIPTOR_STRING_VENDOR_CODE  0xA5
-
-// USB 2.0 response structure lengths
-#define USB_DEVICE_DESCRIPTOR_LENGTH             18
-#define USB_CONFIGURATION_DESCRIPTOR_LENGTH       9
-#define USB_STRING_DESCRIPTOR_HEADER_LENGTH       2
-
-
-// USB configuration list structures
-#define USB_END_DESCRIPTOR_MARKER           0x00
-#define USB_DEVICE_DESCRIPTOR_MARKER        0x01
-#define USB_CONFIGURATION_DESCRIPTOR_MARKER 0x02
-#define USB_STRING_DESCRIPTOR_MARKER        0x03
-#define USB_GENERIC_DESCRIPTOR_MARKER       0xFF
-
-// configuration Descriptor
-#define USB_ATTRIBUTE_REMOTE_WAKEUP    0x20
-#define USB_ATTRIBUTE_SELF_POWER       0x40
-#define USB_ATTRIBUTE_BASE             0x80
-
 // Endpoint Direction
 #define USB_ENDPOINT_DIRECTION_IN 0x80
 #define USB_ENDPOINT_DIRECTION_OUT 0x00
 #define USB_ENDPOINT_NULL 0xFF
 
-// Endpoint Attribute
-#define ENDPOINT_INUSED_MASK        0x01
-#define ENDPOINT_DIR_IN_MASK        0x02
-#define ENDPOINT_DIR_OUT_MASK       0x04
-
-#define USB_ENDPOINT_ATTRIBUTE_BULK 2
-#define USB_MAX_DATA_PACKET_SIZE 64
-
 // This version of the USB code supports only one language - which
 // is not specified by USB configuration records - it is defined here.
 // This is the String 0 descriptor.This array includes the String descriptor
 // header and exactly one language.
-
 #define USB_LANGUAGE_DESCRIPTOR_SIZE 4
-
 
 // USB 2.0 defined descriptor types
 #define USB_DEVICE_DESCRIPTOR_TYPE        1
@@ -156,6 +104,11 @@
 #define USB_STRING_DESCRIPTOR_MARKER        0x03
 #define USB_GENERIC_DESCRIPTOR_MARKER       0xFF
 
+// configuration Descriptor
+#define USB_ATTRIBUTE_REMOTE_WAKEUP    0x20
+#define USB_ATTRIBUTE_SELF_POWER       0x40
+#define USB_ATTRIBUTE_BASE             0x80
+
 // Sideshow descriptor lengths
 #define OS_DESCRIPTOR_STRING_SIZE                18
 #define OS_DESCRIPTOR_STRING_LENGTH               7
@@ -167,7 +120,6 @@
 #define OS_DESCRIPTOR_STRING_INDEX        0xEE
 #define OS_DESCRIPTOR_STRING_VENDOR_CODE  0xA5
 
-
 // Generic Descriptor Header
 #define USB_REQUEST_TYPE_OUT       0x00
 #define USB_REQUEST_TYPE_IN        0x80
@@ -177,19 +129,6 @@
 #define USB_REQUEST_TYPE_DEVICE    0x00
 #define USB_REQUEST_TYPE_INTERFACE 0x01
 #define USB_REQUEST_TYPE_ENDPOINT  0x02
-
-//XProperties Os WinUsb
-#define EX_PROPERTY_DATA_TYPE__RESERVED                 0
-#define EX_PROPERTY_DATA_TYPE__REG_SZ                   1
-#define EX_PROPERTY_DATA_TYPE__REG_SZ_ENV               2
-#define EX_PROPERTY_DATA_TYPE__REG_BINARY               3
-#define EX_PROPERTY_DATA_TYPE__REG_DWORD_LITTLE_ENDIAN  4
-#define EX_PROPERTY_DATA_TYPE__REG_DWORD_BIG_ENDIAN     5
-#define EX_PROPERTY_DATA_TYPE__REG_LINK                 6
-#define EX_PROPERTY_DATA_TYPE__REG_MULTI_SZ             7
-
-// Configuration for extended descriptor
-#define OS_DESCRIPTOR_EX_VERSION            0x0100
 
 PACKED(struct) TinyCLR_UsbClient_DescriptorHeader {
     uint8_t  marker;
@@ -319,7 +258,6 @@ PACKED(struct) TinyCLR_UsbClient_Configuration {
     TinyCLR_UsbClient_XPropertiesOsWinUsb *OsXProperty;
 };
 
-
 // USB 2.0 request packet from host
 PACKED(struct) USB_SETUP_PACKET {
     uint8_t bmRequestType;
@@ -331,7 +269,7 @@ PACKED(struct) USB_SETUP_PACKET {
 
 struct USB_PACKET64 {
     uint32_t Size;
-    uint8_t  Buffer[USB_MAX_DATA_PACKET_SIZE];
+    uint8_t  Buffer[64];
 };
 
 struct USB_PIPE_MAP {
@@ -342,8 +280,6 @@ struct USB_PIPE_MAP {
 struct USB_CONTROLLER_STATE;
 
 typedef void(*USB_NEXT_CALLBACK)(USB_CONTROLLER_STATE*);
-
-struct TinyCLR_UsbClient_Configuration;
 
 struct USB_CONTROLLER_STATE {
     bool                                                        initialized;
@@ -390,11 +326,7 @@ struct USB_CONTROLLER_STATE {
     uint8_t*                                                    residualData;
     uint16_t                                                    residualCount;
     uint16_t                                                    expected;
-
-
 };
-
-
 
 const TinyCLR_Api_Info* UsbClient_GetApi();
 TinyCLR_Result UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self);

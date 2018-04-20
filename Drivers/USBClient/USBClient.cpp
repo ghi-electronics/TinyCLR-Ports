@@ -26,15 +26,7 @@ static int32_t usb_packet_fifo_in[CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)];
 static int32_t usb_packet_fifo_out[CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)];
 static int32_t usb_packet_fifo_count[CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)];
 
-//TinyCLR_UsbClient_Configuration UsbClient_DefaultConfiguration;
-
 uint8_t UsbClient_ControlDataBuffer[256];
-
-// int8_t UsbClient_EndpointMap[] = { ENDPOINT_INUSED_MASK,                          // Endpoint 0
-                                            // ENDPOINT_DIR_IN_MASK | ENDPOINT_DIR_OUT_MASK,  // Endpoint 1
-                                            // ENDPOINT_DIR_IN_MASK | ENDPOINT_DIR_OUT_MASK,  // Endpoint 2
-                                            // ENDPOINT_DIR_IN_MASK | ENDPOINT_DIR_OUT_MASK   // Endpoint 3
-// };
 
 USB_CONTROLLER_STATE usbClient_State[CONCAT(DEVICE_TARGET, _TOTAL_USB_CONTROLLERS)];
 
@@ -44,7 +36,6 @@ uint8_t USB_LanguageDescriptor[USB_LANGUAGE_DESCRIPTOR_SIZE] =
     USB_STRING_DESCRIPTOR_TYPE,
     0x09, 0x04                      // U.S. English
 };
-
 
 void UsbClient_SetEvent(USB_CONTROLLER_STATE *usbState, uint32_t event) {
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -543,6 +534,9 @@ const TinyCLR_UsbClient_DescriptorHeader * UsbClient_FindRecord(USB_CONTROLLER_S
         found = true;
         break;
     case USB_STRING_DESCRIPTOR_MARKER:
+        if ((setup->wValue & 0x00FF) == OS_DESCRIPTOR_STRING_INDEX)
+            return  (TinyCLR_UsbClient_DescriptorHeader*)usbState->configuration.OsStringDescriptor;
+
         ptr = (TinyCLR_UsbClient_DescriptorHeader*)usbState->configuration.stringsDescriptor;
 
         while (ptr != nullptr && ptr->marker == USB_STRING_DESCRIPTOR_MARKER) {
@@ -555,9 +549,7 @@ const TinyCLR_UsbClient_DescriptorHeader * UsbClient_FindRecord(USB_CONTROLLER_S
 
             next += ptr->size;
             ptr = (TinyCLR_UsbClient_DescriptorHeader*)next;
-
-        }
-
+        }        
         break;
     case USB_GENERIC_DESCRIPTOR_MARKER:
         ptr = (setup->wIndex == USB_XCOMPATIBLE_OS_REQUEST) ? (TinyCLR_UsbClient_DescriptorHeader*)usbState->configuration.OsXCompatibleId : (TinyCLR_UsbClient_DescriptorHeader*)usbState->configuration.OsXProperty;
@@ -1063,4 +1055,3 @@ void UsbClient_Reset() {
 
     UsbClient_Release(&usbClientProvider);
 }
-

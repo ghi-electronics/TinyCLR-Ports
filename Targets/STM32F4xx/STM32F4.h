@@ -27,12 +27,6 @@
 #define CHARIZE2(c) #c
 #define CHARIZE(c) (CHARIZE2(c)[0])
 
-#if defined(__GNUC__)
-#define PACKED(x) x __attribute__((packed))
-#elif defined(arm) || defined(__arm)
-#define PACKED(x) __packed x
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 //Deployment
 ////////////////////////////////////////////////////////////////////////////////
