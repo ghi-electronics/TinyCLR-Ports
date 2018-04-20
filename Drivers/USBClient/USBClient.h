@@ -20,12 +20,6 @@
 
 #define __min(a,b)  (((a) < (b)) ? (a) : (b))
 
-#if defined(__GNUC__)
-#define PACKED(x) x __attribute__((packed))
-#elif defined(arm) || defined(__arm)
-#define PACKED(x) __packed x
-#endif
-
 ///////////////////////////////////////////////////////////////////////////////////////////
 /// USB Debugger driver
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -130,157 +124,6 @@
 #define USB_REQUEST_TYPE_INTERFACE 0x01
 #define USB_REQUEST_TYPE_ENDPOINT  0x02
 
-PACKED(struct) TinyCLR_UsbClient_DescriptorHeader {
-    uint8_t  marker;
-    uint8_t  iValue;
-    uint16_t size;
-};
-
-PACKED(struct) TinyCLR_UsbClient_GenericDescriptorHeader {
-    TinyCLR_UsbClient_DescriptorHeader header;
-
-    uint8_t  bmRequestType;
-    uint8_t  bRequest;
-    uint16_t wValue;
-    uint16_t wIndex;
-};
-
-PACKED(struct) TinyCLR_UsbClient_DeviceDescriptor {
-    TinyCLR_UsbClient_DescriptorHeader header;
-
-    uint8_t  bLength;
-    uint8_t  bDescriptorType;
-    uint16_t bcdUSB;
-    uint8_t  bDeviceClass;
-    uint8_t  bDeviceSubClass;
-    uint8_t  bDeviceProtocol;
-    uint8_t  bMaxPacketSize0;
-    uint16_t idVendor;
-    uint16_t idProduct;
-    uint16_t bcdDevice;
-    uint8_t  iManufacturer;
-    uint8_t  iProduct;
-    uint8_t  iSerialNumber;
-    uint8_t  bNumConfigurations;
-};
-
-PACKED(struct) TinyCLR_UsbClient_InterfaceDescriptor {
-    uint8_t bLength;
-    uint8_t bDescriptorType;
-    uint8_t bInterfaceNumber;
-    uint8_t bAlternateSetting;
-    uint8_t bNumEndpoints;
-    uint8_t bInterfaceClass;
-    uint8_t bInterfaceSubClass;
-    uint8_t bInterfaceProtocol;
-    uint8_t iInterface;
-};
-
-PACKED(struct) TinyCLR_UsbClient_EndpointDescriptor {
-    uint8_t  bLength;
-    uint8_t  bDescriptorType;
-    uint8_t  bEndpointAddress;
-    uint8_t  bmAttributes;
-    uint16_t wMaxPacketSize;
-    uint8_t  bInterval;
-};
-
-PACKED(struct) TinyCLR_UsbClient_StringDescriptorHeader {
-    TinyCLR_UsbClient_DescriptorHeader header;
-
-    uint8_t bLength;
-    uint8_t bDescriptorType;
-    wchar_t stringDescriptor[32];
-};
-
-PACKED(struct) TinyCLR_UsbClient_ConfigurationDescriptor {
-    TinyCLR_UsbClient_DescriptorHeader header;
-
-    uint8_t  bLength;
-    uint8_t  bDescriptorType;
-    uint16_t wTotalLength;
-    uint8_t  bNumInterfaces;
-    uint8_t  bConfigurationValue;
-    uint8_t  iConfiguration;
-    uint8_t  bmAttributes;
-    uint8_t  bMaxPower;
-};
-
-PACKED(struct) TinyCLR_UsbClient_OsStringDescriptor {
-    TinyCLR_UsbClient_DescriptorHeader header;
-
-    uint8_t   bLength;
-    uint8_t   bDescriptorType;
-    wchar_t   signature[7];
-    uint8_t   bMS_VendorCode;
-    uint8_t   padding;
-};
-
-PACKED(struct) TinyCLR_UsbClient_XCompatibleOsId {
-    TinyCLR_UsbClient_GenericDescriptorHeader header;
-
-    uint32_t dwLength;
-    uint16_t bcdVersion;
-    uint16_t wIndex;
-    uint8_t  bCount;
-    uint8_t  padding1[7];
-    uint8_t  bFirstInterfaceNumber;
-    uint8_t  reserved;
-    uint8_t  compatibleID[8];
-    uint8_t  subCompatibleID[8];
-    uint8_t  padding2[6];
-};
-
-PACKED(struct) TinyCLR_UsbClient_XPropertiesOsWinUsb {
-    TinyCLR_UsbClient_GenericDescriptorHeader header;
-
-    uint32_t dwLength;
-    uint16_t bcdVersion;
-    uint16_t wIndex;
-    uint16_t  bCount;
-
-    uint32_t dwSize;
-    uint32_t dwPropertyDataType;
-    uint16_t wPropertyNameLengh;
-    uint8_t  bPropertyName[40];
-    uint32_t dwPropertyDataLengh;
-    uint8_t  bPropertyData[78];
-};
-
-PACKED(struct) TinyCLR_UsbClient_Configuration {
-    TinyCLR_UsbClient_DeviceDescriptor *deviceDescriptor;
-    TinyCLR_UsbClient_ConfigurationDescriptor *configurationDescriptor;
-    TinyCLR_UsbClient_InterfaceDescriptor *interfaceDescriptor;
-    TinyCLR_UsbClient_EndpointDescriptor *endpointDescriptor;
-    TinyCLR_UsbClient_StringDescriptorHeader *stringsDescriptor;
-    TinyCLR_UsbClient_OsStringDescriptor *OsStringDescriptor;
-    TinyCLR_UsbClient_XCompatibleOsId *OsXCompatibleId;
-    TinyCLR_UsbClient_XPropertiesOsWinUsb *OsXProperty;
-};
-
-// USB 2.0 request packet from host
-PACKED(struct) USB_SETUP_PACKET {
-    uint8_t bmRequestType;
-    uint8_t bRequest;
-    uint16_t wValue;
-    uint16_t wIndex;
-    uint16_t wLength;
-};
-
-struct USB_PACKET64 {
-    uint32_t Size;
-    uint8_t  Buffer[64];
-};
-
-struct USB_PIPE_MAP {
-    uint8_t RxEP;
-    uint8_t TxEP;
-};
-
-struct USB_CONTROLLER_STATE;
-
-typedef void(*USB_NEXT_CALLBACK)(USB_CONTROLLER_STATE*);
-
 struct USB_CONTROLLER_STATE {
     bool                                                        initialized;
     uint8_t                                                     currentState;
@@ -339,16 +182,6 @@ TinyCLR_Result TinyCLR_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, in
 TinyCLR_Result TinyCLR_UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, int32_t pipe);
 TinyCLR_Result TinyCLR_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_DataReceivedHandler handler);
 const TinyCLR_UsbClient_DescriptorHeader * TinyCLR_UsbClient_FindRecord(USB_CONTROLLER_STATE* usbState, uint8_t marker, USB_SETUP_PACKET * iValue);
-
-void TinyCLR_UsbClient_ClearEvent(USB_CONTROLLER_STATE *usbState, uint32_t event);
-void TinyCLR_UsbClient_StateCallback(USB_CONTROLLER_STATE* usbState);
-void TinyCLR_UsbClient_ClearEndpoints(int32_t endpoint);
-
-USB_PACKET64* TinyCLR_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* usbState, int32_t endpoint, bool& disableRx);
-USB_PACKET64* TinyCLR_UsbClient_TxDequeue(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
-
-uint8_t TinyCLR_UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState);
-bool TinyCLR_UsbClient_CanReceivePackage(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
 
 bool CONCAT(DEVICE_TARGET, _TinyCLR_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState));
 bool CONCAT(DEVICE_TARGET, _TinyCLR_UsbClient_Uninitialize(USB_CONTROLLER_STATE* usbState));

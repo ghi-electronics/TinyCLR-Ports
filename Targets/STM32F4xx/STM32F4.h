@@ -254,6 +254,14 @@ void STM32F4_Uart_Reset();
 const TinyCLR_Api_Info* STM32F4_TinyCLR_UsbClient_GetApi();
 void STM32F4_TinyCLR_UsbClient_Reset();
 
+void TinyCLR_UsbClient_ClearEvent(USB_CONTROLLER_STATE *usbState, uint32_t event);
+void TinyCLR_UsbClient_ClearEndpoints(int32_t endpoint);
+USB_PACKET64* TinyCLR_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* usbState, int32_t endpoint, bool& disableRx);
+USB_PACKET64* TinyCLR_UsbClient_TxDequeue(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
+void TinyCLR_UsbClient_StateCallback(USB_CONTROLLER_STATE* usbState);
+uint8_t TinyCLR_UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState);
+bool TinyCLR_UsbClient_CanReceivePackage(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
+
 ////////////////////////////////////////////////////////////////////////////////
 //Interrupt Internal
 ////////////////////////////////////////////////////////////////////////////////
