@@ -90,9 +90,11 @@
 #define LPC24_UART_CTS_PINS             { { PIN_NONE , PF_NONE }, { PIN(3, 18), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } }
 
 #define INCLUDE_USBCLIENT
-#define TOTAL_USB_CONTROLLER            1
-#define LPC24_USB_QUEUE_SIZE 16
-#define LPC24_USB_FIFO_BUFFER_SIZE 64
+#define LPC24_TOTAL_USB_CONTROLLERS 1
+#define LPC24_USB_PACKET_FIFO_COUNT 64
+#define LPC24_USB_ENDPOINT_SIZE 64
+#define LPC24_USB_ENDPOINT0_SIZE 64
+#define LPC24_USB_ENDPOINT_COUNT 16
 
 #define INCLUDE_DISPLAY
 #define LPC24_DISPLAY_CONTROLLER_PINS { { PIN(1, 20), PF(1) }, { PIN(1, 21), PF(1) }, { PIN(1, 22), PF(1) }, { PIN(1, 23), PF(1) }, { PIN(1, 24), PF(1) }, { PIN(1, 25), PF(1) }, { PIN(1, 26), PF(1) }, { PIN(1, 27), PF(1) }, { PIN(1, 28), PF(1)}, { PIN(1, 29), PF(1) }, { PIN(2, 2), PF(3) }, { PIN(2, 3), PF(3) }, { PIN(2, 5), PF(3) }, { PIN(2, 6), PF(3) }, { PIN(2, 7), PF(3) }, { PIN(2, 8), PF(3) }, { PIN(2, 9), PF(3) }, { PIN(2, 12), PF(1) }, { PIN(2, 13), PF(1) } }

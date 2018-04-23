@@ -46,7 +46,7 @@ void LPC24_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, si
     valueUsbActive = DEBUGGER_SELECTOR_USB_STATE;
 
     if (value == valueUsbActive) {
-        api = LPC24_UsbClient_GetApi();
+        api = UsbClient_GetApi();
         index = USB_DEBUGGER_INDEX;
     }
     else {
