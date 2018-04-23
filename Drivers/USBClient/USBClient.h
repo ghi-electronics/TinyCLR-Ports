@@ -141,6 +141,7 @@ struct USB_CONTROLLER_STATE {
     /* Arbitrarily as many pipes as endpoints since that is the maximum number of pipes
        necessary to represent the maximum number of endpoints */
     USB_PIPE_MAP*                                               pipes;
+    uint8_t                                                     totalPipesCount;
 
     /* used for transferring packets between upper & lower */
     uint8_t*                                                    ptrData;
@@ -148,8 +149,7 @@ struct USB_CONTROLLER_STATE {
 
     /* USB hardware information */
     uint8_t                                                     address;
-    uint8_t                                                     deviceState;
-    uint8_t                                                     packetSize;    
+    uint8_t                                                     deviceState;    
     uint8_t                                                     configurationNum;
     uint32_t                                                    firstGetDescriptor;
 
@@ -158,7 +158,7 @@ struct USB_CONTROLLER_STATE {
     uint16_t                                                    deviceStatus;
 
     uint16_t*                                                   endpointStatus;
-    uint8_t                                                     endpointCount;
+    uint8_t                                                     totalEndpointsCount;
     uint8_t                                                     endpointStatusChange;
 
     /* callback function for getting next packet */

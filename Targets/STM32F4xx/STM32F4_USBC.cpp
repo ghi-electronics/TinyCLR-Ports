@@ -269,11 +269,13 @@ bool STM32F4_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState) {
     
     TinyCLR_UsbClient_SetupConfiguration(&usbState->configuration);
     
+    usbClientController[controller].endpointType = 0; 
     usbClientController[controller].usbState = usbState;
     usbClientController[controller].usbState->endpointStatus = &usbClientController[controller].endpointStatus[0];
-    usbClientController[controller].endpointType = 0; 
     usbClientController[controller].usbState->maxFifoPacketCount = STM32F4_USB_PACKET_FIFO_COUNT;
-    
+    usbClientController[controller].usbState->totalEndpointsCount = STM32F4_USB_ENDPOINT_COUNT;
+    usbClientController[controller].usbState->totalPipesCount = STM32F4_USB_PIPE_COUNT;
+     
     for (auto i = 0; i < usbClientController[controller].usbState->configuration.interfaceDescriptor->bNumEndpoints; i++) {
         TinyCLR_UsbClient_EndpointDescriptor  *ep = (TinyCLR_UsbClient_EndpointDescriptor*)&usbClientController[controller].usbState->configuration.endpointDescriptor[i];
 
@@ -359,7 +361,7 @@ void STM32F4_UsbClient_ResetEvent(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* usbSta
     OTG->GRXFSIZ = USB_RXFIFO_SIZE; // Rx Fifo
     OTG->DIEPTXF0 = (USB_TX0FIFO_SIZE << 16) | USB_RXFIFO_SIZE; // Tx Fifo 0
     uint32_t addr = USB_RXFIFO_SIZE + USB_TX0FIFO_SIZE;
-    for (int32_t i = 0; i < usbState->endpointCount; i++) {
+    for (int32_t i = 0; i < usbState->totalEndpointsCount; i++) {
         OTG->DIEPTXF[i] = (USB_TXnFIFO_SIZE << 16) | addr; // Tx Fifo i
         addr += USB_TXnFIFO_SIZE;
         OTG->DIEP[i].INT = 0xFF; // clear endpoint interrupts
@@ -527,7 +529,7 @@ void STM32F4_UsbClient_HandleSetup(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* usbSt
 
     // check all Tx endpoints after configuration setup
     if (result == USB_STATE_CONFIGURATION) {
-        for (int32_t ep = 1; ep < usbState->endpointCount; ep++) {
+        for (int32_t ep = 1; ep < usbState->totalEndpointsCount; ep++) {
             if (usbState->queues[ep] && usbState->isTxQueue[ep]) {
                 STM32F4_UsbClient_EndpointInInterrupt(OTG, usbState, ep);
             }
@@ -547,7 +549,7 @@ void STM32F4_UsbClient_EndpointOutInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STA
 
     if (ep == 0) { // control endpoint
         // enable endpoint
-        OTG->DOEP[0].TSIZ = OTG_DOEPTSIZ_STUPCNT | OTG_DOEPTSIZ_PKTCNT_1 | usbState->packetSize;
+        OTG->DOEP[0].TSIZ = OTG_DOEPTSIZ_STUPCNT | OTG_DOEPTSIZ_PKTCNT_1 | usbState->configuration.deviceDescriptor->bMaxPacketSize0;
         OTG->DOEP[0].CTL |= OTG_DOEPCTL_EPENA | OTG_DOEPCTL_CNAK;
         // Handle Setup data in upper layer
         STM32F4_UsbClient_HandleSetup(OTG, usbState);
@@ -643,7 +645,7 @@ void STM32F4_UsbClient_Interrupt(void* param) {
 }
 
 bool STM32F4_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t ep) {
-    if (usbState == 0 || ep >= usbState->endpointCount)
+    if (usbState == 0 || ep >= usbState->totalEndpointsCount)
         return false;
 
     OTG_TypeDef* OTG = OTG_FS;
@@ -716,7 +718,7 @@ void STM32F4_UsbClient_ProtectPins(int32_t controller, bool on) {
         OTG->DCTL |= OTG_DCTL_SDIS; // soft disconnect
 
         // clear USB Txbuffer
-        for (int32_t ep = 1; ep < usbState->endpointCount; ep++) {
+        for (int32_t ep = 1; ep < usbState->totalEndpointsCount; ep++) {
             if (usbState->queues[ep] && usbState->isTxQueue[ep]) {
                 TinyCLR_UsbClient_ClearEndpoints(usbState, ep);
             }
@@ -732,12 +734,4 @@ void STM32F4_UsbClient_ProtectPins(int32_t controller, bool on) {
     usbState->deviceState = on ? USB_DEVICE_STATE_ATTACHED : USB_DEVICE_STATE_DETACHED;
 
     TinyCLR_UsbClient_StateCallback(usbState);
-}
-
-int32_t STM32F4_UsbClient_GetEndpointCount() {
-    return STM32F4_USB_ENDPOINT_COUNT;
-}
-
-int32_t STM32F4_UsbClient_GetPipeCount() {
-    return STM32F4_USB_PIPE_COUNT;
 }
