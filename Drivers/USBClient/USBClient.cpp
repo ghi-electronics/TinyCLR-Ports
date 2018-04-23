@@ -21,9 +21,9 @@
 
 TinyCLR_UsbClient_DataReceivedHandler TinyCLR_UsbClientDataReceivedHandler;
 
-USB_CONTROLLER_STATE usbClient_State[CONCAT(DEVICE_TARGET, _TOTAL_USB_CONTROLLERS)];
+USB_CONTROLLER_STATE usbClient_State[1];
 
-uint8_t USB_LanguageDescriptor[USB_LANGUAGE_DESCRIPTOR_SIZE] =
+const uint8_t USB_LanguageDescriptor[USB_LANGUAGE_DESCRIPTOR_SIZE] =
 {
     USB_LANGUAGE_DESCRIPTOR_SIZE,
     USB_STRING_DESCRIPTOR_TYPE,
@@ -411,7 +411,7 @@ uint8_t TinyCLR_UsbClient_HandleConfigurationRequests(USB_CONTROLLER_STATE* usbS
         case USB_STRING_DESCRIPTOR_TYPE:
             if (DescriptorIndex == 0)        // If host is requesting the language list
             {
-                usbState->residualData = USB_LanguageDescriptor;
+                usbState->residualData = (uint8_t *)USB_LanguageDescriptor;
                 usbState->residualCount = __min(usbState->expected, USB_LANGUAGE_DESCRIPTOR_SIZE);
             }
             else {
