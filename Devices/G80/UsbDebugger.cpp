@@ -263,3 +263,7 @@ void TinyCLR_UsbClient_SetupConfiguration(TinyCLR_UsbClient_Configuration* confi
     configuration->OsXCompatibleId = (TinyCLR_UsbClient_XCompatibleOsId*)&STM32F4_UsbClient_XCompatibleOsId;
     configuration->OsXProperty = (TinyCLR_UsbClient_XPropertiesOsWinUsb*)&STM32F4_UsbClient_XPropertiesOsWinUsb;
 }
+
+int8_t TinyCLR_UsbClient_GetTotalController() {
+    return STM32F4_TOTAL_USB_CONTROLLERS;
+}

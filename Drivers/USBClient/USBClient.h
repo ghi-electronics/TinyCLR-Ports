@@ -194,3 +194,5 @@ bool CONCAT(DEVICE_TARGET, _UsbClient_Initialize(USB_CONTROLLER_STATE* usbState)
 bool CONCAT(DEVICE_TARGET, _UsbClient_Uninitialize(USB_CONTROLLER_STATE* usbState));
 bool CONCAT(DEVICE_TARGET, _UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t endpoint));
 bool CONCAT(DEVICE_TARGET, _UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t endpoint));
+
+int8_t TinyCLR_UsbClient_GetTotalController();
