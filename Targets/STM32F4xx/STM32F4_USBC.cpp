@@ -735,3 +735,27 @@ void STM32F4_UsbClient_ProtectPins(int32_t controller, bool on) {
 
     TinyCLR_UsbClient_StateCallback(usbState);
 }
+
+int8_t TinyCLR_UsbClient_GetTotalController() {
+    return STM32F4_TOTAL_USB_CONTROLLERS;
+}
+
+bool TinyCLR_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState) {
+    return STM32F4_UsbClient_Initialize(usbState);
+}
+
+bool TinyCLR_UsbClient_Uninitialize(USB_CONTROLLER_STATE* usbState) {
+    return STM32F4_UsbClient_Uninitialize(usbState);
+}
+
+bool TinyCLR_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
+    return STM32F4_UsbClient_StartOutput(usbState, endpoint);
+}
+
+bool TinyCLR_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
+    return STM32F4_UsbClient_RxEnable(usbState, endpoint);
+}
+
+void TinyCLR_UsbClient_Delay(uint64_t microseconds) {
+    STM32F4_Time_Delay(nullptr, microseconds);
+}

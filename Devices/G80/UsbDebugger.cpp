@@ -251,6 +251,7 @@ const TinyCLR_UsbClient_XPropertiesOsWinUsb STM32F4_UsbClient_XPropertiesOsWinUs
     { '{','\0', 'C','\0', '1','\0', '3','\0', 'B','\0', 'C','\0', 'F','\0', 'E','\0', '9','\0', '-','\0', '5','\0', 'E','\0', '8','\0', '4','\0', '-','\0', '4','\0', '1','\0', '8','\0', '7','\0', '-','\0', '9','\0', 'B','\0', 'A','\0', 'A','\0', '-','\0', '4','\0', '5','\0', '5','\0', '9','\0', '7','\0', 'F','\0', 'F','\0', 'C','\0', 'B','\0', 'B','\0', '6','\0', 'F','\0', '}','\0', '\0','\0' }
 };
 
+
 void TinyCLR_UsbClient_SetupConfiguration(TinyCLR_UsbClient_Configuration* configuration) {
     memset((uint8_t*)configuration, 0, sizeof(TinyCLR_UsbClient_Configuration));
 
@@ -262,8 +263,4 @@ void TinyCLR_UsbClient_SetupConfiguration(TinyCLR_UsbClient_Configuration* confi
     configuration->OsStringDescriptor = (TinyCLR_UsbClient_OsStringDescriptor*)&STM32F4_UsbClient_OsStringDescriptor;
     configuration->OsXCompatibleId = (TinyCLR_UsbClient_XCompatibleOsId*)&STM32F4_UsbClient_XCompatibleOsId;
     configuration->OsXProperty = (TinyCLR_UsbClient_XPropertiesOsWinUsb*)&STM32F4_UsbClient_XPropertiesOsWinUsb;
-}
-
-int8_t TinyCLR_UsbClient_GetTotalController() {
-    return STM32F4_TOTAL_USB_CONTROLLERS;
 }
