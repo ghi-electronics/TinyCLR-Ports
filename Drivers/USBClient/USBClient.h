@@ -20,12 +20,6 @@
 
 #define __min(a,b)  (((a) < (b)) ? (a) : (b))
 
-#if defined(__GNUC__)
-#define PACKED(x) x __attribute__((packed))
-#elif defined(arm) || defined(__arm)
-#define PACKED(x) __packed x
-#endif
-
 ///////////////////////////////////////////////////////////////////////////////////////////
 /// USB Debugger driver
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -80,37 +74,24 @@
 #define USB_STATE_CONFIGURATION         5
 #define USB_STATE_REMOTE_WAKEUP         6
 
+// Endpoint Direction
+#define USB_ENDPOINT_DIRECTION_IN 0x80
+#define USB_ENDPOINT_DIRECTION_OUT 0x00
+#define USB_ENDPOINT_NULL 0xFF
 
-// ATTENTION:
-// 2.0 is the lowest version that works with WinUSB on Windows 8!!!
-// use older values below if you do not care about that
+// This version of the USB code supports only one language - which
+// is not specified by USB configuration records - it is defined here.
+// This is the String 0 descriptor.This array includes the String descriptor
+// header and exactly one language.
+#define USB_LANGUAGE_DESCRIPTOR_SIZE 4
 
-#define DEVICE_RELEASE_VERSION              0x0200
+// USB 2.0 defined descriptor types
+#define USB_DEVICE_DESCRIPTOR_TYPE        1
+#define USB_CONFIGURATION_DESCRIPTOR_TYPE 2
+#define USB_STRING_DESCRIPTOR_TYPE        3
+#define USB_INTERFACE_DESCRIPTOR_TYPE     4
+#define USB_ENDPOINT_DESCRIPTOR_TYPE      5
 
-//string descriptor
-#define USB_STRING_DESCRIPTOR_SIZE          32
-
-// index for the strings
-#define MANUFACTURER_NAME_INDEX             1
-#define PRODUCT_NAME_INDEX                  2
-#define SERIAL_NUMBER_INDEX                 0
-
-// configuration for extended descriptor
-#define OS_DESCRIPTOR_EX_VERSION            0x0100
-
-#define USB_DISPLAY_STRING_NUM     4
-#define USB_FRIENDLY_STRING_NUM    5
-
-#define OS_DESCRIPTOR_STRING_INDEX        0xEE
-#define OS_DESCRIPTOR_STRING_VENDOR_CODE  0xA5
-
-// USB 2.0 response structure lengths
-#define USB_DEVICE_DESCRIPTOR_LENGTH             18
-#define USB_CONFIGURATION_DESCRIPTOR_LENGTH       9
-#define USB_STRING_DESCRIPTOR_HEADER_LENGTH       2
-
-
-// USB configuration list structures
 #define USB_END_DESCRIPTOR_MARKER           0x00
 #define USB_DEVICE_DESCRIPTOR_MARKER        0x01
 #define USB_CONFIGURATION_DESCRIPTOR_MARKER 0x02
@@ -122,50 +103,26 @@
 #define USB_ATTRIBUTE_SELF_POWER       0x40
 #define USB_ATTRIBUTE_BASE             0x80
 
-// Endpoint Direction
-#define USB_ENDPOINT_DIRECTION_IN 0x80
-#define USB_ENDPOINT_DIRECTION_OUT 0x00
-#define USB_ENDPOINT_NULL 0xFF
+// Sideshow descriptor lengths
+#define OS_DESCRIPTOR_STRING_SIZE                18
+#define OS_DESCRIPTOR_STRING_LENGTH               7
+#define USB_XCOMPATIBLE_OS_SIZE                  40
+#define USB_XPROPERTY_OS_SIZE_WINUSB     0x0000008E  // Size of this descriptor (78 bytes for guid + 40 bytes for the property name + 24 bytes for other fields = 142 bytes)
+#define USB_XCOMPATIBLE_OS_REQUEST                4
+#define USB_XPROPERTY_OS_REQUEST                  5
 
-// Endpoint Attribute
-#define ENDPOINT_INUSED_MASK        0x01
-#define ENDPOINT_DIR_IN_MASK        0x02
-#define ENDPOINT_DIR_OUT_MASK       0x04
+#define OS_DESCRIPTOR_STRING_INDEX        0xEE
+#define OS_DESCRIPTOR_STRING_VENDOR_CODE  0xA5
 
-#define USB_ENDPOINT_ATTRIBUTE_BULK 2
-#define USB_MAX_DATA_PACKET_SIZE 64
-
-// This version of the USB code supports only one language - which
-// is not specified by USB configuration records - it is defined here.
-// This is the String 0 descriptor.This array includes the String descriptor
-// header and exactly one language.
-
-#define USB_LANGUAGE_DESCRIPTOR_SIZE 4
-
-// USB 2.0 request packet from host
-PACKED(struct) USB_SETUP_PACKET {
-    uint8_t bmRequestType;
-    uint8_t bRequest;
-    uint16_t wValue;
-    uint16_t wIndex;
-    uint16_t wLength;
-};
-
-PACKED(struct) USB_DYNAMIC_CONFIGURATION;
-
-struct USB_PACKET64 {
-    uint32_t Size;
-    uint8_t  Buffer[USB_MAX_DATA_PACKET_SIZE];
-};
-
-struct USB_PIPE_MAP {
-    uint8_t RxEP;
-    uint8_t TxEP;
-};
-
-struct USB_CONTROLLER_STATE;
-
-typedef void(*USB_NEXT_CALLBACK)(USB_CONTROLLER_STATE*);
+// Generic Descriptor Header
+#define USB_REQUEST_TYPE_OUT       0x00
+#define USB_REQUEST_TYPE_IN        0x80
+#define USB_REQUEST_TYPE_STANDARD  0x00
+#define USB_REQUEST_TYPE_CLASS     0x20
+#define USB_REQUEST_TYPE_VENDOR    0x40
+#define USB_REQUEST_TYPE_DEVICE    0x00
+#define USB_REQUEST_TYPE_INTERFACE 0x01
+#define USB_REQUEST_TYPE_ENDPOINT  0x02
 
 struct USB_CONTROLLER_STATE {
     bool                                                        initialized;
@@ -173,17 +130,18 @@ struct USB_CONTROLLER_STATE {
     uint8_t                                                     controllerNum;
     uint32_t                                                    event;
 
-    const USB_DYNAMIC_CONFIGURATION*                            configuration;
+    TinyCLR_UsbClient_Configuration                             configuration;
 
     /* queues & maxPacketSize must be initialized by the HAL */
-    USB_PACKET64                                   	            *queues[CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)];
-    uint8_t                                                     currentPacketOffset[CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)];
-    uint8_t                                                     maxPacketSize[CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)];
-    bool                                                        isTxQueue[CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)];
+    USB_PACKET64**                                   	        queues;
+    uint8_t*                                                    currentPacketOffset;
+    uint8_t*                                                    maxPacketSize;
+    bool*                                                       isTxQueue;
 
     /* Arbitrarily as many pipes as endpoints since that is the maximum number of pipes
        necessary to represent the maximum number of endpoints */
-    USB_PIPE_MAP                                                pipes[CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)];
+    USB_PIPE_MAP*                                               pipes;
+    uint8_t                                                     totalPipesCount;
 
     /* used for transferring packets between upper & lower */
     uint8_t*                                                    ptrData;
@@ -200,9 +158,8 @@ struct USB_CONTROLLER_STATE {
        GET_STATUS, SET_FEATURE, CLEAR_FEATURE */
     uint16_t                                                    deviceStatus;
 
-    uint16_t                                                    endpointType;
     uint16_t*                                                   endpointStatus;
-    uint8_t                                                     endpointCount;
+    uint8_t                                                     totalEndpointsCount;
     uint8_t                                                     endpointStatusChange;
 
     /* callback function for getting next packet */
@@ -212,174 +169,31 @@ struct USB_CONTROLLER_STATE {
     uint8_t*                                                    residualData;
     uint16_t                                                    residualCount;
     uint16_t                                                    expected;
+
+    uint8_t*                                                    fifoPacketIn;
+    uint8_t*                                                    fifoPacketOut;
+    uint8_t*                                                    fifoPacketCount;
+    uint8_t                                                     maxFifoPacketCount;
+
+    uint8_t*                                                    controlEndpointBuffer;
 };
 
-PACKED(struct) TinyCLR_UsbClient_DescriptorHeader {
-    uint8_t  marker;
-    uint8_t  iValue;
-    uint16_t size;
-};
+const TinyCLR_Api_Info* TinyCLR_UsbClient_GetApi();
+void TinyCLR_UsbClient_Reset();
+TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_Configuration configuration);
+TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Provider* self);
+TinyCLR_Result TinyCLR_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t& pipe, TinyCLR_UsbClient_PipeMode mode);
+TinyCLR_Result TinyCLR_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t pipe);
+TinyCLR_Result TinyCLR_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int32_t pipe, const uint8_t* data, size_t& length);
+TinyCLR_Result TinyCLR_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int32_t pipe, uint8_t* data, size_t& length);
+TinyCLR_Result TinyCLR_UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, int32_t pipe);
+TinyCLR_Result TinyCLR_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_DataReceivedHandler handler);
+const TinyCLR_UsbClient_DescriptorHeader * TinyCLR_UsbClient_FindRecord(USB_CONTROLLER_STATE* usbState, uint8_t marker, USB_SETUP_PACKET * iValue);
 
-PACKED(struct) TinyCLR_UsbClient_GenericDescriptorHeader {
-    TinyCLR_UsbClient_DescriptorHeader header;
+bool TinyCLR_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState);
+bool TinyCLR_UsbClient_Uninitialize(USB_CONTROLLER_STATE* usbState);
+bool TinyCLR_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
+bool TinyCLR_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
+void TinyCLR_UsbClient_Delay(uint64_t microseconds);
 
-    uint8_t  bmRequestType;
-    uint8_t  bRequest;
-    uint16_t wValue;
-    uint16_t wIndex;
-};
-
-PACKED(struct) TinyCLR_UsbClient_DeviceDescriptor {
-    TinyCLR_UsbClient_DescriptorHeader header;
-
-    uint8_t  bLength;
-    uint8_t  bDescriptorType;
-    uint16_t bcdUSB;
-    uint8_t  bDeviceClass;
-    uint8_t  bDeviceSubClass;
-    uint8_t  bDeviceProtocol;
-    uint8_t  bMaxPacketSize0;
-    uint16_t idVendor;
-    uint16_t idProduct;
-    uint16_t bcdDevice;
-    uint8_t  iManufacturer;
-    uint8_t  iProduct;
-    uint8_t  iSerialNumber;
-    uint8_t  bNumConfigurations;
-};
-
-PACKED(struct) TinyCLR_UsbClient_InterfaceDescriptor {
-    uint8_t bLength;
-    uint8_t bDescriptorType;
-    uint8_t bInterfaceNumber;
-    uint8_t bAlternateSetting;
-    uint8_t bNumEndpoints;
-    uint8_t bInterfaceClass;
-    uint8_t bInterfaceSubClass;
-    uint8_t bInterfaceProtocol;
-    uint8_t iInterface;
-};
-
-PACKED(struct) TinyCLR_UsbClient_EndpointDescriptor {
-    uint8_t  bLength;
-    uint8_t  bDescriptorType;
-    uint8_t  bEndpointAddress;
-    uint8_t  bmAttributes;
-    uint16_t wMaxPacketSize;
-    uint8_t  bInterval;
-};
-
-PACKED(struct) TinyCLR_UsbClient_ClassDescriptorHeader {
-    uint8_t bLength;
-    uint8_t bDescriptorType;
-};
-
-PACKED(struct) TinyCLR_UsbClient_StringDescriptorHeader {
-    TinyCLR_UsbClient_DescriptorHeader header;
-
-    uint8_t bLength;
-    uint8_t bDescriptorType;
-    wchar_t stringDescriptor[32];
-};
-
-PACKED(struct) TinyCLR_UsbClient_ConfigurationDescriptor {
-    TinyCLR_UsbClient_DescriptorHeader header;
-
-    uint8_t  bLength;
-    uint8_t  bDescriptorType;
-    uint16_t wTotalLength;
-    uint8_t  bNumInterfaces;
-    uint8_t  bConfigurationValue;
-    uint8_t  iConfiguration;
-    uint8_t  bmAttributes;
-    uint8_t  bMaxPower;
-
-    TinyCLR_UsbClient_InterfaceDescriptor   itfc0;
-    TinyCLR_UsbClient_EndpointDescriptor    epWrite;
-    TinyCLR_UsbClient_EndpointDescriptor    epRead;
-};
-
-PACKED(struct) TinyCLR_UsbClient_OsStringDescriptor {
-    TinyCLR_UsbClient_DescriptorHeader header;
-
-    uint8_t   bLength;
-    uint8_t   bDescriptorType;
-    wchar_t signature[7];
-    uint8_t   bMS_VendorCode;
-    uint8_t   padding;
-};
-
-PACKED(struct) TinyCLR_UsbClient_XCompatibleOsId {
-    TinyCLR_UsbClient_GenericDescriptorHeader header;
-
-    uint32_t dwLength;
-    uint16_t bcdVersion;
-    uint16_t wIndex;
-    uint8_t  bCount;
-    uint8_t  padding1[7];
-    uint8_t  bFirstInterfaceNumber;
-    uint8_t  reserved;
-    uint8_t  compatibleID[8];
-    uint8_t  subCompatibleID[8];
-    uint8_t  padding2[6];
-};
-
-PACKED(struct) TinyCLR_UsbClient_XPropertiesOsWinUsb {
-    TinyCLR_UsbClient_GenericDescriptorHeader header;
-
-    uint32_t dwLength;
-    uint16_t bcdVersion;
-    uint16_t wIndex;
-    uint16_t  bCount;
-
-    uint32_t dwSize;
-    uint32_t dwPropertyDataType;
-    uint16_t wPropertyNameLengh;
-    uint8_t  bPropertyName[40];
-    uint32_t dwPropertyDataLengh;
-    uint8_t  bPropertyData[78];
-};
-
-PACKED(struct) USB_DYNAMIC_CONFIGURATION {
-    TinyCLR_UsbClient_DeviceDescriptor                  *device;
-    TinyCLR_UsbClient_ConfigurationDescriptor           *config;
-    TinyCLR_UsbClient_StringDescriptorHeader            *manHeader;
-    TinyCLR_UsbClient_StringDescriptorHeader            *prodHeader;
-    TinyCLR_UsbClient_StringDescriptorHeader            *displayStringHeader;
-    TinyCLR_UsbClient_StringDescriptorHeader            *friendlyStringHeader;
-    TinyCLR_UsbClient_OsStringDescriptor                *OS_String;
-    TinyCLR_UsbClient_XCompatibleOsId                   *OS_XCompatible_ID;
-    TinyCLR_UsbClient_XPropertiesOsWinUsb               *OS_XProperty;
-    TinyCLR_UsbClient_DescriptorHeader                  *endList;
-};
-
-const TinyCLR_Api_Info* UsbClient_GetApi();
-TinyCLR_Result UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self);
-TinyCLR_Result UsbClient_Release(const TinyCLR_UsbClient_Provider* self);
-TinyCLR_Result UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t& pipe, TinyCLR_UsbClient_PipeMode mode);
-TinyCLR_Result UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t pipe);
-TinyCLR_Result UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int32_t pipe, const uint8_t* data, size_t& length);
-TinyCLR_Result UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int32_t pipe, uint8_t* data, size_t& length);
-TinyCLR_Result UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, int32_t pipe);
-TinyCLR_Result UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Provider* self, const void* descriptor, int32_t length);
-TinyCLR_Result UsbClient_SetConfigDescriptor(const TinyCLR_UsbClient_Provider* self, const void* descriptor, int32_t length);
-TinyCLR_Result UsbClient_SetStringDescriptor(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_StringDescriptorType type, const wchar_t* value);
-TinyCLR_Result UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_DataReceivedHandler handler);
-TinyCLR_Result UsbClient_SetOsExtendedPropertyHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_OsExtendedPropertyHandler handler);
-
-const TinyCLR_UsbClient_DescriptorHeader * UsbClient_FindRecord(USB_CONTROLLER_STATE* usbState, uint8_t marker, USB_SETUP_PACKET * iValue);
-
-void UsbClient_ClearEvent(USB_CONTROLLER_STATE *usbState, uint32_t event);
-void UsbClient_StateCallback(USB_CONTROLLER_STATE* usbState);
-void UsbClient_ClearEndpoints(int32_t endpoint);
-
-USB_PACKET64* UsbClient_RxEnqueue(USB_CONTROLLER_STATE* usbState, int32_t endpoint, bool& disableRx);
-USB_PACKET64* UsbClient_TxDequeue(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
-
-uint8_t UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState);
-bool UsbClient_CanReceivePackage(int32_t endpoint);
-
-bool CONCAT(DEVICE_TARGET, _UsbClient_Initialize(USB_CONTROLLER_STATE* usbState));
-bool CONCAT(DEVICE_TARGET, _UsbClient_Uninitialize(USB_CONTROLLER_STATE* usbState));
-bool CONCAT(DEVICE_TARGET, _UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t endpoint));
-bool CONCAT(DEVICE_TARGET, _UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t endpoint));
+int8_t TinyCLR_UsbClient_GetTotalController();

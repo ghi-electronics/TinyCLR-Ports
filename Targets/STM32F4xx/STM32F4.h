@@ -27,12 +27,6 @@
 #define CHARIZE2(c) #c
 #define CHARIZE(c) (CHARIZE2(c)[0])
 
-#if defined(__GNUC__)
-#define PACKED(x) x __attribute__((packed))
-#elif defined(arm) || defined(__arm)
-#define PACKED(x) __packed x
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 //Deployment
 ////////////////////////////////////////////////////////////////////////////////
@@ -257,8 +251,16 @@ void STM32F4_Uart_Reset();
 ////////////////////////////////////////////////////////////////////////////////
 //USB Client
 ////////////////////////////////////////////////////////////////////////////////
-const TinyCLR_Api_Info* UsbClient_GetApi();
-void UsbClient_Reset();
+const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi();
+void STM32F4_UsbClient_Reset();
+
+void TinyCLR_UsbClient_ClearEvent(USB_CONTROLLER_STATE *usbState, uint32_t event);
+void TinyCLR_UsbClient_ClearEndpoints(USB_CONTROLLER_STATE *usbState, int32_t endpoint);
+USB_PACKET64* TinyCLR_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* usbState, int32_t endpoint, bool& disableRx);
+USB_PACKET64* TinyCLR_UsbClient_TxDequeue(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
+void TinyCLR_UsbClient_StateCallback(USB_CONTROLLER_STATE* usbState);
+uint8_t TinyCLR_UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState);
+bool TinyCLR_UsbClient_CanReceivePackage(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
 
 ////////////////////////////////////////////////////////////////////////////////
 //Interrupt Internal
