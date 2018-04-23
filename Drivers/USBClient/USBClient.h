@@ -132,8 +132,8 @@ struct USB_CONTROLLER_STATE {
 
     TinyCLR_UsbClient_Configuration                             configuration;
 
-    /* queues & maxPacketSize must be initialized by the HAL */    
-	USB_PACKET64**                                   	        queues;
+    /* queues & maxPacketSize must be initialized by the HAL */
+    USB_PACKET64**                                   	        queues;
     uint8_t*                                                    currentPacketOffset;
     uint8_t*                                                    maxPacketSize;
     bool*                                                       isTxQueue;
@@ -150,7 +150,7 @@ struct USB_CONTROLLER_STATE {
     /* USB hardware information */
     uint8_t                                                     address;
     uint8_t                                                     deviceState;
-    uint8_t                                                     packetSize;    
+    uint8_t                                                     packetSize;
     uint8_t                                                     configurationNum;
     uint32_t                                                    firstGetDescriptor;
 
@@ -169,12 +169,12 @@ struct USB_CONTROLLER_STATE {
     uint8_t*                                                    residualData;
     uint16_t                                                    residualCount;
     uint16_t                                                    expected;
-    
+
     uint8_t*                                                    fifoPacketIn;
     uint8_t*                                                    fifoPacketOut;
-    uint8_t*                                                    fifoPacketCount;    
+    uint8_t*                                                    fifoPacketCount;
     uint8_t                                                     maxFifoPacketCount;
-    
+
     uint8_t*                                                    controlEndpointBuffer;
 };
 
