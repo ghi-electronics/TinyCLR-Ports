@@ -686,6 +686,7 @@ TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self,
 
         usbState->pipes = (USB_PIPE_MAP*)memoryProvider->Allocate(memoryProvider, usbState->totalPipesCount * sizeof(USB_PIPE_MAP));
         usbState->controlEndpointBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, sizeof(TinyCLR_UsbClient_ConfigurationDescriptor) + (usbState->configuration.configurationDescriptor->bNumInterfaces * sizeof(TinyCLR_UsbClient_InterfaceDescriptor)) + (usbState->configuration.interfaceDescriptor->bNumEndpoints * sizeof(TinyCLR_UsbClient_EndpointDescriptor)));
+        usbState->endpointStatus = (uint16_t*)memoryProvider->Allocate(memoryProvider, usbState->totalEndpointsCount * sizeof(uint16_t));
 
         if (usbState->queues == nullptr)
             return TinyCLR_Result::ArgumentNull;;
@@ -728,6 +729,7 @@ TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Provider* self)
             memoryProvider->Free(memoryProvider, usbState->pipes);
 
             memoryProvider->Free(memoryProvider, usbState->controlEndpointBuffer);
+            memoryProvider->Free(memoryProvider, usbState->endpointStatus);
         }
     }
 

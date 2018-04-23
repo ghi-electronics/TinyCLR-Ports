@@ -233,7 +233,6 @@ typedef struct {
     USB_CONTROLLER_STATE* usbState;
 
     uint8_t     ep0Buffer[STM32F4_USB_ENDPOINT_SIZE];
-    uint16_t    endpointStatus[STM32F4_USB_ENDPOINT_COUNT];
     uint8_t     previousDeviceState;
     uint16_t    endpointType;
 
@@ -275,7 +274,6 @@ bool STM32F4_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState) {
     usbState->configuration.deviceDescriptor->idVendor = USB_DEBUGGER_VENDOR_ID;
     usbState->configuration.deviceDescriptor->idProduct = USB_DEBUGGER_PRODUCT_ID;
 
-    usbClientController[controller].usbState->endpointStatus = &usbClientController[controller].endpointStatus[0];
     usbClientController[controller].usbState->maxFifoPacketCount = STM32F4_USB_PACKET_FIFO_COUNT;
     usbClientController[controller].usbState->totalEndpointsCount = STM32F4_USB_ENDPOINT_COUNT;
     usbClientController[controller].usbState->totalPipesCount = STM32F4_USB_PIPE_COUNT;
