@@ -232,7 +232,6 @@ OTG_TypeDef;
 typedef struct {
     USB_CONTROLLER_STATE* usbState;
 
-    uint8_t     ep0Buffer[STM32F4_USB_ENDPOINT_SIZE];
     uint8_t     previousDeviceState;
     uint16_t    endpointType;
 
@@ -437,7 +436,7 @@ void STM32F4_UsbClient_EndpointRxInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STAT
     bool disableRx = false;
 
     if (ep == 0) { // control endpoint
-        pd = (uint32_t*)usbClientController[usbState->controllerNum].ep0Buffer;
+        pd = (uint32_t*)usbState->controlEndpointBuffer;
         usbState->ptrData = (uint8_t*)pd;
         usbState->dataSize = count;
     }
