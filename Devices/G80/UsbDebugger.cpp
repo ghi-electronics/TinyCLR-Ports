@@ -251,7 +251,7 @@ const TinyCLR_UsbClient_XPropertiesOsWinUsb STM32F4_UsbClient_XPropertiesOsWinUs
     { '{','\0', 'C','\0', '1','\0', '3','\0', 'B','\0', 'C','\0', 'F','\0', 'E','\0', '9','\0', '-','\0', '5','\0', 'E','\0', '8','\0', '4','\0', '-','\0', '4','\0', '1','\0', '8','\0', '7','\0', '-','\0', '9','\0', 'B','\0', 'A','\0', 'A','\0', '-','\0', '4','\0', '5','\0', '5','\0', '9','\0', '7','\0', 'F','\0', 'F','\0', 'C','\0', 'B','\0', 'B','\0', '6','\0', 'F','\0', '}','\0', '\0','\0' }
 };
 
-void STM32F4_UsbClient_SetupConfiguration(TinyCLR_UsbClient_Configuration* configuration) {
+void TinyCLR_UsbClient_SetupConfiguration(TinyCLR_UsbClient_Configuration* configuration) {
     memset((uint8_t*)configuration, 0, sizeof(TinyCLR_UsbClient_Configuration));
 
     configuration->deviceDescriptor = (TinyCLR_UsbClient_DeviceDescriptor*)&STM32F4_UsbClient_DeviceDescriptor;
