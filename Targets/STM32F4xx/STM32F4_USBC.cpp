@@ -265,18 +265,23 @@ bool STM32F4_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState) {
 
     int32_t controller = STM32F4_USB_FS_ID;
 
+    usbClientController[controller].usbState = usbState;
+
+    // Map controlller id
     usbState->controllerNum = controller;
 
-    TinyCLR_UsbClient_SetupConfiguration(&usbState->configuration);
+    // Specific device
+    usbState->configuration.deviceDescriptor->bMaxPacketSize0 = STM32F4_USB_ENDPOINT0_SIZE;
+    usbState->configuration.deviceDescriptor->idVendor = USB_DEBUGGER_VENDOR_ID;
+    usbState->configuration.deviceDescriptor->idProduct = USB_DEBUGGER_PRODUCT_ID;
 
-    usbClientController[controller].endpointType = 0;
-    usbClientController[controller].usbState = usbState;
     usbClientController[controller].usbState->endpointStatus = &usbClientController[controller].endpointStatus[0];
     usbClientController[controller].usbState->maxFifoPacketCount = STM32F4_USB_PACKET_FIFO_COUNT;
     usbClientController[controller].usbState->totalEndpointsCount = STM32F4_USB_ENDPOINT_COUNT;
     usbClientController[controller].usbState->totalPipesCount = STM32F4_USB_PIPE_COUNT;
-    usbClientController[controller].usbState->packetSize = usbState->configuration.deviceDescriptor->bMaxPacketSize0;
+    usbClientController[controller].usbState->packetSize = STM32F4_USB_ENDPOINT0_SIZE;
 
+    usbClientController[controller].endpointType = 0;
     for (auto i = 0; i < usbClientController[controller].usbState->configuration.interfaceDescriptor->bNumEndpoints; i++) {
         TinyCLR_UsbClient_EndpointDescriptor  *ep = (TinyCLR_UsbClient_EndpointDescriptor*)&usbClientController[controller].usbState->configuration.endpointDescriptor[i];
 

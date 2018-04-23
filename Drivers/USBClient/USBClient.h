@@ -180,7 +180,7 @@ struct USB_CONTROLLER_STATE {
 
 const TinyCLR_Api_Info* TinyCLR_UsbClient_GetApi();
 void TinyCLR_UsbClient_Reset();
-TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self);
+TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_Configuration configuration);
 TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Provider* self);
 TinyCLR_Result TinyCLR_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t& pipe, TinyCLR_UsbClient_PipeMode mode);
 TinyCLR_Result TinyCLR_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t pipe);

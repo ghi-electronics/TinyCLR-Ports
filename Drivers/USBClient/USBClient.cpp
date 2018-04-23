@@ -19,8 +19,7 @@
 
 #define __min(a,b)  (((a) < (b)) ? (a) : (b))
 
-TinyCLR_UsbClient_DataReceivedHandler TinyCLR_UsbClientDataReceivedHandler;
-
+TinyCLR_UsbClient_DataReceivedHandler TinyCLR_UsbClient_SetDataReceived;
 USB_CONTROLLER_STATE* usbClient_State;
 
 const uint8_t USB_LanguageDescriptor[USB_LANGUAGE_DESCRIPTOR_SIZE] =
@@ -38,7 +37,7 @@ void TinyCLR_UsbClient_SetEvent(USB_CONTROLLER_STATE *usbState, uint32_t event) 
     usbState->event |= event;
 
     if (old_event != usbState->event) {
-        TinyCLR_UsbClientDataReceivedHandler(nullptr);
+        TinyCLR_UsbClient_SetDataReceived(nullptr);
     }
 }
 
@@ -657,7 +656,7 @@ const TinyCLR_Api_Info* TinyCLR_UsbClient_GetApi() {
     return &usbClientApi;
 }
 
-TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self) {
+TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_Configuration configuration) {
     int32_t controller = self->Index;
 
     USB_CONTROLLER_STATE *usbState = &usbClient_State[controller];
@@ -665,6 +664,8 @@ TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self)
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     memset(usbState, 0, sizeof(USB_CONTROLLER_STATE));
+
+    memcpy(&usbState->configuration, &configuration, sizeof(TinyCLR_UsbClient_Configuration));
 
     TinyCLR_UsbClient_Initialize(usbState);
 
@@ -1069,7 +1070,7 @@ TinyCLR_Result TinyCLR_UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, i
 TinyCLR_Result TinyCLR_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_DataReceivedHandler handler) {
     int32_t controller = self->Index;
 
-    TinyCLR_UsbClientDataReceivedHandler = handler;
+    TinyCLR_UsbClient_SetDataReceived = handler;
 
     return TinyCLR_Result::Success;
 }
