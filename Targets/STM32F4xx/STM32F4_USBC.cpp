@@ -275,6 +275,7 @@ bool STM32F4_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState) {
     usbClientController[controller].usbState->maxFifoPacketCount = STM32F4_USB_PACKET_FIFO_COUNT;
     usbClientController[controller].usbState->totalEndpointsCount = STM32F4_USB_ENDPOINT_COUNT;
     usbClientController[controller].usbState->totalPipesCount = STM32F4_USB_PIPE_COUNT;
+    usbClientController[controller].usbState->packetSize = usbState->configuration.deviceDescriptor->bMaxPacketSize0;
      
     for (auto i = 0; i < usbClientController[controller].usbState->configuration.interfaceDescriptor->bNumEndpoints; i++) {
         TinyCLR_UsbClient_EndpointDescriptor  *ep = (TinyCLR_UsbClient_EndpointDescriptor*)&usbClientController[controller].usbState->configuration.endpointDescriptor[i];
@@ -549,7 +550,7 @@ void STM32F4_UsbClient_EndpointOutInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STA
 
     if (ep == 0) { // control endpoint
         // enable endpoint
-        OTG->DOEP[0].TSIZ = OTG_DOEPTSIZ_STUPCNT | OTG_DOEPTSIZ_PKTCNT_1 | usbState->configuration.deviceDescriptor->bMaxPacketSize0;
+        OTG->DOEP[0].TSIZ = OTG_DOEPTSIZ_STUPCNT | OTG_DOEPTSIZ_PKTCNT_1 | usbState->packetSize;
         OTG->DOEP[0].CTL |= OTG_DOEPCTL_EPENA | OTG_DOEPCTL_CNAK;
         // Handle Setup data in upper layer
         STM32F4_UsbClient_HandleSetup(OTG, usbState);

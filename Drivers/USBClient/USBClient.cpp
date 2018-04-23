@@ -100,7 +100,7 @@ void TinyCLR_UsbClient_StateCallback(USB_CONTROLLER_STATE* usbState) {
 }
 
 void TinyCLR_UsbClient_DataCallback(USB_CONTROLLER_STATE* usbState) {
-    uint32_t length = __min(usbState->configuration.deviceDescriptor->bMaxPacketSize0, usbState->residualCount);
+    uint32_t length = __min(usbState->packetSize, usbState->residualCount);
 
     memcpy(usbState->ptrData, usbState->residualData, length);
 
@@ -108,7 +108,7 @@ void TinyCLR_UsbClient_DataCallback(USB_CONTROLLER_STATE* usbState) {
     usbState->residualData += length;
     usbState->residualCount -= length;
 
-    if (length == usbState->configuration.deviceDescriptor->bMaxPacketSize0) {
+    if (length == usbState->packetSize) {
         usbState->expected -= length;
     }
     else {
@@ -369,7 +369,7 @@ uint8_t TinyCLR_UsbClient_HandleConfigurationRequests(USB_CONTROLLER_STATE* usbS
         if (usbState->firstGetDescriptor) {
             usbState->firstGetDescriptor = false;
 
-            usbState->expected = __min(usbState->expected, usbState->configuration.deviceDescriptor->bMaxPacketSize0);
+            usbState->expected = __min(usbState->expected, usbState->packetSize);
         }
     }
 

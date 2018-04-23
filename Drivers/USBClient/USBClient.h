@@ -149,7 +149,8 @@ struct USB_CONTROLLER_STATE {
 
     /* USB hardware information */
     uint8_t                                                     address;
-    uint8_t                                                     deviceState;    
+    uint8_t                                                     deviceState;
+    uint8_t                                                     packetSize;    
     uint8_t                                                     configurationNum;
     uint32_t                                                    firstGetDescriptor;
 
