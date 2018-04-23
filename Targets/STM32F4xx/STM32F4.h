@@ -251,8 +251,8 @@ void STM32F4_Uart_Reset();
 ////////////////////////////////////////////////////////////////////////////////
 //USB Client
 ////////////////////////////////////////////////////////////////////////////////
-const TinyCLR_Api_Info* STM32F4_TinyCLR_UsbClient_GetApi();
-void STM32F4_TinyCLR_UsbClient_Reset();
+const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi();
+void STM32F4_UsbClient_Reset();
 
 void TinyCLR_UsbClient_ClearEvent(USB_CONTROLLER_STATE *usbState, uint32_t event);
 void TinyCLR_UsbClient_ClearEndpoints(int32_t endpoint);

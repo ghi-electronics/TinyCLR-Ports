@@ -183,7 +183,7 @@ TinyCLR_Result TinyCLR_UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, i
 TinyCLR_Result TinyCLR_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_DataReceivedHandler handler);
 const TinyCLR_UsbClient_DescriptorHeader * TinyCLR_UsbClient_FindRecord(USB_CONTROLLER_STATE* usbState, uint8_t marker, USB_SETUP_PACKET * iValue);
 
-bool CONCAT(DEVICE_TARGET, _TinyCLR_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState));
-bool CONCAT(DEVICE_TARGET, _TinyCLR_UsbClient_Uninitialize(USB_CONTROLLER_STATE* usbState));
-bool CONCAT(DEVICE_TARGET, _TinyCLR_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t endpoint));
-bool CONCAT(DEVICE_TARGET, _TinyCLR_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t endpoint));
+bool CONCAT(DEVICE_TARGET, _UsbClient_Initialize(USB_CONTROLLER_STATE* usbState));
+bool CONCAT(DEVICE_TARGET, _UsbClient_Uninitialize(USB_CONTROLLER_STATE* usbState));
+bool CONCAT(DEVICE_TARGET, _UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t endpoint));
+bool CONCAT(DEVICE_TARGET, _UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t endpoint));

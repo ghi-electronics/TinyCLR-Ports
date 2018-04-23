@@ -66,7 +66,7 @@ void TinyCLR_UsbClient_ClearQueues(USB_CONTROLLER_STATE *usbState, bool ClrRxQue
             TinyCLR_UsbClient_ClearEndpoints(endpoint);
 
             /* since this queue is now reset, we have room available for newly arrived packets */
-            CONCAT(DEVICE_TARGET, _TinyCLR_UsbClient_RxEnable(usbState, endpoint));
+            CONCAT(DEVICE_TARGET, _UsbClient_RxEnable(usbState, endpoint));
         }
     }
 
@@ -691,7 +691,7 @@ TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Provider* self)
     if (usbState->initialized) {
         DISABLE_INTERRUPTS_SCOPED(irq);
 
-        CONCAT(DEVICE_TARGET, _TinyCLR_UsbClient_Uninitialize(usbState));
+        CONCAT(DEVICE_TARGET, _UsbClient_Uninitialize(usbState));
 
         usbState->initialized = false;
 
@@ -717,7 +717,7 @@ TinyCLR_Result TinyCLR_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, in
         return TinyCLR_Result::NotSupported;
 
     if (usbState->currentState == USB_DEVICE_STATE_UNINITIALIZED) {
-        CONCAT(DEVICE_TARGET, _TinyCLR_UsbClient_Initialize(usbState));
+        CONCAT(DEVICE_TARGET, _UsbClient_Initialize(usbState));
 
         usbState->endpointCount = usbState->configuration.interfaceDescriptor->bNumEndpoints;
         usbState->packetSize = usbState->configuration.deviceDescriptor->bMaxPacketSize0;
@@ -914,7 +914,7 @@ TinyCLR_Result TinyCLR_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, i
                 goto done_write;
             }
 
-            CONCAT(DEVICE_TARGET, _TinyCLR_UsbClient_StartOutput(usbState, endpoint));
+            CONCAT(DEVICE_TARGET, _UsbClient_StartOutput(usbState, endpoint));
 
             irq.Release();
 
@@ -926,7 +926,7 @@ TinyCLR_Result TinyCLR_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, i
 
     // here we have a post-condition that IRQs are disabled for all paths through conditional block above
     if (usbState->deviceState == USB_DEVICE_STATE_CONFIGURED) {
-        CONCAT(DEVICE_TARGET, _TinyCLR_UsbClient_StartOutput(usbState, endpoint));
+        CONCAT(DEVICE_TARGET, _UsbClient_StartOutput(usbState, endpoint));
     }
 
 done_write:
@@ -992,7 +992,7 @@ TinyCLR_Result TinyCLR_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, in
             usbState->currentPacketOffset[endpoint] = 0;
             Packet64 = nullptr;
 
-            CONCAT(DEVICE_TARGET, _TinyCLR_UsbClient_RxEnable(usbState, endpoint));
+            CONCAT(DEVICE_TARGET, _UsbClient_RxEnable(usbState, endpoint));
         }
     }
 
@@ -1025,7 +1025,7 @@ TinyCLR_Result TinyCLR_UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, i
 
     // interrupts were disabled or USB interrupt was disabled for whatever reason, so force the flush
     while (usb_packet_fifo_count[endpoint] > 0 && retries > 0) {
-        CONCAT(DEVICE_TARGET, _TinyCLR_UsbClient_StartOutput(usbState, endpoint));
+        CONCAT(DEVICE_TARGET, _UsbClient_StartOutput(usbState, endpoint));
 
         CONCAT(DEVICE_TARGET, _Time_Delay(nullptr, queueCnt == usb_packet_fifo_count[endpoint] ? 100 : 0)); // don't call Events_WaitForEventsXXX because it will turn off interrupts
 
