@@ -174,6 +174,8 @@ struct USB_CONTROLLER_STATE {
     uint8_t*                                                    fifoPacketOut;
     uint8_t*                                                    fifoPacketCount;    
     uint8_t                                                     maxFifoPacketCount;
+    
+    uint8_t*                                                    controlEndpointBuffer;
 };
 
 const TinyCLR_Api_Info* TinyCLR_UsbClient_GetApi();
