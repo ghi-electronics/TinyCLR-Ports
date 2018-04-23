@@ -130,17 +130,17 @@ struct USB_CONTROLLER_STATE {
     uint8_t                                                     controllerNum;
     uint32_t                                                    event;
 
-    TinyCLR_UsbClient_Configuration                            configuration;
+    TinyCLR_UsbClient_Configuration                             configuration;
 
-    /* queues & maxPacketSize must be initialized by the HAL */
-    USB_PACKET64                                   	            *queues[CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)];
-    uint8_t                                                     currentPacketOffset[CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)];
-    uint8_t                                                     maxPacketSize[CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)];
-    bool                                                        isTxQueue[CONCAT(DEVICE_TARGET, _USB_ENDPOINT_COUNT)];
+    /* queues & maxPacketSize must be initialized by the HAL */    
+	USB_PACKET64**                                   	        queues;
+    uint8_t*                                                    currentPacketOffset;
+    uint8_t*                                                    maxPacketSize;
+    bool*                                                       isTxQueue;
 
     /* Arbitrarily as many pipes as endpoints since that is the maximum number of pipes
        necessary to represent the maximum number of endpoints */
-    USB_PIPE_MAP                                                pipes[CONCAT(DEVICE_TARGET, _USB_PIPE_COUNT)];
+    USB_PIPE_MAP*                                               pipes;
 
     /* used for transferring packets between upper & lower */
     uint8_t*                                                    ptrData;
@@ -149,8 +149,7 @@ struct USB_CONTROLLER_STATE {
     /* USB hardware information */
     uint8_t                                                     address;
     uint8_t                                                     deviceState;
-    uint8_t                                                     packetSize;
-    uint16_t                                                    packetFifoCount;
+    uint8_t                                                     packetSize;    
     uint8_t                                                     configurationNum;
     uint32_t                                                    firstGetDescriptor;
 
@@ -169,6 +168,11 @@ struct USB_CONTROLLER_STATE {
     uint8_t*                                                    residualData;
     uint16_t                                                    residualCount;
     uint16_t                                                    expected;
+    
+    uint8_t*                                                    fifoPacketIn;
+    uint8_t*                                                    fifoPacketOut;
+    uint8_t*                                                    fifoPacketCount;    
+    uint8_t                                                     maxFifoPacketCount;
 };
 
 const TinyCLR_Api_Info* TinyCLR_UsbClient_GetApi();

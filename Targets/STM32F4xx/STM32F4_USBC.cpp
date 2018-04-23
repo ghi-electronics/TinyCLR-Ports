@@ -250,7 +250,7 @@ void STM32F4_UsbClient_Interrupt(void* param);
 /* usbState variables for the controllers */
 static STM32F4_UsbClientController usbClientController[STM32F4_TOTAL_USB_CONTROLLERS];
 
-void STM32F4_UsbClient_SetupConfiguration(TinyCLR_UsbClient_Configuration* configuration);
+void TinyCLR_UsbClient_SetupConfiguration(TinyCLR_UsbClient_Configuration* configuration);
 
 const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi() {
     return TinyCLR_UsbClient_GetApi();
@@ -267,12 +267,12 @@ bool STM32F4_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState) {
     
     usbState->controllerNum = controller;
     
-    STM32F4_UsbClient_SetupConfiguration(&usbState->configuration);
+    TinyCLR_UsbClient_SetupConfiguration(&usbState->configuration);
     
     usbClientController[controller].usbState = usbState;
     usbClientController[controller].usbState->endpointStatus = &usbClientController[controller].endpointStatus[0];
     usbClientController[controller].endpointType = 0; 
-    usbClientController[controller].usbState->packetFifoCount = STM32F4_USB_PACKET_FIFO_COUNT;
+    usbClientController[controller].usbState->maxFifoPacketCount = STM32F4_USB_PACKET_FIFO_COUNT;
     
     for (auto i = 0; i < usbClientController[controller].usbState->configuration.interfaceDescriptor->bNumEndpoints; i++) {
         TinyCLR_UsbClient_EndpointDescriptor  *ep = (TinyCLR_UsbClient_EndpointDescriptor*)&usbClientController[controller].usbState->configuration.endpointDescriptor[i];
@@ -656,7 +656,7 @@ bool STM32F4_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t ep) {
 
     /* if the halt feature for this endpoint is set, then just clear all the characters */
     if (usbState->endpointStatus[ep] & USB_STATUS_ENDPOINT_HALT) {
-        TinyCLR_UsbClient_ClearEndpoints(ep);
+        TinyCLR_UsbClient_ClearEndpoints(usbState, ep);
 
         return true;
     }
@@ -718,7 +718,7 @@ void STM32F4_UsbClient_ProtectPins(int32_t controller, bool on) {
         // clear USB Txbuffer
         for (int32_t ep = 1; ep < usbState->endpointCount; ep++) {
             if (usbState->queues[ep] && usbState->isTxQueue[ep]) {
-                TinyCLR_UsbClient_ClearEndpoints(ep);
+                TinyCLR_UsbClient_ClearEndpoints(usbState, ep);
             }
         }
 
@@ -732,4 +732,12 @@ void STM32F4_UsbClient_ProtectPins(int32_t controller, bool on) {
     usbState->deviceState = on ? USB_DEVICE_STATE_ATTACHED : USB_DEVICE_STATE_DETACHED;
 
     TinyCLR_UsbClient_StateCallback(usbState);
+}
+
+int32_t STM32F4_UsbClient_GetEndpointCount() {
+    return STM32F4_USB_ENDPOINT_COUNT;
+}
+
+int32_t STM32F4_UsbClient_GetPipeCount() {
+    return STM32F4_USB_PIPE_COUNT;
 }
