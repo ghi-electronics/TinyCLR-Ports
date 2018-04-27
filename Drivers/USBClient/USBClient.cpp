@@ -424,13 +424,15 @@ uint8_t TinyCLR_UsbClient_HandleConfigurationRequests(USB_CONTROLLER_STATE* usbS
                 size += USB_CONFIGURATION_DESCRIPTOR_STRUCTURE_SIZE;
 
                 // Parse Vendor Class Descriptor
-                if (usbState->deviceDescriptor.Configurations->VendorClassDescriptors != nullptr) {
-                    usbState->controlEndpointBuffer[size + 0] = 2 + usbState->deviceDescriptor.Configurations->VendorClassDescriptors->Length;
-                    usbState->controlEndpointBuffer[size + 1] = usbState->deviceDescriptor.Configurations->VendorClassDescriptors->Type;
+                for (auto vendor_id = 0; vendor_id < usbState->deviceDescriptor.Configurations->VendorClassDescriptorCount; vendor_id++) {
+                    auto vendor = (TinyCLR_UsbClient_VendorClassDescriptor*)&usbState->deviceDescriptor.Configurations->VendorClassDescriptors[vendor_id];
+
+                    usbState->controlEndpointBuffer[size + 0] = 2 + vendor->Length;
+                    usbState->controlEndpointBuffer[size + 1] = vendor->Type;
 
                     size += 2;
-                    memcpy((uint8_t*)&usbState->controlEndpointBuffer[size], usbState->deviceDescriptor.Configurations->VendorClassDescriptors->Payload, usbState->deviceDescriptor.Configurations->VendorClassDescriptors->Length);
-                    size += usbState->deviceDescriptor.Configurations->VendorClassDescriptors->Length;
+                    memcpy((uint8_t*)&usbState->controlEndpointBuffer[size], vendor->Payload, vendor->Length);
+                    size += vendor->Length;
                 }
 
                 // Parse interfaces
@@ -447,13 +449,15 @@ uint8_t TinyCLR_UsbClient_HandleConfigurationRequests(USB_CONTROLLER_STATE* usbS
                     auto ifc = (TinyCLR_UsbClient_InterfaceDescriptor*)&usbState->deviceDescriptor.Configurations->Interfaces[interface_id];
 
                     // Parse Vendor Class Descriptor
-                    if (ifc->VendorClassDescriptors != nullptr) {
-                        usbState->controlEndpointBuffer[size + 0] = 2 + ifc->VendorClassDescriptors->Length;
-                        usbState->controlEndpointBuffer[size + 1] = ifc->VendorClassDescriptors->Type;
+                    for (auto vendor_id = 0; vendor_id < ifc->VendorClassDescriptorCount; vendor_id++) {
+                        auto vendor = (TinyCLR_UsbClient_VendorClassDescriptor*)&ifc->VendorClassDescriptors[vendor_id];
+
+                        usbState->controlEndpointBuffer[size + 0] = 2 + vendor->Length;
+                        usbState->controlEndpointBuffer[size + 1] = vendor->Type;
 
                         size += 2;
-                        memcpy((uint8_t*)&usbState->controlEndpointBuffer[size], ifc->VendorClassDescriptors->Payload, ifc->VendorClassDescriptors->Length);
-                        size += ifc->VendorClassDescriptors->Length;
+                        memcpy((uint8_t*)&usbState->controlEndpointBuffer[size], vendor->Payload, vendor->Length);
+                        size += vendor->Length;
                     }
 
                     // Parse Endpoints
@@ -468,13 +472,15 @@ uint8_t TinyCLR_UsbClient_HandleConfigurationRequests(USB_CONTROLLER_STATE* usbS
                         size += USB_ENDPOINT_DESCRIPTOR_STRUCTURE_SIZE;
 
                         // Parse Vendor Class Descriptor
-                        if (ep->VendorClassDescriptors != nullptr) {
-                            usbState->controlEndpointBuffer[size + 0] = 2 + ep->VendorClassDescriptors->Length;
-                            usbState->controlEndpointBuffer[size + 1] = ep->VendorClassDescriptors->Type;
+                        for (auto vendor_id = 0; vendor_id < ep->VendorClassDescriptorCount; vendor_id++) {
+                            auto vendor = (TinyCLR_UsbClient_VendorClassDescriptor*)&ep->VendorClassDescriptors[vendor_id];
+
+                            usbState->controlEndpointBuffer[size + 0] = 2 + vendor->Length;
+                            usbState->controlEndpointBuffer[size + 1] = vendor->Type;
 
                             size += 2;
-                            memcpy((uint8_t*)&usbState->controlEndpointBuffer[size], ep->VendorClassDescriptors->Payload, ep->VendorClassDescriptors->Length);
-                            size += ep->VendorClassDescriptors->Length;
+                            memcpy((uint8_t*)&usbState->controlEndpointBuffer[size], vendor->Payload, vendor->Length);
+                            size += vendor->Length;
                         }
                     }
                 }
