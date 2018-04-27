@@ -35,7 +35,7 @@ void STM32F4_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 #endif
 #ifdef INCLUDE_I2C
     STM32F4_I2c_Reset();
-#endif    
+#endif
 #ifdef INCLUDE_PWM
     STM32F4_Pwm_Reset();
 #endif
@@ -45,7 +45,7 @@ void STM32F4_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 #ifdef INCLUDE_UART
     STM32F4_Uart_Reset();
 #endif
-#ifdef INCLUDE_USBCLIENT 
+#ifdef INCLUDE_USBCLIENT
     STM32F4_UsbClient_Reset();
 #endif
 }
@@ -440,7 +440,15 @@ void STM32F4_Startup_Initialize() {
 
 }
 
-void STM32F4_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index) {
+const TinyCLR_Startup_UsbDebuggerConfiguration STM32F4_Startup_UsbDebuggerConfiguration = {
+    USB_DEBUGGER_VENDOR_ID,
+    USB_DEBUGGER_PRODUCT_ID,
+    CONCAT(L,DEVICE_MANUFACTURER),
+    CONCAT(L,DEVICE_NAME),
+    0
+};
+
+void STM32F4_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN) && defined(DEBUGGER_SELECTOR_PULL) && defined(DEBUGGER_SELECTOR_USB_STATE)
     TinyCLR_Gpio_PinValue value;
     auto controller = static_cast<const TinyCLR_Gpio_Provider*>(STM32F4_Gpio_GetApi()->Implementation);
@@ -453,6 +461,7 @@ void STM32F4_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, 
     if (value == DEBUGGER_SELECTOR_USB_STATE) {
         api = STM32F4_UsbClient_GetApi();
         index = USB_DEBUGGER_INDEX;
+        configuration = (const void*)&STM32F4_Startup_UsbDebuggerConfiguration;
     }
     else {
         api = STM32F4_Uart_GetApi();

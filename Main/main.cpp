@@ -88,10 +88,12 @@ int main() {
     const TinyCLR_Api_Info* debuggerApi;
     size_t debuggerIndex;
 
+    const void* debuggerConfiguration;
+
     apiProvider = nullptr;
 
-    TARGET(_Startup_GetDebuggerTransportProvider)(debuggerApi, debuggerIndex);
-    TinyCLR_Startup_SetDebuggerTransportProvider(debuggerApi, debuggerIndex);
+    TARGET(_Startup_GetDebuggerTransportProvider)(debuggerApi, debuggerIndex, debuggerConfiguration);
+    TinyCLR_Startup_SetDebuggerTransportProvider(debuggerApi, debuggerIndex, debuggerConfiguration);
 
 
     TinyCLR_Startup_SetDeviceInformation(DEVICE_NAME, DEVICE_MANUFACTURER, DEVICE_VERSION);
