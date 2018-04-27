@@ -28,13 +28,6 @@ TinyCLR_UsbClient_RequestHandler TinyCLR_UsbClient_SetGetDescriptor = nullptr;
 
 USB_CONTROLLER_STATE* usbClient_State;
 
-const uint8_t USB_LanguageDescriptor[USB_LANGUAGE_DESCRIPTOR_SIZE] =
-{
-    USB_LANGUAGE_DESCRIPTOR_SIZE,
-    USB_STRING_DESCRIPTOR_TYPE,
-    0x09, 0x04                      // U.S. English
-};
-
 void TinyCLR_UsbClient_SetEvent(USB_CONTROLLER_STATE *usbState, uint32_t event) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -496,26 +489,21 @@ uint8_t TinyCLR_UsbClient_HandleConfigurationRequests(USB_CONTROLLER_STATE* usbS
             break;
 
         case USB_STRING_DESCRIPTOR_TYPE:
-            if (DescriptorIndex == 0) // If host is requesting the language list
-            {
-                usbState->residualData = (uint8_t *)USB_LanguageDescriptor;
-                usbState->residualCount = __min(usbState->expected, USB_LANGUAGE_DESCRIPTOR_SIZE);
+
+            if (nullptr != (header = TinyCLR_UsbClient_FindRecord(usbState, USB_STRING_DESCRIPTOR_TYPE, Setup))) {
+                TinyCLR_UsbClient_StringDescriptor* str = (TinyCLR_UsbClient_StringDescriptor*)header;
+
+                auto size = 2 + str->Length * 2;
+
+                usbState->controlEndpointBuffer[0] = size;
+                usbState->controlEndpointBuffer[1] = USB_STRING_DESCRIPTOR_TYPE;
+
+                memcpy((uint8_t*)&usbState->controlEndpointBuffer[2], (uint8_t*)str->Data, str->Length * 2);
+
+                usbState->residualData = usbState->controlEndpointBuffer;
+                usbState->residualCount = __min(usbState->expected, size);
             }
-            else {
-                if (nullptr != (header = TinyCLR_UsbClient_FindRecord(usbState, USB_STRING_DESCRIPTOR_TYPE, Setup))) {
-                    TinyCLR_UsbClient_StringDescriptor* str = (TinyCLR_UsbClient_StringDescriptor*)header;
 
-                    auto size = 2 + str->Length * 2;
-
-                    usbState->controlEndpointBuffer[0] = size;
-                    usbState->controlEndpointBuffer[1] = USB_STRING_DESCRIPTOR_TYPE;
-
-                    memcpy((uint8_t*)&usbState->controlEndpointBuffer[2], (uint8_t*)str->Data, str->Length * 2);
-
-                    usbState->residualData = usbState->controlEndpointBuffer;
-                    usbState->residualCount = __min(usbState->expected, size);
-                }
-            }
             break;
 
         default:
@@ -625,8 +613,6 @@ const uint8_t* TinyCLR_UsbClient_FindRecord(USB_CONTROLLER_STATE* usbState, uint
 
     uint8_t* ptr = nullptr;
 
-    TinyCLR_UsbClient_StringDescriptor* stringDescriptor = nullptr;
-
     switch (marker) {
     case USB_DEVICE_DESCRIPTOR_TYPE:
         ptr = (uint8_t*)&usbState->deviceDescriptor;
@@ -638,9 +624,10 @@ const uint8_t* TinyCLR_UsbClient_FindRecord(USB_CONTROLLER_STATE* usbState, uint
         found = true;
         break;
     case USB_STRING_DESCRIPTOR_TYPE:
-        stringDescriptor = (TinyCLR_UsbClient_StringDescriptor*)usbState->deviceDescriptor.Strings;
 
-        while (stringDescriptor != nullptr) {
+        for (auto i = 0; i < usbState->deviceDescriptor.StringCount; i++) {
+            auto stringDescriptor = (TinyCLR_UsbClient_StringDescriptor*)&usbState->deviceDescriptor.Strings[i];
+
             if (stringDescriptor->Index == (setup->Value & 0x00FF)) {
                 ptr = (uint8_t*)stringDescriptor;
                 found = true;
@@ -650,6 +637,7 @@ const uint8_t* TinyCLR_UsbClient_FindRecord(USB_CONTROLLER_STATE* usbState, uint
 
             stringDescriptor++;
         }
+
         break;
     }
 
