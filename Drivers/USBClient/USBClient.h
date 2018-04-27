@@ -131,7 +131,6 @@ struct USB_CONTROLLER_STATE {
     /* queues & maxPacketSize must be initialized by the HAL */
     USB_PACKET64**                                   	        queues;
     uint8_t*                                                    currentPacketOffset;
-    uint8_t*                                                    maxPacketSize;
     bool*                                                       isTxQueue;
 
     /* Arbitrarily as many pipes as endpoints since that is the maximum number of pipes
@@ -146,7 +145,8 @@ struct USB_CONTROLLER_STATE {
     /* USB hardware information */
     uint8_t                                                     address;
     uint8_t                                                     deviceState;
-    uint8_t                                                     packetSize;
+    uint8_t                                                     maxEndpoint0PacketSize;
+    uint8_t                                                     maxEndpointsPacketSize;
     uint8_t                                                     configurationNum;
     uint32_t                                                    firstGetDescriptor;
 
@@ -179,7 +179,7 @@ void TinyCLR_UsbClient_Reset();
 
 TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self);
 TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Provider* self);
-TinyCLR_Result TinyCLR_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t& pipe, TinyCLR_UsbClient_PipeMode mode);
+TinyCLR_Result TinyCLR_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t& pipe, uint8_t writeEndpoint, uint8_t readEndpoint);
 TinyCLR_Result TinyCLR_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t pipe);
 TinyCLR_Result TinyCLR_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int32_t pipe, const uint8_t* data, size_t& length);
 TinyCLR_Result TinyCLR_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int32_t pipe, uint8_t* data, size_t& length);

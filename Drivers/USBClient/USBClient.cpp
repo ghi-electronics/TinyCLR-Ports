@@ -101,7 +101,7 @@ void TinyCLR_UsbClient_StateCallback(USB_CONTROLLER_STATE* usbState) {
 }
 
 void TinyCLR_UsbClient_DataCallback(USB_CONTROLLER_STATE* usbState) {
-    uint32_t length = __min(usbState->packetSize, usbState->residualCount);
+    uint32_t length = __min(usbState->maxEndpoint0PacketSize, usbState->residualCount);
 
     memcpy(usbState->ptrData, usbState->residualData, length);
 
@@ -109,7 +109,7 @@ void TinyCLR_UsbClient_DataCallback(USB_CONTROLLER_STATE* usbState) {
     usbState->residualData += length;
     usbState->residualCount -= length;
 
-    if (length == usbState->packetSize) {
+    if (length == usbState->maxEndpoint0PacketSize) {
         usbState->expected -= length;
     }
     else {
@@ -366,13 +366,13 @@ uint8_t TinyCLR_UsbClient_HandleConfigurationRequests(USB_CONTROLLER_STATE* usbS
         return USB_STATE_DATA;
     }
 
-    // The very first GET_DESCRIPTOR command out of reset should always return at most packetSize bytes.
+    // The very first GET_DESCRIPTOR command out of reset should always return at most maxEndpoint0PacketSize bytes.
     // After that, you can return as many as the host has asked.
     if (usbState->deviceState <= USB_DEVICE_STATE_DEFAULT) {
         if (usbState->firstGetDescriptor) {
             usbState->firstGetDescriptor = false;
 
-            usbState->expected = __min(usbState->expected, usbState->packetSize);
+            usbState->expected = __min(usbState->expected, usbState->maxEndpoint0PacketSize);
         }
     }
 
@@ -785,7 +785,6 @@ TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self)
 
         usbState->queues = (USB_PACKET64**)memoryProvider->Allocate(memoryProvider, usbState->totalEndpointsCount * sizeof(uint32_t));
         usbState->currentPacketOffset = (uint8_t*)memoryProvider->Allocate(memoryProvider, usbState->totalEndpointsCount * sizeof(uint8_t));
-        usbState->maxPacketSize = (uint8_t*)memoryProvider->Allocate(memoryProvider, usbState->totalEndpointsCount * sizeof(uint8_t));
         usbState->isTxQueue = (bool*)memoryProvider->Allocate(memoryProvider, usbState->totalEndpointsCount * sizeof(bool));
 
         usbState->fifoPacketIn = (uint8_t*)memoryProvider->Allocate(memoryProvider, usbState->totalEndpointsCount * sizeof(uint8_t));
@@ -828,7 +827,6 @@ TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Provider* self)
 
             memoryProvider->Free(memoryProvider, usbState->queues);
             memoryProvider->Free(memoryProvider, usbState->currentPacketOffset);
-            memoryProvider->Free(memoryProvider, usbState->maxPacketSize);
             memoryProvider->Free(memoryProvider, usbState->isTxQueue);
 
             memoryProvider->Free(memoryProvider, usbState->fifoPacketIn);
@@ -845,7 +843,7 @@ TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Provider* self)
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result TinyCLR_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t& pipe, TinyCLR_UsbClient_PipeMode mode) {
+TinyCLR_Result TinyCLR_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t& pipe, uint8_t writeEp, uint8_t readEp) {
     int32_t controller = self->Index;
 
     USB_CONTROLLER_STATE * usbState = &usbClient_State[controller];
@@ -853,74 +851,49 @@ TinyCLR_Result TinyCLR_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, in
     if (!usbState->initialized)
         return TinyCLR_Result::NotAvailable;
 
-    int32_t writeEp = USB_ENDPOINT_NULL;
-    int32_t readEp = USB_ENDPOINT_NULL;
-
-    if (mode != TinyCLR_UsbClient_PipeMode::InOut)
-        return TinyCLR_Result::NotSupported;
-
     if (usbState->currentState == USB_DEVICE_STATE_UNINITIALIZED) {
         for (auto i = 0; i < usbState->totalPipesCount; i++) {
             usbState->pipes[i].RxEP = USB_ENDPOINT_NULL;
             usbState->pipes[i].TxEP = USB_ENDPOINT_NULL;
         }
     }
-    for (auto ifc = 0; ifc < usbState->deviceDescriptor.Configurations->InterfaceCount; ifc++) {
 
-        TinyCLR_UsbClient_InterfaceDescriptor* ifcx = (TinyCLR_UsbClient_InterfaceDescriptor*)&usbState->deviceDescriptor.Configurations->Interfaces[ifc];
+    usbState->isTxQueue[writeEp] = true;
+    usbState->isTxQueue[readEp] = false;
 
-        for (auto i = 0; i < ifcx->EndpointCount; i++) {
-            TinyCLR_UsbClient_EndpointDescriptor  *ep = (TinyCLR_UsbClient_EndpointDescriptor*)&ifcx->Endpoints[i];
+    if (apiProvider != nullptr) {
+        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-            auto idx = 0;
+        usbState->queues[writeEp] = (USB_PACKET64*)memoryProvider->Allocate(memoryProvider, usbState->maxFifoPacketCount * sizeof(USB_PACKET64));
+        usbState->queues[readEp] = (USB_PACKET64*)memoryProvider->Allocate(memoryProvider, usbState->maxFifoPacketCount * sizeof(USB_PACKET64));
 
-            if ((ep->Address & USB_ENDPOINT_DIRECTION_IN) == USB_ENDPOINT_DIRECTION_IN) {
-                writeEp = (ep->Address & (~USB_ENDPOINT_DIRECTION_IN));
-                idx = writeEp;
-                usbState->isTxQueue[idx] = true;
-            }
-            else if ((ep->Address & USB_ENDPOINT_DIRECTION_OUT) == USB_ENDPOINT_DIRECTION_OUT) {
-                readEp = (ep->Address & (~USB_ENDPOINT_DIRECTION_OUT));
-                idx = readEp;
-                usbState->isTxQueue[idx] = false;
-            }
+        memset(reinterpret_cast<uint8_t*>(usbState->queues[writeEp]), 0x00, usbState->maxFifoPacketCount * sizeof(USB_PACKET64));
+        memset(reinterpret_cast<uint8_t*>(usbState->queues[readEp]), 0x00, usbState->maxFifoPacketCount * sizeof(USB_PACKET64));
 
-            if (idx > 0) {
-                if (apiProvider != nullptr) {
-                    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+        TinyCLR_UsbClient_ClearEndpoints(usbState, writeEp);
+        TinyCLR_UsbClient_ClearEndpoints(usbState, readEp);
 
-                    usbState->queues[idx] = (USB_PACKET64*)memoryProvider->Allocate(memoryProvider, usbState->maxFifoPacketCount * sizeof(USB_PACKET64));
-
-                    if (usbState->queues[idx] == nullptr)
-                        return TinyCLR_Result::ArgumentNull;;
-
-                    memset(reinterpret_cast<uint8_t*>(usbState->queues[idx]), 0x00, usbState->maxFifoPacketCount * sizeof(USB_PACKET64));
-                }
-
-                TinyCLR_UsbClient_ClearEndpoints(usbState, idx);
-                usbState->maxPacketSize[idx] = ep->MaxPacketSize;
-            }
+        for (pipe = 0; pipe < usbState->totalPipesCount; pipe++) {
+            // The Pipe must be currently closed
+            if (usbState->pipes[pipe].RxEP == USB_ENDPOINT_NULL && usbState->pipes[pipe].TxEP == USB_ENDPOINT_NULL)
+                break;
         }
+
+        if (pipe == usbState->totalPipesCount)
+            return TinyCLR_Result::NotAvailable;
+
+        // All tests pass, assign the endpoints to the pipe
+        usbState->pipes[pipe].RxEP = readEp;
+        usbState->pipes[pipe].TxEP = writeEp;
+
+        if (usbState->currentState == USB_DEVICE_STATE_UNINITIALIZED) {
+            TinyCLR_UsbClient_Initialize(usbState);
+        }
+
+        return TinyCLR_Result::Success;
     }
 
-    for (pipe = 0; pipe < usbState->totalPipesCount; pipe++) {
-        // The Pipe must be currently closed
-        if (usbState->pipes[pipe].RxEP == USB_ENDPOINT_NULL && usbState->pipes[pipe].TxEP == USB_ENDPOINT_NULL)
-            break;
-    }
-
-    if (pipe == usbState->totalPipesCount)
-        return TinyCLR_Result::NotAvailable;
-
-    // All tests pass, assign the endpoints to the pipe
-    usbState->pipes[pipe].RxEP = readEp;
-    usbState->pipes[pipe].TxEP = writeEp;
-
-    if (usbState->currentState == USB_DEVICE_STATE_UNINITIALIZED) {
-        TinyCLR_UsbClient_Initialize(usbState);
-    }
-
-    return TinyCLR_Result::Success;
+    return TinyCLR_Result::NotAvailable;
 }
 
 TinyCLR_Result TinyCLR_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t pipe) {
@@ -1008,8 +981,8 @@ TinyCLR_Result TinyCLR_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, i
         if (Packet64) {
             uint32_t max_move;
 
-            if (count > usbState->maxPacketSize[endpoint])
-                max_move = usbState->maxPacketSize[endpoint];
+            if (count > usbState->maxEndpointsPacketSize)
+                max_move = usbState->maxEndpointsPacketSize;
             else
                 max_move = count;
 
@@ -1018,7 +991,7 @@ TinyCLR_Result TinyCLR_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, i
             }
 
             // we are done when we send a non-full length packet
-            if (max_move < usbState->maxPacketSize[endpoint]) {
+            if (max_move < usbState->maxEndpointsPacketSize) {
                 Done = true;
             }
 

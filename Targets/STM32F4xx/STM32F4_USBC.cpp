@@ -264,8 +264,9 @@ void STM32F4_UsbClient_InitializeConfiguration(USB_CONTROLLER_STATE *usbState) {
         usbState->maxFifoPacketCount = STM32F4_USB_PACKET_FIFO_COUNT;
         usbState->totalEndpointsCount = STM32F4_USB_ENDPOINT_COUNT;
         usbState->totalPipesCount = STM32F4_USB_PIPE_COUNT;
-        usbState->packetSize = STM32F4_USB_ENDPOINT0_SIZE;
-        
+        usbState->maxEndpoint0PacketSize = STM32F4_USB_ENDPOINT0_SIZE;
+        usbState->maxEndpointsPacketSize = STM32F4_USB_ENDPOINT_SIZE;
+
         usbClientController[controller].usbState = usbState;
 
         usbClientController[controller].endpointType = 0;
@@ -389,7 +390,7 @@ void STM32F4_UsbClient_ResetEvent(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* usbSta
         if (type != 0) { // data endpoint
             uint32_t ctrl = OTG_DIEPCTL_SD0PID | OTG_DIEPCTL_USBAEP;
             ctrl |= type << 18; // endpoint type
-            ctrl |= usbState->maxPacketSize[i]; // packet size
+            ctrl |= usbState->maxEndpointsPacketSize; // packet size
             if (usbState->isTxQueue[i]) { // Tx (in) endpoint
                 ctrl |= OTG_DIEPCTL_SNAK; // disable tx endpoint
                 ctrl |= i << 22; // Tx FIFO number
@@ -399,7 +400,7 @@ void STM32F4_UsbClient_ResetEvent(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* usbSta
             else { // Rx (out) endpoint
                 // Rx endpoints must be enabled here
                 // Enabling after Set_Configuration does not work correctly
-                OTG->DOEP[i].TSIZ = OTG_DOEPTSIZ_PKTCNT_1 | usbState->maxPacketSize[i];
+                OTG->DOEP[i].TSIZ = OTG_DOEPTSIZ_PKTCNT_1 | usbState->maxEndpointsPacketSize;
                 ctrl |= OTG_DOEPCTL_EPENA | OTG_DOEPCTL_CNAK; // enable rx endpoint
                 OTG->DOEP[i].CTL = ctrl; // configure out endpoint
                 intMask |= bit << 16; // enable out interrupt
@@ -550,14 +551,14 @@ void STM32F4_UsbClient_EndpointOutInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STA
 
     if (ep == 0) { // control endpoint
         // enable endpoint
-        OTG->DOEP[0].TSIZ = OTG_DOEPTSIZ_STUPCNT | OTG_DOEPTSIZ_PKTCNT_1 | usbState->packetSize;
+        OTG->DOEP[0].TSIZ = OTG_DOEPTSIZ_STUPCNT | OTG_DOEPTSIZ_PKTCNT_1 | usbState->maxEndpoint0PacketSize;
         OTG->DOEP[0].CTL |= OTG_DOEPCTL_EPENA | OTG_DOEPCTL_CNAK;
         // Handle Setup data in upper layer
         STM32F4_UsbClient_HandleSetup(OTG, usbState);
     }
     else if (TinyCLR_UsbClient_CanReceivePackage(usbState, ep)) {
         // enable endpoint
-        OTG->DOEP[ep].TSIZ = OTG_DOEPTSIZ_PKTCNT_1 | usbState->maxPacketSize[ep];
+        OTG->DOEP[ep].TSIZ = OTG_DOEPTSIZ_PKTCNT_1 | usbState->maxEndpointsPacketSize;
         OTG->DOEP[ep].CTL |= OTG_DOEPCTL_EPENA | OTG_DOEPCTL_CNAK;
     }
     else {
@@ -684,7 +685,7 @@ bool STM32F4_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t ep) {
 
     // enable Rx
     if (!(OTG->DOEP[ep].CTL & OTG_DOEPCTL_EPENA)) {
-        OTG->DOEP[ep].TSIZ = OTG_DOEPTSIZ_PKTCNT_1 | usbState->maxPacketSize[ep];
+        OTG->DOEP[ep].TSIZ = OTG_DOEPTSIZ_PKTCNT_1 | usbState->maxEndpointsPacketSize;
         OTG->DOEP[ep].CTL |= OTG_DOEPCTL_EPENA | OTG_DOEPCTL_CNAK; // enable endpoint
     }
 
