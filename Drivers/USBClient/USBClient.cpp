@@ -23,7 +23,8 @@ static TinyCLR_UsbClient_Provider usbClientProvider;
 static TinyCLR_Api_Info usbClientApi;
 
 TinyCLR_UsbClient_DataReceivedHandler TinyCLR_UsbClient_SetDataReceived;
-TinyCLR_UsbClient_VendorRequestHandler TinyCLR_UsbClient_ProcessVendorRequest;
+TinyCLR_UsbClient_RequestHandler TinyCLR_UsbClient_ProcessVendorClassRequest = nullptr;
+TinyCLR_UsbClient_RequestHandler TinyCLR_UsbClient_SetGetDescriptor = nullptr;
 
 USB_CONTROLLER_STATE* usbClient_State;
 
@@ -422,6 +423,16 @@ uint8_t TinyCLR_UsbClient_HandleConfigurationRequests(USB_CONTROLLER_STATE* usbS
                 memcpy((uint8_t*)&usbState->controlEndpointBuffer[size], header, USB_CONFIGURATION_DESCRIPTOR_STRUCTURE_SIZE);
                 size += USB_CONFIGURATION_DESCRIPTOR_STRUCTURE_SIZE;
 
+                // Parse Vendor Class Descriptor
+                if (usbState->deviceDescriptor.Configurations->VendorClassDescriptors != nullptr) {
+                    usbState->controlEndpointBuffer[size + 0] = 2 + usbState->deviceDescriptor.Configurations->VendorClassDescriptors->Length;
+                    usbState->controlEndpointBuffer[size + 1] = usbState->deviceDescriptor.Configurations->VendorClassDescriptors->Type;
+
+                    size += 2;
+                    memcpy((uint8_t*)&usbState->controlEndpointBuffer[size], usbState->deviceDescriptor.Configurations->VendorClassDescriptors->Payload, usbState->deviceDescriptor.Configurations->VendorClassDescriptors->Length);
+                    size += usbState->deviceDescriptor.Configurations->VendorClassDescriptors->Length;
+                }
+
                 // Parse interfaces
                 for (auto interface_id = 0; interface_id < usbState->deviceDescriptor.Configurations->InterfaceCount; interface_id++) {
                     auto interface_size_index = size;
@@ -435,14 +446,36 @@ uint8_t TinyCLR_UsbClient_HandleConfigurationRequests(USB_CONTROLLER_STATE* usbS
 
                     auto ifc = (TinyCLR_UsbClient_InterfaceDescriptor*)&usbState->deviceDescriptor.Configurations->Interfaces[interface_id];
 
+                    // Parse Vendor Class Descriptor
+                    if (ifc->VendorClassDescriptors != nullptr) {
+                        usbState->controlEndpointBuffer[size + 0] = 2 + ifc->VendorClassDescriptors->Length;
+                        usbState->controlEndpointBuffer[size + 1] = ifc->VendorClassDescriptors->Type;
+
+                        size += 2;
+                        memcpy((uint8_t*)&usbState->controlEndpointBuffer[size], ifc->VendorClassDescriptors->Payload, ifc->VendorClassDescriptors->Length);
+                        size += ifc->VendorClassDescriptors->Length;
+                    }
+
                     // Parse Endpoints
                     for (auto endpoint = 0; endpoint < ifc->EndpointCount; endpoint++) {
+                        auto ep = (TinyCLR_UsbClient_EndpointDescriptor*)&ifc->Endpoints[endpoint];
+
                         usbState->controlEndpointBuffer[size + 0] = USB_ENDPOINT_DESCRIPTOR_STRUCTURE_SIZE + 2;
                         usbState->controlEndpointBuffer[size + 1] = USB_ENDPOINT_DESCRIPTOR_TYPE;
 
                         size += 2;
-                        memcpy((uint8_t*)&usbState->controlEndpointBuffer[size], (uint8_t*)&ifc->Endpoints[endpoint], USB_ENDPOINT_DESCRIPTOR_STRUCTURE_SIZE);
+                        memcpy((uint8_t*)&usbState->controlEndpointBuffer[size], (uint8_t*)ep, USB_ENDPOINT_DESCRIPTOR_STRUCTURE_SIZE);
                         size += USB_ENDPOINT_DESCRIPTOR_STRUCTURE_SIZE;
+
+                        // Parse Vendor Class Descriptor
+                        if (ep->VendorClassDescriptors != nullptr) {
+                            usbState->controlEndpointBuffer[size + 0] = 2 + ep->VendorClassDescriptors->Length;
+                            usbState->controlEndpointBuffer[size + 1] = ep->VendorClassDescriptors->Type;
+
+                            size += 2;
+                            memcpy((uint8_t*)&usbState->controlEndpointBuffer[size], ep->VendorClassDescriptors->Payload, ep->VendorClassDescriptors->Length);
+                            size += ep->VendorClassDescriptors->Length;
+                        }
                     }
                 }
 
@@ -480,16 +513,30 @@ uint8_t TinyCLR_UsbClient_HandleConfigurationRequests(USB_CONTROLLER_STATE* usbS
             break;
 
         default:
+
+            if (TinyCLR_UsbClient_SetGetDescriptor != nullptr) {
+
+                const uint8_t* responsePayload;
+
+                size_t responsePayloadLength = 0;
+
+                if (TinyCLR_UsbClient_SetGetDescriptor(&usbClientProvider, Setup, responsePayload, responsePayloadLength) == TinyCLR_Result::Success) {
+                    memcpy(usbState->controlEndpointBuffer, (uint8_t*)responsePayload, responsePayloadLength);
+                    usbState->residualData = usbState->controlEndpointBuffer;
+                    usbState->residualCount = __min(usbState->expected, responsePayloadLength);
+                }
+            }
+
             break;
         }
     }
     else {
-        if (Setup->RequestType & USB_REQUEST_TYPE_VENDOR) {
+        if (Setup->RequestType & (USB_REQUEST_TYPE_VENDOR | USB_REQUEST_TYPE_CLASS)) {
             const uint8_t* responsePayload;
 
             size_t responsePayloadLength = 0;
 
-            if (TinyCLR_UsbClient_ProcessVendorRequest(&usbClientProvider, Setup, responsePayload, responsePayloadLength) == TinyCLR_Result::Success) {
+            if (TinyCLR_UsbClient_ProcessVendorClassRequest(&usbClientProvider, Setup, responsePayload, responsePayloadLength) == TinyCLR_Result::Success) {
                 memcpy(usbState->controlEndpointBuffer, (uint8_t*)responsePayload, responsePayloadLength);
 
                 usbState->residualData = usbState->controlEndpointBuffer;
@@ -696,7 +743,7 @@ const TinyCLR_Api_Info* TinyCLR_UsbClient_GetApi() {
     usbClientProvider.Read = &TinyCLR_UsbClient_Read;
     usbClientProvider.Flush = &TinyCLR_UsbClient_Flush;
     usbClientProvider.SetDataReceivedHandler = &TinyCLR_UsbClient_SetDataReceivedHandler;
-    usbClientProvider.SetVendorRequestHandler = &TinyCLR_UsbClient_SetVendorRequestHandler;
+    usbClientProvider.SetVendorClassRequestHandler = &TinyCLR_UsbClient_SetVendorClassRequestHandler;
     usbClientProvider.SetDeviceDescriptor = &TinyCLR_UsbClient_SetDeviceDescriptor;
 
     usbClientApi.Author = "GHI Electronics, LLC";
@@ -1153,10 +1200,10 @@ TinyCLR_Result TinyCLR_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result TinyCLR_UsbClient_SetVendorRequestHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_VendorRequestHandler handler) {
+TinyCLR_Result TinyCLR_UsbClient_SetVendorClassRequestHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_RequestHandler handler) {
     int32_t controller = self->Index;
 
-    TinyCLR_UsbClient_ProcessVendorRequest = handler;
+    TinyCLR_UsbClient_ProcessVendorClassRequest = handler;
 
     return TinyCLR_Result::Success;
 }
