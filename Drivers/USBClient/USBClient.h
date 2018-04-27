@@ -85,34 +85,10 @@
 // header and exactly one language.
 #define USB_LANGUAGE_DESCRIPTOR_SIZE 4
 
-// USB 2.0 defined descriptor types
-#define USB_DEVICE_DESCRIPTOR_TYPE        1
-#define USB_CONFIGURATION_DESCRIPTOR_TYPE 2
-#define USB_STRING_DESCRIPTOR_TYPE        3
-#define USB_INTERFACE_DESCRIPTOR_TYPE     4
-#define USB_ENDPOINT_DESCRIPTOR_TYPE      5
-
-#define USB_END_DESCRIPTOR_MARKER           0x00
-#define USB_DEVICE_DESCRIPTOR_MARKER        0x01
-#define USB_CONFIGURATION_DESCRIPTOR_MARKER 0x02
-#define USB_STRING_DESCRIPTOR_MARKER        0x03
-#define USB_GENERIC_DESCRIPTOR_MARKER       0xFF
-
 // configuration Descriptor
 #define USB_ATTRIBUTE_REMOTE_WAKEUP    0x20
 #define USB_ATTRIBUTE_SELF_POWER       0x40
 #define USB_ATTRIBUTE_BASE             0x80
-
-// Sideshow descriptor lengths
-#define OS_DESCRIPTOR_STRING_SIZE                18
-#define OS_DESCRIPTOR_STRING_LENGTH               7
-#define USB_XCOMPATIBLE_OS_SIZE                  40
-#define USB_XPROPERTY_OS_SIZE_WINUSB     0x0000008E  // Size of this descriptor (78 bytes for guid + 40 bytes for the property name + 24 bytes for other fields = 142 bytes)
-#define USB_XCOMPATIBLE_OS_REQUEST                4
-#define USB_XPROPERTY_OS_REQUEST                  5
-
-#define OS_DESCRIPTOR_STRING_INDEX        0xEE
-#define OS_DESCRIPTOR_STRING_VENDOR_CODE  0xA5
 
 // Generic Descriptor Header
 #define USB_REQUEST_TYPE_OUT       0x00
@@ -124,13 +100,33 @@
 #define USB_REQUEST_TYPE_INTERFACE 0x01
 #define USB_REQUEST_TYPE_ENDPOINT  0x02
 
+// Actual USB Client Structures size.
+// The size send to host must be plus 2 bytes for lenght and type.
+#define USB_ENDPOINT_DESCRIPTOR_STRUCTURE_SIZE      5
+#define USB_INTERFACE_DESCRIPTOR_STRUCTURE_SIZE     7
+#define USB_CONFIGURATION_DESCRIPTOR_STRUCTURE_SIZE 7
+#define USB_DEVICE_DESCRIPTOR_STRUCTURE_SIZE        16
+
+// This size must be large than WinUsb xproperty os size (0x8E)
+#define USB_ENDPOINT_CONTROL_BUFFER_SIZE 256
+
+struct USB_PACKET64 {
+    uint32_t Size;
+    uint8_t  Buffer[64];
+};
+
+struct USB_PIPE_MAP {
+    uint8_t RxEP;
+    uint8_t TxEP;
+};
+
 struct USB_CONTROLLER_STATE {
     bool                                                        initialized;
     uint8_t                                                     currentState;
     uint8_t                                                     controllerNum;
     uint32_t                                                    event;
 
-    TinyCLR_UsbClient_Configuration                             configuration;
+    TinyCLR_UsbClient_DeviceDescriptor                          deviceDescriptor;
 
     /* queues & maxPacketSize must be initialized by the HAL */
     USB_PACKET64**                                   	        queues;
@@ -180,7 +176,8 @@ struct USB_CONTROLLER_STATE {
 
 const TinyCLR_Api_Info* TinyCLR_UsbClient_GetApi();
 void TinyCLR_UsbClient_Reset();
-TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_Configuration configuration);
+
+TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self);
 TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Provider* self);
 TinyCLR_Result TinyCLR_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t& pipe, TinyCLR_UsbClient_PipeMode mode);
 TinyCLR_Result TinyCLR_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t pipe);
@@ -188,7 +185,9 @@ TinyCLR_Result TinyCLR_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, i
 TinyCLR_Result TinyCLR_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int32_t pipe, uint8_t* data, size_t& length);
 TinyCLR_Result TinyCLR_UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, int32_t pipe);
 TinyCLR_Result TinyCLR_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_DataReceivedHandler handler);
-const TinyCLR_UsbClient_DescriptorHeader * TinyCLR_UsbClient_FindRecord(USB_CONTROLLER_STATE* usbState, uint8_t marker, USB_SETUP_PACKET * iValue);
+TinyCLR_Result TinyCLR_UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Provider* self, const TinyCLR_UsbClient_DeviceDescriptor* descriptor);
+TinyCLR_Result TinyCLR_UsbClient_SetVendorRequestHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_VendorRequestHandler handler);
+const uint8_t* TinyCLR_UsbClient_FindRecord(USB_CONTROLLER_STATE* usbState, uint8_t marker, TinyCLR_UsbClient_SetupPacket * iValue);
 
 bool TinyCLR_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState);
 bool TinyCLR_UsbClient_Uninitialize(USB_CONTROLLER_STATE* usbState);

@@ -248,8 +248,6 @@ void STM32F4_UsbClient_Interrupt(void* param);
 /* usbState variables for the controllers */
 static STM32F4_UsbClientController usbClientController[STM32F4_TOTAL_USB_CONTROLLERS];
 
-void TinyCLR_UsbClient_SetupConfiguration(TinyCLR_UsbClient_Configuration* configuration);
-
 const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi() {
     return TinyCLR_UsbClient_GetApi();
 }
@@ -257,35 +255,36 @@ void STM32F4_UsbClient_Reset() {
     return TinyCLR_UsbClient_Reset();
 }
 
+void STM32F4_UsbClient_InitializeConfiguration(USB_CONTROLLER_STATE *usbState) {
+    int32_t controller = STM32F4_USB_FS_ID;
+
+    if (usbState != nullptr) {
+        usbState->controllerNum = controller;
+
+        usbState->maxFifoPacketCount = STM32F4_USB_PACKET_FIFO_COUNT;
+        usbState->totalEndpointsCount = STM32F4_USB_ENDPOINT_COUNT;
+        usbState->totalPipesCount = STM32F4_USB_PIPE_COUNT;
+        usbState->packetSize = STM32F4_USB_ENDPOINT0_SIZE;
+        
+        usbClientController[controller].usbState = usbState;
+
+        usbClientController[controller].endpointType = 0;
+        for (auto i = 0; i < usbClientController[controller].usbState->deviceDescriptor.Configurations->Interfaces->EndpointCount; i++) {
+            TinyCLR_UsbClient_EndpointDescriptor  *ep = (TinyCLR_UsbClient_EndpointDescriptor*)&usbClientController[controller].usbState->deviceDescriptor.Configurations->Interfaces->Endpoints[i];
+
+            auto idx = ep->Address & 0x0F;
+
+            usbClientController[controller].endpointType |= (ep->Attributes & 3) << (idx * 2);
+        }
+    }
+}
+
 bool STM32F4_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState) {
+
     if (usbState == nullptr)
         return false;
 
-    int32_t controller = STM32F4_USB_FS_ID;
-
-    usbClientController[controller].usbState = usbState;
-
-    // Map controlller id
-    usbState->controllerNum = controller;
-
-    // Specific device
-    usbState->configuration.deviceDescriptor->bMaxPacketSize0 = STM32F4_USB_ENDPOINT0_SIZE;
-    usbState->configuration.deviceDescriptor->idVendor = USB_DEBUGGER_VENDOR_ID;
-    usbState->configuration.deviceDescriptor->idProduct = USB_DEBUGGER_PRODUCT_ID;
-
-    usbClientController[controller].usbState->maxFifoPacketCount = STM32F4_USB_PACKET_FIFO_COUNT;
-    usbClientController[controller].usbState->totalEndpointsCount = STM32F4_USB_ENDPOINT_COUNT;
-    usbClientController[controller].usbState->totalPipesCount = STM32F4_USB_PIPE_COUNT;
-    usbClientController[controller].usbState->packetSize = STM32F4_USB_ENDPOINT0_SIZE;
-
-    usbClientController[controller].endpointType = 0;
-    for (auto i = 0; i < usbClientController[controller].usbState->configuration.interfaceDescriptor->bNumEndpoints; i++) {
-        TinyCLR_UsbClient_EndpointDescriptor  *ep = (TinyCLR_UsbClient_EndpointDescriptor*)&usbClientController[controller].usbState->configuration.endpointDescriptor[i];
-
-        auto idx = ep->bEndpointAddress & 0x0F;
-
-        usbClientController[controller].endpointType |= (ep->bmAttributes & 3) << (idx * 2);
-    }
+    int32_t controller = usbState->controllerNum;
 
     auto& dp = g_STM32F4_Usb_Dp_Pins[controller];
     auto& dm = g_STM32F4_Usb_Dm_Pins[controller];
@@ -297,7 +296,7 @@ bool STM32F4_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState) {
     if (STM32F4_USB_USE_ID_PIN(controller) && !STM32F4_GpioInternal_OpenPin(id.number))
         return false;
 
-    // enable USB clock
+    // Enable USB clock
     // FS on AHB2
     RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN;
 
@@ -760,4 +759,8 @@ bool TinyCLR_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t endpoint
 
 void TinyCLR_UsbClient_Delay(uint64_t microseconds) {
     STM32F4_Time_Delay(nullptr, microseconds);
+}
+
+void TinyCLR_UsbClient_InitializeConfiguration(USB_CONTROLLER_STATE *usbState) {
+    STM32F4_UsbClient_InitializeConfiguration(usbState);
 }
