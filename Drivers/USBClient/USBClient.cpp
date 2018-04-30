@@ -793,23 +793,41 @@ TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self)
 
         usbState->pipes = (USB_PIPE_MAP*)memoryProvider->Allocate(memoryProvider, usbState->totalPipesCount * sizeof(USB_PIPE_MAP));
 
+        usbState->controlEndpointBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, USB_ENDPOINT_CONTROL_BUFFER_SIZE);
+        usbState->endpointStatus = (uint16_t*)memoryProvider->Allocate(memoryProvider, usbState->totalEndpointsCount * sizeof(uint16_t));
+
+        if (usbState->queues == nullptr
+            || usbState->currentPacketOffset == nullptr
+            || usbState->isTxQueue == nullptr
+            || usbState->fifoPacketIn == nullptr
+            || usbState->fifoPacketOut == nullptr
+            || usbState->fifoPacketCount == nullptr
+            || usbState->pipes == nullptr
+            || usbState->controlEndpointBuffer == nullptr
+            || usbState->endpointStatus == nullptr)
+            goto acquire_error;
+
+        // Reset buffer, make sure no random value in RAM after soft reset
+        memset(reinterpret_cast<uint8_t*>(usbState->queues), 0x00, usbState->totalEndpointsCount * sizeof(uint32_t));
+        memset(reinterpret_cast<uint8_t*>(usbState->currentPacketOffset), 0x00, usbState->totalEndpointsCount * sizeof(uint8_t));
+
+        memset(reinterpret_cast<uint8_t*>(usbState->fifoPacketIn), 0x00, usbState->totalEndpointsCount * sizeof(uint8_t));
+        memset(reinterpret_cast<uint8_t*>(usbState->fifoPacketOut), 0x00, usbState->totalEndpointsCount * sizeof(uint8_t));
+        memset(reinterpret_cast<uint8_t*>(usbState->fifoPacketCount), 0x00, usbState->totalEndpointsCount * sizeof(uint8_t));
+
         for (auto i = 0; i < usbState->totalPipesCount; i++) {
             usbState->pipes[i].RxEP = USB_ENDPOINT_NULL;
             usbState->pipes[i].TxEP = USB_ENDPOINT_NULL;
         }
 
-        usbState->controlEndpointBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, USB_ENDPOINT_CONTROL_BUFFER_SIZE);
-        usbState->endpointStatus = (uint16_t*)memoryProvider->Allocate(memoryProvider, usbState->totalEndpointsCount * sizeof(uint16_t));
+        usbState->initialized = true;
 
-        if (usbState->queues == nullptr)
-            return TinyCLR_Result::ArgumentNull;
+        return TinyCLR_Result::Success;
 
-        memset(reinterpret_cast<uint8_t*>(usbState->queues), 0x00, usbState->totalEndpointsCount * sizeof(uint32_t));
     }
 
-    usbState->initialized = true;
-
-    return TinyCLR_Result::Success;
+acquire_error:
+    return TinyCLR_Result::ArgumentNull;
 }
 
 TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Provider* self) {
