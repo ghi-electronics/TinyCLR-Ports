@@ -101,7 +101,7 @@ void TinyCLR_UsbClient_StateCallback(USB_CONTROLLER_STATE* usbState) {
 }
 
 void TinyCLR_UsbClient_DataCallback(USB_CONTROLLER_STATE* usbState) {
-    uint32_t length = __min(usbState->maxEndpoint0PacketSize, usbState->residualCount);
+    uint32_t length = __min(usbState->maxEndpointsPacketSize[0], usbState->residualCount);
 
     memcpy(usbState->ptrData, usbState->residualData, length);
 
@@ -109,7 +109,7 @@ void TinyCLR_UsbClient_DataCallback(USB_CONTROLLER_STATE* usbState) {
     usbState->residualData += length;
     usbState->residualCount -= length;
 
-    if (length == usbState->maxEndpoint0PacketSize) {
+    if (length == usbState->maxEndpointsPacketSize[0]) {
         usbState->expected -= length;
     }
     else {
@@ -366,13 +366,13 @@ uint8_t TinyCLR_UsbClient_HandleConfigurationRequests(USB_CONTROLLER_STATE* usbS
         return USB_STATE_DATA;
     }
 
-    // The very first GET_DESCRIPTOR command out of reset should always return at most maxEndpoint0PacketSize bytes.
+    // The very first GET_DESCRIPTOR command out of reset should always return at most maxEndpointsPacketSize[0] bytes.
     // After that, you can return as many as the host has asked.
     if (usbState->deviceState <= USB_DEVICE_STATE_DEFAULT) {
         if (usbState->firstGetDescriptor) {
             usbState->firstGetDescriptor = false;
 
-            usbState->expected = __min(usbState->expected, usbState->maxEndpoint0PacketSize);
+            usbState->expected = __min(usbState->expected, usbState->maxEndpointsPacketSize[0]);
         }
     }
 
@@ -794,7 +794,9 @@ TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self)
         usbState->pipes = (USB_PIPE_MAP*)memoryProvider->Allocate(memoryProvider, usbState->totalPipesCount * sizeof(USB_PIPE_MAP));
 
         usbState->controlEndpointBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, USB_ENDPOINT_CONTROL_BUFFER_SIZE);
+
         usbState->endpointStatus = (uint16_t*)memoryProvider->Allocate(memoryProvider, usbState->totalEndpointsCount * sizeof(uint16_t));
+        usbState->maxEndpointsPacketSize = (uint8_t*)memoryProvider->Allocate(memoryProvider, usbState->totalEndpointsCount * sizeof(uint8_t));
 
         if (usbState->queues == nullptr
             || usbState->currentPacketOffset == nullptr
@@ -804,6 +806,7 @@ TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self)
             || usbState->fifoPacketCount == nullptr
             || usbState->pipes == nullptr
             || usbState->controlEndpointBuffer == nullptr
+            || usbState->maxEndpointsPacketSize == nullptr
             || usbState->endpointStatus == nullptr)
             goto acquire_error;
 
@@ -818,6 +821,10 @@ TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self)
         for (auto i = 0; i < usbState->totalPipesCount; i++) {
             usbState->pipes[i].RxEP = USB_ENDPOINT_NULL;
             usbState->pipes[i].TxEP = USB_ENDPOINT_NULL;
+        }
+
+        for (auto i = 0; i < usbState->totalEndpointsCount; i++) {
+            usbState->maxEndpointsPacketSize[i] = TinyCLR_UsbClient_GetEndpointSize(i);
         }
 
         usbState->initialized = true;
@@ -860,6 +867,7 @@ TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Provider* self)
 
             memoryProvider->Free(memoryProvider, usbState->controlEndpointBuffer);
             memoryProvider->Free(memoryProvider, usbState->endpointStatus);
+            memoryProvider->Free(memoryProvider, usbState->maxEndpointsPacketSize);
         }
     }
 
@@ -999,8 +1007,8 @@ TinyCLR_Result TinyCLR_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, i
         if (Packet64) {
             uint32_t max_move;
 
-            if (count > usbState->maxEndpointsPacketSize)
-                max_move = usbState->maxEndpointsPacketSize;
+            if (count > usbState->maxEndpointsPacketSize[endpoint])
+                max_move = usbState->maxEndpointsPacketSize[endpoint];
             else
                 max_move = count;
 
@@ -1009,7 +1017,7 @@ TinyCLR_Result TinyCLR_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, i
             }
 
             // we are done when we send a non-full length packet
-            if (max_move < usbState->maxEndpointsPacketSize) {
+            if (max_move < usbState->maxEndpointsPacketSize[endpoint]) {
                 Done = true;
             }
 
