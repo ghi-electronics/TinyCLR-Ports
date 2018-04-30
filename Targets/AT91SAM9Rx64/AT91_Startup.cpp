@@ -38,7 +38,7 @@ void AT91_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 #endif
 #ifdef INCLUDE_I2C
     AT91_I2c_Reset();
-#endif    
+#endif
 #ifdef INCLUDE_PWM
     AT91_Pwm_Reset();
 #endif
@@ -48,8 +48,8 @@ void AT91_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 #ifdef INCLUDE_UART
     AT91_Uart_Reset();
 #endif
-#ifdef INCLUDE_USBCLIENT 
-    UsbClient_Reset();
+#ifdef INCLUDE_USBCLIENT
+    AT91_UsbClient_Reset();
 #endif
 }
 
@@ -201,7 +201,16 @@ void AT91_Startup_Initialize() {
 
 }
 
-void AT91_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index) {
+const TinyCLR_Startup_UsbDebuggerConfiguration AT91_Startup_UsbDebuggerConfiguration = {
+    USB_DEBUGGER_VENDOR_ID,
+    USB_DEBUGGER_PRODUCT_ID,
+    CONCAT(L,DEVICE_MANUFACTURER),
+    CONCAT(L,DEVICE_NAME),
+    0
+};
+
+void AT91_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index, const void*& configuration) {
+#if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value;
     auto controller = static_cast<const TinyCLR_Gpio_Provider*>(AT91_Gpio_GetApi()->Implementation);
 
@@ -211,16 +220,24 @@ void AT91_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, siz
     controller->ReleasePin(controller, DEBUGGER_SELECTOR_PIN);
 
     if (value == DEBUGGER_SELECTOR_USB_STATE) {
-        api = UsbClient_GetApi();
+        api = AT91_UsbClient_GetApi();
         index = USB_DEBUGGER_INDEX;
+        configuration = (const void*)&AT91_Startup_UsbDebuggerConfiguration;
     }
     else {
         api = AT91_Uart_GetApi();
         index = UART_DEBUGGER_INDEX;
     }
+#elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
+    api = DEBUGGER_FORCE_API;
+    index = DEBUGGER_FORCE_INDEX;
+#else
+#error You must specify a debugger mode pin or specify the API explicitly.
+#endif
 }
 
 void AT91_Startup_GetRunApp(bool& runApp) {
+#if defined(RUN_APP_PIN)
     TinyCLR_Gpio_PinValue value;
     auto controller = static_cast<const TinyCLR_Gpio_Provider*>(AT91_Gpio_GetApi()->Implementation);
     controller->AcquirePin(controller, RUN_APP_PIN);
@@ -229,6 +246,11 @@ void AT91_Startup_GetRunApp(bool& runApp) {
     controller->ReleasePin(controller, RUN_APP_PIN);
 
     runApp = value == RUN_APP_STATE;
+#elif defined(RUN_APP_FORCE_STATE)
+    runApp = RUN_APP_FORCE_STATE;
+#else
+    runApp = true;
+#endif
 }
 
 #define BOARD_OSCOUNT           (AT91_PMC::CKGR_OSCOUNT & (64 << 8))
