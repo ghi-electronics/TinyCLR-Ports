@@ -32,6 +32,10 @@
 
 void LPC17_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider) {
     apiProvider->Add(apiProvider, SPIDisplay_GetApi());
+
+#ifdef INCLUDE_USBCLIENT
+    apiProvider->Add(apiProvider, UsbClient_GetApi());
+#endif
 }
 
 static int32_t lpc178_deviceId = -1;
@@ -91,7 +95,7 @@ void LPC17_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, si
     valueUsbActive = LPC17_Startup_GetDebuggerSelectorUsbState();
 
     if (value == valueUsbActive) {
-        api = LPC17_UsbClient_GetApi();
+        api = UsbClient_GetApi();
         index = USB_DEBUGGER_INDEX;
     }
     else {

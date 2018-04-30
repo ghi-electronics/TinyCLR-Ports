@@ -361,7 +361,7 @@ public:
     LPC24_SmartPtr_IRQ();
     ~LPC24_SmartPtr_IRQ();
 
-    bool WasDisabled();
+    bool IsDisabled();
     void Acquire();
     void Release();
     void Probe();
@@ -435,18 +435,12 @@ TinyCLR_Result LPC24_Power_Acquire(const TinyCLR_Power_Provider* self);
 TinyCLR_Result LPC24_Power_Release(const TinyCLR_Power_Provider* self);
 
 //UsbClient
-#define USB_BASE 0xFFE0C000
-#define OTGIntSt (*(volatile unsigned *)0xFFE0C100)
-#define OTGIntEn (*(volatile unsigned *)0xFFE0C104)
-#define OTGIntSet (*(volatile unsigned *)0xFFE0C108)
-#define OTGIntClr (*(volatile unsigned *)0xFFE0C10C)
+
 #define OTGStCtrl (*(volatile unsigned *)0xFFE0C110)
-#define OTGTmr (*(volatile unsigned *)0xFFE0C114)
-#define USBPortSel (*(volatile unsigned *)0xFFE0C110)
 #define USBDevIntSt (*(volatile unsigned *)0xFFE0C200)
 #define USBDevIntEn (*(volatile unsigned *)0xFFE0C204)
 #define USBDevIntClr (*(volatile unsigned *)0xFFE0C208)
-#define USBDevIntSet (*(volatile unsigned *)0xFFE0C20C)
+
 #define USBCmdCode (*(volatile unsigned *)0xFFE0C210)
 #define USBCmdData (*(volatile unsigned *)0xFFE0C214)
 #define USBRxData (*(volatile unsigned *)0xFFE0C218)
@@ -454,54 +448,24 @@ TinyCLR_Result LPC24_Power_Release(const TinyCLR_Power_Provider* self);
 #define USBRxPLen (*(volatile unsigned *)0xFFE0C220)
 #define USBTxPLen (*(volatile unsigned *)0xFFE0C224)
 #define USBCtrl (*(volatile unsigned *)0xFFE0C228)
-#define USBDevIntPri (*(volatile unsigned *)0xFFE0C22C)
+
 #define USBEpIntSt (*(volatile unsigned *)0xFFE0C230)
 #define USBEpIntEn (*(volatile unsigned *)0xFFE0C234)
 #define USBEpIntClr (*(volatile unsigned *)0xFFE0C238)
 #define USBEpIntSet (*(volatile unsigned *)0xFFE0C23C)
-#define USBEpIntPri (*(volatile unsigned *)0xFFE0C240)
+
 #define USBReEp (*(volatile unsigned *)0xFFE0C244)
 #define USBEpInd (*(volatile unsigned *)0xFFE0C248)
 #define USBEpMaxPSize (*(volatile unsigned *)0xFFE0C24C)
-#define USBDMARSt (*(volatile unsigned *)0xFFE0C250)
-#define USBDMARClr (*(volatile unsigned *)0xFFE0C254)
-#define USBDMARSet (*(volatile unsigned *)0xFFE0C258)
-#define USBUDCAH (*(volatile unsigned *)0xFFE0C280)
-#define USBEpDMASt (*(volatile unsigned *)0xFFE0C284)
-#define USBEpDMAEn (*(volatile unsigned *)0xFFE0C288)
-#define USBEpDMADis (*(volatile unsigned *)0xFFE0C28C)
-#define USBDMAIntSt (*(volatile unsigned *)0xFFE0C290)
-#define USBDMAIntEn (*(volatile unsigned *)0xFFE0C294)
-#define USBEoTIntSt (*(volatile unsigned *)0xFFE0C2A0)
-#define USBEoTIntClr (*(volatile unsigned *)0xFFE0C2A4)
-#define USBEoTIntSet (*(volatile unsigned *)0xFFE0C2A8)
-#define USBNDDRIntSt (*(volatile unsigned *)0xFFE0C2AC)
-#define USBNDDRIntClr (*(volatile unsigned *)0xFFE0C2B0)
-#define USBNDDRIntSet (*(volatile unsigned *)0xFFE0C2B4)
-#define USBSysErrIntSt (*(volatile unsigned *)0xFFE0C2B8)
-#define USBSysErrIntClr (*(volatile unsigned *)0xFFE0C2BC)
-#define USBSysErrIntSet (*(volatile unsigned *)0xFFE0C2C0)
+
 #define USBClkCtrl (*(volatile unsigned *)0xFFE0CFF4)
 #define USBClkSt (*(volatile unsigned *)0xFFE0CFF8)
 #define OTGClkCtrl (*(volatile unsigned *)0xFFE0CFF4)
 #define OTGClkSt (*(volatile unsigned *)0xFFE0CFF8)
 
-const TinyCLR_Api_Info* LPC24_UsbClient_GetApi();
-void LPC24_UsbClient_Reset();
+const TinyCLR_Api_Info* UsbClient_GetApi();
+void UsbClient_Reset();
 void LPC24_UsbClient_PinConfiguration();
-TinyCLR_Result LPC24_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self);
-TinyCLR_Result LPC24_UsbClient_Release(const TinyCLR_UsbClient_Provider* self);
-TinyCLR_Result LPC24_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t & pipe, TinyCLR_UsbClient_PipeMode mode);
-TinyCLR_Result LPC24_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t pipe);
-TinyCLR_Result LPC24_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int32_t pipe, const uint8_t* data, size_t& length);
-TinyCLR_Result LPC24_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int32_t pipe, uint8_t* data, size_t& length);
-TinyCLR_Result LPC24_UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, int32_t pipe);
-TinyCLR_Result LPC24_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_DataReceivedHandler handler);
-
-TinyCLR_Result LPC24_UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Provider* self, const void* descriptor, int32_t length);
-TinyCLR_Result LPC24_UsbClient_SetConfigDescriptor(const TinyCLR_UsbClient_Provider* self, const void* descriptor, int32_t length);
-TinyCLR_Result LPC24_UsbClient_SetStringDescriptor(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_StringDescriptorType type, const wchar_t* value);
-TinyCLR_Result LPC24_UsbClient_SetOsExtendedPropertyHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_OsExtendedPropertyHandler handler);
 
 // LCD
 void LPC24_Display_Reset();

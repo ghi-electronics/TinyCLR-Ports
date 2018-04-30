@@ -79,7 +79,7 @@ void STM32F4_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t micros
 ////////////////////////////////////////////////////////////////////////////////
 void STM32F4_Startup_Initialize();
 void STM32F4_Startup_GetHeap(uint8_t*& start, size_t& length);
-void STM32F4_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index);
+void STM32F4_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index, const void*& configuration);
 void STM32F4_Startup_GetRunApp(bool& runApp);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -252,19 +252,21 @@ void STM32F4_Uart_Reset();
 //USB Client
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi();
-TinyCLR_Result STM32F4_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self);
-TinyCLR_Result STM32F4_UsbClient_Release(const TinyCLR_UsbClient_Provider* self);
-TinyCLR_Result STM32F4_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t& pipe, TinyCLR_UsbClient_PipeMode mode);
-TinyCLR_Result STM32F4_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t pipe);
-TinyCLR_Result STM32F4_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int32_t pipe, const uint8_t* data, size_t& length);
-TinyCLR_Result STM32F4_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int32_t pipe, uint8_t* data, size_t& length);
-TinyCLR_Result STM32F4_UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, int32_t pipe);
-TinyCLR_Result STM32F4_UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Provider* self, const void* descriptor, int32_t length);
-TinyCLR_Result STM32F4_UsbClient_SetConfigDescriptor(const TinyCLR_UsbClient_Provider* self, const void* descriptor, int32_t length);
-TinyCLR_Result STM32F4_UsbClient_SetStringDescriptor(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_StringDescriptorType type, const wchar_t* value);
-TinyCLR_Result STM32F4_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_DataReceivedHandler handler);
-TinyCLR_Result STM32F4_UsbClient_SetOsExtendedPropertyHandler(const TinyCLR_UsbClient_Provider* self, TinyCLR_UsbClient_OsExtendedPropertyHandler handler);
 void STM32F4_UsbClient_Reset();
+
+struct USB_PACKET64;
+struct USB_CONTROLLER_STATE;
+typedef void(*USB_NEXT_CALLBACK)(USB_CONTROLLER_STATE*);
+
+void TinyCLR_UsbClient_ClearEvent(USB_CONTROLLER_STATE *usbState, uint32_t event);
+void TinyCLR_UsbClient_ClearEndpoints(USB_CONTROLLER_STATE *usbState, int32_t endpoint);
+USB_PACKET64* TinyCLR_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* usbState, int32_t endpoint, bool& disableRx);
+USB_PACKET64* TinyCLR_UsbClient_TxDequeue(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
+void TinyCLR_UsbClient_StateCallback(USB_CONTROLLER_STATE* usbState);
+uint8_t TinyCLR_UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState);
+bool TinyCLR_UsbClient_CanReceivePackage(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
+void TinyCLR_UsbClient_InitializeConfiguration(USB_CONTROLLER_STATE *usbState);
+uint32_t TinyCLR_UsbClient_GetEndpointSize(int32_t endpoint);
 
 ////////////////////////////////////////////////////////////////////////////////
 //Interrupt Internal

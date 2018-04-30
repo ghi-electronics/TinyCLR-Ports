@@ -46,7 +46,7 @@ void STM32F7_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
     STM32F7_Uart_Reset();
 #endif
 #ifdef INCLUDE_USBCLIENT
-    STM32F7_UsbClient_Reset();
+    UsbClient_Reset();
 #endif
 }
 
@@ -458,7 +458,7 @@ void STM32F7_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, 
     controller->ReleasePin(controller, DEBUGGER_SELECTOR_PIN);
 
     if (value == DEBUGGER_SELECTOR_USB_STATE) {
-        api = STM32F7_UsbClient_GetApi();
+        api = UsbClient_GetApi();
         index = USB_DEBUGGER_INDEX;
     }
     else {

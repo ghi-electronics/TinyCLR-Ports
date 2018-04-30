@@ -281,7 +281,7 @@ AT91_SmartPtr_Interrupt::~AT91_SmartPtr_Interrupt() { AT91_Interrupt_Ended(); };
 AT91_SmartPtr_IRQ::AT91_SmartPtr_IRQ() { Disable(); }
 AT91_SmartPtr_IRQ::~AT91_SmartPtr_IRQ() { Restore(); }
 
-bool AT91_SmartPtr_IRQ::WasDisabled() {
+bool AT91_SmartPtr_IRQ::IsDisabled() {
     return (m_state & DISABLED_MASK) == DISABLED_MASK;
 }
 

@@ -44,7 +44,7 @@ void LPC24_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
     LPC24_Uart_Reset();
 #endif
 #ifdef INCLUDE_USBCLIENT 
-    LPC24_UsbClient_Reset();
+    UsbClient_Reset();
 #endif
 }
 
