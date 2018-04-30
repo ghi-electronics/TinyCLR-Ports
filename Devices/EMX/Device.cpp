@@ -20,10 +20,6 @@
 
 void LPC24_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider) {
     apiProvider->Add(apiProvider, SPIDisplay_GetApi());
-
-#ifdef INCLUDE_USBCLIENT
-    apiProvider->Add(apiProvider, UsbClient_GetApi());
-#endif    
 }
 
 static int32_t lpc24_deviceId = 0;
@@ -37,7 +33,15 @@ int32_t LPC24_Startup_GetDeviceId() {
     return lpc24_deviceId;
 }
 
-void LPC24_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index) {
+const TinyCLR_Startup_UsbDebuggerConfiguration LPC24_Startup_UsbDebuggerConfiguration = {
+    USB_DEBUGGER_VENDOR_ID,
+    USB_DEBUGGER_PRODUCT_ID,
+    CONCAT(L,DEVICE_MANUFACTURER),
+    CONCAT(L,DEVICE_NAME),
+    0
+};
+void LPC24_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index, const void*& configuration) {
+#if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value, valueUsbActive;
     auto controller = static_cast<const TinyCLR_Gpio_Provider*>(LPC24_Gpio_GetApi()->Implementation);
 
@@ -49,16 +53,24 @@ void LPC24_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, si
     valueUsbActive = DEBUGGER_SELECTOR_USB_STATE;
 
     if (value == valueUsbActive) {
-        api = UsbClient_GetApi();
+        api = LPC24_UsbClient_GetApi();
         index = USB_DEBUGGER_INDEX;
+        configuration = (const void*)&LPC24_Startup_UsbDebuggerConfiguration;
     }
     else {
         api = LPC24_Uart_GetApi();
         index = UART_DEBUGGER_INDEX;
     }
+#elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
+    api = DEBUGGER_FORCE_API;
+    index = DEBUGGER_FORCE_INDEX;
+#else
+#error You must specify a debugger mode pin or specify the API explicitly.
+#endif
 }
 
 void LPC24_Startup_GetRunApp(bool& runApp) {
+#if defined(RUN_APP_PIN)
     TinyCLR_Gpio_PinValue value;
     auto controller = static_cast<const TinyCLR_Gpio_Provider*>(LPC24_Gpio_GetApi()->Implementation);
     controller->AcquirePin(controller, RUN_APP_PIN);
@@ -67,6 +79,11 @@ void LPC24_Startup_GetRunApp(bool& runApp) {
     controller->ReleasePin(controller, RUN_APP_PIN);
 
     runApp = value == RUN_APP_STATE;
+#elif defined(RUN_APP_FORCE_STATE)
+    runApp = RUN_APP_FORCE_STATE;
+#else
+    runApp = true;
+#endif	
 }
 
 // UsbClient
