@@ -79,7 +79,7 @@ void STM32F7_Time_DelayNoInterrupt(const TinyCLR_NativeTime_Provider* self, uint
 ////////////////////////////////////////////////////////////////////////////////
 void STM32F7_Startup_Initialize();
 void STM32F7_Startup_GetHeap(uint8_t*& start, size_t& length);
-void STM32F7_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index);
+void STM32F7_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index, const void*& configuration);
 void STM32F7_Startup_GetRunApp(bool& runApp);
 void STM32F7_Startup_CacheEnable(void);
 void STM32F7_Startup_CacheDisable(void);
