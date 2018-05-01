@@ -95,7 +95,7 @@
 #define LPC24_USB_ENDPOINT_SIZE 64
 #define LPC24_USB_ENDPOINT0_SIZE 64
 #define LPC24_USB_ENDPOINT_COUNT 16
-#define LPC24_USB_PIPE_COUNT 4
+#define LPC24_USB_PIPE_COUNT 16
 
 #define INCLUDE_DISPLAY
 #define LPC24_DISPLAY_CONTROLLER_PINS { { PIN(1, 20), PF(1) }, { PIN(1, 21), PF(1) }, { PIN(1, 22), PF(1) }, { PIN(1, 23), PF(1) }, { PIN(1, 24), PF(1) }, { PIN(1, 25), PF(1) }, { PIN(1, 26), PF(1) }, { PIN(1, 27), PF(1) }, { PIN(1, 28), PF(1)}, { PIN(1, 29), PF(1) }, { PIN(2, 2), PF(3) }, { PIN(2, 3), PF(3) }, { PIN(2, 5), PF(3) }, { PIN(2, 6), PF(3) }, { PIN(2, 7), PF(3) }, { PIN(2, 8), PF(3) }, { PIN(2, 9), PF(3) }, { PIN(2, 12), PF(1) }, { PIN(2, 13), PF(1) } }
