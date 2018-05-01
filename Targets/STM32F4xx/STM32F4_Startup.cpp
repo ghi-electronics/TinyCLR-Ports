@@ -288,6 +288,9 @@ extern "C" {
             | RCC_CFGR_PPRE1_DIV_BITS  // APB1 clock
             | RCC_CFGR_PPRE2_DIV_BITS; // APB2 clock
 
+        // wait for PLL ready 
+        while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL);
+
     // minimal peripheral clocks
 #ifdef RCC_AHB1ENR_CCMDATARAMEN
         RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN; // 64k RAM (CCM)
