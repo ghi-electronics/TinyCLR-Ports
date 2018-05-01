@@ -1207,7 +1207,7 @@ void TinyCLR_UsbClient_Reset() {
 
     USB_CONTROLLER_STATE * usbState = &usbClient_State[controller];
 
-    for (auto pipe = 0; pipe < usbState->totalEndpointsCount; pipe++) {
+    for (auto pipe = 0; pipe < usbState->totalPipesCount; pipe++) {
         TinyCLR_UsbClient_Close(&usbClientProvider, pipe);
     }
 

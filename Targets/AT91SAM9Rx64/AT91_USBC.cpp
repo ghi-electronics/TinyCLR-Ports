@@ -151,6 +151,8 @@
 #define USB_BULK_WMAXPACKETSIZE_EP_WRITE                    64
 #define USB_BULK_WMAXPACKETSIZE_EP_READ                     64
 
+#define USB_MAX_DATA_PACKET_SIZE    64
+
 struct AT91_UDPHS_EPT {
     volatile uint32_t	 UDPHS_EPTCFG; 	// UDPHS Endpoint Config Register
     volatile uint32_t	 UDPHS_EPTCTLENB; 	// UDPHS Endpoint Control Enable Register
@@ -217,9 +219,7 @@ struct AT91_UDPHS_EPTFIFO {
 struct AT91_UsbClientController {
     USB_CONTROLLER_STATE *usbState;
 
-    uint8_t			controlPacketBuffer[AT91_USB_ENDPOINT0_SIZE];
     uint8_t			previousDeviceState;
-    uint16_t		endpointStatus[AT91_USB_ENDPOINT_COUNT];
 
     bool			firstDescriptorPacket;
     bool			txRunning[AT91_USB_ENDPOINT_COUNT];
@@ -322,7 +322,7 @@ void AT91_UsbClient_ResetEvent(USB_CONTROLLER_STATE *usbState) {
     pUdp->UDPHS_EPT[0].UDPHS_EPTCTLENB = AT91C_UDPHS_RX_SETUP | AT91C_UDPHS_TX_PK_RDY;
 
     /* clear all flags */
-    UsbClient_ClearEvent(usbState, 0xFFFFFFFF); // clear all events on all endpoints
+    TinyCLR_UsbClient_ClearEvent(usbState, 0xFFFFFFFF); // clear all events on all endpoints
 
     for (int32_t ep = 0; ep < AT91_USB_ENDPOINT_COUNT; ep++) {
         at91_UsbClientController[usbState->controllerNum].txRunning[ep] = false;
@@ -331,7 +331,7 @@ void AT91_UsbClient_ResetEvent(USB_CONTROLLER_STATE *usbState) {
 
     usbState->deviceState = USB_DEVICE_STATE_DEFAULT;
     usbState->address = 0;
-    UsbClient_StateCallback(usbState);
+    TinyCLR_UsbClient_StateCallback(usbState);
 }
 
 void AT91_UsbClient_ResumeEvent(USB_CONTROLLER_STATE *usbState) {
@@ -347,7 +347,7 @@ void AT91_UsbClient_ResumeEvent(USB_CONTROLLER_STATE *usbState) {
 
     usbState->deviceState = at91_UsbClientController[usbState->controllerNum].previousDeviceState;
 
-    UsbClient_StateCallback(usbState);
+    TinyCLR_UsbClient_StateCallback(usbState);
 
     // Enable end of reset and suspend interrupt
     pUdp->UDPHS_IEN |= AT91C_UDPHS_ENDOFRSM;// | AT91C_UDPHS_DET_SUSPD;
@@ -362,8 +362,6 @@ void AT91_UsbClient_InterruptHandler(void *param) {
     uint32_t USB_INTR = (pUdp->UDPHS_INTSTA & pUdp->UDPHS_IEN);
     uint32_t endpoint = 0;
 
-    //TQD
-    //int32_t controller = *((int32_t*)param);
 
     USB_CONTROLLER_STATE *usbState = (USB_CONTROLLER_STATE*)param;
 
@@ -471,14 +469,14 @@ void AT91_UsbClient_VbusInterruptHandler(USB_CONTROLLER_STATE *usbState, int32_t
 
         usbState->deviceState = USB_DEVICE_STATE_ATTACHED;
 
-        UsbClient_StateCallback(usbState);
+        TinyCLR_UsbClient_StateCallback(usbState);
     }
     else // VBus Low
     {
         // clear USB Txbuffer
         for (int32_t ep = 0; ep < AT91_USB_ENDPOINT_COUNT; ep++) {
             if (usbState->isTxQueue[ep] && usbState->queues[ep] != NULL)
-                UsbClient_ClearEndpoints(ep);
+                TinyCLR_UsbClient_ClearEndpoints(usbState, ep);
         }
 
         pUdp->UDPHS_CTRL |= AT91C_UDPHS_DETACH;
@@ -488,7 +486,7 @@ void AT91_UsbClient_VbusInterruptHandler(USB_CONTROLLER_STATE *usbState, int32_t
         AT91_UsbClient_PmcDisableUsbClock();
 
         usbState->deviceState = USB_DEVICE_STATE_DETACHED;
-        UsbClient_StateCallback(usbState);
+        TinyCLR_UsbClient_StateCallback(usbState);
     }
 }
 
@@ -515,7 +513,7 @@ bool AT91_UsbClient_ProtectPins(USB_CONTROLLER_STATE *usbState, bool On) {
 
             //--//
             usbState->deviceState = USB_DEVICE_STATE_DETACHED;
-            UsbClient_StateCallback(usbState);
+            TinyCLR_UsbClient_StateCallback(usbState);
         }
 
         return true;
@@ -527,7 +525,7 @@ bool AT91_UsbClient_ProtectPins(USB_CONTROLLER_STATE *usbState, bool On) {
 void AT91_UsbClient_ClearTxQueue(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
     // it is much faster to just re-initialize the queue and it does the same thing
     if (usbState->queues[endpoint] != NULL) {
-        UsbClient_ClearEndpoints(endpoint);
+        TinyCLR_UsbClient_ClearEndpoints(usbState, endpoint);
     }
 }
 
@@ -559,7 +557,7 @@ void AT91_UsbClient_TxPacket(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
     USB_PACKET64* Packet64;
 
     for (;;) {
-        Packet64 = UsbClient_TxDequeue(usbState, endpoint);
+        Packet64 = TinyCLR_UsbClient_TxDequeue(usbState, endpoint);
 
         if (Packet64 == nullptr || Packet64->Size > 0) {
             break;
@@ -670,14 +668,14 @@ void AT91_UsbClient_EndpointIsr(USB_CONTROLLER_STATE *usbState, uint32_t endpoin
         // set up packet receive
         if (Status & AT91C_UDPHS_RX_SETUP) {
             uint8_t len = (pUdp->UDPHS_EPT[0].UDPHS_EPTSTA >> 20) & 0x7F;
-            (*(uint32_t *)(&at91_UsbClientController[usbState->controllerNum].controlPacketBuffer[0])) = pFifo->UDPHS_READEPT0[0];
-            (*(uint32_t *)(&at91_UsbClientController[usbState->controllerNum].controlPacketBuffer[4])) = pFifo->UDPHS_READEPT0[0];
+            (*(uint32_t *)(&usbState->controlEndpointBuffer[0])) = pFifo->UDPHS_READEPT0[0];
+            (*(uint32_t *)(&usbState->controlEndpointBuffer[4])) = pFifo->UDPHS_READEPT0[0];
 
             // special handling for the very first SETUP command - Getdescriptor[DeviceType], the host looks for 8 bytes data only
-            USB_SETUP_PACKET* Setup = (USB_SETUP_PACKET*)&at91_UsbClientController[usbState->controllerNum].controlPacketBuffer[0];
+            TinyCLR_UsbClient_SetupPacket* Setup = (TinyCLR_UsbClient_SetupPacket*)&usbState->controlEndpointBuffer[0];
 
 
-            if ((Setup->bRequest == USB_GET_DESCRIPTOR) && (((Setup->wValue & 0xFF00) >> 8) == USB_DEVICE_DESCRIPTOR_TYPE) && (Setup->wLength != 0x12))
+            if ((Setup->Request == USB_GET_DESCRIPTOR) && (((Setup->Value & 0xFF00) >> 8) == USB_DEVICE_DESCRIPTOR_TYPE) && (Setup->Length != 0x12))
                 at91_UsbClientController[usbState->controllerNum].firstDescriptorPacket = true;
             else
                 at91_UsbClientController[usbState->controllerNum].firstDescriptorPacket = false;
@@ -687,12 +685,12 @@ void AT91_UsbClient_EndpointIsr(USB_CONTROLLER_STATE *usbState, uint32_t endpoin
                 pUdp->UDPHS_EPT[0].UDPHS_EPTCLRSTA = AT91C_UDPHS_RX_SETUP;
 
             /* send it to the upper layer */
-            usbState->ptrData = &at91_UsbClientController[usbState->controllerNum].controlPacketBuffer[0];
+            usbState->ptrData = &usbState->controlEndpointBuffer[0];
             usbState->dataSize = len;
 
             pUdp->UDPHS_EPT[0].UDPHS_EPTCTLENB = AT91C_UDPHS_TX_PK_RDY;
 
-            uint8_t result = UsbClient_ControlCallback(usbState);
+            uint8_t result = TinyCLR_UsbClient_ControlCallback(usbState);
 
             switch (result) {
             case USB_STATE_DATA:
@@ -744,7 +742,7 @@ void AT91_UsbClient_EndpointIsr(USB_CONTROLLER_STATE *usbState, uint32_t endpoin
                 if (result == USB_STATE_CONFIGURATION) {
                     for (int32_t ep = 1; ep < AT91_USB_ENDPOINT_COUNT; ep++) {
                         if (usbState->queues[ep] && usbState->isTxQueue[ep])
-                            AT91_UsbClient_StartOutput(usbState, ep);
+                            TinyCLR_UsbClient_StartOutput(usbState, ep);
                     }
                 }
             }
@@ -772,7 +770,7 @@ void AT91_UsbClient_EndpointIsr(USB_CONTROLLER_STATE *usbState, uint32_t endpoin
             uint8_t block = len / USB_MAX_DATA_PACKET_SIZE;
             uint8_t rest = len % USB_MAX_DATA_PACKET_SIZE;
             while (block > 0) {
-                USB_PACKET64* Packet64 = UsbClient_RxEnqueue(usbState, endpoint, DisableRx);
+                USB_PACKET64* Packet64 = TinyCLR_UsbClient_RxEnqueue(usbState, endpoint, DisableRx);
                 if (!DisableRx) {
 
                     memcpy(&(Packet64->Buffer[0]), pDest, USB_MAX_DATA_PACKET_SIZE);
@@ -782,7 +780,7 @@ void AT91_UsbClient_EndpointIsr(USB_CONTROLLER_STATE *usbState, uint32_t endpoin
                 }
             }
             if ((rest > 0) && (block == 0)) {
-                USB_PACKET64* Packet64 = UsbClient_RxEnqueue(usbState, endpoint, DisableRx);
+                USB_PACKET64* Packet64 = TinyCLR_UsbClient_RxEnqueue(usbState, endpoint, DisableRx);
                 if (!DisableRx) {
                     memcpy(&(Packet64->Buffer[0]), pDest, rest);
                     pDest += rest;
@@ -797,6 +795,31 @@ void AT91_UsbClient_EndpointIsr(USB_CONTROLLER_STATE *usbState, uint32_t endpoin
                 pUdp->UDPHS_EPT[endpoint].UDPHS_EPTCTLDIS = AT91C_UDPHS_RX_BK_RDY;
             }
         }
+    }
+}
+
+const TinyCLR_Api_Info* AT91_UsbClient_GetApi() {
+    return TinyCLR_UsbClient_GetApi();
+}
+
+void AT91_UsbClient_Reset() {
+    return TinyCLR_UsbClient_Reset();
+}
+
+void AT91_UsbClient_InitializeConfiguration(USB_CONTROLLER_STATE *usbState) {
+    int32_t controller = 0;
+
+    if (usbState != nullptr) {
+        usbState->controllerNum = controller;
+
+        usbState->maxFifoPacketCount = AT91_USB_PACKET_FIFO_COUNT;
+        usbState->totalEndpointsCount = AT91_USB_ENDPOINT_COUNT;
+        usbState->totalPipesCount = AT91_USB_PIPE_COUNT;
+
+        // Update endpoint size DeviceDescriptor Configuration if device value is different to default value
+        usbState->deviceDescriptor.MaxPacketSizeEp0 = TinyCLR_UsbClient_GetEndpointSize(0);
+
+        at91_UsbClientController[controller].usbState = usbState;
     }
 }
 
@@ -822,11 +845,10 @@ bool AT91_UsbClient_Initialize(USB_CONTROLLER_STATE *usbState) {
     pUdp->UDPHS_IEN |= AT91C_UDPHS_EPT_INT_0;
     pEp->UDPHS_EPTCFG |= 0x00000043; //configuration info for control ep
 
-    for (auto pipe = 0; pipe < AT91_USB_ENDPOINT_COUNT; pipe++) {
+    for (auto pipe = 0; pipe < AT91_USB_PIPE_COUNT; pipe++) {
         auto idx = 0;
         if (usbState->pipes[pipe].RxEP != USB_ENDPOINT_NULL) {
             idx = usbState->pipes[pipe].RxEP;
-            usbState->maxPacketSize[idx] = USB_BULK_WMAXPACKETSIZE_EP_READ;
             AT91_UsbClient_EndpointAttr[idx].Dir_Type = AT91C_UDPHS_EPT_TYPE_BUL_EPT;
             AT91_UsbClient_EndpointAttr[idx].Dir_Type |= AT91C_UDPHS_EPT_DIR_OUT;
             pUdp->UDPHS_IEN |= (AT91C_UDPHS_EPT_INT_0 << idx);
@@ -834,16 +856,11 @@ bool AT91_UsbClient_Initialize(USB_CONTROLLER_STATE *usbState) {
 
         if (usbState->pipes[pipe].TxEP != USB_ENDPOINT_NULL) {
             idx = usbState->pipes[pipe].TxEP;
-            usbState->maxPacketSize[idx] = USB_BULK_WMAXPACKETSIZE_EP_WRITE;
             AT91_UsbClient_EndpointAttr[idx].Dir_Type = AT91C_UDPHS_EPT_TYPE_BUL_EPT;
             AT91_UsbClient_EndpointAttr[idx].Dir_Type |= AT91C_UDPHS_EPT_DIR_IN;
             pUdp->UDPHS_IEN |= (AT91C_UDPHS_EPT_INT_0 << idx);
         }
     }
-
-    usbState->endpointStatus = &at91_UsbClientController[usbState->controllerNum].endpointStatus[0];
-    usbState->endpointCount = AT91_USB_ENDPOINT_COUNT;
-    usbState->packetSize = AT91_UsbClient_EndpointAttr[0].Payload;
 
     usbState->firstGetDescriptor = true;
 
@@ -884,7 +901,7 @@ bool AT91_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t endpoint
 
     /* if the halt feature for this endpoint is set, then just
             clear all the characters */
-    if (at91_UsbClientController[usbState->controllerNum].endpointStatus[endpoint] & USB_STATUS_ENDPOINT_HALT) {
+    if (usbState->endpointStatus[endpoint] & USB_STATUS_ENDPOINT_HALT) {
         AT91_UsbClient_ClearTxQueue(usbState, endpoint);
         return true;
     }
@@ -912,3 +929,35 @@ bool AT91_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
 
     return true;
 }
+int8_t TinyCLR_UsbClient_GetTotalController() {
+    return AT91_TOTAL_USB_CONTROLLERS;
+}
+
+bool TinyCLR_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState) {
+    return AT91_UsbClient_Initialize(usbState);
+}
+
+bool TinyCLR_UsbClient_Uninitialize(USB_CONTROLLER_STATE* usbState) {
+    return AT91_UsbClient_Uninitialize(usbState);
+}
+
+bool TinyCLR_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
+    return AT91_UsbClient_StartOutput(usbState, endpoint);
+}
+
+bool TinyCLR_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
+    return AT91_UsbClient_RxEnable(usbState, endpoint);
+}
+
+void TinyCLR_UsbClient_Delay(uint64_t microseconds) {
+    AT91_Time_Delay(nullptr, microseconds);
+}
+
+void TinyCLR_UsbClient_InitializeConfiguration(USB_CONTROLLER_STATE *usbState) {
+    AT91_UsbClient_InitializeConfiguration(usbState);
+}
+
+uint32_t TinyCLR_UsbClient_GetEndpointSize(int32_t endpoint) {
+    return endpoint == 0 ? AT91_USB_ENDPOINT0_SIZE : AT91_USB_ENDPOINT_SIZE;
+}
+

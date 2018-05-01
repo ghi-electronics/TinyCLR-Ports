@@ -764,10 +764,6 @@ void TinyCLR_UsbClient_InitializeConfiguration(USB_CONTROLLER_STATE *usbState) {
     STM32F4_UsbClient_InitializeConfiguration(usbState);
 }
 
-uint32_t TinyCLR_UsbClient_GetEndpoint0Size() {
-    return STM32F4_USB_ENDPOINT0_SIZE;
-}
-
 uint32_t TinyCLR_UsbClient_GetEndpointSize(int32_t endpoint) {
     return endpoint == 0 ? STM32F4_USB_ENDPOINT0_SIZE : STM32F4_USB_ENDPOINT_SIZE;
 }

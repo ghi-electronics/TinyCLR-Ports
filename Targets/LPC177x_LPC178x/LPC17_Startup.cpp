@@ -35,7 +35,7 @@ void LPC17_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 #endif
 #ifdef INCLUDE_I2C
     LPC17_I2c_Reset();
-#endif    
+#endif
 #ifdef INCLUDE_PWM
     LPC17_Pwm_Reset();
 #endif
@@ -45,8 +45,8 @@ void LPC17_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 #ifdef INCLUDE_UART
     LPC17_Uart_Reset();
 #endif
-#ifdef INCLUDE_USBCLIENT 
-    UsbClient_Reset();
+#ifdef INCLUDE_USBCLIENT
+    LPC17_UsbClient_Reset();
 #endif
 }
 

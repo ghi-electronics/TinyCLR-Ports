@@ -463,9 +463,20 @@ TinyCLR_Result LPC24_Power_Release(const TinyCLR_Power_Provider* self);
 #define OTGClkCtrl (*(volatile unsigned *)0xFFE0CFF4)
 #define OTGClkSt (*(volatile unsigned *)0xFFE0CFF8)
 
-const TinyCLR_Api_Info* UsbClient_GetApi();
-void UsbClient_Reset();
+const TinyCLR_Api_Info* LPC24_UsbClient_GetApi();
+void LPC24_UsbClient_Reset();
 void LPC24_UsbClient_PinConfiguration();
+
+struct USB_PACKET64;
+struct USB_CONTROLLER_STATE;
+typedef void(*USB_NEXT_CALLBACK)(USB_CONTROLLER_STATE*);
+
+void TinyCLR_UsbClient_ClearEvent(USB_CONTROLLER_STATE *usbState, uint32_t event);
+void TinyCLR_UsbClient_ClearEndpoints(USB_CONTROLLER_STATE *usbState, int32_t endpoint);
+USB_PACKET64* TinyCLR_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* usbState, int32_t endpoint, bool& disableRx);
+USB_PACKET64* TinyCLR_UsbClient_TxDequeue(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
+void TinyCLR_UsbClient_StateCallback(USB_CONTROLLER_STATE* usbState);
+uint8_t TinyCLR_UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState);
 
 // LCD
 void LPC24_Display_Reset();
@@ -484,7 +495,7 @@ TinyCLR_Result LPC24_Display_WriteString(const TinyCLR_Display_Provider* self, c
 void LPC24_Startup_Initialize();
 void LPC24_Startup_GetHeap(uint8_t*& start, size_t& length);
 int32_t LPC24_Startup_GetDeviceId();
-void LPC24_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index);
+void LPC24_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index, const void*& configuration);
 void LPC24_Startup_GetRunApp(bool& runApp);
 
 

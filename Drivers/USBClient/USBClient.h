@@ -79,6 +79,11 @@
 #define USB_ENDPOINT_DIRECTION_OUT 0x00
 #define USB_ENDPOINT_NULL 0xFF
 
+// Endpoint type
+#define USB_ENDPOINT_ATTRIBUTE_ISOCHRONOUS 1
+#define USB_ENDPOINT_ATTRIBUTE_BULK 2
+#define USB_ENDPOINT_ATTRIBUTE_INTERRUPT 3
+
 // This version of the USB code supports only one language - which
 // is not specified by USB configuration records - it is defined here.
 // This is the String 0 descriptor.This array includes the String descriptor
@@ -195,3 +200,5 @@ bool TinyCLR_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t endpoint
 void TinyCLR_UsbClient_Delay(uint64_t microseconds);
 
 int8_t TinyCLR_UsbClient_GetTotalController();
+void TinyCLR_UsbClient_InitializeConfiguration(USB_CONTROLLER_STATE *usbState);
+uint32_t TinyCLR_UsbClient_GetEndpointSize(int32_t endpoint);

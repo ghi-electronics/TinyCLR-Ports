@@ -371,8 +371,19 @@ TinyCLR_Result LPC17_Power_Acquire(const TinyCLR_Power_Provider* self);
 TinyCLR_Result LPC17_Power_Release(const TinyCLR_Power_Provider* self);
 
 //UsbClient
-const TinyCLR_Api_Info* UsbClient_GetApi();
-void UsbClient_Reset();
+const TinyCLR_Api_Info* LPC17_UsbClient_GetApi();
+void LPC17_UsbClient_Reset();
+
+struct USB_PACKET64;
+struct USB_CONTROLLER_STATE;
+typedef void(*USB_NEXT_CALLBACK)(USB_CONTROLLER_STATE*);
+
+void TinyCLR_UsbClient_ClearEvent(USB_CONTROLLER_STATE *usbState, uint32_t event);
+void TinyCLR_UsbClient_ClearEndpoints(USB_CONTROLLER_STATE *usbState, int32_t endpoint);
+USB_PACKET64* TinyCLR_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* usbState, int32_t endpoint, bool& disableRx);
+USB_PACKET64* TinyCLR_UsbClient_TxDequeue(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
+void TinyCLR_UsbClient_StateCallback(USB_CONTROLLER_STATE* usbState);
+uint8_t TinyCLR_UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState);
 
 // LCD
 void LPC17_Display_Reset();
@@ -390,7 +401,7 @@ TinyCLR_Result LPC17_Display_WriteString(const TinyCLR_Display_Provider* self, c
 //Startup
 void LPC17_Startup_Initialize();
 void LPC17_Startup_GetHeap(uint8_t*& start, size_t& length);
-void LPC17_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index);
+void LPC17_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index, const void*& configuration);
 void LPC17_Startup_GetRunApp(bool& runApp);
 
 void LPC17_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider);
