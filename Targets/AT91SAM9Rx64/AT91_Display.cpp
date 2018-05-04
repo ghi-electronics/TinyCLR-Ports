@@ -440,10 +440,6 @@ enum AT91_LCD_Rotation {
     rotateCCW_90,
 };
 
-int64_t m_AT91_Display_ReservedVitualRamLocation[VIDEO_RAM_SIZE / 8];
-
-//static uint32_t* AT91_LCD_Screen_Buffer = (uint32_t*)0x20F00000;
-
 uint32_t m_AT91_DisplayWidth = 0;
 uint32_t m_AT91_DisplayHeight = 0;
 uint32_t m_AT91_DisplayPixelClockRateKHz = 0;
@@ -466,7 +462,9 @@ bool m_AT91_DisplayHorizontalSyncPolarity = false;
 bool m_AT91_DisplayVerticalSyncPolarity = false;
 bool m_AT91_DisplayEnable = false;
 
-uint16_t* m_AT91_Display_VituralRam;
+uint16_t* m_AT91_Display_VituralRam = nullptr;
+size_t m_AT91_DisplayBufferSize = 0;
+
 uint8_t m_AT91_Display_TextBuffer[LCD_MAX_COLUMN][LCD_MAX_ROW];
 
 AT91_LCD_Rotation m_AT91_Display_CurrentRotation = AT91_LCD_Rotation::rotateNormal_0;
@@ -638,7 +636,7 @@ bool AT91_Display_Initialize() {
     lcdc.LCDC_CTRSTCON = value;
     lcdc.LCDC_CTRSTVAL = 0xDA;
 
-    lcdc.LCDC_BA1 = (uint32_t)m_AT91_Display_ReservedVitualRamLocation;
+    lcdc.LCDC_BA1 = (uint32_t)m_AT91_Display_VituralRam;
     lcdc.LCDC_FRMCFG = (4 << 24) + (m_AT91_DisplayHeight * m_AT91_DisplayWidth * m_AT91_Display_BitsPerPixel >> 5);
 
     // Enable
@@ -794,10 +792,10 @@ void AT91_Display_TextShiftColUp() {
 }
 
 void AT91_Display_Clear() {
-    if (m_AT91_DisplayEnable == false)
+    if (m_AT91_DisplayEnable == false || m_AT91_Display_VituralRam == nullptr)
         return;
 
-    memset((uint32_t*)m_AT91_Display_VituralRam, 0, VIDEO_RAM_SIZE);
+    memset((uint32_t*)m_AT91_Display_VituralRam, 0, m_AT91_DisplayBufferSize);
 }
 
 bool  AT91_Display_SetPinConfiguration(bool enable) {
@@ -1020,7 +1018,6 @@ void AT91_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenHeig
 TinyCLR_Result AT91_Display_Acquire(const TinyCLR_Display_Provider* self) {
     m_AT91_Display_CurrentRotation = AT91_LCD_Rotation::rotateNormal_0;
 
-    m_AT91_Display_VituralRam = (uint16_t*)m_AT91_Display_ReservedVitualRamLocation;
 
     if (!AT91_Display_SetPinConfiguration(true)) {
         return TinyCLR_Result::SharingViolation;
@@ -1035,6 +1032,14 @@ TinyCLR_Result AT91_Display_Release(const TinyCLR_Display_Provider* self) {
     AT91_Display_SetPinConfiguration(false);
 
     m_AT91_DisplayEnable = false;
+
+    if (m_AT91_Display_VituralRam != nullptr) {
+        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+
+        memoryProvider->Free(memoryProvider, m_AT91_Display_VituralRam);
+
+        m_AT91_Display_VituralRam = nullptr;
+    }
 
     return TinyCLR_Result::Success;
 }
@@ -1083,6 +1088,30 @@ TinyCLR_Result AT91_Display_SetConfiguration(const TinyCLR_Display_Provider* sel
         m_AT91_DisplayVerticalSyncPulseWidth = cfg.VerticalSyncPulseWidth;
         m_AT91_DisplayVerticalFrontPorch = cfg.VerticalFrontPorch;
         m_AT91_DisplayVerticalBackPorch = cfg.VerticalBackPorch;
+
+        switch (dataFormat) {
+        case TinyCLR_Display_DataFormat::Rgb565:
+            m_AT91_DisplayBufferSize = width * height * 2;
+            break;
+
+        default:
+            // TODO 8 - 24 - 32 bits
+            break;
+        }
+
+        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+
+        if (m_AT91_Display_VituralRam != nullptr) {
+            memoryProvider->Free(memoryProvider, m_AT91_Display_VituralRam);
+
+            m_AT91_Display_VituralRam = nullptr;
+        }
+
+        m_AT91_Display_VituralRam = (uint16_t*)((uint8_t*)memoryProvider->Allocate(memoryProvider, m_AT91_DisplayBufferSize));
+
+        if (m_AT91_Display_VituralRam == nullptr) {
+            return TinyCLR_Result::OutOfMemory;
+        }
     }
 
     return  TinyCLR_Result::Success;
@@ -1113,6 +1142,8 @@ TinyCLR_Result AT91_Display_GetConfiguration(const TinyCLR_Display_Provider* sel
         cfg.VerticalSyncPulseWidth = m_AT91_DisplayVerticalSyncPulseWidth;
         cfg.VerticalFrontPorch = m_AT91_DisplayVerticalFrontPorch;
         cfg.VerticalBackPorch = m_AT91_DisplayVerticalBackPorch;
+
+        return TinyCLR_Result::Success;
     }
 
     return TinyCLR_Result::InvalidOperation;
@@ -1159,6 +1190,8 @@ const TinyCLR_Api_Info* AT91_Display_GetApi() {
     displayApi.Version = 0;
     displayApi.Count = 1;
     displayApi.Implementation = &displayProvider;
+
+    m_AT91_Display_VituralRam = nullptr;
 
     return &displayApi;
 }

@@ -18,8 +18,6 @@
 
 #include "LPC17.h"
 
-#define VIDEO_RAM_SIZE              800*600*2
-
 #define LCD_MAX_ROW	                32
 #define LCD_MAX_COLUMN              70
 
@@ -348,8 +346,6 @@ enum LPC17xx_LCD_Rotation {
     rotateCCW_90,
 };
 
-int64_t m_LPC17_Display_ReservedVitualRamLocation[VIDEO_RAM_SIZE / 8];
-
 uint32_t m_LPC17_DisplayWidth = 0;
 uint32_t m_LPC17_DisplayHeight = 0;
 uint32_t m_LPC17_DisplayPixelClockRateKHz = 0;
@@ -369,7 +365,9 @@ bool m_LPC17_DisplayHorizontalSyncPolarity = false;
 bool m_LPC17_DisplayVerticalSyncPolarity = false;
 bool m_LPC17_DisplayEnable = false;
 
-uint16_t* m_LPC17_Display_VituralRam;
+uint16_t* m_LPC17_Display_VituralRam = nullptr;
+size_t m_LPC17_DisplayBufferSize = 0;
+
 uint8_t m_LPC17_Display_TextBuffer[LCD_MAX_COLUMN][LCD_MAX_ROW];
 
 LPC17xx_LCD_Rotation m_LPC17_Display_CurrentRotation = LPC17xx_LCD_Rotation::rotateNormal_0;
@@ -445,6 +443,9 @@ bool LPC17_Display_Initialize() {
     }
 
     LPC_SC->LCD_CFG = (divider - 1);
+    
+    if (m_LPC17_Display_VituralRam == nullptr)
+        return false;
 
     LCDC.LCD_UPBASE = (uint32_t)&m_LPC17_Display_VituralRam[0];
 
@@ -608,10 +609,10 @@ void LPC17_Display_TextShiftColUp() {
 }
 
 void LPC17_Display_Clear() {
-    if (m_LPC17_DisplayEnable == false)
+    if (m_LPC17_DisplayEnable == false || m_LPC17_Display_VituralRam == nullptr)
         return;
 
-    memset((uint32_t*)m_LPC17_Display_VituralRam, 0, VIDEO_RAM_SIZE);
+    memset((uint32_t*)m_LPC17_Display_VituralRam, 0, m_LPC17_DisplayBufferSize);
 }
 
 const LPC17_Gpio_Pin g_Display_ControllerPins[] = LPC17_DISPLAY_CONTROLLER_PINS;
@@ -841,8 +842,6 @@ void LPC17_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenHei
 TinyCLR_Result LPC17_Display_Acquire(const TinyCLR_Display_Provider* self) {
     m_LPC17_Display_CurrentRotation = LPC17xx_LCD_Rotation::rotateNormal_0;
 
-    m_LPC17_Display_VituralRam = (uint16_t*)m_LPC17_Display_ReservedVitualRamLocation;
-
     if (!LPC17_Display_SetPinConfiguration(true)) {
         return TinyCLR_Result::SharingViolation;
     }
@@ -856,6 +855,14 @@ TinyCLR_Result LPC17_Display_Release(const TinyCLR_Display_Provider* self) {
     LPC17_Display_SetPinConfiguration(false);
 
     m_LPC17_DisplayEnable = false;
+    
+    if (m_LPC17_Display_VituralRam != nullptr) {
+        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+
+        memoryProvider->Free(memoryProvider, m_LPC17_Display_VituralRam);
+
+        m_LPC17_Display_VituralRam = nullptr;
+    }
 
     return TinyCLR_Result::Success;
 }
@@ -904,6 +911,30 @@ TinyCLR_Result LPC17_Display_SetConfiguration(const TinyCLR_Display_Provider* se
         m_LPC17_DisplayVerticalSyncPulseWidth = cfg.VerticalSyncPulseWidth;
         m_LPC17_DisplayVerticalFrontPorch = cfg.VerticalFrontPorch;
         m_LPC17_DisplayVerticalBackPorch = cfg.VerticalBackPorch;
+        
+        switch (dataFormat) {
+        case TinyCLR_Display_DataFormat::Rgb565:
+            m_LPC17_DisplayBufferSize = width * height * 2;
+            break;
+
+        default:
+            // TODO 8 - 24 - 32 bits
+            break;
+        }
+
+        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+
+        if (m_LPC17_Display_VituralRam != nullptr) {
+            memoryProvider->Free(memoryProvider, m_LPC17_Display_VituralRam);
+
+            m_LPC17_Display_VituralRam = nullptr;
+        }
+
+        m_LPC17_Display_VituralRam = (uint16_t*)((uint8_t*)memoryProvider->Allocate(memoryProvider, m_LPC17_DisplayBufferSize));
+
+        if (m_LPC17_Display_VituralRam == nullptr) {
+            return TinyCLR_Result::OutOfMemory;
+        }
     }
 
     return  TinyCLR_Result::Success;
@@ -934,6 +965,8 @@ TinyCLR_Result LPC17_Display_GetConfiguration(const TinyCLR_Display_Provider* se
         cfg.VerticalSyncPulseWidth = m_LPC17_DisplayVerticalSyncPulseWidth;
         cfg.VerticalFrontPorch = m_LPC17_DisplayVerticalFrontPorch;
         cfg.VerticalBackPorch = m_LPC17_DisplayVerticalBackPorch;
+        
+        return TinyCLR_Result::Success;
     }
 
     return TinyCLR_Result::InvalidOperation;
@@ -980,6 +1013,8 @@ const TinyCLR_Api_Info* LPC17_Display_GetApi() {
     displayApi.Version = 0;
     displayApi.Count = 1;
     displayApi.Implementation = &displayProvider;
+    
+    m_LPC17_Display_VituralRam = nullptr;
 
     return &displayApi;
 }
