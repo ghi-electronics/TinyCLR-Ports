@@ -1,11 +1,17 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 
-void TinyCLR_Can_ErrorReceivedIsr(const TinyCLR_Can_Provider* self, TinyCLR_Can_Error error, const TinyCLR_Interop_Provider* interopProvider) {
-    interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Can.ErrorReceived", self->Parent->Name, self->Index, (uint64_t)error, 0, 0);
+void TinyCLR_Can_ErrorReceivedIsr(const TinyCLR_Can_Provider* self, TinyCLR_Can_Error error) {
+    auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider));
+
+    if (interopProvider != nullptr)
+        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Can.ErrorReceived", self->Parent->Name, self->Index, (uint64_t)error, 0, 0);
 }
 
-void TinyCLR_Can_MessageReceivedIsr(const TinyCLR_Can_Provider* self, size_t count, const TinyCLR_Interop_Provider* interopProvider) {
-    interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Can.MessageReceived", self->Parent->Name, self->Index, (uint64_t)count, 0, 0);
+void TinyCLR_Can_MessageReceivedIsr(const TinyCLR_Can_Provider* self, size_t count) {
+    auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider));
+
+    if (interopProvider != nullptr)
+        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Can.MessageReceived", self->Parent->Name, self->Index, (uint64_t)count, 0, 0);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::NativeAcquire___VOID(const TinyCLR_Interop_MethodData md) {
@@ -21,8 +27,8 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     if (provider != nullptr) {
         if (provider->Acquire(provider) == TinyCLR_Result::Success) {
-            provider->SetMessageReceivedHandler(provider, TinyCLR_Can_MessageReceivedIsr, interop);
-            provider->SetErrorReceivedHandler(provider, TinyCLR_Can_ErrorReceivedIsr, interop);
+            provider->SetMessageReceivedHandler(provider, TinyCLR_Can_MessageReceivedIsr);
+            provider->SetErrorReceivedHandler(provider, TinyCLR_Can_ErrorReceivedIsr);
 
             return TinyCLR_Result::Success;
         }

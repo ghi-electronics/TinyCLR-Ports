@@ -595,3 +595,4 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Ser
 };
 
 extern const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices;
+extern const TinyCLR_Api_Provider* apiProvider;

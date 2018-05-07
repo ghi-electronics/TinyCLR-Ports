@@ -307,7 +307,6 @@ struct STM32F4_Can_Controller {
 
     TinyCLR_Can_ErrorReceivedHandler   errorEventHandler;
     TinyCLR_Can_MessageReceivedHandler    messageReceivedEventHandler;
-    const  TinyCLR_Interop_Provider* interopProvider;
 
     int32_t can_rx_count;
     int32_t can_rx_in;
@@ -989,25 +988,25 @@ bool CAN_ErrorHandler(uint8_t channel) {
 
     if (CAN_GetITStatus(CANx, CAN_IT_FF0)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_FF0);
-        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ReadBufferFull, canController[channel].interopProvider);
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ReadBufferFull);
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_FOV0)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_FOV0);
-        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ReadBufferOverrun, canController[channel].interopProvider);
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ReadBufferOverrun);
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_BOF)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_BOF);
-        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::BusOff, canController[channel].interopProvider);
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::BusOff);
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_EPV)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_EPV);
-        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::Passive, canController[channel].interopProvider);
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::Passive);
 
         return true;
     }
@@ -1017,13 +1016,13 @@ bool CAN_ErrorHandler(uint8_t channel) {
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_ERR)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_ERR);
-        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::Passive, canController[channel].interopProvider);
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::Passive);
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_EWG)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_EWG);
-        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::Passive, canController[channel].interopProvider);
+        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::Passive);
     }
 
     return false;
@@ -1191,7 +1190,7 @@ void STM32_Can_RxInterruptHandler(int32_t channel) {
         canController[channel].can_rx_in = 0;
     }
 
-    canController[channel].messageReceivedEventHandler(canController[channel].provider, canController[channel].can_rx_count, canController[channel].interopProvider);
+    canController[channel].messageReceivedEventHandler(canController[channel].provider, canController[channel].can_rx_count);
 
     return;
 }
@@ -1455,20 +1454,18 @@ TinyCLR_Result STM32F4_Can_GetUnreadMessageCount(const TinyCLR_Can_Provider* sel
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_SetMessageReceivedHandler(const TinyCLR_Can_Provider* self, TinyCLR_Can_MessageReceivedHandler handler, const  TinyCLR_Interop_Provider* interopProvider) {
+TinyCLR_Result STM32F4_Can_SetMessageReceivedHandler(const TinyCLR_Can_Provider* self, TinyCLR_Can_MessageReceivedHandler handler) {
     int32_t channel = self->Index;
 
     canController[channel].messageReceivedEventHandler = handler;
-    canController[channel].interopProvider = interopProvider;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_SetErrorReceivedHandler(const TinyCLR_Can_Provider* self, TinyCLR_Can_ErrorReceivedHandler handler, const  TinyCLR_Interop_Provider* interopProvider) {
+TinyCLR_Result STM32F4_Can_SetErrorReceivedHandler(const TinyCLR_Can_Provider* self, TinyCLR_Can_ErrorReceivedHandler handler) {
     int32_t channel = self->Index;
 
     canController[channel].errorEventHandler = handler;
-    canController[channel].interopProvider = interopProvider;
 
     return TinyCLR_Result::Success;
 }
