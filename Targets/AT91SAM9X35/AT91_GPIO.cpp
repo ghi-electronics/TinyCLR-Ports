@@ -108,8 +108,8 @@ void AT91_Gpio_InterruptHandler(void* param) {
             AT91_Int_State* state = &g_int_state[bitIndex + port * 32];;
 
             if (state->debounce) {
-                if ((AT91_Time_GetCurrentProcessorTicks(nullptr) - state->lastDebounceTicks) >= g_debounceTicksPin[state->pin]) {
-                    state->lastDebounceTicks = AT91_Time_GetCurrentProcessorTicks(nullptr);
+                if ((AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr)) - state->lastDebounceTicks) >= g_debounceTicksPin[state->pin]) {
+                    state->lastDebounceTicks = AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr));
                 }
                 else {
                     executeIsr = false;
@@ -145,7 +145,7 @@ TinyCLR_Result AT91_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* sel
         state->pin = (uint8_t)pin;
         state->debounce = AT91_Gpio_GetDebounceTimeout(self, pin);
         state->ISR = ISR;
-        state->lastDebounceTicks = AT91_Time_GetCurrentProcessorTicks(nullptr);
+        state->lastDebounceTicks = AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr));
 
         pioX.PIO_IER = bitmask; // Enable interrupt
     }
@@ -425,11 +425,11 @@ TinyCLR_Result AT91_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t
     return TinyCLR_Result::Success;
 }
 
-int32_t AT91_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin) {
+uint64_t AT91_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin) {
     return g_debounceTicksPin[pin];
 }
 
-TinyCLR_Result AT91_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, int64_t debounceTicks) {
+TinyCLR_Result AT91_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, uint64_t debounceTicks) {
     g_debounceTicksPin[pin] = debounceTicks;
 
     return TinyCLR_Result::Success;

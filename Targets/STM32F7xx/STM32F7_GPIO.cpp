@@ -101,8 +101,8 @@ void STM32F7_Gpio_ISR(int num)  // 0 <= num <= 15
 
     if (state->ISR) {
         if (state->debounce) {   // debounce enabled
-            if ((STM32F7_Time_GetCurrentProcessorTicks(nullptr) - state->lastDebounceTicks) >= g_debounceTicksPin[state->pin]) {
-                state->lastDebounceTicks = STM32F7_Time_GetCurrentProcessorTicks(nullptr);
+            if ((STM32F7_Time_GetTimeForProcessorTicks(nullptr, STM32F7_Time_GetCurrentProcessorTicks(nullptr)) - state->lastDebounceTicks) >= g_debounceTicksPin[state->pin]) {
+                state->lastDebounceTicks = STM32F7_Time_GetTimeForProcessorTicks(nullptr, STM32F7_Time_GetCurrentProcessorTicks(nullptr));
             }
             else {
                 executeIsr = false;
@@ -183,7 +183,7 @@ TinyCLR_Result STM32F7_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* 
         state->pin = (uint8_t)pin;
         state->debounce = STM32F7_Gpio_GetDebounceTimeout(self, pin);
         state->ISR = isr;
-        state->lastDebounceTicks = STM32F7_Time_GetCurrentProcessorTicks(nullptr);
+        state->lastDebounceTicks = STM32F7_Time_GetTimeForProcessorTicks(STM32F7_Time_GetCurrentProcessorTicks(nullptr));
 
         EXTI->RTSR &= ~bit;
         EXTI->FTSR &= ~bit;
@@ -407,18 +407,14 @@ TinyCLR_Result STM32F7_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int3
     return TinyCLR_Result::Success;
 }
 
-int32_t STM32F7_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin) {
+uint64_t STM32F7_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin) {
     return g_debounceTicksPin[pin];
 }
 
-TinyCLR_Result STM32F7_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, int64_t debounceTicks) {
+TinyCLR_Result STM32F7_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, uint64_t debounceTicks) {
     g_debounceTicksPin[pin] = debounceTicks;
 
     return TinyCLR_Result::Success;
-}
-
-int32_t AT91_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self) {
-    return AT91_Gpio_MaxPins;
 }
 
 int32_t STM32F7_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self) {
