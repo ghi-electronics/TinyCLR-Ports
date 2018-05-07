@@ -157,7 +157,7 @@ bool STM32F7_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_
 TinyCLR_Gpio_PinDriveMode STM32F7_Gpio_GetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t pin);
 TinyCLR_Result STM32F7_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
 int32_t STM32F7_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin);
-TinyCLR_Result STM32F7_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, int32_t debounceTime);
+TinyCLR_Result STM32F7_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, int64_t debounceTicks);
 TinyCLR_Result STM32F7_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler handler);
 int32_t STM32F7_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self);
 

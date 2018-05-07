@@ -50,7 +50,7 @@ static const LPC17_Gpio_PinConfiguration g_lpc17_pins[] = LPC17_GPIO_PINS;
 
 struct LPC17_Int_State {
     uint8_t                                     pin;      // pin number
-    uint32_t                                    debounce; // debounce
+    int64_t                                    debounce; // debounce
     uint64_t                                    lastDebounceTicks;
 
     const TinyCLR_Gpio_Provider*                controller; // controller
@@ -59,7 +59,7 @@ struct LPC17_Int_State {
 };
 
 static bool                     g_pinReserved[LPC17_Gpio_MaxPins];
-static uint64_t                     g_debounceTicksPin[LPC17_Gpio_MaxPins];
+static int64_t                     g_debounceTicksPin[LPC17_Gpio_MaxPins];
 static LPC17_Int_State             g_int_state[LPC17_Gpio_MaxPins]; // interrupt state
 static TinyCLR_Gpio_PinDriveMode    g_pinDriveMode[LPC17_Gpio_MaxPins];
 
@@ -411,22 +411,17 @@ TinyCLR_Result LPC17_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_
 }
 
 int32_t LPC17_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin) {
-    if (pin >= LPC17_Gpio_MaxPins || pin < 0)
-        return 0;
-
-    return LPC17_Time_GetTimeForProcessorTicks(nullptr, (uint64_t)(g_debounceTicksPin[pin])) / 10;
+    return g_debounceTicksPin[pin];
 }
 
-TinyCLR_Result LPC17_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, int32_t debounceTime) {
-    if (pin >= LPC17_Gpio_MaxPins || pin < 0)
-        return TinyCLR_Result::ArgumentOutOfRange;
+TinyCLR_Result LPC17_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, int64_t debounceTicks) {
+    g_debounceTicksPin[pin] = debounceTicks;
 
-    if (debounceTime > 0 && debounceTime < 10000) {
-        g_debounceTicksPin[pin] = (uint32_t)LPC17_Time_GetProcessorTicksForTime(nullptr, (uint64_t)debounceTime * 1000 * 10);
-        return TinyCLR_Result::Success;
-    }
+    return TinyCLR_Result::Success;
+}
 
-    return TinyCLR_Result::WrongType;
+int32_t AT91_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self) {
+    return AT91_Gpio_MaxPins;
 }
 
 int32_t LPC17_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self) {
