@@ -847,6 +847,19 @@ const void* TinyCLR_Interop_GetProvider(const TinyCLR_Interop_MethodData md, int
     return (const void*)fld.Data.Numeric->I;
 }
 
+TinyCLR_Interop_ClrValue TinyCLR_Interop_GetField(const TinyCLR_Interop_MethodData md, int32_t fieldId) {
+    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+
+    const TinyCLR_Interop_ClrObject* self;
+    TinyCLR_Interop_ClrValue fld;
+
+    interop->GetThisObject(interop, md.Stack, self);
+
+    interop->GetField(interop, self, fieldId, fld);
+
+    return fld;
+}
+
 TinyCLR_Interop_ClrValue TinyCLR_Interop_GetReturn(const TinyCLR_Interop_MethodData md) {
     auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
 
