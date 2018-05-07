@@ -97,7 +97,7 @@
 static const LPC24_Gpio_PinConfiguration g_lpc24_pins[] = LPC24_GPIO_PINS;
 struct LPC24_Int_State {
     uint8_t                                     pin;      // pin number
-    uint32_t                                    debounce; // debounce
+    int64_t                                    debounce; // debounce
     uint64_t                                    lastDebounceTicks;
 
     const TinyCLR_Gpio_Provider*                controller; // controller
@@ -106,7 +106,7 @@ struct LPC24_Int_State {
 };
 
 static bool                     g_pinReserved[LPC24_Gpio_MaxPins] __attribute__((section(".bss2.g_pinReserved")));
-static uint64_t                     g_debounceTicksPin[LPC24_Gpio_MaxPins] __attribute__((section(".bss2.g_debounceTicksPin")));
+static int64_t                     g_debounceTicksPin[LPC24_Gpio_MaxPins] __attribute__((section(".bss2.g_debounceTicksPin")));
 static LPC24_Int_State              g_int_state[LPC24_Gpio_MaxPins] __attribute__((section(".bss2.g_int_state"))); // interrupt state
 static TinyCLR_Gpio_PinDriveMode    g_pinDriveMode[LPC24_Gpio_MaxPins] __attribute__((section(".bss2.g_pinDriveMode")));
 
@@ -168,8 +168,8 @@ void LPC24_Gpio_InterruptHandler(void* param) {
             CLEAR_PIN_INTERRUPT(port, pin); // Clear this pin's IRQ
 
             if (state->debounce) {
-                if ((LPC24_Time_GetCurrentProcessorTicks(nullptr) - state->lastDebounceTicks) >= g_debounceTicksPin[state->pin]) {
-                    state->lastDebounceTicks = LPC24_Time_GetCurrentProcessorTicks(nullptr);
+                if ((LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr)) - state->lastDebounceTicks) >= g_debounceTicksPin[state->pin]) {
+                    state->lastDebounceTicks = LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr));
                 }
                 else {
                     executeIsr = false;
@@ -203,7 +203,7 @@ TinyCLR_Result LPC24_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* se
         state->pin = (uint8_t)pin;
         state->debounce = LPC24_Gpio_GetDebounceTimeout(self, pin);
         state->ISR = ISR;
-        state->lastDebounceTicks = LPC24_Time_GetCurrentProcessorTicks(nullptr);
+        state->lastDebounceTicks = LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr));
 
         SET_PIN_INTERRUPT_RISING_EDGE(GET_PORT(pin), GET_PIN(pin));
         SET_PIN_INTERRUPT_FALLING_EDGE(GET_PORT(pin), GET_PIN(pin));
@@ -435,20 +435,14 @@ TinyCLR_Result LPC24_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC24_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin) {
-    return  LPC24_Time_GetTimeForProcessorTicks(nullptr, (uint64_t)(g_debounceTicksPin[pin])) / 10;
+uint64_t LPC24_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin) {
+    return g_debounceTicksPin[pin];
 }
 
-TinyCLR_Result LPC24_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, int32_t debounceTime) {
-    if (pin >= LPC24_Gpio_MaxPins || pin < 0)
-        return TinyCLR_Result::ArgumentOutOfRange;
+TinyCLR_Result LPC24_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, uint64_t debounceTicks) {
+    g_debounceTicksPin[pin] = debounceTicks;
 
-    if (debounceTime > 0 && debounceTime < 10000) {
-        g_debounceTicksPin[pin] = LPC24_Time_MillisecondsToTicks(nullptr, (uint64_t)debounceTime);
-        return TinyCLR_Result::Success;
-    }
-
-    return TinyCLR_Result::WrongType;
+    return TinyCLR_Result::Success;
 }
 
 int32_t LPC24_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self) {
