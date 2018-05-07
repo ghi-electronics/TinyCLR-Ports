@@ -183,7 +183,7 @@ TinyCLR_Result STM32F7_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* 
         state->pin = (uint8_t)pin;
         state->debounce = STM32F7_Gpio_GetDebounceTimeout(self, pin);
         state->ISR = isr;
-        state->lastDebounceTicks = STM32F7_Time_GetTimeForProcessorTicks(STM32F7_Time_GetCurrentProcessorTicks(nullptr));
+        state->lastDebounceTicks = STM32F7_Time_GetTimeForProcessorTicks(nullptr, STM32F7_Time_GetCurrentProcessorTicks(nullptr));
 
         EXTI->RTSR &= ~bit;
         EXTI->FTSR &= ~bit;
