@@ -597,11 +597,16 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Ser
 
 extern const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices;
 extern const TinyCLR_Api_Provider* apiProvider;
-extern TinyCLR_NativeTime_Provider timeProvider;
 extern const TinyCLR_Api_Provider* apiProvider;
 
 const void* TinyCLR_Interop_GetProvider(const TinyCLR_Interop_MethodData md, int32_t fieldId);
 TinyCLR_Interop_ClrValue TinyCLR_Interop_GetReturn(const TinyCLR_Interop_MethodData md);
 TinyCLR_Interop_ClrValue TinyCLR_Interop_GetArguments(const TinyCLR_Interop_MethodData md, int32_t argIndex);
+
 uint64_t TinyCLR_Interop_CurrentTime();
+void TinyCLR_Interop_Delay(uint32_t microseconds);
+
+void TinyCLR_Interop_EnableInterrupt();
+void TinyCLR_Interop_DisableInterrupt();
+bool TinyCLR_Interop_GetStateInterrupt();
 
