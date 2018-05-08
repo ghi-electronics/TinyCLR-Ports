@@ -71,6 +71,8 @@
                           /* TIM4  */ { { PIN(B,  6), AF(2)   }, { PIN(B,  7), AF(2)   }, { PIN(B,  8), AF(2)   }, { PIN(B,  9), AF(2)   } },\
                          }
 
+#define INCLUDE_RTC
+
 #define INCLUDE_SPI
 #define STM32F4_SPI_SCLK_PINS { { PIN(B, 3), AF(5) }, { PIN(B, 13), AF(5) } }
 #define STM32F4_SPI_MISO_PINS { { PIN(B, 4), AF(5) }, { PIN(B, 14), AF(5) } }
