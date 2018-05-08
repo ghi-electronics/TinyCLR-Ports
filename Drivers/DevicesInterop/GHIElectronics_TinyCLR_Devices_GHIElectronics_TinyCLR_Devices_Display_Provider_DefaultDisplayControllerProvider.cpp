@@ -106,30 +106,32 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     size_t supportedDataFormatCount;
 
-
     auto ret = TinyCLR_Interop_GetReturn(md);
 
     auto res = provider->GetCapabilities(provider, type, supportedDataFormats, supportedDataFormatCount);
 
-    // CLR_RT_TypeDef_Index idx;
+    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
 
-    // if (res == TinyCLR_Result::Success) {
-        // if (!g_CLR_RT_TypeSystem.FindTypeDef("DisplayDataFormat", "GHIElectronics.TinyCLR.Devices.Display", idx)) {
-            // top.SetObjectReference(nullptr);
+    const TinyCLR_Interop_ClrObject* self;
 
-            // return TinyCLR_Result::UnknownFailure;
-        // }
+    TinyCLR_Interop_ClrValue arr;
+    TinyCLR_Interop_ClrTypeId idx;
 
-        // CLR_RT_HeapBlock_Array::CreateInstance(top, idx, nullptr, supportedDataFormatCount);
+    if (res == TinyCLR_Result::Success) {
+        interop->GetThisObject(interop, md.Stack, self);
 
-        // auto arr = top.Array();
+        interop->FindType(interop, "GHIElectronics.TinyCLR.Devices", "GHIElectronics.TinyCLR.Devices.Display", "DisplayDataFormat", idx);
 
-        // for (auto i = 0; i < supportedDataFormatCount; i++)
-            // *(TinyCLR_Display_DataFormat*)arr->GetElement(i) = supportedDataFormats[i];
-    // }
+        auto top = TinyCLR_Interop_GetReturn(md);
 
-    while (1) {
-        // TODO
+        interop->GetField(interop, top.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_DisplayControllerSettings::FIELD___DataFormat__BackingField___GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat, arr);
+
+        interop->CreateArray(interop, supportedDataFormatCount, idx, arr);
+
+        auto p = (TinyCLR_Display_DataFormat*)(arr.Data.SzArray.Data);
+
+        for (auto i = 0; i < supportedDataFormatCount; i++)
+            p[i] = supportedDataFormats[i];
     }
 
     return res;
