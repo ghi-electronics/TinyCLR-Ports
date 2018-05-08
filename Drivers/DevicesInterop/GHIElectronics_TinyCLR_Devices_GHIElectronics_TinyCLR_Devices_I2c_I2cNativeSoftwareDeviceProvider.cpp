@@ -1,15 +1,10 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 
-#include <TinyCLR_Interop.h>
-#include <TinyCLR_Runtime.h>
-#include "../InteropExtensions.h"
-
 #define TIMEOUT_COUNTER 10
 
-// Standard speed = 100KHz = 10us / 2 = 5
 #define I2C_STANDARD_SPEED_US 5
 
-#define I2CDELAY(x) TinyCLR_Time_Delay(x)
+#define I2CDELAY(x) TinyCLR_Interop_Delay(x)
 
 #define ClearSCL() MakePinOutput(softwareI2cConfig->scl)
 #define ClearSDA() MakePinOutput(softwareI2cConfig->sda)
@@ -43,38 +38,37 @@ bool softwareI2cStart;
 static const TinyCLR_Gpio_Provider* provider = nullptr;
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_I2cNativeSoftwareDeviceProvider::NativeWriteRead___STATIC___BOOLEAN__I4__I4__U1__BOOLEAN__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_U4(const TinyCLR_Interop_MethodData md) {
-    LIB_TC_HEADER();
+    auto agr0 = TinyCLR_Interop_GetArguments(md, 0);
+    auto agr1 = TinyCLR_Interop_GetArguments(md, 1);
+    auto agr2 = TinyCLR_Interop_GetArguments(md, 2);
+    auto agr3 = TinyCLR_Interop_GetArguments(md, 3);
+    auto agr4 = TinyCLR_Interop_GetArguments(md, 4);
+    auto agr5 = TinyCLR_Interop_GetArguments(md, 5);
+    auto agr6 = TinyCLR_Interop_GetArguments(md, 6);
+    auto agr7 = TinyCLR_Interop_GetArguments(md, 7);
+    auto agr8 = TinyCLR_Interop_GetArguments(md, 8);
+    auto agr9 = TinyCLR_Interop_GetArguments(md, 9);
+    auto agr10 = TinyCLR_Interop_GetArguments(md, 10);
+    auto agr11 = TinyCLR_Interop_GetArguments(md, 11);
 
-    auto agr0 = TinyCLR_Interop_GetArguments(md,0);
-    auto agr1 = TinyCLR_Interop_GetArguments(md,1);
-    auto agr2 = TinyCLR_Interop_GetArguments(md,2);
-    auto agr3 = TinyCLR_Interop_GetArguments(md,3);
-    auto agr4 = TinyCLR_Interop_GetArguments(md,4);
-    auto agr5 = TinyCLR_Interop_GetArguments(md,5);
-    auto agr6 = TinyCLR_Interop_GetArguments(md,6);
-    auto agr7 = TinyCLR_Interop_GetArguments(md,7);
-    auto agr8 = TinyCLR_Interop_GetArguments(md,8);
-    auto agr9 = TinyCLR_Interop_GetArguments(md,9);
-    auto agr10 = TinyCLR_Interop_GetArguments(md,10);
-    auto agr11 = TinyCLR_Interop_GetArguments(md,11);
-    
     int32_t scl = agr0.Data.Numeric->I4;
     int32_t sda = agr1.Data.Numeric->I4;
 
-    uint8_t address = md.Stack.Arg2().NumericByRef().u1;
+    uint8_t address = agr2.Data.Numeric->U1;
 
     bool useSoftwarePullups = agr3.Data.Numeric->I1 != 0;
 
-    CLR_RT_HeapBlock_Array* writeBuffer = md.Stack.Arg4().DereferenceArray();
+    uint8_t* writeBuffer = (uint8_t*)agr4.Data.SzArray.Data;
+
     int32_t writeOffset = agr5.Data.Numeric->I4;
     int32_t writeLength = agr6.Data.Numeric->I4;
 
-    CLR_RT_HeapBlock_Array* readBuffer = md.Stack.Arg7().DereferenceArray();
+    uint8_t* readBuffer = (uint8_t*)agr7.Data.SzArray.Data;
     int32_t readOffset = agr8.Data.Numeric->I4;
     int32_t readLength = agr9.Data.Numeric->I4;
 
-    CLR_RT_HeapBlock& writtenRef = md.Stack.ArgN(10);
-    CLR_RT_HeapBlock& readRef = md.Stack.ArgN(11);
+    int32_t& writtenRef = agr10.Data.Numeric->I4;
+    int32_t& readRef = agr11.Data.Numeric->I4;
 
     uint32_t written = 0;
     uint32_t read = 0;
@@ -85,17 +79,17 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     SoftwareI2CConfig i2c;
 
     TinyCLR_Interop_ClrValue ret;
-    
+
     auto prov = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
 
-    if (prov == nullptr || (provider == nullptr && (provider = GetNativeGpioController()) == nullptr))
-        LIB_TC_SET_AND_LEAVE(CLR_E_FAIL);
+    if (prov == nullptr || (provider == nullptr && (provider = (const TinyCLR_Gpio_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider)) == nullptr))
+        return TinyCLR_Result::ArgumentNull;
 
     if (writeBuffer != NULL)
-        dataWrite = writeBuffer->GetFirstElement();
+        dataWrite = writeBuffer;
 
     if (readBuffer != NULL)
-        dataRead = readBuffer->GetFirstElement();
+        dataRead = readBuffer;
 
     i2c.scl = scl;
     i2c.sda = sda;
@@ -107,10 +101,10 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     ret.Data.Numeric->Boolean = SoftwareI2C_WriteRead(&i2c, dataWrite + writeOffset, writeLength, dataRead + readOffset, readLength, &written, &read);
 
-    writtenRef.Dereference()->SetInteger(written);
-    readRef.Dereference()->SetInteger(read);
+    writtenRef = written;
+    readRef = read;
 
-    LIB_TC_NOCLEANUP();
+    return TinyCLR_Result::Success;
 }
 
 bool SoftwareI2C_WriteRead(SoftwareI2CConfig *i2c, uint8_t *writeBuffer, uint32_t writeLength, uint8_t *readBuffer, uint32_t readLength, uint32_t *numWritten, uint32_t *numRead) {
@@ -200,7 +194,7 @@ bool ReadBit() {
         // How long have we been stuck in the while loop?
         //if (Utility.GetMachineTime().Ticks >= endStretch)
         //    throw new TimeOutException();    // Too long, so bail out by throwing an exception.
-        TinyCLR_Time_Delay(1); // 1 microsecond;
+        TinyCLR_Interop_Delay(1); // 1 microsecond;
         endStretch++;
     }
     // At this point, SCL is high and SDA is valid - so read the bit.
@@ -228,7 +222,7 @@ bool WriteBit(bool bit) {
         // How long have we been stuck in the while loop?
         //if (Utility.GetMachineTime().Ticks >= endStretch)
         //   throw new TimeOutException();    // Too long, so bail out by throwing an exception.
-        TinyCLR_Time_Delay(1); // 1 microsecond;
+        TinyCLR_Interop_Delay(1); // 1 microsecond;
         endStretch++;
     }
     // SCL is high and SDA is valid ...
@@ -256,7 +250,7 @@ bool SendStartCondition() {
             // How long have we been stuck in the while loop?
             //if (Utility.GetMachineTime().Ticks >= endStretch)
             //throw new TimeOutException();    // Too long, so bail out by throwing an exception.
-            TinyCLR_Time_Delay(1); // 1 microsecond;
+            TinyCLR_Interop_Delay(1); // 1 microsecond;
             endStretch++;
         }
     }
@@ -287,7 +281,7 @@ bool SendStopCondition() {
         // How long have we been stuck in the while loop?
         //if (Utility.GetMachineTime().Ticks >= endStretch)
         //    throw new TimeOutException();    // Too long, so bail out by throwing an exception.
-        TinyCLR_Time_Delay(1); // 1 microsecond;
+        TinyCLR_Interop_Delay(1); // 1 microsecond;
         endStretch++;
 
     }
