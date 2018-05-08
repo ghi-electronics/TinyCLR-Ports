@@ -1,45 +1,50 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_SpiBusInfo::ctor___VOID__I(const TinyCLR_Interop_MethodData md) {
-
-    //auto provider = (const TinyCLR_Spi_Provider*)md.Stack.Arg1().NumericByRefConst().s4;
-
     auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
 
     auto provider = (const TinyCLR_Spi_Provider*)arg1.Data.Numeric->I4;
 
-    while (1); // TODO
+    auto thisObject = TinyCLR_Interop_GetFieldInMethodData(md, 0);
 
-    // CLR_RT_HeapBlock* pThis = md.Stack.This();
+    if (thisObject.Object == nullptr)
+        return TinyCLR_Result::NullReference;
 
-    // LIB_TC_FAULT_ON_NULL(pThis);
+    if (provider == nullptr)
+        return TinyCLR_Result::ArgumentNull;
 
+    {
+        auto minClock = TinyCLR_Interop_GetFieldInObject(md, thisObject.Object, FIELD___MinClockFrequency__BackingField___I4);
+        auto maxClock = TinyCLR_Interop_GetFieldInObject(md, thisObject.Object, FIELD___MaxClockFrequency__BackingField___I4);
+        auto chipselectLineCount = TinyCLR_Interop_GetFieldInObject(md, thisObject.Object, FIELD___ChipSelectLineCount__BackingField___I4);
 
-    // if (provider == nullptr)
-        // return TinyCLR_Result::ArgumentNull;
+        minClock.Data.Numeric->I4 = provider->GetMinClockFrequency(provider);
+        maxClock.Data.Numeric->I4 = provider->GetMaxClockFrequency(provider);
+        chipselectLineCount.Data.Numeric->I4 = provider->GetChipSelectLineCount(provider);
 
-    // {
-        // pThis[FIELD___MinClockFrequency__BackingField___I4].NumericByRef().s4 = provider->GetMinClockFrequency(provider);
-        // pThis[FIELD___MaxClockFrequency__BackingField___I4].NumericByRef().s4 = provider->GetMaxClockFrequency(provider);
-        // pThis[FIELD___ChipSelectLineCount__BackingField___I4].NumericByRef().s4 = provider->GetChipSelectLineCount(provider);
+        int32_t ptr[10];
+        size_t ptrLen = 10;
 
-        // int32_t ptr[10];
-        // size_t ptrLen = 10;
+        provider->GetSupportedDataBitLengths(provider, ptr, ptrLen);
 
-        // provider->GetSupportedDataBitLengths(provider, ptr, ptrLen);
+        auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
 
-        // auto& hb = pThis[FIELD___SupportedDataBitLengths__BackingField___SZARRAY_I4];
+        const TinyCLR_Interop_ClrObject* self;
 
-        // hb.SetObjectReference(nullptr);
+        TinyCLR_Interop_ClrValue arr;
+        TinyCLR_Interop_ClrTypeId idx;
 
-        // LIB_TC_CHECK_HRESULT(CLR_RT_HeapBlock_Array::CreateInstance(hb, ptrLen, g_CLR_RT_WellKnownTypes.m_Int32));
-        // {
-            // auto p = reinterpret_cast<int32_t*>(hb.DereferenceArray()->GetFirstElement());
+        interop->GetThisObject(interop, md.Stack, self);
+        interop->FindType(interop, "mscorlib", "System", "Int32", idx);
+        interop->GetField(interop, self, FIELD___SupportedDataBitLengths__BackingField___SZARRAY_I4, arr);
 
-            // for (auto i = 0; i < ptrLen; i++)
-                // p[i] = ptr[i];
-        // }
-    // }
+        interop->CreateArray(interop, ptrLen, idx, arr);
+
+        auto p = reinterpret_cast<int32_t*>(arr.Data.SzArray.Data);
+        for (auto i = 0; i < ptrLen; i++)
+            p[i] = ptr[i];
+
+    }
 
     return TinyCLR_Result::Success;
 }
