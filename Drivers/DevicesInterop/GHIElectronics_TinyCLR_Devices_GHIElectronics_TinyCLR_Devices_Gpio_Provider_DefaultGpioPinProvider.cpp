@@ -158,7 +158,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     fld = TinyCLR_Interop_GetField(md, FIELD___m_pinNumber___I4);
 
-    portId = arg.Data.Numeric->U4;
+    portId = fld.Data.Numeric->U4;
 
     switch (driveMode) {
     case TinyCLR_Gpio_PinDriveMode::Output:
