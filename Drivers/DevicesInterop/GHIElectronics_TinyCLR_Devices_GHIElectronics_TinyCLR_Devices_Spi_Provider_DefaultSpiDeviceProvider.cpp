@@ -15,7 +15,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     if (provider == nullptr) return TinyCLR_Result::ArgumentNull;
 
-    auto fld = TinyCLR_Interop_GetField(md, FIELD___m_disposed___BOOLEAN);
+    auto fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_disposed___BOOLEAN);
 
     if (fld.Data.Numeric->I1 != 0) {
         return TinyCLR_Result::Disposed;
@@ -69,7 +69,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     if (provider == nullptr) return TinyCLR_Result::ArgumentNull;
 
-    auto fld = TinyCLR_Interop_GetField(md, FIELD___m_disposed___BOOLEAN);
+    auto fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_disposed___BOOLEAN);
 
     if (fld.Data.Numeric->I1 != 0) {
         return TinyCLR_Result::Disposed;
@@ -120,7 +120,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     if (provider == nullptr) return TinyCLR_Result::ArgumentNull;
 
-    auto fld = TinyCLR_Interop_GetField(md, FIELD___m_disposed___BOOLEAN);
+    auto fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_disposed___BOOLEAN);
 
     if (fld.Data.Numeric->I1 != 0) {
         return TinyCLR_Result::Disposed;
@@ -165,7 +165,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     if (provider == nullptr) return TinyCLR_Result::ArgumentNull;
 
-    auto fld = TinyCLR_Interop_GetField(md, FIELD___m_disposed___BOOLEAN);
+    auto fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_disposed___BOOLEAN);
 
     if (fld.Data.Numeric->I1 != 0) {
         return TinyCLR_Result::Disposed;

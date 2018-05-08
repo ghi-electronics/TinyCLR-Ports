@@ -22,13 +22,13 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     TinyCLR_Interop_ClrValue fld;
 
-    fld = TinyCLR_Interop_GetField(md, FIELD___m_disposed___BOOLEAN);
+    fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_disposed___BOOLEAN);
 
     if (fld.Data.Numeric->I1 != 0) {
         return TinyCLR_Result::Disposed;
     }
 
-    fld = TinyCLR_Interop_GetField(md, FIELD___m_pinNumber___I4);
+    fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_pinNumber___I4);
 
     pin = fld.Data.Numeric->U4;
 
@@ -54,7 +54,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     TinyCLR_Interop_ClrValue fld;
 
-    fld = TinyCLR_Interop_GetField(md, FIELD___m_disposed___BOOLEAN);
+    fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_disposed___BOOLEAN);
 
     if (fld.Data.Numeric->I1 != 0) {
         return TinyCLR_Result::Disposed;
@@ -64,7 +64,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     value = (int64_t)arg.Data.Numeric->I8 / TIME_CONVERSION__TO_MILLISECONDS;
 
-    fld = TinyCLR_Interop_GetField(md, FIELD___m_pinNumber___I4);
+    fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_pinNumber___I4);
 
     pin = fld.Data.Numeric->U4;
 
@@ -83,7 +83,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     TinyCLR_Interop_ClrValue fld;
 
-    fld = TinyCLR_Interop_GetField(md, FIELD___m_disposed___BOOLEAN);
+    fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_disposed___BOOLEAN);
 
     if (fld.Data.Numeric->I1 != 0) {
         return TinyCLR_Result::Disposed;
@@ -91,7 +91,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     TinyCLR_Gpio_PinValue value;
 
-    fld = TinyCLR_Interop_GetField(md, FIELD___m_pinNumber___I4);
+    fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_pinNumber___I4);
 
     provider->Read(provider, fld.Data.Numeric->U4, value);
 
@@ -110,25 +110,25 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     TinyCLR_Interop_ClrValue fld;
 
-    fld = TinyCLR_Interop_GetField(md, FIELD___m_disposed___BOOLEAN);
+    fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_disposed___BOOLEAN);
 
     if (fld.Data.Numeric->I1 != 0) {
         return TinyCLR_Result::Disposed;
     }
 
-    fld = TinyCLR_Interop_GetField(md, FIELD___m_lastOutputValue___GHIElectronicsTinyCLRDevicesGpioProviderProviderGpioPinValue);
+    fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_lastOutputValue___GHIElectronicsTinyCLRDevicesGpioProviderProviderGpioPinValue);
 
     auto arg = TinyCLR_Interop_GetArguments(md, 1);
 
     fld.Data.Numeric->I4 = arg.Data.Numeric->I4;
 
-    fld = TinyCLR_Interop_GetField(md, FIELD___m_driveMode___GHIElectronicsTinyCLRDevicesGpioProviderProviderGpioPinDriveMode);
+    fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_driveMode___GHIElectronicsTinyCLRDevicesGpioProviderProviderGpioPinDriveMode);
 
     auto pinDriveMode = (TinyCLR_Gpio_PinDriveMode)fld.Data.Numeric->I4;
 
     // If the current drive mode is set to output, write the value to the pin.
     if (pinDriveMode == TinyCLR_Gpio_PinDriveMode::Output) {
-        fld = TinyCLR_Interop_GetField(md, FIELD___m_pinNumber___I4);
+        fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_pinNumber___I4);
 
         provider->Write(provider, fld.Data.Numeric->I4, arg.Data.Numeric->I4 ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
     }
@@ -156,7 +156,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     TinyCLR_Interop_ClrValue fld;
 
-    fld = TinyCLR_Interop_GetField(md, FIELD___m_pinNumber___I4);
+    fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_pinNumber___I4);
 
     portId = fld.Data.Numeric->U4;
 
@@ -187,7 +187,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
         goto SetIsr;
 
     SetIsr:
-        fld = TinyCLR_Interop_GetField(md, FIELD___m_callbacks___GHIElectronicsTinyCLRDevicesGpioProviderGpioPinProviderValueChangedEventHandler);
+        fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_callbacks___GHIElectronicsTinyCLRDevicesGpioProviderGpioPinProviderValueChangedEventHandler);
         provider->SetValueChangedHandler(provider, portId, fld.Object != NULL ? IsrProcedure : nullptr);
 
         break;

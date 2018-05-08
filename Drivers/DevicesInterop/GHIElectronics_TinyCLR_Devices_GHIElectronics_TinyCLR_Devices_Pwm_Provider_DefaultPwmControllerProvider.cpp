@@ -108,7 +108,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::SetDesiredFrequency___R8__R8(const TinyCLR_Interop_MethodData md) {
     auto provider = (const TinyCLR_Pwm_Provider*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___nativeProvider___I);
 
-    auto fld = TinyCLR_Interop_GetField(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___ActualFrequency__BackingField___R8);
+    auto fld = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___ActualFrequency__BackingField___R8);
 
     auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
 
