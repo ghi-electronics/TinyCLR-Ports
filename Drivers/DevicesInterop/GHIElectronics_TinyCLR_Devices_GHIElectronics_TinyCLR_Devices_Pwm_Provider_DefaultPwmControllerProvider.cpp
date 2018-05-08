@@ -32,7 +32,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto ret = TinyCLR_Interop_GetReturn(md);
 
-    ret.Data.Numeric->I8 = provider->GetMaxFrequency(provider);
+    ret.Data.Numeric->R8 = provider->GetMaxFrequency(provider);
 
     return TinyCLR_Result::Success;
 }
@@ -42,7 +42,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto ret = TinyCLR_Interop_GetReturn(md);
 
-    ret.Data.Numeric->I8 = provider->GetMinFrequency(provider);
+    ret.Data.Numeric->R8 = provider->GetMinFrequency(provider);
 
     return TinyCLR_Result::Success;
 }
@@ -52,7 +52,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto ret = TinyCLR_Interop_GetReturn(md);
 
-    ret.Data.Numeric->I8 = provider->GetPinCount(provider);
+    ret.Data.Numeric->I4 = provider->GetPinCount(provider);
 
     return TinyCLR_Result::Success;
 }
@@ -62,7 +62,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
 
-    auto pinNumber = arg1.Data.Numeric->U4;
+    auto pinNumber = arg1.Data.Numeric->I4;
 
     provider->DisablePin(provider, pinNumber);
 
@@ -74,7 +74,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
 
-    auto pinNumber = arg1.Data.Numeric->U4;
+    auto pinNumber = arg1.Data.Numeric->I4;
 
     provider->EnablePin(provider, pinNumber);
 
@@ -86,7 +86,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
 
-    auto pinNumber = arg1.Data.Numeric->U4;
+    auto pinNumber = arg1.Data.Numeric->I4;
 
     provider->AcquirePin(provider, pinNumber);
 
@@ -98,7 +98,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
 
-    auto pinNumber = arg1.Data.Numeric->U4;
+    auto pinNumber = arg1.Data.Numeric->I4;
 
     provider->ReleasePin(provider, pinNumber);
 
@@ -112,7 +112,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
 
-    double desiredFrequency = arg1.Data.Numeric->I8;
+    double desiredFrequency = arg1.Data.Numeric->R8;
 
     provider->SetDesiredFrequency(provider, desiredFrequency);
 
