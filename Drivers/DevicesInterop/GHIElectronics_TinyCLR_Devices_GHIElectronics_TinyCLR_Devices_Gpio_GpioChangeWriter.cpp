@@ -1,5 +1,7 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 
+#include <string.h>
+
 struct GpioChangeWriter {
     // Helper Functions to access fields of managed object
     static uint32_t& Get_pin(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioChangeWriter::FIELD___pin___U4, val); return val.Data.Numeric->U4; }
@@ -31,7 +33,6 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
             ret.Data.Numeric->I1 = GpioChangeWriter::NativeConstructor(provider, self, param1.Data.Numeric->I1, result);
 
-
         }
     }
     return result;
@@ -49,7 +50,6 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
             provider->GetThisObject(provider, md.Stack, self);
 
             GpioChangeWriter::NativeDispose(provider, self, result);
-
 
         }
     }
@@ -70,7 +70,6 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
             ret.Data.Numeric->I1 = GpioChangeWriter::NativeIsActive(provider, self, result);
 
-
         }
     }
     return result;
@@ -89,7 +88,6 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
             provider->GetArgument(provider, md.Stack, 1, param1);
 
             GpioChangeWriter::NativeSet(provider, self, param1.Data.Numeric->I1, result);
-
 
         }
     }
@@ -154,19 +152,18 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return result;
 }
 
-/*
+
 struct OC {
     uint32_t *buffer;
     uint32_t BUFFER_MAX_SIZE;
     uint32_t bufferIndex;
     uint32_t bufferSize;
-    GPIO_PIN pin;
-    HAL_COMPLETION completion;
+    uint32_t pin;
     uint8_t repeat;
     uint8_t currentState;
     uint8_t isActive;
 };
-*/
+
 #define COMPLETION_LATENCY_SCHED_TIME	100
 volatile int32_t completionLatency;
 int32_t carrierFrequency_hz_latency = -1;
@@ -182,119 +179,91 @@ void CompletionLatencyIsr(void* arg) {
 }
 
 void ComputeCompletionLatency() {
-    /*
-        // compute completion latency
-        if (TinyCLR_Interop_GetStateInterrupt()) // must be on!
+
+    // compute completion latency
+    if (TinyCLR_Interop_GetStateInterrupt()) // must be on!
+    {
+        uint64_t start, end;
+        uint32_t getTimeLatency;
+
+        // Get time latency
         {
-            uint64_t start, end;
-            uint32_t getTimeLatency;
-
-            // Get time latency
-            {
-                //GLOBAL_LOCK(irq);
-                start = TinyCLR_Interop_CurrentTime() / 10;
-                end = TinyCLR_Interop_CurrentTime() / 10;
-                getTimeLatency = end - start;
-            }
-
-            // completion latency
-            HAL_COMPLETION completion;
-            completion.InitializeForISR(CompletionLatencyIsr, &start);
-            {
-                //GLOBAL_LOCK(irq);
-                start = TinyCLR_Interop_CurrentTime() / 10;
-                completion.EnqueueDelta(COMPLETION_LATENCY_SCHED_TIME);
-                completionLatency = -1;
-            }
-
-            while (completionLatency == -1)
-                ;
-
-            completionLatency -= getTimeLatency + COMPLETION_LATENCY_SCHED_TIME;
-            if (completionLatency < 0)
-                completionLatency = 0;
+            //DISABLE_INTERRUPTS_SCOPED(irq);
+            start = TinyCLR_Interop_CurrentTime() / 10;
+            end = TinyCLR_Interop_CurrentTime() / 10;
+            getTimeLatency = end - start;
         }
-        else {
+
+
+        completionLatency -= getTimeLatency + COMPLETION_LATENCY_SCHED_TIME;
+        if (completionLatency < 0)
             completionLatency = 0;
-        }
-        */
+    }
+    else {
+        completionLatency = 0;
+    }
+
 }
 
 void OC_ISR(void* arg) {
-    /*
-        OC *oc = (OC*)arg;
-
-        oc->currentState = !oc->currentState;
-        gpioProvider->Write(gpioProvider, (int32_t)oc->pin, oc->currentState ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
-
-        oc->bufferIndex++;
-
-        if (oc->bufferIndex < oc->bufferSize) {
-            oc->completion.EnqueueDelta(oc->buffer[oc->bufferIndex]);
-        }
-        else if (oc->repeat) {
-            oc->bufferIndex = 0;
-            oc->completion.EnqueueDelta(oc->buffer[oc->bufferIndex]);
-        }
-        else
-            oc->isActive = FALSE;
-            */
+    // TODO
 }
 
 void GpioChangeWriter::NativeDispose(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self, TinyCLR_Result& result) {
 
-    /*   GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
-        OC *oc = (OC*)Get_nativePointer(provider, self);
-        if (!oc)
-            return;
+    OC *oc = (OC*)Get_nativePointer(provider, self);
+    if (!oc)
+        return;
 
-        if (oc->completion.IsLinked())
-            oc->completion.Abort();
+    gpioProvider->SetDriveMode(gpioProvider, (int32_t)oc->pin, TinyCLR_Gpio_PinDriveMode::InputPullUp);
+    gpioProvider->ReleasePin(gpioProvider, (int32_t)oc->pin);
 
-        gpioProvider->SetDriveMode(gpioProvider, (int32_t)oc->pin, TinyCLR_Gpio_PinDriveMode::InputPullUp);
-        gpioProvider->ReleasePin(gpioProvider, (int32_t)oc->pin);
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-        if (oc->buffer)
-            private_free(oc->buffer);
+    if (oc->buffer != nullptr)
+        memoryProvider->Free(memoryProvider, oc->buffer);
 
-        private_free(oc);
+    memoryProvider->Free(memoryProvider, oc);
 
-        oc = NULL;
-        */
+    oc = nullptr;
+
 }
 
 int8_t GpioChangeWriter::NativeIsActive(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self, TinyCLR_Result& result) {
+    result = TinyCLR_Result::Success;
 
-    /*if (Get_disposed(provider, self)) {
-        hr = CLR_E_OBJECT_DISPOSED;
-        return FALSE;
+    if (Get_disposed(provider, self)) {
+        result = TinyCLR_Result::Disposed;
+        return false;
     }
 
     OC *oc = (OC*)Get_nativePointer(provider, self);
+
     if (!oc) {
         result = TinyCLR_Result::ArgumentNull;
-        return FALSE;
+        return false;
     }
 
     return oc->isActive;
-    */
 }
 
 int8_t GpioChangeWriter::NativeConstructor(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self, int8_t param1, TinyCLR_Result& result) {
 
-    /*uint8_t param0 = Get_pin(provider, self);
+    uint8_t param0 = Get_pin(provider, self);
 
-    OC *oc = (OC*)private_malloc(sizeof(OC));
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+
+    OC *oc = (OC*)memoryProvider->Allocate(memoryProvider, sizeof(OC));
 
     if (!oc) {
-        private_free(oc);
-        hr = CLR_E_OUT_OF_MEMORY;
+        result = TinyCLR_Result::OutOfMemory;
         return 0;
     }
 
-    if (gpioProvider == nullptr && (gpioProvider = GetNativeGpioController()) == nullptr) {
-        hr = CLR_E_FAIL;
+    if (gpioProvider == nullptr && (gpioProvider = (const TinyCLR_Gpio_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider)) == nullptr) {
+        result = TinyCLR_Result::InvalidOperation;
         return 0;
     }
 
@@ -304,17 +273,16 @@ int8_t GpioChangeWriter::NativeConstructor(const TinyCLR_Interop_Provider* provi
     gpioProvider->Write(gpioProvider, (int32_t)param0, param1 ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
 
     oc->pin = param0;
-    oc->buffer = NULL;
+    oc->buffer = nullptr;
     oc->bufferSize = 0;
-    oc->completion.InitializeForISR(OC_ISR, oc);
-    oc->isActive = FALSE;
+    oc->isActive = false;
 
     Get_nativePointer(provider, self) = (uint32_t)oc;
-    Get_disposed(provider, self) = FALSE;
+    Get_disposed(provider, self) = false;
 
     // calculate carrierFrequency_hz_latency
     if (carrierFrequency_hz_latency == -1) {
-        GLOBAL_LOCK(irq);
+        DISABLE_INTERRUPTS_SCOPED(irq);
 
         uint64_t start, end, a;
 
@@ -337,40 +305,38 @@ int8_t GpioChangeWriter::NativeConstructor(const TinyCLR_Interop_Provider* provi
         else
             carrierFrequency_hz_latency /= 10;
     }
-*/
+
     return 1;
 }
 
 void GpioChangeWriter::NativeSet(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self, int8_t param0, TinyCLR_Result& result) {
 
-    /*   GLOBAL_LOCK(irq);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
-        if (Get_disposed(provider, self)) {
-            hr = CLR_E_OBJECT_DISPOSED;
-            return;
-        }
+    if (Get_disposed(provider, self)) {
+        result = TinyCLR_Result::Disposed;
+        return;
+    }
 
-        OC *oc = (OC*)Get_nativePointer(provider, self);
-        if (!oc) {
-            result = TinyCLR_Result::ArgumentNull;
-            return;
-        }
+    OC *oc = (OC*)Get_nativePointer(provider, self);
 
-        if (oc->completion.IsLinked())
-            oc->completion.Abort();
+    if (!oc) {
+        result = TinyCLR_Result::ArgumentNull;
+        return;
+    }
 
-        oc->isActive = FALSE;
+    oc->isActive = false;
 
-        gpioProvider->Write(gpioProvider, (int32_t)oc->pin, param0 ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
-        */
+    gpioProvider->Write(gpioProvider, (int32_t)oc->pin, param0 ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+
 }
 
 int8_t GpioChangeWriter::NativeSet(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self, int8_t param0, TinyCLR_Interop_ClrValue::SzArrayType& param1, int32_t param2, int32_t param3, int8_t param4, TinyCLR_Result& result) {
-    /*
-    GLOBAL_LOCK(irq);
+
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (Get_disposed(provider, self)) {
-        hr = CLR_E_OBJECT_DISPOSED;
+        result = TinyCLR_Result::Disposed;
         return 0;
     }
 
@@ -380,23 +346,22 @@ int8_t GpioChangeWriter::NativeSet(const TinyCLR_Interop_Provider* provider, con
     }
 
     OC *oc = (OC*)Get_nativePointer(provider, self);
+
     if (!oc) {
         result = TinyCLR_Result::ArgumentNull;
         return 0;
     }
 
-    if (oc->completion.IsLinked())
-        oc->completion.Abort();
-
-
-    oc->isActive = FALSE;
+    oc->isActive = false;
 
     // is there data??
-    if (param3) {
-        if (oc->buffer)
-            private_free(oc->buffer);
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-        oc->buffer = (uint32_t*)private_malloc(sizeof(uint32_t) * param3);
+    if (param3) {
+        if (oc->buffer != nullptr)
+            memoryProvider->Free(memoryProvider, oc->buffer);
+
+        oc->buffer = (uint32_t*)memoryProvider->Allocate(memoryProvider, sizeof(uint32_t) * param3);
 
         if (!oc->buffer)
             return 0;
@@ -407,7 +372,7 @@ int8_t GpioChangeWriter::NativeSet(const TinyCLR_Interop_Provider* provider, con
         oc->bufferSize = param3;
         oc->repeat = param4;
 
-        int32_t latency = 0; //GPAL_GetCompletionLatency();
+        int32_t latency = 0;
         int32_t minLatency;
         if (latency)
             minLatency = latency;
@@ -424,102 +389,98 @@ int8_t GpioChangeWriter::NativeSet(const TinyCLR_Interop_Provider* provider, con
 
         oc->currentState = param0;
         gpioProvider->Write(gpioProvider, (int32_t)oc->pin, param0 ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
-        oc->completion.EnqueueDelta(oc->buffer[oc->bufferIndex]);
 
-        oc->isActive = TRUE;
+        oc->isActive = true;
     }
-*/
+
     return 1;
 }
 
 void GpioChangeWriter::NativeSet(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self, int8_t initialValue, TinyCLR_Interop_ClrValue::SzArrayType& timingsBuffer_us, int32_t offset, int32_t count, uint32_t lastBitHoldTime_us, int8_t disableInterrupts, uint32_t carrierFrequency_hz, TinyCLR_Result& result) {
-    /*
-        if ((offset < 0) || (count < 0) || ((offset + count) > timingsBuffer_us.Length)) {
-            result = TinyCLR_Result::ArgumentOutOfRange;
-            return;
+
+    if ((offset < 0) || (count < 0) || ((offset + count) > timingsBuffer_us.Length)) {
+        result = TinyCLR_Result::ArgumentOutOfRange;
+        return;
+    }
+
+    OC *oc = (OC*)Get_nativePointer(provider, self);
+    if (!oc) {
+        result = TinyCLR_Result::ArgumentNull;
+        return;
+    }
+
+    {
+        DISABLE_INTERRUPTS_SCOPED(irq);
+
+        oc->isActive = false;
+    }
+
+    int i;
+    int f, fCount;
+    int wasInterrptEnabled;
+    uint32_t *buffer = (uint32_t*)timingsBuffer_us.Data + offset;
+
+    // carrierFrequency_hz
+    if (carrierFrequency_hz) {
+        carrierFrequency_hz = ((uint32_t)1000000 / 2 / (carrierFrequency_hz));
+
+        // avoids dividing by 0 for little values
+        if (carrierFrequency_hz <= carrierFrequency_hz_latency)
+            carrierFrequency_hz = carrierFrequency_hz_latency + 1;
+        else
+            carrierFrequency_hz -= carrierFrequency_hz_latency;
+    }
+
+    if (disableInterrupts) {
+        wasInterrptEnabled = TinyCLR_Interop_GetStateInterrupt();
+        if (wasInterrptEnabled) {
+            TinyCLR_Interop_DisableInterrupt();
         }
+    }
 
-        OC *oc = (OC*)Get_nativePointer(provider, self);
-        if (!oc) {
-            result = TinyCLR_Result::ArgumentNull;
-            return;
+    gpioProvider->Write(gpioProvider, (int32_t)oc->pin, initialValue ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+
+    for (i = 0; i < count; i++) {
+        if (!(initialValue && carrierFrequency_hz)) {
+            TinyCLR_Interop_Delay(buffer[i]);
         }
-
-        {
-            GLOBAL_LOCK(irq);
-
-            if (oc->completion.IsLinked())
-                oc->completion.Abort();
-
-            oc->isActive = FALSE;
-        }
-
-        int i;
-        int f, fCount;
-        int wasInterrptEnabled;
-        uint32_t *buffer = (uint32_t*)timingsBuffer_us.Data + offset;
-
-        // carrierFrequency_hz
-        if (carrierFrequency_hz) {
-            carrierFrequency_hz = ((uint32_t)1000000 / 2 / (carrierFrequency_hz));
-
-            // avoids dividing by 0 for little values
-            if (carrierFrequency_hz <= carrierFrequency_hz_latency)
-                carrierFrequency_hz = carrierFrequency_hz_latency + 1;
-            else
-                carrierFrequency_hz -= carrierFrequency_hz_latency;
-        }
-
-        if (disableInterrupts) {
-            wasInterrptEnabled = TinyCLR_Interop_GetStateInterrupt();
-            if (wasInterrptEnabled) {
-                TinyCLR_Interop_DisableInterrupt();
-            }
-        }
-
-        gpioProvider->Write(gpioProvider, (int32_t)oc->pin, initialValue ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
-
-        for (i = 0; i < count; i++) {
-            if (!(initialValue && carrierFrequency_hz)) {
-                TinyCLR_Interop_Delay(buffer[i]);
-            }
-            else {
-                fCount = (buffer[i] / (carrierFrequency_hz + carrierFrequency_hz_latency));
-                for (f = 0; f < fCount; f += 2) {
-                    gpioProvider->Write(gpioProvider, (int32_t)oc->pin, TinyCLR_Gpio_PinValue::High);
-                    TinyCLR_Interop_Delay(carrierFrequency_hz);
-
-                    gpioProvider->Write(gpioProvider, (int32_t)oc->pin, TinyCLR_Gpio_PinValue::Low);
-                    TinyCLR_Interop_Delay(carrierFrequency_hz);
-                }
-            }
-
-            initialValue = !initialValue;
-            gpioProvider->Write(gpioProvider, (int32_t)oc->pin, initialValue ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
-        }
-
-        if (lastBitHoldTime_us) {
-            if (!(initialValue && carrierFrequency_hz)) {
-                TinyCLR_Interop_Delay(lastBitHoldTime_us);
-            }
-            else {
-                fCount = (lastBitHoldTime_us / (carrierFrequency_hz + carrierFrequency_hz_latency));
-                for (f = 0; f < fCount; f += 2) {
-                    gpioProvider->Write(gpioProvider, (int32_t)oc->pin, TinyCLR_Gpio_PinValue::High);
-                    TinyCLR_Interop_Delay(carrierFrequency_hz);
-
-                    gpioProvider->Write(gpioProvider, (int32_t)oc->pin, TinyCLR_Gpio_PinValue::Low);
-                    TinyCLR_Interop_Delay(carrierFrequency_hz);
-                }
-
+        else {
+            fCount = (buffer[i] / (carrierFrequency_hz + carrierFrequency_hz_latency));
+            for (f = 0; f < fCount; f += 2) {
                 gpioProvider->Write(gpioProvider, (int32_t)oc->pin, TinyCLR_Gpio_PinValue::High);
+                TinyCLR_Interop_Delay(carrierFrequency_hz);
+
+                gpioProvider->Write(gpioProvider, (int32_t)oc->pin, TinyCLR_Gpio_PinValue::Low);
+                TinyCLR_Interop_Delay(carrierFrequency_hz);
             }
         }
 
-        if (disableInterrupts) {
-            if (wasInterrptEnabled) {
-                TinyCLR_Interop_EnableInterrupt();
-            }
+        initialValue = !initialValue;
+        gpioProvider->Write(gpioProvider, (int32_t)oc->pin, initialValue ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+    }
+
+    if (lastBitHoldTime_us) {
+        if (!(initialValue && carrierFrequency_hz)) {
+            TinyCLR_Interop_Delay(lastBitHoldTime_us);
         }
-        */
+        else {
+            fCount = (lastBitHoldTime_us / (carrierFrequency_hz + carrierFrequency_hz_latency));
+            for (f = 0; f < fCount; f += 2) {
+                gpioProvider->Write(gpioProvider, (int32_t)oc->pin, TinyCLR_Gpio_PinValue::High);
+                TinyCLR_Interop_Delay(carrierFrequency_hz);
+
+                gpioProvider->Write(gpioProvider, (int32_t)oc->pin, TinyCLR_Gpio_PinValue::Low);
+                TinyCLR_Interop_Delay(carrierFrequency_hz);
+            }
+
+            gpioProvider->Write(gpioProvider, (int32_t)oc->pin, TinyCLR_Gpio_PinValue::High);
+        }
+    }
+
+    if (disableInterrupts) {
+        if (wasInterrptEnabled) {
+            TinyCLR_Interop_EnableInterrupt();
+        }
+    }
+
 }
