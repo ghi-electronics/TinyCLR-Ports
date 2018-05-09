@@ -1,7 +1,5 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 
-#define TIME_CONVERSION__TO_MILLISECONDS    10000
-
 void IsrProcedure(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue pinState) {
     auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider));
 
@@ -32,7 +30,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     pin = fld.Data.Numeric->U4;
 
-    value = (int64_t)provider->GetDebounceTimeout(provider, pin) * TIME_CONVERSION__TO_MILLISECONDS;
+    value = (int64_t)provider->GetDebounceTimeout(provider, pin);
 
     auto ret = TinyCLR_Interop_GetReturn(md);
 
@@ -62,7 +60,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto arg = TinyCLR_Interop_GetArguments(md, 1);
 
-    value = (int64_t)arg.Data.Numeric->I8 / TIME_CONVERSION__TO_MILLISECONDS;
+    value = (int64_t)arg.Data.Numeric->I8;
 
     fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_pinNumber___I4);
 
