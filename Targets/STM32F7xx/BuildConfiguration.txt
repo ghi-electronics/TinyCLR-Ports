@@ -1,2 +1,2 @@
 TargetArchitecture:CortexM7
-AdditionalTargetDrivers:SPIDisplay,USBClient
+AdditionalTargetDrivers:SPIDisplay,USBClient,DevicesInterop
