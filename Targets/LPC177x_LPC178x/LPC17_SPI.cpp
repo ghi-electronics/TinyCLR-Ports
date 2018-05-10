@@ -870,7 +870,11 @@ TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Provider* self) {
         LPC17_Gpio_ClosePin(mosiPin);
 
         if (g_SpiController[controller].chipSelectLine != PIN_NONE) {
+            // Release the pin, set pin un-reserved
             LPC17_Gpio_ClosePin(g_SpiController[controller].chipSelectLine);
+
+            // Keep chip select is inactive by internal pull up
+            LPC17_Gpio_ConfigurePin(g_SpiController[controller].chipSelectLine, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
             g_SpiController[controller].chipSelectLine = PIN_NONE;
         }

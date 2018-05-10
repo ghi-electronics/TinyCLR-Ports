@@ -407,7 +407,11 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Provider* self) {
         AT91_Gpio_ClosePin(mosiPin);
 
         if (g_SpiController[controller].chipSelectLine != PIN_NONE) {
+            // Release the pin, set pin un-reserved
             AT91_Gpio_ClosePin(g_SpiController[controller].chipSelectLine);
+
+            // Keep chip select is inactive by internal pull up
+            AT91_Gpio_ConfigurePin(g_SpiController[controller].chipSelectLine, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::PullUp);
 
             g_SpiController[controller].chipSelectLine = PIN_NONE;
         }
