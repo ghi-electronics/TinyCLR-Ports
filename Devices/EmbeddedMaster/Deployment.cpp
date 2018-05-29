@@ -21,7 +21,6 @@ static TinyCLR_Api_Info deploymentApi;
 
 const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
     deploymentProvider.Parent = &deploymentApi;
-    deploymentProvider.Index = 0;
     deploymentProvider.Acquire = &LPC24_Deployment_Acquire;
     deploymentProvider.Release = &LPC24_Deployment_Release;
     deploymentProvider.Read = &LPC24_Deployment_Read;

@@ -48,7 +48,6 @@ static TinyCLR_Api_Info deploymentApi;
 
 const TinyCLR_Api_Info* STM32F4_Deployment_GetApi() {
     deploymentProvider.Parent = &deploymentApi;
-    deploymentProvider.Index = 0;
     deploymentProvider.Acquire = &STM32F4_Flash_Acquire;
     deploymentProvider.Release = &STM32F4_Flash_Release;
     deploymentProvider.Read = &STM32F4_Flash_Read;

@@ -26,7 +26,6 @@ static TinyCLR_Api_Info interruptApi;
 
 const TinyCLR_Api_Info* STM32F4_Interrupt_GetApi() {
     interruptProvider.Parent = &interruptApi;
-    interruptProvider.Index = 0;
     interruptProvider.Acquire = &STM32F4_Interrupt_Acquire;
     interruptProvider.Release = &STM32F4_Interrupt_Release;
     interruptProvider.Enable = &STM32F4_Interrupt_Enable;

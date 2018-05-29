@@ -23,7 +23,6 @@ static TinyCLR_Api_Info powerApi;
 
 const TinyCLR_Api_Info* AT91_Power_GetApi() {
     powerProvider.Parent = &powerApi;
-    powerProvider.Index = 0;
     powerProvider.Acquire = &AT91_Power_Acquire;
     powerProvider.Release = &AT91_Power_Release;
     powerProvider.Reset = &AT91_Power_Reset;

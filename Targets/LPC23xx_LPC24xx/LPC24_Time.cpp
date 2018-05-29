@@ -178,7 +178,6 @@ static TinyCLR_Api_Info timeApi;
 
 const TinyCLR_Api_Info* LPC24_Time_GetApi() {
     timeProvider.Parent = &timeApi;
-    timeProvider.Index = 0;
     timeProvider.ConvertNativeTimeToSystemTime = &LPC24_Time_GetTimeForProcessorTicks;
     timeProvider.ConvertSystemTimeToNativeTime = &LPC24_Time_TimeToTicks;
     timeProvider.GetNativeTime = &LPC24_Time_GetCurrentProcessorTicks;
