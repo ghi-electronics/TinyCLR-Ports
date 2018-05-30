@@ -1308,31 +1308,29 @@ TinyCLR_Result STM32F7_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32
 
     uint8_t txmailbox;
 
-    STM32F7_Can_TxMessage txMessage;
-
     /* Transmit Structure preparation */
     canController[channel].txMessage->RTR = (isRemoteTransmissionRequest == true) ? 1 : 0;
 
     if (isExtendedId) {
-        txMessage.IDE = CAN_Id_Extended;
-        txMessage.ExtId = arbitrationId;
+        canController[channel].txMessage->IDE = CAN_Id_Extended;
+        canController[channel].txMessage->ExtId = arbitrationId;
     }
     else {
-        txMessage.IDE = CAN_Id_Standard;
-        txMessage.StdId = arbitrationId;
+        canController[channel].txMessage->IDE = CAN_Id_Standard;
+        canController[channel].txMessage->StdId = arbitrationId;
     }
-    txMessage.DLC = length & 0x0F;
+    canController[channel].txMessage->DLC = length & 0x0F;
 
-    txMessage.Data[0] = ((data32[0] >> 0) & 0xFF);
-    txMessage.Data[1] = ((data32[0] >> 8) & 0xFF);
-    txMessage.Data[2] = ((data32[0] >> 16) & 0xFF);
-    txMessage.Data[3] = ((data32[0] >> 24) & 0xFF);
-    txMessage.Data[4] = ((data32[1] >> 0) & 0xFF);
-    txMessage.Data[5] = ((data32[1] >> 8) & 0xFF);
-    txMessage.Data[6] = ((data32[1] >> 16) & 0xFF);
-    txMessage.Data[7] = ((data32[1] >> 24) & 0xFF);
+    canController[channel].txMessage->Data[0] = ((data32[0] >> 0) & 0xFF);
+    canController[channel].txMessage->Data[1] = ((data32[0] >> 8) & 0xFF);
+    canController[channel].txMessage->Data[2] = ((data32[0] >> 16) & 0xFF);
+    canController[channel].txMessage->Data[3] = ((data32[0] >> 24) & 0xFF);
+    canController[channel].txMessage->Data[4] = ((data32[1] >> 0) & 0xFF);
+    canController[channel].txMessage->Data[5] = ((data32[1] >> 8) & 0xFF);
+    canController[channel].txMessage->Data[6] = ((data32[1] >> 16) & 0xFF);
+    canController[channel].txMessage->Data[7] = ((data32[1] >> 24) & 0xFF);
 
-    txmailbox = CAN_Transmit(CANx, &txMessage);
+    txmailbox = CAN_Transmit(CANx, canController[channel].txMessage);
 
     while (CAN_TransmitStatus(CANx, txmailbox) != CAN_TxStatus_Ok && i++ < CAN_GetTransferTimeout())
         STM32F7_Time_Delay(nullptr, 1);
