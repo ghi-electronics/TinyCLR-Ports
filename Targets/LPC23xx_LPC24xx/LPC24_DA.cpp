@@ -32,7 +32,6 @@ bool g_LPC24_Dac_IsOpened[SIZEOF_ARRAY(g_LPC24_Dac_Pins)];
 
 const TinyCLR_Api_Info* LPC24_Dac_GetApi() {
     dacProvider.Parent = &dacApi;
-    dacProvider.Index = 0;
     dacProvider.Acquire = &LPC24_Dac_Acquire;
     dacProvider.Release = &LPC24_Dac_Release;
     dacProvider.AcquireChannel = &LPC24_Dac_AcquireChannel;
