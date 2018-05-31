@@ -47,7 +47,7 @@ static TinyCLR_Api_Info gpioApi;
 
 const TinyCLR_Api_Info* STM32F7_Gpio_GetApi() {
     gpioProvider.Parent = &gpioApi;
-    gpioProvider.Index = 0;
+
     gpioProvider.Acquire = &STM32F7_Gpio_Acquire;
     gpioProvider.Release = &STM32F7_Gpio_Release;
     gpioProvider.AcquirePin = &STM32F7_Gpio_AcquirePin;

@@ -115,7 +115,6 @@ static TinyCLR_Api_Info gpioApi;
 
 const TinyCLR_Api_Info* LPC24_Gpio_GetApi() {
     gpioProvider.Parent = &gpioApi;
-    gpioProvider.Index = 0;
     gpioProvider.Acquire = &LPC24_Gpio_Acquire;
     gpioProvider.Release = &LPC24_Gpio_Release;
     gpioProvider.AcquirePin = &LPC24_Gpio_AcquirePin;
