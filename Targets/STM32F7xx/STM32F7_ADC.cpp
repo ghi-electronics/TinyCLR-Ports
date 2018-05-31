@@ -33,7 +33,6 @@ bool g_STM32F7_AD_IsOpened[STM32F7_AD_NUM];
 
 const TinyCLR_Api_Info* STM32F7_Adc_GetApi() {
     adcProvider.Parent = &adcApi;
-    adcProvider.Index = 0;
     adcProvider.Acquire = &STM32F7_Adc_Acquire;
     adcProvider.Release = &STM32F7_Adc_Release;
     adcProvider.AcquireChannel = &STM32F7_Adc_AcquireChannel;
