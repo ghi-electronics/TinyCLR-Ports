@@ -1180,8 +1180,7 @@ TinyCLR_Result STM32F7_Display_GetCapabilities(const TinyCLR_Display_Provider* s
 }
 
 const TinyCLR_Api_Info* STM32F7_Display_GetApi() {
-    displayProvider.Parent = &displayApi;
-    displayProvider.Index = 0;
+    displayProvider.Parent = &displayApi;    
     displayProvider.Acquire = &STM32F7_Display_Acquire;
     displayProvider.Release = &STM32F7_Display_Release;
     displayProvider.Enable = &STM32F7_Display_Enable;
