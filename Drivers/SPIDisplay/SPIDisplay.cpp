@@ -95,6 +95,7 @@ static void Swap(uint8_t* a, uint8_t* b) {
 
 TinyCLR_Result SPIDisplay_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data) {
     auto d = const_cast<uint8_t*>(data);
+    int32_t controller = 0; //TODO Should get controller from  SPIDisplay controller!!!
 
     for (auto i = 0; i < spiDisplayWidth * spiDisplayHeight * 2; i += 2)
         Swap(d + i, d + i + 1);
@@ -102,13 +103,13 @@ TinyCLR_Result SPIDisplay_DrawBuffer(const TinyCLR_Display_Provider* self, int32
     if (x == 0 && spiDisplayWidth == width) {
         auto len = static_cast<size_t>(width * height * 2);
 
-        spiDisplayBus->Write(spiDisplayBus, data + (y * spiDisplayWidth * 2), len);
+        spiDisplayBus->Write(spiDisplayBus, controller, data + (y * spiDisplayWidth * 2), len);
     }
     else {
         auto len = static_cast<size_t>(width * 2);
 
         for (auto yy = y; yy < y + height; yy++)
-            spiDisplayBus->Write(spiDisplayBus, data + (yy * spiDisplayWidth * 2) + (x * 2), len);
+            spiDisplayBus->Write(spiDisplayBus, controller, data + (yy * spiDisplayWidth * 2) + (x * 2), len);
     }
 
     for (auto i = 0; i < (spiDisplayWidth * spiDisplayHeight * 2); i += 2)

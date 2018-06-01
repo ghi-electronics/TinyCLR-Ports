@@ -484,6 +484,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi
     static const size_t FIELD___nativeProvider___I = 1;
     static const size_t FIELD___created___I4 = 2;
     static const size_t FIELD___isExclusive___BOOLEAN = 3;
+    static const size_t FIELD___idx___I4 = 4;
 
     static TinyCLR_Result AcquireNative___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result ReleaseNative___VOID(const TinyCLR_Interop_MethodData md);
@@ -526,7 +527,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi
     static const size_t FIELD___MaxClockFrequency__BackingField___I4 = 3;
     static const size_t FIELD___SupportedDataBitLengths__BackingField___SZARRAY_I4 = 4;
 
-    static TinyCLR_Result ctor___VOID__I(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result ctor___VOID__I__I4(const TinyCLR_Interop_MethodData md);
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings {

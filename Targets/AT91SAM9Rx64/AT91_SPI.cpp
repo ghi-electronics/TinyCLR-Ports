@@ -41,27 +41,22 @@ struct SpiController {
 
 static SpiController g_SpiController[TOTAL_SPI_CONTROLLERS];
 
-static uint8_t spiProviderDefs[TOTAL_SPI_CONTROLLERS * sizeof(TinyCLR_Spi_Provider)];
-static TinyCLR_Spi_Provider* spiProviders[TOTAL_SPI_CONTROLLERS];
+static TinyCLR_Spi_Provider spiProviders;
 static TinyCLR_Api_Info spiApi;
 
 const TinyCLR_Api_Info* AT91_Spi_GetApi() {
-    for (int i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        spiProviders[i] = (TinyCLR_Spi_Provider*)(spiProviderDefs + (i * sizeof(TinyCLR_Spi_Provider)));
-        spiProviders[i]->Parent = &spiApi;
-        spiProviders[i]->Index = i;
-        spiProviders[i]->Acquire = &AT91_Spi_Acquire;
-        spiProviders[i]->Release = &AT91_Spi_Release;
-        spiProviders[i]->SetActiveSettings = &AT91_Spi_SetActiveSettings;
-        spiProviders[i]->Read = &AT91_Spi_Read;
-        spiProviders[i]->Write = &AT91_Spi_Write;
-        spiProviders[i]->TransferFullDuplex = &AT91_Spi_TransferFullDuplex;
-        spiProviders[i]->TransferSequential = &AT91_Spi_TransferSequential;
-        spiProviders[i]->GetChipSelectLineCount = &AT91_Spi_GetChipSelectLineCount;
-        spiProviders[i]->GetMinClockFrequency = &AT91_Spi_GetMinClockFrequency;
-        spiProviders[i]->GetMaxClockFrequency = &AT91_Spi_GetMaxClockFrequency;
-        spiProviders[i]->GetSupportedDataBitLengths = &AT91_Spi_GetSupportedDataBitLengths;
-    }
+    spiProviders.Parent = &spiApi;
+    spiProviders.Acquire = &AT91_Spi_Acquire;
+    spiProviders.Release = &AT91_Spi_Release;
+    spiProviders.SetActiveSettings = &AT91_Spi_SetActiveSettings;
+    spiProviders.Read = &AT91_Spi_Read;
+    spiProviders.Write = &AT91_Spi_Write;
+    spiProviders.TransferFullDuplex = &AT91_Spi_TransferFullDuplex;
+    spiProviders.TransferSequential = &AT91_Spi_TransferSequential;
+    spiProviders.GetChipSelectLineCount = &AT91_Spi_GetChipSelectLineCount;
+    spiProviders.GetMinClockFrequency = &AT91_Spi_GetMinClockFrequency;
+    spiProviders.GetMaxClockFrequency = &AT91_Spi_GetMaxClockFrequency;
+    spiProviders.GetSupportedDataBitLengths = &AT91_Spi_GetSupportedDataBitLengths;
 
     spiApi.Author = "GHI Electronics, LLC";
     spiApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.SpiProvider";
@@ -145,16 +140,14 @@ bool AT91_Spi_Transaction_nWrite16_nRead16(int32_t controller) {
     return true;
 }
 
-TinyCLR_Result AT91_Spi_TransferSequential(const TinyCLR_Spi_Provider* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
-    if (AT91_Spi_Write(self, writeBuffer, writeLength) != TinyCLR_Result::Success)
+TinyCLR_Result AT91_Spi_TransferSequential(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
+    if (AT91_Spi_Write(self, controller, writeBuffer, writeLength) != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
 
-    return AT91_Spi_Read(self, readBuffer, readLength);
+    return AT91_Spi_Read(self, controller, readBuffer, readLength);
 }
 
-TinyCLR_Result AT91_Spi_TransferFullDuplex(const TinyCLR_Spi_Provider* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
-    int32_t controller = self->Index;
-
+TinyCLR_Result AT91_Spi_TransferFullDuplex(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
     if (controller >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
@@ -182,9 +175,7 @@ TinyCLR_Result AT91_Spi_TransferFullDuplex(const TinyCLR_Spi_Provider* self, con
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Spi_Read(const TinyCLR_Spi_Provider* self, uint8_t* buffer, size_t& length) {
-    int32_t controller = self->Index;
-
+TinyCLR_Result AT91_Spi_Read(const TinyCLR_Spi_Provider* self, int32_t controller, uint8_t* buffer, size_t& length) {
     if (controller >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
@@ -211,9 +202,7 @@ TinyCLR_Result AT91_Spi_Read(const TinyCLR_Spi_Provider* self, uint8_t* buffer, 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Spi_Write(const TinyCLR_Spi_Provider* self, const uint8_t* buffer, size_t& length) {
-    int32_t controller = self->Index;
-
+TinyCLR_Result AT91_Spi_Write(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* buffer, size_t& length) {
     if (controller >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
@@ -240,9 +229,7 @@ TinyCLR_Result AT91_Spi_Write(const TinyCLR_Spi_Provider* self, const uint8_t* b
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode) {
-    int32_t controller = (self->Index);
-
+TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int32_t controller, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode) {
     if (controller >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
@@ -326,11 +313,9 @@ TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int3
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
+TinyCLR_Result AT91_Spi_Acquire(const TinyCLR_Spi_Provider* self, int32_t controller) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
-
-    int32_t controller = (self->Index);
 
     uint32_t clkPin, misoPin, mosiPin;
     AT91_Gpio_PeripheralSelection clkMode, misoMode, mosiMode;
@@ -368,11 +353,9 @@ TinyCLR_Result AT91_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Provider* self) {
+TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Provider* self, int32_t controller) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
-
-    int32_t controller = (self->Index);
 
     AT91_PMC &pmc = AT91::PMC();
 
@@ -415,22 +398,22 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-int32_t AT91_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self) {
+int32_t AT91_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller) {
     return AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 255;
 }
 
-int32_t AT91_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self) {
+int32_t AT91_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller) {
     return AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 1;
 }
 
-int32_t AT91_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self) {
+int32_t AT91_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self, int32_t controller) {
     return AT91_Gpio_GetPinCount(nullptr);
 }
 
 static const int32_t dataBitsCount = 2;
 static int32_t dataBits[dataBitsCount] = { 8, 16 };
 
-TinyCLR_Result AT91_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* self, int32_t* dataBitLengths, size_t& dataBitLengthsCount) {
+TinyCLR_Result AT91_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* self, int32_t controller, int32_t* dataBitLengths, size_t& dataBitLengthsCount) {
     if (dataBitLengths != nullptr)
         memcpy(dataBitLengths, dataBits, (dataBitsCount < dataBitLengthsCount ? dataBitsCount : dataBitLengthsCount) * sizeof(int32_t));
 
@@ -441,8 +424,7 @@ TinyCLR_Result AT91_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* s
 
 void AT91_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        AT91_Spi_Release(spiProviders[i]);
-
+        AT91_Spi_Release(&spiProviders, i);
 
         g_SpiController[i].isOpened = false;
     }

@@ -282,17 +282,17 @@ void LPC24_Spi_Reset();
 bool LPC24_Spi_Transaction_Start(int32_t controller);
 bool LPC24_Spi_Transaction_Stop(int32_t controller);
 bool LPC24_Spi_Transaction_nWrite8_nRead8(int32_t controller);
-TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Provider* self);
-TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Provider* self);
-TinyCLR_Result LPC24_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode);
-TinyCLR_Result LPC24_Spi_Read(const TinyCLR_Spi_Provider* self, uint8_t* buffer, size_t& length);
-TinyCLR_Result LPC24_Spi_Write(const TinyCLR_Spi_Provider* self, const uint8_t* buffer, size_t& length);
-TinyCLR_Result LPC24_Spi_TransferFullDuplex(const TinyCLR_Spi_Provider* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength);
-TinyCLR_Result LPC24_Spi_TransferSequential(const TinyCLR_Spi_Provider* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength);
-int32_t LPC24_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self);
-int32_t LPC24_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self);
-int32_t LPC24_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self);
-TinyCLR_Result LPC24_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* self, int32_t* dataBitLengths, size_t& dataBitLengthsCount);
+TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Provider* self, int32_t controller);
+TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Provider* self, int32_t controller);
+TinyCLR_Result LPC24_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int32_t controller, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode);
+TinyCLR_Result LPC24_Spi_Read(const TinyCLR_Spi_Provider* self, int32_t controller, uint8_t* buffer, size_t& length);
+TinyCLR_Result LPC24_Spi_Write(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* buffer, size_t& length);
+TinyCLR_Result LPC24_Spi_TransferFullDuplex(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength);
+TinyCLR_Result LPC24_Spi_TransferSequential(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength);
+int32_t LPC24_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self, int32_t controller);
+int32_t LPC24_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller);
+int32_t LPC24_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller);
+TinyCLR_Result LPC24_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* self, int32_t controller, int32_t* dataBitLengths, size_t& dataBitLengthsCount);
 
 //Uart
 const TinyCLR_Api_Info* LPC24_Uart_GetApi();
