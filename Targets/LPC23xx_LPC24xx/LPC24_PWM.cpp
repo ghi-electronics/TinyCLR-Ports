@@ -73,81 +73,76 @@
 
 static PwmController g_PwmController[TOTAL_PWM_CONTROLLER];
 
-static uint8_t pwmProviderDefs[TOTAL_PWM_CONTROLLER * sizeof(TinyCLR_Pwm_Provider)];
-static TinyCLR_Pwm_Provider* pwmProviders[TOTAL_PWM_CONTROLLER];
+static TinyCLR_Pwm_Provider pwmProviders;
 static TinyCLR_Api_Info pwmApi;
 
 const TinyCLR_Api_Info* LPC24_Pwm_GetApi() {
-    for (int i = 0; i < TOTAL_PWM_CONTROLLER; i++) {
-        pwmProviders[i] = (TinyCLR_Pwm_Provider*)(pwmProviderDefs + (i * sizeof(TinyCLR_Pwm_Provider)));
-        pwmProviders[i]->Parent = &pwmApi;
-        pwmProviders[i]->Index = i;
-        pwmProviders[i]->Acquire = &LPC24_Pwm_Acquire;
-        pwmProviders[i]->Release = &LPC24_Pwm_Release;
-        pwmProviders[i]->SetDesiredFrequency = &LPC24_Pwm_SetDesiredFrequency;
-        pwmProviders[i]->AcquirePin = &LPC24_Pwm_AcquirePin;
-        pwmProviders[i]->ReleasePin = &LPC24_Pwm_ReleasePin;
-        pwmProviders[i]->EnablePin = &LPC24_Pwm_EnablePin;
-        pwmProviders[i]->DisablePin = &LPC24_Pwm_DisablePin;
-        pwmProviders[i]->SetPulseParameters = &LPC24_Pwm_SetPulseParameters;
-        pwmProviders[i]->GetMinFrequency = &LPC24_Pwm_GetMinFrequency;
-        pwmProviders[i]->GetMaxFrequency = &LPC24_Pwm_GetMaxFrequency;
-        pwmProviders[i]->GetPinCount = &LPC24_Pwm_GetPinCount;
-    }
+    pwmProviders.Parent = &pwmApi;
+    pwmProviders.Acquire = &LPC24_Pwm_Acquire;
+    pwmProviders.Release = &LPC24_Pwm_Release;
+    pwmProviders.SetDesiredFrequency = &LPC24_Pwm_SetDesiredFrequency;
+    pwmProviders.AcquirePin = &LPC24_Pwm_AcquirePin;
+    pwmProviders.ReleasePin = &LPC24_Pwm_ReleasePin;
+    pwmProviders.EnablePin = &LPC24_Pwm_EnablePin;
+    pwmProviders.DisablePin = &LPC24_Pwm_DisablePin;
+    pwmProviders.SetPulseParameters = &LPC24_Pwm_SetPulseParameters;
+    pwmProviders.GetMinFrequency = &LPC24_Pwm_GetMinFrequency;
+    pwmProviders.GetMaxFrequency = &LPC24_Pwm_GetMaxFrequency;
+    pwmProviders.GetPinCount = &LPC24_Pwm_GetPinCount;
 
     pwmApi.Author = "GHI Electronics, LLC";
     pwmApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.PwmProvider";
     pwmApi.Type = TinyCLR_Api_Type::PwmProvider;
     pwmApi.Version = 0;
     pwmApi.Count = TOTAL_PWM_CONTROLLER;
-    pwmApi.Implementation = (pwmApi.Count > 1) ? pwmProviders : (TinyCLR_Pwm_Provider**)&pwmProviderDefs;
+    pwmApi.Implementation = &pwmProviders;
 
     return &pwmApi;
 }
 
-TinyCLR_Result LPC24_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t pin) {
-    int32_t actualPin = LPC24_Pwm_GetGpioPinForChannel(self, pin);
+TinyCLR_Result LPC24_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin) {
+    int32_t actualPin = LPC24_Pwm_GetGpioPinForChannel(self, controller, pin);
 
     if (!LPC24_Gpio_OpenPin(actualPin))
         return TinyCLR_Result::SharingViolation;
 
     // enable PWM output
-    if (g_PwmController[self->Index].channel[pin] == 0) {
+    if (g_PwmController[controller].channel[pin] == 0) {
 
         // Enable PWMs controller channel 0
         LPC24XX::SYSCON().PCONP |= PCONP_PCPWM0;
 
         // Reset Timer Counter
         PWM0TCR |= (1 << 1);
-        *g_PwmController[self->Index].matchAddress[pin] = 0;
+        *g_PwmController[controller].matchAddress[pin] = 0;
         PWM0MCR = (1 << 1); // Reset on MAT0
         PWM0TCR = 1; // Enable
-        PWM0PCR |= (1 << (9 + g_PwmController[self->Index].match[pin])); // To enable output on the proper channel
+        PWM0PCR |= (1 << (9 + g_PwmController[controller].match[pin])); // To enable output on the proper channel
     }
-    else if (g_PwmController[self->Index].channel[pin] == 1) {
+    else if (g_PwmController[controller].channel[pin] == 1) {
 
         // Enable PWMs controller channel 1
         LPC24XX::SYSCON().PCONP |= PCONP_PCPWM1;
 
         // Reset Timer Counter
         PWM1TCR |= (1 << 1);
-        *g_PwmController[self->Index].matchAddress[pin] = 0;
+        *g_PwmController[controller].matchAddress[pin] = 0;
         PWM1MCR = (1 << 1); // Reset on MAT0
         PWM1TCR = 1; // Enable
-        PWM1PCR |= (1 << (9 + (g_PwmController[self->Index].match[pin]))); // To enable output on the proper channel
+        PWM1PCR |= (1 << (9 + (g_PwmController[controller].match[pin]))); // To enable output on the proper channel
     }
 
-    g_PwmController[self->Index].isOpened[pin] = true;
+    g_PwmController[controller].isOpened[pin] = true;
 
     return TinyCLR_Result::Success;;
 }
 
-TinyCLR_Result LPC24_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t pin) {
-    int32_t actualPin = LPC24_Pwm_GetGpioPinForChannel(self, pin);
+TinyCLR_Result LPC24_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin) {
+    int32_t actualPin = LPC24_Pwm_GetGpioPinForChannel(self, controller, pin);
 
     LPC24_Gpio_ClosePin(actualPin);
 
-    g_PwmController[self->Index].isOpened[pin] = false;
+    g_PwmController[controller].isOpened[pin] = false;
 
     return TinyCLR_Result::Success;
 }
@@ -167,13 +162,13 @@ void LPC24_Pwm_GetScaleFactor(double frequency, uint32_t& period, uint32_t& scal
     }
 }
 
-double LPC24_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self) {
+double LPC24_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller) {
     uint32_t period = 0;
     uint32_t scale = 0;
 
     uint64_t periodInNanoSeconds = 0;
 
-    double frequency = g_PwmController[self->Index].frequency;
+    double frequency = g_PwmController[controller].frequency;
 
     LPC24_Pwm_GetScaleFactor(frequency, period, scale);
 
@@ -229,39 +224,39 @@ double LPC24_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self) {
 
 }
 
-TinyCLR_Result LPC24_Pwm_EnablePin(const TinyCLR_Pwm_Provider* self, int32_t pin) {
-    int32_t actualPin = LPC24_Pwm_GetGpioPinForChannel(self, pin);
+TinyCLR_Result LPC24_Pwm_EnablePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin) {
+    int32_t actualPin = LPC24_Pwm_GetGpioPinForChannel(self, controller, pin);
 
-    LPC24_Gpio_ConfigurePin(actualPin, LPC24_Gpio_Direction::Input, g_PwmController[self->Index].gpioPin[pin].pinFunction, LPC24_Gpio_PinMode::Inactive);
+    LPC24_Gpio_ConfigurePin(actualPin, LPC24_Gpio_Direction::Input, g_PwmController[controller].gpioPin[pin].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Pwm_DisablePin(const TinyCLR_Pwm_Provider* self, int32_t pin) {
-    int32_t actualPin = LPC24_Pwm_GetGpioPinForChannel(self, pin);
+TinyCLR_Result LPC24_Pwm_DisablePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin) {
+    int32_t actualPin = LPC24_Pwm_GetGpioPinForChannel(self, controller, pin);
 
     LPC24_Gpio_ConfigurePin(actualPin, LPC24_Gpio_Direction::Output, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::Inactive);
 
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC24_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self) {
+int32_t LPC24_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self, int32_t controller) {
     return MAX_PWM_PER_CONTROLLER;
 }
 
-int32_t LPC24_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t pin) {
-    return g_PwmController[self->Index].gpioPin[pin].number;
+int32_t LPC24_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin) {
+    return g_PwmController[controller].gpioPin[pin].number;
 }
 
-double LPC24_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self) {
+double LPC24_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller) {
     return LPC24_MAX_PWM_FREQUENCY;
 }
 
-double LPC24_Pwm_GetMinFrequency(const TinyCLR_Pwm_Provider* self) {
+double LPC24_Pwm_GetMinFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller) {
     return LPC24_MIN_PWM_FREQUENCY;
 }
 
-TinyCLR_Result LPC24_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int32_t pin, double dutyCycle, bool invertPolarity) {
+TinyCLR_Result LPC24_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin, double dutyCycle, bool invertPolarity) {
 
     uint32_t period = 0;
     uint32_t duration = 0;
@@ -270,7 +265,7 @@ TinyCLR_Result LPC24_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, in
     uint32_t periodInNanoSeconds = 0;
     uint32_t durationInNanoSeconds = 0;
 
-    double frequency = g_PwmController[self->Index].frequency;
+    double frequency = g_PwmController[controller].frequency;
 
     LPC24_Pwm_GetScaleFactor(frequency, period, scale);
 
@@ -331,19 +326,19 @@ TinyCLR_Result LPC24_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, in
         highTicks = periodTicks - highTicks;
 
     if (periodInNanoSeconds == 0 || durationInNanoSeconds == 0) {
-        LPC24_Gpio_EnableOutputPin(g_PwmController[self->Index].gpioPin[pin].number, false);
-        g_PwmController[self->Index].outputEnabled[pin] = true;
+        LPC24_Gpio_EnableOutputPin(g_PwmController[controller].gpioPin[pin].number, false);
+        g_PwmController[controller].outputEnabled[pin] = true;
 
         return TinyCLR_Result::Success;
     }
     else if (durationInNanoSeconds >= periodInNanoSeconds) {
-        LPC24_Gpio_EnableOutputPin(g_PwmController[self->Index].gpioPin[pin].number, true);
-        g_PwmController[self->Index].outputEnabled[pin] = true;
+        LPC24_Gpio_EnableOutputPin(g_PwmController[controller].gpioPin[pin].number, true);
+        g_PwmController[controller].outputEnabled[pin] = true;
 
         return TinyCLR_Result::Success;
     }
     else {
-        if (g_PwmController[self->Index].channel[pin] == 0) {
+        if (g_PwmController[controller].channel[pin] == 0) {
             // Re-scale with new frequency!
             if ((PWM0MR0 != periodTicks)) {
 
@@ -354,9 +349,9 @@ TinyCLR_Result LPC24_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, in
                 PWM0TCR = 1; // Enable
             }
 
-            *g_PwmController[self->Index].matchAddress[pin] = highTicks;
+            *g_PwmController[controller].matchAddress[pin] = highTicks;
         }
-        else if (g_PwmController[self->Index].channel[pin] == 1) {
+        else if (g_PwmController[controller].channel[pin] == 1) {
             // Re-scale with new frequency!
             if ((PWM1MR0 != periodTicks)) {
                 // Reset Timer Counter
@@ -366,51 +361,51 @@ TinyCLR_Result LPC24_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, in
                 PWM1TCR = 1; // Enable
             }
 
-            *g_PwmController[self->Index].matchAddress[pin] = highTicks;
+            *g_PwmController[controller].matchAddress[pin] = highTicks;
         }
 
-        if (g_PwmController[self->Index].outputEnabled[pin] == true) {
+        if (g_PwmController[controller].outputEnabled[pin] == true) {
             LPC24_Pwm_EnablePin(self, pin);
 
-            g_PwmController[self->Index].outputEnabled[pin] = false;
+            g_PwmController[controller].outputEnabled[pin] = false;
         }
     }
 
-    g_PwmController[self->Index].invert[pin] = invertPolarity;
-    g_PwmController[self->Index].dutyCycle[pin] = dutyCycle;
+    g_PwmController[controller].invert[pin] = invertPolarity;
+    g_PwmController[controller].dutyCycle[pin] = dutyCycle;
 
     return TinyCLR_Result::Success;
 
 }
 
-TinyCLR_Result LPC24_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self, double& frequency) {
-    g_PwmController[self->Index].frequency = frequency;
+TinyCLR_Result LPC24_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller, double& frequency) {
+    g_PwmController[controller].frequency = frequency;
 
     // Calculate actual frequency
-    frequency = LPC24_Pwm_GetActualFrequency(self);
+    frequency = LPC24_Pwm_GetActualFrequency(self, controller);
 
 
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++)
-        if (g_PwmController[self->Index].gpioPin[p].number != PIN_NONE)
-            if (LPC24_Pwm_SetPulseParameters(self, p, g_PwmController[self->Index].dutyCycle[p], g_PwmController[self->Index].invert[p]) != TinyCLR_Result::Success)
+        if (g_PwmController[controller].gpioPin[p].number != PIN_NONE)
+            if (LPC24_Pwm_SetPulseParameters(self, controller, p, g_PwmController[controller].dutyCycle[p], g_PwmController[controller].invert[p]) != TinyCLR_Result::Success)
                 return TinyCLR_Result::InvalidOperation;
 
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Pwm_Acquire(const TinyCLR_Pwm_Provider* self) {
+TinyCLR_Result LPC24_Pwm_Acquire(const TinyCLR_Pwm_Provider* self, int32_t controller) {
     if (self == nullptr) return TinyCLR_Result::ArgumentNull;
 
-    LPC24_Pwm_ResetController(self->Index);
+    LPC24_Pwm_ResetController(controller);
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Pwm_Release(const TinyCLR_Pwm_Provider* self) {
+TinyCLR_Result LPC24_Pwm_Release(const TinyCLR_Pwm_Provider* self, int32_t controller) {
     if (self == nullptr) return TinyCLR_Result::ArgumentNull;
 
-    LPC24_Pwm_ResetController(self->Index);
+    LPC24_Pwm_ResetController(controller);
 
     return TinyCLR_Result::Success;
 }
@@ -447,13 +442,13 @@ void LPC24_Pwm_ResetController(int32_t controller) {
             g_PwmController[pwmProviders[controller]->Index].dutyCycle[p] = 0.0;
 
             if (g_PwmController[controller].isOpened[p] == true) {
-            if (controller == 0)
-                PWM0PCR &= ~(1 << (9 + (g_PwmController[controller].match[p])));
-            if (controller == 1)
-                PWM1PCR &= ~(1 << (9 + (g_PwmController[controller].match[p])));
-            
-                LPC24_Pwm_DisablePin(pwmProviders[controller], p);
-                LPC24_Pwm_ReleasePin(pwmProviders[controller], p);
+                if (controller == 0)
+                    PWM0PCR &= ~(1 << (9 + (g_PwmController[controller].match[p])));
+                if (controller == 1)
+                    PWM1PCR &= ~(1 << (9 + (g_PwmController[controller].match[p])));
+
+                LPC24_Pwm_DisablePin(&pwmProviders, controller, p);
+                LPC24_Pwm_ReleasePin(&pwmProviders, controller, p);
             }
 
             g_PwmController[controller].isOpened[p] = false;

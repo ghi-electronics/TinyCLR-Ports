@@ -195,19 +195,19 @@ struct PwmController {
 const TinyCLR_Api_Info* LPC17_Pwm_GetApi();
 void LPC17_Pwm_Reset();
 void LPC17_Pwm_ResetController(int32_t controller);
-TinyCLR_Result LPC17_Pwm_Acquire(const TinyCLR_Pwm_Provider* self);
-TinyCLR_Result LPC17_Pwm_Release(const TinyCLR_Pwm_Provider* self);
-int32_t LPC17_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t pin);
-TinyCLR_Result LPC17_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self, double& frequency);
-TinyCLR_Result LPC17_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t pin);
-TinyCLR_Result LPC17_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t pin);
-TinyCLR_Result LPC17_Pwm_EnablePin(const TinyCLR_Pwm_Provider* self, int32_t pin);
-TinyCLR_Result LPC17_Pwm_DisablePin(const TinyCLR_Pwm_Provider* self, int32_t pin);
-TinyCLR_Result LPC17_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int32_t pin, double dutyCycle, bool invertPolarity);
-double LPC17_Pwm_GetMinFrequency(const TinyCLR_Pwm_Provider* self);
-double LPC17_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self);
-double LPC17_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self);
-int32_t LPC17_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self);
+TinyCLR_Result LPC17_Pwm_Acquire(const TinyCLR_Pwm_Provider* self, int32_t controller);
+TinyCLR_Result LPC17_Pwm_Release(const TinyCLR_Pwm_Provider* self, int32_t controller);
+int32_t LPC17_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin);
+TinyCLR_Result LPC17_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller, double& frequency);
+TinyCLR_Result LPC17_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin);
+TinyCLR_Result LPC17_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin);
+TinyCLR_Result LPC17_Pwm_EnablePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin);
+TinyCLR_Result LPC17_Pwm_DisablePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin);
+TinyCLR_Result LPC17_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin, double dutyCycle, bool invertPolarity);
+double LPC17_Pwm_GetMinFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller);
+double LPC17_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller);
+double LPC17_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller);
+int32_t LPC17_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self, int32_t controller);
 LPC17_Gpio_Pin LPC17_Pwm_GetPins(int32_t controller, int32_t channel);
 
 ////////////////////////////////////////////////////////////////////////////////

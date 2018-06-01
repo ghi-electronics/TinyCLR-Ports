@@ -176,18 +176,18 @@ void STM32F4_I2c_Reset();
 //PWM
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F4_Pwm_GetApi();
-TinyCLR_Result STM32F4_Pwm_Acquire(const TinyCLR_Pwm_Provider* self);
-TinyCLR_Result STM32F4_Pwm_Release(const TinyCLR_Pwm_Provider* self);
-TinyCLR_Result STM32F4_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t pin);
-TinyCLR_Result STM32F4_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t pin);
-TinyCLR_Result STM32F4_Pwm_EnablePin(const TinyCLR_Pwm_Provider* self, int32_t pin);
-TinyCLR_Result STM32F4_Pwm_DisablePin(const TinyCLR_Pwm_Provider* self, int32_t pin);
-TinyCLR_Result STM32F4_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int32_t pin, double dutyCycle, bool invertPolarity);
-TinyCLR_Result STM32F4_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self, double& frequency);
-double STM32F4_Pwm_GetMinFrequency(const TinyCLR_Pwm_Provider* self);
-double STM32F4_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self);
-double STM32F4_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self);
-int32_t STM32F4_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self);
+TinyCLR_Result STM32F4_Pwm_Acquire(const TinyCLR_Pwm_Provider* self, int32_t controller);
+TinyCLR_Result STM32F4_Pwm_Release(const TinyCLR_Pwm_Provider* self, int32_t controller);
+TinyCLR_Result STM32F4_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin);
+TinyCLR_Result STM32F4_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin);
+TinyCLR_Result STM32F4_Pwm_EnablePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin);
+TinyCLR_Result STM32F4_Pwm_DisablePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin);
+TinyCLR_Result STM32F4_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin, double dutyCycle, bool invertPolarity);
+TinyCLR_Result STM32F4_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller, double& frequency);
+double STM32F4_Pwm_GetMinFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller);
+double STM32F4_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller);
+double STM32F4_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller);
+int32_t STM32F4_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self, int32_t controller);
 void STM32F4_Pwm_Reset();
 
 ////////////////////////////////////////////////////////////////////////////////

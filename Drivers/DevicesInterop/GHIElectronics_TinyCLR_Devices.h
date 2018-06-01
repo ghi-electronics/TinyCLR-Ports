@@ -406,6 +406,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Low
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider {
     static const size_t FIELD___nativeProvider___I = 1;
     static const size_t FIELD___ActualFrequency__BackingField___R8 = 2;
+    static const size_t FIELD___idx___I4 = 3;
 
     static TinyCLR_Result get_MaxFrequency___R8(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_MinFrequency___R8(const TinyCLR_Interop_MethodData md);
