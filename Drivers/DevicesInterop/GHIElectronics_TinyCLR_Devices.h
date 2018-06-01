@@ -76,13 +76,14 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanProvider {
     static const size_t FIELD_STATIC___providers___mscorlibSystemCollectionsHashtable = 1;
 
-    static const size_t FIELD___controllers___SZARRAY_GHIElectronicsTinyCLRDevicesCanProviderICanControllerProvider = 1;
+    static const size_t FIELD___controllers___GHIElectronicsTinyCLRDevicesCanProviderICanControllerProvider = 1;
     static const size_t FIELD___Name__BackingField___STRING = 2;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider {
     static const size_t FIELD___nativeProvider___I = 1;
     static const size_t FIELD___disposed___BOOLEAN = 2;
+    static const size_t FIELD___controllerId___I4 = 3;
 
     static TinyCLR_Result Reset___VOID__I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result ReadMessages___I4__I4__SZARRAY_GHIElectronicsTinyCLRDevicesCanCanMessage__I4__I4(const TinyCLR_Interop_MethodData md);
@@ -339,7 +340,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c
     static const size_t FIELD___sda___I4 = 2;
     static const size_t FIELD___scl___I4 = 3;
     static const size_t FIELD___useSoftwarePullups___BOOLEAN = 4;
-    static const size_t FIELD___controllers___SZARRAY_GHIElectronicsTinyCLRDevicesI2cProviderII2cControllerProvider = 5;
+    static const size_t FIELD___controllers___GHIElectronicsTinyCLRDevicesI2cProviderII2cControllerProvider = 5;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_I2cTransferResult {
@@ -351,9 +352,10 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c
     static const size_t FIELD___nativeProvider___I = 1;
     static const size_t FIELD___created___I4 = 2;
     static const size_t FIELD___isExclusive___BOOLEAN = 3;
+    static const size_t FIELD___controllerId___I4 = 4;
 
-    static TinyCLR_Result AcquireNative___VOID(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result ReleaseNative___VOID(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result AcquireNative___VOID__I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result ReleaseNative___VOID__I4(const TinyCLR_Interop_MethodData md);
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cDeviceProvider {
@@ -361,10 +363,11 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c
     static const size_t FIELD___parent___GHIElectronicsTinyCLRDevicesI2cProviderDefaultI2cControllerProvider = 2;
     static const size_t FIELD___m_disposed___BOOLEAN = 3;
     static const size_t FIELD___m_settings___GHIElectronicsTinyCLRDevicesI2cI2cConnectionSettings = 4;
+    static const size_t FIELD___idx___I4 = 5;
 
-    static TinyCLR_Result ReadInternal___VOID__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result WriteInternal___VOID__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result WriteReadInternal___VOID__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result ReadInternal___VOID__I4__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result WriteInternal___VOID__I4__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result WriteReadInternal___VOID__I4__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md);
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_I2cProvider {
