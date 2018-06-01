@@ -18,8 +18,7 @@ static TinyCLR_Rtc_Provider rtcProvider;
 static TinyCLR_Api_Info timeApi;
 
 const TinyCLR_Api_Info* LPC17_Rtc_GetApi() {
-    rtcProvider.Parent = &timeApi;
-    rtcProvider.Index = 0;
+    rtcProvider.Parent = &timeApi;    
     rtcProvider.Acquire = &LPC17_Rtc_Acquire;
     rtcProvider.Release = &LPC17_Rtc_Release;
     rtcProvider.GetNow = &LPC17_Rtc_GetNow;
