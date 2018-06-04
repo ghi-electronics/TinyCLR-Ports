@@ -103,7 +103,7 @@ const TinyCLR_Api_Info* STM32F4_Pwm_GetApi() {
 TinyCLR_Result STM32F4_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin) {
     ptr_TIM_TypeDef treg = g_PwmController[controller].timerdef;
 
-    auto actualPin = STM32F4_Pwm_GetGpioPinForChannel(self, controller pin);
+    auto actualPin = STM32F4_Pwm_GetGpioPinForChannel(self, controller, pin);
 
     if (!STM32F4_GpioInternal_OpenPin(actualPin->number))
         return TinyCLR_Result::SharingViolation;
@@ -139,7 +139,7 @@ TinyCLR_Result STM32F4_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t 
 TinyCLR_Result STM32F4_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin) {
     ptr_TIM_TypeDef treg = g_PwmController[controller].timerdef;
 
-    auto actualPin = STM32F4_Pwm_GetGpioPinForChannel(self, controller pin);
+    auto actualPin = STM32F4_Pwm_GetGpioPinForChannel(self, controller, pin);
 
     uint32_t mask = 0xFF; // disable PWM channel
     if (pin & 1) mask = 0xFF00; // 1 or 3
@@ -259,7 +259,7 @@ double STM32F4_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self, int32_t 
 TinyCLR_Result STM32F4_Pwm_EnablePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin) {
     ptr_TIM_TypeDef treg = g_PwmController[controller].timerdef;
 
-    auto actualPin = STM32F4_Pwm_GetGpioPinForChannel(self, controller pin);
+    auto actualPin = STM32F4_Pwm_GetGpioPinForChannel(self, controller, pin);
 
     STM32F4_GpioInternal_ConfigurePin(actualPin->number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, actualPin->alternateFunction);
 
@@ -280,7 +280,7 @@ TinyCLR_Result STM32F4_Pwm_EnablePin(const TinyCLR_Pwm_Provider* self, int32_t c
 TinyCLR_Result STM32F4_Pwm_DisablePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin) {
     ptr_TIM_TypeDef treg = g_PwmController[controller].timerdef;
 
-    auto actualPin = STM32F4_Pwm_GetGpioPinForChannel(self, controller pin);
+    auto actualPin = STM32F4_Pwm_GetGpioPinForChannel(self, controller, pin);
 
     uint16_t ccer = treg->CCER;
 
@@ -371,7 +371,7 @@ TinyCLR_Result STM32F4_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self,
     g_PwmController[controller].theoryFreq = frequency;
 
     // Calculate actual frequency base on desired frequency
-    frequency = STM32F4_Pwm_GetActualFrequency(self);
+    frequency = STM32F4_Pwm_GetActualFrequency(self, controller);
 
     // Update channel if frequency had different
     for (int p = 0; p < PWM_PER_CONTROLLER; p++)

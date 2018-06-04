@@ -197,7 +197,7 @@ void STM32F4_Uart_IrqRx(int controller, uint16_t sr) {
 
     if (g_UartController[controller].rxBufferCount == g_UartController[controller].rxBufferSize) {
         if (g_UartController[controller].errorEventHandler != nullptr)
-            g_UartController[controller].errorEventHandler(g_UartController[controller].provider, TinyCLR_Uart_Error::ReceiveFull);
+            g_UartController[controller].errorEventHandler(g_UartController[controller].provider, controller, TinyCLR_Uart_Error::ReceiveFull);
 
         return;
     }
@@ -210,17 +210,17 @@ void STM32F4_Uart_IrqRx(int controller, uint16_t sr) {
         g_UartController[controller].rxBufferIn = 0;
 
     if (g_UartController[controller].dataReceivedEventHandler != nullptr)
-        g_UartController[controller].dataReceivedEventHandler(g_UartController[controller].provider, 1);
+        g_UartController[controller].dataReceivedEventHandler(g_UartController[controller].provider, controller, 1);
 
     if (g_UartController[controller].errorEventHandler != nullptr) {
         if (sr & USART_SR_ORE)
-            g_UartController[controller].errorEventHandler(g_UartController[controller].provider, TinyCLR_Uart_Error::BufferOverrun);
+            g_UartController[controller].errorEventHandler(g_UartController[controller].provider, controller, TinyCLR_Uart_Error::BufferOverrun);
 
         if (sr & USART_SR_FE)
-            g_UartController[controller].errorEventHandler(g_UartController[controller].provider, TinyCLR_Uart_Error::Frame);
+            g_UartController[controller].errorEventHandler(g_UartController[controller].provider, controller, TinyCLR_Uart_Error::Frame);
 
         if (sr & USART_SR_PE)
-            g_UartController[controller].errorEventHandler(g_UartController[controller].provider, TinyCLR_Uart_Error::ReceiveParity);
+            g_UartController[controller].errorEventHandler(g_UartController[controller].provider, controller, TinyCLR_Uart_Error::ReceiveParity);
     }
 }
 
@@ -502,12 +502,12 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self,
     g_UartController[controller].isOpened = true;
 
     if (g_UartController[controller].txBufferSize == 0) {
-        if (STM32F4_Uart_SetWriteBufferSize(self, g_STM32F4_Uart_TxDefaultBuffersSize[controller]) != TinyCLR_Result::Success)
+        if (STM32F4_Uart_SetWriteBufferSize(self, controller, g_STM32F4_Uart_TxDefaultBuffersSize[controller]) != TinyCLR_Result::Success)
             return TinyCLR_Result::OutOfMemory;
     }
 
     if (g_UartController[controller].rxBufferSize == 0) {
-        if (STM32F4_Uart_SetReadBufferSize(self, g_STM32F4_Uart_RxDefaultBuffersSize[controller]) != TinyCLR_Result::Success)
+        if (STM32F4_Uart_SetReadBufferSize(self, controller, g_STM32F4_Uart_RxDefaultBuffersSize[controller]) != TinyCLR_Result::Success)
             return TinyCLR_Result::OutOfMemory;
     }
 
@@ -728,7 +728,7 @@ TinyCLR_Result STM32F4_Uart_Write(const TinyCLR_Uart_Provider* self, int32_t con
 
     if (g_UartController[controller].txBufferCount == g_UartController[controller].txBufferSize) {
         if (g_UartController[controller].errorEventHandler != nullptr)
-            g_UartController[controller].errorEventHandler(g_UartController[controller].provider, TinyCLR_Uart_Error::TransmitFull);
+            g_UartController[controller].errorEventHandler(g_UartController[controller].provider, controller, TinyCLR_Uart_Error::TransmitFull);
 
         return TinyCLR_Result::Success;
     }
