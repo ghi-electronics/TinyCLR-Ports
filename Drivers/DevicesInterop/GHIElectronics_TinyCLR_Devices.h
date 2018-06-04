@@ -83,28 +83,28 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider {
     static const size_t FIELD___nativeProvider___I = 1;
     static const size_t FIELD___disposed___BOOLEAN = 2;
-    static const size_t FIELD___controllerId___I4 = 3;
+    static const size_t FIELD___idx___I4 = 3;
 
-    static TinyCLR_Result Reset___VOID__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result ReadMessages___I4__I4__SZARRAY_GHIElectronicsTinyCLRDevicesCanCanMessage__I4__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result WriteMessages___I4__I4__SZARRAY_GHIElectronicsTinyCLRDevicesCanCanMessage__I4__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result SetBitTiming___VOID__I4__GHIElectronicsTinyCLRDevicesCanCanBitTiming(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result SetExplicitFilters___VOID__I4__SZARRAY_U4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result SetGroupFilters___VOID__I4__SZARRAY_U4__SZARRAY_U4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result ClearReadBuffer___VOID__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result ClearWriteBuffer___VOID__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result UnreadMessageCount___I4__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result UnwrittenMessageCount___I4__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result IsWritingAllowed___BOOLEAN__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result ReadErrorCount___I4__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result WriteErrorCount___I4__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result SourceClock___U4__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result NativeAcquire___VOID__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result NativeRelease___VOID__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result GetReadBufferSize___U4__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result SetReadBufferSize___VOID__I4__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result GetWriteBufferSize___U4__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result SetWriteBufferSize___VOID__I4__I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result Reset___VOID(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result ReadMessages___I4__SZARRAY_GHIElectronicsTinyCLRDevicesCanCanMessage__I4__I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result WriteMessages___I4__SZARRAY_GHIElectronicsTinyCLRDevicesCanCanMessage__I4__I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result SetBitTiming___VOID__GHIElectronicsTinyCLRDevicesCanCanBitTiming(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result SetExplicitFilters___VOID__SZARRAY_U4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result SetGroupFilters___VOID__SZARRAY_U4__SZARRAY_U4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result ClearReadBuffer___VOID(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result ClearWriteBuffer___VOID(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result get_UnreadMessageCount___I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result get_UnwrittenMessageCount___I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result get_IsWritingAllowed___BOOLEAN(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result get_ReadErrorCount___I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result get_WriteErrorCount___I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result get_SourceClock___U4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result NativeAcquire___VOID(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result NativeRelease___VOID(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result get_ReadBufferSize___U4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result set_ReadBufferSize___VOID__U4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result get_WriteBufferSize___U4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result set_WriteBufferSize___VOID__U4(const TinyCLR_Interop_MethodData md);
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_DacChannel {
