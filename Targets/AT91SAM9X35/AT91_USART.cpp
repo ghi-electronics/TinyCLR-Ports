@@ -41,6 +41,7 @@ struct AT91_Uart_Controller {
     TinyCLR_Uart_DataReceivedHandler    dataReceivedEventHandler;
 
     const TinyCLR_Uart_Provider*        provider;
+    int32_t        controllerId;
 
 };
 
@@ -392,7 +393,8 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, in
     // Write the Timeguard Register
     usart.US_TTGR = 0;
 
-    AT91_Interrupt_Activate(uartId, (uint32_t*)&AT91_Uart_InterruptHandler, (void*)(size_t)controller);
+    g_UartController[controller].controllerId = controller;
+    AT91_Interrupt_Activate(uartId, (uint32_t*)&AT91_Uart_InterruptHandler, (void*)(size_t)&g_UartController[controller].controllerId);
 
     if (AT91_Uart_PinConfiguration(controller, true) == TinyCLR_Result::NotSupported)
         return TinyCLR_Result::NotSupported;
