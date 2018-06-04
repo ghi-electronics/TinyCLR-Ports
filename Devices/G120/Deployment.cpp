@@ -41,9 +41,9 @@ const TinyCLR_Api_Info* LPC17_Deployment_GetApi() {
 
 TinyCLR_Result LPC17_Deployment_Acquire(const TinyCLR_Deployment_Provider* self, bool& supportXIP) {
     const TinyCLR_Api_Info* spiApi = CONCAT(DEVICE_TARGET, _Spi_GetApi)();
-    TinyCLR_Spi_Provider** spiProvider = (TinyCLR_Spi_Provider**)spiApi->Implementation;
+    TinyCLR_Spi_Provider* spiProvider = (TinyCLR_Spi_Provider*)spiApi->Implementation;
 
-    return S25FL032_Flash_Acquire(spiProvider[LPC17_DEPLOYMENT_SPI_PORT], LPC17_DEPLOYMENT_SPI_PORT, LPC17_DEPLOYMENT_SPI_ENABLE_PIN, supportXIP);
+    return S25FL032_Flash_Acquire(spiProvider, LPC17_DEPLOYMENT_SPI_PORT, LPC17_DEPLOYMENT_SPI_ENABLE_PIN, supportXIP);
 }
 
 TinyCLR_Result LPC17_Deployment_Release(const TinyCLR_Deployment_Provider* self) {
