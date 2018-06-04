@@ -39,7 +39,6 @@
 #define AT91_AHB_CLOCK_HZ (200*1000*1000) // 200 MHz
 #define AT91_SYSTEM_PERIPHERAL_CLOCK_HZ (AT91_AHB_CLOCK_HZ / 2) // 100MHz (Peripheral Clock - MCK)
 
-
 #define INCLUDE_GPIO
 #define AT91_GPIO_PINS  {/*      0          1          2          3          4          5          6          7          8          9          10         11         12         13         14         15         16         17         18         19         20         21         22         23         24         25         26         27         28         29         30         31      */\
                          /*PAx*/ DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), DEFAULT(), NO_INIT(), NO_INIT(), NO_INIT(), NO_INIT(), DEFAULT(), DEFAULT(), DEFAULT(),\
@@ -74,6 +73,8 @@
 #define AT91_SPI_MISO_PINS { { PIN(A,25), PS(A) } }
 #define AT91_SPI_MOSI_PINS { { PIN(A,26), PS(A) } }
 #define AT91_SPI_SCLK_PINS { { PIN(A,27), PS(A) } }
+
+#define AT91_TIME_DEFAULT_CONTROLLER_ID 0
 
 #define INCLUDE_UART
 #define TOTAL_UART_CONTROLLERS 4
