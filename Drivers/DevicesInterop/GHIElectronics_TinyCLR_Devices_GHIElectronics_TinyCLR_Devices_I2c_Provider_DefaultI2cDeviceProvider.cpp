@@ -1,7 +1,7 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cDeviceProvider::ReadInternal___VOID__I4__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cDeviceProvider::ReadInternal___VOID__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md) {
     auto provider = (const TinyCLR_I2c_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);;
 
     uint8_t* data = nullptr;
@@ -17,10 +17,9 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     }
 
     {
-        auto channelArg = TinyCLR_Interop_GetArguments(md, 1);
-        auto agr2 = TinyCLR_Interop_GetArguments(md, 2);
+        auto agr1 = TinyCLR_Interop_GetArguments(md, 1);
 
-        uint8_t* buffer = (uint8_t*)agr2.Data.SzArray.Data;
+        uint8_t* buffer = (uint8_t*)agr1.Data.SzArray.Data;
 
         auto clrValueSettingObject = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_settings___GHIElectronicsTinyCLRDevicesI2cI2cConnectionSettings);
 
@@ -36,25 +35,27 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
         data = buffer;
 
+        auto arg2 = TinyCLR_Interop_GetArguments(md, 2);
         auto arg3 = TinyCLR_Interop_GetArguments(md, 3);
-        auto arg4 = TinyCLR_Interop_GetArguments(md, 4);
 
-        offset = arg3.Data.Numeric->I4;
-        length = arg4.Data.Numeric->I4;
+        offset = arg2.Data.Numeric->I4;
+        length = arg3.Data.Numeric->I4;
 
-        int32_t channel = channelArg.Data.Numeric->I4;
+        auto fieldParent = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___parent___GHIElectronicsTinyCLRDevicesI2cProviderDefaultI2cControllerProvider);
+        auto fieldParentObject = TinyCLR_Interop_GetFieldInObject(md, fieldParent.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cControllerProvider::FIELD___idx___I4);
+        auto controller = fieldParentObject.Data.Numeric->I4;
 
-        provider->SetActiveSettings(provider, channel, slaveAddress, busSpeed);
+        provider->SetActiveSettings(provider, controller, slaveAddress, busSpeed);
 
-        if (provider->Read(provider, channel, data + offset, length, result) != TinyCLR_Result::Success) {
+        if (provider->Read(provider, controller, data + offset, length, result) != TinyCLR_Result::Success) {
             return TinyCLR_Result::InvalidOperation;
         }
         else {
+            auto arg4 = TinyCLR_Interop_GetArguments(md, 4);
             auto arg5 = TinyCLR_Interop_GetArguments(md, 5);
-            auto arg6 = TinyCLR_Interop_GetArguments(md, 6);
 
-            arg5.Data.Numeric->I4 = length;
-            arg6.Data.Numeric->I4 = (int32_t)result;
+            arg4.Data.Numeric->I4 = length;
+            arg5.Data.Numeric->I4 = (int32_t)result;
 
         }
     }
@@ -62,7 +63,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cDeviceProvider::WriteInternal___VOID__I4__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cDeviceProvider::WriteInternal___VOID__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md) {
     auto provider = (const TinyCLR_I2c_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
 
     uint8_t* data = nullptr;
@@ -78,10 +79,9 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     }
 
     {
-        auto channelArg = TinyCLR_Interop_GetArguments(md, 1);
-        auto agr2 = TinyCLR_Interop_GetArguments(md, 2);
+        auto agr1 = TinyCLR_Interop_GetArguments(md, 1);
 
-        uint8_t* buffer = (uint8_t*)agr2.Data.SzArray.Data;
+        uint8_t* buffer = (uint8_t*)agr1.Data.SzArray.Data;
 
         auto clrValueSettingObject = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_settings___GHIElectronicsTinyCLRDevicesI2cI2cConnectionSettings);
 
@@ -97,32 +97,34 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
         data = buffer;
 
+        auto arg2 = TinyCLR_Interop_GetArguments(md, 2);
         auto arg3 = TinyCLR_Interop_GetArguments(md, 3);
-        auto arg4 = TinyCLR_Interop_GetArguments(md, 4);
 
-        offset = arg3.Data.Numeric->I4;
-        length = arg4.Data.Numeric->I4;
+        offset = arg2.Data.Numeric->I4;
+        length = arg3.Data.Numeric->I4;
 
-        int32_t channel = channelArg.Data.Numeric->I4;
+        auto fieldParent = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___parent___GHIElectronicsTinyCLRDevicesI2cProviderDefaultI2cControllerProvider);
+        auto fieldParentObject = TinyCLR_Interop_GetFieldInObject(md, fieldParent.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cControllerProvider::FIELD___idx___I4);
+        auto controller = fieldParentObject.Data.Numeric->I4;
 
-        provider->SetActiveSettings(provider, channel, slaveAddress, busSpeed);
+        provider->SetActiveSettings(provider, controller, slaveAddress, busSpeed);
 
-        if (provider->Write(provider, channel, data + offset, length, result) != TinyCLR_Result::Success) {
+        if (provider->Write(provider, controller, data + offset, length, result) != TinyCLR_Result::Success) {
             return TinyCLR_Result::InvalidOperation;
         }
         else {
+            auto arg4 = TinyCLR_Interop_GetArguments(md, 4);
             auto arg5 = TinyCLR_Interop_GetArguments(md, 5);
-            auto arg6 = TinyCLR_Interop_GetArguments(md, 6);
 
-            arg5.Data.Numeric->I4 = length;
-            arg6.Data.Numeric->I4 = (int32_t)result;
+            arg4.Data.Numeric->I4 = length;
+            arg5.Data.Numeric->I4 = (int32_t)result;
         }
     }
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cDeviceProvider::WriteReadInternal___VOID__I4__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cDeviceProvider::WriteReadInternal___VOID__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md) {
     auto provider = (const TinyCLR_I2c_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
 
     uint8_t* writeData = nullptr;
@@ -141,14 +143,13 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     }
 
     {
-        auto channelArg = TinyCLR_Interop_GetArguments(md, 1);
-        auto agr2 = TinyCLR_Interop_GetArguments(md, 2);
+        auto agr1 = TinyCLR_Interop_GetArguments(md, 1);
 
-        uint8_t* writeBuffer = (uint8_t*)agr2.Data.SzArray.Data;
+        uint8_t* writeBuffer = (uint8_t*)agr1.Data.SzArray.Data;
 
-        auto agr5 = TinyCLR_Interop_GetArguments(md, 5);
+        auto agr4 = TinyCLR_Interop_GetArguments(md, 4);
 
-        uint8_t* readBuffer = (uint8_t*)agr5.Data.SzArray.Data;
+        uint8_t* readBuffer = (uint8_t*)agr4.Data.SzArray.Data;
 
         auto clrValueSettingObject = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_settings___GHIElectronicsTinyCLRDevicesI2cI2cConnectionSettings);
 
@@ -163,35 +164,35 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
         auto busSpeed = (TinyCLR_I2c_BusSpeed)clrValueSettingObjectBusSpeed.Data.Numeric->U4;
 
         writeData = writeBuffer;
+        auto agr2 = TinyCLR_Interop_GetArguments(md, 2);
         auto agr3 = TinyCLR_Interop_GetArguments(md, 3);
-        auto agr4 = TinyCLR_Interop_GetArguments(md, 4);
 
-        writeOffset = agr3.Data.Numeric->I4;
-        writeLength = agr4.Data.Numeric->I4;
+        writeOffset = agr2.Data.Numeric->I4;
+        writeLength = agr3.Data.Numeric->I4;
 
         readData = readBuffer;
 
+        auto agr5 = TinyCLR_Interop_GetArguments(md, 5);
         auto agr6 = TinyCLR_Interop_GetArguments(md, 6);
-        auto agr7 = TinyCLR_Interop_GetArguments(md, 7);
 
-        readOffset = agr6.Data.Numeric->I4;
-        readLength = agr7.Data.Numeric->I4;
+        readOffset = agr5.Data.Numeric->I4;
+        readLength = agr6.Data.Numeric->I4;
 
-        int32_t channel = channelArg.Data.Numeric->I4;
+        auto fieldParent = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___parent___GHIElectronicsTinyCLRDevicesI2cProviderDefaultI2cControllerProvider);
+        auto fieldParentObject = TinyCLR_Interop_GetFieldInObject(md, fieldParent.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cControllerProvider::FIELD___idx___I4);
+        auto controller = fieldParentObject.Data.Numeric->I4;
 
-        provider->SetActiveSettings(provider, channel, slaveAddress, busSpeed);
+        provider->SetActiveSettings(provider, controller, slaveAddress, busSpeed);
 
-        if (provider->WriteRead(provider, channel, writeData + writeOffset, writeLength, readData + readOffset, readLength, result) != TinyCLR_Result::Success) {
+        if (provider->WriteRead(provider, controller, writeData + writeOffset, writeLength, readData + readOffset, readLength, result) != TinyCLR_Result::Success) {
             return TinyCLR_Result::NullReference;
         }
         else {
-
+            auto arg7 = TinyCLR_Interop_GetArguments(md, 7);
             auto arg8 = TinyCLR_Interop_GetArguments(md, 8);
-            auto arg9 = TinyCLR_Interop_GetArguments(md, 9);
 
-            arg8.Data.Numeric->I4 = writeLength + readLength;
-            arg9.Data.Numeric->I4 = (int32_t)result;
-
+            arg7.Data.Numeric->I4 = writeLength + readLength;
+            arg8.Data.Numeric->I4 = (int32_t)result;
         }
     }
 
