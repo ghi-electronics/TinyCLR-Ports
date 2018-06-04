@@ -202,7 +202,7 @@ void LPC24_Uart_PinConfiguration(int controller, bool enable) {
 
 void LPC24_Uart_SetErrorEvent(int32_t controller, TinyCLR_Uart_Error error) {
     if (g_UartController[controller].errorEventHandler != nullptr)
-        g_UartController[controller].errorEventHandler(g_UartController[controller].provider, error);
+        g_UartController[controller].errorEventHandler(g_UartController[controller].provider, controller, error);
 }
 
 void LPC24_Uart_ReceiveData(int controller, uint32_t LSR_Value, uint32_t IIR_Value) {
@@ -233,7 +233,7 @@ void LPC24_Uart_ReceiveData(int controller, uint32_t LSR_Value, uint32_t IIR_Val
                         g_UartController[controller].rxBufferIn = 0;
 
                     if (g_UartController[controller].dataReceivedEventHandler != nullptr)
-                        g_UartController[controller].dataReceivedEventHandler(g_UartController[controller].provider, 1);
+                        g_UartController[controller].dataReceivedEventHandler(g_UartController[controller].provider, controller, 1);
                 }
 
                 LSR_Value = USARTC.UART_LSR;

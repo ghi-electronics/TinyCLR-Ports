@@ -365,7 +365,7 @@ TinyCLR_Result LPC24_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, in
         }
 
         if (g_PwmController[controller].outputEnabled[pin] == true) {
-            LPC24_Pwm_EnablePin(self, pin);
+            LPC24_Pwm_EnablePin(self, controller, pin);
 
             g_PwmController[controller].outputEnabled[pin] = false;
         }
@@ -419,27 +419,27 @@ void LPC24_Pwm_Reset() {
 
 void LPC24_Pwm_ResetController(int32_t controller) {
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-        g_PwmController[pwmProviders[controller]->Index].gpioPin[p] = LPC24_Pwm_GetPins(controller, p);
+        g_PwmController[controller].gpioPin[p] = LPC24_Pwm_GetPins(controller, p);
 
-        if (g_PwmController[pwmProviders[controller]->Index].gpioPin[p].number != PIN_NONE) {
+        if (g_PwmController[controller].gpioPin[p].number != PIN_NONE) {
             // Reset values
-            g_PwmController[pwmProviders[controller]->Index].channel[p] = controller;
-            g_PwmController[pwmProviders[controller]->Index].match[p] = p;
+            g_PwmController[controller].channel[p] = controller;
+            g_PwmController[controller].match[p] = p;
 #if defined(LPC2388) || defined(LPC2387)
             if (p < 3)
-                g_PwmController[pwmProviders[controller]->Index].matchAddress[p] = (uint32_t*)(PWM1MR1 + (p * 4));
+                g_PwmController[controller].matchAddress[p] = (uint32_t*)(PWM1MR1 + (p * 4));
             else
-                g_PwmController[pwmProviders[controller]->Index].matchAddress[p] = (uint32_t*)(PWM1MR4 + ((p - 3) * 4));
+                g_PwmController[controller].matchAddress[p] = (uint32_t*)(PWM1MR4 + ((p - 3) * 4));
 #else
             if (p < 3)
-                g_PwmController[pwmProviders[controller]->Index].matchAddress[p] = pwmProviders[controller]->Index == 0 ? (uint32_t*)(PWM0MR1 + (p * 4)) : (uint32_t*)(PWM1MR1 + (p * 4));
+                g_PwmController[controller].matchAddress[p] = controller == 0 ? (uint32_t*)(PWM0MR1 + (p * 4)) : (uint32_t*)(PWM1MR1 + (p * 4));
             else
-                g_PwmController[pwmProviders[controller]->Index].matchAddress[p] = pwmProviders[controller]->Index == 0 ? (uint32_t*)(PWM0MR4 + ((p - 3) * 4)) : (uint32_t*)(PWM1MR4 + ((p - 3) * 4));
+                g_PwmController[controller].matchAddress[p] = controller == 0 ? (uint32_t*)(PWM0MR4 + ((p - 3) * 4)) : (uint32_t*)(PWM1MR4 + ((p - 3) * 4));
 #endif
-            g_PwmController[pwmProviders[controller]->Index].outputEnabled[p] = false;
-            g_PwmController[pwmProviders[controller]->Index].invert[p] = false;
-            g_PwmController[pwmProviders[controller]->Index].frequency = 0.0;
-            g_PwmController[pwmProviders[controller]->Index].dutyCycle[p] = 0.0;
+            g_PwmController[controller].outputEnabled[p] = false;
+            g_PwmController[controller].invert[p] = false;
+            g_PwmController[controller].frequency = 0.0;
+            g_PwmController[controller].dutyCycle[p] = 0.0;
 
             if (g_PwmController[controller].isOpened[p] == true) {
                 if (controller == 0)

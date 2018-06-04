@@ -149,10 +149,7 @@ uint32_t __section("SectionForFlashOperations") LPC24_Timer_Controller::ReadCoun
 void LPC24_Time_InterruptHandler(void* Param) {
     TinyCLR_NativeTime_Provider *provider = (TinyCLR_NativeTime_Provider*)Param;
 
-    int32_t timer = 0;
-
-    if (provider != nullptr)
-        timer = provider->Index;
+    int32_t timer = LPC24_TIME_CONTROLLER;
 
     if (LPC24_Timer_Controller::DidCompareHit(timer)) {
         LPC24_Timer_Controller::ResetCompareHit(timer);
@@ -236,10 +233,7 @@ uint64_t LPC24_Time_MicrosecondsToTicks(const TinyCLR_NativeTime_Provider* self,
 }
 
 uint64_t LPC24_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Provider* self) {
-    int32_t timer = 0;
-
-    if (self != nullptr)
-        timer = self->Index;
+    int32_t timer = LPC24_TIME_CONTROLLER;
 
     uint64_t lastValue = g_LPC24_Timer_Controller.m_lastRead;
 
@@ -258,10 +252,7 @@ uint64_t LPC24_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Provider* 
 }
 
 TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Provider* self, uint64_t processorTicks) {
-    int32_t timer = 0;
-
-    if (self != nullptr)
-        timer = self->Index;
+    int32_t timer = LPC24_TIME_CONTROLLER;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -332,7 +323,7 @@ TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Provi
 }
 
 TinyCLR_Result LPC24_Time_Acquire(const TinyCLR_NativeTime_Provider* self) {
-    int32_t timer = self->Index;
+    int32_t timer = LPC24_TIME_CONTROLLER;
 
     g_LPC24_Timer_Controller.m_lastRead = 0;
     g_LPC24_Timer_Controller.m_nextCompare = TIMER_IDLE_VALUE;
@@ -348,7 +339,7 @@ TinyCLR_Result LPC24_Time_Acquire(const TinyCLR_NativeTime_Provider* self) {
 }
 
 TinyCLR_Result LPC24_Time_Release(const TinyCLR_NativeTime_Provider* self) {
-    int32_t timer = self->Index;
+    int32_t timer = LPC24_TIME_CONTROLLER;
 
     if (LPC24_Timer_Controller::Uninitialize(timer) == false)
         return TinyCLR_Result::InvalidOperation;

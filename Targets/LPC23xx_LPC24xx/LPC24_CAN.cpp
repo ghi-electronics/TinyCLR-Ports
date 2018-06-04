@@ -2032,10 +2032,8 @@ static const int TOTAL_CAN_CONTROLLERS = SIZEOF_ARRAY(g_LPC24_Can_Tx_Pins);
 
 static LPC24_Can_Controller canController[TOTAL_CAN_CONTROLLERS];
 
-static TinyCLR_Can_Provider *canProvider[TOTAL_CAN_CONTROLLERS];
+static TinyCLR_Can_Provider canProvider;
 static TinyCLR_Api_Info canApi;
-
-static uint8_t canProviderDefs[TOTAL_CAN_CONTROLLERS * sizeof(TinyCLR_Can_Provider)];
 
 void CAN_DisableExplicitFilters(int32_t channel) {
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -2219,38 +2217,34 @@ int32_t BinarySearch2(uint32_t *lowerBounds, uint32_t *upperBounds, int32_t firs
 }
 
 const TinyCLR_Api_Info* LPC24_Can_GetApi() {
-    for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
-        canProvider[i] = (TinyCLR_Can_Provider*)(canProviderDefs + (i * sizeof(TinyCLR_Can_Provider)));
-        canProvider[i]->Parent = &canApi;
-        canProvider[i]->Index = i;
-        canProvider[i]->Acquire = &LPC24_Can_Acquire;
-        canProvider[i]->Release = &LPC24_Can_Release;
-        canProvider[i]->Reset = &LPC24_Can_SoftReset;
-        canProvider[i]->WriteMessage = &LPC24_Can_WriteMessage;
-        canProvider[i]->ReadMessage = &LPC24_Can_ReadMessage;
-        canProvider[i]->SetBitTiming = &LPC24_Can_SetBitTiming;
-        canProvider[i]->GetUnreadMessageCount = &LPC24_Can_GetUnreadMessageCount;
-        canProvider[i]->SetMessageReceivedHandler = &LPC24_Can_SetMessageReceivedHandler;
-        canProvider[i]->SetErrorReceivedHandler = &LPC24_Can_SetErrorReceivedHandler;
-        canProvider[i]->SetExplicitFilters = &LPC24_Can_SetExplicitFilters;
-        canProvider[i]->SetGroupFilters = &LPC24_Can_SetGroupFilters;
-        canProvider[i]->ClearReadBuffer = &LPC24_Can_ClearReadBuffer;
-        canProvider[i]->IsWritingAllowed = &LPC24_Can_IsWritingAllowed;
-        canProvider[i]->GetWriteErrorCount = &LPC24_Can_GetWriteErrorCount;
-        canProvider[i]->GetReadErrorCount = &LPC24_Can_GetReadErrorCount;
-        canProvider[i]->GetSourceClock = &LPC24_Can_GetSourceClock;
-        canProvider[i]->GetReadBufferSize = LPC24_Can_GetReadBufferSize;
-        canProvider[i]->SetReadBufferSize = LPC24_Can_SetReadBufferSize;
-        canProvider[i]->GetWriteBufferSize = LPC24_Can_GetWriteBufferSize;
-        canProvider[i]->SetWriteBufferSize = LPC24_Can_SetWriteBufferSize;
-    }
-
+    canProvider.Parent = &canApi;
+    canProvider.Acquire = &LPC24_Can_Acquire;
+    canProvider.Release = &LPC24_Can_Release;
+    canProvider.Reset = &LPC24_Can_SoftReset;
+    canProvider.WriteMessage = &LPC24_Can_WriteMessage;
+    canProvider.ReadMessage = &LPC24_Can_ReadMessage;
+    canProvider.SetBitTiming = &LPC24_Can_SetBitTiming;
+    canProvider.GetUnreadMessageCount = &LPC24_Can_GetUnreadMessageCount;
+    canProvider.SetMessageReceivedHandler = &LPC24_Can_SetMessageReceivedHandler;
+    canProvider.SetErrorReceivedHandler = &LPC24_Can_SetErrorReceivedHandler;
+    canProvider.SetExplicitFilters = &LPC24_Can_SetExplicitFilters;
+    canProvider.SetGroupFilters = &LPC24_Can_SetGroupFilters;
+    canProvider.ClearReadBuffer = &LPC24_Can_ClearReadBuffer;
+    canProvider.IsWritingAllowed = &LPC24_Can_IsWritingAllowed;
+    canProvider.GetWriteErrorCount = &LPC24_Can_GetWriteErrorCount;
+    canProvider.GetReadErrorCount = &LPC24_Can_GetReadErrorCount;
+    canProvider.GetSourceClock = &LPC24_Can_GetSourceClock;
+    canProvider.GetReadBufferSize = LPC24_Can_GetReadBufferSize;
+    canProvider.SetReadBufferSize = LPC24_Can_SetReadBufferSize;
+    canProvider.GetWriteBufferSize = LPC24_Can_GetWriteBufferSize;
+    canProvider.SetWriteBufferSize = LPC24_Can_SetWriteBufferSize;
     canApi.Author = "GHI Electronics, LLC";
+
     canApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.CanProvider";
     canApi.Type = TinyCLR_Api_Type::CanProvider;
     canApi.Version = 0;
     canApi.Count = TOTAL_CAN_CONTROLLERS;
-    canApi.Implementation = canProvider;
+    canApi.Implementation = &canProvider;
 
     return &canApi;
 }
@@ -2300,7 +2294,7 @@ void CAN_ISR_Rx(int32_t channel) {
         else
             C2CMR = 0x04; // release receive buffer
 
-        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ReadBufferFull);
+        canController[channel].errorEventHandler(canController[channel].provider, channel, TinyCLR_Can_Error::ReadBufferFull);
 
         return;
     }
@@ -2353,7 +2347,7 @@ void CAN_ISR_Rx(int32_t channel) {
         canController[channel].can_rx_in = 0;
     }
 
-    canController[channel].messageReceivedEventHandler(canController[channel].provider, canController[channel].can_rx_count);
+    canController[channel].messageReceivedEventHandler(canController[channel].provider, channel, canController[channel].can_rx_count);
 }
 void LPC24_Can_RxInterruptHandler(void *param) {
     uint32_t status = CANRxSR;
@@ -2370,14 +2364,14 @@ void LPC24_Can_RxInterruptHandler(void *param) {
         CAN_ISR_Rx(channel);
 
         if (c1 & (1 << 3)) {
-            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ReadBufferOverrun);
+            canController[channel].errorEventHandler(canController[channel].provider, channel, TinyCLR_Can_Error::ReadBufferOverrun);
         }
         if (c1 & (1 << 5)) {
-            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::Passive);
+            canController[channel].errorEventHandler(canController[channel].provider, channel, TinyCLR_Can_Error::Passive);
         }
         if (c1 & (1 << 7)) {
             C1MOD = 1;    // Reset CAN
-            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::BusOff);
+            canController[channel].errorEventHandler(canController[channel].provider, channel, TinyCLR_Can_Error::BusOff);
         }
     }
     if (status & (1 << 9)) {
@@ -2388,14 +2382,14 @@ void LPC24_Can_RxInterruptHandler(void *param) {
         CAN_ISR_Rx(channel);
 
         if (c2 & (1 << 3)) {
-            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ReadBufferOverrun);
+            canController[channel].errorEventHandler(canController[channel].provider, channel, TinyCLR_Can_Error::ReadBufferOverrun);
         }
         if (c2 & (1 << 5)) {
-            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::Passive);
+            canController[channel].errorEventHandler(canController[channel].provider, channel, TinyCLR_Can_Error::Passive);
         }
         if (c2 & (1 << 7)) {
             C2MOD = 1;    // Reset CAN
-            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::BusOff);
+            canController[channel].errorEventHandler(canController[channel].provider, channel, TinyCLR_Can_Error::BusOff);
         }
     }
 }
@@ -2509,7 +2503,7 @@ TinyCLR_Result LPC24_Can_WriteMessage(const TinyCLR_Can_Provider* self, int32_t 
     uint32_t timeout = CAN_TRANSFER_TIMEOUT;
 
     while (readyToSend == false && timeout-- > 0) {
-        LPC24_Can_IsWritingAllowed(self, readyToSend);
+        LPC24_Can_IsWritingAllowed(self, channel, readyToSend);
         LPC24_Time_Delay(nullptr, 1);
     }
 
@@ -2799,7 +2793,7 @@ void LPC24_Can_Reset() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
         canController[i].canRxMessagesFifo = nullptr;
 
-        LPC24_Can_Release(canProvider[i]);
+        LPC24_Can_Release(&canProvider, i);
 
         canController[i].isOpened = false;
     }
