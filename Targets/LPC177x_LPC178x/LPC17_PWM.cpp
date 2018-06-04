@@ -358,7 +358,7 @@ TinyCLR_Result LPC17_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, in
         }
 
         if (g_PwmController[controller].outputEnabled[pin] == true) {
-            LPC17_Pwm_EnablePin(self, pin);
+            LPC17_Pwm_EnablePin(self, controller, pin);
 
             g_PwmController[controller].outputEnabled[pin] = false;
         }

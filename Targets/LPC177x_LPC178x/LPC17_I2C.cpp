@@ -75,7 +75,7 @@ static LPC17_I2c_Transaction   *g_currentI2cTransactionAction;
 static LPC17_I2c_Transaction   g_ReadI2cTransactionAction[SIZEOF_ARRAY(g_i2c_scl_pins)];
 static LPC17_I2c_Transaction   g_WriteI2cTransactionAction[SIZEOF_ARRAY(g_i2c_scl_pins)];
 
-static TinyCLR_I2c_Provider i2cProviders;
+static TinyCLR_I2c_Provider i2cProvider;
 static TinyCLR_Api_Info i2cApi;
 
 const TinyCLR_Api_Info* LPC17_I2c_GetApi() {
@@ -92,7 +92,7 @@ const TinyCLR_Api_Info* LPC17_I2c_GetApi() {
     i2cApi.Type = TinyCLR_Api_Type::I2cProvider;
     i2cApi.Version = 0;
     i2cApi.Count = 1;
-    i2cApi.Implementation = &i2cProviders;
+    i2cApi.Implementation = &i2cProvider;
 
     return &i2cApi;
 }
@@ -421,7 +421,7 @@ TinyCLR_Result LPC17_I2c_Release(const TinyCLR_I2c_Provider* self, int32_t chann
 
 void LPC17_I2c_Reset() {
     for (auto i = 0; i < SIZEOF_ARRAY(g_i2c_scl_pins); i++) {
-        LPC17_I2c_Release(&i2cProviders, i);
+        LPC17_I2c_Release(&i2cProvider, i);
 
         g_I2cConfiguration[i].address = 0;
         g_I2cConfiguration[i].clockRate = 0;
