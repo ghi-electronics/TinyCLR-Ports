@@ -41,22 +41,22 @@ struct SpiController {
 
 static SpiController g_SpiController[TOTAL_SPI_CONTROLLERS];
 
-static TinyCLR_Spi_Provider spiProviders;
+static TinyCLR_Spi_Provider spiProvider;
 static TinyCLR_Api_Info spiApi;
 
 const TinyCLR_Api_Info* AT91_Spi_GetApi() {
-    spiProviders.Parent = &spiApi;
-    spiProviders.Acquire = &AT91_Spi_Acquire;
-    spiProviders.Release = &AT91_Spi_Release;
-    spiProviders.SetActiveSettings = &AT91_Spi_SetActiveSettings;
-    spiProviders.Read = &AT91_Spi_Read;
-    spiProviders.Write = &AT91_Spi_Write;
-    spiProviders.TransferFullDuplex = &AT91_Spi_TransferFullDuplex;
-    spiProviders.TransferSequential = &AT91_Spi_TransferSequential;
-    spiProviders.GetChipSelectLineCount = &AT91_Spi_GetChipSelectLineCount;
-    spiProviders.GetMinClockFrequency = &AT91_Spi_GetMinClockFrequency;
-    spiProviders.GetMaxClockFrequency = &AT91_Spi_GetMaxClockFrequency;
-    spiProviders.GetSupportedDataBitLengths = &AT91_Spi_GetSupportedDataBitLengths;
+    spiProvider.Parent = &spiApi;
+    spiProvider.Acquire = &AT91_Spi_Acquire;
+    spiProvider.Release = &AT91_Spi_Release;
+    spiProvider.SetActiveSettings = &AT91_Spi_SetActiveSettings;
+    spiProvider.Read = &AT91_Spi_Read;
+    spiProvider.Write = &AT91_Spi_Write;
+    spiProvider.TransferFullDuplex = &AT91_Spi_TransferFullDuplex;
+    spiProvider.TransferSequential = &AT91_Spi_TransferSequential;
+    spiProvider.GetChipSelectLineCount = &AT91_Spi_GetChipSelectLineCount;
+    spiProvider.GetMinClockFrequency = &AT91_Spi_GetMinClockFrequency;
+    spiProvider.GetMaxClockFrequency = &AT91_Spi_GetMaxClockFrequency;
+    spiProvider.GetSupportedDataBitLengths = &AT91_Spi_GetSupportedDataBitLengths;
 
     spiApi.Author = "GHI Electronics, LLC";
     spiApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.SpiProvider";
@@ -64,7 +64,7 @@ const TinyCLR_Api_Info* AT91_Spi_GetApi() {
     spiApi.Version = 0;
     spiApi.Count = TOTAL_SPI_CONTROLLERS;
 
-    spiApi.Implementation = (spiApi.Count > 1) ? spiProviders : reinterpret_cast<TinyCLR_Spi_Provider**>(spiProviderDefs);
+    spiApi.Implementation = &spiProvider;
 
     return &spiApi;
 }
@@ -424,7 +424,7 @@ TinyCLR_Result AT91_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* s
 
 void AT91_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        AT91_Spi_Release(&spiProviders, i);
+        AT91_Spi_Release(&spiProvider, i);
 
         g_SpiController[i].isOpened = false;
     }

@@ -31,7 +31,7 @@ static const AT91_Gpio_Pin g_i2c_sda_pins[] = AT91_I2C_SDA_PINS;
 
 static AT91_I2c_Configuration g_I2cConfiguration[SIZEOF_ARRAY(g_i2c_scl_pins)];
 
-static TinyCLR_I2c_Provider i2cProviders;
+static TinyCLR_I2c_Provider i2cProvider;
 static TinyCLR_Api_Info i2cApi;
 
 const TinyCLR_Api_Info* AT91_I2c_GetApi() {
@@ -48,7 +48,7 @@ const TinyCLR_Api_Info* AT91_I2c_GetApi() {
     i2cApi.Type = TinyCLR_Api_Type::I2cProvider;
     i2cApi.Version = 0;
     i2cApi.Count = 1;
-    i2cApi.Implementation = &i2cProviders;
+    i2cApi.Implementation = &i2cProvider;
 
     return &i2cApi;
 }
@@ -206,15 +206,15 @@ TinyCLR_Result AT91_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, int32
 
 TinyCLR_Result AT91_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, int32_t channel, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
     if (writeLength > 3) {
-        AT91_I2c_WriteTransaction(self, writeBuffer, writeLength, result);
+        AT91_I2c_WriteTransaction(self, channel, writeBuffer, writeLength, result);
 
         if (result == TinyCLR_I2c_TransferStatus::FullTransfer)
-            AT91_I2c_ReadTransaction(self, readBuffer, readLength, result);
+            AT91_I2c_ReadTransaction(self, channel, readBuffer, readLength, result);
 
         return result == TinyCLR_I2c_TransferStatus::FullTransfer ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
     }
     else if (writeLength == 0) {
-        AT91_I2c_ReadTransaction(self, readBuffer, readLength, result);
+        AT91_I2c_ReadTransaction(self, channel, readBuffer, readLength, result);
 
         return result == TinyCLR_I2c_TransferStatus::FullTransfer ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
     }
@@ -413,7 +413,7 @@ TinyCLR_Result AT91_I2c_Release(const TinyCLR_I2c_Provider* self, int32_t channe
 
 void AT91_I2c_Reset() {
     for (auto i = 0; i < SIZEOF_ARRAY(g_i2c_scl_pins); i++) {
-        AT91_I2c_Release(&i2cProviders, i);
+        AT91_I2c_Release(&i2cProvider, i);
 
         g_I2cConfiguration[i].address = 0;
         g_I2cConfiguration[i].clockRate = 0;
