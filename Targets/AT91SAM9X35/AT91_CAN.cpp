@@ -1025,7 +1025,7 @@ typedef struct {
 
 struct AT91_Can_Controller {
     const TinyCLR_Can_Provider* provider;
-
+    int32_t channel;
     AT91_Can_Message *canRxMessagesFifo;
 
     TinyCLR_Can_ErrorReceivedHandler   errorEventHandler;
@@ -1057,10 +1057,8 @@ static const int TOTAL_CAN_CONTROLLERS = SIZEOF_ARRAY(g_AT91_Can_Tx_Pins);
 
 static AT91_Can_Controller canController[TOTAL_CAN_CONTROLLERS];
 
-static TinyCLR_Can_Provider *canProvider[TOTAL_CAN_CONTROLLERS];
+static TinyCLR_Can_Provider canProvider;
 static TinyCLR_Api_Info canApi;
-
-static uint8_t canProviderDefs[TOTAL_CAN_CONTROLLERS * sizeof(TinyCLR_Can_Provider)];
 
 void CAN_DisableExplicitFilters(int32_t channel) {
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -1184,38 +1182,34 @@ int32_t BinarySearch2(uint32_t *lowerBounds, uint32_t *upperBounds, int32_t firs
 }
 
 const TinyCLR_Api_Info* AT91_Can_GetApi() {
-    for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
-        canProvider[i] = (TinyCLR_Can_Provider*)(canProviderDefs + (i * sizeof(TinyCLR_Can_Provider)));
-        canProvider[i]->Parent = &canApi;
-        canProvider[i]->Index = i;
-        canProvider[i]->Acquire = &AT91_Can_Acquire;
-        canProvider[i]->Release = &AT91_Can_Release;
-        canProvider[i]->Reset = &AT91_Can_SoftReset;
-        canProvider[i]->WriteMessage = &AT91_Can_WriteMessage;
-        canProvider[i]->ReadMessage = &AT91_Can_ReadMessage;
-        canProvider[i]->SetBitTiming = &AT91_Can_SetBitTiming;
-        canProvider[i]->GetUnreadMessageCount = &AT91_Can_GetUnreadMessageCount;
-        canProvider[i]->SetMessageReceivedHandler = &AT91_Can_SetMessageReceivedHandler;
-        canProvider[i]->SetErrorReceivedHandler = &AT91_Can_SetErrorReceivedHandler;
-        canProvider[i]->SetExplicitFilters = &AT91_Can_SetExplicitFilters;
-        canProvider[i]->SetGroupFilters = &AT91_Can_SetGroupFilters;
-        canProvider[i]->ClearReadBuffer = &AT91_Can_ClearReadBuffer;
-        canProvider[i]->IsWritingAllowed = &AT91_Can_IsWritingAllowed;
-        canProvider[i]->GetWriteErrorCount = &AT91_Can_GetWriteErrorCount;
-        canProvider[i]->GetReadErrorCount = &AT91_Can_GetReadErrorCount;
-        canProvider[i]->GetSourceClock = &AT91_Can_GetSourceClock;
-        canProvider[i]->GetReadBufferSize = AT91_Can_GetReadBufferSize;
-        canProvider[i]->SetReadBufferSize = AT91_Can_SetReadBufferSize;
-        canProvider[i]->GetWriteBufferSize = AT91_Can_GetWriteBufferSize;
-        canProvider[i]->SetWriteBufferSize = AT91_Can_SetWriteBufferSize;
-    }
+    canProvider.Parent = &canApi;
+    canProvider.Acquire = &AT91_Can_Acquire;
+    canProvider.Release = &AT91_Can_Release;
+    canProvider.Reset = &AT91_Can_SoftReset;
+    canProvider.WriteMessage = &AT91_Can_WriteMessage;
+    canProvider.ReadMessage = &AT91_Can_ReadMessage;
+    canProvider.SetBitTiming = &AT91_Can_SetBitTiming;
+    canProvider.GetUnreadMessageCount = &AT91_Can_GetUnreadMessageCount;
+    canProvider.SetMessageReceivedHandler = &AT91_Can_SetMessageReceivedHandler;
+    canProvider.SetErrorReceivedHandler = &AT91_Can_SetErrorReceivedHandler;
+    canProvider.SetExplicitFilters = &AT91_Can_SetExplicitFilters;
+    canProvider.SetGroupFilters = &AT91_Can_SetGroupFilters;
+    canProvider.ClearReadBuffer = &AT91_Can_ClearReadBuffer;
+    canProvider.IsWritingAllowed = &AT91_Can_IsWritingAllowed;
+    canProvider.GetWriteErrorCount = &AT91_Can_GetWriteErrorCount;
+    canProvider.GetReadErrorCount = &AT91_Can_GetReadErrorCount;
+    canProvider.GetSourceClock = &AT91_Can_GetSourceClock;
+    canProvider.GetReadBufferSize = AT91_Can_GetReadBufferSize;
+    canProvider.SetReadBufferSize = AT91_Can_SetReadBufferSize;
+    canProvider.GetWriteBufferSize = AT91_Can_GetWriteBufferSize;
+    canProvider.SetWriteBufferSize = AT91_Can_SetWriteBufferSize;
 
     canApi.Author = "GHI Electronics, LLC";
     canApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.CanProvider";
     canApi.Type = TinyCLR_Api_Type::CanProvider;
     canApi.Version = 0;
     canApi.Count = TOTAL_CAN_CONTROLLERS;
-    canApi.Implementation = canProvider;
+    canApi.Implementation = &canProvider;
 
     return &canApi;
 }
@@ -1282,7 +1276,7 @@ void CopyMessageFromMailBoxToBuffer(uint8_t channel, uint32_t dwMsr) {
     }
 
     if (canController[channel].can_rx_count > (canController[channel].can_rxBufferSize - 3)) {
-        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ReadBufferFull);
+        canController[channel].errorEventHandler(canController[channel].provider, channel, TinyCLR_Can_Error::ReadBufferFull);
     }
 
     // initialize destination pointer
@@ -1313,7 +1307,7 @@ void CopyMessageFromMailBoxToBuffer(uint8_t channel, uint32_t dwMsr) {
         canController[channel].can_rx_in = 0;
     }
 
-    canController[channel].messageReceivedEventHandler(canController[channel].provider, canController[channel].can_rx_count);
+    canController[channel].messageReceivedEventHandler(canController[channel].provider, channel, canController[channel].can_rx_count);
 }
 
 void CAN_ProccessMailbox(uint8_t channel) {
@@ -1367,11 +1361,11 @@ void CAN_ProccessMailbox(uint8_t channel) {
 void CAN_ErrorHandler(sCand *pCand, uint32_t dwErrS, int32_t channel) {
     if (dwErrS & CAN_SR_BOFF) // BusOff is higher priority
     {
-        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::BusOff);
+        canController[channel].errorEventHandler(canController[channel].provider, channel, TinyCLR_Can_Error::BusOff);
 
     }
     else if (dwErrS & CAN_SR_ERRP) {
-        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::Passive);
+        canController[channel].errorEventHandler(canController[channel].provider, channel, TinyCLR_Can_Error::Passive);
     }
 }
 
@@ -1424,7 +1418,7 @@ void AT91_Can_RxInterruptHandler(void *param) {
     }
     /* Timer overflow */
     if (dwSr & CAN_SR_TOVF) {
-        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ReadBufferOverrun);
+        canController[channel].errorEventHandler(canController[channel].provider, channel, TinyCLR_Can_Error::ReadBufferOverrun);
     }
 }
 
@@ -1461,6 +1455,7 @@ TinyCLR_Result AT91_Can_Acquire(const TinyCLR_Can_Provider* self, int32_t channe
     CAN_DisableIt(canController[channel].cand.pHw, 0xFFFFFFFF);
 
     canController[channel].isOpened = true;
+    canController[channel].channel = channel;
 
     return TinyCLR_Result::Success;
 }
@@ -1552,7 +1547,7 @@ TinyCLR_Result AT91_Can_WriteMessage(const TinyCLR_Can_Provider* self, int32_t c
     uint32_t timeout = CAN_TRANSFER_TIMEOUT;
 
     while (readyToSend == false && timeout-- > 0) {
-        AT91_Can_IsWritingAllowed(self, readyToSend);
+        AT91_Can_IsWritingAllowed(self, channel, readyToSend);
         AT91_Time_Delay(nullptr, 1);
     }
 
@@ -1662,7 +1657,7 @@ TinyCLR_Result AT91_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_t c
     /* Enable the interrupts for error cases */
     CAN_EnableIt(canController[channel].cand.pHw, CAN_ERRS);
 
-    AT91_Interrupt_Activate(channel == 0 ? AT91C_ID_CAN0 : AT91C_ID_CAN1, (uint32_t*)&AT91_Can_RxInterruptHandler, (void*)(size_t)self->Index);
+    AT91_Interrupt_Activate(channel == 0 ? AT91C_ID_CAN0 : AT91C_ID_CAN1, (uint32_t*)&AT91_Can_RxInterruptHandler, (void*)(size_t)canController[channel].channel);
 
     CAND_Activate(&canController[channel].cand);
 
@@ -1849,7 +1844,7 @@ void AT91_Can_Reset() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
         canController[i].canRxMessagesFifo = nullptr;
 
-        AT91_Can_Release(canProvider[i]);
+        AT91_Can_Release(&canProvider, i);
 
         canController[i].isOpened = false;
     }

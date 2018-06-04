@@ -81,7 +81,6 @@ bool AT91_Pwm_SetPinState(const TinyCLR_Pwm_Provider* self, int32_t controller, 
 
 TinyCLR_Result AT91_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin) {
     int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, controller, pin);
-    int32_t controller = controller;
 
     if (!AT91_Gpio_OpenPin(actualPin))
         return TinyCLR_Result::SharingViolation;
@@ -89,7 +88,7 @@ TinyCLR_Result AT91_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t con
     PWM_ENABLE_REGISTER |= (1 << controller);
     PWM_INTERUPT_ENABLE_REGISTER |= (1 << controller);
 
-    AT91_Pwm_SetPinState(self, pin, false);
+    AT91_Pwm_SetPinState(self, controller, pin, false);
 
     g_PwmController[controller].isOpened[pin] = true;
 
@@ -98,7 +97,6 @@ TinyCLR_Result AT91_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t con
 
 TinyCLR_Result AT91_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin) {
     int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, controller, pin);
-    int32_t controller = controller;
 
     PWM_DISABLE_REGISTER |= (1 << controller);
     PWM_INTERUPT_DISABLE_REGISTER |= (1 << controller);
@@ -268,7 +266,7 @@ double AT91_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self, int32_t con
     AT91_Pwm_GetDivider(convertedPeriod, divider, registerDividerFlag);
 
     if (divider > 0)
-        convertedPeriod = AT91_Pwm_GetPeriod(self, convertedPeriod, divider);
+        convertedPeriod = AT91_Pwm_GetPeriod(self, controller, convertedPeriod, divider);
 
     if (convertedPeriod > 503308801)
         convertedPeriod = 503308801; // max period
@@ -307,7 +305,7 @@ TinyCLR_Result AT91_Pwm_EnablePin(const TinyCLR_Pwm_Provider* self, int32_t cont
 TinyCLR_Result AT91_Pwm_DisablePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin) {
     int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, controller, pin);
 
-    AT91_Pwm_SetPinState(self, pin, false);
+    AT91_Pwm_SetPinState(self, controller, pin, false);
 
     return TinyCLR_Result::Success;
 }
@@ -360,7 +358,7 @@ TinyCLR_Result AT91_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int
     AT91_Pwm_GetDivider(convertedPeriod, divider, registerDividerFlag);
 
     if (divider > 0)
-        convertedPeriod = AT91_Pwm_GetPeriod(self, convertedPeriod, divider);
+        convertedPeriod = AT91_Pwm_GetPeriod(self, controller, convertedPeriod, divider);
 
     convertedDuration = (uint32_t)(dutyCycle * convertedPeriod);
 

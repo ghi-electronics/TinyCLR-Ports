@@ -233,7 +233,7 @@ TinyCLR_Result AT91_Uart_PinConfiguration(int controller, bool enable) {
 
 void AT91_Uart_SetErrorEvent(int32_t controller, TinyCLR_Uart_Error error) {
     if (g_UartController[controller].errorEventHandler != nullptr)
-        g_UartController[controller].errorEventHandler(g_UartController[controller].provider, error);
+        g_UartController[controller].errorEventHandler(g_UartController[controller].provider, controller, error);
 }
 
 void AT91_Uart_ReceiveData(int32_t controller, uint32_t sr) {
@@ -255,7 +255,7 @@ void AT91_Uart_ReceiveData(int32_t controller, uint32_t sr) {
         g_UartController[controller].rxBufferIn = 0;
 
     if (g_UartController[controller].dataReceivedEventHandler != nullptr)
-        g_UartController[controller].dataReceivedEventHandler(g_UartController[controller].provider, 1);
+        g_UartController[controller].dataReceivedEventHandler(g_UartController[controller].provider, controller, 1);
 
     if (sr & AT91_USART::US_OVRE)
         AT91_Uart_SetErrorEvent(controller, TinyCLR_Uart_Error::BufferOverrun);
