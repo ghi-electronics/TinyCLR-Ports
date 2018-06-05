@@ -17,6 +17,8 @@
 #include <Device.h>
 
 #include "../../Drivers/SPIDisplay/SPIDisplay.h"
+#include "../../Drivers/DevicesInterop/GHIElectronics_TinyCLR_Devices.h"
+#include "../../Drivers/DevicesInterop/GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
 // G120, G120E
 #define LPC17_G120                         1
@@ -30,8 +32,9 @@
 #define G120E_DETECT2_STATE TinyCLR_Gpio_PinValue::Low
 #define G120E_DETECT3_STATE TinyCLR_Gpio_PinValue::Low
 
-void LPC17_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider) {
+void LPC17_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider, const TinyCLR_Interop_Provider* interopProvider) {
     apiProvider->Add(apiProvider, SPIDisplay_GetApi());
+    interopProvider->Add(interopProvider, &Interop_GHIElectronics_TinyCLR_Devices);
 }
 
 static int32_t lpc178_deviceId = -1;

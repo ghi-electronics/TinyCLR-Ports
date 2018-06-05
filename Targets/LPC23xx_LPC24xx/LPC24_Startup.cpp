@@ -15,7 +15,7 @@
 
 #include "LPC24.h"
 
-void LPC24_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
+void LPC24_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider, const TinyCLR_Interop_Provider* interopProvider) {
 #ifdef INCLUDE_ADC
     LPC24_Adc_Reset();
 #endif

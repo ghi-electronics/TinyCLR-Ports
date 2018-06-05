@@ -17,7 +17,7 @@
 #include "STM32F7.h"
 #include <stdio.h>
 
-void STM32F7_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
+void STM32F7_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider, const TinyCLR_Interop_Provider* interopProvider) {
 #ifdef INCLUDE_ADC
     STM32F7_Adc_Reset();
 #endif
