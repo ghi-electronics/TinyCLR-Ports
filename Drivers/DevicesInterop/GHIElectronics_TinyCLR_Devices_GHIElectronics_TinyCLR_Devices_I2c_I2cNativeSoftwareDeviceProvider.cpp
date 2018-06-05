@@ -1,4 +1,5 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
+#include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
 #define TIMEOUT_COUNTER 10
 

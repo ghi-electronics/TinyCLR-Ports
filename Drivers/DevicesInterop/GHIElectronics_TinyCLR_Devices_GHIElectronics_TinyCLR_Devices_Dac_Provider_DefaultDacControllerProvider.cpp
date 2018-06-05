@@ -1,4 +1,5 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
+#include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
 const TinyCLR_Dac_Provider* TinyCLR_Dac_GetProvider(const TinyCLR_Interop_MethodData md, TinyCLR_Interop_ClrValue& ret, TinyCLR_Interop_ClrValue& arg, int argIndex) {
     auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);

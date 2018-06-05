@@ -389,7 +389,7 @@ TinyCLR_Result STM32F7_Display_SetConfiguration(const TinyCLR_Display_Provider* 
 TinyCLR_Result STM32F7_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data);
 TinyCLR_Result STM32F7_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer, size_t length);
 
-void STM32F7_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider);
-void STM32F7_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider);
+void STM32F7_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider, const TinyCLR_Interop_Provider* interopProvider);
+void STM32F7_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider, const TinyCLR_Interop_Provider* interopProvider);
 
 extern const TinyCLR_Api_Provider* apiProvider;

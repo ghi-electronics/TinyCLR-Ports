@@ -1,4 +1,5 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
+#include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
 struct GpioPulseReaderWriter {
     static int8_t& Get_disposed(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::FIELD___disposed___BOOLEAN, val); return val.Data.Numeric->I1; }

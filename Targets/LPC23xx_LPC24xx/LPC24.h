@@ -150,8 +150,8 @@ struct LPC24_Gpio_PinConfiguration {
 #define DEFAULT() INIT(Input, Inactive, PinFunction0, false, true)
 #define NO_INIT() INIT(Input, Inactive, PinFunction0, false, false)
 
-void LPC24_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider);
-void LPC24_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider);
+void LPC24_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider, const TinyCLR_Interop_Provider* interopProvider);
+void LPC24_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider, const TinyCLR_Interop_Provider* interopProvider);
 
 extern const TinyCLR_Api_Provider* apiProvider;
 
