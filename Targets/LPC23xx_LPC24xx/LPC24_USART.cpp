@@ -40,6 +40,7 @@ struct LPC24_Uart_Controller {
     TinyCLR_Uart_DataReceivedHandler    dataReceivedEventHandler;
 
     const TinyCLR_Uart_Provider*        provider;
+    int32_t                             controller;
 
 };
 
@@ -538,7 +539,9 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, i
         }
     }
 
-    LPC24_Interrupt_Activate(LPC24XX_USART::getIntNo(controller), (uint32_t*)&LPC24_Uart_InterruptHandler, (void*)controller);
+    g_UartController[controller].controller = controller;
+
+    LPC24_Interrupt_Activate(LPC24XX_USART::getIntNo(controller), (uint32_t*)&LPC24_Uart_InterruptHandler, (void*)&g_UartController[controller].controller);
     LPC24_Interrupt_Enable(LPC24XX_USART::getIntNo(controller));
 
     LPC24_Uart_PinConfiguration(controller, true);
