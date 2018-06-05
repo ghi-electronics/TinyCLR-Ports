@@ -1,4 +1,5 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
+#include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
 struct GpioChangeReader {
     static int32_t NativeRead(uint32_t param0, int8_t* param1, TinyCLR_Interop_ClrValue::SzArrayType& param2, int32_t param3, int32_t param4, int32_t param5, TinyCLR_Result& result);
