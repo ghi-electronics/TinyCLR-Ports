@@ -1,7 +1,7 @@
 #include "Device.h"
 #include "../../Drivers/SPIDisplay/SPIDisplay.h"
 
-void STM32F4_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider) {
+void STM32F4_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider, const TinyCLR_Interop_Provider* interopProvider) {
     apiProvider->Add(apiProvider, SPIDisplay_GetApi());
     
     extern const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices;

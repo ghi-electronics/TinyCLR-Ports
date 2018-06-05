@@ -20,7 +20,7 @@
 
 #include "AT91.h"
 
-void AT91_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
+void AT91_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider, const TinyCLR_Interop_Provider* interopProvider) {
 #ifdef INCLUDE_ADC
     AT91_Adc_Reset();
 #endif
