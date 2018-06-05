@@ -1382,7 +1382,7 @@ void CAN_ErrorHandler(sCand *pCand, uint32_t dwErrS, int32_t channel) {
 void AT91_Can_RxInterruptHandler(void *param) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    int32_t channel = (int32_t)param;
+    uint32_t channel = *reinterpret_cast<uint32_t*>(param);
 
     sCand *pCand = &canController[channel].cand;
     Can *pHw = pCand->pHw;
@@ -1657,7 +1657,7 @@ TinyCLR_Result AT91_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_t c
     /* Enable the interrupts for error cases */
     CAN_EnableIt(canController[channel].cand.pHw, CAN_ERRS);
 
-    AT91_Interrupt_Activate(channel == 0 ? AT91C_ID_CAN0 : AT91C_ID_CAN1, (uint32_t*)&AT91_Can_RxInterruptHandler, (void*)(size_t)canController[channel].channel);
+    AT91_Interrupt_Activate(channel == 0 ? AT91C_ID_CAN0 : AT91C_ID_CAN1, (uint32_t*)&AT91_Can_RxInterruptHandler, (void*)&canController[channel].channel);
 
     CAND_Activate(&canController[channel].cand);
 
