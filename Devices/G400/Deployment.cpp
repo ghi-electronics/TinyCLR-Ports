@@ -33,7 +33,6 @@ const TinyCLR_Api_Info* AT91_Deployment_GetApi() {
     deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT45DB321D.DeploymentProvider";
     deploymentApi.Type = TinyCLR_Api_Type::DeploymentProvider;
     deploymentApi.Version = 0;
-    deploymentApi.Count = 1;
     deploymentApi.Implementation = &deploymentProvider;
 
     return &deploymentApi;

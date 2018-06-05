@@ -110,7 +110,6 @@ const TinyCLR_Api_Info* STM32F7_Uart_GetApi() {
     uartApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.UartProvider";
     uartApi.Type = TinyCLR_Api_Type::UartProvider;
     uartApi.Version = 0;
-    uartApi.Count = TOTAL_UART_CONTROLLERS;
     uartApi.Implementation = &uartProviders;
 
     if (TOTAL_UART_CONTROLLERS > 0) g_STM32F7_Uart_Ports[0] = USART1;

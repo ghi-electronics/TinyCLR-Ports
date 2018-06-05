@@ -38,7 +38,6 @@ const TinyCLR_Api_Info* LPC17_Power_GetApi() {
     powerApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.PowerProvider";
     powerApi.Type = TinyCLR_Api_Type::PowerProvider;
     powerApi.Version = 0;
-    powerApi.Count = 1;
     powerApi.Implementation = &powerProvider;
 
     return &powerApi;

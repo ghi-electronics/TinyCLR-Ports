@@ -1195,7 +1195,6 @@ const TinyCLR_Api_Info* STM32F7_Display_GetApi() {
     displayApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.DisplayProvider";
     displayApi.Type = TinyCLR_Api_Type::DisplayProvider;
     displayApi.Version = 0;
-    displayApi.Count = 1;
     displayApi.Implementation = &displayProvider;
 
     m_STM32F7_Display_VituralRam = nullptr;

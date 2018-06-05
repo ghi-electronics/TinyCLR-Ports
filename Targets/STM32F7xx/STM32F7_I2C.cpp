@@ -87,7 +87,6 @@ const TinyCLR_Api_Info* STM32F7_I2c_GetApi() {
     i2cApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.I2cProvider";
     i2cApi.Type = TinyCLR_Api_Type::I2cProvider;
     i2cApi.Version = 0;
-    i2cApi.Count = TOTAL_I2C_CONTROLLERS;
     i2cApi.Implementation = &i2cProvider;
 
     if (TOTAL_I2C_CONTROLLERS > 0)

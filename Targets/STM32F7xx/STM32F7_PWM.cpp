@@ -92,7 +92,6 @@ const TinyCLR_Api_Info* STM32F7_Pwm_GetApi() {
     pwmApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmProvider";
     pwmApi.Type = TinyCLR_Api_Type::PwmProvider;
     pwmApi.Version = 0;
-    pwmApi.Count = TOTAL_PWM_CONTROLLER;
     pwmApi.Implementation = &pwmProviders;
 
     return &pwmApi;

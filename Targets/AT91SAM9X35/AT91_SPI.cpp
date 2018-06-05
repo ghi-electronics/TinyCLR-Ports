@@ -62,7 +62,6 @@ const TinyCLR_Api_Info* AT91_Spi_GetApi() {
     spiApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.SpiProvider";
     spiApi.Type = TinyCLR_Api_Type::SpiProvider;
     spiApi.Version = 0;
-    spiApi.Count = TOTAL_SPI_CONTROLLERS;
     spiApi.Implementation = &spiProviders;
 
     return &spiApi;

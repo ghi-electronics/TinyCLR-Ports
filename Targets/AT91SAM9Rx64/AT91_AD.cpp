@@ -46,7 +46,6 @@ const TinyCLR_Api_Info *AT91_Adc_GetApi() {
     adcApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.AdcProvider";
     adcApi.Type = TinyCLR_Api_Type::AdcProvider;
     adcApi.Version = 0;
-    adcApi.Count = 1;
     adcApi.Implementation = &adcProvider;
 
     return &adcApi;

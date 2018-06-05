@@ -1010,7 +1010,6 @@ const TinyCLR_Api_Info* LPC17_Display_GetApi() {
     displayApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.DisplayProvider";
     displayApi.Type = TinyCLR_Api_Type::DisplayProvider;
     displayApi.Version = 0;
-    displayApi.Count = 1;
     displayApi.Implementation = &displayProvider;
     
     m_LPC17_Display_VituralRam = nullptr;

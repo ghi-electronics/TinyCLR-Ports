@@ -105,7 +105,6 @@ const TinyCLR_Api_Info* STM32F7_Deployment_GetApi() {
     deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.DeploymentProvider";
     deploymentApi.Type = TinyCLR_Api_Type::DeploymentProvider;
     deploymentApi.Version = 0;
-    deploymentApi.Count = 1;
     deploymentApi.Implementation = &deploymentProvider;
 
     for (int32_t i = 0; i < SIZEOF_ARRAY(deploymentSectors); i++) {

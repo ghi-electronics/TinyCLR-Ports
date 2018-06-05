@@ -304,7 +304,6 @@ const TinyCLR_Api_Info* LPC24_Spi_GetApi() {
     spiApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.SpiProvider";
     spiApi.Type = TinyCLR_Api_Type::SpiProvider;
     spiApi.Version = 0;
-    spiApi.Count = TOTAL_SPI_CONTROLLERS;
     spiApi.Implementation = &spiProviders;
 
     return &spiApi;

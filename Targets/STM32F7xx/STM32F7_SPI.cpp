@@ -73,7 +73,6 @@ const TinyCLR_Api_Info* STM32F7_Spi_GetApi() {
     spiApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.SpiProvider";
     spiApi.Type = TinyCLR_Api_Type::SpiProvider;
     spiApi.Version = 0;
-    spiApi.Count = TOTAL_SPI_CONTROLLERS;
     spiApi.Implementation = &spiProviders;
 
 #ifdef SPI1

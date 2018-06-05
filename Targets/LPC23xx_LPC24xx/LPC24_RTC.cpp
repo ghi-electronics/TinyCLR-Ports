@@ -45,7 +45,6 @@ const TinyCLR_Api_Info* LPC24_Rtc_GetApi() {
     timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.RtcProvider";
     timeApi.Type = TinyCLR_Api_Type::RtcProvider;
     timeApi.Version = 0;
-    timeApi.Count = 1;
     timeApi.Implementation = &rtcProvider;
 
     return &timeApi;

@@ -33,7 +33,6 @@ const TinyCLR_Api_Info* LPC17_Deployment_GetApi() {
     deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.S25FL032.DeploymentProvider";
     deploymentApi.Type = TinyCLR_Api_Type::DeploymentProvider;
     deploymentApi.Version = 0;
-    deploymentApi.Count = 1;
     deploymentApi.Implementation = &deploymentProvider;
 
     return &deploymentApi;

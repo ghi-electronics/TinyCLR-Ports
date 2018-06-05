@@ -53,7 +53,6 @@ const TinyCLR_Api_Info* LPC17_Time_GetApi() {
     timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.NativeTimeProvider";
     timeApi.Type = TinyCLR_Api_Type::NativeTimeProvider;
     timeApi.Version = 0;
-    timeApi.Count = 1;
     timeApi.Implementation = &timeProvider;
 
     return &timeApi;

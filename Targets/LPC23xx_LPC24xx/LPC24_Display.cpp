@@ -1048,7 +1048,6 @@ const TinyCLR_Api_Info* LPC24_Display_GetApi() {
     displayApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.DisplayProvider";
     displayApi.Type = TinyCLR_Api_Type::DisplayProvider;
     displayApi.Version = 0;
-    displayApi.Count = 1;
     displayApi.Implementation = &displayProvider;
     m_LPC24_Display_VituralRam = nullptr;
 

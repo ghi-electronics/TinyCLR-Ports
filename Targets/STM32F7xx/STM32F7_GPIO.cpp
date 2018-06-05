@@ -66,7 +66,6 @@ const TinyCLR_Api_Info* STM32F7_Gpio_GetApi() {
     gpioApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.GpioProvider";
     gpioApi.Type = TinyCLR_Api_Type::GpioProvider;
     gpioApi.Version = 0;
-    gpioApi.Count = 1;
     gpioApi.Implementation = &gpioProvider;
 
     return &gpioApi;

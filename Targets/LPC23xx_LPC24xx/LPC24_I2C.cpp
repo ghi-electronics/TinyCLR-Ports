@@ -64,7 +64,6 @@ const TinyCLR_Api_Info* LPC24_I2c_GetApi() {
     i2cApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.I2cProvider";
     i2cApi.Type = TinyCLR_Api_Type::I2cProvider;
     i2cApi.Version = 0;
-    i2cApi.Count = 1;
     i2cApi.Implementation = &i2cProvider;
 
     return &i2cApi;

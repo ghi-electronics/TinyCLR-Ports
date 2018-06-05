@@ -30,7 +30,6 @@ const TinyCLR_Api_Info* STM32F4_Power_GetApi() {
     powerApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.PowerProvider";
     powerApi.Type = TinyCLR_Api_Type::PowerProvider;
     powerApi.Version = 0;
-    powerApi.Count = 1;
     powerApi.Implementation = &powerProvider;
 
     return &powerApi;

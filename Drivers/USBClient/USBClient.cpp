@@ -743,13 +743,12 @@ const TinyCLR_Api_Info* TinyCLR_UsbClient_GetApi() {
     usbClientApi.Name = "GHIElectronics.TinyCLR.NativeApis.Drivers.UsbClientProvider";
     usbClientApi.Type = TinyCLR_Api_Type::UsbClientProvider;
     usbClientApi.Version = 0;
-    usbClientApi.Count = TinyCLR_UsbClient_GetTotalController();
     usbClientApi.Implementation = &usbClientProvider;
 
     if (apiProvider != nullptr) {
         auto memoryProvider = reinterpret_cast<const TinyCLR_Memory_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider));
 
-        usbClient_State = reinterpret_cast<USB_CONTROLLER_STATE*>(memoryProvider->Allocate(memoryProvider, usbClientApi.Count * sizeof(USB_CONTROLLER_STATE)));
+        usbClient_State = reinterpret_cast<USB_CONTROLLER_STATE*>(memoryProvider->Allocate(memoryProvider, sizeof(USB_CONTROLLER_STATE)));
     }
 
     return &usbClientApi;

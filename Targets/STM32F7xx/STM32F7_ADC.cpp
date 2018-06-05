@@ -50,7 +50,6 @@ const TinyCLR_Api_Info* STM32F7_Adc_GetApi() {
     adcApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.AdcProvider";
     adcApi.Type = TinyCLR_Api_Type::AdcProvider;
     adcApi.Version = 0;
-    adcApi.Count = 1;
     adcApi.Implementation = &adcProvider;
 
     return &adcApi;

@@ -59,7 +59,6 @@ const TinyCLR_Api_Info* AT91_Pwm_GetApi() {
     pwmApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.PwmProvider";
     pwmApi.Type = TinyCLR_Api_Type::PwmProvider;
     pwmApi.Version = 0;
-    pwmApi.Count = TOTAL_PWM_CONTROLLER;
     pwmApi.Implementation = &pwmProviders;
 
     return &pwmApi;

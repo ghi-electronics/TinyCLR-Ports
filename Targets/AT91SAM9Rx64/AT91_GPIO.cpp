@@ -66,7 +66,6 @@ const TinyCLR_Api_Info* AT91_Gpio_GetApi() {
     gpioApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.GpioProvider";
     gpioApi.Type = TinyCLR_Api_Type::GpioProvider;
     gpioApi.Version = 0;
-    gpioApi.Count = 1;
     gpioApi.Implementation = &gpioProvider;
 
     return &gpioApi;

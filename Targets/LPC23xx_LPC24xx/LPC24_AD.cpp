@@ -47,7 +47,6 @@ const TinyCLR_Api_Info* LPC24_Adc_GetApi() {
     adcApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.AdcProvider";
     adcApi.Type = TinyCLR_Api_Type::AdcProvider;
     adcApi.Version = 0;
-    adcApi.Count = 1;
     adcApi.Implementation = &adcProvider;
 
     return &adcApi;

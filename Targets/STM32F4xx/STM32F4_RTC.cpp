@@ -87,7 +87,6 @@ const TinyCLR_Api_Info* STM32F4_Rtc_GetApi() {
     timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.RtcProvider";
     timeApi.Type = TinyCLR_Api_Type::RtcProvider;
     timeApi.Version = 0;
-    timeApi.Count = 1;
     timeApi.Implementation = &rtcProvider;
 
     return &timeApi;

@@ -248,7 +248,6 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpi
     static const size_t FIELD___exclusivePins___mscorlibSystemCollectionsArrayList = 2;
     static const size_t FIELD___acquiredPins___mscorlibSystemCollectionsHashtable = 3;
     static const size_t FIELD___Name___STRING = 4;
-    static const size_t FIELD___Index___U4 = 5;
 
     static TinyCLR_Result get_PinCount___I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result AcquireNative___VOID(const TinyCLR_Interop_MethodData md);

@@ -85,7 +85,6 @@ const TinyCLR_Api_Info* AT91_Uart_GetApi() {
     uartApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.UartProvider";
     uartApi.Type = TinyCLR_Api_Type::UartProvider;
     uartApi.Version = 0;
-    uartApi.Count = TOTAL_UART_CONTROLLERS;
     uartApi.Implementation = &uartProviders;
 
     return &uartApi;

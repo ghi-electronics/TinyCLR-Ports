@@ -53,7 +53,6 @@ const TinyCLR_Api_Info* LPC17_Dac_GetApi() {
     dacApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.DacProvider";
     dacApi.Type = TinyCLR_Api_Type::DacProvider;
     dacApi.Version = 0;
-    dacApi.Count = 1;
     dacApi.Implementation = &dacProvider;
 
     return &dacApi;

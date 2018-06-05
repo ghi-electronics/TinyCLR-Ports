@@ -26,7 +26,6 @@ const TinyCLR_Api_Info* SPIDisplay_GetApi() {
     spiDisplayApi.Name = "GHIElectronics.TinyCLR.NativeApis.Drivers.SPIDisplay";
     spiDisplayApi.Type = TinyCLR_Api_Type::DisplayProvider;
     spiDisplayApi.Version = 0;
-    spiDisplayApi.Count = 1;
     spiDisplayApi.Implementation = &spiDisplayProvider;
 
     return &spiDisplayApi;

@@ -1058,7 +1058,6 @@ const TinyCLR_Api_Info* STM32F7_Can_GetApi() {
     canApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.CanProvider";
     canApi.Type = TinyCLR_Api_Type::CanProvider;
     canApi.Version = 0;
-    canApi.Count = TOTAL_CAN_CONTROLLERS;
     canApi.Implementation = &canProvider;
 
     return &canApi;
