@@ -22,6 +22,7 @@ struct LPC24_I2c_Configuration {
     uint8_t                  clockRate2;   // additional clock factors, if more than one is needed for the clock (optional)
 
     bool                     isOpened;
+    int32_t                  channel;
 };
 
 struct LPC24_I2c_Transaction {
@@ -342,7 +343,9 @@ TinyCLR_Result LPC24_I2c_Acquire(const TinyCLR_I2c_Provider* self, int32_t chann
     LPC24_Gpio_ConfigurePin(g_i2c_sda_pins[channel].number, LPC24_Gpio_Direction::Input, g_i2c_sda_pins[channel].pinFunction, LPC24_Gpio_PinMode::Inactive);
     LPC24_Gpio_ConfigurePin(g_i2c_scl_pins[channel].number, LPC24_Gpio_Direction::Input, g_i2c_scl_pins[channel].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
-    LPC24_Interrupt_Activate(channel == 0 ? LPC24XX_VIC::c_IRQ_INDEX_I2C0 : (channel == 1 ? LPC24XX_VIC::c_IRQ_INDEX_I2C1 : LPC24XX_VIC::c_IRQ_INDEX_I2C2), (uint32_t*)&LPC24_I2c_InterruptHandler, (uint32_t*)&channel);
+    g_I2cConfiguration[channel].channel = channel;
+
+    LPC24_Interrupt_Activate(channel == 0 ? LPC24XX_VIC::c_IRQ_INDEX_I2C0 : (channel == 1 ? LPC24XX_VIC::c_IRQ_INDEX_I2C1 : LPC24XX_VIC::c_IRQ_INDEX_I2C2), (uint32_t*)&LPC24_I2c_InterruptHandler, (uint32_t*)&g_I2cConfiguration[channel].channel);
 
     // enable the I2c module
     I2C.I2CONSET = LPC24XX_I2C::I2EN;
