@@ -286,7 +286,7 @@ void LPC24_Uart_InterruptHandler(void *param) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    uint32_t controller = (uint32_t)param;
+    uint32_t controller = *reinterpret_cast<uint32_t*>(param);
 
     LPC24XX_USART& USARTC = LPC24XX::UART(controller);
     volatile uint32_t LSR_Value = USARTC.UART_LSR;                     // Store LSR value since it's Read-to-Clear

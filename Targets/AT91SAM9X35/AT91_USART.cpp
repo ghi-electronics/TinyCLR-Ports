@@ -293,7 +293,7 @@ void AT91_Uart_InterruptHandler(void *param) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    uint32_t controller = (uint32_t)param;
+    uint32_t controller = *reinterpret_cast<uint32_t*>(param);
 
     AT91_USART &usart = AT91::USART(controller);
 
