@@ -92,7 +92,7 @@ int main() {
 
     const void* debuggerConfiguration;
 
-    apiProvider = nullptr;  
+    apiProvider = nullptr;
 
     TARGET(_Startup_GetDebuggerTransportProvider)(debuggerApi, debuggerIndex, debuggerConfiguration);
     TinyCLR_Startup_SetDebuggerTransportProvider(debuggerApi, debuggerIndex, debuggerConfiguration);
@@ -101,6 +101,7 @@ int main() {
     TinyCLR_Startup_SetDeviceInformation(DEVICE_NAME, DEVICE_MANUFACTURER, DEVICE_VERSION);
 
     TinyCLR_Startup_SetRequiredProviders(TARGET(_Deployment_GetApi)(), TARGET(_Interrupt_GetApi)(), TARGET(_Power_GetApi)(), TARGET(_Time_GetApi)());
+
 
     auto runApp = true;
 
