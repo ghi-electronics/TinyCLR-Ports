@@ -17,7 +17,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcProvider {
     static const size_t FIELD_STATIC___providers___mscorlibSystemCollectionsHashtable = 0;
 
-    static const size_t FIELD___controllers___SZARRAY_GHIElectronicsTinyCLRDevicesAdcProviderIAdcControllerProvider = 1;
+    static const size_t FIELD___controller___SZARRAY_GHIElectronicsTinyCLRDevicesAdcProviderIAdcControllerProvider = 1;
     static const size_t FIELD___Name__BackingField___STRING = 2;
 };
 
@@ -122,7 +122,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DacProvider {
     static const size_t FIELD_STATIC___providers___mscorlibSystemCollectionsHashtable = 2;
 
-    static const size_t FIELD___controllers___SZARRAY_GHIElectronicsTinyCLRDevicesDacProviderIDacControllerProvider = 1;
+    static const size_t FIELD___controller___SZARRAY_GHIElectronicsTinyCLRDevicesDacProviderIDacControllerProvider = 1;
     static const size_t FIELD___Name__BackingField___STRING = 2;
 };
 
@@ -178,7 +178,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dis
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayProvider {
     static const size_t FIELD_STATIC___providers___mscorlibSystemCollectionsHashtable = 3;
 
-    static const size_t FIELD___controllers___SZARRAY_GHIElectronicsTinyCLRDevicesDisplayProviderIDisplayControllerProvider = 1;
+    static const size_t FIELD___controller___SZARRAY_GHIElectronicsTinyCLRDevicesDisplayProviderIDisplayControllerProvider = 1;
     static const size_t FIELD___Name__BackingField___STRING = 2;
 };
 
@@ -288,7 +288,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpi
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioProvider {
     static const size_t FIELD_STATIC___providers___mscorlibSystemCollectionsHashtable = 5;
 
-    static const size_t FIELD___controllers___SZARRAY_GHIElectronicsTinyCLRDevicesGpioProviderIGpioControllerProvider = 1;
+    static const size_t FIELD___controller___SZARRAY_GHIElectronicsTinyCLRDevicesGpioProviderIGpioControllerProvider = 1;
     static const size_t FIELD___Name__BackingField___STRING = 2;
 };
 
