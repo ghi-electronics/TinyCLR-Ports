@@ -361,8 +361,6 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, in
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-
-
     int32_t uartId = AT91_Uart_GetPeripheralId(controller);
 
     AT91_USART &usart = AT91::USART(controller);
@@ -394,7 +392,7 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, in
     usart.US_TTGR = 0;
 
     g_UartController[controller].controller = controller;
-    AT91_Interrupt_Activate(uartId, (uint32_t*)&AT91_Uart_InterruptHandler, (void*)(size_t)&g_UartController[controller].controller);
+    AT91_Interrupt_Activate(uartId, (uint32_t*)&AT91_Uart_InterruptHandler, (void*)&g_UartController[controller].controller);
 
     if (AT91_Uart_PinConfiguration(controller, true) == TinyCLR_Result::NotSupported)
         return TinyCLR_Result::NotSupported;
@@ -493,8 +491,6 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, in
 
 TinyCLR_Result AT91_Uart_Release(const TinyCLR_Uart_Provider* self, int32_t controller) {
     DISABLE_INTERRUPTS_SCOPED(irq);
-
-
 
     g_UartController[controller].txBufferCount = 0;
     g_UartController[controller].txBufferIn = 0;
