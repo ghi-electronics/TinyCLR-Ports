@@ -1070,7 +1070,7 @@ TinyCLR_Result STM32F4_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, i
 
     if (size > 3) {
         canController[channel].can_rxBufferSize = size;
-        return TinyCLR_Result::Success;;
+        return TinyCLR_Result::Success;
     }
     else {
         canController[channel].can_rxBufferSize = g_STM32F4_Can_defaultBuffersSize[channel];
@@ -1508,7 +1508,7 @@ TinyCLR_Result STM32F4_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, int
         canController[channel].canDataFilter.upperBoundFilters = _upperBoundFilters;
     }
 
-    return TinyCLR_Result::Success;;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Can_ClearReadBuffer(const TinyCLR_Can_Provider* self, int32_t channel) {
@@ -1526,7 +1526,7 @@ TinyCLR_Result STM32F4_Can_IsWritingAllowed(const TinyCLR_Can_Provider* self, in
 
     if ((CANx->TSR&CAN_TSR_TME0) == CAN_TSR_TME0 || (CANx->TSR&CAN_TSR_TME1) == CAN_TSR_TME1 || (CANx->TSR&CAN_TSR_TME2) == CAN_TSR_TME2) allowed = true;
 
-    return TinyCLR_Result::Success;;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Can_GetReadErrorCount(const TinyCLR_Can_Provider* self, int32_t channel, size_t& count) {
@@ -1535,7 +1535,7 @@ TinyCLR_Result STM32F4_Can_GetReadErrorCount(const TinyCLR_Can_Provider* self, i
 
     count = (uint8_t)((CANx->ESR & CAN_ESR_REC) >> 24);;
 
-    return TinyCLR_Result::Success;;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, int32_t channel, size_t& count) {
@@ -1544,13 +1544,13 @@ TinyCLR_Result STM32F4_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, 
 
     count = (uint8_t)((CANx->ESR & CAN_ESR_REC) >> 16);;
 
-    return TinyCLR_Result::Success;;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, int32_t channel, uint32_t& sourceClock) {
     sourceClock = STM32F4_APB1_CLOCK_HZ;
 
-    return TinyCLR_Result::Success;;
+    return TinyCLR_Result::Success;
 }
 
 void STM32F4_Can_Reset() {
@@ -1566,6 +1566,6 @@ void STM32F4_Can_Reset() {
 TinyCLR_Result STM32F4_Can_GetControllerCount(const TinyCLR_Can_Provider* self, int32_t& count) {
     count = TOTAL_CAN_CONTROLLERS;
 
-    return TinyCLR_Result::Success;;
+    return TinyCLR_Result::Success;
 }
 #endif // INCLUDE_CAN

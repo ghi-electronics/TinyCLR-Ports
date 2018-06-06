@@ -2707,7 +2707,7 @@ TinyCLR_Result LPC17_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, int32
         canController[channel].canDataFilter.upperBoundFilters = _upperBoundFilters;
     }
 
-    return TinyCLR_Result::Success;;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC17_Can_ClearReadBuffer(const TinyCLR_Can_Provider* self, int32_t channel) {
@@ -2740,20 +2740,20 @@ TinyCLR_Result LPC17_Can_GetReadErrorCount(const TinyCLR_Can_Provider* self, int
 
     count = channel == 0 ? ((C1GSR >> 16) & 0xFF) : ((C2GSR >> 16) & 0xFF);
 
-    return TinyCLR_Result::Success;;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC17_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, int32_t channel, size_t& count) {
 
     count = channel == 0 ? (C1GSR >> 24) : (C2GSR >> 24);
 
-    return TinyCLR_Result::Success;;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC17_Can_GetSourceClock(const TinyCLR_Can_Provider* self, int32_t channel, uint32_t& sourceClock) {
     sourceClock = LPC17_AHB_CLOCK_HZ / 2;
 
-    return TinyCLR_Result::Success;;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC17_Can_GetReadBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t& size) {
@@ -2768,7 +2768,7 @@ TinyCLR_Result LPC17_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, int
 
     if (size > 3) {
         canController[channel].can_rxBufferSize = size;
-        return TinyCLR_Result::Success;;
+        return TinyCLR_Result::Success;
     }
     else {
         canController[channel].can_rxBufferSize = g_LPC17_Can_defaultBuffersSize[channel];
@@ -2803,6 +2803,6 @@ void LPC17_Can_Reset() {
 TinyCLR_Result LPC17_Can_GetControllerCount(const TinyCLR_Can_Provider* self, int32_t& count) {
     count = TOTAL_CAN_CONTROLLERS;
 
-    return TinyCLR_Result::Success;;
+    return TinyCLR_Result::Success;
 }
 #endif // INCLUDE_CAN
