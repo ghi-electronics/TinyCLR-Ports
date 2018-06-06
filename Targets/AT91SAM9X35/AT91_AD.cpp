@@ -39,7 +39,7 @@ const TinyCLR_Api_Info *AT91_Adc_GetApi() {
     adcProvider.GetMinValue = &AT91_Adc_GetMinValue;
     adcProvider.GetMaxValue = &AT91_Adc_GetMaxValue;
     adcProvider.GetResolutionInBits = &AT91_Adc_GetResolutionInBits;
-    adcProvider.GetChannelCount = &AT91_Adc_GetChannelCount;
+    adcProvider.GetChannelCount = &AT91_Adc_GetControllerCount;
     adcProvider.GetChannelMode = &AT91_Adc_GetChannelMode;
     adcProvider.SetChannelMode = &AT91_Adc_SetChannelMode;
 
@@ -186,7 +186,7 @@ TinyCLR_Result AT91_Adc_ReadValue(const TinyCLR_Adc_Provider *self, int32_t chan
     return TinyCLR_Result::Success;
 }
 
-int32_t AT91_Adc_GetChannelCount(const TinyCLR_Adc_Provider *self) {
+int32_t AT91_Adc_GetControllerCount(const TinyCLR_Adc_Provider *self) {
     return AT91_Adc_GetControllerCount();
 }
 

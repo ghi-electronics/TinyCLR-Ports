@@ -39,7 +39,7 @@ const TinyCLR_Api_Info* LPC24_Adc_GetApi() {
     adcProvider.GetMinValue = &LPC24_Adc_GetMinValue;
     adcProvider.GetMaxValue = &LPC24_Adc_GetMaxValue;
     adcProvider.GetResolutionInBits = &LPC24_Adc_GetResolutionInBits;
-    adcProvider.GetChannelCount = &LPC24_Adc_GetChannelCount;
+    adcProvider.GetChannelCount = &LPC24_Adc_GetControllerCount;
     adcProvider.GetChannelMode = &LPC24_Adc_GetChannelMode;
     adcProvider.SetChannelMode = &LPC24_Adc_SetChannelMode;
 
@@ -132,7 +132,7 @@ TinyCLR_Result LPC24_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t cha
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC24_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self) {
+int32_t LPC24_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self) {
     return LPC24_Adc_GetControllerCount();
 }
 

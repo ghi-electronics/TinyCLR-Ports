@@ -500,7 +500,7 @@ TinyCLR_Result AT91_Adc_Release(const TinyCLR_Adc_Provider* self);
 TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
 TinyCLR_Result AT91_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
 TinyCLR_Result AT91_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t channel, int32_t& value);
-int32_t AT91_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self);
+int32_t AT91_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self);
 int32_t AT91_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider* self);
 int32_t AT91_Adc_GetMinValue(const TinyCLR_Adc_Provider* self);
 int32_t AT91_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self);
