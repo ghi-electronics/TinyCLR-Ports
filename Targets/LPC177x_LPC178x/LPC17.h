@@ -209,6 +209,7 @@ double LPC17_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self, int32_t contr
 double LPC17_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller);
 int32_t LPC17_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self, int32_t controller);
 LPC17_Gpio_Pin LPC17_Pwm_GetPins(int32_t controller, int32_t channel);
+TinyCLR_Result LPC17_Pwm_GetControllerCount(const TinyCLR_Pwm_Provider* self, int32_t& count);
 
 ////////////////////////////////////////////////////////////////////////////////
 //RTC

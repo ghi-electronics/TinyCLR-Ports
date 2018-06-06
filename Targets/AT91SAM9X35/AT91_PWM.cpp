@@ -443,3 +443,9 @@ void AT91_Pwm_ResetController(int32_t controller) {
         }
     }
 }
+
+TinyCLR_Result AT91_Pwm_GetControllerCount(const TinyCLR_Pwm_Provider* self, int32_t& count) {
+    count = TOTAL_PWM_CONTROLLER;
+
+    return TinyCLR_Result::Success;
+}

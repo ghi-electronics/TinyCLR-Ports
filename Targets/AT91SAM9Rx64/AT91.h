@@ -553,6 +553,7 @@ double AT91_Pwm_GetMinFrequency(const TinyCLR_Pwm_Provider* self, int32_t contro
 double AT91_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller);
 double AT91_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller);
 int32_t AT91_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self, int32_t controller);
+TinyCLR_Result AT91_Pwm_GetControllerCount(const TinyCLR_Pwm_Provider* self, int32_t& count);
 
 //RTC
 const TinyCLR_Api_Info* AT91_Rtc_GetApi();

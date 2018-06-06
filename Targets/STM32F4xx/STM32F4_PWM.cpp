@@ -447,3 +447,9 @@ void STM32F4_Pwm_ResetController(int32_t controller) {
     g_PwmController[controller].timer = controller + 1;
 }
 
+TinyCLR_Result STM32F4_Pwm_GetControllerCount(const TinyCLR_Pwm_Provider* self, int32_t& count) {
+    count = TOTAL_PWM_CONTROLLER;
+
+    return TinyCLR_Result::Success;
+}
+

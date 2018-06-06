@@ -191,6 +191,7 @@ double STM32F7_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self, int32_t con
 double STM32F7_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller);
 int32_t STM32F7_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self, int32_t controller);
 void STM32F7_Pwm_Reset();
+TinyCLR_Result STM32F7_Pwm_GetControllerCount(const TinyCLR_Pwm_Provider* self, int32_t& count);
 
 ////////////////////////////////////////////////////////////////////////////////
 //RTC

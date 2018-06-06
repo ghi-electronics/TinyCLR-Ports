@@ -268,6 +268,7 @@ double LPC24_Pwm_GetMinFrequency(const TinyCLR_Pwm_Provider* self, int32_t contr
 double LPC24_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller);
 double LPC24_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller);
 int32_t LPC24_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self, int32_t controller);
+TinyCLR_Result LPC24_Pwm_GetControllerCount(const TinyCLR_Pwm_Provider* self, int32_t& count);
 
 //RTC
 const TinyCLR_Api_Info* LPC24_Rtc_GetApi();
