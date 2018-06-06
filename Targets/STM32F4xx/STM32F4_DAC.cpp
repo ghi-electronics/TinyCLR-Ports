@@ -38,7 +38,7 @@ const TinyCLR_Api_Info* STM32F4_Dac_GetApi() {
     dacProvider.GetMinValue = &STM32F4_Dac_GetMinValue;
     dacProvider.GetMaxValue = &STM32F4_Dac_GetMaxValue;
     dacProvider.GetResolutionInBits = &STM32F4_Dac_GetResolutionInBits;
-    dacProvider.GetChannelCount = &STM32F4_Dac_GetControllerCount;
+    dacProvider.GetChannelCount = &STM32F4_Dac_GetChannelCount;
 
     dacApi.Author = "GHI Electronics, LLC";
     dacApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.DacProvider";
@@ -117,7 +117,7 @@ TinyCLR_Result STM32F4_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t 
     return TinyCLR_Result::Success;
 }
 
-int32_t STM32F4_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self) {
+int32_t STM32F4_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self) {
     return STM32F4_DAC_CONTROLLERS;
 }
 
@@ -134,10 +134,16 @@ int32_t STM32F4_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self) {
 }
 
 void STM32F4_Dac_Reset() {
-    for (auto i = 0; i < STM32F4_Dac_GetControllerCount(&dacProvider); i++) {
+    for (auto i = 0; i < STM32F4_Dac_GetChannelCount(&dacProvider); i++) {
         STM32F4_Dac_ReleaseChannel(&dacProvider, i);
 
         g_STM32F4_DA_IsOpened[i] = false;
     }
+}
+
+TinyCLR_Result STM32F4_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t& count) {
+    count = 1;
+
+    return TinyCLR_Result::Success;
 }
 #endif

@@ -37,7 +37,7 @@ const TinyCLR_Api_Info* LPC24_Dac_GetApi() {
     dacProvider.AcquireChannel = &LPC24_Dac_AcquireChannel;
     dacProvider.ReleaseChannel = &LPC24_Dac_ReleaseChannel;
     dacProvider.WriteValue = &LPC24_Dac_WriteValue;
-    dacProvider.GetChannelCount = &LPC24_Dac_GetControllerCount;
+    dacProvider.GetChannelCount = &LPC24_Dac_GetChannelCount;
     dacProvider.GetResolutionInBits = &LPC24_Dac_GetResolutionInBits;
     dacProvider.GetMinValue = &LPC24_Dac_GetMinValue;
     dacProvider.GetMaxValue = &LPC24_Dac_GetMaxValue;
@@ -66,7 +66,7 @@ TinyCLR_Result LPC24_Dac_Release(const TinyCLR_Dac_Provider* self) {
 }
 
 TinyCLR_Result LPC24_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t channel) {
-    if (channel >= LPC24_Dac_GetControllerCount(self))
+    if (channel >= LPC24_Dac_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 
     if (!LPC24_Gpio_OpenPin(g_LPC24_Dac_Pins[channel].number))
@@ -82,7 +82,7 @@ TinyCLR_Result LPC24_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_
 }
 
 TinyCLR_Result LPC24_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t channel) {
-    if (channel >= LPC24_Dac_GetControllerCount(self))
+    if (channel >= LPC24_Dac_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 
     if (g_LPC24_Dac_IsOpened[channel])
@@ -94,7 +94,7 @@ TinyCLR_Result LPC24_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_
 }
 
 TinyCLR_Result LPC24_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t channel, int32_t value) {
-    if (channel >= LPC24_Dac_GetControllerCount(self))
+    if (channel >= LPC24_Dac_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 
     if (value > LPC24_DAC_MAX_VALUE) {
@@ -110,7 +110,7 @@ TinyCLR_Result LPC24_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t ch
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC24_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self) {
+int32_t LPC24_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self) {
     return SIZEOF_ARRAY(g_LPC24_Dac_Pins);
 }
 
@@ -127,10 +127,16 @@ int32_t LPC24_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self) {
 }
 
 void LPC24_Dac_Reset() {
-    for (auto ch = 0; ch < LPC24_Dac_GetControllerCount(&dacProvider); ch++) {
+    for (auto ch = 0; ch < LPC24_Dac_GetChannelCount(&dacProvider); ch++) {
         LPC24_Dac_ReleaseChannel(&dacProvider, ch);
 
         g_LPC24_Dac_IsOpened[ch] = false;
     }
+}
+
+TinyCLR_Result LPC24_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t& count) {
+    count = 1;
+
+    return TinyCLR_Result::Success;
 }
 

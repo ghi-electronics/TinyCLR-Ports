@@ -231,10 +231,11 @@ TinyCLR_Result LPC24_Dac_Release(const TinyCLR_Dac_Provider* self);
 TinyCLR_Result LPC24_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t channel);
 TinyCLR_Result LPC24_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t channel);
 TinyCLR_Result LPC24_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t channel, int32_t value);
-int32_t LPC24_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self);
+int32_t LPC24_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self);
 int32_t LPC24_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self);
 int32_t LPC24_Dac_GetMinValue(const TinyCLR_Dac_Provider* self);
 int32_t LPC24_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self);
+TinyCLR_Result LPC24_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t& count);
 
 // PWM
 struct PwmController {

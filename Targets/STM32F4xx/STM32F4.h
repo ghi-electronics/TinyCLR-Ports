@@ -139,8 +139,9 @@ TinyCLR_Result STM32F4_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t 
 int32_t STM32F4_Dac_GetMinValue(const TinyCLR_Dac_Provider* self);
 int32_t STM32F4_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self);
 int32_t STM32F4_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self);
-int32_t STM32F4_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self);
+int32_t STM32F4_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self);
 void STM32F4_Dac_Reset();
+TinyCLR_Result STM32F4_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t& count);
 
 ////////////////////////////////////////////////////////////////////////////////
 //GPIO

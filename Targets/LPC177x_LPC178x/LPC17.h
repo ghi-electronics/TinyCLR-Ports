@@ -77,10 +77,11 @@ TinyCLR_Result LPC17_Dac_Release(const TinyCLR_Dac_Provider* self);
 TinyCLR_Result LPC17_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t channel);
 TinyCLR_Result LPC17_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t channel);
 TinyCLR_Result LPC17_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t channel, int32_t value);
-int32_t LPC17_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self);
+int32_t LPC17_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self);
 int32_t LPC17_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self);
 int32_t LPC17_Dac_GetMinValue(const TinyCLR_Dac_Provider* self);
 int32_t LPC17_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self);
+TinyCLR_Result LPC17_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t& count);
 
 // GPIO
 enum class LPC17_Gpio_Direction : uint8_t {
