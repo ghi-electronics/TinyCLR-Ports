@@ -1211,3 +1211,8 @@ void STM32F7_Display_Reset() {
     m_STM32F7_DisplayEnable = false;
 }
 
+TinyCLR_Result STM32F7_Display_GetControllerCount(const TinyCLR_Display_Provider* self, int32_t& count) {
+    count = 1;
+
+    return TinyCLR_Result::Success;
+}

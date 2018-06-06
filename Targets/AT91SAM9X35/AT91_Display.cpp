@@ -1440,4 +1440,9 @@ void AT91_Display_Reset() {
 	m_AT91_DisplayEnable = false;
 }
 
+TinyCLR_Result AT91_Display_GetControllerCount(const TinyCLR_Display_Provider* self, int32_t& count) {
+    count = 1;
+
+    return TinyCLR_Result::Success;
+}
 #endif // INCLUDE_DISPLAY

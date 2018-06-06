@@ -12,3 +12,4 @@ TinyCLR_Result SPIDisplay_GetConfiguration(const TinyCLR_Display_Provider* self,
 TinyCLR_Result SPIDisplay_SetConfiguration(const TinyCLR_Display_Provider* self, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration);
 TinyCLR_Result SPIDisplay_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data);
 TinyCLR_Result SPIDisplay_WriteString(const TinyCLR_Display_Provider* self, const char* buffer, size_t length);
+TinyCLR_Result SPIDisplay_GetControllerCount(const TinyCLR_Display_Provider* self, int32_t& count);

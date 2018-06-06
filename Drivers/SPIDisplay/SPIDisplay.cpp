@@ -116,3 +116,9 @@ TinyCLR_Result SPIDisplay_DrawBuffer(const TinyCLR_Display_Provider* self, int32
 
     return TinyCLR_Result::Success;
 }
+
+TinyCLR_Result SPIDisplay_GetControllerCount(const TinyCLR_Display_Provider* self, int32_t& count) {
+    count = 1;
+
+    return TinyCLR_Result::Success;
+}
