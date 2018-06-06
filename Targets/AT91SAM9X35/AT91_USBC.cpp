@@ -929,7 +929,7 @@ bool AT91_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
 
     return true;
 }
-int8_t TinyCLR_UsbClient_GetTotalController() {
+int8_t TinyCLR_UsbClient_GetControllerCount() {
     return AT91_TOTAL_USB_CONTROLLERS;
 }
 
