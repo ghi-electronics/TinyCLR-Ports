@@ -41,6 +41,7 @@ const TinyCLR_Api_Info* LPC24_Dac_GetApi() {
     dacProvider.GetResolutionInBits = &LPC24_Dac_GetResolutionInBits;
     dacProvider.GetMinValue = &LPC24_Dac_GetMinValue;
     dacProvider.GetMaxValue = &LPC24_Dac_GetMaxValue;
+    dacProvider.GetControllerCount = &LPC24_Dac_GetControllerCount;
 
     dacApi.Author = "GHI Electronics, LLC";
     dacApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.DacProvider";

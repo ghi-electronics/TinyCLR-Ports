@@ -89,6 +89,7 @@ const TinyCLR_Api_Info* LPC24_Pwm_GetApi() {
     pwmProviders.GetMinFrequency = &LPC24_Pwm_GetMinFrequency;
     pwmProviders.GetMaxFrequency = &LPC24_Pwm_GetMaxFrequency;
     pwmProviders.GetPinCount = &LPC24_Pwm_GetPinCount;
+    pwmProviders.GetControllerCount = &LPC24_Pwm_GetControllerCount;
 
     pwmApi.Author = "GHI Electronics, LLC";
     pwmApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.PwmProvider";

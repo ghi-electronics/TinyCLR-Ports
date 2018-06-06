@@ -198,7 +198,7 @@ bool TinyCLR_UsbClient_Uninitialize(USB_CONTROLLER_STATE* usbState);
 bool TinyCLR_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
 bool TinyCLR_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
 void TinyCLR_UsbClient_Delay(uint64_t microseconds);
+TinyCLR_Result TinyCLR_UsbClient_GetControllerCount(const TinyCLR_UsbClient_Provider* self, int32_t& count);
 
-int8_t TinyCLR_UsbClient_GetControllerCount();
 void TinyCLR_UsbClient_InitializeConfiguration(USB_CONTROLLER_STATE *usbState);
 uint32_t TinyCLR_UsbClient_GetEndpointSize(int32_t endpoint);

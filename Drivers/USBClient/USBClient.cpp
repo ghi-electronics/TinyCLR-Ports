@@ -738,6 +738,7 @@ const TinyCLR_Api_Info* TinyCLR_UsbClient_GetApi() {
     usbClientProvider.SetDataReceivedHandler = &TinyCLR_UsbClient_SetDataReceivedHandler;
     usbClientProvider.SetVendorClassRequestHandler = &TinyCLR_UsbClient_SetVendorClassRequestHandler;
     usbClientProvider.SetDeviceDescriptor = &TinyCLR_UsbClient_SetDeviceDescriptor;
+    usbClientProvider.GetControllerCount = &TinyCLR_UsbClient_GetControllerCount;
 
     usbClientApi.Author = "GHI Electronics, LLC";
     usbClientApi.Name = "GHIElectronics.TinyCLR.NativeApis.Drivers.UsbClientProvider";

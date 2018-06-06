@@ -581,6 +581,7 @@ TinyCLR_Result AT91_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, int3
 TinyCLR_Result AT91_Can_GetReadBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t& size);
 TinyCLR_Result AT91_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t& size);
 TinyCLR_Result AT91_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t size);
+TinyCLR_Result AT91_Can_GetControllerCount(const TinyCLR_Can_Provider* self, int32_t& count);
 void AT91_Can_Reset();
 
 //DAC

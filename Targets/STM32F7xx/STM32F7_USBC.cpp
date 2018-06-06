@@ -734,8 +734,10 @@ void STM32F7_UsbClient_ProtectPins(int32_t controller, bool on) {
     TinyCLR_UsbClient_StateCallback(usbState);
 }
 
-int8_t TinyCLR_UsbClient_GetControllerCount() {
-    return STM32F7_TOTAL_USB_CONTROLLERS;
+TinyCLR_Result TinyCLR_UsbClient_GetControllerCount(const TinyCLR_UsbClient_Provider* self, int32_t& count) {
+    count = STM32F7_TOTAL_USB_CONTROLLERS;
+
+    return TinyCLR_Result::Success;
 }
 
 bool TinyCLR_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState) {

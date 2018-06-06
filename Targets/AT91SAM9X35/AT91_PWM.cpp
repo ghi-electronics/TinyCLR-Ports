@@ -54,6 +54,7 @@ const TinyCLR_Api_Info* AT91_Pwm_GetApi() {
     pwmProviders.GetMinFrequency = &AT91_Pwm_GetMinFrequency;
     pwmProviders.GetMaxFrequency = &AT91_Pwm_GetMaxFrequency;
     pwmProviders.GetPinCount = &AT91_Pwm_GetPinCount;
+    pwmProviders.GetControllerCount = &AT91_Pwm_GetControllerCount;
 
     pwmApi.Author = "GHI Electronics, LLC";
     pwmApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.PwmProvider";

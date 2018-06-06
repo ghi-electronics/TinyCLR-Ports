@@ -1005,6 +1005,7 @@ const TinyCLR_Api_Info* LPC17_Display_GetApi() {
     displayProvider.GetCapabilities = &LPC17_Display_GetCapabilities;
     displayProvider.DrawBuffer = &LPC17_Display_DrawBuffer;
     displayProvider.WriteString = &LPC17_Display_WriteString;
+    displayProvider.GetControllerCount = &LPC17_Display_GetControllerCount;
 
     displayApi.Author = "GHI Electronics, LLC";
     displayApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.DisplayProvider";

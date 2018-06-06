@@ -57,6 +57,7 @@ const TinyCLR_Api_Info* AT91_Spi_GetApi() {
     spiProvider.GetMinClockFrequency = &AT91_Spi_GetMinClockFrequency;
     spiProvider.GetMaxClockFrequency = &AT91_Spi_GetMaxClockFrequency;
     spiProvider.GetSupportedDataBitLengths = &AT91_Spi_GetSupportedDataBitLengths;
+    spiProvider.GetControllerCount = &AT91_Spi_GetControllerCount;
 
     spiApi.Author = "GHI Electronics, LLC";
     spiApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.SpiProvider";

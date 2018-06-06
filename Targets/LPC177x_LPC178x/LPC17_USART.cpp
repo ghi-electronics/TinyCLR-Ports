@@ -254,6 +254,7 @@ const TinyCLR_Api_Info* LPC17_Uart_GetApi() {
     uartProviders.GetUnwrittenCount = &LPC17_Uart_GetUnwrittenCount;
     uartProviders.ClearReadBuffer = &LPC17_Uart_ClearReadBuffer;
     uartProviders.ClearWriteBuffer = &LPC17_Uart_ClearWriteBuffer;
+    uartProviders.GetControllerCount = &LPC17_Uart_GetControllerCount;
 
     uartApi.Author = "GHI Electronics, LLC";
     uartApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.UartProvider";

@@ -68,6 +68,7 @@ const TinyCLR_Api_Info* STM32F7_Spi_GetApi() {
     spiProviders.GetMinClockFrequency = &STM32F7_Spi_GetMinClockFrequency;
     spiProviders.GetMaxClockFrequency = &STM32F7_Spi_GetMaxClockFrequency;
     spiProviders.GetSupportedDataBitLengths = &STM32F7_Spi_GetSupportedDataBitLengths;
+    spiProviders.GetControllerCount = &STM32F7_Spi_GetControllerCount;
 
     spiApi.Author = "GHI Electronics, LLC";
     spiApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.SpiProvider";

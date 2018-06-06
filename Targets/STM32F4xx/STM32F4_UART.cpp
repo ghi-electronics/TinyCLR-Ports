@@ -104,6 +104,7 @@ const TinyCLR_Api_Info* STM32F4_Uart_GetApi() {
     uartProviders.GetUnwrittenCount = &STM32F4_Uart_GetUnwrittenCount;
     uartProviders.ClearReadBuffer = &STM32F4_Uart_ClearReadBuffer;
     uartProviders.ClearWriteBuffer = &STM32F4_Uart_ClearWriteBuffer;
+    uartProviders.GetControllerCount = &STM32F4_Uart_GetControllerCount;
 
     uartApi.Author = "GHI Electronics, LLC";
     uartApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.UartProvider";

@@ -42,6 +42,7 @@ const TinyCLR_Api_Info* AT91_I2c_GetApi() {
     i2cProvider.Read = &AT91_I2c_ReadTransaction;
     i2cProvider.Write = &AT91_I2c_WriteTransaction;
     i2cProvider.WriteRead = &AT91_I2c_WriteReadTransaction;
+    i2cProvider.GetControllerCount = &AT91_I2c_GetControllerCount;
 
     i2cApi.Author = "GHI Electronics, LLC";
     i2cApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.I2cProvider";

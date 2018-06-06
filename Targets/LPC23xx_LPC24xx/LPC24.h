@@ -221,6 +221,7 @@ TinyCLR_Result LPC24_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, int
 TinyCLR_Result LPC24_Can_GetReadBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t& size);
 TinyCLR_Result LPC24_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t& size);
 TinyCLR_Result LPC24_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t size);
+TinyCLR_Result LPC24_Can_GetControllerCount(const TinyCLR_Can_Provider* self, int32_t& count);
 void LPC24_Can_Reset();
 
 //DAC

@@ -299,6 +299,7 @@ const TinyCLR_Api_Info* LPC24_Spi_GetApi() {
     spiProviders.GetMinClockFrequency = &LPC24_Spi_GetMinClockFrequency;
     spiProviders.GetMaxClockFrequency = &LPC24_Spi_GetMaxClockFrequency;
     spiProviders.GetSupportedDataBitLengths = &LPC24_Spi_GetSupportedDataBitLengths;
+    spiProviders.GetControllerCount = &LPC24_Spi_GetControllerCount;
 
     spiApi.Author = "GHI Electronics, LLC";
     spiApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.SpiProvider";

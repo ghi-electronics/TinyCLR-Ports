@@ -80,6 +80,7 @@ const TinyCLR_Api_Info* AT91_Uart_GetApi() {
     uartProviders.GetUnwrittenCount = &AT91_Uart_GetUnwrittenCount;
     uartProviders.ClearReadBuffer = &AT91_Uart_ClearReadBuffer;
     uartProviders.ClearWriteBuffer = &AT91_Uart_ClearWriteBuffer;
+    uartProviders.GetControllerCount = &AT91_Uart_GetControllerCount;
 
     uartApi.Author = "GHI Electronics, LLC";
     uartApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.UartProvider";

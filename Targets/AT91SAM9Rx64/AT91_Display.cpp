@@ -1182,6 +1182,7 @@ const TinyCLR_Api_Info* AT91_Display_GetApi() {
     displayProvider.GetCapabilities = &AT91_Display_GetCapabilities;
     displayProvider.DrawBuffer = &AT91_Display_DrawBuffer;
     displayProvider.WriteString = &AT91_Display_WriteString;
+    displayProvider.GetControllerCount = &AT91_Display_GetControllerCount;
 
     displayApi.Author = "GHI Electronics, LLC";
     displayApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.DisplayProvider";

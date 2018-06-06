@@ -40,7 +40,7 @@ const TinyCLR_Api_Info *AT91_Adc_GetApi() {
     adcProvider.GetResolutionInBits = &AT91_Adc_GetResolutionInBits;
     adcProvider.GetChannelCount = &AT91_Adc_GetChannelCount;
     adcProvider.GetChannelMode = &AT91_Adc_GetChannelMode;
-    adcProvider.SetChannelMode = &AT91_Adc_SetChannelMode;
+    adcProvider.GetControllerCount = &AT91_Adc_GetControllerCount;
 
     adcApi.Author = "GHI Electronics, LLC";
     adcApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.AdcProvider";

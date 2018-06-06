@@ -39,6 +39,7 @@ const TinyCLR_Api_Info* STM32F4_Dac_GetApi() {
     dacProvider.GetMaxValue = &STM32F4_Dac_GetMaxValue;
     dacProvider.GetResolutionInBits = &STM32F4_Dac_GetResolutionInBits;
     dacProvider.GetChannelCount = &STM32F4_Dac_GetChannelCount;
+    dacProvider.GetControllerCount = &STM32F4_Dac_GetControllerCount;
 
     dacApi.Author = "GHI Electronics, LLC";
     dacApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.DacProvider";

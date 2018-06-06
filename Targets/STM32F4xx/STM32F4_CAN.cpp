@@ -1049,6 +1049,7 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
     canProvider.SetReadBufferSize = STM32F4_Can_SetReadBufferSize;
     canProvider.GetWriteBufferSize = STM32F4_Can_GetWriteBufferSize;
     canProvider.SetWriteBufferSize = STM32F4_Can_SetWriteBufferSize;
+    canProvider.GetControllerCount = STM32F4_Can_GetControllerCount;
 
     canApi.Author = "GHI Electronics, LLC";
     canApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.CanProvider";

@@ -87,6 +87,7 @@ const TinyCLR_Api_Info* STM32F7_Pwm_GetApi() {
     pwmProviders.GetMinFrequency = &STM32F7_Pwm_GetMinFrequency;
     pwmProviders.GetMaxFrequency = &STM32F7_Pwm_GetMaxFrequency;
     pwmProviders.GetPinCount = &STM32F7_Pwm_GetPinCount;
+    pwmProviders.GetControllerCount = &STM32F7_Pwm_GetControllerCount;
 
     pwmApi.Author = "GHI Electronics, LLC";
     pwmApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmProvider";

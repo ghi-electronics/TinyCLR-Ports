@@ -125,6 +125,7 @@ TinyCLR_Result STM32F4_Can_GetReadBufferSize(const TinyCLR_Can_Provider* self, i
 TinyCLR_Result STM32F4_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t size);
 TinyCLR_Result STM32F4_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t& size);
 TinyCLR_Result STM32F4_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t size);
+TinyCLR_Result STM32F4_Can_GetControllerCount(const TinyCLR_Can_Provider* self, int32_t& count);
 void STM32F4_Can_Reset();
 
 ////////////////////////////////////////////////////////////////////////////////

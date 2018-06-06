@@ -1190,6 +1190,7 @@ const TinyCLR_Api_Info* STM32F7_Display_GetApi() {
     displayProvider.GetCapabilities = &STM32F7_Display_GetCapabilities;
     displayProvider.DrawBuffer = &STM32F7_Display_DrawBuffer;
     displayProvider.WriteString = &STM32F7_Display_WriteString;
+    displayProvider.GetControllerCount = &STM32F7_Display_GetControllerCount;
 
     displayApi.Author = "GHI Electronics, LLC";
     displayApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.DisplayProvider";

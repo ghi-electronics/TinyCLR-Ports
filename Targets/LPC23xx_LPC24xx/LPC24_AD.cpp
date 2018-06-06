@@ -42,6 +42,7 @@ const TinyCLR_Api_Info* LPC24_Adc_GetApi() {
     adcProvider.GetChannelCount = &LPC24_Adc_GetChannelCount;
     adcProvider.GetChannelMode = &LPC24_Adc_GetChannelMode;
     adcProvider.SetChannelMode = &LPC24_Adc_SetChannelMode;
+    adcProvider.GetControllerCount = &LPC24_Adc_GetControllerCount;
 
     adcApi.Author = "GHI Electronics, LLC";
     adcApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.AdcProvider";

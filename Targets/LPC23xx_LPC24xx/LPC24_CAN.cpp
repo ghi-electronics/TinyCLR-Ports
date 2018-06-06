@@ -2238,8 +2238,9 @@ const TinyCLR_Api_Info* LPC24_Can_GetApi() {
     canProvider.SetReadBufferSize = LPC24_Can_SetReadBufferSize;
     canProvider.GetWriteBufferSize = LPC24_Can_GetWriteBufferSize;
     canProvider.SetWriteBufferSize = LPC24_Can_SetWriteBufferSize;
+    canProvider.GetControllerCount = LPC24_Can_GetControllerCount;
+    
     canApi.Author = "GHI Electronics, LLC";
-
     canApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.CanProvider";
     canApi.Type = TinyCLR_Api_Type::CanProvider;
     canApi.Version = 0;

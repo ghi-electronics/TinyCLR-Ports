@@ -1203,6 +1203,7 @@ const TinyCLR_Api_Info* AT91_Can_GetApi() {
     canProvider.SetReadBufferSize = AT91_Can_SetReadBufferSize;
     canProvider.GetWriteBufferSize = AT91_Can_GetWriteBufferSize;
     canProvider.SetWriteBufferSize = AT91_Can_SetWriteBufferSize;
+    canProvider.GetControllerCount = AT91_Can_GetControllerCount;
 
     canApi.Author = "GHI Electronics, LLC";
     canApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.CanProvider";

@@ -45,6 +45,7 @@ const TinyCLR_Api_Info* STM32F7_Adc_GetApi() {
     adcProvider.GetMaxValue = &STM32F7_Adc_GetMaxValue;
     adcProvider.GetResolutionInBits = &STM32F7_Adc_GetResolutionInBits;
     adcProvider.GetChannelCount = &STM32F7_Adc_GetChannelCount;
+    adcProvider.GetControllerCount = &STM32F7_Adc_GetControllerCount;
 
     adcApi.Author = "GHI Electronics, LLC";
     adcApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.AdcProvider";
