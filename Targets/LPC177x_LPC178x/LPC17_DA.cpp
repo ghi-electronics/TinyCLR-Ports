@@ -44,7 +44,7 @@ const TinyCLR_Api_Info* LPC17_Dac_GetApi() {
     dacProvider.AcquireChannel = &LPC17_Dac_AcquireChannel;
     dacProvider.ReleaseChannel = &LPC17_Dac_ReleaseChannel;
     dacProvider.WriteValue = &LPC17_Dac_WriteValue;
-    dacProvider.GetChannelCount = &LPC17_Dac_GetChannelCount;
+    dacProvider.GetChannelCount = &LPC17_Dac_GetControllerCount;
     dacProvider.GetResolutionInBits = &LPC17_Dac_GetResolutionInBits;
     dacProvider.GetMinValue = &LPC17_Dac_GetMinValue;
     dacProvider.GetMaxValue = &LPC17_Dac_GetMaxValue;
@@ -120,7 +120,7 @@ TinyCLR_Result LPC17_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t ch
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC17_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self) {
+int32_t LPC17_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self) {
     return SIZEOF_ARRAY(g_lpc17_dac_pins);
 }
 
@@ -137,7 +137,7 @@ int32_t LPC17_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self) {
 }
 
 void LPC17_Dac_Reset() {
-    for (auto ch = 0; ch < LPC17_Dac_GetChannelCount(&dacProvider); ch++) {
+    for (auto ch = 0; ch < LPC17_Dac_GetControllerCount(&dacProvider); ch++) {
         LPC17_Dac_ReleaseChannel(&dacProvider, ch);
 
         g_lpc17_dac_isOpened[ch] = false;

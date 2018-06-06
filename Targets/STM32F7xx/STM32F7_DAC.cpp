@@ -19,14 +19,14 @@
 #ifdef INCLUDE_DAC
 ///////////////////////////////////////////////////////////////////////////////
 
-#define STM32F7_DAC_CHANNELS             2       // number of channels
+#define STM32F7_DAC_CONTROLLERS             2       // number of channels
 #define STM32F7_DAC_FIRST_PIN           4       // channel 0 pin (A4)
 #define STM32F7_DAC_RESOLUTION_INT_BIT    12      // max resolution in bit
 
 static TinyCLR_Dac_Provider dacProvider;
 static TinyCLR_Api_Info dacApi;
 
-bool g_stm32f7_dac_isOpened[STM32F7_DAC_CHANNELS];
+bool g_stm32f7_dac_isOpened[STM32F7_DAC_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F7_Dac_GetApi() {
     dacProvider.Parent = &dacApi;    
@@ -38,7 +38,7 @@ const TinyCLR_Api_Info* STM32F7_Dac_GetApi() {
     dacProvider.GetMinValue = &STM32F7_Dac_GetMinValue;
     dacProvider.GetMaxValue = &STM32F7_Dac_GetMaxValue;
     dacProvider.GetResolutionInBits = &STM32F7_Dac_GetResolutionInBits;
-    dacProvider.GetChannelCount = &STM32F7_Dac_GetChannelCount;
+    dacProvider.GetChannelCount = &STM32F7_Dac_GetControllerCount;
 
     dacApi.Author = "GHI Electronics, LLC";
     dacApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.DacProvider";
@@ -122,8 +122,8 @@ TinyCLR_Result STM32F7_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t 
     return TinyCLR_Result::Success;
 }
 
-int32_t STM32F7_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self) {
-    return STM32F7_DAC_CHANNELS;
+int32_t STM32F7_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self) {
+    return STM32F7_DAC_CONTROLLERS;
 }
 
 int32_t STM32F7_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self) {
@@ -139,7 +139,7 @@ int32_t STM32F7_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self) {
 }
 
 void STM32F7_Dac_Reset() {
-    for (auto i = 0; i < STM32F7_Dac_GetChannelCount(&dacProvider); i++) {
+    for (auto i = 0; i < STM32F7_Dac_GetControllerCount(&dacProvider); i++) {
         STM32F7_Dac_ReleaseChannel(&dacProvider, i);
 
         g_stm32f7_dac_isOpened[i] = false;
