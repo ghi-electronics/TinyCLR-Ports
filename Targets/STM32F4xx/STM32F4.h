@@ -132,17 +132,17 @@ void STM32F4_Can_Reset();
 //DAC
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F4_Dac_GetApi();
-TinyCLR_Result STM32F4_Dac_Acquire(const TinyCLR_Dac_Provider* self);
-TinyCLR_Result STM32F4_Dac_Release(const TinyCLR_Dac_Provider* self);
-TinyCLR_Result STM32F4_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t channel);
-TinyCLR_Result STM32F4_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t channel);
-TinyCLR_Result STM32F4_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t channel, int32_t value);
-int32_t STM32F4_Dac_GetMinValue(const TinyCLR_Dac_Provider* self);
-int32_t STM32F4_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self);
-int32_t STM32F4_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self);
-int32_t STM32F4_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self);
+TinyCLR_Result STM32F4_Dac_Acquire(const TinyCLR_Dac_Provider* self, int32_t controller);
+TinyCLR_Result STM32F4_Dac_Release(const TinyCLR_Dac_Provider* self, int32_t controller);
+TinyCLR_Result STM32F4_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel);
+TinyCLR_Result STM32F4_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel);
+TinyCLR_Result STM32F4_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel, int32_t value);
+int32_t STM32F4_Dac_GetMinValue(const TinyCLR_Dac_Provider* self, int32_t controller);
+int32_t STM32F4_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self, int32_t controller);
+int32_t STM32F4_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self, int32_t controller);
+int32_t STM32F4_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self, int32_t controller);
 void STM32F4_Dac_Reset();
-TinyCLR_Result STM32F4_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t& count);
+TinyCLR_Result STM32F4_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t& count);
 
 ////////////////////////////////////////////////////////////////////////////////
 //GPIO
