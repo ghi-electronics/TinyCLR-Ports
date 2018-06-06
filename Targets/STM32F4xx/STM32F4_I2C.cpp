@@ -460,3 +460,5 @@ void STM32F4_I2c_Reset() {
         g_I2cConfiguration[i].isOpened = false;
     }
 }
+
+

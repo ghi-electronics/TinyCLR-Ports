@@ -349,6 +349,7 @@ TinyCLR_Result LPC17_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, int3
 TinyCLR_Result LPC17_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, int32_t channel, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result);
 void LPC17_I2c_StartTransaction(int32_t channel);
 void LPC17_I2c_StopTransaction(int32_t channel);
+TinyCLR_Result LPC17_I2c_GetControllerCount(const TinyCLR_I2c_Provider* self, int32_t& count);
 
 // Time
 const TinyCLR_Api_Info* LPC17_Time_GetApi();

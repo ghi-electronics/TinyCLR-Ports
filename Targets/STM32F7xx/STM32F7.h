@@ -172,6 +172,7 @@ TinyCLR_Result STM32F7_I2c_Read(const TinyCLR_I2c_Provider* self, int32_t channe
 TinyCLR_Result STM32F7_I2c_Write(const TinyCLR_I2c_Provider* self, int32_t channel, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
 TinyCLR_Result STM32F7_I2c_WriteRead(const TinyCLR_I2c_Provider* self, int32_t channel, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result);
 void STM32F7_I2c_Reset();
+TinyCLR_Result STM32F7_I2c_GetControllerCount(const TinyCLR_I2c_Provider* self, int32_t& count);
 
 ////////////////////////////////////////////////////////////////////////////////
 //PWM

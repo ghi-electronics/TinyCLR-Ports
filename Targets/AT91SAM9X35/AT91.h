@@ -1200,6 +1200,7 @@ TinyCLR_Result AT91_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, int32
 TinyCLR_Result AT91_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, int32_t channel, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result);
 void AT91_I2c_StartTransaction();
 void AT91_I2c_StopTransaction();
+TinyCLR_Result AT91_I2c_GetControllerCount(const TinyCLR_I2c_Provider* self, int32_t& count);
 
 // Time
 //////////////////////////////////////////////////////////////////////////////
