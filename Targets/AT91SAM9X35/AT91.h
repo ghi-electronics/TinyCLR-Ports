@@ -542,7 +542,7 @@ bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_P
 // ADC
 const TinyCLR_Api_Info* AT91_Adc_GetApi();
 void AT91_Adc_Reset();
-int32_t AT91_Adc_GetControllerCount();
+int32_t AT91_Adc_GetChannelCount();
 int32_t AT91_Adc_GetPin(int32_t channel);
 AT91_Gpio_PeripheralSelection AT91_Adc_GetPeripheralSelection(int32_t channel);
 TinyCLR_Result AT91_Adc_Acquire(const TinyCLR_Adc_Provider* self);
@@ -550,13 +550,14 @@ TinyCLR_Result AT91_Adc_Release(const TinyCLR_Adc_Provider* self);
 TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
 TinyCLR_Result AT91_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
 TinyCLR_Result AT91_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t channel, int32_t& value);
-int32_t AT91_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self);
+int32_t AT91_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self);
 int32_t AT91_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider* self);
 int32_t AT91_Adc_GetMinValue(const TinyCLR_Adc_Provider* self);
 int32_t AT91_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self);
 TinyCLR_Adc_ChannelMode AT91_Adc_GetChannelMode(const TinyCLR_Adc_Provider* self);
 TinyCLR_Result AT91_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
 bool AT91_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
+TinyCLR_Result AT91_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count);
 
 // CAN
 const TinyCLR_Api_Info* AT91_Can_GetApi();

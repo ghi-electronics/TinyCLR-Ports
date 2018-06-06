@@ -61,7 +61,7 @@ const TinyCLR_Api_Info* STM32F4_Adc_GetApi() {
     adcProvider.GetMinValue = &STM32F4_Adc_GetMinValue;
     adcProvider.GetMaxValue = &STM32F4_Adc_GetMaxValue;
     adcProvider.GetResolutionInBits = &STM32F4_Adc_GetResolutionInBits;
-    adcProvider.GetChannelCount = &STM32F4_Adc_GetControllerCount;
+    adcProvider.GetChannelCount = &STM32F4_Adc_GetChannelCount;
 
     adcApi.Author = "GHI Electronics, LLC";
     adcApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.AdcProvider";
@@ -168,7 +168,7 @@ TinyCLR_Result STM32F4_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t c
     return TinyCLR_Result::ArgumentOutOfRange;
 }
 
-int32_t STM32F4_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self) {
+int32_t STM32F4_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self) {
     return STM32F4_AD_NUM;
 }
 
@@ -202,4 +202,10 @@ void STM32F4_Adc_Reset() {
 
         g_STM32F4_AD_IsOpened[i] = false;
     }
+}
+
+TinyCLR_Result STM32F4_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count) {
+    count = 1;
+
+    return TinyCLR_Result::Success;
 }

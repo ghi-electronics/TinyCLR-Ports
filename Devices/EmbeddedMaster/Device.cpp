@@ -172,7 +172,7 @@ LPC24_Gpio_PinFunction LPC24_Uart_GetCtsAlternateFunction(int32_t portNum) {
 
 // ADC
 static const LPC24_Gpio_Pin g_lpc24_adc_pins[] = LPC24_ADC_PINS;
-int32_t LPC24_Adc_GetControllerCount() {
+int32_t LPC24_Adc_GetChannelCount() {
     return SIZEOF_ARRAY(g_lpc24_adc_pins);
 }
 

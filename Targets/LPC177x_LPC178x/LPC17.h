@@ -35,13 +35,14 @@ TinyCLR_Result LPC17_Adc_Release(const TinyCLR_Adc_Provider* self);
 TinyCLR_Result LPC17_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
 TinyCLR_Result LPC17_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
 TinyCLR_Result LPC17_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t channel, int32_t& value);
-int32_t LPC17_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self);
+int32_t LPC17_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self);
 int32_t LPC17_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider* self);
 int32_t LPC17_Adc_GetMinValue(const TinyCLR_Adc_Provider* self);
 int32_t LPC17_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self);
 TinyCLR_Adc_ChannelMode LPC17_Adc_GetChannelMode(const TinyCLR_Adc_Provider* self);
 TinyCLR_Result LPC17_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
 bool LPC17_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
+TinyCLR_Result LPC17_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count);
 
 // CAN
 const TinyCLR_Api_Info* LPC17_Can_GetApi();

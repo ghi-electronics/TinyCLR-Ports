@@ -246,7 +246,7 @@ const TinyCLR_Api_Info* LPC17_Adc_GetApi() {
     adcProvider.GetMinValue = &LPC17_Adc_GetMinValue;
     adcProvider.GetMaxValue = &LPC17_Adc_GetMaxValue;
     adcProvider.GetResolutionInBits = &LPC17_Adc_GetResolutionInBits;
-    adcProvider.GetChannelCount = &LPC17_Adc_GetControllerCount;
+    adcProvider.GetChannelCount = &LPC17_Adc_GetChannelCount;
     adcProvider.GetChannelMode = &LPC17_Adc_GetChannelMode;
     adcProvider.SetChannelMode = &LPC17_Adc_SetChannelMode;
 
@@ -326,7 +326,7 @@ TinyCLR_Result LPC17_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t cha
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC17_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self) {
+int32_t LPC17_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self) {
     return SIZEOF_ARRAY(g_lpc17_adc_pins);
 }
 
@@ -362,4 +362,10 @@ void LPC17_Adc_Reset() {
 
         g_lpc17_adc_isOpened[ch] = false;
     }
+}
+
+TinyCLR_Result LPC17_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count) {
+    count = 1;
+
+    return TinyCLR_Result::Success;
 }

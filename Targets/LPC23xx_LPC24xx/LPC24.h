@@ -182,7 +182,7 @@ bool LPC24_Gpio_ConfigurePin(int32_t pin, LPC24_Gpio_Direction pinDir, LPC24_Gpi
 // ADC
 const TinyCLR_Api_Info* LPC24_Adc_GetApi();
 void LPC24_Adc_Reset();
-int32_t LPC24_Adc_GetControllerCount();
+int32_t LPC24_Adc_GetChannelCount();
 int32_t LPC24_Adc_GetPin(int32_t channel);
 LPC24_Gpio_PinFunction LPC24_Adc_GetPinFunction(int32_t channel);
 TinyCLR_Result LPC24_Adc_Acquire(const TinyCLR_Adc_Provider* self);
@@ -190,13 +190,14 @@ TinyCLR_Result LPC24_Adc_Release(const TinyCLR_Adc_Provider* self);
 TinyCLR_Result LPC24_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
 TinyCLR_Result LPC24_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
 TinyCLR_Result LPC24_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t channel, int32_t& value);
-int32_t LPC24_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self);
+int32_t LPC24_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self);
 int32_t LPC24_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider* self);
 int32_t LPC24_Adc_GetMinValue(const TinyCLR_Adc_Provider* self);
 int32_t LPC24_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self);
 TinyCLR_Adc_ChannelMode LPC24_Adc_GetChannelMode(const TinyCLR_Adc_Provider* self);
 TinyCLR_Result LPC24_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
 bool LPC24_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
+TinyCLR_Result LPC24_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count);
 
 // CAN
 const TinyCLR_Api_Info* LPC24_Can_GetApi();

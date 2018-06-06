@@ -39,7 +39,7 @@ const TinyCLR_Api_Info* LPC24_Adc_GetApi() {
     adcProvider.GetMinValue = &LPC24_Adc_GetMinValue;
     adcProvider.GetMaxValue = &LPC24_Adc_GetMaxValue;
     adcProvider.GetResolutionInBits = &LPC24_Adc_GetResolutionInBits;
-    adcProvider.GetChannelCount = &LPC24_Adc_GetControllerCount;
+    adcProvider.GetChannelCount = &LPC24_Adc_GetChannelCount;
     adcProvider.GetChannelMode = &LPC24_Adc_GetChannelMode;
     adcProvider.SetChannelMode = &LPC24_Adc_SetChannelMode;
 
@@ -67,14 +67,14 @@ TinyCLR_Result LPC24_Adc_Release(const TinyCLR_Adc_Provider* self) {
 }
 
 int32_t LPC24_Adc_GetPinForChannel(int32_t channel) {
-    if ((uint32_t)channel >= LPC24_Adc_GetControllerCount())
+    if ((uint32_t)channel >= LPC24_Adc_GetChannelCount())
         return PIN_NONE;
 
     return LPC24_Adc_GetPin(channel);
 }
 
 TinyCLR_Result LPC24_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t channel) {
-    if (channel >= LPC24_Adc_GetControllerCount())
+    if (channel >= LPC24_Adc_GetChannelCount())
         return TinyCLR_Result::ArgumentOutOfRange;
 
     if (LPC24_Adc_GetPin(channel) == PIN_NONE)
@@ -112,7 +112,7 @@ TinyCLR_Result LPC24_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_
 TinyCLR_Result LPC24_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t channel, int32_t& value) {
     uint32_t result = 0;
 
-    if (channel >= LPC24_Adc_GetControllerCount())
+    if (channel >= LPC24_Adc_GetChannelCount())
         return TinyCLR_Result::ArgumentOutOfRange;
 
     value = 0;
@@ -132,8 +132,8 @@ TinyCLR_Result LPC24_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t cha
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC24_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self) {
-    return LPC24_Adc_GetControllerCount();
+int32_t LPC24_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self) {
+    return LPC24_Adc_GetChannelCount();
 }
 
 int32_t LPC24_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider* self) {
@@ -161,11 +161,17 @@ bool LPC24_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCLR_
 }
 
 void LPC24_Adc_Reset() {
-    for (auto ch = 0; ch < LPC24_Adc_GetControllerCount(); ch++) {
+    for (auto ch = 0; ch < LPC24_Adc_GetChannelCount(); ch++) {
         LPC24_Adc_ReleaseChannel(&adcProvider, ch);
     }
 
     g_lpc24_adc_isOpened = 0;
 
     LPC24XX::SYSCON().PCONP &= ~(PCONP_PCAD);
+}
+
+TinyCLR_Result LPC24_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count) {
+    count = 1;
+
+    return TinyCLR_Result::Success;
 }

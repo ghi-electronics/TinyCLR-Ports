@@ -99,8 +99,9 @@ bool STM32F7_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCL
 int32_t STM32F7_Adc_GetMinValue(const TinyCLR_Adc_Provider* self);
 int32_t STM32F7_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self);
 int32_t STM32F7_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider* self);
-int32_t STM32F7_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self);
+int32_t STM32F7_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self);
 void STM32F7_Adc_Reset();
+TinyCLR_Result STM32F7_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count);
 
 ////////////////////////////////////////////////////////////////////////////////
 //CAN
