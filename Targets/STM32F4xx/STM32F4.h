@@ -249,6 +249,7 @@ TinyCLR_Result STM32F4_Uart_GetUnreadCount(const TinyCLR_Uart_Provider* self, in
 TinyCLR_Result STM32F4_Uart_GetUnwrittenCount(const TinyCLR_Uart_Provider* self, int32_t controller, size_t& count);
 TinyCLR_Result STM32F4_Uart_ClearReadBuffer(const TinyCLR_Uart_Provider* self, int32_t controller);
 TinyCLR_Result STM32F4_Uart_ClearWriteBuffer(const TinyCLR_Uart_Provider* self, int32_t controller);
+TinyCLR_Result STM32F4_Uart_GetControllerCount(const TinyCLR_Uart_Provider* self, int32_t& count);
 void STM32F4_Uart_Reset();
 
 ////////////////////////////////////////////////////////////////////////////////

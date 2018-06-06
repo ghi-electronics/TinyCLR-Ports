@@ -826,3 +826,8 @@ void LPC24_Uart_Reset() {
     }
 }
 
+TinyCLR_Result LPC24_Uart_GetControllerCount(const TinyCLR_Uart_Provider* self, int32_t& count) {
+    count = TOTAL_UART_CONTROLLERS;
+
+    return TinyCLR_Result::Success;
+}

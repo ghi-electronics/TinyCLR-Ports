@@ -831,3 +831,8 @@ TinyCLR_Result STM32F4_Uart_ClearWriteBuffer(const TinyCLR_Uart_Provider* self, 
     return TinyCLR_Result::Success;
 }
 
+TinyCLR_Result STM32F4_Uart_GetControllerCount(const TinyCLR_Uart_Provider* self, int32_t& count) {
+    count = TOTAL_UART_CONTROLLERS;
+
+    return TinyCLR_Result::Success;
+}
