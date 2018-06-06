@@ -1573,4 +1573,10 @@ void STM32F7_Can_Reset() {
     }
 }
 
+TinyCLR_Result STM32F7_Can_GetControllerCount(const TinyCLR_Can_Provider* self, int32_t& count) {
+    count = TOTAL_CAN_CONTROLLERS;
+
+    return TinyCLR_Result::Success;;
+}
+
 #endif // INCLUDE_CAN

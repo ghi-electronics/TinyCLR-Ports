@@ -2797,4 +2797,10 @@ void LPC24_Can_Reset() {
         canController[i].isOpened = false;
     }
 }
+
+TinyCLR_Result LPC24_Can_GetControllerCount(const TinyCLR_Can_Provider* self, int32_t& count) {
+    count = TOTAL_CAN_CONTROLLERS;
+
+    return TinyCLR_Result::Success;;
+}
 #endif // INCLUDE_CAN
