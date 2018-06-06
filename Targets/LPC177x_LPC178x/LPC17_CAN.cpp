@@ -2033,10 +2033,8 @@ static const int TOTAL_CAN_CONTROLLERS = SIZEOF_ARRAY(g_LPC17_Can_Tx_Pins);
 
 static LPC17_Can_Controller canController[TOTAL_CAN_CONTROLLERS];
 
-static TinyCLR_Can_Provider *canProvider[TOTAL_CAN_CONTROLLERS];
+static TinyCLR_Can_Provider canProvider;
 static TinyCLR_Api_Info canApi;
-
-static uint8_t canProviderDefs[TOTAL_CAN_CONTROLLERS * sizeof(TinyCLR_Can_Provider)];
 
 void CAN_DisableExplicitFilters(int32_t channel) {
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -2220,38 +2218,34 @@ int32_t BinarySearch2(uint32_t *lowerBounds, uint32_t *upperBounds, int32_t firs
 }
 
 const TinyCLR_Api_Info* LPC17_Can_GetApi() {
-    for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
-        canProvider[i] = (TinyCLR_Can_Provider*)(canProviderDefs + (i * sizeof(TinyCLR_Can_Provider)));
-        canProvider[i]->Parent = &canApi;
-        canProvider[i]->Index = i;
-        canProvider[i]->Acquire = &LPC17_Can_Acquire;
-        canProvider[i]->Release = &LPC17_Can_Release;
-        canProvider[i]->Reset = &LPC17_Can_SoftReset;
-        canProvider[i]->WriteMessage = &LPC17_Can_WriteMessage;
-        canProvider[i]->ReadMessage = &LPC17_Can_ReadMessage;
-        canProvider[i]->SetBitTiming = &LPC17_Can_SetBitTiming;
-        canProvider[i]->GetUnreadMessageCount = &LPC17_Can_GetUnreadMessageCount;
-        canProvider[i]->SetMessageReceivedHandler = &LPC17_Can_SetMessageReceivedHandler;
-        canProvider[i]->SetErrorReceivedHandler = &LPC17_Can_SetErrorReceivedHandler;
-        canProvider[i]->SetExplicitFilters = &LPC17_Can_SetExplicitFilters;
-        canProvider[i]->SetGroupFilters = &LPC17_Can_SetGroupFilters;
-        canProvider[i]->ClearReadBuffer = &LPC17_Can_ClearReadBuffer;
-        canProvider[i]->IsWritingAllowed = &LPC17_Can_IsWritingAllowed;
-        canProvider[i]->GetWriteErrorCount = &LPC17_Can_GetWriteErrorCount;
-        canProvider[i]->GetReadErrorCount = &LPC17_Can_GetReadErrorCount;
-        canProvider[i]->GetSourceClock = &LPC17_Can_GetSourceClock;
-        canProvider[i]->GetReadBufferSize = LPC17_Can_GetReadBufferSize;
-        canProvider[i]->SetReadBufferSize = LPC17_Can_SetReadBufferSize;
-        canProvider[i]->GetWriteBufferSize = LPC17_Can_GetWriteBufferSize;
-        canProvider[i]->SetWriteBufferSize = LPC17_Can_SetWriteBufferSize;
-    }
+    canProvider.Parent = &canApi;
+    canProvider.Acquire = &LPC17_Can_Acquire;
+    canProvider.Release = &LPC17_Can_Release;
+    canProvider.Reset = &LPC17_Can_SoftReset;
+    canProvider.WriteMessage = &LPC17_Can_WriteMessage;
+    canProvider.ReadMessage = &LPC17_Can_ReadMessage;
+    canProvider.SetBitTiming = &LPC17_Can_SetBitTiming;
+    canProvider.GetUnreadMessageCount = &LPC17_Can_GetUnreadMessageCount;
+    canProvider.SetMessageReceivedHandler = &LPC17_Can_SetMessageReceivedHandler;
+    canProvider.SetErrorReceivedHandler = &LPC17_Can_SetErrorReceivedHandler;
+    canProvider.SetExplicitFilters = &LPC17_Can_SetExplicitFilters;
+    canProvider.SetGroupFilters = &LPC17_Can_SetGroupFilters;
+    canProvider.ClearReadBuffer = &LPC17_Can_ClearReadBuffer;
+    canProvider.IsWritingAllowed = &LPC17_Can_IsWritingAllowed;
+    canProvider.GetWriteErrorCount = &LPC17_Can_GetWriteErrorCount;
+    canProvider.GetReadErrorCount = &LPC17_Can_GetReadErrorCount;
+    canProvider.GetSourceClock = &LPC17_Can_GetSourceClock;
+    canProvider.GetReadBufferSize = LPC17_Can_GetReadBufferSize;
+    canProvider.SetReadBufferSize = LPC17_Can_SetReadBufferSize;
+    canProvider.GetWriteBufferSize = LPC17_Can_GetWriteBufferSize;
+    canProvider.SetWriteBufferSize = LPC17_Can_SetWriteBufferSize;
+
 
     canApi.Author = "GHI Electronics, LLC";
     canApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.CanProvider";
     canApi.Type = TinyCLR_Api_Type::CanProvider;
     canApi.Version = 0;
-    canApi.Count = TOTAL_CAN_CONTROLLERS;
-    canApi.Implementation = canProvider;
+    canApi.Implementation = &canProvider;
 
     return &canApi;
 }
@@ -2301,7 +2295,7 @@ void CAN_ISR_Rx(int32_t channel) {
         else
             C2CMR = 0x04; // release receive buffer
 
-        canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ReadBufferFull);
+        canController[channel].errorEventHandler(canController[channel].provider, channel, TinyCLR_Can_Error::ReadBufferFull);
 
         return;
     }
@@ -2354,7 +2348,7 @@ void CAN_ISR_Rx(int32_t channel) {
         canController[channel].can_rx_in = 0;
     }
 
-    canController[channel].messageReceivedEventHandler(canController[channel].provider, canController[channel].can_rx_count);
+    canController[channel].messageReceivedEventHandler(canController[channel].provider, channel, canController[channel].can_rx_count);
 }
 void LPC17_Can_RxInterruptHandler(void *param) {
     uint32_t status = CANRxSR;
@@ -2371,14 +2365,14 @@ void LPC17_Can_RxInterruptHandler(void *param) {
         CAN_ISR_Rx(channel);
 
         if (c1 & (1 << 3)) {
-            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ReadBufferOverrun);
+            canController[channel].errorEventHandler(canController[channel].provider, channel, TinyCLR_Can_Error::ReadBufferOverrun);
         }
         if (c1 & (1 << 5)) {
-            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::Passive);
+            canController[channel].errorEventHandler(canController[channel].provider, channel, TinyCLR_Can_Error::Passive);
         }
         if (c1 & (1 << 7)) {
             C1MOD = 1;    // Reset CAN
-            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::BusOff);
+            canController[channel].errorEventHandler(canController[channel].provider, channel, TinyCLR_Can_Error::BusOff);
         }
 
     }
@@ -2390,23 +2384,21 @@ void LPC17_Can_RxInterruptHandler(void *param) {
         CAN_ISR_Rx(channel);
 
         if (c2 & (1 << 3)) {
-            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::ReadBufferOverrun);
+            canController[channel].errorEventHandler(canController[channel].provider, channel, TinyCLR_Can_Error::ReadBufferOverrun);
         }
         if (c2 & (1 << 5)) {
-            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::Passive);
+            canController[channel].errorEventHandler(canController[channel].provider, channel, TinyCLR_Can_Error::Passive);
         }
         if (c2 & (1 << 7)) {
             C2MOD = 1;    // Reset CAN
-            canController[channel].errorEventHandler(canController[channel].provider, TinyCLR_Can_Error::BusOff);
+            canController[channel].errorEventHandler(canController[channel].provider, channel, TinyCLR_Can_Error::BusOff);
         }
     }
 }
 
-TinyCLR_Result LPC17_Can_Acquire(const TinyCLR_Can_Provider* self) {
+TinyCLR_Result LPC17_Can_Acquire(const TinyCLR_Can_Provider* self, int32_t channel) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
-
-    int32_t channel = self->Index;
 
     if (!LPC17_Gpio_OpenPin(g_LPC17_Can_Tx_Pins[channel].number))
         return TinyCLR_Result::SharingViolation;
@@ -2443,11 +2435,9 @@ TinyCLR_Result LPC17_Can_Acquire(const TinyCLR_Can_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_Release(const TinyCLR_Can_Provider* self) {
+TinyCLR_Result LPC17_Can_Release(const TinyCLR_Can_Provider* self, int32_t channel) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
-
-    int32_t channel = self->Index;
 
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
@@ -2470,8 +2460,7 @@ TinyCLR_Result LPC17_Can_Release(const TinyCLR_Can_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_SoftReset(const TinyCLR_Can_Provider* self) {
-    int32_t channel = self->Index;
+TinyCLR_Result LPC17_Can_SoftReset(const TinyCLR_Can_Provider* self, int32_t channel) {
 
     canController[channel].can_rx_count = 0;
     canController[channel].can_rx_in = 0;
@@ -2498,14 +2487,12 @@ TinyCLR_Result LPC17_Can_SoftReset(const TinyCLR_Can_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length) {
+TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Provider* self, int32_t channel, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length) {
 
     uint32_t *data32 = (uint32_t*)data;
 
     uint32_t flags = 0;
     uint32_t status;
-
-    int32_t channel = self->Index;
 
     if (isExtendedId)
         flags |= 0x80000000;
@@ -2520,7 +2507,7 @@ TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t
     uint32_t timeout = CAN_TRANSFER_TIMEOUT;
 
     while (readyToSend == false && timeout-- > 0) {
-        LPC17_Can_IsWritingAllowed(self, readyToSend);
+        LPC17_Can_IsWritingAllowed(self, channel, readyToSend);
         LPC17_Time_Delay(nullptr, 1);
     }
 
@@ -2559,12 +2546,10 @@ TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Provider* self, uint32_t
     return TinyCLR_Result::Busy;
 }
 
-TinyCLR_Result LPC17_Can_ReadMessage(const TinyCLR_Can_Provider* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length) {
+TinyCLR_Result LPC17_Can_ReadMessage(const TinyCLR_Can_Provider* self, int32_t channel, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length) {
     LPC17_Can_Message *can_msg;
 
     uint32_t *data32 = (uint32_t*)data;
-
-    int32_t channel = self->Index;
 
     if (canController[channel].can_rx_count) {
         DISABLE_INTERRUPTS_SCOPED(irq);
@@ -2593,8 +2578,7 @@ TinyCLR_Result LPC17_Can_ReadMessage(const TinyCLR_Can_Provider* self, uint32_t&
 
 }
 
-TinyCLR_Result LPC17_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
-    int32_t channel = self->Index;
+TinyCLR_Result LPC17_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_t channel, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
 
     LPC17xx_SYSCON &SYSCON = *(LPC17xx_SYSCON *)(size_t)(LPC17xx_SYSCON::c_SYSCON_Base);
 
@@ -2635,35 +2619,31 @@ TinyCLR_Result LPC17_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_t 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_GetUnreadMessageCount(const TinyCLR_Can_Provider* self, size_t& count) {
-    int32_t channel = self->Index;
+TinyCLR_Result LPC17_Can_GetUnreadMessageCount(const TinyCLR_Can_Provider* self, int32_t channel, size_t& count) {
 
     count = canController[channel].can_rx_count;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_SetMessageReceivedHandler(const TinyCLR_Can_Provider* self, TinyCLR_Can_MessageReceivedHandler handler) {
-    int32_t channel = self->Index;
+TinyCLR_Result LPC17_Can_SetMessageReceivedHandler(const TinyCLR_Can_Provider* self, int32_t channel, TinyCLR_Can_MessageReceivedHandler handler) {
+
 
     canController[channel].messageReceivedEventHandler = handler;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_SetErrorReceivedHandler(const TinyCLR_Can_Provider* self, TinyCLR_Can_ErrorReceivedHandler handler) {
-    int32_t channel = self->Index;
+TinyCLR_Result LPC17_Can_SetErrorReceivedHandler(const TinyCLR_Can_Provider* self, int32_t channel, TinyCLR_Can_ErrorReceivedHandler handler) {
 
     canController[channel].errorEventHandler = handler;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, uint8_t* filters, size_t length) {
+TinyCLR_Result LPC17_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, int32_t channel, uint8_t* filters, size_t length) {
     uint32_t *_matchFilters;
     uint32_t *filters32 = (uint32_t*)filters;
-
-    int32_t channel = self->Index;
 
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
@@ -2688,14 +2668,12 @@ TinyCLR_Result LPC17_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, ui
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8_t* lowerBounds, uint8_t* upperBounds, size_t length) {
+TinyCLR_Result LPC17_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, int32_t channel, uint8_t* lowerBounds, uint8_t* upperBounds, size_t length) {
     uint32_t *_lowerBoundFilters, *_upperBoundFilters;
     uint32_t *lowerBounds32 = (uint32_t *)lowerBounds;
     uint32_t *upperBounds32 = (uint32_t *)upperBounds;
 
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
-
-    int32_t channel = self->Index;
 
     _lowerBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
     _upperBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
@@ -2732,8 +2710,7 @@ TinyCLR_Result LPC17_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, uint8
     return TinyCLR_Result::Success;;
 }
 
-TinyCLR_Result LPC17_Can_ClearReadBuffer(const TinyCLR_Can_Provider* self) {
-    int32_t channel = self->Index;
+TinyCLR_Result LPC17_Can_ClearReadBuffer(const TinyCLR_Can_Provider* self, int32_t channel) {
 
     canController[channel].can_rx_count = 0;
     canController[channel].can_rx_in = 0;
@@ -2742,8 +2719,7 @@ TinyCLR_Result LPC17_Can_ClearReadBuffer(const TinyCLR_Can_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_IsWritingAllowed(const TinyCLR_Can_Provider* self, bool& allowed) {
-    int32_t channel = self->Index;
+TinyCLR_Result LPC17_Can_IsWritingAllowed(const TinyCLR_Can_Provider* self, int32_t channel, bool& allowed) {
 
     uint32_t status = 0;
 
@@ -2760,38 +2736,35 @@ TinyCLR_Result LPC17_Can_IsWritingAllowed(const TinyCLR_Can_Provider* self, bool
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_GetReadErrorCount(const TinyCLR_Can_Provider* self, size_t& count) {
-    int32_t channel = self->Index;
+TinyCLR_Result LPC17_Can_GetReadErrorCount(const TinyCLR_Can_Provider* self, int32_t channel, size_t& count) {
 
     count = channel == 0 ? ((C1GSR >> 16) & 0xFF) : ((C2GSR >> 16) & 0xFF);
 
     return TinyCLR_Result::Success;;
 }
 
-TinyCLR_Result LPC17_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, size_t& count) {
-    int32_t channel = self->Index;
+TinyCLR_Result LPC17_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, int32_t channel, size_t& count) {
 
     count = channel == 0 ? (C1GSR >> 24) : (C2GSR >> 24);
 
     return TinyCLR_Result::Success;;
 }
 
-TinyCLR_Result LPC17_Can_GetSourceClock(const TinyCLR_Can_Provider* self, uint32_t& sourceClock) {
+TinyCLR_Result LPC17_Can_GetSourceClock(const TinyCLR_Can_Provider* self, int32_t channel, uint32_t& sourceClock) {
     sourceClock = LPC17_AHB_CLOCK_HZ / 2;
 
     return TinyCLR_Result::Success;;
 }
 
-TinyCLR_Result LPC17_Can_GetReadBufferSize(const TinyCLR_Can_Provider* self, size_t& size) {
-    int32_t channel = self->Index;
+TinyCLR_Result LPC17_Can_GetReadBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t& size) {
+
 
     size = canController[channel].can_rxBufferSize == 0 ? g_LPC17_Can_defaultBuffersSize[channel] : canController[channel].can_rxBufferSize;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, size_t size) {
-    int32_t channel = self->Index;
+TinyCLR_Result LPC17_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t size) {
 
     if (size > 3) {
         canController[channel].can_rxBufferSize = size;
@@ -2803,14 +2776,14 @@ TinyCLR_Result LPC17_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, siz
     }
 }
 
-TinyCLR_Result LPC17_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t& size) {
+TinyCLR_Result LPC17_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t& size) {
     size = 1;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, size_t size) {
-    int32_t channel = self->Index;
+TinyCLR_Result LPC17_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t size) {
+
 
     canController[channel].can_txBufferSize = 1;
 
@@ -2821,7 +2794,7 @@ void LPC17_Can_Reset() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
         canController[i].canRxMessagesFifo = nullptr;
 
-        LPC17_Can_Release(canProvider[i]);
+        LPC17_Can_Release(&canProvider, i);
 
         canController[i].isOpened = false;
     }

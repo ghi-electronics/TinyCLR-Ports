@@ -41,7 +41,6 @@ static TinyCLR_Api_Info timeApi;
 
 const TinyCLR_Api_Info* STM32F4_Time_GetApi() {
     timeProvider.Parent = &timeApi;
-    timeProvider.Index = 0;
     timeProvider.Acquire = &STM32F4_Time_Acquire;
     timeProvider.Release = &STM32F4_Time_Release;
     timeProvider.GetNativeTime = &STM32F4_Time_GetCurrentProcessorTicks;
@@ -55,7 +54,6 @@ const TinyCLR_Api_Info* STM32F4_Time_GetApi() {
     timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.NativeTimeProvider";
     timeApi.Type = TinyCLR_Api_Type::NativeTimeProvider;
     timeApi.Version = 0;
-    timeApi.Count = 1;
     timeApi.Implementation = &timeProvider;
 
     return &timeApi;

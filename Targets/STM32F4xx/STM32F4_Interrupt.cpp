@@ -26,7 +26,6 @@ static TinyCLR_Api_Info interruptApi;
 
 const TinyCLR_Api_Info* STM32F4_Interrupt_GetApi() {
     interruptProvider.Parent = &interruptApi;
-    interruptProvider.Index = 0;
     interruptProvider.Acquire = &STM32F4_Interrupt_Acquire;
     interruptProvider.Release = &STM32F4_Interrupt_Release;
     interruptProvider.Enable = &STM32F4_Interrupt_Enable;
@@ -39,7 +38,6 @@ const TinyCLR_Api_Info* STM32F4_Interrupt_GetApi() {
     interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.InterruptProvider";
     interruptApi.Type = TinyCLR_Api_Type::InterruptProvider;
     interruptApi.Version = 0;
-    interruptApi.Count = 1;
     interruptApi.Implementation = &interruptProvider;
 
     return &interruptApi;

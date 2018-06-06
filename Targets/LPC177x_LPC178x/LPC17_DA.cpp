@@ -39,7 +39,6 @@ bool g_lpc17_dac_isOpened[SIZEOF_ARRAY(g_lpc17_dac_pins)];
 
 const TinyCLR_Api_Info* LPC17_Dac_GetApi() {
     dacProvider.Parent = &dacApi;
-    dacProvider.Index = 0;
     dacProvider.Acquire = &LPC17_Dac_Acquire;
     dacProvider.Release = &LPC17_Dac_Release;
     dacProvider.AcquireChannel = &LPC17_Dac_AcquireChannel;
@@ -54,7 +53,6 @@ const TinyCLR_Api_Info* LPC17_Dac_GetApi() {
     dacApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.DacProvider";
     dacApi.Type = TinyCLR_Api_Type::DacProvider;
     dacApi.Version = 0;
-    dacApi.Count = 1;
     dacApi.Implementation = &dacProvider;
 
     return &dacApi;

@@ -2,8 +2,6 @@
 #include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_Provider_DefaultSpiDeviceProvider::TransferFullDuplexInternal___VOID__SZARRAY_U1__I4__SZARRAY_U1__I4__I4(const TinyCLR_Interop_MethodData md) {
-
-
     auto provider = (const TinyCLR_Spi_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
 
     uint8_t* writeData = nullptr;
@@ -57,9 +55,15 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
         writeLength = readLength = arg5.Data.Numeric->I4;
 
-        provider->SetActiveSettings(provider, chipSelectLine, clockFrequency, dataBitLength, mode);
+        auto controllerProvider = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___parent___GHIElectronicsTinyCLRDevicesSpiProviderDefaultSpiControllerProvider);
 
-        if (provider->TransferFullDuplex(provider, writeData + writeOffset, writeLength, readData + readOffset, readLength) != TinyCLR_Result::Success) {
+        auto controllerObject = TinyCLR_Interop_GetFieldInObject(md, controllerProvider.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_Provider_DefaultSpiControllerProvider::FIELD___idx___I4);
+
+        auto controller = controllerObject.Data.Numeric->I4;
+
+        provider->SetActiveSettings(provider, controller, chipSelectLine, clockFrequency, dataBitLength, mode);
+
+        if (provider->TransferFullDuplex(provider, controller, writeData + writeOffset, writeLength, readData + readOffset, readLength) != TinyCLR_Result::Success) {
             return TinyCLR_Result::InvalidOperation;
         }
     }
@@ -68,8 +72,6 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_Provider_DefaultSpiDeviceProvider::TransferSequentialInternal___VOID__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4(const TinyCLR_Interop_MethodData md) {
-
-
     auto provider = (const TinyCLR_Spi_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
 
     uint8_t* writeData = nullptr;
@@ -123,9 +125,15 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
         readOffset = arg5.Data.Numeric->I4;
         readLength = arg6.Data.Numeric->I4;
 
-        provider->SetActiveSettings(provider, chipSelectLine, clockFrequency, dataBitLength, mode);
+        auto controllerProvider = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___parent___GHIElectronicsTinyCLRDevicesSpiProviderDefaultSpiControllerProvider);
 
-        if (provider->TransferSequential(provider, writeData + writeOffset, writeLength, readData + readOffset, readLength) != TinyCLR_Result::Success) {
+        auto controllerObject = TinyCLR_Interop_GetFieldInObject(md, controllerProvider.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_Provider_DefaultSpiControllerProvider::FIELD___idx___I4);
+
+        auto controller = controllerObject.Data.Numeric->I4;
+
+        provider->SetActiveSettings(provider, controller, chipSelectLine, clockFrequency, dataBitLength, mode);
+
+        if (provider->TransferSequential(provider, controller, writeData + writeOffset, writeLength, readData + readOffset, readLength) != TinyCLR_Result::Success) {
             return TinyCLR_Result::InvalidOperation;
         }
     }
@@ -176,9 +184,15 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
         offset = arg2.Data.Numeric->I4;
         length = arg3.Data.Numeric->I4;
 
-        provider->SetActiveSettings(provider, chipSelectLine, clockFrequency, dataBitLength, mode);
+        auto controllerProvider = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___parent___GHIElectronicsTinyCLRDevicesSpiProviderDefaultSpiControllerProvider);
 
-        if (provider->Write(provider, data + offset, length) != TinyCLR_Result::Success) {
+        auto controllerObject = TinyCLR_Interop_GetFieldInObject(md, controllerProvider.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_Provider_DefaultSpiControllerProvider::FIELD___idx___I4);
+
+        auto controller = controllerObject.Data.Numeric->I4;
+
+        provider->SetActiveSettings(provider, controller, chipSelectLine, clockFrequency, dataBitLength, mode);
+
+        if (provider->Write(provider, controller, data + offset, length) != TinyCLR_Result::Success) {
             return TinyCLR_Result::InvalidOperation;
         }
     }
@@ -229,9 +243,15 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
         offset = arg2.Data.Numeric->I4;
         length = arg3.Data.Numeric->I4;
 
-        provider->SetActiveSettings(provider, chipSelectLine, clockFrequency, dataBitLength, mode);
+        auto controllerProvider = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___parent___GHIElectronicsTinyCLRDevicesSpiProviderDefaultSpiControllerProvider);
 
-        if (provider->Read(provider, data + offset, length) != TinyCLR_Result::Success) {
+        auto controllerObject = TinyCLR_Interop_GetFieldInObject(md, controllerProvider.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_Provider_DefaultSpiControllerProvider::FIELD___idx___I4);
+
+        auto controller = controllerObject.Data.Numeric->I4;
+
+        provider->SetActiveSettings(provider, controller, chipSelectLine, clockFrequency, dataBitLength, mode);
+
+        if (provider->Read(provider, controller, data + offset, length) != TinyCLR_Result::Success) {
             return TinyCLR_Result::InvalidOperation;
         }
     }

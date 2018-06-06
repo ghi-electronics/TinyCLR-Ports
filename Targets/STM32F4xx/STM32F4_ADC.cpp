@@ -50,7 +50,6 @@ bool g_STM32F4_AD_IsOpened[STM32F4_AD_NUM];
 
 const TinyCLR_Api_Info* STM32F4_Adc_GetApi() {
     adcProvider.Parent = &adcApi;
-    adcProvider.Index = 0;
     adcProvider.Acquire = &STM32F4_Adc_Acquire;
     adcProvider.Release = &STM32F4_Adc_Release;
     adcProvider.AcquireChannel = &STM32F4_Adc_AcquireChannel;
@@ -68,7 +67,6 @@ const TinyCLR_Api_Info* STM32F4_Adc_GetApi() {
     adcApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.AdcProvider";
     adcApi.Type = TinyCLR_Api_Type::AdcProvider;
     adcApi.Version = 0;
-    adcApi.Count = 1;
     adcApi.Implementation = &adcProvider;
 
     return &adcApi;

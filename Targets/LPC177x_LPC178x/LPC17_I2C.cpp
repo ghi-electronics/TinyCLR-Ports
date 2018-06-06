@@ -75,37 +75,31 @@ static LPC17_I2c_Transaction   *g_currentI2cTransactionAction;
 static LPC17_I2c_Transaction   g_ReadI2cTransactionAction[SIZEOF_ARRAY(g_i2c_scl_pins)];
 static LPC17_I2c_Transaction   g_WriteI2cTransactionAction[SIZEOF_ARRAY(g_i2c_scl_pins)];
 
-static uint8_t i2cProviderDefs[SIZEOF_ARRAY(g_i2c_scl_pins) * sizeof(TinyCLR_I2c_Provider)];
-static TinyCLR_I2c_Provider* i2cProviders[SIZEOF_ARRAY(g_i2c_scl_pins)];
+static TinyCLR_I2c_Provider i2cProvider;
 static TinyCLR_Api_Info i2cApi;
 
 const TinyCLR_Api_Info* LPC17_I2c_GetApi() {
-    for (int i = 0; i < SIZEOF_ARRAY(g_i2c_scl_pins); i++) {
-        i2cProviders[i] = (TinyCLR_I2c_Provider*)(i2cProviderDefs + (i * sizeof(TinyCLR_I2c_Provider)));
-        i2cProviders[i]->Parent = &i2cApi;
-        i2cProviders[i]->Index = i;
-        i2cProviders[i]->Acquire = &LPC17_I2c_Acquire;
-        i2cProviders[i]->Release = &LPC17_I2c_Release;
-        i2cProviders[i]->SetActiveSettings = &LPC17_I2c_SetActiveSettings;
-        i2cProviders[i]->Read = &LPC17_I2c_ReadTransaction;
-        i2cProviders[i]->Write = &LPC17_I2c_WriteTransaction;
-        i2cProviders[i]->WriteRead = &LPC17_I2c_WriteReadTransaction;
-    }
+    i2cProvider.Parent = &i2cApi;
+    i2cProvider.Acquire = &LPC17_I2c_Acquire;
+    i2cProvider.Release = &LPC17_I2c_Release;
+    i2cProvider.SetActiveSettings = &LPC17_I2c_SetActiveSettings;
+    i2cProvider.Read = &LPC17_I2c_ReadTransaction;
+    i2cProvider.Write = &LPC17_I2c_WriteTransaction;
+    i2cProvider.WriteRead = &LPC17_I2c_WriteReadTransaction;
 
     i2cApi.Author = "GHI Electronics, LLC";
     i2cApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.I2cProvider";
     i2cApi.Type = TinyCLR_Api_Type::I2cProvider;
     i2cApi.Version = 0;
-    i2cApi.Count = 1;
-    i2cApi.Implementation = (i2cApi.Count > 1) ? i2cProviders : reinterpret_cast<TinyCLR_I2c_Provider**>(i2cProviderDefs);
+    i2cApi.Implementation = &i2cProvider;
 
     return &i2cApi;
 }
 
-void LPC17_I2c_InterruptHandler(int32_t portId) {
+void LPC17_I2c_InterruptHandler(int32_t channel) {
     uint8_t address;
 
-    LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(portId == 0 ? LPC17xx_I2C::c_I2C0_Base : ((portId == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
+    LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(channel == 0 ? LPC17xx_I2C::c_I2C0_Base : ((channel == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
 
 
     // read status
@@ -122,7 +116,7 @@ void LPC17_I2c_InterruptHandler(int32_t portId) {
     case 0x08: // Start Condition transmitted
     case 0x10: // Repeated Start Condition transmitted
         // Write Slave address and Data direction
-        address = 0xFE & (g_I2cConfiguration[portId].address << 1);
+        address = 0xFE & (g_I2cConfiguration[channel].address << 1);
         address |= transaction->isReadTransaction ? 1 : 0;
         I2C.I2DAT = address;
         // Clear STA bit
@@ -134,11 +128,11 @@ void LPC17_I2c_InterruptHandler(int32_t portId) {
         // transaction completed
         if (transaction->bytesToTransfer == 0) {
             if (transaction->repeatedStart == false) {
-                LPC17_I2c_StopTransaction(portId);
+                LPC17_I2c_StopTransaction(channel);
             }
             else {
-                g_currentI2cTransactionAction = &g_ReadI2cTransactionAction[portId];
-                LPC17_I2c_StartTransaction(portId);
+                g_currentI2cTransactionAction = &g_ReadI2cTransactionAction[channel];
+                LPC17_I2c_StartTransaction(channel);
             }
         }
         else {
@@ -153,10 +147,10 @@ void LPC17_I2c_InterruptHandler(int32_t portId) {
     case 0x20: // Write Address not acknowledged by slave
     case 0x30: // Data not acknowledged by slave
     case 0x48: // Read Address not acknowledged by slave
-        LPC17_I2c_StopTransaction(portId);
+        LPC17_I2c_StopTransaction(channel);
         break;
     case 0x38: // Arbitration lost
-        LPC17_I2c_StopTransaction(portId);
+        LPC17_I2c_StopTransaction(channel);
         break;
     case 0x40: // Slave Address + R transmitted, Ack received
         // if the transaction is one byte only to read, then we must send NAK immediately
@@ -182,22 +176,22 @@ void LPC17_I2c_InterruptHandler(int32_t portId) {
         if (transaction->bytesToTransfer == 0) {
             if (transaction->repeatedStart == false) {
                 // send transaction stop
-                LPC17_I2c_StopTransaction(portId);
+                LPC17_I2c_StopTransaction(channel);
             }
             else {
                 // start next
-                g_currentI2cTransactionAction = &g_ReadI2cTransactionAction[portId];
-                LPC17_I2c_StartTransaction(portId);
+                g_currentI2cTransactionAction = &g_ReadI2cTransactionAction[channel];
+                LPC17_I2c_StartTransaction(channel);
             }
         }
         break;
     case 0x00: // Bus Error
         // Clear Bus error
         I2C.I2CONSET = LPC17xx_I2C::STO;
-        LPC17_I2c_StopTransaction(portId);
+        LPC17_I2c_StopTransaction(channel);
         break;
     default:
-        LPC17_I2c_StopTransaction(portId);
+        LPC17_I2c_StopTransaction(channel);
         break;
     } // switch(status)
 
@@ -216,12 +210,12 @@ void LPC17_I2c_InterruptHandler2(void *param) {
     LPC17_I2c_InterruptHandler(2);
 }
 
-void LPC17_I2c_StartTransaction(int32_t portId) {
-    LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(portId == 0 ? LPC17xx_I2C::c_I2C0_Base : ((portId == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
+void LPC17_I2c_StartTransaction(int32_t channel) {
+    LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(channel == 0 ? LPC17xx_I2C::c_I2C0_Base : ((channel == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
 
-    if (!g_WriteI2cTransactionAction[portId].repeatedStart || g_WriteI2cTransactionAction[portId].bytesTransferred == 0) {
-        I2C.I2SCLH = g_I2cConfiguration[portId].clockRate | (g_I2cConfiguration[portId].clockRate2 << 8);
-        I2C.I2SCLL = g_I2cConfiguration[portId].clockRate | (g_I2cConfiguration[portId].clockRate2 << 8);
+    if (!g_WriteI2cTransactionAction[channel].repeatedStart || g_WriteI2cTransactionAction[channel].bytesTransferred == 0) {
+        I2C.I2SCLH = g_I2cConfiguration[channel].clockRate | (g_I2cConfiguration[channel].clockRate2 << 8);
+        I2C.I2SCLL = g_I2cConfiguration[channel].clockRate | (g_I2cConfiguration[channel].clockRate2 << 8);
 
         I2C.I2CONSET = LPC17xx_I2C::STA;
     }
@@ -231,8 +225,8 @@ void LPC17_I2c_StartTransaction(int32_t portId) {
 
 }
 
-void LPC17_I2c_StopTransaction(int32_t portId) {
-    LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(portId == 0 ? LPC17xx_I2C::c_I2C0_Base : ((portId == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
+void LPC17_I2c_StopTransaction(int32_t channel) {
+    LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(channel == 0 ? LPC17xx_I2C::c_I2C0_Base : ((channel == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
 
     I2C.I2CONSET = LPC17xx_I2C::STO;
     I2C.I2CONCLR = LPC17xx_I2C::AA | LPC17xx_I2C::SI | LPC17xx_I2C::STA;
@@ -240,20 +234,19 @@ void LPC17_I2c_StopTransaction(int32_t portId) {
     g_currentI2cTransactionAction->isDone = true;
 }
 
-TinyCLR_Result LPC17_I2c_ReadTransaction(const TinyCLR_I2c_Provider* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result LPC17_I2c_ReadTransaction(const TinyCLR_I2c_Provider* self, int32_t channel, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
-    int32_t portId = self->Index;
 
-    g_ReadI2cTransactionAction[portId].isReadTransaction = true;
-    g_ReadI2cTransactionAction[portId].buffer = buffer;
-    g_ReadI2cTransactionAction[portId].bytesToTransfer = length;
-    g_ReadI2cTransactionAction[portId].isDone = false;
-    g_ReadI2cTransactionAction[portId].repeatedStart = false;
-    g_ReadI2cTransactionAction[portId].bytesTransferred = 0;
+    g_ReadI2cTransactionAction[channel].isReadTransaction = true;
+    g_ReadI2cTransactionAction[channel].buffer = buffer;
+    g_ReadI2cTransactionAction[channel].bytesToTransfer = length;
+    g_ReadI2cTransactionAction[channel].isDone = false;
+    g_ReadI2cTransactionAction[channel].repeatedStart = false;
+    g_ReadI2cTransactionAction[channel].bytesTransferred = 0;
 
-    g_currentI2cTransactionAction = &g_ReadI2cTransactionAction[portId];
+    g_currentI2cTransactionAction = &g_ReadI2cTransactionAction[channel];
 
-    LPC17_I2c_StartTransaction(portId);
+    LPC17_I2c_StartTransaction(channel);
 
     while (g_currentI2cTransactionAction->isDone == false && timeout > 0) {
         LPC17_Time_Delay(nullptr, 1000);
@@ -271,20 +264,19 @@ TinyCLR_Result LPC17_I2c_ReadTransaction(const TinyCLR_I2c_Provider* self, uint8
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result LPC17_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result LPC17_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, int32_t channel, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
-    int32_t portId = self->Index;
 
-    g_WriteI2cTransactionAction[portId].isReadTransaction = false;
-    g_WriteI2cTransactionAction[portId].buffer = (uint8_t*)buffer;
-    g_WriteI2cTransactionAction[portId].bytesToTransfer = length;
-    g_WriteI2cTransactionAction[portId].isDone = false;
-    g_WriteI2cTransactionAction[portId].repeatedStart = false;
-    g_WriteI2cTransactionAction[portId].bytesTransferred = 0;
+    g_WriteI2cTransactionAction[channel].isReadTransaction = false;
+    g_WriteI2cTransactionAction[channel].buffer = (uint8_t*)buffer;
+    g_WriteI2cTransactionAction[channel].bytesToTransfer = length;
+    g_WriteI2cTransactionAction[channel].isDone = false;
+    g_WriteI2cTransactionAction[channel].repeatedStart = false;
+    g_WriteI2cTransactionAction[channel].bytesTransferred = 0;
 
-    g_currentI2cTransactionAction = &g_WriteI2cTransactionAction[portId];
+    g_currentI2cTransactionAction = &g_WriteI2cTransactionAction[channel];
 
-    LPC17_I2c_StartTransaction(portId);
+    LPC17_I2c_StartTransaction(channel);
 
     while (g_currentI2cTransactionAction->isDone == false && timeout > 0) {
         LPC17_Time_Delay(nullptr, 1000);
@@ -302,27 +294,26 @@ TinyCLR_Result LPC17_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, cons
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result LPC17_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result LPC17_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, int32_t channel, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
-    int32_t portId = self->Index;
 
-    g_WriteI2cTransactionAction[portId].isReadTransaction = false;
-    g_WriteI2cTransactionAction[portId].buffer = (uint8_t*)writeBuffer;
-    g_WriteI2cTransactionAction[portId].bytesToTransfer = writeLength;
-    g_WriteI2cTransactionAction[portId].isDone = false;
-    g_WriteI2cTransactionAction[portId].repeatedStart = true;
-    g_WriteI2cTransactionAction[portId].bytesTransferred = 0;
+    g_WriteI2cTransactionAction[channel].isReadTransaction = false;
+    g_WriteI2cTransactionAction[channel].buffer = (uint8_t*)writeBuffer;
+    g_WriteI2cTransactionAction[channel].bytesToTransfer = writeLength;
+    g_WriteI2cTransactionAction[channel].isDone = false;
+    g_WriteI2cTransactionAction[channel].repeatedStart = true;
+    g_WriteI2cTransactionAction[channel].bytesTransferred = 0;
 
-    g_ReadI2cTransactionAction[portId].isReadTransaction = true;
-    g_ReadI2cTransactionAction[portId].buffer = readBuffer;
-    g_ReadI2cTransactionAction[portId].bytesToTransfer = readLength;
-    g_ReadI2cTransactionAction[portId].isDone = false;
-    g_ReadI2cTransactionAction[portId].repeatedStart = false;
-    g_ReadI2cTransactionAction[portId].bytesTransferred = 0;
+    g_ReadI2cTransactionAction[channel].isReadTransaction = true;
+    g_ReadI2cTransactionAction[channel].buffer = readBuffer;
+    g_ReadI2cTransactionAction[channel].bytesToTransfer = readLength;
+    g_ReadI2cTransactionAction[channel].isDone = false;
+    g_ReadI2cTransactionAction[channel].repeatedStart = false;
+    g_ReadI2cTransactionAction[channel].bytesTransferred = 0;
 
-    g_currentI2cTransactionAction = &g_WriteI2cTransactionAction[portId];
+    g_currentI2cTransactionAction = &g_WriteI2cTransactionAction[channel];
 
-    LPC17_I2c_StartTransaction(portId);
+    LPC17_I2c_StartTransaction(channel);
 
     while (g_currentI2cTransactionAction->isDone == false && timeout > 0) {
         LPC17_Time_Delay(nullptr, 1000);
@@ -330,12 +321,12 @@ TinyCLR_Result LPC17_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, 
         timeout--;
     }
 
-    if (g_WriteI2cTransactionAction[portId].bytesTransferred != writeLength) {
-        writeLength = g_WriteI2cTransactionAction[portId].bytesTransferred;
+    if (g_WriteI2cTransactionAction[channel].bytesTransferred != writeLength) {
+        writeLength = g_WriteI2cTransactionAction[channel].bytesTransferred;
         result = TinyCLR_I2c_TransferStatus::PartialTransfer;
     }
     else {
-        readLength = g_ReadI2cTransactionAction[portId].bytesTransferred;
+        readLength = g_ReadI2cTransactionAction[channel].bytesTransferred;
 
         if (g_currentI2cTransactionAction->bytesTransferred == readLength)
             result = TinyCLR_I2c_TransferStatus::FullTransfer;
@@ -346,13 +337,11 @@ TinyCLR_Result LPC17_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result LPC17_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed) {
+TinyCLR_Result LPC17_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int32_t channel, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed) {
     uint32_t rateKhz;
 
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
-
-    int32_t portId = self->Index;
 
     if (busSpeed == TinyCLR_I2c_BusSpeed::FastMode)
         rateKhz = 400; // FastMode
@@ -363,23 +352,21 @@ TinyCLR_Result LPC17_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int
 
     uint32_t divider = LPC17xx_I2C::c_I2C_Clk_KHz / (2 * rateKhz);
 
-    g_I2cConfiguration[portId].clockRate = (uint8_t)divider; // low byte
-    g_I2cConfiguration[portId].clockRate2 = (uint8_t)(divider >> 8); // high byte
-    g_I2cConfiguration[portId].address = slaveAddress;
+    g_I2cConfiguration[channel].clockRate = (uint8_t)divider; // low byte
+    g_I2cConfiguration[channel].clockRate2 = (uint8_t)(divider >> 8); // high byte
+    g_I2cConfiguration[channel].address = slaveAddress;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_I2c_Acquire(const TinyCLR_I2c_Provider* self) {
+TinyCLR_Result LPC17_I2c_Acquire(const TinyCLR_I2c_Provider* self, int32_t channel) {
 
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    int32_t portId = self->Index;
+    LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(channel == 0 ? LPC17xx_I2C::c_I2C0_Base : ((channel == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
 
-    LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(portId == 0 ? LPC17xx_I2C::c_I2C0_Base : ((portId == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
-
-    switch (portId) {
+    switch (channel) {
     case 0:
         LPC17_Interrupt_Activate(I2C0_IRQn, (uint32_t*)&LPC17_I2c_InterruptHandler0, 0);
         break;
@@ -393,11 +380,11 @@ TinyCLR_Result LPC17_I2c_Acquire(const TinyCLR_I2c_Provider* self) {
         break;
     }
 
-    if (!LPC17_Gpio_OpenPin(g_i2c_sda_pins[self->Index].number) || !LPC17_Gpio_OpenPin(g_i2c_scl_pins[self->Index].number))
+    if (!LPC17_Gpio_OpenPin(g_i2c_sda_pins[channel].number) || !LPC17_Gpio_OpenPin(g_i2c_scl_pins[channel].number))
         return TinyCLR_Result::SharingViolation;
 
-    LPC17_Gpio_ConfigurePin(g_i2c_sda_pins[self->Index].number, LPC17_Gpio_Direction::Input, g_i2c_sda_pins[self->Index].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(g_i2c_scl_pins[self->Index].number, LPC17_Gpio_Direction::Input, g_i2c_scl_pins[self->Index].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+    LPC17_Gpio_ConfigurePin(g_i2c_sda_pins[channel].number, LPC17_Gpio_Direction::Input, g_i2c_sda_pins[channel].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+    LPC17_Gpio_ConfigurePin(g_i2c_scl_pins[channel].number, LPC17_Gpio_Direction::Input, g_i2c_scl_pins[channel].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
     // enable the I2c module
     I2C.I2CONSET = LPC17xx_I2C::I2EN;
@@ -405,37 +392,35 @@ TinyCLR_Result LPC17_I2c_Acquire(const TinyCLR_I2c_Provider* self) {
     // set the slave address
     I2C.I2ADR = 0x7E;
 
-    g_I2cConfiguration[portId].isOpened = true;
+    g_I2cConfiguration[channel].isOpened = true;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_I2c_Release(const TinyCLR_I2c_Provider* self) {
+TinyCLR_Result LPC17_I2c_Release(const TinyCLR_I2c_Provider* self, int32_t channel) {
 
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    int32_t portId = self->Index;
+    LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(channel == 0 ? LPC17xx_I2C::c_I2C0_Base : ((channel == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
 
-    LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(portId == 0 ? LPC17xx_I2C::c_I2C0_Base : ((portId == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
-
-    LPC17_Interrupt_Deactivate(portId == 0 ? I2C0_IRQn : (portId == 1 ? I2C1_IRQn : I2C2_IRQn));
+    LPC17_Interrupt_Deactivate(channel == 0 ? I2C0_IRQn : (channel == 1 ? I2C1_IRQn : I2C2_IRQn));
 
     I2C.I2CONCLR = (LPC17xx_I2C::AA | LPC17xx_I2C::SI | LPC17xx_I2C::STO | LPC17xx_I2C::STA | LPC17xx_I2C::I2EN);
 
-    if (g_I2cConfiguration[portId].isOpened) {
-        LPC17_Gpio_ClosePin(g_i2c_sda_pins[self->Index].number);
-        LPC17_Gpio_ClosePin(g_i2c_scl_pins[self->Index].number);
+    if (g_I2cConfiguration[channel].isOpened) {
+        LPC17_Gpio_ClosePin(g_i2c_sda_pins[channel].number);
+        LPC17_Gpio_ClosePin(g_i2c_scl_pins[channel].number);
     }
 
-    g_I2cConfiguration[portId].isOpened = false;
+    g_I2cConfiguration[channel].isOpened = false;
 
     return TinyCLR_Result::Success;
 }
 
 void LPC17_I2c_Reset() {
     for (auto i = 0; i < SIZEOF_ARRAY(g_i2c_scl_pins); i++) {
-        LPC17_I2c_Release(i2cProviders[i]);
+        LPC17_I2c_Release(&i2cProvider, i);
 
         g_I2cConfiguration[i].address = 0;
         g_I2cConfiguration[i].clockRate = 0;

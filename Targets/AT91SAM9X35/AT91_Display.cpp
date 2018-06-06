@@ -1410,7 +1410,6 @@ TinyCLR_Result AT91_Display_GetCapabilities(const TinyCLR_Display_Provider* self
 
 const TinyCLR_Api_Info* AT91_Display_GetApi() {
 	displayProvider.Parent = &displayApi;
-	displayProvider.Index = 0;
 	displayProvider.Acquire = &AT91_Display_Acquire;
 	displayProvider.Release = &AT91_Display_Release;
 	displayProvider.Enable = &AT91_Display_Enable;
@@ -1424,8 +1423,7 @@ const TinyCLR_Api_Info* AT91_Display_GetApi() {
 	displayApi.Author = "GHI Electronics, LLC";
 	displayApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.DisplayProvider";
 	displayApi.Type = TinyCLR_Api_Type::DisplayProvider;
-	displayApi.Version = 0;
-	displayApi.Count = 1;
+	displayApi.Version = 0;	
 	displayApi.Implementation = &displayProvider;
 
 	m_AT91_Display_VituralRam = nullptr;

@@ -29,8 +29,7 @@ static TinyCLR_Api_Info dacApi;
 bool g_stm32f7_dac_isOpened[STM32F7_DAC_CHANNELS];
 
 const TinyCLR_Api_Info* STM32F7_Dac_GetApi() {
-    dacProvider.Parent = &dacApi;
-    dacProvider.Index = 0;
+    dacProvider.Parent = &dacApi;    
     dacProvider.Acquire = &STM32F7_Dac_Acquire;
     dacProvider.Release = &STM32F7_Dac_Release;
     dacProvider.AcquireChannel = &STM32F7_Dac_AcquireChannel;
@@ -45,7 +44,6 @@ const TinyCLR_Api_Info* STM32F7_Dac_GetApi() {
     dacApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.DacProvider";
     dacApi.Type = TinyCLR_Api_Type::DacProvider;
     dacApi.Version = 0;
-    dacApi.Count = 1;
     dacApi.Implementation = &dacProvider;
 
     return &dacApi;

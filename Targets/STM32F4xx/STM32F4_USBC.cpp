@@ -252,7 +252,7 @@ const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi() {
     return TinyCLR_UsbClient_GetApi();
 }
 void STM32F4_UsbClient_Reset() {
-    return TinyCLR_UsbClient_Reset();
+    return TinyCLR_UsbClient_Reset(STM32F4_USB_FS_ID);
 }
 
 void STM32F4_UsbClient_InitializeConfiguration(USB_CONTROLLER_STATE *usbState) {

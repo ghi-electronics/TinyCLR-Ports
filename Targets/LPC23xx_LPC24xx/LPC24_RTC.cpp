@@ -35,8 +35,7 @@ static TinyCLR_Rtc_Provider rtcProvider;
 static TinyCLR_Api_Info timeApi;
 
 const TinyCLR_Api_Info* LPC24_Rtc_GetApi() {
-    rtcProvider.Parent = &timeApi;
-    rtcProvider.Index = 0;
+    rtcProvider.Parent = &timeApi;    
     rtcProvider.Acquire = &LPC24_Rtc_Acquire;
     rtcProvider.Release = &LPC24_Rtc_Release;
     rtcProvider.GetNow = &LPC24_Rtc_GetNow;
@@ -46,7 +45,6 @@ const TinyCLR_Api_Info* LPC24_Rtc_GetApi() {
     timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.RtcProvider";
     timeApi.Type = TinyCLR_Api_Type::RtcProvider;
     timeApi.Version = 0;
-    timeApi.Count = 1;
     timeApi.Implementation = &rtcProvider;
 
     return &timeApi;

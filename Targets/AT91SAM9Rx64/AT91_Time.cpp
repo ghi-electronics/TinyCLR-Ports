@@ -215,7 +215,6 @@ static TinyCLR_Api_Info timeApi;
 
 const TinyCLR_Api_Info* AT91_Time_GetApi() {
     timeProvider.Parent = &timeApi;
-    timeProvider.Index = 0;
     timeProvider.ConvertNativeTimeToSystemTime = &AT91_Time_GetTimeForProcessorTicks;
     timeProvider.ConvertSystemTimeToNativeTime = &AT91_Time_TimeToTicks;
     timeProvider.GetNativeTime = &AT91_Time_GetCurrentProcessorTicks;
@@ -229,7 +228,6 @@ const TinyCLR_Api_Info* AT91_Time_GetApi() {
     timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.NativeTimeProvider";
     timeApi.Type = TinyCLR_Api_Type::NativeTimeProvider;
     timeApi.Version = 0;
-    timeApi.Count = 1;
     timeApi.Implementation = &timeProvider;
 
     return &timeApi;
@@ -283,10 +281,7 @@ uint64_t AT91_Time_MicrosecondsToTicks(const TinyCLR_NativeTime_Provider* self, 
 }
 
 uint64_t AT91_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Provider* self) {
-    int32_t timer = 0;
-
-    if (self != nullptr)
-        timer = self->Index;
+    int32_t timer = AT91_TIME_DEFAULT_CONTROLLER_ID;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -304,10 +299,7 @@ uint64_t AT91_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Provider* s
 }
 
 TinyCLR_Result AT91_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Provider* self, uint64_t processorTicks) {
-    int32_t timer = 0;
-
-    if (self != nullptr)
-        timer = self->Index;
+    int32_t timer = AT91_TIME_DEFAULT_CONTROLLER_ID;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -360,7 +352,7 @@ TinyCLR_Result AT91_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Provid
 }
 
 TinyCLR_Result AT91_Time_Acquire(const TinyCLR_NativeTime_Provider* self) {
-    int32_t timer = self->Index;
+    int32_t timer = AT91_TIME_DEFAULT_CONTROLLER_ID;
 
     g_AT91_TIME_Driver.m_lastRead = 0;
     g_AT91_TIME_Driver.m_nextCompare = (uint64_t)AT91_TIMER_Driver::c_MaxTimerValue;
@@ -374,7 +366,7 @@ TinyCLR_Result AT91_Time_Acquire(const TinyCLR_NativeTime_Provider* self) {
 }
 
 TinyCLR_Result AT91_Time_Release(const TinyCLR_NativeTime_Provider* self) {
-    int32_t timer = self->Index;
+    int32_t timer = AT91_TIME_DEFAULT_CONTROLLER_ID;
 
     if (!AT91_TIMER_Driver::Uninitialize(AT91_TIMER_Driver::c_SystemTimer))
         return TinyCLR_Result::InvalidOperation;;

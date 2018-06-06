@@ -198,7 +198,7 @@ const TinyCLR_Api_Info* LPC17_UsbClient_GetApi() {
 }
 
 void LPC17_UsbClient_Reset() {
-    return TinyCLR_UsbClient_Reset();
+    return TinyCLR_UsbClient_Reset(0);
 }
 
 void LPC17_UsbClient_InitializeConfiguration(USB_CONTROLLER_STATE *usbState) {

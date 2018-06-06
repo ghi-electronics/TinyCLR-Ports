@@ -48,7 +48,6 @@ static TinyCLR_Api_Info deploymentApi;
 
 const TinyCLR_Api_Info* STM32F4_Deployment_GetApi() {
     deploymentProvider.Parent = &deploymentApi;
-    deploymentProvider.Index = 0;
     deploymentProvider.Acquire = &STM32F4_Flash_Acquire;
     deploymentProvider.Release = &STM32F4_Flash_Release;
     deploymentProvider.Read = &STM32F4_Flash_Read;
@@ -61,7 +60,6 @@ const TinyCLR_Api_Info* STM32F4_Deployment_GetApi() {
     deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.DeploymentProvider";
     deploymentApi.Type = TinyCLR_Api_Type::DeploymentProvider;
     deploymentApi.Version = 0;
-    deploymentApi.Count = 1;
     deploymentApi.Implementation = &deploymentProvider;
 
     STM32F4_Deplpoyment_Reset();

@@ -29,7 +29,6 @@ static TinyCLR_Api_Info powerApi;
 
 const TinyCLR_Api_Info* LPC17_Power_GetApi() {
     powerProvider.Parent = &powerApi;
-    powerProvider.Index = 0;
     powerProvider.Acquire = &LPC17_Power_Acquire;
     powerProvider.Release = &LPC17_Power_Release;
     powerProvider.Reset = &LPC17_Power_Reset;
@@ -39,7 +38,6 @@ const TinyCLR_Api_Info* LPC17_Power_GetApi() {
     powerApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.PowerProvider";
     powerApi.Type = TinyCLR_Api_Type::PowerProvider;
     powerApi.Version = 0;
-    powerApi.Count = 1;
     powerApi.Implementation = &powerProvider;
 
     return &powerApi;
@@ -53,25 +51,25 @@ void LPC17_Power_SetHandlers(void(*stop)(), void(*restart)()) {
 void LPC17_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level) {
     switch (level) {
 
-        case TinyCLR_Power_SleepLevel::Hibernate: // stop
-            if (g_LPC17_stopHandler != 0)
-                g_LPC17_stopHandler();
+    case TinyCLR_Power_SleepLevel::Hibernate: // stop
+        if (g_LPC17_stopHandler != 0)
+            g_LPC17_stopHandler();
 
-            return;
+        return;
 
-        case TinyCLR_Power_SleepLevel::Off: // standby
-            // stop peripherals if needed
-            if (g_LPC17_stopHandler != 0)
-                g_LPC17_stopHandler();
+    case TinyCLR_Power_SleepLevel::Off: // standby
+        // stop peripherals if needed
+        if (g_LPC17_stopHandler != 0)
+            g_LPC17_stopHandler();
 
-            __WFI(); // soft power off, never returns
-            return;
+        __WFI(); // soft power off, never returns
+        return;
 
-        default: // sleep
-            LPC_SC->PCON &= ~(LPC_SC_PCON_PM0_Msk | LPC_SC_PCON_PM1_Msk); // clear PM0 and PM1 to 0 => sleep
-            __WFI(); // sleep and wait for interrupt
+    default: // sleep
+        LPC_SC->PCON &= ~(LPC_SC_PCON_PM0_Msk | LPC_SC_PCON_PM1_Msk); // clear PM0 and PM1 to 0 => sleep
+        __WFI(); // sleep and wait for interrupt
 
-            return;
+        return;
     }
 }
 

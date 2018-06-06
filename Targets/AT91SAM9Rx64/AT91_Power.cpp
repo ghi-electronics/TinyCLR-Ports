@@ -23,7 +23,6 @@ static TinyCLR_Api_Info powerApi;
 
 const TinyCLR_Api_Info* AT91_Power_GetApi() {
     powerProvider.Parent = &powerApi;
-    powerProvider.Index = 0;
     powerProvider.Acquire = &AT91_Power_Acquire;
     powerProvider.Release = &AT91_Power_Release;
     powerProvider.Reset = &AT91_Power_Reset;
@@ -33,7 +32,6 @@ const TinyCLR_Api_Info* AT91_Power_GetApi() {
     powerApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.PowerProvider";
     powerApi.Type = TinyCLR_Api_Type::PowerProvider;
     powerApi.Version = 0;
-    powerApi.Count = 1;
     powerApi.Implementation = &powerProvider;
 
     return &powerApi;

@@ -30,7 +30,6 @@ uint32_t g_lpc24_adc_isOpened;
 
 const TinyCLR_Api_Info* LPC24_Adc_GetApi() {
     adcProvider.Parent = &adcApi;
-    adcProvider.Index = 0;
     adcProvider.Acquire = &LPC24_Adc_Acquire;
     adcProvider.Release = &LPC24_Adc_Release;
     adcProvider.AcquireChannel = &LPC24_Adc_AcquireChannel;
@@ -48,7 +47,6 @@ const TinyCLR_Api_Info* LPC24_Adc_GetApi() {
     adcApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.AdcProvider";
     adcApi.Type = TinyCLR_Api_Type::AdcProvider;
     adcApi.Version = 0;
-    adcApi.Count = 1;
     adcApi.Implementation = &adcProvider;
 
     return &adcApi;

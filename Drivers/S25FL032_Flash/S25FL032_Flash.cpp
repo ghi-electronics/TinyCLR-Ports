@@ -21,6 +21,7 @@
 #define SPI_CLOCK_RATE_HZ 20000000
 
 const TinyCLR_Spi_Provider* g_S25FL032_Flash_SpiProvider;
+int32_t g_S25FL032_Flash_SpiControllerId;
 uint32_t g_S25FL032_Flash_SpiChipSelectLine;
 
 uint8_t g_S25FL032_Flash_DataReadBuffer[S25FL032_FLASH_SECTOR_SIZE + 4];
@@ -36,7 +37,7 @@ bool S25FL032_Flash_WriteEnable() {
     size_t writeLength = 1;
     size_t readLength = 0;
 
-    g_S25FL032_Flash_SpiProvider->TransferFullDuplex(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_DataWriteBuffer, writeLength, g_S25FL032_Flash_DataReadBuffer, readLength);
+    g_S25FL032_Flash_SpiProvider->TransferFullDuplex(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId, g_S25FL032_Flash_DataWriteBuffer, writeLength, g_S25FL032_Flash_DataReadBuffer, readLength);
 
     g_S25FL032_Flash_DataWriteBuffer[0] = S25FL032_FLASH_COMMAND_READ_STATUS_REGISTER;
     g_S25FL032_Flash_DataWriteBuffer[1] = 0x00;
@@ -44,7 +45,7 @@ bool S25FL032_Flash_WriteEnable() {
     writeLength = 2;
     readLength = 2;
 
-    g_S25FL032_Flash_SpiProvider->TransferFullDuplex(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_DataWriteBuffer, writeLength, g_S25FL032_Flash_DataReadBuffer, readLength);
+    g_S25FL032_Flash_SpiProvider->TransferFullDuplex(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId, g_S25FL032_Flash_DataWriteBuffer, writeLength, g_S25FL032_Flash_DataReadBuffer, readLength);
 
     if ((g_S25FL032_Flash_DataReadBuffer[1] & 0x2) != 0)
         return true;
@@ -59,7 +60,7 @@ bool S25FL032_Flash_WriteInProgress() {
     size_t writeLength = 2;
     size_t readLength = 2;
 
-    g_S25FL032_Flash_SpiProvider->TransferFullDuplex(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_DataWriteBuffer, writeLength, g_S25FL032_Flash_DataReadBuffer, readLength);
+    g_S25FL032_Flash_SpiProvider->TransferFullDuplex(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId, g_S25FL032_Flash_DataWriteBuffer, writeLength, g_S25FL032_Flash_DataReadBuffer, readLength);
 
     if ((g_S25FL032_Flash_DataReadBuffer[1] & 0x1) != 0)
         return true;
@@ -70,9 +71,9 @@ bool S25FL032_Flash_WriteInProgress() {
 TinyCLR_Result S25FL032_Flash_Read(uint32_t address, size_t length, uint8_t* buffer) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    g_S25FL032_Flash_SpiProvider->Acquire(g_S25FL032_Flash_SpiProvider);
+    g_S25FL032_Flash_SpiProvider->Acquire(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId);
 
-    g_S25FL032_Flash_SpiProvider->SetActiveSettings(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiChipSelectLine, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    g_S25FL032_Flash_SpiProvider->SetActiveSettings(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId, g_S25FL032_Flash_SpiChipSelectLine, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     while (S25FL032_Flash_WriteInProgress() == true);
 
@@ -92,7 +93,7 @@ TinyCLR_Result S25FL032_Flash_Read(uint32_t address, size_t length, uint8_t* buf
         readLength = S25FL032_FLASH_SECTOR_SIZE + 4;
 
         // start to read
-        g_S25FL032_Flash_SpiProvider->TransferFullDuplex(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_DataWriteBuffer, writeLength, g_S25FL032_Flash_DataReadBuffer, readLength);
+        g_S25FL032_Flash_SpiProvider->TransferFullDuplex(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId, g_S25FL032_Flash_DataWriteBuffer, writeLength, g_S25FL032_Flash_DataReadBuffer, readLength);
 
         // copy to buffer
         memcpy(&buffer[index], &g_S25FL032_Flash_DataReadBuffer[4], S25FL032_FLASH_SECTOR_SIZE);
@@ -113,7 +114,7 @@ TinyCLR_Result S25FL032_Flash_Read(uint32_t address, size_t length, uint8_t* buf
         readLength = rest + 4;
 
         // start to read
-        g_S25FL032_Flash_SpiProvider->TransferFullDuplex(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_DataWriteBuffer, writeLength, g_S25FL032_Flash_DataReadBuffer, readLength);
+        g_S25FL032_Flash_SpiProvider->TransferFullDuplex(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId, g_S25FL032_Flash_DataWriteBuffer, writeLength, g_S25FL032_Flash_DataReadBuffer, readLength);
 
         // copy to buffer
         memcpy(&buffer[index], &g_S25FL032_Flash_DataReadBuffer[4], rest);
@@ -123,7 +124,7 @@ TinyCLR_Result S25FL032_Flash_Read(uint32_t address, size_t length, uint8_t* buf
         rest = 0;
     }
 
-    g_S25FL032_Flash_SpiProvider->Release(g_S25FL032_Flash_SpiProvider);
+    g_S25FL032_Flash_SpiProvider->Release(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId);
 
     return index == length ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
 }
@@ -155,7 +156,7 @@ TinyCLR_Result S25FL032_Flash_PageProgram(uint32_t byteAddress, uint32_t NumberO
         memcpy(&g_S25FL032_Flash_DataWriteBuffer[4], pointerToWriteBuffer + source_index, block_size);
 
         // Write cmd to Write
-        g_S25FL032_Flash_SpiProvider->Write(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_DataWriteBuffer, actualWrite);
+        g_S25FL032_Flash_SpiProvider->Write(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId, g_S25FL032_Flash_DataWriteBuffer, actualWrite);
 
         while (S25FL032_Flash_WriteInProgress() == true);
 
@@ -179,13 +180,13 @@ TinyCLR_Result S25FL032_Flash_PageProgram(uint32_t byteAddress, uint32_t NumberO
 TinyCLR_Result S25FL032_Flash_Write(uint32_t address, size_t length, const uint8_t* buffer) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    g_S25FL032_Flash_SpiProvider->Acquire(g_S25FL032_Flash_SpiProvider);
+    g_S25FL032_Flash_SpiProvider->Acquire(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId);
 
-    g_S25FL032_Flash_SpiProvider->SetActiveSettings(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiChipSelectLine, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    g_S25FL032_Flash_SpiProvider->SetActiveSettings(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId, g_S25FL032_Flash_SpiChipSelectLine, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     TinyCLR_Result result = S25FL032_Flash_PageProgram(address, length, buffer);
 
-    g_S25FL032_Flash_SpiProvider->Release(g_S25FL032_Flash_SpiProvider);
+    g_S25FL032_Flash_SpiProvider->Release(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId);
 
     return result;
 }
@@ -219,9 +220,9 @@ TinyCLR_Result S25FL032_Flash_IsBlockErased(uint32_t sector, bool &erased) {
 TinyCLR_Result S25FL032_Flash_EraseBlock(uint32_t sector) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    g_S25FL032_Flash_SpiProvider->Acquire(g_S25FL032_Flash_SpiProvider);
+    g_S25FL032_Flash_SpiProvider->Acquire(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId);
 
-    g_S25FL032_Flash_SpiProvider->SetActiveSettings(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiChipSelectLine, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    g_S25FL032_Flash_SpiProvider->SetActiveSettings(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId, g_S25FL032_Flash_SpiChipSelectLine, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     while (S25FL032_Flash_WriteEnable() == false);
 
@@ -234,18 +235,19 @@ TinyCLR_Result S25FL032_Flash_EraseBlock(uint32_t sector) {
 
     size_t writeLength = 4;
 
-    g_S25FL032_Flash_SpiProvider->Write(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_DataWriteBuffer, writeLength);
+    g_S25FL032_Flash_SpiProvider->Write(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId, g_S25FL032_Flash_DataWriteBuffer, writeLength);
 
     while (S25FL032_Flash_WriteInProgress() == true);
 
-    g_S25FL032_Flash_SpiProvider->Release(g_S25FL032_Flash_SpiProvider);
+    g_S25FL032_Flash_SpiProvider->Release(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId);
 
     TinyCLR_Result::Success;
 }
 
-TinyCLR_Result S25FL032_Flash_Acquire(const TinyCLR_Spi_Provider* spiProvider, uint32_t chipSelectLine, bool& supportXIP) {
+TinyCLR_Result S25FL032_Flash_Acquire(const TinyCLR_Spi_Provider* spiProvider, int32_t controller, uint32_t chipSelectLine, bool& supportXIP) {
     supportXIP = false;
 
+    g_S25FL032_Flash_SpiControllerId = controller;
     g_S25FL032_Flash_DataWriteBuffer[0] = S25FL032_FLASH_COMMAND_READID;
     g_S25FL032_Flash_DataWriteBuffer[1] = 0x00;
     g_S25FL032_Flash_DataWriteBuffer[2] = 0x00;
@@ -257,11 +259,11 @@ TinyCLR_Result S25FL032_Flash_Acquire(const TinyCLR_Spi_Provider* spiProvider, u
     g_S25FL032_Flash_SpiProvider = spiProvider;
     g_S25FL032_Flash_SpiChipSelectLine = chipSelectLine;
 
-    g_S25FL032_Flash_SpiProvider->Acquire(g_S25FL032_Flash_SpiProvider);
+    g_S25FL032_Flash_SpiProvider->Acquire(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId);
 
-    g_S25FL032_Flash_SpiProvider->SetActiveSettings(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiChipSelectLine, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    g_S25FL032_Flash_SpiProvider->SetActiveSettings(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId, g_S25FL032_Flash_SpiChipSelectLine, SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
-    g_S25FL032_Flash_SpiProvider->TransferFullDuplex(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_DataWriteBuffer, writeLength, g_S25FL032_Flash_DataReadBuffer, readLength);
+    g_S25FL032_Flash_SpiProvider->TransferFullDuplex(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId, g_S25FL032_Flash_DataWriteBuffer, writeLength, g_S25FL032_Flash_DataReadBuffer, readLength);
 
     if (S25F_FLASH_MANUFACTURER_CODE != g_S25FL032_Flash_DataReadBuffer[1] && MX25L_FLASH_MANUFACTURER_CODE != g_S25FL032_Flash_DataReadBuffer[1]) {
 
@@ -273,7 +275,7 @@ TinyCLR_Result S25FL032_Flash_Acquire(const TinyCLR_Spi_Provider* spiProvider, u
         return TinyCLR_Result::WrongType;
     }
 
-    g_S25FL032_Flash_SpiProvider->Release(g_S25FL032_Flash_SpiProvider);
+    g_S25FL032_Flash_SpiProvider->Release(g_S25FL032_Flash_SpiProvider, g_S25FL032_Flash_SpiControllerId);
 
     return TinyCLR_Result::Success;
 }

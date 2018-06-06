@@ -48,7 +48,6 @@ static TinyCLR_Api_Info gpioApi;
 
 const TinyCLR_Api_Info* AT91_Gpio_GetApi() {
     gpioProvider.Parent = &gpioApi;
-    gpioProvider.Index = 0;
     gpioProvider.Acquire = &AT91_Gpio_Acquire;
     gpioProvider.Release = &AT91_Gpio_Release;
     gpioProvider.AcquirePin = &AT91_Gpio_AcquirePin;
@@ -67,7 +66,6 @@ const TinyCLR_Api_Info* AT91_Gpio_GetApi() {
     gpioApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.GpioProvider";
     gpioApi.Type = TinyCLR_Api_Type::GpioProvider;
     gpioApi.Version = 0;
-    gpioApi.Count = 1;
     gpioApi.Implementation = &gpioProvider;
 
     return &gpioApi;

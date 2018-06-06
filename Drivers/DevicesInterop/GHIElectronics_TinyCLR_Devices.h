@@ -17,7 +17,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcProvider {
     static const size_t FIELD_STATIC___providers___mscorlibSystemCollectionsHashtable = 0;
 
-    static const size_t FIELD___controllers___SZARRAY_GHIElectronicsTinyCLRDevicesAdcProviderIAdcControllerProvider = 1;
+    static const size_t FIELD___controller___SZARRAY_GHIElectronicsTinyCLRDevicesAdcProviderIAdcControllerProvider = 1;
     static const size_t FIELD___Name__BackingField___STRING = 2;
 };
 
@@ -76,13 +76,14 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanProvider {
     static const size_t FIELD_STATIC___providers___mscorlibSystemCollectionsHashtable = 1;
 
-    static const size_t FIELD___controllers___SZARRAY_GHIElectronicsTinyCLRDevicesCanProviderICanControllerProvider = 1;
+    static const size_t FIELD___controllers___GHIElectronicsTinyCLRDevicesCanProviderICanControllerProvider = 1;
     static const size_t FIELD___Name__BackingField___STRING = 2;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider {
     static const size_t FIELD___nativeProvider___I = 1;
     static const size_t FIELD___disposed___BOOLEAN = 2;
+    static const size_t FIELD___idx___I4 = 3;
 
     static TinyCLR_Result Reset___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result ReadMessages___I4__SZARRAY_GHIElectronicsTinyCLRDevicesCanCanMessage__I4__I4(const TinyCLR_Interop_MethodData md);
@@ -121,7 +122,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DacProvider {
     static const size_t FIELD_STATIC___providers___mscorlibSystemCollectionsHashtable = 2;
 
-    static const size_t FIELD___controllers___SZARRAY_GHIElectronicsTinyCLRDevicesDacProviderIDacControllerProvider = 1;
+    static const size_t FIELD___controller___SZARRAY_GHIElectronicsTinyCLRDevicesDacProviderIDacControllerProvider = 1;
     static const size_t FIELD___Name__BackingField___STRING = 2;
 };
 
@@ -177,7 +178,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dis
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayProvider {
     static const size_t FIELD_STATIC___providers___mscorlibSystemCollectionsHashtable = 3;
 
-    static const size_t FIELD___controllers___SZARRAY_GHIElectronicsTinyCLRDevicesDisplayProviderIDisplayControllerProvider = 1;
+    static const size_t FIELD___controller___SZARRAY_GHIElectronicsTinyCLRDevicesDisplayProviderIDisplayControllerProvider = 1;
     static const size_t FIELD___Name__BackingField___STRING = 2;
 };
 
@@ -247,7 +248,6 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpi
     static const size_t FIELD___exclusivePins___mscorlibSystemCollectionsArrayList = 2;
     static const size_t FIELD___acquiredPins___mscorlibSystemCollectionsHashtable = 3;
     static const size_t FIELD___Name___STRING = 4;
-    static const size_t FIELD___Index___U4 = 5;
 
     static TinyCLR_Result get_PinCount___I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result AcquireNative___VOID(const TinyCLR_Interop_MethodData md);
@@ -288,7 +288,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpi
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioProvider {
     static const size_t FIELD_STATIC___providers___mscorlibSystemCollectionsHashtable = 5;
 
-    static const size_t FIELD___controllers___SZARRAY_GHIElectronicsTinyCLRDevicesGpioProviderIGpioControllerProvider = 1;
+    static const size_t FIELD___controller___SZARRAY_GHIElectronicsTinyCLRDevicesGpioProviderIGpioControllerProvider = 1;
     static const size_t FIELD___Name__BackingField___STRING = 2;
 };
 
@@ -339,7 +339,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c
     static const size_t FIELD___sda___I4 = 2;
     static const size_t FIELD___scl___I4 = 3;
     static const size_t FIELD___useSoftwarePullups___BOOLEAN = 4;
-    static const size_t FIELD___controllers___SZARRAY_GHIElectronicsTinyCLRDevicesI2cProviderII2cControllerProvider = 5;
+    static const size_t FIELD___controllers___GHIElectronicsTinyCLRDevicesI2cProviderII2cControllerProvider = 5;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_I2cTransferResult {
@@ -351,6 +351,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c
     static const size_t FIELD___nativeProvider___I = 1;
     static const size_t FIELD___created___I4 = 2;
     static const size_t FIELD___isExclusive___BOOLEAN = 3;
+    static const size_t FIELD___idx___I4 = 4;
 
     static TinyCLR_Result AcquireNative___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result ReleaseNative___VOID(const TinyCLR_Interop_MethodData md);
@@ -362,6 +363,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c
     static const size_t FIELD___m_disposed___BOOLEAN = 3;
     static const size_t FIELD___m_settings___GHIElectronicsTinyCLRDevicesI2cI2cConnectionSettings = 4;
 
+
     static TinyCLR_Result ReadInternal___VOID__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result WriteInternal___VOID__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result WriteReadInternal___VOID__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md);
@@ -371,7 +373,8 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c
     static const size_t FIELD_STATIC___providers___mscorlibSystemCollectionsHashtable = 6;
 
     static const size_t FIELD___controllers___SZARRAY_GHIElectronicsTinyCLRDevicesI2cProviderII2cControllerProvider = 1;
-    static const size_t FIELD___Name__BackingField___STRING = 2;
+    static const size_t FIELD___idx___I4 = 2;
+    static const size_t FIELD___Name__BackingField___STRING = 3;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_ProviderI2cConnectionSettings {
@@ -403,6 +406,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Low
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider {
     static const size_t FIELD___nativeProvider___I = 1;
     static const size_t FIELD___ActualFrequency__BackingField___R8 = 2;
+    static const size_t FIELD___idx___I4 = 3;
 
     static TinyCLR_Result get_MaxFrequency___R8(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_MinFrequency___R8(const TinyCLR_Interop_MethodData md);
@@ -480,6 +484,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi
     static const size_t FIELD___nativeProvider___I = 1;
     static const size_t FIELD___created___I4 = 2;
     static const size_t FIELD___isExclusive___BOOLEAN = 3;
+    static const size_t FIELD___idx___I4 = 4;
 
     static TinyCLR_Result AcquireNative___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result ReleaseNative___VOID(const TinyCLR_Interop_MethodData md);
@@ -522,7 +527,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi
     static const size_t FIELD___MaxClockFrequency__BackingField___I4 = 3;
     static const size_t FIELD___SupportedDataBitLengths__BackingField___SZARRAY_I4 = 4;
 
-    static TinyCLR_Result ctor___VOID__I(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result ctor___VOID__I__I4(const TinyCLR_Interop_MethodData md);
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings {
@@ -594,3 +599,4 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Ser
     static TinyCLR_Result NativeRead___I4__SZARRAY_U1__I4__I4__I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result NativeWrite___I4__SZARRAY_U1__I4__I4__I4(const TinyCLR_Interop_MethodData md);
 };
+

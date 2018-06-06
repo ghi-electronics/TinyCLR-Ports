@@ -52,34 +52,28 @@ struct SpiController {
 
 static SpiController g_SpiController[TOTAL_SPI_CONTROLLERS];
 
-static uint8_t spiProviderDefs[TOTAL_SPI_CONTROLLERS * sizeof(TinyCLR_Spi_Provider)];
-static TinyCLR_Spi_Provider* spiProviders[TOTAL_SPI_CONTROLLERS];
+static TinyCLR_Spi_Provider spiProviders;
 static TinyCLR_Api_Info spiApi;
 
 const TinyCLR_Api_Info* STM32F7_Spi_GetApi() {
-    for (int i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        spiProviders[i] = (TinyCLR_Spi_Provider*)(spiProviderDefs + (i * sizeof(TinyCLR_Spi_Provider)));
-        spiProviders[i]->Parent = &spiApi;
-        spiProviders[i]->Index = i;
-        spiProviders[i]->Acquire = &STM32F7_Spi_Acquire;
-        spiProviders[i]->Release = &STM32F7_Spi_Release;
-        spiProviders[i]->SetActiveSettings = &STM32F7_Spi_SetActiveSettings;
-        spiProviders[i]->Read = &STM32F7_Spi_Read;
-        spiProviders[i]->Write = &STM32F7_Spi_Write;
-        spiProviders[i]->TransferFullDuplex = &STM32F7_Spi_TransferFullDuplex;
-        spiProviders[i]->TransferSequential = &STM32F7_Spi_TransferSequential;
-        spiProviders[i]->GetChipSelectLineCount = &STM32F7_Spi_GetChipSelectLineCount;
-        spiProviders[i]->GetMinClockFrequency = &STM32F7_Spi_GetMinClockFrequency;
-        spiProviders[i]->GetMaxClockFrequency = &STM32F7_Spi_GetMaxClockFrequency;
-        spiProviders[i]->GetSupportedDataBitLengths = &STM32F7_Spi_GetSupportedDataBitLengths;
-    }
+    spiProviders.Parent = &spiApi;
+    spiProviders.Acquire = &STM32F7_Spi_Acquire;
+    spiProviders.Release = &STM32F7_Spi_Release;
+    spiProviders.SetActiveSettings = &STM32F7_Spi_SetActiveSettings;
+    spiProviders.Read = &STM32F7_Spi_Read;
+    spiProviders.Write = &STM32F7_Spi_Write;
+    spiProviders.TransferFullDuplex = &STM32F7_Spi_TransferFullDuplex;
+    spiProviders.TransferSequential = &STM32F7_Spi_TransferSequential;
+    spiProviders.GetChipSelectLineCount = &STM32F7_Spi_GetChipSelectLineCount;
+    spiProviders.GetMinClockFrequency = &STM32F7_Spi_GetMinClockFrequency;
+    spiProviders.GetMaxClockFrequency = &STM32F7_Spi_GetMaxClockFrequency;
+    spiProviders.GetSupportedDataBitLengths = &STM32F7_Spi_GetSupportedDataBitLengths;
 
     spiApi.Author = "GHI Electronics, LLC";
     spiApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.SpiProvider";
     spiApi.Type = TinyCLR_Api_Type::SpiProvider;
     spiApi.Version = 0;
-    spiApi.Count = TOTAL_SPI_CONTROLLERS;
-    spiApi.Implementation = (spiApi.Count > 1) ? spiProviders : (TinyCLR_Spi_Provider**)&spiProviderDefs;
+    spiApi.Implementation = &spiProviders;
 
 #ifdef SPI1
     if (TOTAL_SPI_CONTROLLERS > 0) g_STM32_Spi_Port[0] = SPI1;
@@ -226,16 +220,14 @@ bool STM32F7_Spi_Transaction_nWrite16_nRead16(int32_t controller) {
 }
 
 
-TinyCLR_Result STM32F7_Spi_TransferSequential(const TinyCLR_Spi_Provider* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
-    if (STM32F7_Spi_Write(self, writeBuffer, writeLength) != TinyCLR_Result::Success)
+TinyCLR_Result STM32F7_Spi_TransferSequential(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
+    if (STM32F7_Spi_Write(self, controller, writeBuffer, writeLength) != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
 
-    return STM32F7_Spi_Read(self, readBuffer, readLength);
+    return STM32F7_Spi_Read(self, controller, readBuffer, readLength);
 }
 
-TinyCLR_Result STM32F7_Spi_TransferFullDuplex(const TinyCLR_Spi_Provider* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
-    int32_t controller = self->Index;
-
+TinyCLR_Result STM32F7_Spi_TransferFullDuplex(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
     if (controller >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
@@ -262,10 +254,7 @@ TinyCLR_Result STM32F7_Spi_TransferFullDuplex(const TinyCLR_Spi_Provider* self, 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Spi_Read(const TinyCLR_Spi_Provider* self, uint8_t* buffer, size_t& length) {
-
-    int32_t controller = self->Index;
-
+TinyCLR_Result STM32F7_Spi_Read(const TinyCLR_Spi_Provider* self, int32_t controller, uint8_t* buffer, size_t& length) {
     if (controller >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
@@ -292,10 +281,7 @@ TinyCLR_Result STM32F7_Spi_Read(const TinyCLR_Spi_Provider* self, uint8_t* buffe
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Spi_Write(const TinyCLR_Spi_Provider* self, const uint8_t* buffer, size_t& length) {
-
-    int32_t controller = self->Index;
-
+TinyCLR_Result STM32F7_Spi_Write(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* buffer, size_t& length) {
     if (controller >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
@@ -322,9 +308,7 @@ TinyCLR_Result STM32F7_Spi_Write(const TinyCLR_Spi_Provider* self, const uint8_t
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode) {
-    int32_t controller = (self->Index);
-
+TinyCLR_Result STM32F7_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int32_t controller, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode) {
     if (controller >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
@@ -408,11 +392,9 @@ TinyCLR_Result STM32F7_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, i
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
+TinyCLR_Result STM32F7_Spi_Acquire(const TinyCLR_Spi_Provider* self, int32_t controller) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
-
-    int32_t controller = (self->Index);
 
     auto& sclk = g_STM32F7_Spi_Sclk_Pins[controller];
     auto& miso = g_STM32F7_Spi_Miso_Pins[controller];
@@ -480,11 +462,9 @@ TinyCLR_Result STM32F7_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Spi_Release(const TinyCLR_Spi_Provider* self) {
+TinyCLR_Result STM32F7_Spi_Release(const TinyCLR_Spi_Provider* self, int32_t controller) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
-
-    int32_t controller = (self->Index);
 
     ptr_SPI_TypeDef spi = g_STM32_Spi_Port[controller];
 
@@ -549,9 +529,7 @@ TinyCLR_Result STM32F7_Spi_Release(const TinyCLR_Spi_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-int32_t STM32F7_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self) {
-    int32_t controller = (self->Index);
-
+int32_t STM32F7_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller) {
     if (controller > 0 && controller < 3)
         return  STM32F7_APB1_CLOCK_HZ / 256;
     else
@@ -559,8 +537,7 @@ int32_t STM32F7_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self) {
     return 1;
 }
 
-int32_t STM32F7_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self) {
-    int32_t controller = (self->Index);
+int32_t STM32F7_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller) {
 
     if (controller > 0 && controller < 3)
         return  STM32F7_APB1_CLOCK_HZ >> 1;
@@ -569,14 +546,14 @@ int32_t STM32F7_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self) {
 
 }
 
-int32_t STM32F7_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self) {
+int32_t STM32F7_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self, int32_t controller) {
     return STM32F7_Gpio_GetPinCount(nullptr);
 }
 
 static const int32_t dataBitsCount = 2;
 static int32_t dataBits[dataBitsCount] = { 8, 16 };
 
-TinyCLR_Result STM32F7_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* self, int32_t* dataBitLengths, size_t& dataBitLengthsCount) {
+TinyCLR_Result STM32F7_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* self, int32_t controller, int32_t* dataBitLengths, size_t& dataBitLengthsCount) {
     if (dataBitLengths != nullptr)
         memcpy(dataBitLengths, dataBits, (dataBitsCount < dataBitLengthsCount ? dataBitsCount : dataBitLengthsCount) * sizeof(int32_t));
 
@@ -586,7 +563,7 @@ TinyCLR_Result STM32F7_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider
 }
 void STM32F7_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        STM32F7_Spi_Release(spiProviders[i]);
+        STM32F7_Spi_Release(&spiProviders, i);
 
         g_SpiController[i].isOpened = false;
     }

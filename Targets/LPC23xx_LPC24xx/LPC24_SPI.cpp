@@ -283,34 +283,28 @@ struct SpiController {
 
 static SpiController g_SpiController[TOTAL_SPI_CONTROLLERS];
 
-static uint8_t spiProviderDefs[TOTAL_SPI_CONTROLLERS * sizeof(TinyCLR_Spi_Provider)];
-static TinyCLR_Spi_Provider* spiProviders[TOTAL_SPI_CONTROLLERS];
+static TinyCLR_Spi_Provider spiProviders;
 static TinyCLR_Api_Info spiApi;
 
 const TinyCLR_Api_Info* LPC24_Spi_GetApi() {
-    for (int i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        spiProviders[i] = (TinyCLR_Spi_Provider*)(spiProviderDefs + (i * sizeof(TinyCLR_Spi_Provider)));
-        spiProviders[i]->Parent = &spiApi;
-        spiProviders[i]->Index = i;
-        spiProviders[i]->Acquire = &LPC24_Spi_Acquire;
-        spiProviders[i]->Release = &LPC24_Spi_Release;
-        spiProviders[i]->SetActiveSettings = &LPC24_Spi_SetActiveSettings;
-        spiProviders[i]->Read = &LPC24_Spi_Read;
-        spiProviders[i]->Write = &LPC24_Spi_Write;
-        spiProviders[i]->TransferFullDuplex = &LPC24_Spi_TransferFullDuplex;
-        spiProviders[i]->TransferSequential = &LPC24_Spi_TransferSequential;
-        spiProviders[i]->GetChipSelectLineCount = &LPC24_Spi_GetChipSelectLineCount;
-        spiProviders[i]->GetMinClockFrequency = &LPC24_Spi_GetMinClockFrequency;
-        spiProviders[i]->GetMaxClockFrequency = &LPC24_Spi_GetMaxClockFrequency;
-        spiProviders[i]->GetSupportedDataBitLengths = &LPC24_Spi_GetSupportedDataBitLengths;
-    }
+    spiProviders.Parent = &spiApi;
+    spiProviders.Acquire = &LPC24_Spi_Acquire;
+    spiProviders.Release = &LPC24_Spi_Release;
+    spiProviders.SetActiveSettings = &LPC24_Spi_SetActiveSettings;
+    spiProviders.Read = &LPC24_Spi_Read;
+    spiProviders.Write = &LPC24_Spi_Write;
+    spiProviders.TransferFullDuplex = &LPC24_Spi_TransferFullDuplex;
+    spiProviders.TransferSequential = &LPC24_Spi_TransferSequential;
+    spiProviders.GetChipSelectLineCount = &LPC24_Spi_GetChipSelectLineCount;
+    spiProviders.GetMinClockFrequency = &LPC24_Spi_GetMinClockFrequency;
+    spiProviders.GetMaxClockFrequency = &LPC24_Spi_GetMaxClockFrequency;
+    spiProviders.GetSupportedDataBitLengths = &LPC24_Spi_GetSupportedDataBitLengths;
 
     spiApi.Author = "GHI Electronics, LLC";
     spiApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.SpiProvider";
     spiApi.Type = TinyCLR_Api_Type::SpiProvider;
     spiApi.Version = 0;
-    spiApi.Count = TOTAL_SPI_CONTROLLERS;
-    spiApi.Implementation = spiProviders;
+    spiApi.Implementation = &spiProviders;
 
     return &spiApi;
 }
@@ -422,16 +416,14 @@ bool LPC24_Spi_Transaction_nWrite16_nRead16(int32_t controller) {
     return true;
 }
 
-TinyCLR_Result LPC24_Spi_TransferSequential(const TinyCLR_Spi_Provider* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
-    if (LPC24_Spi_Write(self, writeBuffer, writeLength) != TinyCLR_Result::Success)
+TinyCLR_Result LPC24_Spi_TransferSequential(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
+    if (LPC24_Spi_Write(self, controller, writeBuffer, writeLength) != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
 
-    return LPC24_Spi_Read(self, readBuffer, readLength);
+    return LPC24_Spi_Read(self, controller, readBuffer, readLength);
 }
 
-TinyCLR_Result LPC24_Spi_TransferFullDuplex(const TinyCLR_Spi_Provider* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
-    int32_t controller = self->Index;
-
+TinyCLR_Result LPC24_Spi_TransferFullDuplex(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
     if (controller >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
@@ -459,9 +451,7 @@ TinyCLR_Result LPC24_Spi_TransferFullDuplex(const TinyCLR_Spi_Provider* self, co
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Spi_Read(const TinyCLR_Spi_Provider* self, uint8_t* buffer, size_t& length) {
-    int32_t controller = self->Index;
-
+TinyCLR_Result LPC24_Spi_Read(const TinyCLR_Spi_Provider* self, int32_t controller, uint8_t* buffer, size_t& length) {
     if (controller >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
@@ -488,9 +478,7 @@ TinyCLR_Result LPC24_Spi_Read(const TinyCLR_Spi_Provider* self, uint8_t* buffer,
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Spi_Write(const TinyCLR_Spi_Provider* self, const uint8_t* buffer, size_t& length) {
-    int32_t controller = self->Index;
-
+TinyCLR_Result LPC24_Spi_Write(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* buffer, size_t& length) {
     if (controller >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
@@ -517,9 +505,7 @@ TinyCLR_Result LPC24_Spi_Write(const TinyCLR_Spi_Provider* self, const uint8_t* 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode) {
-    int32_t controller = (self->Index);
-
+TinyCLR_Result LPC24_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int32_t controller, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode) {
     if (controller >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
@@ -637,10 +623,9 @@ TinyCLR_Result LPC24_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
+TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Provider* self, int32_t controller) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
-    int32_t controller = (self->Index);
 
     uint32_t clkPin, misoPin, mosiPin;
     LPC24_Gpio_PinFunction clkMode, misoMode, mosiMode;
@@ -681,11 +666,9 @@ TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Provider* self) {
+TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Provider* self, int32_t controller) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
-
-    int32_t controller = (self->Index);
 
     switch (controller) {
     case 0:
@@ -722,15 +705,15 @@ TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC24_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self) {
+int32_t LPC24_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller) {
     return (LPC24_AHB_CLOCK_HZ / 2) / (254 * (127 + 1));
 }
 
-int32_t LPC24_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self) {
+int32_t LPC24_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller) {
     return (LPC24_AHB_CLOCK_HZ / 2) / (2 * (0 + 1));
 }
 
-int32_t LPC24_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self) {
+int32_t LPC24_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self, int32_t controller) {
     // This could maintain a map of the actual pins
     // that are available for a particular port.
     // (Not all pins can be mapped to all ports.)
@@ -747,7 +730,7 @@ int32_t LPC24_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self) {
 static const int32_t dataBitsCount = 2;
 static int32_t dataBits[dataBitsCount] = { 8, 16 };
 
-TinyCLR_Result LPC24_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* self, int32_t* dataBitLengths, size_t& dataBitLengthsCount) {
+TinyCLR_Result LPC24_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* self, int32_t controller, int32_t* dataBitLengths, size_t& dataBitLengthsCount) {
     if (dataBitLengths != nullptr)
         memcpy(dataBitLengths, dataBits, (dataBitsCount < dataBitLengthsCount ? dataBitsCount : dataBitLengthsCount) * sizeof(int32_t));
 
@@ -758,7 +741,7 @@ TinyCLR_Result LPC24_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* 
 
 void LPC24_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        LPC24_Spi_Release(spiProviders[i]);
+        LPC24_Spi_Release(&spiProviders, i);
 
         g_SpiController[i].isOpened = false;
     }

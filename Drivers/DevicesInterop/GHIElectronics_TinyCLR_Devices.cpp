@@ -622,7 +622,6 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
     nullptr,
     nullptr,
     nullptr,
-    nullptr,
     Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerProvider::get_Now___mscorlibSystemDateTime,
     Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerProvider::set_Now___VOID__mscorlibSystemDateTime,
     nullptr,
@@ -741,7 +740,7 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
     nullptr,
     nullptr,
     nullptr,
-    Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_SpiBusInfo::ctor___VOID__I,
+    Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_SpiBusInfo::ctor___VOID__I__I4,
     nullptr,
     nullptr,
     nullptr,
@@ -828,7 +827,7 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
 
 const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices = {
     "GHIElectronics.TinyCLR.Devices",
-    0xC8A0D70B,
+    0xE0FCFAAB,
     methods
 };
 

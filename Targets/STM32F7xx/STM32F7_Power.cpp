@@ -24,7 +24,6 @@ static TinyCLR_Api_Info powerApi;
 
 const TinyCLR_Api_Info* STM32F7_Power_GetApi() {
     powerProvider.Parent = &powerApi;
-    powerProvider.Index = 0;
     powerProvider.Acquire = &STM32F7_Power_Acquire;
     powerProvider.Release = &STM32F7_Power_Release;
     powerProvider.Reset = &STM32F7_Power_Reset;
@@ -34,7 +33,6 @@ const TinyCLR_Api_Info* STM32F7_Power_GetApi() {
     powerApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.PowerProvider";
     powerApi.Type = TinyCLR_Api_Type::PowerProvider;
     powerApi.Version = 0;
-    powerApi.Count = 1;
     powerApi.Implementation = &powerProvider;
 
     return &powerApi;
@@ -44,45 +42,45 @@ void STM32F7_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep
     uint32_t tmpreg = 0;
     switch (level) {
 
-        case TinyCLR_Power_SleepLevel::Hibernate: // stop
-            /* Select the regulator state in Stop mode ---------------------------------*/
-            tmpreg = PWR->CR1;
-            /* Clear PDDS and LPDS bits */
-            tmpreg &= (uint32_t)~(PWR_CR1_PDDS | PWR_CR1_LPDS);
+    case TinyCLR_Power_SleepLevel::Hibernate: // stop
+        /* Select the regulator state in Stop mode ---------------------------------*/
+        tmpreg = PWR->CR1;
+        /* Clear PDDS and LPDS bits */
+        tmpreg &= (uint32_t)~(PWR_CR1_PDDS | PWR_CR1_LPDS);
 
-            /* Set LPDS, MRLVDS and LPLVDS bits according to PWR_LOWPOWERREGULATOR_ON value */
-            tmpreg |= PWR_LOWPOWERREGULATOR_ON;
+        /* Set LPDS, MRLVDS and LPLVDS bits according to PWR_LOWPOWERREGULATOR_ON value */
+        tmpreg |= PWR_LOWPOWERREGULATOR_ON;
 
-            /* Store the new value */
-            PWR->CR1 = tmpreg;
+        /* Store the new value */
+        PWR->CR1 = tmpreg;
 
-            /* Set SLEEPDEEP bit of Cortex System Control Register */
-            SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
-            
-            /* Request Wait For Interrupt */
-            __WFI();
+        /* Set SLEEPDEEP bit of Cortex System Control Register */
+        SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
 
-            return;
+        /* Request Wait For Interrupt */
+        __WFI();
 
-        case TinyCLR_Power_SleepLevel::Off: // standby
-            /* Select Standby mode */
-            PWR->CR1 |= PWR_CR1_PDDS;
+        return;
 
-            /* Set SLEEPDEEP bit of Cortex System Control Register */
-            SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+    case TinyCLR_Power_SleepLevel::Off: // standby
+        /* Select Standby mode */
+        PWR->CR1 |= PWR_CR1_PDDS;
 
-            /* Request Wait For Interrupt */
-            __WFI();
+        /* Set SLEEPDEEP bit of Cortex System Control Register */
+        SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
 
-            return;
+        /* Request Wait For Interrupt */
+        __WFI();
 
-        default: // sleep
-            CLEAR_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPDEEP_Msk));
+        return;
 
-            /* Request Wait For Interrupt */
-            __WFI();
+    default: // sleep
+        CLEAR_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPDEEP_Msk));
 
-            return;
+        /* Request Wait For Interrupt */
+        __WFI();
+
+        return;
     }
 }
 

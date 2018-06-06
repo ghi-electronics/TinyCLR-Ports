@@ -47,7 +47,7 @@ static TinyCLR_Api_Info gpioApi;
 
 const TinyCLR_Api_Info* STM32F7_Gpio_GetApi() {
     gpioProvider.Parent = &gpioApi;
-    gpioProvider.Index = 0;
+
     gpioProvider.Acquire = &STM32F7_Gpio_Acquire;
     gpioProvider.Release = &STM32F7_Gpio_Release;
     gpioProvider.AcquirePin = &STM32F7_Gpio_AcquirePin;
@@ -66,7 +66,6 @@ const TinyCLR_Api_Info* STM32F7_Gpio_GetApi() {
     gpioApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.GpioProvider";
     gpioApi.Type = TinyCLR_Api_Type::GpioProvider;
     gpioApi.Version = 0;
-    gpioApi.Count = 1;
     gpioApi.Implementation = &gpioProvider;
 
     return &gpioApi;

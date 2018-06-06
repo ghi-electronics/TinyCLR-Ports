@@ -11,8 +11,7 @@ static TinyCLR_Display_SpiConfiguration spiDisplayConfig;
 static const TinyCLR_Spi_Provider* spiDisplayBus;
 
 const TinyCLR_Api_Info* SPIDisplay_GetApi() {
-    spiDisplayProvider.Parent = &spiDisplayApi;
-    spiDisplayProvider.Index = 0;
+    spiDisplayProvider.Parent = &spiDisplayApi;    
     spiDisplayProvider.Acquire = &SPIDisplay_Acquire;
     spiDisplayProvider.Release = &SPIDisplay_Release;
     spiDisplayProvider.Enable = &SPIDisplay_Enable;
@@ -27,7 +26,6 @@ const TinyCLR_Api_Info* SPIDisplay_GetApi() {
     spiDisplayApi.Name = "GHIElectronics.TinyCLR.NativeApis.Drivers.SPIDisplay";
     spiDisplayApi.Type = TinyCLR_Api_Type::DisplayProvider;
     spiDisplayApi.Version = 0;
-    spiDisplayApi.Count = 1;
     spiDisplayApi.Implementation = &spiDisplayProvider;
 
     return &spiDisplayApi;
@@ -96,6 +94,7 @@ static void Swap(uint8_t* a, uint8_t* b) {
 
 TinyCLR_Result SPIDisplay_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data) {
     auto d = const_cast<uint8_t*>(data);
+    int32_t controller = 0; //TODO Should get controller from  SPIDisplay controller!!!
 
     for (auto i = 0; i < spiDisplayWidth * spiDisplayHeight * 2; i += 2)
         Swap(d + i, d + i + 1);
@@ -103,13 +102,13 @@ TinyCLR_Result SPIDisplay_DrawBuffer(const TinyCLR_Display_Provider* self, int32
     if (x == 0 && spiDisplayWidth == width) {
         auto len = static_cast<size_t>(width * height * 2);
 
-        spiDisplayBus->Write(spiDisplayBus, data + (y * spiDisplayWidth * 2), len);
+        spiDisplayBus->Write(spiDisplayBus, controller, data + (y * spiDisplayWidth * 2), len);
     }
     else {
         auto len = static_cast<size_t>(width * 2);
 
         for (auto yy = y; yy < y + height; yy++)
-            spiDisplayBus->Write(spiDisplayBus, data + (yy * spiDisplayWidth * 2) + (x * 2), len);
+            spiDisplayBus->Write(spiDisplayBus, controller, data + (yy * spiDisplayWidth * 2) + (x * 2), len);
     }
 
     for (auto i = 0; i < (spiDisplayWidth * spiDisplayHeight * 2); i += 2)

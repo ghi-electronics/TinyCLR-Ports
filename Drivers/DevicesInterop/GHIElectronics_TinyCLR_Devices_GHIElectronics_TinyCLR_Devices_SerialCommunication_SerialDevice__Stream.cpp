@@ -1,22 +1,25 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 #include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
-void PinChangedIsr(const TinyCLR_Uart_Provider* self, TinyCLR_Uart_PinChange pinChange) {
+void PinChangedIsr(const TinyCLR_Uart_Provider* self, int32_t controller, TinyCLR_Uart_PinChange pinChange) {
     auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider));
 
     if (interopProvider != nullptr)
-        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Uart.PinChanged", self->Parent->Name, self->Index, (uint64_t)pinChange, 0, 0);
+        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Uart.PinChanged", self->Parent->Name, controller, (uint64_t)pinChange, 0, 0);
 }
 
-void ErrorReceivedIsr(const TinyCLR_Uart_Provider* self, TinyCLR_Uart_Error error) {
+void ErrorReceivedIsr(const TinyCLR_Uart_Provider* self, int32_t controller, TinyCLR_Uart_Error error) {
     auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider));
 
     if (interopProvider != nullptr)
-        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Uart.ErrorReceived", self->Parent->Name, self->Index, (uint64_t)error, 0, 0);
+        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Uart.ErrorReceived", self->Parent->Name, controller, (uint64_t)error, 0, 0);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SerialCommunication_SerialDevice__Stream::NativeOpen___VOID__U4__U4__U4__U4__U4(const TinyCLR_Interop_MethodData md) {
     auto provider = (const TinyCLR_Uart_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
+
+    auto controllerProvider = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___idx___U4);
+    auto controller = controllerProvider.Data.Numeric->U4;
 
     auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
     auto arg2 = TinyCLR_Interop_GetArguments(md, 2);
@@ -31,10 +34,10 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     uint32_t handshaking = arg5.Data.Numeric->U4;
 
     if (provider != nullptr) {
-        if (provider->Acquire(provider) == TinyCLR_Result::Success) {
-            if (provider->SetActiveSettings(provider, baudRate, dataBits, (TinyCLR_Uart_Parity)parity, (TinyCLR_Uart_StopBitCount)stopBits, (TinyCLR_Uart_Handshake)handshaking) == TinyCLR_Result::Success) {
-                provider->SetPinChangedHandler(provider, PinChangedIsr);
-                provider->SetErrorReceivedHandler(provider, ErrorReceivedIsr);
+        if (provider->Acquire(provider, controller) == TinyCLR_Result::Success) {
+            if (provider->SetActiveSettings(provider, controller, baudRate, dataBits, (TinyCLR_Uart_Parity)parity, (TinyCLR_Uart_StopBitCount)stopBits, (TinyCLR_Uart_Handshake)handshaking) == TinyCLR_Result::Success) {
+                provider->SetPinChangedHandler(provider, controller, PinChangedIsr);
+                provider->SetErrorReceivedHandler(provider, controller, ErrorReceivedIsr);
 
                 return TinyCLR_Result::Success;
             }
@@ -51,13 +54,19 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SerialCommunication_SerialDevice__Stream::NativeClose___VOID__U4(const TinyCLR_Interop_MethodData md) {
     auto provider = (const TinyCLR_Uart_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
 
-    return provider->Release(provider);
+    auto controllerProvider = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___idx___U4);
+    auto controller = controllerProvider.Data.Numeric->U4;
+
+    return provider->Release(provider, controller);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SerialCommunication_SerialDevice__Stream::NativeFlush___VOID(const TinyCLR_Interop_MethodData md) {
     auto provider = (const TinyCLR_Uart_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
 
-    provider->Flush(provider);
+    auto controllerProvider = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___idx___U4);
+    auto controller = controllerProvider.Data.Numeric->U4;
+
+    provider->Flush(provider, controller);
 
     return TinyCLR_Result::Success;
 }
@@ -76,7 +85,10 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     bool result = true;
 
-    provider->Read(provider, ptr, count);
+    auto controllerProvider = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___idx___U4);
+    auto controller = controllerProvider.Data.Numeric->U4;
+
+    provider->Read(provider, controller, ptr, count);
 
     auto ret = TinyCLR_Interop_GetReturn(md);
 
@@ -99,7 +111,10 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     bool result = true;
 
-    provider->Write(provider, ptr, count);
+    auto controllerProvider = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___idx___U4);
+    auto controller = controllerProvider.Data.Numeric->U4;
+
+    provider->Write(provider, controller, ptr, count);
 
     auto ret = TinyCLR_Interop_GetReturn(md);
 
@@ -113,7 +128,10 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     size_t val;
 
-    auto result = provider->GetReadBufferSize(provider, val);
+    auto controllerProvider = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___idx___U4);
+    auto controller = controllerProvider.Data.Numeric->U4;
+
+    auto result = provider->GetReadBufferSize(provider, controller, val);
 
     auto ret = TinyCLR_Interop_GetReturn(md);
 
@@ -125,9 +143,12 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SerialCommunication_SerialDevice__Stream::set_ReadBufferSize___VOID__U4(const TinyCLR_Interop_MethodData md) {
     auto provider = (const TinyCLR_Uart_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
 
+    auto controllerProvider = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___idx___U4);
+    auto controller = controllerProvider.Data.Numeric->U4;
+
     auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
 
-    return provider->SetReadBufferSize(provider, (size_t)arg1.Data.Numeric->U4);
+    return provider->SetReadBufferSize(provider, controller, (size_t)arg1.Data.Numeric->U4);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SerialCommunication_SerialDevice__Stream::get_WriteBufferSize___U4(const TinyCLR_Interop_MethodData md) {
@@ -135,7 +156,10 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     size_t val;
 
-    auto result = provider->GetWriteBufferSize(provider, val);
+    auto controllerProvider = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___idx___U4);
+    auto controller = controllerProvider.Data.Numeric->U4;
+
+    auto result = provider->GetWriteBufferSize(provider, controller, val);
 
     auto ret = TinyCLR_Interop_GetReturn(md);
 
@@ -149,7 +173,10 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
 
-    return provider->SetWriteBufferSize(provider, (size_t)arg1.Data.Numeric->U4);
+    auto controllerProvider = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___idx___U4);
+    auto controller = controllerProvider.Data.Numeric->U4;
+
+    return provider->SetWriteBufferSize(provider, controller, (size_t)arg1.Data.Numeric->U4);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SerialCommunication_SerialDevice__Stream::get_UnreadCount___U4(const TinyCLR_Interop_MethodData md) {
@@ -157,7 +184,10 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     size_t val;
 
-    auto result = provider->GetUnreadCount(provider, val);
+    auto controllerProvider = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___idx___U4);
+    auto controller = controllerProvider.Data.Numeric->U4;
+
+    auto result = provider->GetUnreadCount(provider, controller, val);
 
     auto ret = TinyCLR_Interop_GetReturn(md);
 
@@ -171,7 +201,10 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     size_t val;
 
-    auto result = provider->GetUnwrittenCount(provider, val);
+    auto controllerProvider = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___idx___U4);
+    auto controller = controllerProvider.Data.Numeric->U4;
+
+    auto result = provider->GetUnwrittenCount(provider, controller, val);
 
     auto ret = TinyCLR_Interop_GetReturn(md);
 
@@ -183,11 +216,17 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SerialCommunication_SerialDevice__Stream::ClearReadBuffer___VOID(const TinyCLR_Interop_MethodData md) {
     auto provider = (const TinyCLR_Uart_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
 
-    return provider->ClearReadBuffer(provider);
+    auto controllerProvider = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___idx___U4);
+    auto controller = controllerProvider.Data.Numeric->U4;
+
+    return provider->ClearReadBuffer(provider, controller);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SerialCommunication_SerialDevice__Stream::ClearWriteBuffer___VOID(const TinyCLR_Interop_MethodData md) {
     auto provider = (const TinyCLR_Uart_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
 
-    return provider->ClearWriteBuffer(provider);
+    auto controllerProvider = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___idx___U4);
+    auto controller = controllerProvider.Data.Numeric->U4;
+
+    return provider->ClearWriteBuffer(provider, controller);
 }

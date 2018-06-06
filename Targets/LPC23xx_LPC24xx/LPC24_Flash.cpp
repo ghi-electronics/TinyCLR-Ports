@@ -45,7 +45,6 @@ static uint8_t data256[INTERNAL_FLASH_PROGRAM_SIZE_256];
 
 const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
     deploymentProvider.Parent = &deploymentApi;
-    deploymentProvider.Index = 0;
     deploymentProvider.Acquire = &LPC24_Deployment_Acquire;
     deploymentProvider.Release = &LPC24_Deployment_Release;
     deploymentProvider.Read = &LPC24_Deployment_Read;
@@ -58,7 +57,6 @@ const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
     deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.DeploymentProvider";
     deploymentApi.Type = TinyCLR_Api_Type::DeploymentProvider;
     deploymentApi.Version = 0;
-    deploymentApi.Count = 1;
     deploymentApi.Implementation = &deploymentProvider;
 
     return &deploymentApi;

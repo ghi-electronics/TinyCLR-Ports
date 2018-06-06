@@ -803,7 +803,7 @@ const TinyCLR_Api_Info* AT91_UsbClient_GetApi() {
 }
 
 void AT91_UsbClient_Reset() {
-    return TinyCLR_UsbClient_Reset();
+    return TinyCLR_UsbClient_Reset(0);
 }
 
 void AT91_UsbClient_InitializeConfiguration(USB_CONTROLLER_STATE *usbState) {
