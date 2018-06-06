@@ -561,10 +561,17 @@ TinyCLR_Result STM32F7_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider
 
     return TinyCLR_Result::Success;
 }
+
 void STM32F7_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         STM32F7_Spi_Release(&spiProviders, i);
 
         g_SpiController[i].isOpened = false;
     }
+}
+
+TinyCLR_Result STM32F7_Spi_GetControllerCount(const TinyCLR_Spi_Provider* self, int32_t& count) {
+    count = TOTAL_SPI_CONTROLLERS;
+
+    return TinyCLR_Result::Success;
 }

@@ -239,6 +239,7 @@ int32_t LPC17_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self, int32
 int32_t LPC17_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller);
 int32_t LPC17_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller);
 TinyCLR_Result LPC17_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* self, int32_t controller, int32_t* dataBitLengths, size_t& dataBitLengthsCount);
+TinyCLR_Result LPC17_Spi_GetControllerCount(const TinyCLR_Spi_Provider* self, int32_t& count);
 
 //Uart
 const TinyCLR_Api_Info* LPC17_Uart_GetApi();

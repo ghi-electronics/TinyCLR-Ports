@@ -736,6 +736,7 @@ int32_t AT91_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self, int32_
 int32_t AT91_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller);
 int32_t AT91_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller);
 TinyCLR_Result AT91_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* self, int32_t controller, int32_t* dataBitLengths, size_t& dataBitLengthsCount);
+TinyCLR_Result AT91_Spi_GetControllerCount(const TinyCLR_Spi_Provider* self, int32_t& count);
 
 //Uart
 //////////////////////////////////////////////////////////////////////////////
