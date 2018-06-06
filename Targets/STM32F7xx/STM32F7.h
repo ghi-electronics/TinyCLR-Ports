@@ -88,20 +88,20 @@ void STM32F7_Startup_CacheDisable(void);
 //ADC
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F7_Adc_GetApi();
-TinyCLR_Result STM32F7_Adc_Acquire(const TinyCLR_Adc_Provider* self);
-TinyCLR_Result STM32F7_Adc_Release(const TinyCLR_Adc_Provider* self);
-TinyCLR_Result STM32F7_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
-TinyCLR_Result STM32F7_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
-TinyCLR_Result STM32F7_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t channel, int32_t& value);
-TinyCLR_Result STM32F7_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
-TinyCLR_Adc_ChannelMode STM32F7_Adc_GetChannelMode(const TinyCLR_Adc_Provider* self);
-bool STM32F7_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
-int32_t STM32F7_Adc_GetMinValue(const TinyCLR_Adc_Provider* self);
-int32_t STM32F7_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self);
-int32_t STM32F7_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider* self);
-int32_t STM32F7_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self);
+TinyCLR_Result STM32F7_Adc_Acquire(const TinyCLR_Adc_Provider* self, int32_t controller);
+TinyCLR_Result STM32F7_Adc_Release(const TinyCLR_Adc_Provider* self, int32_t controller);
+TinyCLR_Result STM32F7_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t channel);
+TinyCLR_Result STM32F7_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t channel);
+TinyCLR_Result STM32F7_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t channel, int32_t& value);
+TinyCLR_Result STM32F7_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, int32_t controller, TinyCLR_Adc_ChannelMode mode);
+TinyCLR_Adc_ChannelMode STM32F7_Adc_GetChannelMode(const TinyCLR_Adc_Provider* self, int32_t controller);
+bool STM32F7_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, int32_t controller, TinyCLR_Adc_ChannelMode mode);
+int32_t STM32F7_Adc_GetMinValue(const TinyCLR_Adc_Provider* self, int32_t controller);
+int32_t STM32F7_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self, int32_t controller);
+int32_t STM32F7_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider* self, int32_t controller);
+int32_t STM32F7_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self, int32_t controller);
 void STM32F7_Adc_Reset();
-TinyCLR_Result STM32F7_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count);
+TinyCLR_Result STM32F7_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t& count);
 
 ////////////////////////////////////////////////////////////////////////////////
 //CAN
