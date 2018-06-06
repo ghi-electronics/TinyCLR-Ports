@@ -447,3 +447,9 @@ void LPC17_Gpio_Reset() {
     *GPIO_Port_2_INT_RisingEdge_Register = 0x0;
     *GPIO_Port_2_INT_FallingEdge_Register = 0x0;
 }
+
+TinyCLR_Result LPC17_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, int32_t& count) {
+    count = 1;
+
+    return TinyCLR_Result::Success;
+}

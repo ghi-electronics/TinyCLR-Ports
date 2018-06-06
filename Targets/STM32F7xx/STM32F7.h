@@ -162,6 +162,7 @@ uint64_t STM32F7_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int3
 TinyCLR_Result STM32F7_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, uint64_t debounceTicks);
 TinyCLR_Result STM32F7_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler handler);
 int32_t STM32F7_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self);
+TinyCLR_Result STM32F7_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, int32_t& count);
 
 ////////////////////////////////////////////////////////////////////////////////
 //I2C

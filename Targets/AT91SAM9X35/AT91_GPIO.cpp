@@ -468,3 +468,9 @@ void AT91_Gpio_Reset() {
     AT91_Interrupt_Activate(AT91C_ID_PIOA_PIOB, (uint32_t*)&AT91_Gpio_InterruptHandler, nullptr);
     AT91_Interrupt_Activate(AT91C_ID_PIOC_PIOD, (uint32_t*)&AT91_Gpio_InterruptHandler, nullptr);
 }
+
+TinyCLR_Result AT91_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, int32_t& count) {
+    count = 1;
+
+    return TinyCLR_Result::Success;
+}

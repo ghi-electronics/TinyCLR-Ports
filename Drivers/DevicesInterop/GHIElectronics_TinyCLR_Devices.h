@@ -23,6 +23,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider {
     static const size_t FIELD___nativeProvider___I = 1;
+    static const size_t FIELD___idx___I = 2;
 
     static TinyCLR_Result get_ChannelMode___GHIElectronicsTinyCLRDevicesAdcProviderProviderAdcChannelMode(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result set_ChannelMode___VOID__GHIElectronicsTinyCLRDevicesAdcProviderProviderAdcChannelMode(const TinyCLR_Interop_MethodData md);
@@ -36,6 +37,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc
     static TinyCLR_Result ReadValue___I4__I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result AcquireNative___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result ReleaseNative___VOID(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result GetControllerCount___STATIC___I4__I(const TinyCLR_Interop_MethodData md);
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_CanBitTiming {
@@ -105,6 +107,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can
     static TinyCLR_Result set_ReadBufferSize___VOID__U4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_WriteBufferSize___U4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result set_WriteBufferSize___VOID__U4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result GetControllerCount___STATIC___I4__I(const TinyCLR_Interop_MethodData md);
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_DacChannel {
@@ -128,6 +131,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider {
     static const size_t FIELD___nativeProvider___I = 1;
+    static const size_t FIELD___idx___I = 2;
 
     static TinyCLR_Result get_ChannelCount___I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_MaxValue___I4(const TinyCLR_Interop_MethodData md);
@@ -138,6 +142,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac
     static TinyCLR_Result WriteValue___VOID__I4__I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result AcquireNative___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result ReleaseNative___VOID(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result GetControllerCount___STATIC___I4__I(const TinyCLR_Interop_MethodData md);
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_DisplayController {
@@ -167,12 +172,14 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dis
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DefaultDisplayControllerProvider {
     static const size_t FIELD___nativeProvider___I = 1;
+    static const size_t FIELD___idx___I = 2;
 
     static TinyCLR_Result get_Interface___GHIElectronicsTinyCLRDevicesDisplayDisplayInterface(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_SupportedDataFormats___SZARRAY_GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result WriteString___VOID__STRING(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result SetParallelConfiguration___BOOLEAN__U4__U4__GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat__BOOLEAN__BOOLEAN__BOOLEAN__U4__BOOLEAN__U4__U4__U4__BOOLEAN__U4__U4__U4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result SetSpiConfiguration___BOOLEAN__U4__U4__GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat__STRING(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result GetControllerCount___STATIC___I4__I(const TinyCLR_Interop_MethodData md);
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayProvider {
@@ -248,12 +255,14 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpi
     static const size_t FIELD___exclusivePins___mscorlibSystemCollectionsArrayList = 2;
     static const size_t FIELD___acquiredPins___mscorlibSystemCollectionsHashtable = 3;
     static const size_t FIELD___Name___STRING = 4;
+    static const size_t FIELD___Index___I = 5;
 
     static TinyCLR_Result get_PinCount___I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result AcquireNative___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result ReleaseNative___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result AcquireNative___VOID__I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result ReleaseNative___VOID__I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result GetControllerCount___STATIC___I4__I(const TinyCLR_Interop_MethodData md);
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_DefaultGpioPinProvider {
@@ -355,6 +364,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c
 
     static TinyCLR_Result AcquireNative___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result ReleaseNative___VOID(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result GetControllerCount___STATIC___I4__I(const TinyCLR_Interop_MethodData md);
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cDeviceProvider {
@@ -419,6 +429,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm
     static TinyCLR_Result SetPulseParameters___VOID__I4__R8__BOOLEAN(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result AcquireNative___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result ReleaseNative___VOID(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result GetControllerCount___STATIC___I4__I(const TinyCLR_Interop_MethodData md);
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmProvider {
@@ -488,6 +499,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi
 
     static TinyCLR_Result AcquireNative___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result ReleaseNative___VOID(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result GetControllerCount___STATIC___I4__I(const TinyCLR_Interop_MethodData md);
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_Provider_DefaultSpiDeviceProvider {
@@ -598,5 +610,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Ser
     static TinyCLR_Result NativeFlush___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result NativeRead___I4__SZARRAY_U1__I4__I4__I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result NativeWrite___I4__SZARRAY_U1__I4__I4__I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result GetControllerCount___STATIC___I4__I(const TinyCLR_Interop_MethodData md);
 };
 
+extern const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices;

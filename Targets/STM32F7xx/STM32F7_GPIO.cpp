@@ -447,6 +447,12 @@ void STM32F7_Gpio_Reset() {
     STM32F7_InterruptInternal_Activate(EXTI15_10_IRQn, (uint32_t*)&STM32F7_Gpio_Interrupt10, 0);
 }
 
+TinyCLR_Result STM32F7_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, int32_t& count) {
+    count = 1;
+
+    return TinyCLR_Result::Success;
+}
+
 #if !defined(__GNUC__)
 
 extern "C" {

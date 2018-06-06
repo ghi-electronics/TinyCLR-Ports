@@ -178,6 +178,7 @@ bool LPC17_Gpio_ClosePin(int32_t pin);
 bool LPC17_Gpio_ConfigurePin(int32_t pin, LPC17_Gpio_Direction pinDir, LPC17_Gpio_PinFunction pinFunction, LPC17_Gpio_ResistorMode pullResistor, LPC17_Gpio_Hysteresis hysteresis, LPC17_Gpio_InputPolarity inputPolarity, LPC17_Gpio_SlewRate slewRate, LPC17_Gpio_OutputType outputType);
 void LPC17_Gpio_EnableOutputPin(int32_t pin, bool initialState);
 void LPC17_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
+TinyCLR_Result LPC17_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, int32_t& count);;
 
 struct PwmController {
     int32_t                         channel[MAX_PWM_PER_CONTROLLER];

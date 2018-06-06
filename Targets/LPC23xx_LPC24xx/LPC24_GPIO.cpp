@@ -464,3 +464,9 @@ void LPC24_Gpio_Reset() {
         }
     }
 }
+
+TinyCLR_Result LPC24_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, int32_t& count) {
+    count = 1;
+
+    return TinyCLR_Result::Success;
+}

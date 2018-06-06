@@ -178,6 +178,7 @@ bool LPC24_Gpio_ClosePin(int32_t pin);
 bool LPC24_Gpio_ReadPin(int32_t pin);
 void LPC24_Gpio_WritePin(int32_t pin, bool value);
 bool LPC24_Gpio_ConfigurePin(int32_t pin, LPC24_Gpio_Direction pinDir, LPC24_Gpio_PinFunction alternateFunction, LPC24_Gpio_PinMode pullResistor);
+TinyCLR_Result LPC24_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, int32_t& count);
 
 // ADC
 const TinyCLR_Api_Info* LPC24_Adc_GetApi();

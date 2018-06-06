@@ -60,6 +60,7 @@ const TinyCLR_Api_Info* STM32F4_Gpio_GetApi() {
     gpioProvider.SetDebounceTimeout = &STM32F4_Gpio_SetDebounceTimeout;
     gpioProvider.SetValueChangedHandler = &STM32F4_Gpio_SetValueChangedHandler;
     gpioProvider.GetPinCount = &STM32F4_Gpio_GetPinCount;
+    gpioProvider.GetControllerCount = &STM32F4_Gpio_GetControllerCount;
 
     gpioApi.Author = "GHI Electronics, LLC";
     gpioApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.GpioProvider";
@@ -402,4 +403,10 @@ void STM32F4_Gpio_Reset() {
     STM32F4_InterruptInternal_Activate(EXTI4_IRQn, (uint32_t*)&STM32F4_Gpio_Interrupt4, 0);
     STM32F4_InterruptInternal_Activate(EXTI9_5_IRQn, (uint32_t*)&STM32F4_Gpio_Interrupt5, 0);
     STM32F4_InterruptInternal_Activate(EXTI15_10_IRQn, (uint32_t*)&STM32F4_Gpio_Interrupt10, 0);
+}
+
+TinyCLR_Result STM32F4_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, int32_t& count) {
+    count = 1;
+
+    return TinyCLR_Result::Success;
 }
