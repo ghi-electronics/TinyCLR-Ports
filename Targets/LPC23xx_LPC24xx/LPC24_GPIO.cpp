@@ -115,8 +115,6 @@ static TinyCLR_Api_Info gpioApi;
 
 #define LPC24_GPIO_DEFAULT_CONTROLLER 0
 
-static int32_t g_ControllerId = LPC24_GPIO_DEFAULT_CONTROLLER;
-
 const TinyCLR_Api_Info* LPC24_Gpio_GetApi() {
     gpioProvider.Parent = &gpioApi;
     gpioProvider.Acquire = &LPC24_Gpio_Acquire;
@@ -143,7 +141,6 @@ const TinyCLR_Api_Info* LPC24_Gpio_GetApi() {
 }
 
 TinyCLR_Result LPC24_Gpio_Acquire(const TinyCLR_Gpio_Provider* self, int32_t controller) {
-    g_ControllerId = controller;
     return TinyCLR_Result::Success;
 }
 
@@ -180,9 +177,11 @@ void LPC24_Gpio_InterruptHandler(void* param) {
             }
 
             if (executeIsr) {
-                LPC24_Gpio_Read(&gpioProvider, g_ControllerId, state->pin, state->currentValue); // read value as soon as possible
+                auto gpioController = 0; //TODO Temporary set to 0
 
-                state->ISR(state->controller, g_ControllerId, state->pin, state->currentValue);
+                LPC24_Gpio_Read(&gpioProvider, gpioController, state->pin, state->currentValue); // read value as soon as possible
+
+                state->ISR(state->controller, gpioController, state->pin, state->currentValue);
             }
         }
     }
@@ -201,10 +200,12 @@ TinyCLR_Result LPC24_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* se
 
     LPC24_Gpio_EnableInputPin(pin, g_pinDriveMode[pin]);
 
+    auto gpioController = 0; //TODO Temporary set to 0
+
     if (ISR) {
         state->controller = &gpioProvider;
         state->pin = (uint8_t)pin;
-        state->debounce = LPC24_Gpio_GetDebounceTimeout(self, g_ControllerId, pin);
+        state->debounce = LPC24_Gpio_GetDebounceTimeout(self, gpioController, pin);
         state->ISR = ISR;
         state->lastDebounceTicks = LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr));
 
@@ -455,11 +456,13 @@ int32_t LPC24_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self, int32_t contro
 void LPC24_Gpio_Reset() {
     SCS_BASE |= (1 << 0); // Enable for port 0 and 1
 
-    for (auto pin = 0; pin < LPC24_Gpio_GetPinCount(&gpioProvider, g_ControllerId); pin++) {
+    auto gpioController = 0; //TODO Temporary set to 0
+
+    for (auto pin = 0; pin < LPC24_Gpio_GetPinCount(&gpioProvider, gpioController); pin++) {
         auto& p = g_lpc24_pins[pin];
 
         g_pinReserved[pin] = false;
-        LPC24_Gpio_SetDebounceTimeout(&gpioProvider, g_ControllerId, pin, LPC24_Gpio_DebounceDefaultMilisecond);
+        LPC24_Gpio_SetDebounceTimeout(&gpioProvider, gpioController, pin, LPC24_Gpio_DebounceDefaultMilisecond);
 
         if (p.apply) {
             LPC24_Gpio_ConfigurePin(pin, p.pinDirection, p.pinFunction, p.pinMode);
@@ -474,8 +477,4 @@ TinyCLR_Result LPC24_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, 
     count = 1;
 
     return TinyCLR_Result::Success;
-}
-
-int32_t LPC24_GpioInternal_GetControllerId() {
-    return g_ControllerId;
 }

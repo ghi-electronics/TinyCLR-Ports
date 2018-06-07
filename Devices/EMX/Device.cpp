@@ -47,11 +47,12 @@ void LPC24_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, si
 #if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value, valueUsbActive;
     auto provider = static_cast<const TinyCLR_Gpio_Provider*>(LPC24_Gpio_GetApi()->Implementation);
+    auto gpioController = 0; //TODO Temporary set to 0
 
-    provider->AcquirePin(provider, LPC24_GpioInternal_GetControllerId(), DEBUGGER_SELECTOR_PIN);
-    provider->SetDriveMode(provider, LPC24_GpioInternal_GetControllerId(), DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
-    provider->Read(provider, LPC24_GpioInternal_GetControllerId(), DEBUGGER_SELECTOR_PIN, value);
-    provider->ReleasePin(provider, LPC24_GpioInternal_GetControllerId(), DEBUGGER_SELECTOR_PIN);
+    provider->AcquirePin(provider, gpioController, DEBUGGER_SELECTOR_PIN);
+    provider->SetDriveMode(provider, gpioController, DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
+    provider->Read(provider, gpioController, DEBUGGER_SELECTOR_PIN, value);
+    provider->ReleasePin(provider, gpioController, DEBUGGER_SELECTOR_PIN);
 
     valueUsbActive = DEBUGGER_SELECTOR_USB_STATE;
 
@@ -76,10 +77,12 @@ void LPC24_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN)
     TinyCLR_Gpio_PinValue value;
     auto provider = static_cast<const TinyCLR_Gpio_Provider*>(LPC24_Gpio_GetApi()->Implementation);
-    provider->AcquirePin(provider, LPC24_GpioInternal_GetControllerId(), RUN_APP_PIN);
-    provider->SetDriveMode(provider, LPC24_GpioInternal_GetControllerId(), RUN_APP_PIN, RUN_APP_PULL);
-    provider->Read(provider, LPC24_GpioInternal_GetControllerId(), RUN_APP_PIN, value);
-    provider->ReleasePin(provider, LPC24_GpioInternal_GetControllerId(), RUN_APP_PIN);
+    auto gpioController = 0; //TODO Temporary set to 0
+
+    provider->AcquirePin(provider, gpioController, RUN_APP_PIN);
+    provider->SetDriveMode(provider, gpioController, RUN_APP_PIN, RUN_APP_PULL);
+    provider->Read(provider, gpioController, RUN_APP_PIN, value);
+    provider->ReleasePin(provider, gpioController, RUN_APP_PIN);
 
     runApp = value == RUN_APP_STATE;
 #elif defined(RUN_APP_FORCE_STATE)
@@ -156,7 +159,7 @@ LPC24_Gpio_PinFunction LPC24_Adc_GetPinFunction(int32_t channel) {
 //PWM
 const LPC24_Gpio_Pin g_lpc24_pwm_pins[TOTAL_PWM_CONTROLLER][MAX_PWM_PER_CONTROLLER] = LPC24_PWM_PINS;
 
-LPC24_Gpio_Pin LPC24_Pwm_GetPins(int32_t provider, int32_t channel) {
-    return g_lpc24_pwm_pins[provider][channel];
+LPC24_Gpio_Pin LPC24_Pwm_GetPins(int32_t controller, int32_t channel) {
+    return g_lpc24_pwm_pins[controller][channel];
 }
 

@@ -456,12 +456,12 @@ void STM32F4_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, 
     TinyCLR_Gpio_PinValue value;
     auto provider = static_cast<const TinyCLR_Gpio_Provider*>(STM32F4_Gpio_GetApi()->Implementation);
 
-    auto controller = 0; //TODO Temporary set to 0
+    auto gpioController = 0; //TODO Temporary set to 0
 
-    provider->AcquirePin(provider, controller, DEBUGGER_SELECTOR_PIN);
-    provider->SetDriveMode(provider, controller, DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
-    provider->Read(provider, controller, DEBUGGER_SELECTOR_PIN, value);
-    provider->ReleasePin(provider, controller, DEBUGGER_SELECTOR_PIN);
+    provider->AcquirePin(provider, gpioController, DEBUGGER_SELECTOR_PIN);
+    provider->SetDriveMode(provider, gpioController, DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
+    provider->Read(provider, gpioController, DEBUGGER_SELECTOR_PIN, value);
+    provider->ReleasePin(provider, gpioController, DEBUGGER_SELECTOR_PIN);
 
     if (value == DEBUGGER_SELECTOR_USB_STATE) {
         api = STM32F4_UsbClient_GetApi();
@@ -484,12 +484,12 @@ void STM32F4_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN) && defined(RUN_APP_PULL) && defined(RUN_APP_STATE)
     TinyCLR_Gpio_PinValue value;
     auto provider = static_cast<const TinyCLR_Gpio_Provider*>(STM32F4_Gpio_GetApi()->Implementation);
-    auto controller = 0; //TODO Temporary set to 0
+    auto gpioController = 0; //TODO Temporary set to 0
 
-    provider->AcquirePin(provider, controller, RUN_APP_PIN);
-    provider->SetDriveMode(provider, controller, RUN_APP_PIN, RUN_APP_PULL);
-    provider->Read(provider, controller, RUN_APP_PIN, value);
-    provider->ReleasePin(provider, controller, RUN_APP_PIN);
+    provider->AcquirePin(provider, gpioController, RUN_APP_PIN);
+    provider->SetDriveMode(provider, gpioController, RUN_APP_PIN, RUN_APP_PULL);
+    provider->Read(provider, gpioController, RUN_APP_PIN, value);
+    provider->ReleasePin(provider, gpioController, RUN_APP_PIN);
 
     runApp = value == RUN_APP_STATE;
 #elif defined(RUN_APP_FORCE_STATE)

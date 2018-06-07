@@ -68,8 +68,6 @@ static TinyCLR_Gpio_PinDriveMode    g_pinDriveMode[LPC17_Gpio_MaxPins];
 static TinyCLR_Gpio_Provider gpioProvider;
 static TinyCLR_Api_Info gpioApi;
 
-static int32_t g_ControllerId = LPC17_GPIO_DEFAULT_CONTROLLER;
-
 const TinyCLR_Api_Info* LPC17_Gpio_GetApi() {
     gpioProvider.Parent = &gpioApi;
     gpioProvider.Acquire = &LPC17_Gpio_Acquire;
@@ -96,8 +94,6 @@ const TinyCLR_Api_Info* LPC17_Gpio_GetApi() {
 }
 
 TinyCLR_Result LPC17_Gpio_Acquire(const TinyCLR_Gpio_Provider* self, int32_t controller) {
-    g_ControllerId = controller;
-
     return TinyCLR_Result::Success;
 }
 
@@ -140,9 +136,11 @@ void LPC17_Gpio_InterruptHandler(void* param) {
             }
 
             if (executeIsr) {
-                LPC17_Gpio_Read(&gpioProvider, g_ControllerId, state->pin, state->currentValue); // read value as soon as possible
+                auto gpioController = 0; //TODO Temporary set to 0
 
-                state->ISR(state->controller, g_ControllerId, state->pin, state->currentValue);
+                LPC17_Gpio_Read(&gpioProvider, gpioController, state->pin, state->currentValue); // read value as soon as possible
+
+                state->ISR(state->controller, gpioController, state->pin, state->currentValue);
             }
         }
     }
@@ -164,11 +162,12 @@ TinyCLR_Result LPC17_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* se
         return TinyCLR_Result::ArgumentInvalid;
 
     LPC17_Gpio_EnableInputPin(pin, g_pinDriveMode[pin]);
+    auto gpioController = 0; //TODO Temporary set to 0
 
     if (ISR) {
         state->controller = &gpioProvider;
         state->pin = (uint8_t)pin;
-        state->debounce = LPC17_Gpio_GetDebounceTimeout(self, g_ControllerId, pin);
+        state->debounce = LPC17_Gpio_GetDebounceTimeout(self, gpioController, pin);
         state->ISR = ISR;
         state->lastDebounceTicks = LPC17_Time_GetTimeForProcessorTicks(nullptr, LPC17_Time_GetCurrentProcessorTicks(nullptr));
 
@@ -434,11 +433,13 @@ void LPC17_Gpio_Reset() {
     uint32_t* GPIO_Port_2_INT_RisingEdge_Register = GPIO_INT_RisingEdge(2);
     uint32_t* GPIO_Port_2_INT_FallingEdge_Register = GPIO_INT_FallingEdge(2);
 
-    for (auto pin = 0; pin < LPC17_Gpio_GetPinCount(&gpioProvider, g_ControllerId); pin++) {
+    auto gpioController = 0; //TODO Temporary set to 0
+
+    for (auto pin = 0; pin < LPC17_Gpio_GetPinCount(&gpioProvider, gpioController); pin++) {
         auto& p = g_lpc17_pins[pin];
 
         g_pinReserved[pin] = 0;
-        LPC17_Gpio_SetDebounceTimeout(&gpioProvider, g_ControllerId, pin, LPC17_Gpio_DebounceDefaultMilisecond);
+        LPC17_Gpio_SetDebounceTimeout(&gpioProvider, gpioController, pin, LPC17_Gpio_DebounceDefaultMilisecond);
 
         if (p.apply) {
             LPC17_Gpio_ConfigurePin(pin, p.direction, p.pinFunction, p.resistorMode, p.hysteresis, p.inputPolarity, p.slewRate, p.outputType);
@@ -452,10 +453,6 @@ void LPC17_Gpio_Reset() {
     *GPIO_Port_0_INT_FallingEdge_Register = 0x0;
     *GPIO_Port_2_INT_RisingEdge_Register = 0x0;
     *GPIO_Port_2_INT_FallingEdge_Register = 0x0;
-}
-
-int32_t LPC17_GpioInternal_GetControllerId() {
-    return g_ControllerId;
 }
 
 TinyCLR_Result LPC17_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, int32_t& count) {

@@ -179,7 +179,6 @@ bool LPC17_Gpio_ConfigurePin(int32_t pin, LPC17_Gpio_Direction pinDir, LPC17_Gpi
 void LPC17_Gpio_EnableOutputPin(int32_t pin, bool initialState);
 void LPC17_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
 TinyCLR_Result LPC17_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, int32_t& count);
-int32_t LPC17_GpioInternal_GetControllerId();
 
 struct PwmController {
     int32_t                         channel[MAX_PWM_PER_CONTROLLER];
