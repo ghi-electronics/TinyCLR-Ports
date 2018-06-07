@@ -458,12 +458,14 @@ const TinyCLR_Startup_UsbDebuggerConfiguration STM32F7_Startup_UsbDebuggerConfig
 void STM32F7_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN) && defined(DEBUGGER_SELECTOR_PULL) && defined(DEBUGGER_SELECTOR_USB_STATE)
     TinyCLR_Gpio_PinValue value;
-    auto controller = static_cast<const TinyCLR_Gpio_Provider*>(STM32F7_Gpio_GetApi()->Implementation);
+    auto provider = static_cast<const TinyCLR_Gpio_Provider*>(STM32F7_Gpio_GetApi()->Implementation);
 
-    controller->AcquirePin(controller, STM32F7_GpioInternal_GetControllerId(), DEBUGGER_SELECTOR_PIN);
-    controller->SetDriveMode(controller, STM32F7_GpioInternal_GetControllerId(), DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
-    controller->Read(controller, STM32F7_GpioInternal_GetControllerId(), DEBUGGER_SELECTOR_PIN, value);
-    controller->ReleasePin(controller, STM32F7_GpioInternal_GetControllerId(), DEBUGGER_SELECTOR_PIN);
+    auto controller = 0; //TODO Temporary set to 0
+
+    provider->AcquirePin(provider, controller, DEBUGGER_SELECTOR_PIN);
+    provider->SetDriveMode(provider, controller, DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
+    provider->Read(provider, controller, DEBUGGER_SELECTOR_PIN, value);
+    provider->ReleasePin(provider, controller, DEBUGGER_SELECTOR_PIN);
 
     if (value == DEBUGGER_SELECTOR_USB_STATE) {
         api = STM32F7_UsbClient_GetApi();
@@ -485,11 +487,14 @@ void STM32F7_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, 
 void STM32F7_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN) && defined(RUN_APP_PULL) && defined(RUN_APP_STATE)
     TinyCLR_Gpio_PinValue value;
-    auto controller = static_cast<const TinyCLR_Gpio_Provider*>(STM32F7_Gpio_GetApi()->Implementation);
-    controller->AcquirePin(controller, STM32F7_GpioInternal_GetControllerId(), RUN_APP_PIN);
-    controller->SetDriveMode(controller, STM32F7_GpioInternal_GetControllerId(), RUN_APP_PIN, RUN_APP_PULL);
-    controller->Read(controller, STM32F7_GpioInternal_GetControllerId(), RUN_APP_PIN, value);
-    controller->ReleasePin(controller, STM32F7_GpioInternal_GetControllerId(), RUN_APP_PIN);
+    auto provider = static_cast<const TinyCLR_Gpio_Provider*>(STM32F7_Gpio_GetApi()->Implementation);
+
+    auto controller = 0; //TODO Temporary set to 0
+
+    provider->AcquirePin(provider, controller, RUN_APP_PIN);
+    provider->SetDriveMode(provider, controller, RUN_APP_PIN, RUN_APP_PULL);
+    provider->Read(provider, controller, RUN_APP_PIN, value);
+    provider->ReleasePin(provider, controller, RUN_APP_PIN);
 
     runApp = value == RUN_APP_STATE;
 #elif defined(RUN_APP_FORCE_STATE)

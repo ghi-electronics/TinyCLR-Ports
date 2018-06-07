@@ -44,8 +44,6 @@ static int64_t                         g_debounceTicksPin[STM32F7_Gpio_MaxPins];
 static STM32F7_Int_State            g_int_state[STM32F7_Gpio_MaxInt]; // interrupt state
 static TinyCLR_Gpio_PinDriveMode     g_pinDriveMode[STM32F7_Gpio_MaxPins];
 
-static int32_t g_ControllerId = STM32F7_GPIO_DEFAULT_CONTROLLER;
-
 static TinyCLR_Gpio_Provider gpioProvider;
 static TinyCLR_Api_Info gpioApi;
 
@@ -76,8 +74,6 @@ const TinyCLR_Api_Info* STM32F7_Gpio_GetApi() {
 }
 
 TinyCLR_Result STM32F7_Gpio_Acquire(const TinyCLR_Gpio_Provider* self, int32_t controller) {
-    g_ControllerId = controller;
-
     return TinyCLR_Result::Success;
 }
 
@@ -100,7 +96,9 @@ void STM32F7_Gpio_ISR(int num)  // 0 <= num <= 15
 
     uint32_t bit = 1 << num;
 
-    STM32F7_Gpio_Read(nullptr, g_ControllerId, state->pin, state->currentValue); // read value as soon as possible
+    auto gpioController = 0; //TODO Temporary set to 0
+
+    STM32F7_Gpio_Read(nullptr, gpioController, state->pin, state->currentValue); // read value as soon as possible
 
     EXTI->PR = bit;   // reset pending bit
 
@@ -116,7 +114,7 @@ void STM32F7_Gpio_ISR(int num)  // 0 <= num <= 15
         }
 
         if (executeIsr)
-            state->ISR(state->provider, g_ControllerId, state->pin, state->currentValue);
+            state->ISR(state->provider, gpioController, state->pin, state->currentValue);
     }
 }
 
@@ -432,7 +430,10 @@ void STM32F7_Gpio_Reset() {
         auto& p = g_stm32f7_pins[i];
 
         g_pinReserved[i] = 0;
-        STM32F7_Gpio_SetDebounceTimeout(nullptr, g_ControllerId, i, STM32F7_Gpio_DebounceDefaultMilisecond);
+
+        auto gpioController = 0; //TODO Temporary set to 0
+
+        STM32F7_Gpio_SetDebounceTimeout(nullptr, gpioController, i, STM32F7_Gpio_DebounceDefaultMilisecond);
         STM32F7_Gpio_DisableInterrupt(i);
 
         if (p.apply) {
@@ -457,10 +458,6 @@ TinyCLR_Result STM32F7_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self
     count = 1;
 
     return TinyCLR_Result::Success;
-}
-
-int32_t STM32F7_GpioInternal_GetControllerId() {
-    return g_ControllerId;
 }
 
 #if !defined(__GNUC__)

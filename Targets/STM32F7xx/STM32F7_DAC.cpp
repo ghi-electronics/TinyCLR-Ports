@@ -87,7 +87,9 @@ TinyCLR_Result STM32F7_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int3
 }
 
 TinyCLR_Result STM32F7_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel) {
-    TinyCLR_Result releasePin = STM32F7_Gpio_ReleasePin(nullptr, STM32F7_GpioInternal_GetControllerId(), STM32F7_DAC_FIRST_PIN + channel);
+    auto gpioController = 0; //TODO Temporary set to 0
+
+    TinyCLR_Result releasePin = STM32F7_Gpio_ReleasePin(nullptr, gpioController, STM32F7_DAC_FIRST_PIN + channel);
 
     if (releasePin != TinyCLR_Result::Success)
         return releasePin;
