@@ -107,26 +107,26 @@ TinyCLR_Result STM32F7_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, 
 //CAN
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F7_Can_GetApi();
-TinyCLR_Result STM32F7_Can_Acquire(const TinyCLR_Can_Provider* self, int32_t channel);
-TinyCLR_Result STM32F7_Can_Release(const TinyCLR_Can_Provider* self, int32_t channel);
-TinyCLR_Result STM32F7_Can_SoftReset(const TinyCLR_Can_Provider* self, int32_t channel);
-TinyCLR_Result STM32F7_Can_WriteMessage(const TinyCLR_Can_Provider* self, int32_t channel, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length);
-TinyCLR_Result STM32F7_Can_ReadMessage(const TinyCLR_Can_Provider* self, int32_t channel, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length);
-TinyCLR_Result STM32F7_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_t channel, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling);
-TinyCLR_Result STM32F7_Can_GetUnreadMessageCount(const TinyCLR_Can_Provider* self, int32_t channel, size_t& count);
-TinyCLR_Result STM32F7_Can_SetMessageReceivedHandler(const TinyCLR_Can_Provider* self, int32_t channel, TinyCLR_Can_MessageReceivedHandler handler);
-TinyCLR_Result STM32F7_Can_SetErrorReceivedHandler(const TinyCLR_Can_Provider* self, int32_t channel, TinyCLR_Can_ErrorReceivedHandler handler);
-TinyCLR_Result STM32F7_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, int32_t channel, uint8_t* filters, size_t length);
-TinyCLR_Result STM32F7_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, int32_t channel, uint8_t* lowerBounds, uint8_t* upperBounds, size_t length);
-TinyCLR_Result STM32F7_Can_ClearReadBuffer(const TinyCLR_Can_Provider* self, int32_t channel);
-TinyCLR_Result STM32F7_Can_IsWritingAllowed(const TinyCLR_Can_Provider* self, int32_t channel, bool& allowed);
-TinyCLR_Result STM32F7_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, int32_t channel, size_t& count);
-TinyCLR_Result STM32F7_Can_GetReadErrorCount(const TinyCLR_Can_Provider* self, int32_t channel, size_t& count);
-TinyCLR_Result STM32F7_Can_GetSourceClock(const TinyCLR_Can_Provider* self, int32_t channel, uint32_t& sourceClock);
-TinyCLR_Result STM32F7_Can_GetReadBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t& size);
-TinyCLR_Result STM32F7_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t size);
-TinyCLR_Result STM32F7_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t& size);
-TinyCLR_Result STM32F7_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t size);
+TinyCLR_Result STM32F7_Can_Acquire(const TinyCLR_Can_Provider* self, int32_t controller);
+TinyCLR_Result STM32F7_Can_Release(const TinyCLR_Can_Provider* self, int32_t controller);
+TinyCLR_Result STM32F7_Can_SoftReset(const TinyCLR_Can_Provider* self, int32_t controller);
+TinyCLR_Result STM32F7_Can_WriteMessage(const TinyCLR_Can_Provider* self, int32_t controller, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length);
+TinyCLR_Result STM32F7_Can_ReadMessage(const TinyCLR_Can_Provider* self, int32_t controller, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length);
+TinyCLR_Result STM32F7_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_t controller, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling);
+TinyCLR_Result STM32F7_Can_GetUnreadMessageCount(const TinyCLR_Can_Provider* self, int32_t controller, size_t& count);
+TinyCLR_Result STM32F7_Can_SetMessageReceivedHandler(const TinyCLR_Can_Provider* self, int32_t controller, TinyCLR_Can_MessageReceivedHandler handler);
+TinyCLR_Result STM32F7_Can_SetErrorReceivedHandler(const TinyCLR_Can_Provider* self, int32_t controller, TinyCLR_Can_ErrorReceivedHandler handler);
+TinyCLR_Result STM32F7_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, int32_t controller, uint8_t* filters, size_t length);
+TinyCLR_Result STM32F7_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, int32_t controller, uint8_t* lowerBounds, uint8_t* upperBounds, size_t length);
+TinyCLR_Result STM32F7_Can_ClearReadBuffer(const TinyCLR_Can_Provider* self, int32_t controller);
+TinyCLR_Result STM32F7_Can_IsWritingAllowed(const TinyCLR_Can_Provider* self, int32_t controller, bool& allowed);
+TinyCLR_Result STM32F7_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, int32_t controller, size_t& count);
+TinyCLR_Result STM32F7_Can_GetReadErrorCount(const TinyCLR_Can_Provider* self, int32_t controller, size_t& count);
+TinyCLR_Result STM32F7_Can_GetSourceClock(const TinyCLR_Can_Provider* self, int32_t controller, uint32_t& sourceClock);
+TinyCLR_Result STM32F7_Can_GetReadBufferSize(const TinyCLR_Can_Provider* self, int32_t controller, size_t& size);
+TinyCLR_Result STM32F7_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, int32_t controller, size_t size);
+TinyCLR_Result STM32F7_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, int32_t controller, size_t& size);
+TinyCLR_Result STM32F7_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, int32_t controller, size_t size);
 void STM32F7_Can_Reset();
 TinyCLR_Result STM32F7_Can_GetControllerCount(const TinyCLR_Can_Provider* self, int32_t& count);
 
@@ -169,12 +169,12 @@ TinyCLR_Result STM32F7_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self
 //I2C
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F7_I2c_GetApi();
-TinyCLR_Result STM32F7_I2c_Acquire(const TinyCLR_I2c_Provider* self, int32_t channel);
-TinyCLR_Result STM32F7_I2c_Release(const TinyCLR_I2c_Provider* self, int32_t channel);
-TinyCLR_Result STM32F7_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int32_t channel, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed);
-TinyCLR_Result STM32F7_I2c_Read(const TinyCLR_I2c_Provider* self, int32_t channel, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
-TinyCLR_Result STM32F7_I2c_Write(const TinyCLR_I2c_Provider* self, int32_t channel, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
-TinyCLR_Result STM32F7_I2c_WriteRead(const TinyCLR_I2c_Provider* self, int32_t channel, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result);
+TinyCLR_Result STM32F7_I2c_Acquire(const TinyCLR_I2c_Provider* self, int32_t controller);
+TinyCLR_Result STM32F7_I2c_Release(const TinyCLR_I2c_Provider* self, int32_t controller);
+TinyCLR_Result STM32F7_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int32_t controller, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed);
+TinyCLR_Result STM32F7_I2c_Read(const TinyCLR_I2c_Provider* self, int32_t controller, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
+TinyCLR_Result STM32F7_I2c_Write(const TinyCLR_I2c_Provider* self, int32_t controller, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
+TinyCLR_Result STM32F7_I2c_WriteRead(const TinyCLR_I2c_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result);
 void STM32F7_I2c_Reset();
 TinyCLR_Result STM32F7_I2c_GetControllerCount(const TinyCLR_I2c_Provider* self, int32_t& count);
 

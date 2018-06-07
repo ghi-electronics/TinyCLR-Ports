@@ -35,8 +35,8 @@
 
 #define I2C_MAX_TRANSFER 255
 
-void STM32F7_I2c_StartTransaction(int32_t channel);
-void STM32F7_I2c_StopTransaction(int32_t channel);
+void STM32F7_I2c_StartTransaction(int32_t controller);
+void STM32F7_I2c_StopTransaction(int32_t controller);
 
 static const STM32F7_Gpio_Pin g_STM32F7_I2c_Scl_Pins[] = STM32F7_I2C_SCL_PINS;
 static const STM32F7_Gpio_Pin g_STM32F7_I2c_Sda_Pins[] = STM32F7_I2C_SDA_PINS;
@@ -129,7 +129,7 @@ void STM32F7_I2c_InterruptEnable(I2C_TypeDef* i2c, uint32_t interruptFlag) {
     i2c->CR1 |= interruptFlag;
 }
 
-void STM32F7_I2c_InternalTransferConfig(int32_t channel, uint16_t deviceAddress, uint8_t bytesToTransfer, uint32_t transferMode, uint32_t request) {
+void STM32F7_I2c_InternalTransferConfig(int32_t controller, uint16_t deviceAddress, uint8_t bytesToTransfer, uint32_t transferMode, uint32_t request) {
     uint32_t tmpreg = 0;
 
     deviceAddress = deviceAddress << 1;
@@ -137,7 +137,7 @@ void STM32F7_I2c_InternalTransferConfig(int32_t channel, uint16_t deviceAddress,
         deviceAddress += 1;
     }
 
-    auto& I2Cx = g_STM32_I2c_Port[channel];
+    auto& I2Cx = g_STM32_I2c_Port[controller];
 
     /* Get the CR2 register value */
     tmpreg = I2Cx->CR2;
@@ -156,10 +156,10 @@ void STM32F7_I2c_InternalTransferConfig(int32_t channel, uint16_t deviceAddress,
 
 }
 
-void STM32F7_I2C_ER_Interrupt(int32_t channel) {// Error Interrupt Handler
+void STM32F7_I2C_ER_Interrupt(int32_t controller) {// Error Interrupt Handler
     INTERRUPT_STARTED_SCOPED(isr);
 
-    auto& I2Cx = g_STM32_I2c_Port[channel];
+    auto& I2Cx = g_STM32_I2c_Port[controller];
     /* I2C Bus error interrupt occurred ------------------------------------*/
     if ((STM32F7_I2c_GetFlag(I2Cx, I2C_ISR_BERR) == SET) && (STM32F7_I2c_GetInterruptSource(I2Cx, I2C_CR1_ERRIE) == SET)) {
         /* Clear BERR flag */
@@ -180,9 +180,9 @@ void STM32F7_I2C_ER_Interrupt(int32_t channel) {// Error Interrupt Handler
     }
 
     if (g_currentI2cTransactionAction != nullptr)
-        g_currentI2cTransactionAction[channel]->result = TinyCLR_I2c_TransferStatus::SlaveAddressNotAcknowledged;
+        g_currentI2cTransactionAction[controller]->result = TinyCLR_I2c_TransferStatus::SlaveAddressNotAcknowledged;
 
-    STM32F7_I2c_StopTransaction(channel);
+    STM32F7_I2c_StopTransaction(controller);
 }
 
 void STM32F7_I2C1_ER_Interrupt(void *param) {
@@ -193,12 +193,12 @@ void STM32F7_I2C2_ER_Interrupt(void *param) {
     STM32F7_I2C_ER_Interrupt(1);
 }
 
-void STM32F7_I2C_EV_Interrupt(int32_t channel) {// Event Interrupt Handler
+void STM32F7_I2C_EV_Interrupt(int32_t controller) {// Event Interrupt Handler
     INTERRUPT_STARTED_SCOPED(isr);
 
-    auto& I2Cx = g_STM32_I2c_Port[channel];
+    auto& I2Cx = g_STM32_I2c_Port[controller];
 
-    STM32F7_I2c_Transaction *transaction = g_currentI2cTransactionAction[channel];
+    STM32F7_I2c_Transaction *transaction = g_currentI2cTransactionAction[controller];
 
     int todo = transaction->bytesToTransfer;
     if ((STM32F7_I2c_GetFlag(I2Cx, I2C_ISR_RXNE) == SET) && (STM32F7_I2c_GetInterruptSource(I2Cx, (I2C_CR1_TCIE | I2C_CR1_STOPIE | I2C_CR1_NACKIE | I2C_CR1_RXIE)) == SET)) {
@@ -227,10 +227,10 @@ void STM32F7_I2C_EV_Interrupt(int32_t channel) {// Event Interrupt Handler
     if (STM32F7_I2c_GetFlag(I2Cx, I2C_ISR_TCR) == SET) {
         if ((transaction->bytesTransferred%I2C_MAX_TRANSFER == 0) && (todo != 0)) {
             if (todo > I2C_MAX_TRANSFER) {
-                STM32F7_I2c_InternalTransferConfig(channel, g_I2cConfiguration[channel].address, I2C_MAX_TRANSFER, I2C_RELOAD_MODE, I2C_NO_STARTSTOP);
+                STM32F7_I2c_InternalTransferConfig(controller, g_I2cConfiguration[controller].address, I2C_MAX_TRANSFER, I2C_RELOAD_MODE, I2C_NO_STARTSTOP);
             }
             else {
-                STM32F7_I2c_InternalTransferConfig(channel, g_I2cConfiguration[channel].address, todo, 0, I2C_NO_STARTSTOP);
+                STM32F7_I2c_InternalTransferConfig(controller, g_I2cConfiguration[controller].address, todo, 0, I2C_NO_STARTSTOP);
             }
         }
     }
@@ -249,12 +249,12 @@ void STM32F7_I2C_EV_Interrupt(int32_t channel) {// Event Interrupt Handler
     if (STM32F7_I2c_GetFlag(I2Cx, I2C_ISR_TC) == SET)  // all received or all sent
     {
         if (transaction->repeatedStart) { // start next unit // start next unit
-            g_currentI2cTransactionAction[channel] = &g_ReadI2cTransactionAction[channel];
+            g_currentI2cTransactionAction[controller] = &g_ReadI2cTransactionAction[controller];
 
-            STM32F7_I2c_StartTransaction(channel); // Send restart conditon
+            STM32F7_I2c_StartTransaction(controller); // Send restart conditon
         }
         else {
-            STM32F7_I2c_StopTransaction(channel);
+            STM32F7_I2c_StopTransaction(controller);
         }
     }
 }
@@ -266,15 +266,15 @@ void STM32F7_I2C1_EV_Interrupt(void* param) {
 void STM32F7_I2C2_EV_Interrupt(void* param) {
     STM32F7_I2C_EV_Interrupt(1);
 }
-void STM32F7_I2c_StartTransaction(int32_t channel) {
-    auto& I2Cx = g_STM32_I2c_Port[channel];
+void STM32F7_I2c_StartTransaction(int32_t controller) {
+    auto& I2Cx = g_STM32_I2c_Port[controller];
 
-    STM32F7_I2c_Transaction *transaction = g_currentI2cTransactionAction[channel];
+    STM32F7_I2c_Transaction *transaction = g_currentI2cTransactionAction[controller];
 
-    uint32_t ccr = g_I2cConfiguration[channel].clockRate + (g_I2cConfiguration[channel].clockRate2 << 8);
+    uint32_t ccr = g_I2cConfiguration[controller].clockRate + (g_I2cConfiguration[controller].clockRate2 << 8);
 
     uint32_t transferMode = I2C_SOFTEND_MODE;
-    uint16_t deviceAddress = g_I2cConfiguration[channel].address;
+    uint16_t deviceAddress = g_I2cConfiguration[controller].address;
     uint8_t bytesToTransfer = transaction->bytesToTransfer;
     if (bytesToTransfer > I2C_MAX_TRANSFER) {
         transferMode = I2C_CR2_RELOAD;
@@ -290,128 +290,128 @@ void STM32F7_I2c_StartTransaction(int32_t channel) {
     STM32F7_I2c_Enable(I2Cx);
 
     if (transaction->isReadTransaction) {
-        STM32F7_I2c_InternalTransferConfig(channel, deviceAddress, bytesToTransfer, transferMode, I2C_GENERATE_START_READ);
+        STM32F7_I2c_InternalTransferConfig(controller, deviceAddress, bytesToTransfer, transferMode, I2C_GENERATE_START_READ);
         STM32F7_I2c_InterruptEnable(I2Cx, I2C_CR1_ERRIE | I2C_CR1_TCIE | I2C_CR1_STOPIE | I2C_CR1_NACKIE | I2C_CR1_RXIE);
     }
     else {
-        STM32F7_I2c_InternalTransferConfig(channel, deviceAddress, bytesToTransfer, transferMode, I2C_GENERATE_START_WRITE);
+        STM32F7_I2c_InternalTransferConfig(controller, deviceAddress, bytesToTransfer, transferMode, I2C_GENERATE_START_WRITE);
         STM32F7_I2c_InterruptEnable(I2Cx, I2C_CR1_ERRIE | I2C_CR1_TCIE | I2C_CR1_STOPIE | I2C_CR1_NACKIE | I2C_CR1_TXIE);
     }
 }
 
-void STM32F7_I2c_StopTransaction(int32_t channel) {
-    auto& I2Cx = g_STM32_I2c_Port[channel];
+void STM32F7_I2c_StopTransaction(int32_t controller) {
+    auto& I2Cx = g_STM32_I2c_Port[controller];
 
     I2Cx->CR2 |= I2C_CR2_STOP;  // send stop
     STM32F7_I2c_InterruptDisable(I2Cx, I2C_CR1_ERRIE | I2C_CR1_TCIE | I2C_CR1_STOPIE | I2C_CR1_NACKIE | I2C_CR1_TXIE | I2C_CR1_RXIE); // disable interrupts
 
-    g_currentI2cTransactionAction[channel]->isDone = true;
+    g_currentI2cTransactionAction[controller]->isDone = true;
 }
 
-TinyCLR_Result STM32F7_I2c_Read(const TinyCLR_I2c_Provider* self, int32_t channel, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result STM32F7_I2c_Read(const TinyCLR_I2c_Provider* self, int32_t controller, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
-    g_ReadI2cTransactionAction[channel].isReadTransaction = true;
-    g_ReadI2cTransactionAction[channel].buffer = buffer;
-    g_ReadI2cTransactionAction[channel].bytesToTransfer = length;
-    g_ReadI2cTransactionAction[channel].isDone = false;
-    g_ReadI2cTransactionAction[channel].repeatedStart = false;
-    g_ReadI2cTransactionAction[channel].bytesTransferred = 0;
+    g_ReadI2cTransactionAction[controller].isReadTransaction = true;
+    g_ReadI2cTransactionAction[controller].buffer = buffer;
+    g_ReadI2cTransactionAction[controller].bytesToTransfer = length;
+    g_ReadI2cTransactionAction[controller].isDone = false;
+    g_ReadI2cTransactionAction[controller].repeatedStart = false;
+    g_ReadI2cTransactionAction[controller].bytesTransferred = 0;
 
-    g_currentI2cTransactionAction[channel] = &g_ReadI2cTransactionAction[channel];
+    g_currentI2cTransactionAction[controller] = &g_ReadI2cTransactionAction[controller];
 
-    STM32F7_I2c_StartTransaction(channel);
+    STM32F7_I2c_StartTransaction(controller);
 
-    while (g_currentI2cTransactionAction[channel]->isDone == false && timeout > 0) {
+    while (g_currentI2cTransactionAction[controller]->isDone == false && timeout > 0) {
         STM32F7_Time_Delay(nullptr, 1000);
 
         timeout--;
     }
 
-    if (g_currentI2cTransactionAction[channel]->bytesTransferred == length)
+    if (g_currentI2cTransactionAction[controller]->bytesTransferred == length)
         result = TinyCLR_I2c_TransferStatus::FullTransfer;
-    else if (g_currentI2cTransactionAction[channel]->bytesTransferred < length && g_currentI2cTransactionAction[channel]->bytesTransferred > 0)
+    else if (g_currentI2cTransactionAction[controller]->bytesTransferred < length && g_currentI2cTransactionAction[controller]->bytesTransferred > 0)
         result = TinyCLR_I2c_TransferStatus::PartialTransfer;
 
-    length = g_currentI2cTransactionAction[channel]->bytesTransferred;
+    length = g_currentI2cTransactionAction[controller]->bytesTransferred;
 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result STM32F7_I2c_Write(const TinyCLR_I2c_Provider* self, int32_t channel, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result STM32F7_I2c_Write(const TinyCLR_I2c_Provider* self, int32_t controller, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
-    g_WriteI2cTransactionAction[channel].isReadTransaction = false;
-    g_WriteI2cTransactionAction[channel].buffer = (uint8_t*)buffer;
-    g_WriteI2cTransactionAction[channel].bytesToTransfer = length;
-    g_WriteI2cTransactionAction[channel].isDone = false;
-    g_WriteI2cTransactionAction[channel].repeatedStart = false;
-    g_WriteI2cTransactionAction[channel].bytesTransferred = 0;
+    g_WriteI2cTransactionAction[controller].isReadTransaction = false;
+    g_WriteI2cTransactionAction[controller].buffer = (uint8_t*)buffer;
+    g_WriteI2cTransactionAction[controller].bytesToTransfer = length;
+    g_WriteI2cTransactionAction[controller].isDone = false;
+    g_WriteI2cTransactionAction[controller].repeatedStart = false;
+    g_WriteI2cTransactionAction[controller].bytesTransferred = 0;
 
-    g_currentI2cTransactionAction[channel] = &g_WriteI2cTransactionAction[channel];
+    g_currentI2cTransactionAction[controller] = &g_WriteI2cTransactionAction[controller];
 
-    STM32F7_I2c_StartTransaction(channel);
+    STM32F7_I2c_StartTransaction(controller);
 
-    while (g_currentI2cTransactionAction[channel]->isDone == false && timeout > 0) {
+    while (g_currentI2cTransactionAction[controller]->isDone == false && timeout > 0) {
         STM32F7_Time_Delay(nullptr, 1000);
 
         timeout--;
     }
 
-    if (g_currentI2cTransactionAction[channel]->bytesTransferred == length)
+    if (g_currentI2cTransactionAction[controller]->bytesTransferred == length)
         result = TinyCLR_I2c_TransferStatus::FullTransfer;
-    else if (g_currentI2cTransactionAction[channel]->bytesTransferred < length && g_currentI2cTransactionAction[channel]->bytesTransferred > 0)
+    else if (g_currentI2cTransactionAction[controller]->bytesTransferred < length && g_currentI2cTransactionAction[controller]->bytesTransferred > 0)
         result = TinyCLR_I2c_TransferStatus::PartialTransfer;
 
-    length = g_currentI2cTransactionAction[channel]->bytesTransferred;
+    length = g_currentI2cTransactionAction[controller]->bytesTransferred;
 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result STM32F7_I2c_WriteRead(const TinyCLR_I2c_Provider* self, int32_t channel, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result STM32F7_I2c_WriteRead(const TinyCLR_I2c_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
-    g_WriteI2cTransactionAction[channel].isReadTransaction = false;
-    g_WriteI2cTransactionAction[channel].buffer = (uint8_t*)writeBuffer;
-    g_WriteI2cTransactionAction[channel].bytesToTransfer = writeLength;
-    g_WriteI2cTransactionAction[channel].isDone = false;
-    g_WriteI2cTransactionAction[channel].repeatedStart = true;
-    g_WriteI2cTransactionAction[channel].bytesTransferred = 0;
+    g_WriteI2cTransactionAction[controller].isReadTransaction = false;
+    g_WriteI2cTransactionAction[controller].buffer = (uint8_t*)writeBuffer;
+    g_WriteI2cTransactionAction[controller].bytesToTransfer = writeLength;
+    g_WriteI2cTransactionAction[controller].isDone = false;
+    g_WriteI2cTransactionAction[controller].repeatedStart = true;
+    g_WriteI2cTransactionAction[controller].bytesTransferred = 0;
 
-    g_ReadI2cTransactionAction[channel].isReadTransaction = true;
-    g_ReadI2cTransactionAction[channel].buffer = readBuffer;
-    g_ReadI2cTransactionAction[channel].bytesToTransfer = readLength;
-    g_ReadI2cTransactionAction[channel].isDone = false;
-    g_ReadI2cTransactionAction[channel].repeatedStart = false;
-    g_ReadI2cTransactionAction[channel].bytesTransferred = 0;
+    g_ReadI2cTransactionAction[controller].isReadTransaction = true;
+    g_ReadI2cTransactionAction[controller].buffer = readBuffer;
+    g_ReadI2cTransactionAction[controller].bytesToTransfer = readLength;
+    g_ReadI2cTransactionAction[controller].isDone = false;
+    g_ReadI2cTransactionAction[controller].repeatedStart = false;
+    g_ReadI2cTransactionAction[controller].bytesTransferred = 0;
 
-    g_currentI2cTransactionAction[channel] = &g_WriteI2cTransactionAction[channel];
+    g_currentI2cTransactionAction[controller] = &g_WriteI2cTransactionAction[controller];
 
-    STM32F7_I2c_StartTransaction(channel);
+    STM32F7_I2c_StartTransaction(controller);
 
-    while (g_currentI2cTransactionAction[channel]->isDone == false && timeout > 0) {
+    while (g_currentI2cTransactionAction[controller]->isDone == false && timeout > 0) {
         STM32F7_Time_Delay(nullptr, 1000);
 
         timeout--;
     }
 
-    if (g_WriteI2cTransactionAction[channel].bytesTransferred != writeLength) {
-        writeLength = g_WriteI2cTransactionAction[channel].bytesTransferred;
+    if (g_WriteI2cTransactionAction[controller].bytesTransferred != writeLength) {
+        writeLength = g_WriteI2cTransactionAction[controller].bytesTransferred;
         result = TinyCLR_I2c_TransferStatus::PartialTransfer;
     }
     else {
-        readLength = g_ReadI2cTransactionAction[channel].bytesTransferred;
+        readLength = g_ReadI2cTransactionAction[controller].bytesTransferred;
 
-        if (g_currentI2cTransactionAction[channel]->bytesTransferred == readLength)
+        if (g_currentI2cTransactionAction[controller]->bytesTransferred == readLength)
             result = TinyCLR_I2c_TransferStatus::FullTransfer;
-        else if (g_currentI2cTransactionAction[channel]->bytesTransferred < readLength && g_currentI2cTransactionAction[channel]->bytesTransferred > 0)
+        else if (g_currentI2cTransactionAction[controller]->bytesTransferred < readLength && g_currentI2cTransactionAction[controller]->bytesTransferred > 0)
             result = TinyCLR_I2c_TransferStatus::PartialTransfer;
     }
 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result STM32F7_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int32_t channel, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed) {
+TinyCLR_Result STM32F7_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int32_t controller, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed) {
     uint32_t rateKhz;
     uint32_t ccr;
 
@@ -437,21 +437,21 @@ TinyCLR_Result STM32F7_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, i
     if (clk_num > I2C_MAX_TRANSFER)
         clk_num = I2C_MAX_TRANSFER;
 
-    g_I2cConfiguration[channel].clockRate = (uint8_t)(clk_num); // low byte
-    g_I2cConfiguration[channel].clockRate2 = (uint8_t)(clk_num); // high byte
-    g_I2cConfiguration[channel].address = slaveAddress;
+    g_I2cConfiguration[controller].clockRate = (uint8_t)(clk_num); // low byte
+    g_I2cConfiguration[controller].clockRate2 = (uint8_t)(clk_num); // high byte
+    g_I2cConfiguration[controller].address = slaveAddress;
 
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_I2c_Acquire(const TinyCLR_I2c_Provider* self, int32_t channel) {
+TinyCLR_Result STM32F7_I2c_Acquire(const TinyCLR_I2c_Provider* self, int32_t controller) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto& I2Cx = g_STM32_I2c_Port[channel];
-    auto& scl = g_STM32F7_I2c_Scl_Pins[channel];
-    auto& sda = g_STM32F7_I2c_Sda_Pins[channel];
+    auto& I2Cx = g_STM32_I2c_Port[controller];
+    auto& scl = g_STM32F7_I2c_Scl_Pins[controller];
+    auto& sda = g_STM32F7_I2c_Sda_Pins[controller];
 
     if (!STM32F7_GpioInternal_OpenPin(sda.number) || !STM32F7_GpioInternal_OpenPin(scl.number))
         return TinyCLR_Result::SharingViolation;
@@ -459,7 +459,7 @@ TinyCLR_Result STM32F7_I2c_Acquire(const TinyCLR_I2c_Provider* self, int32_t cha
     STM32F7_GpioInternal_ConfigurePin(sda.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::OpenDrain, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::PullUp, sda.alternateFunction);
     STM32F7_GpioInternal_ConfigurePin(scl.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::OpenDrain, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::PullUp, scl.alternateFunction);
 
-    switch (channel) {
+    switch (controller) {
     case 0:
         RCC->APB1ENR |= RCC_APB1ENR_I2C1EN; // enable I2C clock
         RCC->APB1RSTR = RCC_APB1RSTR_I2C1RST; // reset I2C peripheral
@@ -477,19 +477,19 @@ TinyCLR_Result STM32F7_I2c_Acquire(const TinyCLR_I2c_Provider* self, int32_t cha
 
     RCC->APB1RSTR = 0;
 
-    g_I2cConfiguration[channel].isOpened = true;
+    g_I2cConfiguration[controller].isOpened = true;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_I2c_Release(const TinyCLR_I2c_Provider* self, int32_t channel) {
+TinyCLR_Result STM32F7_I2c_Release(const TinyCLR_I2c_Provider* self, int32_t controller) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto& I2Cx = g_STM32_I2c_Port[channel];
+    auto& I2Cx = g_STM32_I2c_Port[controller];
 
     STM32F7_I2c_InterruptDisable(I2Cx, I2C_CR1_ERRIE | I2C_CR1_TCIE | I2C_CR1_STOPIE | I2C_CR1_NACKIE | I2C_CR1_TXIE | I2C_CR1_RXIE); // disable interrupts
-    switch (channel) {
+    switch (controller) {
     case 0:
 
 
@@ -510,15 +510,15 @@ TinyCLR_Result STM32F7_I2c_Release(const TinyCLR_I2c_Provider* self, int32_t cha
     // TODO other ports
         break;
     }
-    if (g_I2cConfiguration[channel].isOpened) {
-        auto& scl = g_STM32F7_I2c_Scl_Pins[channel];
-        auto& sda = g_STM32F7_I2c_Sda_Pins[channel];
+    if (g_I2cConfiguration[controller].isOpened) {
+        auto& scl = g_STM32F7_I2c_Scl_Pins[controller];
+        auto& sda = g_STM32F7_I2c_Sda_Pins[controller];
 
         STM32F7_GpioInternal_ClosePin(sda.number);
         STM32F7_GpioInternal_ClosePin(scl.number);
     }
 
-    g_I2cConfiguration[channel].isOpened = false;
+    g_I2cConfiguration[controller].isOpened = false;
 
     return TinyCLR_Result::Success;
 }
