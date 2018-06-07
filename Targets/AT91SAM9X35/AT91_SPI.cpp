@@ -69,13 +69,13 @@ const TinyCLR_Api_Info* AT91_Spi_GetApi() {
 }
 
 bool AT91_Spi_Transaction_Start(int32_t controller) {
-    AT91_Gpio_Write(nullptr, g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::Low);
+    AT91_Gpio_Write(nullptr, AT91_GpioInternal_GetControllerId(), g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::Low);
 
     return true;
 }
 
 bool AT91_Spi_Transaction_Stop(int32_t controller) {
-    AT91_Gpio_Write(nullptr, g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::High);
+    AT91_Gpio_Write(nullptr, AT91_GpioInternal_GetControllerId(), g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::High);
 
     return true;
 }
@@ -418,7 +418,7 @@ int32_t AT91_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self, int32_t 
 }
 
 int32_t AT91_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self, int32_t controller) {
-    return AT91_Gpio_GetPinCount(nullptr);
+    return AT91_Gpio_GetPinCount(nullptr, AT91_GpioInternal_GetControllerId());
 }
 
 static const int32_t dataBitsCount = 2;

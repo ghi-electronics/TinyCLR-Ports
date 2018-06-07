@@ -668,7 +668,7 @@ bool STM32F4_Uart_TxHandshakeEnabledState(int controller) {
     if (g_UartController[controller].portPtr->CR3 & USART_CR3_CTSE) {
         TinyCLR_Gpio_PinValue value;
 
-        STM32F4_Gpio_Read(nullptr, g_STM32F4_Uart_Cts_Pins[controller].number, value);
+        STM32F4_Gpio_Read(nullptr, STM32F4_GpioInternal_GetControllerId(), g_STM32F4_Uart_Cts_Pins[controller].number, value);
 
         return !(value == TinyCLR_Gpio_PinValue::High);
     }

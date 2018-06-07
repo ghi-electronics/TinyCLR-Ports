@@ -289,8 +289,8 @@ extern "C" {
             | RCC_CFGR_HPRE_DIV_BITS   // AHB clock
             | RCC_CFGR_PPRE1_DIV_BITS  // APB1 clock
             | RCC_CFGR_PPRE2_DIV_BITS; // APB2 clock
-            
-        // wait for PLL ready 
+
+        // wait for PLL ready
         while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL);
 
 
@@ -460,10 +460,10 @@ void STM32F7_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, 
     TinyCLR_Gpio_PinValue value;
     auto controller = static_cast<const TinyCLR_Gpio_Provider*>(STM32F7_Gpio_GetApi()->Implementation);
 
-    controller->AcquirePin(controller, DEBUGGER_SELECTOR_PIN);
-    controller->SetDriveMode(controller, DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
-    controller->Read(controller, DEBUGGER_SELECTOR_PIN, value);
-    controller->ReleasePin(controller, DEBUGGER_SELECTOR_PIN);
+    controller->AcquirePin(controller, STM32F7_GpioInternal_GetControllerId(), DEBUGGER_SELECTOR_PIN);
+    controller->SetDriveMode(controller, STM32F7_GpioInternal_GetControllerId(), DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
+    controller->Read(controller, STM32F7_GpioInternal_GetControllerId(), DEBUGGER_SELECTOR_PIN, value);
+    controller->ReleasePin(controller, STM32F7_GpioInternal_GetControllerId(), DEBUGGER_SELECTOR_PIN);
 
     if (value == DEBUGGER_SELECTOR_USB_STATE) {
         api = STM32F7_UsbClient_GetApi();
@@ -486,10 +486,10 @@ void STM32F7_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN) && defined(RUN_APP_PULL) && defined(RUN_APP_STATE)
     TinyCLR_Gpio_PinValue value;
     auto controller = static_cast<const TinyCLR_Gpio_Provider*>(STM32F7_Gpio_GetApi()->Implementation);
-    controller->AcquirePin(controller, RUN_APP_PIN);
-    controller->SetDriveMode(controller, RUN_APP_PIN, RUN_APP_PULL);
-    controller->Read(controller, RUN_APP_PIN, value);
-    controller->ReleasePin(controller, RUN_APP_PIN);
+    controller->AcquirePin(controller, STM32F7_GpioInternal_GetControllerId(), RUN_APP_PIN);
+    controller->SetDriveMode(controller, STM32F7_GpioInternal_GetControllerId(), RUN_APP_PIN, RUN_APP_PULL);
+    controller->Read(controller, STM32F7_GpioInternal_GetControllerId(), RUN_APP_PIN, value);
+    controller->ReleasePin(controller, STM32F7_GpioInternal_GetControllerId(), RUN_APP_PIN);
 
     runApp = value == RUN_APP_STATE;
 #elif defined(RUN_APP_FORCE_STATE)

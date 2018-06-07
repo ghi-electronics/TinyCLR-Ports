@@ -164,20 +164,19 @@ end_softwarei2c_readwrite:
     return (write + read) == (writeLength + readLength);
 }
 
-
 void MakePinOutput(uint32_t pin) {
-    provider->SetDriveMode(provider, (int32_t)pin, TinyCLR_Gpio_PinDriveMode::Output);
-    provider->Write(provider, (int32_t)pin, TinyCLR_Gpio_PinValue::Low);
+    provider->SetDriveMode(provider, TinyCLR_Interop_GetControllerId(), (int32_t)pin, TinyCLR_Gpio_PinDriveMode::Output);
+    provider->Write(provider, TinyCLR_Interop_GetControllerId(), (int32_t)pin, TinyCLR_Gpio_PinValue::Low);
 }
 
 void MakePinInput(SoftwareI2CConfig* i2c, uint32_t pin) {
-    provider->SetDriveMode(provider, (int32_t)pin, i2c->useSoftwarePullups ? TinyCLR_Gpio_PinDriveMode::InputPullUp : TinyCLR_Gpio_PinDriveMode::Input);
+    provider->SetDriveMode(provider, TinyCLR_Interop_GetControllerId(), (int32_t)pin, i2c->useSoftwarePullups ? TinyCLR_Gpio_PinDriveMode::InputPullUp : TinyCLR_Gpio_PinDriveMode::Input);
 }
 
 bool ReadPinState(SoftwareI2CConfig* i2c, uint32_t pin) {
     MakePinInput(i2c, pin);
     TinyCLR_Gpio_PinValue value;
-    provider->Read(provider, (int32_t)pin, value);
+    provider->Read(provider, TinyCLR_Interop_GetControllerId(), (int32_t)pin, value);
     return value == TinyCLR_Gpio_PinValue::High;
 }
 

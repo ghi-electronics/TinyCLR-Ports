@@ -1,7 +1,7 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 #include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
-void IsrProcedure(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue pinState) {
+void IsrProcedure(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinValue pinState) {
     auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider));
 
     if (interopProvider != nullptr)
@@ -31,7 +31,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     pin = fld.Data.Numeric->U4;
 
-    value = (int64_t)provider->GetDebounceTimeout(provider, pin);
+    value = (int64_t)provider->GetDebounceTimeout(provider, TinyCLR_Interop_GetControllerId(), pin);
 
     auto ret = TinyCLR_Interop_GetReturn(md);
 
@@ -67,7 +67,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     pin = fld.Data.Numeric->U4;
 
-    if (provider->SetDebounceTimeout(provider, pin, value) != TinyCLR_Result::Success) {
+    if (provider->SetDebounceTimeout(provider, TinyCLR_Interop_GetControllerId(), pin, value) != TinyCLR_Result::Success) {
         return TinyCLR_Result::ArgumentInvalid;
     }
 
@@ -92,7 +92,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_pinNumber___I4);
 
-    provider->Read(provider, fld.Data.Numeric->U4, value);
+    provider->Read(provider, TinyCLR_Interop_GetControllerId(), fld.Data.Numeric->U4, value);
 
     auto ret = TinyCLR_Interop_GetReturn(md);
 
@@ -129,7 +129,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     if (pinDriveMode == TinyCLR_Gpio_PinDriveMode::Output) {
         fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_pinNumber___I4);
 
-        provider->Write(provider, fld.Data.Numeric->I4, arg.Data.Numeric->I4 ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+        provider->Write(provider, TinyCLR_Interop_GetControllerId(), fld.Data.Numeric->I4, arg.Data.Numeric->I4 ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
     }
 
     return TinyCLR_Result::Success;
@@ -161,33 +161,33 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     switch (driveMode) {
     case TinyCLR_Gpio_PinDriveMode::Output:
-        if (provider->GetDriveMode(provider, portId) == TinyCLR_Gpio_PinDriveMode::Input || provider->GetDriveMode(provider, portId) == TinyCLR_Gpio_PinDriveMode::InputPullUp || provider->GetDriveMode(provider, portId) == TinyCLR_Gpio_PinDriveMode::InputPullDown) {
+        if (provider->GetDriveMode(provider, TinyCLR_Interop_GetControllerId(), portId) == TinyCLR_Gpio_PinDriveMode::Input || provider->GetDriveMode(provider, TinyCLR_Interop_GetControllerId(), portId) == TinyCLR_Gpio_PinDriveMode::InputPullUp || provider->GetDriveMode(provider, TinyCLR_Interop_GetControllerId(), portId) == TinyCLR_Gpio_PinDriveMode::InputPullDown) {
             keepPinState = true;
 
-            provider->Read(provider, portId, pinValue);
+            provider->Read(provider, TinyCLR_Interop_GetControllerId(), portId, pinValue);
         }
 
-        result = provider->SetDriveMode(provider, portId, TinyCLR_Gpio_PinDriveMode::Output);
+        result = provider->SetDriveMode(provider, TinyCLR_Interop_GetControllerId(), portId, TinyCLR_Gpio_PinDriveMode::Output);
 
         if (result == TinyCLR_Result::Success && keepPinState == true)
-            result = provider->Write(provider, portId, pinValue);
+            result = provider->Write(provider, TinyCLR_Interop_GetControllerId(), portId, pinValue);
         break;
 
     case TinyCLR_Gpio_PinDriveMode::Input:
-        result = provider->SetDriveMode(provider, portId, TinyCLR_Gpio_PinDriveMode::Input);
+        result = provider->SetDriveMode(provider, TinyCLR_Interop_GetControllerId(), portId, TinyCLR_Gpio_PinDriveMode::Input);
         goto SetIsr;
 
     case TinyCLR_Gpio_PinDriveMode::InputPullUp:
-        result = provider->SetDriveMode(provider, portId, TinyCLR_Gpio_PinDriveMode::InputPullUp);
+        result = provider->SetDriveMode(provider, TinyCLR_Interop_GetControllerId(), portId, TinyCLR_Gpio_PinDriveMode::InputPullUp);
         goto SetIsr;
 
     case TinyCLR_Gpio_PinDriveMode::InputPullDown:
-        result = provider->SetDriveMode(provider, portId, TinyCLR_Gpio_PinDriveMode::InputPullDown);
+        result = provider->SetDriveMode(provider, TinyCLR_Interop_GetControllerId(), portId, TinyCLR_Gpio_PinDriveMode::InputPullDown);
         goto SetIsr;
 
     SetIsr:
         fld = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___m_callbacks___GHIElectronicsTinyCLRDevicesGpioProviderGpioPinProviderValueChangedEventHandler);
-        provider->SetValueChangedHandler(provider, portId, fld.Object != NULL ? IsrProcedure : nullptr);
+        provider->SetValueChangedHandler(provider, TinyCLR_Interop_GetControllerId(), portId, fld.Object != NULL ? IsrProcedure : nullptr);
 
         break;
 

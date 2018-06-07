@@ -158,27 +158,28 @@ struct LPC17_Gpio_PinConfiguration {
 
 void LPC17_Gpio_Reset();
 const TinyCLR_Api_Info* LPC17_Gpio_GetApi();
-TinyCLR_Result LPC17_Gpio_Acquire(const TinyCLR_Gpio_Provider* self);
-TinyCLR_Result LPC17_Gpio_Release(const TinyCLR_Gpio_Provider* self);
+TinyCLR_Result LPC17_Gpio_Acquire(const TinyCLR_Gpio_Provider* self, int32_t controller);
+TinyCLR_Result LPC17_Gpio_Release(const TinyCLR_Gpio_Provider* self, int32_t controller);
 TinyCLR_Result LPC17_Gpio_EnableAlternatePin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor, uint32_t alternate);
-TinyCLR_Result LPC17_Gpio_Read(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue& value);
-TinyCLR_Result LPC17_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue value);
-TinyCLR_Result LPC17_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, uint64_t debounceTicks);
-TinyCLR_Result LPC17_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
-TinyCLR_Result LPC17_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t pin);
-bool LPC17_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
-TinyCLR_Gpio_PinDriveMode LPC17_Gpio_GetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t pin);
-uint64_t LPC17_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin);
-int32_t LPC17_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self);
-TinyCLR_Result LPC17_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR);
-TinyCLR_Result LPC17_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t pin);
+TinyCLR_Result LPC17_Gpio_Read(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinValue& value);
+TinyCLR_Result LPC17_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinValue value);
+TinyCLR_Result LPC17_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, uint64_t debounceTicks);
+TinyCLR_Result LPC17_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
+TinyCLR_Result LPC17_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
+bool LPC17_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
+TinyCLR_Gpio_PinDriveMode LPC17_Gpio_GetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
+uint64_t LPC17_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
+int32_t LPC17_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self, int32_t controller);
+TinyCLR_Result LPC17_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR);
+TinyCLR_Result LPC17_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
 
 bool LPC17_Gpio_OpenPin(int32_t pin);
 bool LPC17_Gpio_ClosePin(int32_t pin);
 bool LPC17_Gpio_ConfigurePin(int32_t pin, LPC17_Gpio_Direction pinDir, LPC17_Gpio_PinFunction pinFunction, LPC17_Gpio_ResistorMode pullResistor, LPC17_Gpio_Hysteresis hysteresis, LPC17_Gpio_InputPolarity inputPolarity, LPC17_Gpio_SlewRate slewRate, LPC17_Gpio_OutputType outputType);
 void LPC17_Gpio_EnableOutputPin(int32_t pin, bool initialState);
 void LPC17_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
-TinyCLR_Result LPC17_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, int32_t& count);;
+TinyCLR_Result LPC17_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, int32_t& count);
+int32_t LPC17_GpioInternal_GetControllerId();
 
 struct PwmController {
     int32_t                         channel[MAX_PWM_PER_CONTROLLER];

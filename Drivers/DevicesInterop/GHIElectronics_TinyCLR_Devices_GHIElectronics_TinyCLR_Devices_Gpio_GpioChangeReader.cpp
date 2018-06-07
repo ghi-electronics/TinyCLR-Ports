@@ -1,6 +1,8 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 #include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
+extern int32_t  TinyCLR_Interop_GetControllerId();
+
 struct GpioChangeReader {
     static int32_t NativeRead(uint32_t param0, int8_t* param1, TinyCLR_Interop_ClrValue::SzArrayType& param2, int32_t param3, int32_t param4, int32_t param5, TinyCLR_Result& result);
     static int32_t NativeRead(uint32_t param0, int8_t param1, TinyCLR_Interop_ClrValue::SzArrayType& param2, int32_t param3, int32_t param4, int32_t param5, TinyCLR_Result& result);
@@ -70,7 +72,7 @@ static bool ReadValue(uint8_t pin) {
 
     TinyCLR_Gpio_PinValue value;
 
-    provider->Read(provider, (int32_t)pin, value);
+    provider->Read(provider, TinyCLR_Interop_GetControllerId(), (int32_t)pin, value);
 
     return value == TinyCLR_Gpio_PinValue::High;
 }

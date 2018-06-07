@@ -211,7 +211,7 @@ static const uint32_t c_RLP_Virtual_Address_Uncached = 0xB0000000; // Added for 
 void AT91_MMU_Initialize() {
 
     uint32_t c_Bootstrap_SDRAM_Begin = ((uint32_t)&Load$$SDRAM$$Base);
-    uint32_t c_Bootstrap_SDRAM_End = c_Bootstrap_SDRAM_Begin + ((uint32_t)&Image$$SDRAM$$Length)  - ARM9_MMU::c_TTB_size;
+    uint32_t c_Bootstrap_SDRAM_End = c_Bootstrap_SDRAM_Begin + ((uint32_t)&Image$$SDRAM$$Length) - ARM9_MMU::c_TTB_size;
     uint32_t c_Bootstrap_SRAM_Begin = ((uint32_t)&Load$$SRAM$$Base);;
     uint32_t c_Bootstrap_SRAM_End = c_Bootstrap_SRAM_Begin + ((uint32_t)&Image$$SRAM$$Length);
     uint32_t* c_Bootstrap_BaseOfTTBs = (uint32_t*)(c_Bootstrap_SDRAM_End);

@@ -466,20 +466,20 @@ struct AT91_Gpio_PinConfiguration {
 
 void AT91_Gpio_Reset();
 const TinyCLR_Api_Info* AT91_Gpio_GetApi();
-TinyCLR_Result AT91_Gpio_Acquire(const TinyCLR_Gpio_Provider* self);
-TinyCLR_Result AT91_Gpio_Release(const TinyCLR_Gpio_Provider* self);
+TinyCLR_Result AT91_Gpio_Acquire(const TinyCLR_Gpio_Provider* self, int32_t controller);
+TinyCLR_Result AT91_Gpio_Release(const TinyCLR_Gpio_Provider* self, int32_t controller);
 TinyCLR_Result AT91_Gpio_EnableAlternatePin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor, uint32_t alternate);
-TinyCLR_Result AT91_Gpio_Read(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue& value);
-TinyCLR_Result AT91_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue value);
-TinyCLR_Result AT91_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, uint64_t debounceTicks);
-TinyCLR_Result AT91_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
-TinyCLR_Result AT91_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t pin);
-bool AT91_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
-TinyCLR_Gpio_PinDriveMode AT91_Gpio_GetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t pin);
-uint64_t AT91_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin);
-int32_t AT91_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self);
-TinyCLR_Result AT91_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR);
-TinyCLR_Result AT91_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t pin);
+TinyCLR_Result AT91_Gpio_Read(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinValue& value);
+TinyCLR_Result AT91_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinValue value);
+TinyCLR_Result AT91_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, uint64_t debounceTicks);
+TinyCLR_Result AT91_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
+TinyCLR_Result AT91_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
+bool AT91_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
+TinyCLR_Gpio_PinDriveMode AT91_Gpio_GetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
+uint64_t AT91_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
+int32_t AT91_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self, int32_t controller);
+TinyCLR_Result AT91_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR);
+TinyCLR_Result AT91_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
 void AT91_Gpio_EnableOutputPin(int32_t pin, bool initialState);
 void AT91_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
 bool AT91_Gpio_OpenPin(int32_t pin);
@@ -489,6 +489,7 @@ void AT91_Gpio_WritePin(int32_t pin, bool value);
 bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PeripheralSelection peripheralSelection, AT91_Gpio_ResistorMode resistorMode);
 bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PeripheralSelection peripheralSelection, AT91_Gpio_ResistorMode resistorMode, AT91_Gpio_MultiDriver multiDrive, AT91_Gpio_Filter filter, AT91_Gpio_FilterSlowClock filterSlowClock, AT91_Gpio_Schmitt schmitt, AT91_Gpio_DriveSpeed driveSpeed);
 TinyCLR_Result AT91_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, int32_t& count);
+int32_t AT91_GpioInternal_GetControllerId();
 
 // ADC
 const TinyCLR_Api_Info* AT91_Adc_GetApi();

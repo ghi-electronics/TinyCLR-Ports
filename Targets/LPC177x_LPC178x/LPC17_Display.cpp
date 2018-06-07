@@ -443,7 +443,7 @@ bool LPC17_Display_Initialize() {
     }
 
     LPC_SC->LCD_CFG = (divider - 1);
-    
+
     if (m_LPC17_Display_VituralRam == nullptr)
         return false;
 
@@ -855,7 +855,7 @@ TinyCLR_Result LPC17_Display_Release(const TinyCLR_Display_Provider* self, int32
     LPC17_Display_SetPinConfiguration(false);
 
     m_LPC17_DisplayEnable = false;
-    
+
     if (m_LPC17_Display_VituralRam != nullptr) {
         auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
@@ -911,7 +911,7 @@ TinyCLR_Result LPC17_Display_SetConfiguration(const TinyCLR_Display_Provider* se
         m_LPC17_DisplayVerticalSyncPulseWidth = cfg.VerticalSyncPulseWidth;
         m_LPC17_DisplayVerticalFrontPorch = cfg.VerticalFrontPorch;
         m_LPC17_DisplayVerticalBackPorch = cfg.VerticalBackPorch;
-        
+
         switch (dataFormat) {
         case TinyCLR_Display_DataFormat::Rgb565:
             m_LPC17_DisplayBufferSize = width * height * 2;
@@ -965,7 +965,7 @@ TinyCLR_Result LPC17_Display_GetConfiguration(const TinyCLR_Display_Provider* se
         cfg.VerticalSyncPulseWidth = m_LPC17_DisplayVerticalSyncPulseWidth;
         cfg.VerticalFrontPorch = m_LPC17_DisplayVerticalFrontPorch;
         cfg.VerticalBackPorch = m_LPC17_DisplayVerticalBackPorch;
-        
+
         return TinyCLR_Result::Success;
     }
 
@@ -1012,7 +1012,7 @@ const TinyCLR_Api_Info* LPC17_Display_GetApi() {
     displayApi.Type = TinyCLR_Api_Type::DisplayProvider;
     displayApi.Version = 0;
     displayApi.Implementation = &displayProvider;
-    
+
     m_LPC17_Display_VituralRam = nullptr;
 
     return &displayApi;

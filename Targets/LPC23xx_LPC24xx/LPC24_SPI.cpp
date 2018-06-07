@@ -311,13 +311,13 @@ const TinyCLR_Api_Info* LPC24_Spi_GetApi() {
 }
 
 bool LPC24_Spi_Transaction_Start(int32_t controller) {
-    LPC24_Gpio_Write(nullptr, g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::Low);
+    LPC24_Gpio_Write(nullptr, LPC24_GpioInternal_GetControllerId(), g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::Low);
 
     return true;
 }
 
 bool LPC24_Spi_Transaction_Stop(int32_t controller) {
-    LPC24_Gpio_Write(nullptr, g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::High);
+    LPC24_Gpio_Write(nullptr, LPC24_GpioInternal_GetControllerId(), g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::High);
 
     return true;
 }
@@ -725,7 +725,7 @@ int32_t LPC24_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self, int32
     // pins as possible so that the selected Chip select
     // line coresponds to a GPIO pin number directly
     // without needing any additional translation/mapping.
-    return LPC24_Gpio_GetPinCount(nullptr);;
+    return LPC24_Gpio_GetPinCount(nullptr, LPC24_GpioInternal_GetControllerId());
 }
 
 static const int32_t dataBitsCount = 2;

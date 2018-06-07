@@ -148,21 +148,22 @@ TinyCLR_Result STM32F4_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, 
 //GPIO
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F4_Gpio_GetApi();
-TinyCLR_Result STM32F4_Gpio_Acquire(const TinyCLR_Gpio_Provider* self);
-TinyCLR_Result STM32F4_Gpio_Release(const TinyCLR_Gpio_Provider* self);
-TinyCLR_Result STM32F4_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t pin);
-TinyCLR_Result STM32F4_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t pin);
-TinyCLR_Result STM32F4_Gpio_Read(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue& value);
-TinyCLR_Result STM32F4_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue value);
-bool STM32F4_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
-TinyCLR_Gpio_PinDriveMode STM32F4_Gpio_GetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t pin);
-TinyCLR_Result STM32F4_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
-uint64_t STM32F4_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin);
-TinyCLR_Result STM32F4_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, uint64_t debounceTicks);
-TinyCLR_Result STM32F4_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler handler);
-int32_t STM32F4_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self);
+TinyCLR_Result STM32F4_Gpio_Acquire(const TinyCLR_Gpio_Provider* self, int32_t controller);
+TinyCLR_Result STM32F4_Gpio_Release(const TinyCLR_Gpio_Provider* self, int32_t controller);
+TinyCLR_Result STM32F4_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
+TinyCLR_Result STM32F4_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
+TinyCLR_Result STM32F4_Gpio_Read(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinValue& value);
+TinyCLR_Result STM32F4_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinValue value);
+bool STM32F4_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
+TinyCLR_Gpio_PinDriveMode STM32F4_Gpio_GetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
+TinyCLR_Result STM32F4_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
+uint64_t STM32F4_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
+TinyCLR_Result STM32F4_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, uint64_t debounceTicks);
+TinyCLR_Result STM32F4_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_ValueChangedHandler handler);
+int32_t STM32F4_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self, int32_t controller);
 void STM32F4_Gpio_Reset();
 TinyCLR_Result STM32F4_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, int32_t& count);
+int32_t STM32F4_GpioInternal_GetControllerId();
 
 ////////////////////////////////////////////////////////////////////////////////
 //I2C
