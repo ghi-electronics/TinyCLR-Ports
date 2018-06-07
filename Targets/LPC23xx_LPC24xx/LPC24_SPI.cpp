@@ -299,6 +299,7 @@ const TinyCLR_Api_Info* LPC24_Spi_GetApi() {
     spiProviders.GetMinClockFrequency = &LPC24_Spi_GetMinClockFrequency;
     spiProviders.GetMaxClockFrequency = &LPC24_Spi_GetMaxClockFrequency;
     spiProviders.GetSupportedDataBitLengths = &LPC24_Spi_GetSupportedDataBitLengths;
+    spiProviders.GetControllerCount = &LPC24_Spi_GetControllerCount;
 
     spiApi.Author = "GHI Electronics, LLC";
     spiApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.SpiProvider";
@@ -310,13 +311,17 @@ const TinyCLR_Api_Info* LPC24_Spi_GetApi() {
 }
 
 bool LPC24_Spi_Transaction_Start(int32_t controller) {
-    LPC24_Gpio_Write(nullptr, g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::Low);
+    auto gpioController = 0; //TODO Temporary set to 0
+
+    LPC24_Gpio_Write(nullptr, gpioController, g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::Low);
 
     return true;
 }
 
 bool LPC24_Spi_Transaction_Stop(int32_t controller) {
-    LPC24_Gpio_Write(nullptr, g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::High);
+    auto gpioController = 0; //TODO Temporary set to 0
+
+    LPC24_Gpio_Write(nullptr, gpioController, g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::High);
 
     return true;
 }
@@ -724,7 +729,9 @@ int32_t LPC24_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self, int32
     // pins as possible so that the selected Chip select
     // line coresponds to a GPIO pin number directly
     // without needing any additional translation/mapping.
-    return LPC24_Gpio_GetPinCount(nullptr);;
+    auto gpioController = 0; //TODO Temporary set to 0
+
+    return LPC24_Gpio_GetPinCount(nullptr, gpioController);
 }
 
 static const int32_t dataBitsCount = 2;
@@ -745,4 +752,10 @@ void LPC24_Spi_Reset() {
 
         g_SpiController[i].isOpened = false;
     }
+}
+
+TinyCLR_Result LPC24_Spi_GetControllerCount(const TinyCLR_Spi_Provider* self, int32_t& count) {
+    count = TOTAL_SPI_CONTROLLERS;
+
+    return TinyCLR_Result::Success;
 }

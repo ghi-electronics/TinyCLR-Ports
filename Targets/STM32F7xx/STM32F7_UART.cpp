@@ -104,6 +104,7 @@ const TinyCLR_Api_Info* STM32F7_Uart_GetApi() {
     uartProviders.GetUnwrittenCount = &STM32F7_Uart_GetUnwrittenCount;
     uartProviders.ClearReadBuffer = &STM32F7_Uart_ClearReadBuffer;
     uartProviders.ClearWriteBuffer = &STM32F7_Uart_ClearWriteBuffer;
+    uartProviders.GetControllerCount = &STM32F7_Uart_GetControllerCount;
 
 
     uartApi.Author = "GHI Electronics, LLC";
@@ -629,7 +630,9 @@ bool STM32F7_Uart_TxHandshakeEnabledState(int controller) {
     if (g_UartController[controller].portPtr->CR3 & USART_CR3_CTSE) {
         TinyCLR_Gpio_PinValue value;
 
-        STM32F7_Gpio_Read(nullptr, g_STM32F7_Uart_Cts_Pins[controller].number, value);
+        auto gpioController = 0; //TODO Temporary set to 0
+
+        STM32F7_Gpio_Read(nullptr, gpioController, g_STM32F7_Uart_Cts_Pins[controller].number, value);
 
         return !(value == TinyCLR_Gpio_PinValue::High);
     }
@@ -783,6 +786,12 @@ TinyCLR_Result STM32F7_Uart_ClearReadBuffer(const TinyCLR_Uart_Provider* self, i
 
 TinyCLR_Result STM32F7_Uart_ClearWriteBuffer(const TinyCLR_Uart_Provider* self, int32_t controller) {
     g_UartController[controller].txBufferCount = g_UartController[controller].txBufferIn = g_UartController[controller].txBufferOut = 0;
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F7_Uart_GetControllerCount(const TinyCLR_Uart_Provider* self, int32_t& count) {
+    count = TOTAL_UART_CONTROLLERS;
 
     return TinyCLR_Result::Success;
 }

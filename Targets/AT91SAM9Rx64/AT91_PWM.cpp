@@ -54,6 +54,7 @@ const TinyCLR_Api_Info* AT91_Pwm_GetApi() {
     pwmProviders.GetMinFrequency = &AT91_Pwm_GetMinFrequency;
     pwmProviders.GetMaxFrequency = &AT91_Pwm_GetMaxFrequency;
     pwmProviders.GetPinCount = &AT91_Pwm_GetPinCount;
+    pwmProviders.GetControllerCount = &AT91_Pwm_GetControllerCount;
 
     pwmApi.Author = "GHI Electronics, LLC";
     pwmApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.PwmProvider";
@@ -91,7 +92,7 @@ TinyCLR_Result AT91_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t con
 
     g_PwmController[controller].isOpened[pin] = true;
 
-    return TinyCLR_Result::Success;;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin) {
@@ -444,3 +445,11 @@ void AT91_Pwm_ResetController(int32_t controller) {
         }
     }
 }
+
+TinyCLR_Result AT91_Pwm_GetControllerCount(const TinyCLR_Pwm_Provider* self, int32_t& count) {
+    count = TOTAL_PWM_CONTROLLER;
+
+    return TinyCLR_Result::Success;
+}
+
+

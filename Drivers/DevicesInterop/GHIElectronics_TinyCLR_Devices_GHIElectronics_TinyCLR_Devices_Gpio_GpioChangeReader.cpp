@@ -70,11 +70,12 @@ static bool ReadValue(uint8_t pin) {
 
     TinyCLR_Gpio_PinValue value;
 
-    provider->Read(provider, (int32_t)pin, value);
+    auto gpioController = 0; //TODO Temporary set to 0
+
+    provider->Read(provider, gpioController, (int32_t)pin, value);
 
     return value == TinyCLR_Gpio_PinValue::High;
 }
-
 
 int32_t _Read(uint32_t pin, uint8_t currentState, uint32_t* buffer, int32_t count, int32_t timeout) {
     int32_t retVal = 0;

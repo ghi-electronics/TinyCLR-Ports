@@ -68,6 +68,7 @@ const TinyCLR_Api_Info* STM32F4_Spi_GetApi() {
     spiProviders.GetMinClockFrequency = &STM32F4_Spi_GetMinClockFrequency;
     spiProviders.GetMaxClockFrequency = &STM32F4_Spi_GetMaxClockFrequency;
     spiProviders.GetSupportedDataBitLengths = &STM32F4_Spi_GetSupportedDataBitLengths;
+    spiProviders.GetControllerCount = &STM32F4_Spi_GetControllerCount;
 
     spiApi.Author = "GHI Electronics, LLC";
     spiApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.SpiProvider";
@@ -462,7 +463,9 @@ int32_t STM32F4_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self, int32
 }
 
 int32_t STM32F4_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self, int32_t controller) {
-    return STM32F4_Gpio_GetPinCount(nullptr);
+    auto gpioController = 0; //TODO Temporary set to 0
+
+    return STM32F4_Gpio_GetPinCount(nullptr, gpioController);
 }
 
 static const int32_t STM32F4_SPI_DATA_BITS_COUNT = 1;
@@ -482,4 +485,10 @@ void STM32F4_Spi_Reset() {
 
         g_SpiController[i].isOpened = false;
     }
+}
+
+TinyCLR_Result STM32F4_Spi_GetControllerCount(const TinyCLR_Spi_Provider* self, int32_t& count) {
+    count = TOTAL_SPI_CONTROLLERS;
+
+    return TinyCLR_Result::Success;
 }

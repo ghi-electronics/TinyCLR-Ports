@@ -57,6 +57,7 @@ const TinyCLR_Api_Info* AT91_Spi_GetApi() {
     spiProviders.GetMinClockFrequency = &AT91_Spi_GetMinClockFrequency;
     spiProviders.GetMaxClockFrequency = &AT91_Spi_GetMaxClockFrequency;
     spiProviders.GetSupportedDataBitLengths = &AT91_Spi_GetSupportedDataBitLengths;
+    spiProviders.GetControllerCount = &AT91_Spi_GetControllerCount;
 
     spiApi.Author = "GHI Electronics, LLC";
     spiApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.SpiProvider";
@@ -68,13 +69,17 @@ const TinyCLR_Api_Info* AT91_Spi_GetApi() {
 }
 
 bool AT91_Spi_Transaction_Start(int32_t controller) {
-    AT91_Gpio_Write(nullptr, g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::Low);
+    auto gpioController = 0; //TODO Temporary set to 0
+
+    AT91_Gpio_Write(nullptr, gpioController, g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::Low);
 
     return true;
 }
 
 bool AT91_Spi_Transaction_Stop(int32_t controller) {
-    AT91_Gpio_Write(nullptr, g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::High);
+    auto gpioController = 0; //TODO Temporary set to 0
+
+    AT91_Gpio_Write(nullptr, gpioController, g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::High);
 
     return true;
 }
@@ -417,7 +422,9 @@ int32_t AT91_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self, int32_t 
 }
 
 int32_t AT91_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self, int32_t controller) {
-    return AT91_Gpio_GetPinCount(nullptr);
+    auto gpioController = 0; //TODO Temporary set to 0
+
+    return AT91_Gpio_GetPinCount(nullptr, gpioController);
 }
 
 static const int32_t dataBitsCount = 2;
@@ -438,4 +445,10 @@ void AT91_Spi_Reset() {
 
         g_SpiController[i].isOpened = false;
     }
+}
+
+TinyCLR_Result AT91_Spi_GetControllerCount(const TinyCLR_Spi_Provider* self, int32_t& count) {
+    count = TOTAL_SPI_CONTROLLERS;
+
+    return TinyCLR_Result::Success;
 }

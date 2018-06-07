@@ -89,6 +89,7 @@ const TinyCLR_Api_Info* LPC24_Pwm_GetApi() {
     pwmProviders.GetMinFrequency = &LPC24_Pwm_GetMinFrequency;
     pwmProviders.GetMaxFrequency = &LPC24_Pwm_GetMaxFrequency;
     pwmProviders.GetPinCount = &LPC24_Pwm_GetPinCount;
+    pwmProviders.GetControllerCount = &LPC24_Pwm_GetControllerCount;
 
     pwmApi.Author = "GHI Electronics, LLC";
     pwmApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.PwmProvider";
@@ -133,7 +134,7 @@ TinyCLR_Result LPC24_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t co
 
     g_PwmController[controller].isOpened[pin] = true;
 
-    return TinyCLR_Result::Success;;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin) {
@@ -453,4 +454,10 @@ void LPC24_Pwm_ResetController(int32_t controller) {
             g_PwmController[controller].isOpened[p] = false;
         }
     }
+}
+
+TinyCLR_Result LPC24_Pwm_GetControllerCount(const TinyCLR_Pwm_Provider* self, int32_t& count) {
+    count = TOTAL_PWM_CONTROLLER;
+
+    return TinyCLR_Result::Success;
 }

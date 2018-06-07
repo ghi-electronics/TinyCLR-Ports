@@ -23,7 +23,9 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto provider = TinyCLR_Dac_GetProvider(md, ret, arg, -1);
 
-    return provider->Acquire(provider);
+    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::FIELD___idx___I).Data.Numeric->I;
+
+    return provider->Acquire(provider, controller);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::ReleaseNative___VOID(const TinyCLR_Interop_MethodData md) {
@@ -31,7 +33,9 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto provider = TinyCLR_Dac_GetProvider(md, ret, arg, -1);
 
-    return provider->Release(provider);
+    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::FIELD___idx___I).Data.Numeric->I;
+
+    return provider->Release(provider, controller);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::get_ChannelCount___I4(const TinyCLR_Interop_MethodData md) {
@@ -39,7 +43,9 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto provider = TinyCLR_Dac_GetProvider(md, ret, arg, -1);
 
-    ret.Data.Numeric->I4 = (int32_t)provider->GetChannelCount(provider);
+    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::FIELD___idx___I).Data.Numeric->I;
+
+    ret.Data.Numeric->I4 = (int32_t)provider->GetChannelCount(provider, controller);
 
     return TinyCLR_Result::Success;
 }
@@ -49,7 +55,9 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto provider = TinyCLR_Dac_GetProvider(md, ret, arg, -1);
 
-    ret.Data.Numeric->I4 = (int32_t)provider->GetMaxValue(provider);
+    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::FIELD___idx___I).Data.Numeric->I;
+
+    ret.Data.Numeric->I4 = (int32_t)provider->GetMaxValue(provider, controller);
 
     return TinyCLR_Result::Success;
 }
@@ -59,7 +67,9 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto provider = TinyCLR_Dac_GetProvider(md, ret, arg, -1);
 
-    ret.Data.Numeric->I4 = (int32_t)provider->GetMinValue(provider);
+    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::FIELD___idx___I).Data.Numeric->I;
+
+    ret.Data.Numeric->I4 = (int32_t)provider->GetMinValue(provider, controller);
 
     return TinyCLR_Result::Success;
 }
@@ -69,7 +79,9 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto provider = TinyCLR_Dac_GetProvider(md, ret, arg, -1);
 
-    ret.Data.Numeric->I4 = (int32_t)provider->GetResolutionInBits(provider);
+    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::FIELD___idx___I).Data.Numeric->I;
+
+    ret.Data.Numeric->I4 = (int32_t)provider->GetResolutionInBits(provider, controller);
 
     return TinyCLR_Result::Success;
 }
@@ -79,7 +91,9 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto provider = TinyCLR_Dac_GetProvider(md, ret, arg, 1);
 
-    if (provider->AcquireChannel(provider, arg.Data.Numeric->I4) != TinyCLR_Result::Success)
+    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::FIELD___idx___I).Data.Numeric->I;
+
+    if (provider->AcquireChannel(provider, controller, arg.Data.Numeric->I4) != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
 
     return TinyCLR_Result::Success;
@@ -90,7 +104,9 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto provider = TinyCLR_Dac_GetProvider(md, ret, arg, 1);
 
-    if (provider->ReleaseChannel(provider, arg.Data.Numeric->I4) != TinyCLR_Result::Success)
+    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::FIELD___idx___I).Data.Numeric->I;
+
+    if (provider->ReleaseChannel(provider, controller, arg.Data.Numeric->I4) != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
 
     return TinyCLR_Result::Success;
@@ -107,9 +123,29 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     int32_t arg2 = arg.Data.Numeric->I4;
 
-    if (provider->WriteValue(provider, arg1, arg2) != TinyCLR_Result::Success) {
+    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::FIELD___idx___I).Data.Numeric->I;
+
+    if (provider->WriteValue(provider, controller, arg1, arg2) != TinyCLR_Result::Success) {
         return TinyCLR_Result::InvalidOperation;
     }
 
     return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::GetControllerCount___STATIC___I4__I(const TinyCLR_Interop_MethodData md) {
+    auto arg = TinyCLR_Interop_GetArguments(md, 0);
+
+    auto ret = TinyCLR_Interop_GetReturn(md);
+
+    auto provider = (const TinyCLR_Dac_Provider*)(arg.Data.Numeric->I4);
+
+    int32_t count;
+
+    if (provider->GetControllerCount(provider, count) == TinyCLR_Result::Success) {
+        ret.Data.Numeric->I4 = count;
+
+        return TinyCLR_Result::Success;
+    }
+
+    return TinyCLR_Result::InvalidOperation;
 }

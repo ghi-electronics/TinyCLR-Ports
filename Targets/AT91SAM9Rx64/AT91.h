@@ -466,20 +466,20 @@ struct AT91_Gpio_PinConfiguration {
 
 void AT91_Gpio_Reset();
 const TinyCLR_Api_Info* AT91_Gpio_GetApi();
-TinyCLR_Result AT91_Gpio_Acquire(const TinyCLR_Gpio_Provider* self);
-TinyCLR_Result AT91_Gpio_Release(const TinyCLR_Gpio_Provider* self);
+TinyCLR_Result AT91_Gpio_Acquire(const TinyCLR_Gpio_Provider* self, int32_t controller);
+TinyCLR_Result AT91_Gpio_Release(const TinyCLR_Gpio_Provider* self, int32_t controller);
 TinyCLR_Result AT91_Gpio_EnableAlternatePin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor, uint32_t alternate);
-TinyCLR_Result AT91_Gpio_Read(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue& value);
-TinyCLR_Result AT91_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue value);
-TinyCLR_Result AT91_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, uint64_t debounceTicks);
-TinyCLR_Result AT91_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
-TinyCLR_Result AT91_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t pin);
-bool AT91_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
-TinyCLR_Gpio_PinDriveMode AT91_Gpio_GetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t pin);
-uint64_t AT91_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin);
-int32_t AT91_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self);
-TinyCLR_Result AT91_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR);
-TinyCLR_Result AT91_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t pin);
+TinyCLR_Result AT91_Gpio_Read(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinValue& value);
+TinyCLR_Result AT91_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinValue value);
+TinyCLR_Result AT91_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, uint64_t debounceTicks);
+TinyCLR_Result AT91_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
+TinyCLR_Result AT91_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
+bool AT91_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
+TinyCLR_Gpio_PinDriveMode AT91_Gpio_GetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
+uint64_t AT91_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
+int32_t AT91_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self, int32_t controller);
+TinyCLR_Result AT91_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR);
+TinyCLR_Result AT91_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
 void AT91_Gpio_EnableOutputPin(int32_t pin, bool initialState);
 void AT91_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
 bool AT91_Gpio_OpenPin(int32_t pin);
@@ -488,38 +488,40 @@ bool AT91_Gpio_ReadPin(int32_t pin);
 void AT91_Gpio_WritePin(int32_t pin, bool value);
 bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PeripheralSelection peripheralSelection, AT91_Gpio_ResistorMode resistorMode);
 bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PeripheralSelection peripheralSelection, AT91_Gpio_ResistorMode resistorMode, AT91_Gpio_MultiDriver multiDrive, AT91_Gpio_Filter filter, AT91_Gpio_FilterSlowClock filterSlowClock, AT91_Gpio_Schmitt schmitt, AT91_Gpio_DriveSpeed driveSpeed);
+TinyCLR_Result AT91_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, int32_t& count);
 
 // ADC
 const TinyCLR_Api_Info* AT91_Adc_GetApi();
 void AT91_Adc_Reset();
-int32_t AT91_Adc_GetControllerCount();
+int32_t AT91_Adc_GetChannelCount();
 int32_t AT91_Adc_GetPin(int32_t channel);
 AT91_Gpio_PeripheralSelection AT91_Adc_GetPeripheralSelection(int32_t channel);
-TinyCLR_Result AT91_Adc_Acquire(const TinyCLR_Adc_Provider* self);
-TinyCLR_Result AT91_Adc_Release(const TinyCLR_Adc_Provider* self);
-TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
-TinyCLR_Result AT91_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
-TinyCLR_Result AT91_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t channel, int32_t& value);
-int32_t AT91_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self);
-int32_t AT91_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider* self);
-int32_t AT91_Adc_GetMinValue(const TinyCLR_Adc_Provider* self);
-int32_t AT91_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self);
-TinyCLR_Adc_ChannelMode AT91_Adc_GetChannelMode(const TinyCLR_Adc_Provider* self);
-TinyCLR_Result AT91_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
-bool AT91_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
+TinyCLR_Result AT91_Adc_Acquire(const TinyCLR_Adc_Provider* self, int32_t controller);
+TinyCLR_Result AT91_Adc_Release(const TinyCLR_Adc_Provider* self, int32_t controller);
+TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t channel);
+TinyCLR_Result AT91_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t channel);
+TinyCLR_Result AT91_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t channel, int32_t& value);
+int32_t AT91_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self, int32_t controller);
+int32_t AT91_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider* self, int32_t controller);
+int32_t AT91_Adc_GetMinValue(const TinyCLR_Adc_Provider* self, int32_t controller);
+int32_t AT91_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self, int32_t controller);
+TinyCLR_Adc_ChannelMode AT91_Adc_GetChannelMode(const TinyCLR_Adc_Provider* self, int32_t controller);
+TinyCLR_Result AT91_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, int32_t controller, TinyCLR_Adc_ChannelMode mode);
+bool AT91_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, int32_t controller, TinyCLR_Adc_ChannelMode mode);
+TinyCLR_Result AT91_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count);
 
 //DAC
 const TinyCLR_Api_Info* AT91_Dac_GetApi();
 void AT91_Dac_Reset();
-TinyCLR_Result AT91_Dac_Acquire(const TinyCLR_Dac_Provider* self);
-TinyCLR_Result AT91_Dac_Release(const TinyCLR_Dac_Provider* self);
-TinyCLR_Result AT91_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t channel);
-TinyCLR_Result AT91_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t channel);
-TinyCLR_Result AT91_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t channel, int32_t value);
-int32_t AT91_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self);
-int32_t AT91_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self);
-int32_t AT91_Dac_GetMinValue(const TinyCLR_Dac_Provider* self);
-int32_t AT91_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self);
+TinyCLR_Result AT91_Dac_Acquire(const TinyCLR_Dac_Provider* self, int32_t controller);
+TinyCLR_Result AT91_Dac_Release(const TinyCLR_Dac_Provider* self, int32_t controller);
+TinyCLR_Result AT91_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel);
+TinyCLR_Result AT91_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel);
+TinyCLR_Result AT91_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel, int32_t value);
+int32_t AT91_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self, int32_t controller);
+int32_t AT91_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self, int32_t controller);
+int32_t AT91_Dac_GetMinValue(const TinyCLR_Dac_Provider* self, int32_t controller);
+int32_t AT91_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self, int32_t controller);
 
 // PWM
 struct PwmController {
@@ -553,6 +555,7 @@ double AT91_Pwm_GetMinFrequency(const TinyCLR_Pwm_Provider* self, int32_t contro
 double AT91_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller);
 double AT91_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller);
 int32_t AT91_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self, int32_t controller);
+TinyCLR_Result AT91_Pwm_GetControllerCount(const TinyCLR_Pwm_Provider* self, int32_t& count);
 
 //RTC
 const TinyCLR_Api_Info* AT91_Rtc_GetApi();
@@ -661,6 +664,7 @@ int32_t AT91_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self, int32_
 int32_t AT91_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller);
 int32_t AT91_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller);
 TinyCLR_Result AT91_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* self, int32_t controller, int32_t* dataBitLengths, size_t& dataBitLengthsCount);
+TinyCLR_Result AT91_Spi_GetControllerCount(const TinyCLR_Spi_Provider* self, int32_t& count);
 
 //Uart
 //////////////////////////////////////////////////////////////////////////////
@@ -864,6 +868,7 @@ TinyCLR_Result AT91_Uart_GetUnreadCount(const TinyCLR_Uart_Provider* self, int32
 TinyCLR_Result AT91_Uart_GetUnwrittenCount(const TinyCLR_Uart_Provider* self, int32_t controller, size_t& count);
 TinyCLR_Result AT91_Uart_ClearReadBuffer(const TinyCLR_Uart_Provider* self, int32_t controller);
 TinyCLR_Result AT91_Uart_ClearWriteBuffer(const TinyCLR_Uart_Provider* self, int32_t controller);
+TinyCLR_Result AT91_Uart_GetControllerCount(const TinyCLR_Uart_Provider* self, int32_t& count);
 
 //Deployment
 const TinyCLR_Api_Info* AT91_Deployment_GetApi();
@@ -1124,6 +1129,7 @@ TinyCLR_Result AT91_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, int32
 TinyCLR_Result AT91_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, int32_t channel, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result);
 void AT91_I2c_StartTransaction();
 void AT91_I2c_StopTransaction();
+TinyCLR_Result AT91_I2c_GetControllerCount(const TinyCLR_I2c_Provider* self, int32_t& count);
 
 // Time
 //////////////////////////////////////////////////////////////////////////////
@@ -1476,15 +1482,16 @@ struct AT91_LCDC {
 
 void AT91_Display_Reset();
 const TinyCLR_Api_Info* AT91_Display_GetApi();
-TinyCLR_Result AT91_Display_Acquire(const TinyCLR_Display_Provider* self);
-TinyCLR_Result AT91_Display_Release(const TinyCLR_Display_Provider* self);
-TinyCLR_Result AT91_Display_Enable(const TinyCLR_Display_Provider* self);
-TinyCLR_Result AT91_Display_Disable(const TinyCLR_Display_Provider* self);
-TinyCLR_Result AT91_Display_GetCapabilities(const TinyCLR_Display_Provider* self, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount);
-TinyCLR_Result AT91_Display_GetConfiguration(const TinyCLR_Display_Provider* self, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration);
-TinyCLR_Result AT91_Display_SetConfiguration(const TinyCLR_Display_Provider* self, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration);
-TinyCLR_Result AT91_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data);
-TinyCLR_Result AT91_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer, size_t length);
+TinyCLR_Result AT91_Display_Acquire(const TinyCLR_Display_Provider* self, int32_t controller);
+TinyCLR_Result AT91_Display_Release(const TinyCLR_Display_Provider* self, int32_t controller);
+TinyCLR_Result AT91_Display_Enable(const TinyCLR_Display_Provider* self, int32_t controller);
+TinyCLR_Result AT91_Display_Disable(const TinyCLR_Display_Provider* self, int32_t controller);
+TinyCLR_Result AT91_Display_GetCapabilities(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount);
+TinyCLR_Result AT91_Display_GetConfiguration(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration);
+TinyCLR_Result AT91_Display_SetConfiguration(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration);
+TinyCLR_Result AT91_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t controller, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data);
+TinyCLR_Result AT91_Display_WriteString(const TinyCLR_Display_Provider* self, int32_t controller, const char* buffer, size_t length);
+TinyCLR_Result AT91_Display_GetControllerCount(const TinyCLR_Display_Provider* self, int32_t& count);
 
 //WatchDog
 //////////////////////////////////////////////////////////////////////////////

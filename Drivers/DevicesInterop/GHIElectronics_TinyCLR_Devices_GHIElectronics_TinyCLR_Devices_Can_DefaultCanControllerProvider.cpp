@@ -584,4 +584,20 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return provider->SetWriteBufferSize(provider, channel, (size_t)arg.Data.Numeric->U4);
 }
 
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::GetControllerCount___STATIC___I4__I(const TinyCLR_Interop_MethodData md) {
+    auto arg = TinyCLR_Interop_GetArguments(md, 0);
 
+    auto ret = TinyCLR_Interop_GetReturn(md);
+
+    auto provider = (const TinyCLR_Can_Provider*)(arg.Data.Numeric->I4);
+
+    int32_t count;
+
+    if (provider->GetControllerCount(provider, count) == TinyCLR_Result::Success) {
+        ret.Data.Numeric->I4 = count;
+
+        return TinyCLR_Result::Success;
+    }
+
+    return TinyCLR_Result::InvalidOperation;
+}

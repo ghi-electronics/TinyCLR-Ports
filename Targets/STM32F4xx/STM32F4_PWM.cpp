@@ -87,6 +87,7 @@ const TinyCLR_Api_Info* STM32F4_Pwm_GetApi() {
     pwmProviders.GetMinFrequency = &STM32F4_Pwm_GetMinFrequency;
     pwmProviders.GetMaxFrequency = &STM32F4_Pwm_GetMaxFrequency;
     pwmProviders.GetPinCount = &STM32F4_Pwm_GetPinCount;
+    pwmProviders.GetControllerCount = &STM32F4_Pwm_GetControllerCount;
 
     pwmApi.Author = "GHI Electronics, LLC";
     pwmApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmProvider";
@@ -445,5 +446,11 @@ void STM32F4_Pwm_ResetController(int32_t controller) {
     g_PwmController[controller].period = 0;
     g_PwmController[controller].presc = 0;
     g_PwmController[controller].timer = controller + 1;
+}
+
+TinyCLR_Result STM32F4_Pwm_GetControllerCount(const TinyCLR_Pwm_Provider* self, int32_t& count) {
+    count = TOTAL_PWM_CONTROLLER;
+
+    return TinyCLR_Result::Success;
 }
 

@@ -1203,6 +1203,7 @@ const TinyCLR_Api_Info* AT91_Can_GetApi() {
     canProvider.SetReadBufferSize = AT91_Can_SetReadBufferSize;
     canProvider.GetWriteBufferSize = AT91_Can_GetWriteBufferSize;
     canProvider.SetWriteBufferSize = AT91_Can_SetWriteBufferSize;
+    canProvider.GetControllerCount = AT91_Can_GetControllerCount;
 
     canApi.Author = "GHI Electronics, LLC";
     canApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.CanProvider";
@@ -1759,7 +1760,7 @@ TinyCLR_Result AT91_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, int32_
         canController[channel].canDataFilter.upperBoundFilters = _upperBoundFilters;
     }
 
-    return TinyCLR_Result::Success;;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Can_ClearReadBuffer(const TinyCLR_Can_Provider* self, int32_t channel) {
@@ -1791,20 +1792,20 @@ TinyCLR_Result AT91_Can_GetReadErrorCount(const TinyCLR_Can_Provider* self, int3
 
     count = CAN_GetRxErrorCount(canController[channel].cand.pHw);
 
-    return TinyCLR_Result::Success;;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, int32_t channel, size_t& count) {
 
     count = CAN_GetTxErrorCount(canController[channel].cand.pHw);
 
-    return TinyCLR_Result::Success;;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Can_GetSourceClock(const TinyCLR_Can_Provider* self, int32_t channel, uint32_t& sourceClock) {
     sourceClock = AT91_SYSTEM_PERIPHERAL_CLOCK_HZ;
 
-    return TinyCLR_Result::Success;;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Can_GetReadBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t& size) {
@@ -1818,7 +1819,7 @@ TinyCLR_Result AT91_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, int3
 
     if (size > 3) {
         canController[channel].can_rxBufferSize = size;
-        return TinyCLR_Result::Success;;
+        return TinyCLR_Result::Success;
     }
     else {
         canController[channel].can_rxBufferSize = g_AT91_Can_defaultBuffersSize[channel];
@@ -1848,5 +1849,11 @@ void AT91_Can_Reset() {
         canController[i].isOpened = false;
     }
 
+}
+
+TinyCLR_Result AT91_Can_GetControllerCount(const TinyCLR_Can_Provider* self, int32_t& count) {
+    count = TOTAL_CAN_CONTROLLERS;
+
+    return TinyCLR_Result::Success;
 }
 #endif // INCLUDE_CAN

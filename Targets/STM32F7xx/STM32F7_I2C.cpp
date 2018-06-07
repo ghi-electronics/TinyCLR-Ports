@@ -82,6 +82,7 @@ const TinyCLR_Api_Info* STM32F7_I2c_GetApi() {
     i2cProvider.Read = &STM32F7_I2c_Read;
     i2cProvider.Write = &STM32F7_I2c_Write;
     i2cProvider.WriteRead = &STM32F7_I2c_WriteRead;
+    i2cProvider.GetControllerCount = &STM32F7_I2c_GetControllerCount;
 
     i2cApi.Author = "GHI Electronics, LLC";
     i2cApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.I2cProvider";
@@ -539,4 +540,10 @@ void STM32F7_I2c_Reset() {
 
         g_I2cConfiguration[i].isOpened = false;
     }
+}
+
+TinyCLR_Result STM32F7_I2c_GetControllerCount(const TinyCLR_I2c_Provider* self, int32_t& count) {
+    count = TOTAL_I2C_CONTROLLERS;
+
+    return TinyCLR_Result::Success;
 }

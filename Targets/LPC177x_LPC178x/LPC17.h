@@ -30,18 +30,19 @@
 // ADC
 const TinyCLR_Api_Info* LPC17_Adc_GetApi();
 void LPC17_Adc_Reset();
-TinyCLR_Result LPC17_Adc_Acquire(const TinyCLR_Adc_Provider* self);
-TinyCLR_Result LPC17_Adc_Release(const TinyCLR_Adc_Provider* self);
-TinyCLR_Result LPC17_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
-TinyCLR_Result LPC17_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t channel);
-TinyCLR_Result LPC17_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t channel, int32_t& value);
-int32_t LPC17_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self);
-int32_t LPC17_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider* self);
-int32_t LPC17_Adc_GetMinValue(const TinyCLR_Adc_Provider* self);
-int32_t LPC17_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self);
-TinyCLR_Adc_ChannelMode LPC17_Adc_GetChannelMode(const TinyCLR_Adc_Provider* self);
-TinyCLR_Result LPC17_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
-bool LPC17_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, TinyCLR_Adc_ChannelMode mode);
+TinyCLR_Result LPC17_Adc_Acquire(const TinyCLR_Adc_Provider* self, int32_t controller);
+TinyCLR_Result LPC17_Adc_Release(const TinyCLR_Adc_Provider* self, int32_t controller);
+TinyCLR_Result LPC17_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t channel);
+TinyCLR_Result LPC17_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t channel);
+TinyCLR_Result LPC17_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t channel, int32_t& value);
+int32_t LPC17_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self, int32_t controller);
+int32_t LPC17_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider* self, int32_t controller);
+int32_t LPC17_Adc_GetMinValue(const TinyCLR_Adc_Provider* self, int32_t controller);
+int32_t LPC17_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self, int32_t controller);
+TinyCLR_Adc_ChannelMode LPC17_Adc_GetChannelMode(const TinyCLR_Adc_Provider* self, int32_t controller);
+TinyCLR_Result LPC17_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, int32_t controller, TinyCLR_Adc_ChannelMode mode);
+bool LPC17_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, int32_t controller, TinyCLR_Adc_ChannelMode mode);
+TinyCLR_Result LPC17_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count);
 
 // CAN
 const TinyCLR_Api_Info* LPC17_Can_GetApi();
@@ -66,20 +67,22 @@ TinyCLR_Result LPC17_Can_GetReadBufferSize(const TinyCLR_Can_Provider* self, int
 TinyCLR_Result LPC17_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t size);
 TinyCLR_Result LPC17_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t& size);
 TinyCLR_Result LPC17_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, int32_t channel, size_t size);
+TinyCLR_Result LPC17_Can_GetControllerCount(const TinyCLR_Can_Provider* self, int32_t& count);
 void LPC17_Can_Reset();
 
 //DAC
 const TinyCLR_Api_Info* LPC17_Dac_GetApi();
 void LPC17_Dac_Reset();
-TinyCLR_Result LPC17_Dac_Acquire(const TinyCLR_Dac_Provider* self);
-TinyCLR_Result LPC17_Dac_Release(const TinyCLR_Dac_Provider* self);
-TinyCLR_Result LPC17_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t channel);
-TinyCLR_Result LPC17_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t channel);
-TinyCLR_Result LPC17_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t channel, int32_t value);
-int32_t LPC17_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self);
-int32_t LPC17_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self);
-int32_t LPC17_Dac_GetMinValue(const TinyCLR_Dac_Provider* self);
-int32_t LPC17_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self);
+TinyCLR_Result LPC17_Dac_Acquire(const TinyCLR_Dac_Provider* self, int32_t controller);
+TinyCLR_Result LPC17_Dac_Release(const TinyCLR_Dac_Provider* self, int32_t controller);
+TinyCLR_Result LPC17_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel);
+TinyCLR_Result LPC17_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel);
+TinyCLR_Result LPC17_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel, int32_t value);
+int32_t LPC17_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self, int32_t controller);
+int32_t LPC17_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self, int32_t controller);
+int32_t LPC17_Dac_GetMinValue(const TinyCLR_Dac_Provider* self, int32_t controller);
+int32_t LPC17_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self, int32_t controller);
+TinyCLR_Result LPC17_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t& count);
 
 // GPIO
 enum class LPC17_Gpio_Direction : uint8_t {
@@ -155,26 +158,27 @@ struct LPC17_Gpio_PinConfiguration {
 
 void LPC17_Gpio_Reset();
 const TinyCLR_Api_Info* LPC17_Gpio_GetApi();
-TinyCLR_Result LPC17_Gpio_Acquire(const TinyCLR_Gpio_Provider* self);
-TinyCLR_Result LPC17_Gpio_Release(const TinyCLR_Gpio_Provider* self);
+TinyCLR_Result LPC17_Gpio_Acquire(const TinyCLR_Gpio_Provider* self, int32_t controller);
+TinyCLR_Result LPC17_Gpio_Release(const TinyCLR_Gpio_Provider* self, int32_t controller);
 TinyCLR_Result LPC17_Gpio_EnableAlternatePin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor, uint32_t alternate);
-TinyCLR_Result LPC17_Gpio_Read(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue& value);
-TinyCLR_Result LPC17_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinValue value);
-TinyCLR_Result LPC17_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin, uint64_t debounceTicks);
-TinyCLR_Result LPC17_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
-TinyCLR_Result LPC17_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t pin);
-bool LPC17_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
-TinyCLR_Gpio_PinDriveMode LPC17_Gpio_GetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t pin);
-uint64_t LPC17_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t pin);
-int32_t LPC17_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self);
-TinyCLR_Result LPC17_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR);
-TinyCLR_Result LPC17_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t pin);
+TinyCLR_Result LPC17_Gpio_Read(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinValue& value);
+TinyCLR_Result LPC17_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinValue value);
+TinyCLR_Result LPC17_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, uint64_t debounceTicks);
+TinyCLR_Result LPC17_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
+TinyCLR_Result LPC17_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
+bool LPC17_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
+TinyCLR_Gpio_PinDriveMode LPC17_Gpio_GetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
+uint64_t LPC17_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
+int32_t LPC17_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self, int32_t controller);
+TinyCLR_Result LPC17_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR);
+TinyCLR_Result LPC17_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
 
 bool LPC17_Gpio_OpenPin(int32_t pin);
 bool LPC17_Gpio_ClosePin(int32_t pin);
 bool LPC17_Gpio_ConfigurePin(int32_t pin, LPC17_Gpio_Direction pinDir, LPC17_Gpio_PinFunction pinFunction, LPC17_Gpio_ResistorMode pullResistor, LPC17_Gpio_Hysteresis hysteresis, LPC17_Gpio_InputPolarity inputPolarity, LPC17_Gpio_SlewRate slewRate, LPC17_Gpio_OutputType outputType);
 void LPC17_Gpio_EnableOutputPin(int32_t pin, bool initialState);
 void LPC17_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
+TinyCLR_Result LPC17_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, int32_t& count);
 
 struct PwmController {
     int32_t                         channel[MAX_PWM_PER_CONTROLLER];
@@ -209,6 +213,7 @@ double LPC17_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self, int32_t contr
 double LPC17_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller);
 int32_t LPC17_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self, int32_t controller);
 LPC17_Gpio_Pin LPC17_Pwm_GetPins(int32_t controller, int32_t channel);
+TinyCLR_Result LPC17_Pwm_GetControllerCount(const TinyCLR_Pwm_Provider* self, int32_t& count);
 
 ////////////////////////////////////////////////////////////////////////////////
 //RTC
@@ -238,6 +243,7 @@ int32_t LPC17_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self, int32
 int32_t LPC17_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller);
 int32_t LPC17_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller);
 TinyCLR_Result LPC17_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* self, int32_t controller, int32_t* dataBitLengths, size_t& dataBitLengthsCount);
+TinyCLR_Result LPC17_Spi_GetControllerCount(const TinyCLR_Spi_Provider* self, int32_t& count);
 
 //Uart
 const TinyCLR_Api_Info* LPC17_Uart_GetApi();
@@ -279,6 +285,7 @@ TinyCLR_Result LPC17_Uart_GetUnreadCount(const TinyCLR_Uart_Provider* self, int3
 TinyCLR_Result LPC17_Uart_GetUnwrittenCount(const TinyCLR_Uart_Provider* self, int32_t controller, size_t& count);
 TinyCLR_Result LPC17_Uart_ClearReadBuffer(const TinyCLR_Uart_Provider* self, int32_t controller);
 TinyCLR_Result LPC17_Uart_ClearWriteBuffer(const TinyCLR_Uart_Provider* self, int32_t controller);
+TinyCLR_Result LPC17_Uart_GetControllerCount(const TinyCLR_Uart_Provider* self, int32_t& count);
 
 //Deployment
 const TinyCLR_Api_Info* LPC17_Deployment_GetApi();
@@ -349,6 +356,7 @@ TinyCLR_Result LPC17_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, int3
 TinyCLR_Result LPC17_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, int32_t channel, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result);
 void LPC17_I2c_StartTransaction(int32_t channel);
 void LPC17_I2c_StopTransaction(int32_t channel);
+TinyCLR_Result LPC17_I2c_GetControllerCount(const TinyCLR_I2c_Provider* self, int32_t& count);
 
 // Time
 const TinyCLR_Api_Info* LPC17_Time_GetApi();
@@ -388,15 +396,16 @@ uint8_t TinyCLR_UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState);
 // LCD
 void LPC17_Display_Reset();
 const TinyCLR_Api_Info* LPC17_Display_GetApi();
-TinyCLR_Result LPC17_Display_Acquire(const TinyCLR_Display_Provider* self);
-TinyCLR_Result LPC17_Display_Release(const TinyCLR_Display_Provider* self);
-TinyCLR_Result LPC17_Display_Enable(const TinyCLR_Display_Provider* self);
-TinyCLR_Result LPC17_Display_Disable(const TinyCLR_Display_Provider* self);
-TinyCLR_Result LPC17_Display_GetCapabilities(const TinyCLR_Display_Provider* self, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount);
-TinyCLR_Result LPC17_Display_GetConfiguration(const TinyCLR_Display_Provider* self, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration);
-TinyCLR_Result LPC17_Display_SetConfiguration(const TinyCLR_Display_Provider* self, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration);
-TinyCLR_Result LPC17_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data);
-TinyCLR_Result LPC17_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer, size_t length);
+TinyCLR_Result LPC17_Display_Acquire(const TinyCLR_Display_Provider* self, int32_t controller);
+TinyCLR_Result LPC17_Display_Release(const TinyCLR_Display_Provider* self, int32_t controller);
+TinyCLR_Result LPC17_Display_Enable(const TinyCLR_Display_Provider* self, int32_t controller);
+TinyCLR_Result LPC17_Display_Disable(const TinyCLR_Display_Provider* self, int32_t controller);
+TinyCLR_Result LPC17_Display_GetCapabilities(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount);
+TinyCLR_Result LPC17_Display_GetConfiguration(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration);
+TinyCLR_Result LPC17_Display_SetConfiguration(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration);
+TinyCLR_Result LPC17_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t controller, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data);
+TinyCLR_Result LPC17_Display_WriteString(const TinyCLR_Display_Provider* self, int32_t controller, const char* buffer, size_t length);
+TinyCLR_Result LPC17_Display_GetControllerCount(const TinyCLR_Display_Provider* self, int32_t& count);
 
 //Startup
 void LPC17_Startup_Initialize();

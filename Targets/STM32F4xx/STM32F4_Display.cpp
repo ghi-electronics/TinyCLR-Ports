@@ -1026,7 +1026,7 @@ void STM32F4_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenH
     }
 }
 
-TinyCLR_Result STM32F4_Display_Acquire(const TinyCLR_Display_Provider* self) {
+TinyCLR_Result STM32F4_Display_Acquire(const TinyCLR_Display_Provider* self, int32_t controller) {
     m_STM32F4_Display_CurrentRotation = STM32F4xx_LCD_Rotation::rotateNormal_0;
 
     if (!STM32F4_Display_SetPinConfiguration(true)) {
@@ -1036,7 +1036,7 @@ TinyCLR_Result STM32F4_Display_Acquire(const TinyCLR_Display_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Display_Release(const TinyCLR_Display_Provider* self) {
+TinyCLR_Result STM32F4_Display_Release(const TinyCLR_Display_Provider* self, int32_t controller) {
     STM32F4_Display_Uninitialize();
 
     STM32F4_Display_SetPinConfiguration(false);
@@ -1054,7 +1054,7 @@ TinyCLR_Result STM32F4_Display_Release(const TinyCLR_Display_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Display_Enable(const TinyCLR_Display_Provider* self) {
+TinyCLR_Result STM32F4_Display_Enable(const TinyCLR_Display_Provider* self, int32_t controller) {
     if (m_STM32F4_DisplayEnable || STM32F4_Display_Initialize()) {
         m_STM32F4_DisplayEnable = true;
 
@@ -1064,7 +1064,7 @@ TinyCLR_Result STM32F4_Display_Enable(const TinyCLR_Display_Provider* self) {
     return TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result STM32F4_Display_Disable(const TinyCLR_Display_Provider* self) {
+TinyCLR_Result STM32F4_Display_Disable(const TinyCLR_Display_Provider* self, int32_t controller) {
     STM32F4_Display_Uninitialize();
 
     m_STM32F4_DisplayEnable = false;
@@ -1072,7 +1072,7 @@ TinyCLR_Result STM32F4_Display_Disable(const TinyCLR_Display_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Display_SetConfiguration(const TinyCLR_Display_Provider* self, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration) {
+TinyCLR_Result STM32F4_Display_SetConfiguration(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration) {
     if (dataFormat != TinyCLR_Display_DataFormat::Rgb565) return TinyCLR_Result::NotSupported;
 
     m_STM32F4_DisplayWidth = width;
@@ -1127,7 +1127,7 @@ TinyCLR_Result STM32F4_Display_SetConfiguration(const TinyCLR_Display_Provider* 
     return  TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Display_GetConfiguration(const TinyCLR_Display_Provider* self, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration) {
+TinyCLR_Result STM32F4_Display_GetConfiguration(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration) {
     dataFormat = TinyCLR_Display_DataFormat::Rgb565;
     width = m_STM32F4_DisplayWidth;
     height = m_STM32F4_DisplayHeight;
@@ -1157,12 +1157,12 @@ TinyCLR_Result STM32F4_Display_GetConfiguration(const TinyCLR_Display_Provider* 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data) {
+TinyCLR_Result STM32F4_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t controller, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data) {
     STM32F4_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer, size_t length) {
+TinyCLR_Result STM32F4_Display_WriteString(const TinyCLR_Display_Provider* self, int32_t controller, const char* buffer, size_t length) {
     for (size_t i = 0; i < length; i++)
         STM32F4_Display_WriteFormattedChar(buffer[i]);
 
@@ -1171,7 +1171,7 @@ TinyCLR_Result STM32F4_Display_WriteString(const TinyCLR_Display_Provider* self,
 
 TinyCLR_Display_DataFormat dataFormats[] = { TinyCLR_Display_DataFormat::Rgb565 };
 
-TinyCLR_Result STM32F4_Display_GetCapabilities(const TinyCLR_Display_Provider* self, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount) {
+TinyCLR_Result STM32F4_Display_GetCapabilities(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount) {
     type = TinyCLR_Display_InterfaceType::Parallel;
     supportedDataFormatCount = SIZEOF_ARRAY(dataFormats);
     supportedDataFormats = dataFormats;
@@ -1190,6 +1190,7 @@ const TinyCLR_Api_Info* STM32F4_Display_GetApi() {
     displayProvider.GetCapabilities = &STM32F4_Display_GetCapabilities;
     displayProvider.DrawBuffer = &STM32F4_Display_DrawBuffer;
     displayProvider.WriteString = &STM32F4_Display_WriteString;
+    displayProvider.GetControllerCount = &STM32F4_Display_GetControllerCount;
 
     displayApi.Author = "GHI Electronics, LLC";
     displayApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.DisplayProvider";
@@ -1209,6 +1210,12 @@ void STM32F4_Display_Reset() {
         STM32F4_Display_Release(&displayProvider);
 
     m_STM32F4_DisplayEnable = false;
+}
+
+TinyCLR_Result STM32F4_Display_GetControllerCount(const TinyCLR_Display_Provider* self, int32_t controller, int32_t& count) {
+    count = 1;
+
+    return TinyCLR_Result::Success;
 }
 
 #endif //INCLUDE_DISPLAY

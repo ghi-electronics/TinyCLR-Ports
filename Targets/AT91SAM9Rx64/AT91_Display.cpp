@@ -1015,7 +1015,7 @@ void AT91_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenHeig
     }
 }
 
-TinyCLR_Result AT91_Display_Acquire(const TinyCLR_Display_Provider* self) {
+TinyCLR_Result AT91_Display_Acquire(const TinyCLR_Display_Provider* self, int32_t controller) {
     m_AT91_Display_CurrentRotation = AT91_LCD_Rotation::rotateNormal_0;
 
 
@@ -1026,7 +1026,7 @@ TinyCLR_Result AT91_Display_Acquire(const TinyCLR_Display_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Display_Release(const TinyCLR_Display_Provider* self) {
+TinyCLR_Result AT91_Display_Release(const TinyCLR_Display_Provider* self, int32_t controller) {
     AT91_Display_Uninitialize();
 
     AT91_Display_SetPinConfiguration(false);
@@ -1044,7 +1044,7 @@ TinyCLR_Result AT91_Display_Release(const TinyCLR_Display_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Display_Enable(const TinyCLR_Display_Provider* self) {
+TinyCLR_Result AT91_Display_Enable(const TinyCLR_Display_Provider* self, int32_t controller) {
     if (m_AT91_DisplayEnable || AT91_Display_Initialize()) {
         m_AT91_DisplayEnable = true;
 
@@ -1054,7 +1054,7 @@ TinyCLR_Result AT91_Display_Enable(const TinyCLR_Display_Provider* self) {
     return TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result AT91_Display_Disable(const TinyCLR_Display_Provider* self) {
+TinyCLR_Result AT91_Display_Disable(const TinyCLR_Display_Provider* self, int32_t controller) {
     AT91_Display_Uninitialize();
 
     m_AT91_DisplayEnable = false;
@@ -1062,7 +1062,7 @@ TinyCLR_Result AT91_Display_Disable(const TinyCLR_Display_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Display_SetConfiguration(const TinyCLR_Display_Provider* self, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration) {
+TinyCLR_Result AT91_Display_SetConfiguration(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration) {
     if (dataFormat != TinyCLR_Display_DataFormat::Rgb565) return TinyCLR_Result::NotSupported;
 
     if (configuration != nullptr) {
@@ -1117,7 +1117,7 @@ TinyCLR_Result AT91_Display_SetConfiguration(const TinyCLR_Display_Provider* sel
     return  TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Display_GetConfiguration(const TinyCLR_Display_Provider* self, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration) {
+TinyCLR_Result AT91_Display_GetConfiguration(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration) {
     dataFormat = TinyCLR_Display_DataFormat::Rgb565;
     width = m_AT91_DisplayWidth;
     height = m_AT91_DisplayHeight;
@@ -1149,12 +1149,12 @@ TinyCLR_Result AT91_Display_GetConfiguration(const TinyCLR_Display_Provider* sel
     return TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result AT91_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data) {
+TinyCLR_Result AT91_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t controller, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data) {
     AT91_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Display_WriteString(const TinyCLR_Display_Provider* self, const char* buffer, size_t length) {
+TinyCLR_Result AT91_Display_WriteString(const TinyCLR_Display_Provider* self, int32_t controller, const char* buffer, size_t length) {
     for (size_t i = 0; i < length; i++)
         AT91_Display_WriteFormattedChar(buffer[i]);
 
@@ -1163,7 +1163,7 @@ TinyCLR_Result AT91_Display_WriteString(const TinyCLR_Display_Provider* self, co
 
 TinyCLR_Display_DataFormat dataFormats[] = { TinyCLR_Display_DataFormat::Rgb565 };
 
-TinyCLR_Result AT91_Display_GetCapabilities(const TinyCLR_Display_Provider* self, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount) {
+TinyCLR_Result AT91_Display_GetCapabilities(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount) {
     type = TinyCLR_Display_InterfaceType::Parallel;
     supportedDataFormatCount = SIZEOF_ARRAY(dataFormats);
     supportedDataFormats = dataFormats;
@@ -1182,6 +1182,7 @@ const TinyCLR_Api_Info* AT91_Display_GetApi() {
     displayProvider.GetCapabilities = &AT91_Display_GetCapabilities;
     displayProvider.DrawBuffer = &AT91_Display_DrawBuffer;
     displayProvider.WriteString = &AT91_Display_WriteString;
+    displayProvider.GetControllerCount = &AT91_Display_GetControllerCount;
 
     displayApi.Author = "GHI Electronics, LLC";
     displayApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.DisplayProvider";
@@ -1198,9 +1199,14 @@ void AT91_Display_Reset() {
     AT91_Display_Clear();
 
     if (m_AT91_DisplayEnable)
-        AT91_Display_Release(&displayProvider);
+        AT91_Display_Release(&displayProvider, 0);
 
     m_AT91_DisplayEnable = false;
 }
 
+TinyCLR_Result AT91_Display_GetControllerCount(const TinyCLR_Display_Provider* self, int32_t& count) {
+    count = 1;
+
+    return TinyCLR_Result::Success;
+}
 #endif // INCLUDE_DISPLAY
