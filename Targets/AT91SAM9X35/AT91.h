@@ -558,7 +558,7 @@ int32_t AT91_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self, int32_t controlle
 TinyCLR_Adc_ChannelMode AT91_Adc_GetChannelMode(const TinyCLR_Adc_Provider* self, int32_t controller);
 TinyCLR_Result AT91_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, int32_t controller, TinyCLR_Adc_ChannelMode mode);
 bool AT91_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, int32_t controller, TinyCLR_Adc_ChannelMode mode);
-TinyCLR_Result AT91_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t& count);
+TinyCLR_Result AT91_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count);
 
 // CAN
 const TinyCLR_Api_Info* AT91_Can_GetApi();
@@ -1398,6 +1398,7 @@ TinyCLR_Result AT91_Display_GetConfiguration(const TinyCLR_Display_Provider* sel
 TinyCLR_Result AT91_Display_SetConfiguration(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration);
 TinyCLR_Result AT91_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t controller, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data);
 TinyCLR_Result AT91_Display_WriteString(const TinyCLR_Display_Provider* self, int32_t controller, const char* buffer, size_t length);
+TinyCLR_Result AT91_Display_GetControllerCount(const TinyCLR_Display_Provider* self, int32_t& count);
 
 
 //WatchDog

@@ -1180,7 +1180,7 @@ TinyCLR_Result STM32F7_Display_GetCapabilities(const TinyCLR_Display_Provider* s
 }
 
 const TinyCLR_Api_Info* STM32F7_Display_GetApi() {
-    displayProvider.Parent = &displayApi;    
+    displayProvider.Parent = &displayApi;
     displayProvider.Acquire = &STM32F7_Display_Acquire;
     displayProvider.Release = &STM32F7_Display_Release;
     displayProvider.Enable = &STM32F7_Display_Enable;
@@ -1207,12 +1207,12 @@ void STM32F7_Display_Reset() {
     STM32F7_Display_Clear();
 
     if (m_STM32F7_DisplayEnable)
-        STM32F7_Display_Release(&displayProvider);
+        STM32F7_Display_Release(&displayProvider, 0);
 
     m_STM32F7_DisplayEnable = false;
 }
 
-TinyCLR_Result STM32F7_Display_GetControllerCount(const TinyCLR_Display_Provider* self, int32_t controller, int32_t& count) {
+TinyCLR_Result STM32F7_Display_GetControllerCount(const TinyCLR_Display_Provider* self, int32_t& count) {
     count = 1;
 
     return TinyCLR_Result::Success;

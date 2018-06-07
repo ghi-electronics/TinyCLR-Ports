@@ -139,11 +139,9 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto provider = (const TinyCLR_Dac_Provider*)(arg.Data.Numeric->I4);
 
-    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::FIELD___idx___I).Data.Numeric->I;
-
     int32_t count;
 
-    if (provider->GetControllerCount(provider, controller, count) == TinyCLR_Result::Success) {
+    if (provider->GetControllerCount(provider, count) == TinyCLR_Result::Success) {
         ret.Data.Numeric->I4 = count;
 
         return TinyCLR_Result::Success;

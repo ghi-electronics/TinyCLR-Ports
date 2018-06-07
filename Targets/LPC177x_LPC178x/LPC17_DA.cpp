@@ -138,14 +138,14 @@ int32_t LPC17_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self, int32_t controll
 }
 
 void LPC17_Dac_Reset() {
-    for (auto ch = 0; ch < LPC17_Dac_GetChannelCount(&dacProvider); ch++) {
-        LPC17_Dac_ReleaseChannel(&dacProvider, ch);
+    for (auto ch = 0; ch < LPC17_Dac_GetChannelCount(&dacProvider, 0); ch++) {
+        LPC17_Dac_ReleaseChannel(&dacProvider, 0, ch);
 
         g_lpc17_dac_isOpened[ch] = false;
     }
 }
 
-TinyCLR_Result LPC17_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t& count) {
+TinyCLR_Result LPC17_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t& count) {
     count = 1;
 
     return TinyCLR_Result::Success;

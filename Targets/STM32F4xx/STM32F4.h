@@ -99,7 +99,7 @@ int32_t STM32F4_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self, int32_t contro
 int32_t STM32F4_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider* self, int32_t controller);
 int32_t STM32F4_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self, int32_t controller);
 void STM32F4_Adc_Reset();
-TinyCLR_Result STM32F4_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t& count);
+TinyCLR_Result STM32F4_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count);
 
 ////////////////////////////////////////////////////////////////////////////////
 //CAN
@@ -142,7 +142,7 @@ int32_t STM32F4_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self, int32_t contro
 int32_t STM32F4_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self, int32_t controller);
 int32_t STM32F4_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self, int32_t controller);
 void STM32F4_Dac_Reset();
-TinyCLR_Result STM32F4_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t& count);
+TinyCLR_Result STM32F4_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t& count);
 
 ////////////////////////////////////////////////////////////////////////////////
 //GPIO

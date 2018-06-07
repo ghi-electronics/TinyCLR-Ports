@@ -542,7 +542,7 @@ void STM32F7_I2c_Reset() {
     }
 }
 
-TinyCLR_Result AT91_I2c_GetControllerCount(const TinyCLR_I2c_Provider* self, int32_t& count) {
+TinyCLR_Result STM32F7_I2c_GetControllerCount(const TinyCLR_I2c_Provider* self, int32_t& count) {
     count = TOTAL_I2C_CONTROLLERS;
 
     return TinyCLR_Result::Success;

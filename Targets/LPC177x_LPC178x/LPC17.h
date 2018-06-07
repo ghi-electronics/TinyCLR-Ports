@@ -42,7 +42,7 @@ int32_t LPC17_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self, int32_t controll
 TinyCLR_Adc_ChannelMode LPC17_Adc_GetChannelMode(const TinyCLR_Adc_Provider* self, int32_t controller);
 TinyCLR_Result LPC17_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, int32_t controller, TinyCLR_Adc_ChannelMode mode);
 bool LPC17_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, int32_t controller, TinyCLR_Adc_ChannelMode mode);
-TinyCLR_Result LPC17_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t& count);
+TinyCLR_Result LPC17_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count);
 
 // CAN
 const TinyCLR_Api_Info* LPC17_Can_GetApi();
@@ -82,7 +82,7 @@ int32_t LPC17_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self, int32_t cont
 int32_t LPC17_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self, int32_t controller);
 int32_t LPC17_Dac_GetMinValue(const TinyCLR_Dac_Provider* self, int32_t controller);
 int32_t LPC17_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self, int32_t controller);
-TinyCLR_Result LPC17_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t& count);
+TinyCLR_Result LPC17_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t& count);
 
 // GPIO
 enum class LPC17_Gpio_Direction : uint8_t {
@@ -405,6 +405,7 @@ TinyCLR_Result LPC17_Display_GetConfiguration(const TinyCLR_Display_Provider* se
 TinyCLR_Result LPC17_Display_SetConfiguration(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration);
 TinyCLR_Result LPC17_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t controller, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data);
 TinyCLR_Result LPC17_Display_WriteString(const TinyCLR_Display_Provider* self, int32_t controller, const char* buffer, size_t length);
+TinyCLR_Result LPC17_Display_GetControllerCount(const TinyCLR_Display_Provider* self, int32_t& count);
 
 //Startup
 void LPC17_Startup_Initialize();

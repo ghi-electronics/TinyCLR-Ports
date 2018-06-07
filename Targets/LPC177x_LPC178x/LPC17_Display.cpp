@@ -1022,12 +1022,12 @@ void LPC17_Display_Reset() {
     LPC17_Display_Clear();
 
     if (m_LPC17_DisplayEnable)
-        LPC17_Display_Release(&displayProvider);
+        LPC17_Display_Release(&displayProvider, 0);
 
     m_LPC17_DisplayEnable = false;
 }
 
-TinyCLR_Result LPC17_Display_GetControllerCount(const TinyCLR_Display_Provider* self, int32_t controller, int32_t& count) {
+TinyCLR_Result LPC17_Display_GetControllerCount(const TinyCLR_Display_Provider* self, int32_t& count) {
     count = 1;
 
     return TinyCLR_Result::Success;

@@ -339,7 +339,7 @@ int32_t LPC17_Adc_GetMinValue(const TinyCLR_Adc_Provider* self, int32_t controll
 }
 
 int32_t LPC17_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self, int32_t controller) {
-    return (1 << LPC17_Adc_GetResolutionInBits(self)) - 1;
+    return (1 << LPC17_Adc_GetResolutionInBits(self, controller)) - 1;
 }
 
 TinyCLR_Adc_ChannelMode LPC17_Adc_GetChannelMode(const TinyCLR_Adc_Provider* self, int32_t controller) {
@@ -358,13 +358,13 @@ void LPC17_Adc_Reset() {
     LPC_SC->PCONP &= ~PCONP_PCAD;
 
     for (auto ch = 0; ch < SIZEOF_ARRAY(g_lpc17_adc_pins); ch++) {
-        LPC17_Adc_ReleaseChannel(&adcProvider, ch);
+        LPC17_Adc_ReleaseChannel(&adcProvider, 0, ch);
 
         g_lpc17_adc_isOpened[ch] = false;
     }
 }
 
-TinyCLR_Result LPC17_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t& count) {
+TinyCLR_Result LPC17_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count) {
     count = 1;
 
     return TinyCLR_Result::Success;

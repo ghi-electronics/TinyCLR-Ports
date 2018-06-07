@@ -205,7 +205,7 @@ void STM32F4_Adc_Reset() {
     }
 }
 
-TinyCLR_Result STM32F4_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t& count) {
+TinyCLR_Result STM32F4_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count) {
     count = 1;
 
     return TinyCLR_Result::Success;

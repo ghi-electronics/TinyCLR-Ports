@@ -142,7 +142,7 @@ void STM32F4_Dac_Reset() {
     }
 }
 
-TinyCLR_Result STM32F4_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t& count) {
+TinyCLR_Result STM32F4_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t& count) {
     count = 1;
 
     return TinyCLR_Result::Success;

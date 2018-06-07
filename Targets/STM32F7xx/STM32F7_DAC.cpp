@@ -29,7 +29,7 @@ static TinyCLR_Api_Info dacApi;
 bool g_stm32f7_dac_isOpened[STM32F7_DAC_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F7_Dac_GetApi() {
-    dacProvider.Parent = &dacApi;    
+    dacProvider.Parent = &dacApi;
     dacProvider.Acquire = &STM32F7_Dac_Acquire;
     dacProvider.Release = &STM32F7_Dac_Release;
     dacProvider.AcquireChannel = &STM32F7_Dac_AcquireChannel;
@@ -140,14 +140,14 @@ int32_t STM32F7_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self, int32_t contro
 }
 
 void STM32F7_Dac_Reset() {
-    for (auto i = 0; i < STM32F7_Dac_GetChannelCount(&dacProvider); i++) {
-        STM32F7_Dac_ReleaseChannel(&dacProvider, i);
+    for (auto i = 0; i < STM32F7_Dac_GetChannelCount(&dacProvider, 0); i++) {
+        STM32F7_Dac_ReleaseChannel(&dacProvider, 0, i);
 
         g_stm32f7_dac_isOpened[i] = false;
     }
 }
 
-TinyCLR_Result STM32F7_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t& count) {
+TinyCLR_Result STM32F7_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t& count) {
     count = 1;
 
     return TinyCLR_Result::Success;

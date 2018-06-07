@@ -67,7 +67,7 @@ TinyCLR_Result LPC24_Dac_Release(const TinyCLR_Dac_Provider* self, int32_t contr
 }
 
 TinyCLR_Result LPC24_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel) {
-    if (channel >= LPC24_Dac_GetChannelCount(self))
+    if (channel >= LPC24_Dac_GetChannelCount(self, controller))
         return TinyCLR_Result::ArgumentOutOfRange;
 
     if (!LPC24_Gpio_OpenPin(g_LPC24_Dac_Pins[channel].number))
@@ -83,7 +83,7 @@ TinyCLR_Result LPC24_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_
 }
 
 TinyCLR_Result LPC24_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel) {
-    if (channel >= LPC24_Dac_GetChannelCount(self))
+    if (channel >= LPC24_Dac_GetChannelCount(self, controller))
         return TinyCLR_Result::ArgumentOutOfRange;
 
     if (g_LPC24_Dac_IsOpened[channel])
@@ -95,7 +95,7 @@ TinyCLR_Result LPC24_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_
 }
 
 TinyCLR_Result LPC24_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel, int32_t value) {
-    if (channel >= LPC24_Dac_GetChannelCount(self))
+    if (channel >= LPC24_Dac_GetChannelCount(self, controller))
         return TinyCLR_Result::ArgumentOutOfRange;
 
     if (value > LPC24_DAC_MAX_VALUE) {
@@ -128,14 +128,14 @@ int32_t LPC24_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self, int32_t controll
 }
 
 void LPC24_Dac_Reset() {
-    for (auto ch = 0; ch < LPC24_Dac_GetChannelCount(&dacProvider); ch++) {
-        LPC24_Dac_ReleaseChannel(&dacProvider, ch);
+    for (auto ch = 0; ch < LPC24_Dac_GetChannelCount(&dacProvider, 0); ch++) {
+        LPC24_Dac_ReleaseChannel(&dacProvider, 0, ch);
 
         g_LPC24_Dac_IsOpened[ch] = false;
     }
 }
 
-TinyCLR_Result LPC24_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t& count) {
+TinyCLR_Result LPC24_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t& count) {
     count = 1;
 
     return TinyCLR_Result::Success;

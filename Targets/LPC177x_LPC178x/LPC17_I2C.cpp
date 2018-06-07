@@ -437,7 +437,7 @@ void LPC17_I2c_Reset() {
     }
 }
 
-TinyCLR_Result AT91_I2c_GetControllerCount(const TinyCLR_I2c_Provider* self, int32_t& count) {
+TinyCLR_Result LPC17_I2c_GetControllerCount(const TinyCLR_I2c_Provider* self, int32_t& count) {
     count = SIZEOF_ARRAY(g_i2c_scl_pins);
 
     return TinyCLR_Result::Success;

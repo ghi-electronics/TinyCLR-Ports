@@ -156,7 +156,7 @@ int32_t STM32F7_Adc_GetMinValue(const TinyCLR_Adc_Provider* self, int32_t contro
 }
 
 int32_t STM32F7_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self, int32_t controller) {
-    return (1 << STM32F7_Adc_GetResolutionInBits(self)) - 1;
+    return (1 << STM32F7_Adc_GetResolutionInBits(self, controller)) - 1;
 }
 
 TinyCLR_Adc_ChannelMode STM32F7_Adc_GetChannelMode(const TinyCLR_Adc_Provider* self, int32_t controller) {
@@ -173,13 +173,13 @@ bool STM32F7_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, int32_
 
 void STM32F7_Adc_Reset() {
     for (auto i = 0; i < STM32F7_AD_NUM; i++) {
-        STM32F7_Adc_ReleaseChannel(&adcProvider, i);
+        STM32F7_Adc_ReleaseChannel(&adcProvider, 0, i);
 
         g_STM32F7_AD_IsOpened[i] = false;
     }
 }
 
-TinyCLR_Result STM32F7_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t& count) {
+TinyCLR_Result STM32F7_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count) {
     count = 1;
 
     return TinyCLR_Result::Success;

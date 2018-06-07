@@ -1049,11 +1049,11 @@ const TinyCLR_Api_Info* STM32F7_Can_GetApi() {
     canProvider.GetWriteErrorCount = &STM32F7_Can_GetWriteErrorCount;
     canProvider.GetReadErrorCount = &STM32F7_Can_GetReadErrorCount;
     canProvider.GetSourceClock = &STM32F7_Can_GetSourceClock;
-    canProvider.GetReadBufferSize = STM32F7_Can_GetReadBufferSize;
-    canProvider.SetReadBufferSize = STM32F7_Can_SetReadBufferSize;
-    canProvider.GetWriteBufferSize = STM32F7_Can_GetWriteBufferSize;
-    canProvider.SetWriteBufferSize = STM32F7_Can_SetWriteBufferSize;
-    canProvider.GetControllerCount = STM32F7_Can_GetControllerCount;
+    canProvider.GetReadBufferSize = &STM32F7_Can_GetReadBufferSize;
+    canProvider.SetReadBufferSize = &STM32F7_Can_SetReadBufferSize;
+    canProvider.GetWriteBufferSize = &STM32F7_Can_GetWriteBufferSize;
+    canProvider.SetWriteBufferSize = &STM32F7_Can_SetWriteBufferSize;
+    canProvider.GetControllerCount = &STM32F7_Can_GetControllerCount;
 
     canApi.Author = "GHI Electronics, LLC";
     canApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.CanProvider";
