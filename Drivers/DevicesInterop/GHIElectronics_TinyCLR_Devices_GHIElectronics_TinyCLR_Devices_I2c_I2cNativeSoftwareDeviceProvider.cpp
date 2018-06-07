@@ -7,8 +7,8 @@
 
 #define I2CDELAY(x) TinyCLR_Interop_Delay(x)
 
-#define ClearSCL() MakePinOutput(softwareI2cConfig->scl)
-#define ClearSDA() MakePinOutput(softwareI2cConfig->sda)
+#define ClearSCL() MakePinOutput(softwareI2cConfig, softwareI2cConfig->scl)
+#define ClearSDA() MakePinOutput(softwareI2cConfig, softwareI2cConfig->sda)
 
 struct SoftwareI2CConfig {
     uint32_t sda;
@@ -16,9 +16,12 @@ struct SoftwareI2CConfig {
     uint32_t clockSpeed; // currently ignored
     uint8_t address;	   // 7 bit address
     bool useSoftwarePullups;
+
+    const TinyCLR_Gpio_Provider* gpioProvider;
+    int32_t gpioController;
 } *softwareI2cConfig;
 
-void MakePinOutput(uint32_t pin);
+void MakePinOutput(SoftwareI2CConfig *i2c, uint32_t pin);
 void MakePinInput(SoftwareI2CConfig* softwareI2cConfig, uint32_t pin);
 bool ReadPinState(SoftwareI2CConfig* softwareI2cConfig, uint32_t pin);
 bool ReadBit();
@@ -35,8 +38,6 @@ uint32_t WriteByte(uint8_t data, bool isFirstByte, bool isMiddleByte, bool isLas
 uint32_t ReadByte(uint8_t *data, bool isFirstByte, bool isMiddleByte, bool isLastByte);
 
 bool softwareI2cStart;
-
-static const TinyCLR_Gpio_Provider* provider = nullptr;
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_I2cNativeSoftwareDeviceProvider::NativeWriteRead___STATIC___BOOLEAN__I4__I4__U1__BOOLEAN__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_U4(const TinyCLR_Interop_MethodData md) {
     auto agr0 = TinyCLR_Interop_GetArguments(md, 0);
@@ -83,7 +84,9 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto prov = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
 
-    if (prov == nullptr || (provider == nullptr && (provider = (const TinyCLR_Gpio_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider)) == nullptr))
+    i2c.gpioProvider = (const TinyCLR_Gpio_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
+
+    if (prov == nullptr || i2c.gpioProvider == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
     if (writeBuffer != NULL)
@@ -97,6 +100,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     i2c.clockSpeed = I2C_STANDARD_SPEED_US;
     i2c.address = address;
     i2c.useSoftwarePullups = useSoftwarePullups;
+    i2c.gpioController = 0; //TODO Temporary set to 0
 
     prov->GetReturn(prov, md.Stack, ret);
 
@@ -164,19 +168,19 @@ end_softwarei2c_readwrite:
     return (write + read) == (writeLength + readLength);
 }
 
-void MakePinOutput(uint32_t pin) {
-    provider->SetDriveMode(provider, TinyCLR_Interop_GetControllerId(), (int32_t)pin, TinyCLR_Gpio_PinDriveMode::Output);
-    provider->Write(provider, TinyCLR_Interop_GetControllerId(), (int32_t)pin, TinyCLR_Gpio_PinValue::Low);
+void MakePinOutput(SoftwareI2CConfig *i2c, uint32_t pin) {
+    i2c->gpioProvider->SetDriveMode(i2c->gpioProvider, i2c->gpioController, (int32_t)pin, TinyCLR_Gpio_PinDriveMode::Output);
+    i2c->gpioProvider->Write(i2c->gpioProvider, i2c->gpioController, (int32_t)pin, TinyCLR_Gpio_PinValue::Low);
 }
 
 void MakePinInput(SoftwareI2CConfig* i2c, uint32_t pin) {
-    provider->SetDriveMode(provider, TinyCLR_Interop_GetControllerId(), (int32_t)pin, i2c->useSoftwarePullups ? TinyCLR_Gpio_PinDriveMode::InputPullUp : TinyCLR_Gpio_PinDriveMode::Input);
+    i2c->gpioProvider->SetDriveMode(i2c->gpioProvider, i2c->gpioController, (int32_t)pin, i2c->useSoftwarePullups ? TinyCLR_Gpio_PinDriveMode::InputPullUp : TinyCLR_Gpio_PinDriveMode::Input);
 }
 
 bool ReadPinState(SoftwareI2CConfig* i2c, uint32_t pin) {
     MakePinInput(i2c, pin);
     TinyCLR_Gpio_PinValue value;
-    provider->Read(provider, TinyCLR_Interop_GetControllerId(), (int32_t)pin, value);
+    i2c->gpioProvider->Read(i2c->gpioProvider, i2c->gpioController, (int32_t)pin, value);
     return value == TinyCLR_Gpio_PinValue::High;
 }
 

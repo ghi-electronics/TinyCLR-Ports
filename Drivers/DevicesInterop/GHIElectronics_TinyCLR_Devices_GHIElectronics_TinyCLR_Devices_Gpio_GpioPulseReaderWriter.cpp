@@ -83,7 +83,9 @@ static bool ReadValue(uint8_t pin) {
 
     auto gpioProvider = (const TinyCLR_Gpio_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
 
-    gpioProvider->Read(gpioProvider, TinyCLR_Interop_GetControllerId(), (int32_t)pin, value);
+    auto gpioController = 0; //TODO Temporary set to 0
+
+    gpioProvider->Read(gpioProvider, gpioController, (int32_t)pin, value);
 
     return value == TinyCLR_Gpio_PinValue::High;
 }
@@ -103,14 +105,16 @@ int64_t GpioPulseReaderWriter::NativeReadDrainTime(const TinyCLR_Interop_Provide
         return 0;
     }
 
-    gpioProvider->SetDriveMode(gpioProvider, TinyCLR_Interop_GetControllerId(), (int32_t)pulsePin, TinyCLR_Gpio_PinDriveMode::Output);
+    auto gpioController = 0; //TODO Temporary set to 0
+
+    gpioProvider->SetDriveMode(gpioProvider, gpioController, (int32_t)pulsePin, TinyCLR_Gpio_PinDriveMode::Output);
 
     TinyCLR_Interop_Delay(pulseLength);
 
     endTime = GetMicroSeconds() + timeout;
     start = GetMicroSeconds();
 
-    gpioProvider->SetDriveMode(gpioProvider, TinyCLR_Interop_GetControllerId(), (int32_t)pulsePin, resistorMode);
+    gpioProvider->SetDriveMode(gpioProvider, gpioController, (int32_t)pulsePin, resistorMode);
 
     while (true) {
         now = GetMicroSeconds();
@@ -141,16 +145,18 @@ int64_t GpioPulseReaderWriter::NativeReadEcho(const TinyCLR_Interop_Provider* pr
         return 0;
     }
 
-    gpioProvider->SetDriveMode(gpioProvider, TinyCLR_Interop_GetControllerId(), (int32_t)pulsePin, TinyCLR_Gpio_PinDriveMode::Output);
-    gpioProvider->Write(gpioProvider, TinyCLR_Interop_GetControllerId(), (int32_t)pulsePin, !pulseState ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+    auto gpioController = 0; //TODO Temporary set to 0
+
+    gpioProvider->SetDriveMode(gpioProvider, gpioController, (int32_t)pulsePin, TinyCLR_Gpio_PinDriveMode::Output);
+    gpioProvider->Write(gpioProvider, gpioController, (int32_t)pulsePin, !pulseState ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
     TinyCLR_Interop_Delay(10);
 
-    gpioProvider->Write(gpioProvider, TinyCLR_Interop_GetControllerId(), (int32_t)pulsePin, pulseState ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+    gpioProvider->Write(gpioProvider, gpioController, (int32_t)pulsePin, pulseState ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
     TinyCLR_Interop_Delay(pulseLength);
 
-    gpioProvider->Write(gpioProvider, TinyCLR_Interop_GetControllerId(), (int32_t)pulsePin, !pulseState ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+    gpioProvider->Write(gpioProvider, gpioController, (int32_t)pulsePin, !pulseState ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
 
-    gpioProvider->SetDriveMode(gpioProvider, TinyCLR_Interop_GetControllerId(), (int32_t)echoPin, resistorMode);
+    gpioProvider->SetDriveMode(gpioProvider, gpioController, (int32_t)echoPin, resistorMode);
 
     if (readUntil)
         start = GetMicroSeconds();
@@ -176,11 +182,13 @@ void GpioPulseReaderWriter::NativeFinalize(const TinyCLR_Interop_Provider* provi
 
     auto gpioProvider = (const TinyCLR_Gpio_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
 
-    gpioProvider->SetDriveMode(gpioProvider, TinyCLR_Interop_GetControllerId(), (int32_t)pulsePin, TinyCLR_Gpio_PinDriveMode::InputPullUp);
-    gpioProvider->ReleasePin(gpioProvider, TinyCLR_Interop_GetControllerId(), (int32_t)pulsePin);
+    auto gpioController = 0; //TODO Temporary set to 0
+
+    gpioProvider->SetDriveMode(gpioProvider, gpioController, (int32_t)pulsePin, TinyCLR_Gpio_PinDriveMode::InputPullUp);
+    gpioProvider->ReleasePin(gpioProvider, gpioController, (int32_t)pulsePin);
 
     if (pulsePin != echoPin) {
-        gpioProvider->SetDriveMode(gpioProvider, TinyCLR_Interop_GetControllerId(), (int32_t)echoPin, TinyCLR_Gpio_PinDriveMode::InputPullUp);
-        gpioProvider->ReleasePin(gpioProvider, TinyCLR_Interop_GetControllerId(), (int32_t)echoPin);
+        gpioProvider->SetDriveMode(gpioProvider, gpioController, (int32_t)echoPin, TinyCLR_Gpio_PinDriveMode::InputPullUp);
+        gpioProvider->ReleasePin(gpioProvider, gpioController, (int32_t)echoPin);
     }
 }

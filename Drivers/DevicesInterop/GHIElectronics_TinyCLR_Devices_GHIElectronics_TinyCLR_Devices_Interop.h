@@ -19,4 +19,3 @@ void TinyCLR_Interop_Delay(uint32_t microseconds);
 void TinyCLR_Interop_EnableInterrupt();
 void TinyCLR_Interop_DisableInterrupt();
 bool TinyCLR_Interop_GetStateInterrupt();
-int32_t TinyCLR_Interop_GetControllerId();
