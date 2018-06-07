@@ -409,12 +409,12 @@ extern TinyCLR_Interrupt_StartStopHandler LPC24_Interrupt_Ended;
 // I2C
 const TinyCLR_Api_Info* LPC24_I2c_GetApi();
 void LPC24_I2c_Reset();
-TinyCLR_Result LPC24_I2c_Acquire(const TinyCLR_I2c_Provider* self, int32_t channel);
-TinyCLR_Result LPC24_I2c_Release(const TinyCLR_I2c_Provider* self, int32_t channel);
-TinyCLR_Result LPC24_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int32_t channel, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed);
-TinyCLR_Result LPC24_I2c_ReadTransaction(const TinyCLR_I2c_Provider* self, int32_t channel, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
-TinyCLR_Result LPC24_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, int32_t channel, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
-TinyCLR_Result LPC24_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, int32_t channel, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result);
+TinyCLR_Result LPC24_I2c_Acquire(const TinyCLR_I2c_Provider* self, int32_t controller);
+TinyCLR_Result LPC24_I2c_Release(const TinyCLR_I2c_Provider* self, int32_t controller);
+TinyCLR_Result LPC24_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int32_t controller, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed);
+TinyCLR_Result LPC24_I2c_ReadTransaction(const TinyCLR_I2c_Provider* self, int32_t controller, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
+TinyCLR_Result LPC24_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, int32_t controller, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
+TinyCLR_Result LPC24_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result);
 void LPC24_I2c_StartTransaction(int32_t channel);
 void LPC24_I2c_StopTransaction(int32_t channel);
 TinyCLR_Result LPC24_I2c_GetControllerCount(const TinyCLR_I2c_Provider* self, int32_t& count);

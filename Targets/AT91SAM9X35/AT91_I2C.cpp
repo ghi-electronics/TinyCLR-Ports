@@ -53,7 +53,7 @@ const TinyCLR_Api_Info* AT91_I2c_GetApi() {
     return &i2cApi;
 }
 
-TinyCLR_Result AT91_I2c_ReadTransaction(const TinyCLR_I2c_Provider* self, int32_t channel, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result AT91_I2c_ReadTransaction(const TinyCLR_I2c_Provider* self, int32_t controller, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
     uint32_t address;
@@ -65,12 +65,12 @@ TinyCLR_Result AT91_I2c_ReadTransaction(const TinyCLR_I2c_Provider* self, int32_
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    AT91_I2C& I2C = AT91::I2C(channel);
+    AT91_I2C& I2C = AT91::I2C(controller);
 
-    address = (g_I2cConfiguration[channel].address << AT91_I2C::TWI_MMR_DADR_SHIFT) | AT91_I2C::TWI_MMR_MREAD_R;
+    address = (g_I2cConfiguration[controller].address << AT91_I2C::TWI_MMR_DADR_SHIFT) | AT91_I2C::TWI_MMR_MREAD_R;
 
 
-    I2C.TWI_CWGR = g_I2cConfiguration[channel].clockRate | (g_I2cConfiguration[channel].clockRate << AT91_I2C::TWI_CWGR_CHDIV_SHIFT) | (g_I2cConfiguration[channel].clockRate2 << AT91_I2C::TWI_CWGR_CKDIV_SHIFT);
+    I2C.TWI_CWGR = g_I2cConfiguration[controller].clockRate | (g_I2cConfiguration[controller].clockRate << AT91_I2C::TWI_CWGR_CHDIV_SHIFT) | (g_I2cConfiguration[controller].clockRate2 << AT91_I2C::TWI_CWGR_CKDIV_SHIFT);
 
     control = AT91_I2C::TWI_CR_MSEN | AT91_I2C::TWI_CR_SVDIS;
 
@@ -123,7 +123,7 @@ TinyCLR_Result AT91_I2c_ReadTransaction(const TinyCLR_I2c_Provider* self, int32_
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result AT91_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, int32_t channel, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result AT91_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, int32_t controller, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
     uint32_t address;
@@ -135,11 +135,11 @@ TinyCLR_Result AT91_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, int32
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    AT91_I2C& I2C = AT91::I2C(channel);
+    AT91_I2C& I2C = AT91::I2C(controller);
 
-    address = g_I2cConfiguration[channel].address << AT91_I2C::TWI_MMR_DADR_SHIFT;
+    address = g_I2cConfiguration[controller].address << AT91_I2C::TWI_MMR_DADR_SHIFT;
 
-    I2C.TWI_CWGR = g_I2cConfiguration[channel].clockRate | (g_I2cConfiguration[channel].clockRate << AT91_I2C::TWI_CWGR_CHDIV_SHIFT) | (g_I2cConfiguration[channel].clockRate2 << AT91_I2C::TWI_CWGR_CKDIV_SHIFT);
+    I2C.TWI_CWGR = g_I2cConfiguration[controller].clockRate | (g_I2cConfiguration[controller].clockRate << AT91_I2C::TWI_CWGR_CHDIV_SHIFT) | (g_I2cConfiguration[controller].clockRate2 << AT91_I2C::TWI_CWGR_CKDIV_SHIFT);
 
     control = AT91_I2C::TWI_CR_MSEN | AT91_I2C::TWI_CR_SVDIS;
 
@@ -204,17 +204,17 @@ TinyCLR_Result AT91_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, int32
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result AT91_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, int32_t channel, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result AT91_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
     if (writeLength > 3) {
-        AT91_I2c_WriteTransaction(self, channel, writeBuffer, writeLength, result);
+        AT91_I2c_WriteTransaction(self, controller, writeBuffer, writeLength, result);
 
         if (result == TinyCLR_I2c_TransferStatus::FullTransfer)
-            AT91_I2c_ReadTransaction(self, channel, readBuffer, readLength, result);
+            AT91_I2c_ReadTransaction(self, controller, readBuffer, readLength, result);
 
         return result == TinyCLR_I2c_TransferStatus::FullTransfer ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
     }
     else if (writeLength == 0) {
-        AT91_I2c_ReadTransaction(self, channel, readBuffer, readLength, result);
+        AT91_I2c_ReadTransaction(self, controller, readBuffer, readLength, result);
 
         return result == TinyCLR_I2c_TransferStatus::FullTransfer ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
     }
@@ -230,11 +230,11 @@ TinyCLR_Result AT91_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, i
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    AT91_I2C& I2C = AT91::I2C(channel);
+    AT91_I2C& I2C = AT91::I2C(controller);
 
-    address = (g_I2cConfiguration[channel].address << AT91_I2C::TWI_MMR_DADR_SHIFT) | AT91_I2C::TWI_MMR_MREAD_R;
+    address = (g_I2cConfiguration[controller].address << AT91_I2C::TWI_MMR_DADR_SHIFT) | AT91_I2C::TWI_MMR_MREAD_R;
 
-    I2C.TWI_CWGR = g_I2cConfiguration[channel].clockRate | (g_I2cConfiguration[channel].clockRate << AT91_I2C::TWI_CWGR_CHDIV_SHIFT) | (g_I2cConfiguration[channel].clockRate2 << AT91_I2C::TWI_CWGR_CKDIV_SHIFT);
+    I2C.TWI_CWGR = g_I2cConfiguration[controller].clockRate | (g_I2cConfiguration[controller].clockRate << AT91_I2C::TWI_CWGR_CHDIV_SHIFT) | (g_I2cConfiguration[controller].clockRate2 << AT91_I2C::TWI_CWGR_CKDIV_SHIFT);
 
     control = AT91_I2C::TWI_CR_MSEN | AT91_I2C::TWI_CR_SVDIS;
 
@@ -305,7 +305,7 @@ TinyCLR_Result AT91_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, i
 #define MIN_CLK_RATE    (AT91_SYSTEM_PERIPHERAL_CLOCK_HZ/1000)/(128 *255+CLOCK_RATE_CONSTANT)
 #define MAX_CLK_RATE    400   //kHz
 
-TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int32_t channel, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed) {
+TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int32_t controller, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed) {
     uint32_t rateKhz;
     uint8_t clockRate, clockRate2;
 
@@ -352,48 +352,48 @@ TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int3
         clockRate2 = clkDiv;
     }
 
-    g_I2cConfiguration[channel].clockRate = (uint8_t)clockRate; // low byte
-    g_I2cConfiguration[channel].clockRate2 = (uint8_t)(clockRate2); // high byte
-    g_I2cConfiguration[channel].address = slaveAddress;
+    g_I2cConfiguration[controller].clockRate = (uint8_t)clockRate; // low byte
+    g_I2cConfiguration[controller].clockRate2 = (uint8_t)(clockRate2); // high byte
+    g_I2cConfiguration[controller].address = slaveAddress;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_I2c_Acquire(const TinyCLR_I2c_Provider* self, int32_t channel) {
+TinyCLR_Result AT91_I2c_Acquire(const TinyCLR_I2c_Provider* self, int32_t controller) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    AT91_I2C& I2C = AT91::I2C(channel);
+    AT91_I2C& I2C = AT91::I2C(controller);
     AT91_PMC &pmc = AT91::PMC();
 
-    if (!g_I2cConfiguration[channel].isOpened) {
-        if (!AT91_Gpio_OpenPin(g_i2c_sda_pins[channel].number) || !AT91_Gpio_OpenPin(g_i2c_scl_pins[channel].number))
+    if (!g_I2cConfiguration[controller].isOpened) {
+        if (!AT91_Gpio_OpenPin(g_i2c_sda_pins[controller].number) || !AT91_Gpio_OpenPin(g_i2c_scl_pins[controller].number))
             return TinyCLR_Result::SharingViolation;
 
-        AT91_Gpio_ConfigurePin(g_i2c_sda_pins[channel].number, AT91_Gpio_Direction::Input, g_i2c_sda_pins[channel].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-        AT91_Gpio_ConfigurePin(g_i2c_scl_pins[channel].number, AT91_Gpio_Direction::Input, g_i2c_scl_pins[channel].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+        AT91_Gpio_ConfigurePin(g_i2c_sda_pins[controller].number, AT91_Gpio_Direction::Input, g_i2c_sda_pins[controller].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+        AT91_Gpio_ConfigurePin(g_i2c_scl_pins[controller].number, AT91_Gpio_Direction::Input, g_i2c_scl_pins[controller].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
 
-        pmc.EnablePeriphClock(channel == 0 ? AT91C_ID_TWI0 : (channel == 1 ? AT91C_ID_TWI1 : AT91C_ID_TWI2));
+        pmc.EnablePeriphClock(controller == 0 ? AT91C_ID_TWI0 : (controller == 1 ? AT91C_ID_TWI1 : AT91C_ID_TWI2));
         I2C.TWI_MMR = 0x7e << AT91_I2C::TWI_MMR_DADR_SHIFT;
 
-        g_I2cConfiguration[channel].isOpened = true;
+        g_I2cConfiguration[controller].isOpened = true;
     }
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_I2c_Release(const TinyCLR_I2c_Provider* self, int32_t channel) {
+TinyCLR_Result AT91_I2c_Release(const TinyCLR_I2c_Provider* self, int32_t controller) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    AT91_I2C& I2C = AT91::I2C(channel);
+    AT91_I2C& I2C = AT91::I2C(controller);
 
     I2C.TWI_CR = AT91_I2C::TWI_CR_SWRST;
 
-    AT91_Interrupt_Disable(channel == 0 ? AT91C_ID_TWI0 : (channel == 1 ? AT91C_ID_TWI1 : AT91C_ID_TWI2));
+    AT91_Interrupt_Disable(controller == 0 ? AT91C_ID_TWI0 : (controller == 1 ? AT91C_ID_TWI1 : AT91C_ID_TWI2));
 
     AT91_PMC &pmc = AT91::PMC();
-    pmc.DisablePeriphClock(channel == 0 ? AT91C_ID_TWI0 : (channel == 1 ? AT91C_ID_TWI1 : AT91C_ID_TWI2));
+    pmc.DisablePeriphClock(controller == 0 ? AT91C_ID_TWI0 : (controller == 1 ? AT91C_ID_TWI1 : AT91C_ID_TWI2));
 
     // disable
     I2C.TWI_CR = AT91_I2C::TWI_CR_MSDIS;
@@ -402,11 +402,11 @@ TinyCLR_Result AT91_I2c_Release(const TinyCLR_I2c_Provider* self, int32_t channe
     I2C.TWI_IDR = AT91_I2C::TWI_IDR_NACK | AT91_I2C::TWI_IDR_RXRDY | AT91_I2C::TWI_IDR_TXCOMP | AT91_I2C::TWI_IDR_TXRDY;
 
 
-    g_I2cConfiguration[channel].isOpened = false;
+    g_I2cConfiguration[controller].isOpened = false;
 
-    if (g_I2cConfiguration[channel].isOpened) {
-        AT91_Gpio_ClosePin(g_i2c_sda_pins[channel].number);
-        AT91_Gpio_ClosePin(g_i2c_scl_pins[channel].number);
+    if (g_I2cConfiguration[controller].isOpened) {
+        AT91_Gpio_ClosePin(g_i2c_sda_pins[controller].number);
+        AT91_Gpio_ClosePin(g_i2c_scl_pins[controller].number);
     }
 
     return TinyCLR_Result::Success;
