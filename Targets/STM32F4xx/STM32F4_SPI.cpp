@@ -463,7 +463,9 @@ int32_t STM32F4_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self, int32
 }
 
 int32_t STM32F4_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self, int32_t controller) {
-    return STM32F4_Gpio_GetPinCount(nullptr, STM32F4_GpioInternal_GetControllerId());
+    auto gpioController = 0; //TODO Temporary set to 0
+
+    return STM32F4_Gpio_GetPinCount(nullptr, gpioController);
 }
 
 static const int32_t STM32F4_SPI_DATA_BITS_COUNT = 1;

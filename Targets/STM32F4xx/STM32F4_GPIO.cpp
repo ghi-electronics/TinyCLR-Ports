@@ -27,8 +27,6 @@ static const int STM32F4_Gpio_MaxPins = SIZEOF_ARRAY(g_stm32f4_pins);
 // indexed port configuration access
 #define Port(port) ((GPIO_TypeDef *) (GPIOA_BASE + (port << 10)))
 
-#define STM32F4_GPIO_DEFAULT_CONTROLLER 0
-
 struct STM32F4_Int_State {
     uint8_t                                pin;      // pin number
     int64_t                               debounce; // debounce
@@ -46,8 +44,6 @@ static TinyCLR_Gpio_PinDriveMode     g_pinDriveMode[STM32F4_Gpio_MaxPins];
 
 static TinyCLR_Gpio_Provider gpioProvider;
 static TinyCLR_Api_Info gpioApi;
-
-static int32_t g_ControllerId = STM32F4_GPIO_DEFAULT_CONTROLLER;
 
 const TinyCLR_Api_Info* STM32F4_Gpio_GetApi() {
     gpioProvider.Parent = &gpioApi;
@@ -76,8 +72,6 @@ const TinyCLR_Api_Info* STM32F4_Gpio_GetApi() {
 }
 
 TinyCLR_Result STM32F4_Gpio_Acquire(const TinyCLR_Gpio_Provider* self, int32_t controller) {
-    g_ControllerId = controller;
-
     return TinyCLR_Result::Success;
 }
 
@@ -100,7 +94,9 @@ void STM32F4_Gpio_ISR(int num)  // 0 <= num <= 15
 
     uint32_t bit = 1 << num;
 
-    STM32F4_Gpio_Read(nullptr, g_ControllerId, state->pin, state->currentValue); // read value as soon as possible
+    auto controller = 0; //TODO Temporary set to 0
+
+    STM32F4_Gpio_Read(nullptr, controller, state->pin, state->currentValue); // read value as soon as possible
 
     EXTI->PR = bit;   // reset pending bit
 
@@ -116,7 +112,7 @@ void STM32F4_Gpio_ISR(int num)  // 0 <= num <= 15
         }
 
         if (executeIsr)
-            state->ISR(state->controller, g_ControllerId, state->pin, state->currentValue);
+            state->ISR(state->controller, controller, state->pin, state->currentValue);
     }
 }
 
@@ -177,6 +173,8 @@ TinyCLR_Result STM32F4_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* 
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
+    auto gpioController = 0; //TODO Temporary set to 0
+
     if (isr) {
         if ((SYSCFG->EXTICR[idx] & mask) != config) {
             if (EXTI->IMR & bit)
@@ -186,7 +184,7 @@ TinyCLR_Result STM32F4_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* 
         }
         state->controller = &gpioProvider;
         state->pin = (uint8_t)pin;
-        state->debounce = STM32F4_Gpio_GetDebounceTimeout(self, g_ControllerId, pin);
+        state->debounce = STM32F4_Gpio_GetDebounceTimeout(self, gpioController, pin);
         state->ISR = isr;
         state->lastDebounceTicks = STM32F4_Time_GetTimeForProcessorTicks(nullptr, STM32F4_Time_GetCurrentProcessorTicks(nullptr));
 
@@ -385,12 +383,13 @@ int32_t STM32F4_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self, int32_t cont
 }
 
 void STM32F4_Gpio_Reset() {
+    auto controller = 0; //TODO Temporary set to 0
 
     for (int i = 0; i < STM32F4_Gpio_MaxPins; i++) {
         auto& p = g_stm32f4_pins[i];
 
         g_pinReserved[i] = 0;
-        STM32F4_Gpio_SetDebounceTimeout(nullptr, g_ControllerId, i, STM32F4_Gpio_DebounceDefaultMilisecond);
+        STM32F4_Gpio_SetDebounceTimeout(nullptr, controller, i, STM32F4_Gpio_DebounceDefaultMilisecond);
         STM32F4_Gpio_DisableInterrupt(i);
 
         if (p.apply) {
@@ -415,8 +414,4 @@ TinyCLR_Result STM32F4_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self
     count = 1;
 
     return TinyCLR_Result::Success;
-}
-
-int32_t STM32F4_GpioInternal_GetControllerId() {
-    return g_ControllerId;
 }

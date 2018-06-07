@@ -163,7 +163,6 @@ TinyCLR_Result STM32F4_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* 
 int32_t STM32F4_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self, int32_t controller);
 void STM32F4_Gpio_Reset();
 TinyCLR_Result STM32F4_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, int32_t& count);
-int32_t STM32F4_GpioInternal_GetControllerId();
 
 ////////////////////////////////////////////////////////////////////////////////
 //I2C
