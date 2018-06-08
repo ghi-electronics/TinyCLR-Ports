@@ -63,6 +63,7 @@ const TinyCLR_Api_Info* STM32F7_Gpio_GetApi() {
     gpioProvider.SetDebounceTimeout = &STM32F7_Gpio_SetDebounceTimeout;
     gpioProvider.SetValueChangedHandler = &STM32F7_Gpio_SetValueChangedHandler;
     gpioProvider.GetPinCount = &STM32F7_Gpio_GetPinCount;
+    gpioProvider.GetControllerCount = &STM32F7_Gpio_GetControllerCount;
 
     gpioApi.Author = "GHI Electronics, LLC";
     gpioApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.GpioProvider";
