@@ -83,6 +83,7 @@ const TinyCLR_Api_Info* LPC17_Gpio_GetApi() {
     gpioProvider.SetDebounceTimeout = &LPC17_Gpio_SetDebounceTimeout;
     gpioProvider.SetValueChangedHandler = &LPC17_Gpio_SetValueChangedHandler;
     gpioProvider.GetPinCount = &LPC17_Gpio_GetPinCount;
+    gpioProvider.GetControllerCount = &LPC17_Gpio_GetControllerCount;
 
     gpioApi.Author = "GHI Electronics, LLC";
     gpioApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.GpioProvider";

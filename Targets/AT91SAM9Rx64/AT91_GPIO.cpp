@@ -61,6 +61,7 @@ const TinyCLR_Api_Info* AT91_Gpio_GetApi() {
     gpioProvider.SetDebounceTimeout = &AT91_Gpio_SetDebounceTimeout;
     gpioProvider.SetValueChangedHandler = &AT91_Gpio_SetValueChangedHandler;
     gpioProvider.GetPinCount = &AT91_Gpio_GetPinCount;
+    gpioProvider.GetControllerCount = &AT91_Gpio_GetControllerCount;
 
     gpioApi.Author = "GHI Electronics, LLC";
     gpioApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.GpioProvider";
