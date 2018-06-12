@@ -23,7 +23,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto provider = (const TinyCLR_Display_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
 
-    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DefaultDisplayControllerProvider::FIELD___idx___I).Data.Numeric->I;
+    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DefaultDisplayControllerProvider::FIELD___idx___I4).Data.Numeric->I;
 
     auto res = provider->Acquire(provider, controller);
 
@@ -59,7 +59,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto provider = (const TinyCLR_Display_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
 
-    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DefaultDisplayControllerProvider::FIELD___idx___I).Data.Numeric->I;
+    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DefaultDisplayControllerProvider::FIELD___idx___I4).Data.Numeric->I;
 
     auto res = provider->Acquire(provider, controller);
 
@@ -93,7 +93,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     size_t supportedDataFormatCount;
 
-    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DefaultDisplayControllerProvider::FIELD___idx___I).Data.Numeric->I;
+    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DefaultDisplayControllerProvider::FIELD___idx___I4).Data.Numeric->I;
 
     auto res = provider->GetCapabilities(provider, controller, type, supportedDataFormats, supportedDataFormatCount);
 
@@ -115,7 +115,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto ret = TinyCLR_Interop_GetReturn(md);
 
-    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DefaultDisplayControllerProvider::FIELD___idx___I).Data.Numeric->I;
+    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DefaultDisplayControllerProvider::FIELD___idx___I4).Data.Numeric->I;
 
     auto res = provider->GetCapabilities(provider, controller, type, supportedDataFormats, supportedDataFormatCount);
 
@@ -153,7 +153,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto stringType = TinyCLR_Interop_GetArguments(md, 1).Data.String;
 
-    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DefaultDisplayControllerProvider::FIELD___idx___I).Data.Numeric->I;
+    auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DefaultDisplayControllerProvider::FIELD___idx___I4).Data.Numeric->I;
 
     return provider->WriteString(provider, controller, stringType.Data, stringType.Length);
 }
