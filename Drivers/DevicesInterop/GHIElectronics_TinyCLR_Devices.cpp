@@ -1,5 +1,4 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
-#include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
 static const TinyCLR_Interop_MethodHandler methods[] = {
     nullptr,
@@ -207,6 +206,8 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
     Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::AcquireNative___VOID,
     Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::ReleaseNative___VOID,
     Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::GetControllerCount___STATIC___I4__I,
+    nullptr,
+    nullptr,
     nullptr,
     nullptr,
     nullptr,
@@ -837,8 +838,6 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
 
 const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices = {
     "GHIElectronics.TinyCLR.Devices",
-    0x63451D2F,
+    0x761EFC63,
     methods
 };
-
-
