@@ -5,9 +5,9 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     auto provider = (const TinyCLR_SdCard_Provider*)TinyCLR_Interop_GetFieldInMethodData(md, FIELD___nativeProvider___I).Data.Numeric->I;
     auto controller = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___idx___I4).Data.Numeric->I4;
 
-    auto sector = (uint64_t)TinyCLR_Interop_GetArguments(md, 1).Data.Numeric->I4;
-    auto count = (size_t)TinyCLR_Interop_GetArguments(md, 2).Data.Numeric->I4;
-    auto buffer = (uint8_t*)TinyCLR_Interop_GetArguments(md, 3).Data.SzArray.Data;
+    auto sector = static_cast<uint64_t>(TinyCLR_Interop_GetArguments(md, 1).Data.Numeric->I4);
+    auto count = static_cast<size_t>(TinyCLR_Interop_GetArguments(md, 2).Data.Numeric->I4);
+    auto buffer = reinterpret_cast<uint8_t*>(TinyCLR_Interop_GetArguments(md, 3).Data.SzArray.Data);
     auto offset = TinyCLR_Interop_GetArguments(md, 4).Data.Numeric->I4;
     auto timeout = TinyCLR_Interop_GetArguments(md, 5).Data.Numeric->I4;
 
@@ -20,8 +20,8 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     auto provider = (const TinyCLR_SdCard_Provider*)TinyCLR_Interop_GetFieldInMethodData(md, FIELD___nativeProvider___I).Data.Numeric->I;
     auto controller = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___idx___I4).Data.Numeric->I4;
 
-    auto sector = (uint64_t)TinyCLR_Interop_GetArguments(md, 1).Data.Numeric->I4;
-    auto count = (size_t)TinyCLR_Interop_GetArguments(md, 2).Data.Numeric->I4;
+    auto sector = static_cast<uint64_t>(TinyCLR_Interop_GetArguments(md, 1).Data.Numeric->I4);
+    auto count = static_cast<size_t>(TinyCLR_Interop_GetArguments(md, 2).Data.Numeric->I4);
     auto buffer = (uint8_t*)TinyCLR_Interop_GetArguments(md, 3).Data.SzArray.Data;
     auto offset = TinyCLR_Interop_GetArguments(md, 4).Data.Numeric->I4;
     auto timeout = TinyCLR_Interop_GetArguments(md, 5).Data.Numeric->I4;
@@ -35,8 +35,8 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     auto provider = (const TinyCLR_SdCard_Provider*)TinyCLR_Interop_GetFieldInMethodData(md, FIELD___nativeProvider___I).Data.Numeric->I;
     auto controller = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___idx___I4).Data.Numeric->I4;
 
-    auto sector = (uint64_t)TinyCLR_Interop_GetArguments(md, 1).Data.Numeric->I4;
-    auto count = (size_t)TinyCLR_Interop_GetArguments(md, 2).Data.Numeric->I4;
+    auto sector = static_cast<uint64_t>(TinyCLR_Interop_GetArguments(md, 1).Data.Numeric->I4);
+    auto count = static_cast<size_t>(TinyCLR_Interop_GetArguments(md, 2).Data.Numeric->I4);
     auto timeout = TinyCLR_Interop_GetArguments(md, 3).Data.Numeric->I4;
 
     return provider->EraseSectors(provider, controller, sector, count, timeout);
@@ -46,8 +46,8 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     auto provider = (const TinyCLR_SdCard_Provider*)TinyCLR_Interop_GetFieldInMethodData(md, FIELD___nativeProvider___I).Data.Numeric->I;
     auto controller = TinyCLR_Interop_GetFieldInMethodData(md, FIELD___idx___I4).Data.Numeric->I4;
 
-    auto sizes = (size_t*)TinyCLR_Interop_GetArguments(md, 1).Data.SzArray.Data;
-    auto count = (size_t)TinyCLR_Interop_GetArguments(md, 2).Data.Numeric->I4;
+    auto sizes = reinterpret_cast<const size_t*>(TinyCLR_Interop_GetArguments(md, 1).Data.SzArray.Data);
+    auto count = static_cast<size_t>(TinyCLR_Interop_GetArguments(md, 2).Data.Numeric->I4);
     auto uniform = TinyCLR_Interop_GetArguments(md, 3).Data.Numeric->Boolean;
 
     return provider->GetSectorMap(provider, controller, sizes, count, uniform);
