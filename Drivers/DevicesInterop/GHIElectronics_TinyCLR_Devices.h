@@ -149,7 +149,6 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_DisplayController {
     static const size_t FIELD___provider___GHIElectronicsTinyCLRDevicesDisplayProviderIDisplayControllerProvider = 1;
-    static const size_t FIELD___ActiveSettings__BackingField___GHIElectronicsTinyCLRDevicesDisplayDisplayControllerSettings = 2;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_DisplayControllerSettings {
@@ -411,6 +410,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Low
     static const size_t FIELD___I2cControllerProvider__BackingField___GHIElectronicsTinyCLRDevicesI2cProviderII2cControllerProvider = 6;
     static const size_t FIELD___PwmControllerProvider__BackingField___GHIElectronicsTinyCLRDevicesPwmProviderIPwmControllerProvider = 7;
     static const size_t FIELD___SpiControllerProvider__BackingField___GHIElectronicsTinyCLRDevicesSpiProviderISpiControllerProvider = 8;
+    static const size_t FIELD___SdCardControllerProvider__BackingField___GHIElectronicsTinyCLRDevicesSdCardProviderISdCardControllerProvider = 9;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_LowLevelDevicesController {
@@ -474,6 +474,29 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc
     static const size_t FIELD___provider___GHIElectronicsTinyCLRDevicesRtcProviderIRtcControllerProvider = 1;
 };
 
+struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SdCard_Provider_DefaultSdCardControllerProvider {
+    static const size_t FIELD___nativeProvider___I = 1;
+    static const size_t FIELD___idx___I4 = 2;
+
+    static TinyCLR_Result ReadSectors___I4__I4__I4__SZARRAY_U1__I4__I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result WriteSectors___I4__I4__I4__SZARRAY_U1__I4__I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result EraseSectors___I4__I4__I4__I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result GetSectorMap___VOID__BYREF_SZARRAY_I4__BYREF_I4__BYREF_BOOLEAN(const TinyCLR_Interop_MethodData md);
+
+    static TinyCLR_Result GetControllerCount___STATIC___I4__I(const TinyCLR_Interop_MethodData md);
+};
+
+struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SdCard_Provider_SdCardProvider {
+    static const size_t FIELD_STATIC___providers___mscorlibSystemCollectionsHashtable = 10;
+
+    static const size_t FIELD___controllers___SZARRAY_GHIElectronicsTinyCLRDevicesSdCardProviderISdCardControllerProvider = 1;
+    static const size_t FIELD___Name__BackingField___STRING = 2;
+};
+
+struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SdCard_SdCardController {
+    static const size_t FIELD___provider___GHIElectronicsTinyCLRDevicesSdCardProviderISdCardControllerProvider = 1;
+};
+
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SerialCommunication_ErrorReceivedEventArgs {
     static const size_t FIELD___Error__BackingField___GHIElectronicsTinyCLRDevicesSerialCommunicationSerialError = 1;
 };
@@ -533,7 +556,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_Provider_SpiProvider {
-    static const size_t FIELD_STATIC___providers___mscorlibSystemCollectionsHashtable = 10;
+    static const size_t FIELD_STATIC___providers___mscorlibSystemCollectionsHashtable = 11;
 
     static const size_t FIELD___controllers___SZARRAY_GHIElectronicsTinyCLRDevicesSpiProviderISpiControllerProvider = 1;
     static const size_t FIELD___Name__BackingField___STRING = 2;
