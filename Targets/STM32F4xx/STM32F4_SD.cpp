@@ -1296,7 +1296,7 @@ SD_Error SD_WaitWriteOperation(void);
 
 #define SDIO_FIFO_ADDRESS                ((uint32_t)0x40012C80)
 #define SDIO_INIT_CLK_DIV                ((uint8_t)0x76)
-#define SDIO_TRANSFER_CLK_DIV            ((uint8_t)0x0)
+#define SDIO_TRANSFER_CLK_DIV            ((uint8_t)0x2)
 #define SDIO_STATIC_FLAGS               ((uint32_t)0x000005FF)
 #define SDIO_CMD0TIMEOUT                ((uint32_t)0x00010000)
 
@@ -3752,7 +3752,14 @@ TinyCLR_Result STM32F4_SdCard_Acquire(const TinyCLR_SdCard_Provider* self, int32
 
     SD_DeInit();
 
-    return SD_Init() == SD_OK ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
+    int32_t to = 2;
+
+    SD_Error error = SD_Init();
+
+    if (error != SD_OK) // try one more time
+        return SD_Init() == SD_OK ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_SdCard_Release(const TinyCLR_SdCard_Provider* self, int32_t controller) {
@@ -3799,17 +3806,17 @@ TinyCLR_Result STM32F4_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, i
 
     uint8_t* pData = (uint8_t*)data;
 
-    while (sectorCount--) {
+    while (sectorCount) {
         to = timeout;
 
-        if (SD_WriteBlock(&pData[index], sectorNum * STM32F4_SD_SECTOR_SIZE, STM32F4_SD_SECTOR_SIZE) == SD_OK) {
+        while (SD_GetStatus() != SD_TRANSFER_OK && to--) {
+            STM32F4_Time_Delay(nullptr, 1);
+        }
 
-            while (SD_GetStatus() != SD_TRANSFER_OK && to--) {
-                STM32F4_Time_Delay(nullptr, 1);
-            }
-
+        if (to > 0 && SD_WriteBlock(&pData[index], sectorNum * STM32F4_SD_SECTOR_SIZE, STM32F4_SD_SECTOR_SIZE) == SD_OK) {
             index += STM32F4_SD_SECTOR_SIZE;
             sectorNum++;
+            sectorCount--;
         }
         else {
             SD_StopTransfer();
@@ -3833,17 +3840,18 @@ TinyCLR_Result STM32F4_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, in
 
     auto sectorNum = sector;
 
-    while (sectorCount--) {
+    while (sectorCount) {
         to = timeout;
 
-        if (SD_ReadBlock(&data[index], sectorNum * STM32F4_SD_SECTOR_SIZE, STM32F4_SD_SECTOR_SIZE) == SD_OK) {
+        while (SD_GetStatus() != SD_TRANSFER_OK && to--) {
+            STM32F4_Time_Delay(nullptr, 1);
+        }
 
-            while (SD_GetStatus() != SD_TRANSFER_OK && to--) {
-                STM32F4_Time_Delay(nullptr, 1);
-            }
+        if (to > 0 && SD_ReadBlock(&data[index], sectorNum * STM32F4_SD_SECTOR_SIZE, STM32F4_SD_SECTOR_SIZE) == SD_OK) {
 
             index += STM32F4_SD_SECTOR_SIZE;
             sectorNum++;
+            sectorCount--;
         }
         else {
             SD_StopTransfer();
