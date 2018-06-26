@@ -1,5 +1,6 @@
 #include "STM32F4.h"
 
+#ifdef INCLUDE_SD
 // sdio
 typedef struct {
     uint32_t SDIO_ClockEdge;            /*!< Specifies the clock transition on which the bit capture is made.
@@ -3890,3 +3891,4 @@ TinyCLR_Result STM32F4_SdCard_GetSectorMap(const TinyCLR_SdCard_Provider* self, 
 TinyCLR_Result STM32F4_SdCard_Reset() {
     return TinyCLR_Result::Success;
 }
+#endif // INCLUDE_SD
