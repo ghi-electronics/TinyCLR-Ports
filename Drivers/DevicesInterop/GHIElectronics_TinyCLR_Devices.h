@@ -149,6 +149,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_DisplayController {
     static const size_t FIELD___provider___GHIElectronicsTinyCLRDevicesDisplayProviderIDisplayControllerProvider = 1;
+    static const size_t FIELD___ActiveSettings__BackingField___GHIElectronicsTinyCLRDevicesDisplayDisplayControllerSettings = 2;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_DisplayControllerSettings {
