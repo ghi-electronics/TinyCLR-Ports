@@ -496,6 +496,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SdC
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SdCard_SdCardController {
     static const size_t FIELD___provider___GHIElectronicsTinyCLRDevicesSdCardProviderISdCardControllerProvider = 1;
+    static const size_t FIELD___driveProvider___OBJECT = 2;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SerialCommunication_ErrorReceivedEventArgs {
