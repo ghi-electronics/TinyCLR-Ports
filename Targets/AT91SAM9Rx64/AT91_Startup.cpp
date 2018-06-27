@@ -42,6 +42,9 @@ void AT91_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider, const Tin
 #ifdef INCLUDE_PWM
     AT91_Pwm_Reset();
 #endif
+#ifdef INCLUDE_SD
+    AT91_SdCard_Reset();
+#endif
 #ifdef INCLUDE_SPI
     AT91_Spi_Reset();
 #endif
