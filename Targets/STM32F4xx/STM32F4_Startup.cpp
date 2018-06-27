@@ -39,6 +39,9 @@ void STM32F4_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider, const 
 #ifdef INCLUDE_PWM
     STM32F4_Pwm_Reset();
 #endif
+#ifdef INCLUDE_SD
+    STM32F4_SdCard_Reset();
+#endif
 #ifdef INCLUDE_SPI
     STM32F4_Spi_Reset();
 #endif

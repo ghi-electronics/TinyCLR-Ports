@@ -60,6 +60,11 @@ void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
     apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::RtcProvider, TARGET(_Rtc_GetApi)()->Name);
 #endif
 
+#ifdef INCLUDE_SD
+    apiProvider->Add(apiProvider, TARGET(_SdCard_GetApi)());
+    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::SdCardProvider, TARGET(_SdCard_GetApi)()->Name);
+#endif
+
 #ifdef INCLUDE_SPI
     apiProvider->Add(apiProvider, TARGET(_Spi_GetApi)());
 #endif
