@@ -74,6 +74,15 @@
 
 #define INCLUDE_RTC
 
+#define INCLUDE_SD
+#define LPC24_SD_DATA0_PINS { { PIN(1, 6), PF(2) } }
+#define LPC24_SD_DATA1_PINS { { PIN(1, 7), PF(2) } }
+#define LPC24_SD_DATA2_PINS { { PIN(1, 11), PF(2) } }
+#define LPC24_SD_DATA3_PINS { { PIN(1, 12), PF(2) } }
+#define LPC24_SD_CLK_PINS { { PIN(1, 2), PF(2) } }
+#define LPC24_SD_CMD_PINS { { PIN(1, 3), PF(2) } }
+#define LPC24_SD_PWR_PINS  { { PIN(1, 5), PF(0) } }
+
 #define INCLUDE_SPI
 #define TOTAL_SPI_CONTROLLERS 2
 #define LPC24_SPI_SCLK_PINS { { PIN(0, 15), PF(2) }, { PIN(0,  7), PF(2) } }
