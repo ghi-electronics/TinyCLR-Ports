@@ -260,6 +260,21 @@
 #define GPDMA_CONFIG           (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x030))
 #define GPDMA_SYNC             (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x034))
 
+/* DMA channel 0 registers */
+#define GPDMA_CH0_SRC      (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x100))
+#define GPDMA_CH0_DEST     (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x104))
+#define GPDMA_CH0_LLI      (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x108))
+#define GPDMA_CH0_CTRL     (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x10C))
+#define GPDMA_CH0_CFG      (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x110))
+
+/* DMA channel 1 registers */
+#define GPDMA_CH1_SRC      (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x120))
+#define GPDMA_CH1_DEST     (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x124))
+#define GPDMA_CH1_LLI      (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x128))
+#define GPDMA_CH1_CTRL     (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x12C))
+#define GPDMA_CH1_CFG      (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x130))
+
+
 #define GPDMA_Source_Register_Channel(ChannelNumber)            (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x100 + (ChannelNumber * 0x20)))
 #define GPDMA_Destination_Register_Channel(ChannelNumber)        (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x104 + (ChannelNumber * 0x20)))
 #define GPDMA_LinkedListItem_Register_Channel(ChannelNumber)    (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x108 + (ChannelNumber * 0x20)))
@@ -302,7 +317,7 @@ void DMAHandler(void * p) {
 ** Returned value:        true or false, false if ISR can't be installed.
 **
 ******************************************************************************/
-uint32_t DMA_Init(void) {
+void DMA_Init(void) {
     LPC_SC->PCONP |= (1 << 29);
 
     GPDMA_INT_TCCLR = 0xFF;
@@ -313,7 +328,6 @@ uint32_t DMA_Init(void) {
     while (!(GPDMA_CONFIG & 0x01));
 
     LPC17_Interrupt_Activate(DMA_IRQn, (uint32_t*)&DMAHandler, (void*)0);
-    return(true);
 }
 
 /******************************************************************************
@@ -569,37 +583,6 @@ typedef enum mci_func_error {
 #define MCI_MASK0      (*(volatile unsigned long *)(MCI_BASE_ADDR + 0x3C))
 #define MCI_FIFO_CNT   (*(volatile unsigned long *)(MCI_BASE_ADDR + 0x48))
 #define MCI_FIFO       (*(volatile unsigned long *)(MCI_BASE_ADDR + 0x80))
-
-/* General-purpose DMA Controller */
-#define DMA_BASE_ADDR        0x20080000
-#define GPDMA_INT_STAT         (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x000))
-#define GPDMA_INT_TCSTAT       (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x004))
-#define GPDMA_INT_TCCLR        (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x008))
-#define GPDMA_INT_ERR_STAT     (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x00C))
-#define GPDMA_INT_ERR_CLR      (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x010))
-#define GPDMA_RAW_INT_TCSTAT   (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x014))
-#define GPDMA_RAW_INT_ERR_STAT (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x018))
-#define GPDMA_ENABLED_CHNS     (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x01C))
-#define GPDMA_SOFT_BREQ        (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x020))
-#define GPDMA_SOFT_SREQ        (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x024))
-#define GPDMA_SOFT_LBREQ       (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x028))
-#define GPDMA_SOFT_LSREQ       (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x02C))
-#define GPDMA_CONFIG           (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x030))
-#define GPDMA_SYNC             (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x034))
-
-/* DMA channel 0 registers */
-#define GPDMA_CH0_SRC      (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x100))
-#define GPDMA_CH0_DEST     (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x104))
-#define GPDMA_CH0_LLI      (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x108))
-#define GPDMA_CH0_CTRL     (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x10C))
-#define GPDMA_CH0_CFG      (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x110))
-
-/* DMA channel 1 registers */
-#define GPDMA_CH1_SRC      (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x120))
-#define GPDMA_CH1_DEST     (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x124))
-#define GPDMA_CH1_LLI      (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x128))
-#define GPDMA_CH1_CTRL     (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x12C))
-#define GPDMA_CH1_CFG      (*(volatile unsigned long *)(DMA_BASE_ADDR + 0x130))
 
 volatile uint32_t MCI_DataErrorProcess_count = 0;
 volatile uint32_t MCI_DATA_END_InterruptService_count = 0;
@@ -975,8 +958,7 @@ bool SD_Set_BusWidth(uint32_t width) {
 void MCI_Init(void) {
     volatile uint32_t i;
 
-    // Crude delay of 50ms at 120MHz
-    for (i = 0; i < 0x100000; i++);
+    LPC17_Time_Delay(nullptr, 50 * 1000); // delay 50ms
 
     LPC_SC->PCONP |= (1 << 28);            /* Enable clock to the MCI block */
 
@@ -988,7 +970,7 @@ void MCI_Init(void) {
         MCI_POWER = 0x00;
     }
 
-    for (i = 0; i < 0x1000; i++);
+    LPC17_Time_Delay(nullptr, 1000); // delay 1ms
 
     /* Disable all interrupts for now */
     MCI_MASK0 = 0;
@@ -1008,13 +990,15 @@ void MCI_Init(void) {
 
     while (!(MCI_POWER & 0x02));
 
-    for (i = 0; i < 0x100; i++);
+    LPC17_Time_Delay(nullptr, 1000); // delay 1ms
 
     MCI_Set_MCIClock(MCI_CLK_375KHZ);
 
+    LPC17_Time_Delay(nullptr, 1000); // delay 1ms
+
     MCI_POWER |= 0x01;
 
-    for (i = 0; i < 0x2000; i++);
+    LPC17_Time_Delay(nullptr, 2000); // delay 2ms
 
     LPC17_Interrupt_Activate(MCI_IRQn, (uint32_t*)&MCI_IRQHandler, (void*)0);
 }
@@ -1037,8 +1021,6 @@ void MCI_SendCmd(uint32_t CmdIndex, uint32_t Argument, uint32_t ExpectResp, uint
         MCI_COMMAND = 0;
         MCI_CLEAR = CmdStatus | MCI_CMD_ACTIVE;
     }
-
-    LPC17_Time_Delay(nullptr, 400);
 
     /*set the command details, the CmdIndex should 0 through 0x3F only */
     CmdData |= (CmdIndex & 0x3F);    /* bit 0 through 5 only */
@@ -1067,8 +1049,6 @@ void MCI_SendCmd(uint32_t CmdIndex, uint32_t Argument, uint32_t ExpectResp, uint
     CmdData |= (1 << 10);        /* This bit needs to be set last. */
     MCI_ARGUMENT = Argument;    /* Set the argument first, finally command */
     MCI_COMMAND = CmdData;
-
-    LPC17_Time_Delay(nullptr, 100);
 }
 
 /******************************************************************************
@@ -1095,11 +1075,15 @@ uint32_t MCI_GetCmdResp(uint32_t ExpectCmdData, uint32_t ExpectResp, uint32_t *C
     uint32_t LastCmdIndex;
     uint32_t i;
 
+    int32_t retry = 0xFFFF;
+
     if (ExpectResp == EXPECT_NO_RESP) {
         return (0);
     }
 
-    while (1) {
+    bool stop = false;
+
+    while (!stop) {
         CmdRespStatus = MCI_STATUS;
         if (CmdRespStatus & (MCI_CMD_TIMEOUT)) {
             MCI_CLEAR = CmdRespStatus | MCI_CMD_TIMEOUT;
@@ -1108,18 +1092,25 @@ uint32_t MCI_GetCmdResp(uint32_t ExpectCmdData, uint32_t ExpectResp, uint32_t *C
             return (CmdRespStatus);
         }
         if (CmdRespStatus & MCI_CMD_CRC_FAIL) {
-            for (i = 0; i < 0xFFFF; i++);
             MCI_CLEAR = CmdRespStatus | MCI_CMD_CRC_FAIL;
-            LastCmdIndex = MCI_COMMAND & 0x003F;
-            if ((LastCmdIndex == SEND_OP_COND) || (LastCmdIndex == SEND_APP_OP_COND)
-                || (LastCmdIndex == STOP_TRANSMISSION)) {
-                MCI_COMMAND = 0;
-                MCI_ARGUMENT = 0xFFFFFFFF;
-                break;
+
+            while (retry-- > 0) {
+                LPC17_Time_Delay(nullptr, 1); // delay 1us
+
+                LastCmdIndex = MCI_COMMAND & 0x003F;
+
+                if ((LastCmdIndex == SEND_OP_COND) || (LastCmdIndex == SEND_APP_OP_COND) || (LastCmdIndex == STOP_TRANSMISSION)) {
+
+                    MCI_COMMAND = 0;
+                    MCI_ARGUMENT = 0xFFFFFFFF;
+
+                    stop = true;
+                    break;
+                }
             }
-            else {
+
+            if (retry == 0)
                 return (CmdRespStatus);
-            }
         }
         else if (CmdRespStatus & MCI_CMD_RESP_END) {
             MCI_CLEAR = CmdRespStatus | MCI_CMD_RESP_END;
@@ -1217,7 +1208,7 @@ uint32_t MCI_Send_ACMD(void) {
             return(true);
         }
 
-        for (i = 0; i < 0x20; i++);
+        LPC17_Time_Delay(nullptr, 1000); // delay 1ms
 
         retryCount--;
     }
@@ -1251,7 +1242,7 @@ uint32_t MCI_Send_OP_Cond(void) {
             return (true);    /* response is back and correct. */
         }
 
-        for (i = 0; i < 0x20; i++);
+        LPC17_Time_Delay(nullptr, 1000); // delay 1ms
 
         retryCount--;
     }
@@ -1296,7 +1287,7 @@ uint32_t MCI_Send_ACMD_OP_Cond(void) {
             return (true);    /* response is back and correct. */
         }
 
-        for (i = 0; i < 0x20; i++);
+        LPC17_Time_Delay(nullptr, 1000); // delay 1ms
 
         retryCount--;
     }
@@ -1311,14 +1302,18 @@ uint32_t MCI_Send_SDHC(void) {
     uint32_t respValue[4];
 
     MCI_SendCmd(8, 0x1aa, EXPECT_SHORT_RESP, 0);
+
     respStatus = MCI_GetCmdResp(8, EXPECT_SHORT_RESP, (uint32_t *)&respValue[0]);
+
     if (respStatus) {
         return (false);
     }
 
     retryCount = ACMD_OP_COND_COUNT;
     MCI_POWER &= ~(1 << 6);
-    for (i = 0; i < 0x3000; i++);
+
+    LPC17_Time_Delay(nullptr, 1000); // delay 1ms
+
     while (retryCount > 0) {
 
 
@@ -1335,7 +1330,7 @@ uint32_t MCI_Send_SDHC(void) {
                 isSDHC = true;
             return (true);
         }
-        for (i = 0; i < 0x20; i++);
+        LPC17_Time_Delay(nullptr, 1000); // delay 1ms
         retryCount--;
     }
     return(false);
@@ -1366,20 +1361,8 @@ uint32_t MCI_CardInit(void) {
 
     MCI_POWER &= ~(1 << 6);
 
-    for (i = 0; i < 0x3000; i++);
+    LPC17_Time_Delay(nullptr, 1000); // delay 1ms
 
-    if (MCI_Send_SDHC() != true) {
-        for (i = 0; i < 0x10; i++);
-        if (MCI_Go_Idle_State() == false) {
-            return(CARD_UNKNOWN);
-        }
-        MCI_POWER &= ~(1 << 6);
-        for (i = 0; i < 0x3000; i++);
-    }
-    else {
-        CardType = SD_CARD;
-        return (CardType);
-    }
     if (MCI_Send_SDHC() == true) {
 
         CardType = SD_CARD;
@@ -1396,7 +1379,8 @@ uint32_t MCI_CardInit(void) {
         CardType = MMC_CARD;
         MCI_POWER &= ~(1 << 6);
 
-        for (i = 0; i < 0x3000; i++);
+        LPC17_Time_Delay(nullptr, 1000); // delay 1ms
+
         return (CardType);
     }
 
@@ -1429,7 +1413,7 @@ bool MCI_Check_CID(void) {
             return (true);
         }
 
-        LPC17_Time_Delay(nullptr, 100);
+        LPC17_Time_Delay(nullptr, 1000);
         retryCount--;
     }
     return (false);
@@ -1468,7 +1452,7 @@ bool MCI_Set_Address(void) {
             return (true);
         }
 
-        LPC17_Time_Delay(nullptr, 100);
+        LPC17_Time_Delay(nullptr, 1000);
         retryCount--;
     }
     return (false);
@@ -1552,7 +1536,7 @@ bool MCI_Send_CSD(void) {
             return (true);
         }
 
-        LPC17_Time_Delay(nullptr, 100);
+        LPC17_Time_Delay(nullptr, 1000);
 
         retryCount--;
     }
@@ -1593,7 +1577,8 @@ bool MCI_Select_Card(void) {
         if (!respStatus && ((respValue[0] & (0x0F << 8)) == 0x0700)) {
             return (true);
         }
-        for (i = 0; i < 0x20; i++);
+
+        LPC17_Time_Delay(nullptr, 1000); // delay 1ms
 
         retryCount--;
     }
@@ -1635,6 +1620,8 @@ uint32_t MCI_Send_Status(void) {
             return (respValue[0]);
         }
         retryCount--;
+
+        LPC17_Time_Delay(nullptr, 1000); // delay 1ms
     }
     return (INVALID_RESPONSE);
 }
@@ -1667,7 +1654,8 @@ bool MCI_Set_BlockLen(uint32_t blockLength) {
         if (!respStatus && ((respValue[0] & (0x0F << 8)) == 0x0900)) {
             return (true);
         }
-        for (i = 0; i < 0x20; i++);
+
+        LPC17_Time_Delay(nullptr, 1000); // delay 1ms
 
         retryCount--;
     }
@@ -1705,7 +1693,7 @@ bool MCI_Send_ACMD_Bus_Width(uint32_t buswidth) {
             return (true);
         }
 
-        LPC17_Time_Delay(nullptr, 100);
+        LPC17_Time_Delay(nullptr, 1000);
 
         retryCount--;
     }
@@ -1738,7 +1726,8 @@ bool MCI_Send_Stop(void) {
             return(true);
         }
 
-        LPC17_Time_Delay(nullptr, 100);
+        LPC17_Time_Delay(nullptr, 1000);
+
         retryCount--;
     }
     return (false);
@@ -1772,7 +1761,7 @@ uint32_t MCI_Send_Write_Block(uint32_t blockNum) {
             return(true);
         }
 
-        LPC17_Time_Delay(nullptr, 100);
+        LPC17_Time_Delay(nullptr, 1000);
 
         retryCount--;
     }
@@ -1796,7 +1785,9 @@ uint32_t MCI_Send_Read_Block(uint32_t blockNum) {
 
     if (!isSDHC)
         blockNum *= BLOCK_LENGTH;
+
     retryCount = 0x20;
+
     while (retryCount > 0) {
         MCI_CLEAR = 0x7FF;
         MCI_SendCmd(READ_SINGLE_BLOCK, blockNum, EXPECT_SHORT_RESP, 0);
@@ -1806,7 +1797,7 @@ uint32_t MCI_Send_Read_Block(uint32_t blockNum) {
             return(true);
         }
 
-        LPC17_Time_Delay(nullptr, 100);
+        LPC17_Time_Delay(nullptr, 1000);
         retryCount--;
     }
     return (false);
@@ -1834,8 +1825,6 @@ bool MCI_Write_Block(uint32_t blockNum, MCI_DATA_END_CALLBACK Write_end_Callback
     MCI_CLEAR = 0x7FF;
     MCI_DATA_CTRL = 0;
 
-    LPC17_Time_Delay(nullptr, 25);
-
     if (MCI_CheckStatus() != true) {
         MCI_Send_Stop();
         return(false);
@@ -1857,8 +1846,6 @@ bool MCI_Write_Block(uint32_t blockNum, MCI_DATA_END_CALLBACK Write_end_Callback
     DataCtrl = ((1 << 0) | (1 << 3) | (DATA_BLOCK_LEN << 4));
 
     MCI_DATA_CTRL = DataCtrl;
-
-    LPC17_Time_Delay(nullptr, 50);
 
     return (true);
 }
@@ -1886,8 +1873,6 @@ bool MCI_Read_Block(uint32_t blockNum, MCI_DATA_END_CALLBACK read_end_Callback) 
     MCI_CLEAR = 0x7FF;
     MCI_DATA_CTRL = 0;
 
-    LPC17_Time_Delay(nullptr, 25);
-
     if (MCI_CheckStatus() != true) {
 
         MCI_Send_Stop();
@@ -1910,8 +1895,6 @@ bool MCI_Read_Block(uint32_t blockNum, MCI_DATA_END_CALLBACK read_end_Callback) 
     DataCtrl = ((1 << 0) | (1 << 1) | (1 << 3) | (DATA_BLOCK_LEN << 4));
 
     MCI_DATA_CTRL = DataCtrl;
-
-    LPC17_Time_Delay(nullptr, 50);
 
     return (true);
 }
@@ -1936,7 +1919,7 @@ bool MCI_And_Card_initialize(void) {
     MCI_Init();
 
     // Allow the card to power up...
-    for (int b = 0; b < 0x200000; b++);
+    LPC17_Time_Delay(nullptr, 50 * 1000); // delay 50ms
 
     if (!err) {
         MCI_CardType = MCI_CardInit();
@@ -2125,7 +2108,7 @@ int32_t MCI_Cmd_SendIfCond(void) {
             break;
         }
 
-        for (i = 0; i < 0x20; i++);
+        LPC17_Time_Delay(nullptr, 1000); // delay 1ms
 
         retryCount--;
     }
