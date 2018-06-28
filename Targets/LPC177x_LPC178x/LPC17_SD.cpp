@@ -506,33 +506,33 @@ extern void MCI_TXDisable(void);
 extern void MCI_RXEnable(void);
 extern void MCI_RXDisable(void);
 
-extern uint32_t MCI_Init(void);
+extern void MCI_Init(void);
 extern void  MCI_SendCmd(uint32_t CmdIndex, uint32_t Argument, uint32_t ExpectResp, uint32_t AllowTimeout);
 extern uint32_t MCI_GetCmdResp(uint32_t CmdIndex, uint32_t NeedRespFlag, uint32_t *CmdRespStatus);
 
 extern void  MCI_Set_MCIClock(uint32_t clockrate);
-extern uint32_t SD_Set_BusWidth(uint32_t width);
+extern bool SD_Set_BusWidth(uint32_t width);
 
 extern uint32_t MCI_CardInit(void);
-extern uint32_t MCI_Go_Idle_State(void);
-extern uint32_t MCI_Check_CID(void);
-extern uint32_t MCI_Set_Address(void);
-extern uint32_t MCI_Send_CSD(void);
-extern uint32_t MCI_Select_Card(void);
+extern bool MCI_Go_Idle_State(void);
+extern bool MCI_Check_CID(void);
+extern bool MCI_Set_Address(void);
+extern bool MCI_Send_CSD(void);
+extern bool MCI_Select_Card(void);
 extern uint32_t MCI_Send_Status(void);
-extern uint32_t MCI_Set_BlockLen(uint32_t blockLength);
-extern uint32_t MCI_Send_ACMD_Bus_Width(uint32_t buswidth);
-extern uint32_t MCI_Send_Stop(void);
+extern bool MCI_Set_BlockLen(uint32_t blockLength);
+extern bool MCI_Send_ACMD_Bus_Width(uint32_t buswidth);
+extern bool MCI_Send_Stop(void);
 
 typedef void(*MCI_DATA_END_CALLBACK)();
 
-extern uint32_t MCI_Write_Block(uint32_t blockNum, MCI_DATA_END_CALLBACK MCI_DATA_END_Callback);
-extern uint32_t MCI_Read_Block(uint32_t blockNum, MCI_DATA_END_CALLBACK MCI_DATA_END_Callback);
+extern bool MCI_Write_Block(uint32_t blockNum, MCI_DATA_END_CALLBACK MCI_DATA_END_Callback);
+extern bool MCI_Read_Block(uint32_t blockNum, MCI_DATA_END_CALLBACK MCI_DATA_END_Callback);
 
-uint8_t MCI_And_Card_initialize();
+bool MCI_And_Card_initialize();
 
-uint8_t MCI_ReadSector(uint32_t sector, uint8_t *readbuffer);
-uint8_t MCI_WriteSector(uint32_t sector, uint8_t *writebuffer);
+bool MCI_ReadSector(uint32_t sector, uint8_t *readbuffer);
+bool MCI_WriteSector(uint32_t sector, uint8_t *writebuffer);
 
 uint64_t sdMediaSize = 0;
 uint32_t sdSectorsPerBlock = 0;
@@ -548,8 +548,6 @@ typedef enum mci_func_error {
     MCI_FUNC_ERR_STATE = -4,
     MCI_FUNC_NOT_READY = -5,
 }en_Mci_Func_Error;
-
-#define MCI_Delay(x) LPC17_Time_Delay(nullptr, x)
 
 /* MultiMedia Card Interface(MCI) Controller */
 #define MCI_BASE_ADDR        0x400C0000 // 0xE008C000
@@ -702,7 +700,7 @@ void MCI_RXDisable(void) {
 ** Returned value:        true or false
 **
 ******************************************************************************/
-uint32_t MCI_CheckStatus(void) {
+bool MCI_CheckStatus(void) {
     uint32_t respValue;
     uint32_t i;
     i = 0;
@@ -930,7 +928,7 @@ void MCI_Set_MCIClock(uint32_t ClockRate) {
     MCI_CLOCK &= ~(0xFF); /* clear clock divider */
     MCI_CLOCK |= (1 << 8) | ClkValue | (1 << 9);
 
-    MCI_Delay(1 * 1000);
+    LPC17_Time_Delay(nullptr, 1 * 1000);
 }
 
 /******************************************************************************
@@ -942,7 +940,7 @@ void MCI_Set_MCIClock(uint32_t ClockRate) {
 ** Returned value:        true or false
 **
 ******************************************************************************/
-uint32_t SD_Set_BusWidth(uint32_t width) {
+bool SD_Set_BusWidth(uint32_t width) {
     uint32_t i;
 
     for (i = 0; i < 0x10; i++);    /* delay 3MCLK + 2PCLK  */
@@ -974,7 +972,7 @@ uint32_t SD_Set_BusWidth(uint32_t width) {
 ** Returned value:        true or fase, if VIC table is full, return false
 **
 ******************************************************************************/
-uint32_t MCI_Init(void) {
+void MCI_Init(void) {
     volatile uint32_t i;
 
     // Crude delay of 50ms at 120MHz
@@ -1019,8 +1017,6 @@ uint32_t MCI_Init(void) {
     for (i = 0; i < 0x2000; i++);
 
     LPC17_Interrupt_Activate(MCI_IRQn, (uint32_t*)&MCI_IRQHandler, (void*)0);
-
-    return (true);
 }
 
 /******************************************************************************
@@ -1042,7 +1038,7 @@ void MCI_SendCmd(uint32_t CmdIndex, uint32_t Argument, uint32_t ExpectResp, uint
         MCI_CLEAR = CmdStatus | MCI_CMD_ACTIVE;
     }
 
-    MCI_Delay(400);
+    LPC17_Time_Delay(nullptr, 400);
 
     /*set the command details, the CmdIndex should 0 through 0x3F only */
     CmdData |= (CmdIndex & 0x3F);    /* bit 0 through 5 only */
@@ -1072,7 +1068,7 @@ void MCI_SendCmd(uint32_t CmdIndex, uint32_t Argument, uint32_t ExpectResp, uint
     MCI_ARGUMENT = Argument;    /* Set the argument first, finally command */
     MCI_COMMAND = CmdData;
 
-    MCI_Delay(100);
+    LPC17_Time_Delay(nullptr, 100);
 }
 
 /******************************************************************************
@@ -1164,7 +1160,7 @@ uint32_t MCI_GetCmdResp(uint32_t ExpectCmdData, uint32_t ExpectResp, uint32_t *C
 ** Returned value:        true or false, true if card has been initialized.
 **
 ******************************************************************************/
-uint32_t MCI_Go_Idle_State(void) {
+bool MCI_Go_Idle_State(void) {
     uint32_t retryCount;
     uint32_t respStatus;
     uint32_t respValue[4];
@@ -1284,7 +1280,7 @@ uint32_t MCI_Send_ACMD_OP_Cond(void) {
     while (retryCount > 0) {
         MCI_POWER &= ~(1 << 6);
 
-        MCI_Delay(15000);
+        LPC17_Time_Delay(nullptr, 15000);
 
         if (MCI_Send_ACMD() == false) {
             retryCount--;
@@ -1416,7 +1412,7 @@ uint32_t MCI_CardInit(void) {
 ** Returned value:        If not timeout, return true.
 **
 ******************************************************************************/
-uint32_t MCI_Check_CID(void) {
+bool MCI_Check_CID(void) {
     uint32_t i, retryCount;
     uint32_t respStatus;
     uint32_t respValue[4];
@@ -1433,7 +1429,7 @@ uint32_t MCI_Check_CID(void) {
             return (true);
         }
 
-        MCI_Delay(100);
+        LPC17_Time_Delay(nullptr, 100);
         retryCount--;
     }
     return (false);
@@ -1448,7 +1444,7 @@ uint32_t MCI_Check_CID(void) {
 ** Returned value:        true if response is back before timeout.
 **
 ******************************************************************************/
-uint32_t MCI_Set_Address(void) {
+bool MCI_Set_Address(void) {
     uint32_t i, retryCount;
     uint32_t respStatus;
     uint32_t respValue[4];
@@ -1472,7 +1468,7 @@ uint32_t MCI_Set_Address(void) {
             return (true);
         }
 
-        MCI_Delay(100);
+        LPC17_Time_Delay(nullptr, 100);
         retryCount--;
     }
     return (false);
@@ -1489,7 +1485,7 @@ uint32_t MCI_Set_Address(void) {
 ** Returned value:        Response value
 **
 ******************************************************************************/
-uint32_t MCI_Send_CSD(void) {
+bool MCI_Send_CSD(void) {
     uint32_t i, retryCount, temp;
     uint32_t respStatus;
     uint32_t respValue[4];
@@ -1556,7 +1552,7 @@ uint32_t MCI_Send_CSD(void) {
             return (true);
         }
 
-        MCI_Delay(100);
+        LPC17_Time_Delay(nullptr, 100);
 
         retryCount--;
     }
@@ -1575,7 +1571,7 @@ uint32_t MCI_Send_CSD(void) {
 ** Returned value:        return false if response times out.
 **
 ******************************************************************************/
-uint32_t MCI_Select_Card(void) {
+bool MCI_Select_Card(void) {
     uint32_t i, retryCount;
     uint32_t respStatus;
     uint32_t respValue[4];
@@ -1654,7 +1650,7 @@ uint32_t MCI_Send_Status(void) {
 **                        in TRANS state.
 **
 ******************************************************************************/
-uint32_t MCI_Set_BlockLen(uint32_t blockLength) {
+bool MCI_Set_BlockLen(uint32_t blockLength) {
     uint32_t i, retryCount;
     uint32_t respStatus;
     uint32_t respValue[4];
@@ -1692,7 +1688,7 @@ uint32_t MCI_Set_BlockLen(uint32_t blockLength) {
 **                        TRANS state after the cmd.
 **
 ******************************************************************************/
-uint32_t MCI_Send_ACMD_Bus_Width(uint32_t buswidth) {
+bool MCI_Send_ACMD_Bus_Width(uint32_t buswidth) {
     uint32_t i, retryCount;
     uint32_t respStatus;
     uint32_t respValue[4];
@@ -1709,7 +1705,7 @@ uint32_t MCI_Send_ACMD_Bus_Width(uint32_t buswidth) {
             return (true);
         }
 
-        MCI_Delay(100);
+        LPC17_Time_Delay(nullptr, 100);
 
         retryCount--;
     }
@@ -1727,7 +1723,7 @@ uint32_t MCI_Send_ACMD_Bus_Width(uint32_t buswidth) {
 **                        shows ready bit is set.
 **
 ******************************************************************************/
-uint32_t MCI_Send_Stop(void) {
+bool MCI_Send_Stop(void) {
     uint32_t i, retryCount;
     uint32_t respStatus;
     uint32_t respValue[4];
@@ -1742,7 +1738,7 @@ uint32_t MCI_Send_Stop(void) {
             return(true);
         }
 
-        MCI_Delay(100);
+        LPC17_Time_Delay(nullptr, 100);
         retryCount--;
     }
     return (false);
@@ -1776,7 +1772,7 @@ uint32_t MCI_Send_Write_Block(uint32_t blockNum) {
             return(true);
         }
 
-        MCI_Delay(100);
+        LPC17_Time_Delay(nullptr, 100);
 
         retryCount--;
     }
@@ -1810,7 +1806,7 @@ uint32_t MCI_Send_Read_Block(uint32_t blockNum) {
             return(true);
         }
 
-        MCI_Delay(100);
+        LPC17_Time_Delay(nullptr, 100);
         retryCount--;
     }
     return (false);
@@ -1831,14 +1827,14 @@ uint32_t MCI_Send_Read_Block(uint32_t blockNum) {
 **
 ******************************************************************************/
 
-uint32_t MCI_Write_Block(uint32_t blockNum, MCI_DATA_END_CALLBACK Write_end_Callback) {
+bool MCI_Write_Block(uint32_t blockNum, MCI_DATA_END_CALLBACK Write_end_Callback) {
     uint32_t i;
     uint32_t DataCtrl = 0;
 
     MCI_CLEAR = 0x7FF;
     MCI_DATA_CTRL = 0;
 
-    MCI_Delay(25);
+    LPC17_Time_Delay(nullptr, 25);
 
     if (MCI_CheckStatus() != true) {
         MCI_Send_Stop();
@@ -1862,7 +1858,7 @@ uint32_t MCI_Write_Block(uint32_t blockNum, MCI_DATA_END_CALLBACK Write_end_Call
 
     MCI_DATA_CTRL = DataCtrl;
 
-    MCI_Delay(50);
+    LPC17_Time_Delay(nullptr, 50);
 
     return (true);
 }
@@ -1883,14 +1879,14 @@ uint32_t MCI_Write_Block(uint32_t blockNum, MCI_DATA_END_CALLBACK Write_end_Call
 **
 **
 ******************************************************************************/
-uint32_t MCI_Read_Block(uint32_t blockNum, MCI_DATA_END_CALLBACK read_end_Callback) {
+bool MCI_Read_Block(uint32_t blockNum, MCI_DATA_END_CALLBACK read_end_Callback) {
     uint32_t i;
     uint32_t DataCtrl = 0;
 
     MCI_CLEAR = 0x7FF;
     MCI_DATA_CTRL = 0;
 
-    MCI_Delay(25);
+    LPC17_Time_Delay(nullptr, 25);
 
     if (MCI_CheckStatus() != true) {
 
@@ -1915,7 +1911,7 @@ uint32_t MCI_Read_Block(uint32_t blockNum, MCI_DATA_END_CALLBACK read_end_Callba
 
     MCI_DATA_CTRL = DataCtrl;
 
-    MCI_Delay(50);
+    LPC17_Time_Delay(nullptr, 50);
 
     return (true);
 }
@@ -1930,16 +1926,14 @@ uint32_t MCI_Read_Block(uint32_t blockNum, MCI_DATA_END_CALLBACK read_end_Callba
 ** Returned value:        false if succeeded. Nuber  if Faild
 **
 ******************************************************************************/
-uint8_t MCI_And_Card_initialize(void) {
+bool MCI_And_Card_initialize(void) {
     int err = 0;
     sdMediaSize = 0;
     sdSectorsPerBlock = 0;
 
     DMA_Init();
 
-    if (MCI_Init() != true) {
-        err++;
-    }
+    MCI_Init();
 
     // Allow the card to power up...
     for (int b = 0; b < 0x200000; b++);
@@ -1986,7 +1980,7 @@ uint8_t MCI_And_Card_initialize(void) {
         err++;
     }
 
-    return err;
+    return err == 0 ? true : false;
 }
 
 /******************************************************************************
@@ -1998,11 +1992,12 @@ uint8_t MCI_And_Card_initialize(void) {
 **
 ******************************************************************************/
 volatile uint8_t Read_Flag = 0;
+
 void Read_end_Callback() {
     Read_Flag = 1;
 }
 
-uint8_t MCI_ReadSector(
+bool MCI_ReadSector(
     uint32_t sector,
     uint8_t *buff) {
     uint32_t i;
@@ -2010,11 +2005,9 @@ uint8_t MCI_ReadSector(
 
     ReadBlock = (uint8_t *)(DMA_DST);
 
-    if (MCI_Read_Block(sector, Read_end_Callback) != true) {
-
-        return true; // Error
+    if (MCI_Read_Block(sector, Read_end_Callback) == false) {
+        return false; // Error
     }
-
 
     temp = 0;
     i = 0;
@@ -2028,13 +2021,13 @@ uint8_t MCI_ReadSector(
         LPC17_Time_Delay(nullptr, 1000); // READ_TIME_OUT uint is ms;
     }
     Read_Flag = 0;
-    if (temp == 0)
-        return true; // Error
 
+    if (temp == 0)
+        return false; // Error
 
     memcpy(buff, ReadBlock, BLOCK_LENGTH);
 
-    return false;// No Error
+    return true;// No Error
 }
 
 /******************************************************************************
@@ -2052,7 +2045,7 @@ void Write_end_Callback() {
     Flag_write = 1;
 }
 
-uint8_t MCI_WriteSector(
+bool MCI_WriteSector(
     uint32_t sector,        /* Sector number (LBA) */
     uint8_t *buff    /* Data to be written */) {
     uint32_t i;
@@ -2062,9 +2055,9 @@ uint8_t MCI_WriteSector(
     memcpy(WriteBlock, buff, BLOCK_LENGTH);
 
 
-    if (MCI_Write_Block(sector, Write_end_Callback) != true) {
+    if (MCI_Write_Block(sector, Write_end_Callback) == false) {
         /* Fatal error */
-        return true; // Error
+        return false; // Error
     }
 
     temp = 0;
@@ -2083,9 +2076,9 @@ uint8_t MCI_WriteSector(
     Flag_write = 0;
 
     if (temp == 0)
-        return true; // Error
+        return false; // Error
 
-    return false;// No Error
+    return true;// No Error
 }
 
 /************************************************************************//**
@@ -2221,7 +2214,7 @@ TinyCLR_Result LPC17_SdCard_Acquire(const TinyCLR_SdCard_Provider* self, int32_t
     sdController[controller].pBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, LPC17_SD_SECTOR_SIZE);
     sdController[controller].sectorSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
 
-    if (MCI_And_Card_initialize())
+    if (!MCI_And_Card_initialize())
         return TinyCLR_Result::InvalidOperation;
 
     return TinyCLR_Result::Success;
@@ -2250,7 +2243,7 @@ TinyCLR_Result LPC17_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int
     uint8_t* pData = (uint8_t*)data;
 
     while (sectorCount) {
-        if (MCI_WriteSector(sectorNum, &pData[index]) == 0) {
+        if (MCI_WriteSector(sectorNum, &pData[index]) == true) {
             index += LPC17_SD_SECTOR_SIZE;
             sectorNum++;
             sectorCount--;
@@ -2274,7 +2267,7 @@ TinyCLR_Result LPC17_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int3
     auto sectorNum = sector;
 
     while (sectorCount) {
-        if (MCI_ReadSector(sectorNum, &data[index]) == 0) {
+        if (MCI_ReadSector(sectorNum, &data[index]) == true) {
             index += LPC17_SD_SECTOR_SIZE;
             sectorNum++;
             sectorCount--;
