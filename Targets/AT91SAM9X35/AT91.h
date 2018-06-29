@@ -33,47 +33,47 @@ void AT91_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider, con
 //
 //  PERIPHERAL ID DEFINITIONS FOR AT91SAM9X35
 //
-#define AT91C_ID_FIQ		((unsigned int)  0) // Advanced Interrupt Controller (FIQ)
-#define AT91C_ID_SYS		((unsigned int)  1) // System Interrupt
-#define AT91C_ID_PIOA_PIOB	((unsigned int)  2) // Parallel IO Controller A and B
-#define AT91C_ID_PIOC_PIOD	((unsigned int)  3) // Parallel IO Controller C and D
-#define AT91C_ID_SMD		((unsigned int)  4) // SMD Soft Modem - not yet supported
-#define AT91C_ID_USART0		((unsigned int)  5) // USART 0
-#define AT91C_ID_USART1		((unsigned int)  6) // USART 1
-#define AT91C_ID_USART2		((unsigned int)  7) // USART 2
-#define AT91C_ID_TWI		AT91C_ID_TWI0       // only support one I2C
-#define AT91C_ID_TWI0		((unsigned int)  9) // Two-Wire Interface 0
-#define AT91C_ID_TWI1		((unsigned int) 10) // Two-Wire Interface 1
-#define AT91C_ID_TWI2		((unsigned int) 11) // Two-Wire Interface 2
-#define AT91C_ID_HSMCI0		((unsigned int) 12) // High Speed Multimedia Card Interface 0
-#define AT91C_ID_SPI0		((unsigned int) 13) // Serial Peripheral Interface
-#define AT91C_ID_SPI1		((unsigned int) 14) // Serial Peripheral Interface
-#define AT91C_ID_UART0		((unsigned int) 15) // UART 0
-#define AT91C_ID_UART1		((unsigned int) 16) // UART 1
-#define AT91C_ID_TC0_TC1	((unsigned int) 17) // Timer Counter 0, 1, 2, 3, 4, 5
-#define AT91C_ID_PWM		((unsigned int) 18) // Pulse Width Modulation Controller
-#define AT91C_ID_ADC		((unsigned int) 19) // ADC Controller
-#define AT91C_ID_DMAC0		((unsigned int) 20) // DMA Controller 0
-#define AT91C_ID_DMAC1		((unsigned int) 21) // DMA Controller 1
-#define AT91C_ID_UHPHS		((unsigned int) 22) // USB Host High Speed
-#define AT91C_ID_UDPHS		((unsigned int) 23) // USB Device High Speed
-#define AT91C_ID_EMAC		((unsigned int) 24) // Ethernet MAC
-#define AT91C_ID_LCDC		((unsigned int) 25) // LCD Controller
-#define AT91C_ID_HSMCI1		((unsigned int) 26) // High Speed Multimedia Card Interface 1
-#define AT91C_ID_SSC		((unsigned int) 28) // Synchronous Serial Controller
-#define AT91C_ID_CAN0		((unsigned int) 29) // CAN Controller 0
-#define AT91C_ID_CAN1		((unsigned int) 30) // CAN Controller 1
-#define AT91C_ID_IRQ0		((unsigned int) 31) // Advanced Interrupt Controller (IRQ0)
+#define AT91C_ID_FIQ        ((unsigned int)  0) // Advanced Interrupt Controller (FIQ)
+#define AT91C_ID_SYS        ((unsigned int)  1) // System Interrupt
+#define AT91C_ID_PIOA_PIOB    ((unsigned int)  2) // Parallel IO Controller A and B
+#define AT91C_ID_PIOC_PIOD    ((unsigned int)  3) // Parallel IO Controller C and D
+#define AT91C_ID_SMD        ((unsigned int)  4) // SMD Soft Modem - not yet supported
+#define AT91C_ID_USART0        ((unsigned int)  5) // USART 0
+#define AT91C_ID_USART1        ((unsigned int)  6) // USART 1
+#define AT91C_ID_USART2        ((unsigned int)  7) // USART 2
+#define AT91C_ID_TWI        AT91C_ID_TWI0       // only support one I2C
+#define AT91C_ID_TWI0        ((unsigned int)  9) // Two-Wire Interface 0
+#define AT91C_ID_TWI1        ((unsigned int) 10) // Two-Wire Interface 1
+#define AT91C_ID_TWI2        ((unsigned int) 11) // Two-Wire Interface 2
+#define AT91C_ID_HSMCI0        ((unsigned int) 12) // High Speed Multimedia Card Interface 0
+#define AT91C_ID_SPI0        ((unsigned int) 13) // Serial Peripheral Interface
+#define AT91C_ID_SPI1        ((unsigned int) 14) // Serial Peripheral Interface
+#define AT91C_ID_UART0        ((unsigned int) 15) // UART 0
+#define AT91C_ID_UART1        ((unsigned int) 16) // UART 1
+#define AT91C_ID_TC0_TC1    ((unsigned int) 17) // Timer Counter 0, 1, 2, 3, 4, 5
+#define AT91C_ID_PWM        ((unsigned int) 18) // Pulse Width Modulation Controller
+#define AT91C_ID_ADC        ((unsigned int) 19) // ADC Controller
+#define AT91C_ID_DMAC0        ((unsigned int) 20) // DMA Controller 0
+#define AT91C_ID_DMAC1        ((unsigned int) 21) // DMA Controller 1
+#define AT91C_ID_UHPHS        ((unsigned int) 22) // USB Host High Speed
+#define AT91C_ID_UDPHS        ((unsigned int) 23) // USB Device High Speed
+#define AT91C_ID_EMAC        ((unsigned int) 24) // Ethernet MAC
+#define AT91C_ID_LCDC        ((unsigned int) 25) // LCD Controller
+#define AT91C_ID_HSMCI1        ((unsigned int) 26) // High Speed Multimedia Card Interface 1
+#define AT91C_ID_SSC        ((unsigned int) 28) // Synchronous Serial Controller
+#define AT91C_ID_CAN0        ((unsigned int) 29) // CAN Controller 0
+#define AT91C_ID_CAN1        ((unsigned int) 30) // CAN Controller 1
+#define AT91C_ID_IRQ0        ((unsigned int) 31) // Advanced Interrupt Controller (IRQ0)
 
 //
 // BASE ADDRESS DEFINITIONS FOR AT91SAM9RL64
 //
 #define AT91C_BASE_SYS          0xFFFFE600 // (SYS) Base Address
-#define AT91C_BASE_DMAC0        0xFFFFEC00 // Hydra original address 0xFFFFE600 // (DMAC)Address						- Not same Memory Address
+#define AT91C_BASE_DMAC0        0xFFFFEC00 // Hydra original address 0xFFFFE600 // (DMAC)Address                        - Not same Memory Address
 #define AT91C_BASE_DDRS         0xFFFFE800 // (DDRS) Address
 #define AT91C_BASE_SDRAMC       0xFFFFEA00 // (SDRAMC) Base Address
 #define AT91C_BASE_SMC          0xFFFFEC00 // (SMC) Base Address
-#define AT91C_BASE_MATRIX       0xFFFFEE00 // (MATRIX) Base Address				- Not same Memory Address
+#define AT91C_BASE_MATRIX       0xFFFFEE00 // (MATRIX) Base Address                - Not same Memory Address
 #define AT91C_BASE_AIC          0xFFFFF000 // (AIC) Base Address
 #define AT91C_BASE_PDC_DBGU     0xFFFFF300 // (PDC_DBGU) Base Address
 #define AT91C_BASE_DBGU         0xFFFFF200 // (DBGU) Base Address
@@ -83,48 +83,48 @@ void AT91_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider, con
 #define AT91C_BASE_PIOD         0xFFFFFA00 // (PIOD) Base Address
 #define AT91C_BASE_CKGR         0xFFFFFC20 // (CKGR) Base Address
 #define AT91C_BASE_PMC          0xFFFFFC00 // (PMC) Base Address
-#define AT91C_BASE_RSTC         0xFFFFFE00 // (RSTC) Base Address				- Not same Memory Address
+#define AT91C_BASE_RSTC         0xFFFFFE00 // (RSTC) Base Address                - Not same Memory Address
 #define AT91C_BASE_RSTC_SR      0xFFFFFD04
 #define AT91C_BASE_RSTC_MR      0xFFFFFD08
 #define AT91C_BASE_SHDWC        0xFFFFFD10 // (SHDWC) Base Address
-#define AT91C_BASE_RTTC         	0xFFFFFD20 // (RTTC) Base Address
-#define AT91C_BASE_PITC         	0xFFFFFE30 // (PITC) Base Address
-#define AT91C_BASE_WDTC         	0xFFFFFE40 // (WDTC) Base Address
-#define AT91C_BASE_SCKCR        	0xFFFFFE50 // (SCKCR) Base Address
-#define AT91C_BASE_GPBR         	0xFFFFFD60 // (GPBR) Base Address
-#define AT91C_BASE_TC0         		0xF8008000 // Hydra original address 0xFFFA0000 // (TC0) Base Address
-#define AT91C_BASE_TC1          	0xFFFA0040 // (TC1) Base Address
-#define AT91C_BASE_TC2          	0xFFFA0080 // (TC2) Base Address
-#define AT91C_BASE_TCB0         	0xFFFA0000 // (TCB0) Base Address
-#define AT91C_BASE_PDC_MCI      	0xFFFA4100 // (PDC_MCI) Base Address
-#define AT91C_BASE_MCI          	0xF0008000 // Hydra original address 0xFFFA4000 // (MCI) Base Address
-#define AT91C_BASE_TWI0         	0xF8010000 // Hydra original address 0xFFFA8000 // (TWI1) Base Address
-#define AT91C_BASE_TWI1         	0xF8014000 // Hydra original address 0xFFFAC000 // (TWI2) Base Address
-#define AT91C_BASE_TWI2         	0xF8018000 // (TWI3) Base Address
-#define AT91C_BASE_TWI          	AT91C_BASE_TWI0 // Support one I2C controller only
-#define AT91C_BASE_USART0          	0xF801C000 // Hydra original address 0xFFFB0000 // (US0) Base Address				- Not same Memory Address
-#define AT91C_BASE_USART1          	0xF8020000 // Hydra original address 0xFFFB4000 // (US1) Base Address				- Not same Memory Address
-#define AT91C_BASE_USART2          	0xF8024000 // Hydra original address 0xFFFB8000 // (US2) Base Address				- Not same Memory Address
-#define AT91C_BASE_UART0			0xF8040000
-#define AT91C_BASE_UART1			0xF8044000
-#define AT91C_BASE_PDC_US3      	0xFFFBC100 // (PDC_US3) Base Address
-#define AT91C_BASE_US3          	0xF8008000 // Hydra original address 0xFFFBC000 // (US3) Base Address				- Not same Memory Address
-#define AT91C_BASE_PDC_SSC0     	0xFFFC0100 // (PDC_SSC0) Base Address
-#define AT91C_BASE_SSC0         	0xFFFC0000 // (SSC0) Base Address
-#define AT91C_BASE_PDC_SSC1     	0xFFFC4100 // (PDC_SSC1) Base Address
-#define AT91C_BASE_SSC1         	0xFFFC4000 // (SSC1) Base Address
-#define AT91C_BASE_PWMC         	0xF8034000 // Hydra original address 0xFFFC8000 // (PWMC) Base Address				- Not same Memory Address
-#define AT91C_BASE_PDC_SPI0     	0xFFFCC100 // (PDC_SPI0) Base Address
-#define AT91C_BASE_SPI0         	0xF0000000 // (SPI0) Base Address // Hydra original address 0xFFFCC000
-#define AT91C_BASE_SPI1         	0xF0004000 // (SPI1) Base Address
-#define AT91C_BASE_TSADCC       	0xFFFD0000 // (ADC touch screen) Base Address
-#define AT91C_BASE_UDP          	0xF803C000 // 0xFFFD4000 // (UDP) Base Address - Changed on G400
-#define AT91C_BASE_AC97         	0xFFFD8000 // (UDP) Base Address
-#define AT91C_BASE_ITCM         	0x00100000 // (ITCM) Base Address
-#define AT91C_BASE_DTCM         	0x00200000 // (DTCM) Base Address
-#define AT91C_BASE_LCDC         	0xF8038000 // Hydra original address 0x00500000 // (LCDC) Base Address
-#define AT91C_BASE_UDP_DMA			0x00500000 // Hydra original address 0x00600000 // (UDP DMA) Base Address
-#define AT91C_BASE_EMAC				0xF802C000
+#define AT91C_BASE_RTTC             0xFFFFFD20 // (RTTC) Base Address
+#define AT91C_BASE_PITC             0xFFFFFE30 // (PITC) Base Address
+#define AT91C_BASE_WDTC             0xFFFFFE40 // (WDTC) Base Address
+#define AT91C_BASE_SCKCR            0xFFFFFE50 // (SCKCR) Base Address
+#define AT91C_BASE_GPBR             0xFFFFFD60 // (GPBR) Base Address
+#define AT91C_BASE_TC0                 0xF8008000 // Hydra original address 0xFFFA0000 // (TC0) Base Address
+#define AT91C_BASE_TC1              0xFFFA0040 // (TC1) Base Address
+#define AT91C_BASE_TC2              0xFFFA0080 // (TC2) Base Address
+#define AT91C_BASE_TCB0             0xFFFA0000 // (TCB0) Base Address
+#define AT91C_BASE_PDC_MCI          0xFFFA4100 // (PDC_MCI) Base Address
+#define AT91C_BASE_MCI              0xF0008000 // Hydra original address 0xFFFA4000 // (MCI) Base Address
+#define AT91C_BASE_TWI0             0xF8010000 // Hydra original address 0xFFFA8000 // (TWI1) Base Address
+#define AT91C_BASE_TWI1             0xF8014000 // Hydra original address 0xFFFAC000 // (TWI2) Base Address
+#define AT91C_BASE_TWI2             0xF8018000 // (TWI3) Base Address
+#define AT91C_BASE_TWI              AT91C_BASE_TWI0 // Support one I2C controller only
+#define AT91C_BASE_USART0              0xF801C000 // Hydra original address 0xFFFB0000 // (US0) Base Address                - Not same Memory Address
+#define AT91C_BASE_USART1              0xF8020000 // Hydra original address 0xFFFB4000 // (US1) Base Address                - Not same Memory Address
+#define AT91C_BASE_USART2              0xF8024000 // Hydra original address 0xFFFB8000 // (US2) Base Address                - Not same Memory Address
+#define AT91C_BASE_UART0            0xF8040000
+#define AT91C_BASE_UART1            0xF8044000
+#define AT91C_BASE_PDC_US3          0xFFFBC100 // (PDC_US3) Base Address
+#define AT91C_BASE_US3              0xF8008000 // Hydra original address 0xFFFBC000 // (US3) Base Address                - Not same Memory Address
+#define AT91C_BASE_PDC_SSC0         0xFFFC0100 // (PDC_SSC0) Base Address
+#define AT91C_BASE_SSC0             0xFFFC0000 // (SSC0) Base Address
+#define AT91C_BASE_PDC_SSC1         0xFFFC4100 // (PDC_SSC1) Base Address
+#define AT91C_BASE_SSC1             0xFFFC4000 // (SSC1) Base Address
+#define AT91C_BASE_PWMC             0xF8034000 // Hydra original address 0xFFFC8000 // (PWMC) Base Address                - Not same Memory Address
+#define AT91C_BASE_PDC_SPI0         0xFFFCC100 // (PDC_SPI0) Base Address
+#define AT91C_BASE_SPI0             0xF0000000 // (SPI0) Base Address // Hydra original address 0xFFFCC000
+#define AT91C_BASE_SPI1             0xF0004000 // (SPI1) Base Address
+#define AT91C_BASE_TSADCC           0xFFFD0000 // (ADC touch screen) Base Address
+#define AT91C_BASE_UDP              0xF803C000 // 0xFFFD4000 // (UDP) Base Address - Changed on G400
+#define AT91C_BASE_AC97             0xFFFD8000 // (UDP) Base Address
+#define AT91C_BASE_ITCM             0x00100000 // (ITCM) Base Address
+#define AT91C_BASE_DTCM             0x00200000 // (DTCM) Base Address
+#define AT91C_BASE_LCDC             0xF8038000 // Hydra original address 0x00500000 // (LCDC) Base Address
+#define AT91C_BASE_UDP_DMA            0x00500000 // Hydra original address 0x00600000 // (UDP DMA) Base Address
+#define AT91C_BASE_EMAC                0xF802C000
 
 // RTSC bit defines
 #define AT91C_RTSC__PROCRST     0x01         // processor reset bit
@@ -584,6 +584,34 @@ TinyCLR_Result AT91_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, int
 TinyCLR_Result AT91_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, int32_t controller, size_t size);
 TinyCLR_Result AT91_Can_GetControllerCount(const TinyCLR_Can_Provider* self, int32_t& count);
 void AT91_Can_Reset();
+
+// MCI
+typedef struct _AT91S_MCI {
+    uint32_t     MCI_CR;
+    uint32_t     MCI_MR;
+    uint32_t     MCI_DTOR;
+    uint32_t     MCI_SDCR;
+    uint32_t     MCI_ARGR;
+    uint32_t     MCI_CMDR;
+    uint32_t     MCI_BLKR;
+    uint32_t     MCI_CSTOR;
+    uint32_t     MCI_RSPR[4];
+    uint32_t     MCI_RDR;
+    uint32_t     MCI_TDR;
+    uint32_t     Reserved1[2];
+    uint32_t     MCI_SR;
+    uint32_t     MCI_IER;
+    uint32_t     MCI_IDR;
+    uint32_t     MCI_IMR;
+    uint32_t     MCI_DMA;
+    uint32_t     MCI_CFG;
+    uint32_t     Reserved2[35];
+    uint32_t     MCI_WPMR;
+    uint32_t     MCI_WPSR;
+    uint32_t     Reserved3[69];
+    uint32_t     MCI_FIFO[256];
+
+} AT91S_MCI, *AT91PS_MCI;
 
 //DAC
 const TinyCLR_Api_Info* AT91_Dac_GetApi();
