@@ -3,13 +3,9 @@
 #include <string.h>
 
 #ifdef INCLUDE_SD
-
-extern "C" {
-    extern uint32_t Load$$ER_DMA$$Base;
-}
-
 //SD timeout command
 #define TRANSFER_CMD_TIMEOUT 2000000
+
 
 // DMA
 
@@ -32,23 +28,23 @@ extern "C" {
 #define DMAC0_PERHERIAL 20
 #define DMAC0_INTERRUP_ID DMAC0_PERHERIAL
 
-#define DMAC0_EBCIER_REG                    (*(volatile unsigned int *)(0xFFFFEC18))
-#define DMAC0_EN_REG                         (*(volatile unsigned int *)(0xFFFFEC04))
-#define DMAC0_CHER_REG                         (*(volatile unsigned int *)(0xFFFFEC28)) //DMAC0 Channel Handler Enable Register
-#define DMAC0_CHDR_REG                         (*(volatile unsigned int *)(0xFFFFEC2C)) //DMAC0 Channel Handler Disable Register
-#define DMAC0_EBCISR_REG                     (*(volatile unsigned int *)(0xFFFFEC24)) //DMAC0 Error, Buffer Transfer and Chained Buffer Transfer Status Register
-#define DMAC0_CTRLA_REG                     (*(volatile unsigned int *)(0xFFFFEC48)) //Control A Register
-#define DMAC0_CTRLB_REG                     (*(volatile unsigned int *)(0xFFFFEC4C)) //Control B Register
-#define DMAC0_CFG_REG                         (*(volatile unsigned int *)(0xFFFFEC50)) //Config Register
-#define DMAC0_SREQ_REG                                          (*(volatile unsigned int *)(0xFFFFEC08)) //DMAC0 Software Single Request Register
-#define DMAC0_LAST_REG                                          (*(volatile unsigned int *)(0xFFFFEC10)) //DMAC0 Software Single Request Register
-#define DMAC0_CHSR_REG                                          (*(volatile unsigned int *)(0xFFFFEC30)) //DMAC0 Channel Handler Status Register
-#define DMAC0_DSCR_REG                                          (*(volatile unsigned int *)(0xFFFFEC44)) //DMAC0 Channel Handler Status Register
+#define DMAC0_EBCIER_REG                    (*(volatile uint32_t *)(0xFFFFEC18))
+#define DMAC0_EN_REG                         (*(volatile uint32_t *)(0xFFFFEC04))
+#define DMAC0_CHER_REG                         (*(volatile uint32_t *)(0xFFFFEC28)) //DMAC0 Channel Handler Enable Register
+#define DMAC0_CHDR_REG                         (*(volatile uint32_t *)(0xFFFFEC2C)) //DMAC0 Channel Handler Disable Register
+#define DMAC0_EBCISR_REG                     (*(volatile uint32_t *)(0xFFFFEC24)) //DMAC0 Error, Buffer Transfer and Chained Buffer Transfer Status Register
+#define DMAC0_CTRLA_REG                     (*(volatile uint32_t *)(0xFFFFEC48)) //Control A Register
+#define DMAC0_CTRLB_REG                     (*(volatile uint32_t *)(0xFFFFEC4C)) //Control B Register
+#define DMAC0_CFG_REG                         (*(volatile uint32_t *)(0xFFFFEC50)) //Config Register
+#define DMAC0_SREQ_REG                                          (*(volatile uint32_t *)(0xFFFFEC08)) //DMAC0 Software Single Request Register
+#define DMAC0_LAST_REG                                          (*(volatile uint32_t *)(0xFFFFEC10)) //DMAC0 Software Single Request Register
+#define DMAC0_CHSR_REG                                          (*(volatile uint32_t *)(0xFFFFEC30)) //DMAC0 Channel Handler Status Register
+#define DMAC0_DSCR_REG                                          (*(volatile uint32_t *)(0xFFFFEC44)) //DMAC0 Channel Handler Status Register
 
-#define HSMCI_SR_REG                         (*(volatile unsigned int *)(0xF0008040)) //HSMCI Status Register
+#define HSMCI_SR_REG                         (*(volatile uint32_t *)(0xF0008040)) //HSMCI Status Register
 
-#define GPDMA_Source_Register_Channel            (*(volatile unsigned int *)(0xFFFFEC3C)) // chanel 0 default
-#define GPDMA_Destination_Register_Channel        (*(volatile unsigned int *)(0xFFFFEC40)) // chanel 0 default
+#define GPDMA_Source_Register_Channel            (*(volatile uint32_t *)(0xFFFFEC3C)) // chanel 0 default
+#define GPDMA_Destination_Register_Channel        (*(volatile uint32_t *)(0xFFFFEC40)) // chanel 0 default
 
 uint32_t DMA_Config(uint32_t DMAMode, uint8_t* pData);
 uint32_t DMA_Init(void);
@@ -295,7 +291,7 @@ uint32_t DMA_Config(uint32_t DMAMode, uint8_t* pData) {
 //------------------------------------------------------------------------------
 
 /// MCI end-of-transfer callback function.
-typedef void(*MciCallback)(unsigned char status, void *pCommand);
+typedef void(*MciCallback)(uint8_t status, void *pCommand);
 
 //------------------------------------------------------------------------------
 /// MCI Transfer Request prepared by the application upper layer. This structure
@@ -305,25 +301,25 @@ typedef void(*MciCallback)(unsigned char status, void *pCommand);
 typedef struct _MciCmd {
 
     /// Command status.
-    volatile char status;
+    volatile int8_t status;
     /// Command code.
-    unsigned int cmd;
+    uint32_t cmd;
     /// Command argument.
-    unsigned int arg;
+    uint32_t arg;
     /// Data buffer.
-    unsigned char *pData;
+    uint8_t *pData;
     /// Size of data buffer in bytes.
-    unsigned short blockSize;
+    uint16_t blockSize;
     /// Number of blocks to be transfered
-    unsigned short nbBlock;
+    uint16_t nbBlock;
     /// Indicate if continue to transfer data
-    unsigned char conTrans;
+    uint8_t conTrans;
     /// Indicates if the command is a read operation.
-    unsigned char isRead;
+    uint8_t isRead;
     /// Response buffer.
-    unsigned int  *pResp;
+    uint32_t  *pResp;
     /// SD card response type.
-    unsigned char  resType;
+    uint8_t  resType;
     /// Optional user-provided callback function.
     MciCallback callback;
     /// Optional argument to the callback function.
@@ -340,11 +336,11 @@ typedef struct {
     /// Pointer to a MCI peripheral.
     AT91S_MCI *pMciHw;
     /// MCI peripheral identifier.
-    unsigned char mciId;
+    uint8_t mciId;
     /// Pointer to currently executing command.
     MciCmd *pCommand;
     /// Mutex.
-    volatile char semaphore;
+    volatile int8_t semaphore;
 
 } Mci;
 
@@ -401,26 +397,26 @@ typedef struct {
 //         Global functions
 //------------------------------------------------------------------------------
 
-void MCI_SetSpeed(Mci *pMci, unsigned int mciSpeed);
+void MCI_SetSpeed(Mci *pMci, uint32_t mciSpeed);
 
-unsigned char MCI_SendCommand(Mci *pMci, MciCmd *pMciCmd);
+uint8_t MCI_SendCommand(Mci *pMci, MciCmd *pMciCmd);
 
 void MCI_Handler(Mci *pMci);
 
-unsigned char MCI_IsTxComplete(MciCmd *pMciCmd);
+uint8_t MCI_IsTxComplete(MciCmd *pMciCmd);
 
-unsigned char MCI_CheckBusy(Mci *pMci);
+uint8_t MCI_CheckBusy(Mci *pMci);
 
 void MCI_Close(Mci *pMci);
 
-void MCI_SetBusWidth(Mci *pMci, unsigned char busWidth);
+void MCI_SetBusWidth(Mci *pMci, uint8_t busWidth);
 
 //------------------------------------------------------------------------------
 /// Enable/disable a MCI driver instance.
 /// \param pMci  Pointer to a MCI driver instance.
 /// \param enb  0 for disable MCI and 1 for enable MCI.
 //------------------------------------------------------------------------------
-void MCI_Enable(Mci *pMci, unsigned char enb) {
+void MCI_Enable(Mci *pMci, uint8_t enb) {
     AT91S_MCI *pMciHw = pMci->pMciHw;
 
     // Set the Control Register: Enable/Disable MCI interface clock
@@ -442,9 +438,9 @@ void MCI_Enable(Mci *pMci, unsigned char enb) {
 void MCI_Init(
     Mci *pMci,
     AT91S_MCI *pMciHw,
-    unsigned char mciId,
-    unsigned int mode) {
-    unsigned short clkDiv;
+    uint8_t mciId,
+    uint32_t mode) {
+    uint16_t clkDiv;
 
     // Initialize the MCI driver structure
     pMci->pMciHw = pMciHw;
@@ -515,10 +511,10 @@ void MCI_Close(Mci *pMci) {
 /// \param pMci  Pointer to the low level MCI driver.
 /// \param mciSpeed  MCI clock speed in Hz.
 //------------------------------------------------------------------------------
-void MCI_SetSpeed(Mci *pMci, unsigned int mciSpeed) {
+void MCI_SetSpeed(Mci *pMci, uint32_t mciSpeed) {
     AT91S_MCI *pMciHw = pMci->pMciHw;
-    unsigned int mciMr;
-    unsigned int clkdiv;
+    uint32_t mciMr;
+    uint32_t clkdiv;
 
     // Set the Mode Register: 400KHz for MCK = 48MHz (CLKDIV = 58)
     mciMr = READ_MCI(pMciHw, MCI_MR) & (~AT91C_MCI_CLKDIV);
@@ -546,17 +542,17 @@ void MCI_SetSpeed(Mci *pMci, unsigned int mciSpeed) {
 /// \param pMci  Pointer to the low level MCI driver.
 /// \param busWidth  MCI bus width mode.
 //------------------------------------------------------------------------------
-void MCI_SetBusWidth(Mci *pMci, unsigned char busWidth) {
+void MCI_SetBusWidth(Mci *pMci, uint8_t busWidth) {
     AT91S_MCI *pMciHw = pMci->pMciHw;
-    unsigned int mciSdcr;
+    uint32_t mciSdcr;
 
     mciSdcr = (READ_MCI(pMciHw, MCI_SDCR) & ~(AT91C_MCI_SCDBUS));
 
     WRITE_MCI(pMciHw, MCI_SDCR, mciSdcr | busWidth);
 }
-unsigned char MCI_PreConfig(Mci *pMci, MciCmd *pCommand) {
-    unsigned int block_reg = (((pCommand->blockSize) << 16) | pCommand->nbBlock);
-    unsigned int dma_config = 0 |            //OFFSET is 0
+uint8_t MCI_PreConfig(Mci *pMci, MciCmd *pCommand) {
+    uint32_t block_reg = (((pCommand->blockSize) << 16) | pCommand->nbBlock);
+    uint32_t dma_config = 0 |            //OFFSET is 0
         (0 << 4) |        //CHKSIZE is 4
         (1 << 8) |        // Enable HSMCI DMA
         (1 << 12);    // ROPT is 0
@@ -564,7 +560,7 @@ unsigned char MCI_PreConfig(Mci *pMci, MciCmd *pCommand) {
 
     WRITE_MCI(pMciHw, MCI_BLKR, block_reg); // set block size, block num
     WRITE_MCI(pMciHw, MCI_DMA, dma_config);
-    (*(volatile unsigned int *)(0xF0008054)) = //( 1<<0) | //FIFOMODE
+    (*(volatile uint32_t *)(0xF0008054)) = //( 1<<0) | //FIFOMODE
         (1 << 4);     //FERRCTRL
 
 
@@ -577,10 +573,10 @@ unsigned char MCI_PreConfig(Mci *pMci, MciCmd *pCommand) {
 /// \param pMci  Pointer to an MCI driver instance.
 /// \param pCommand  Pointer to the command to execute.
 //------------------------------------------------------------------------------
-unsigned char MCI_SendCommand(Mci *pMci, MciCmd *pCommand) {
+uint8_t MCI_SendCommand(Mci *pMci, MciCmd *pCommand) {
     AT91PS_MCI pMciHw = pMci->pMciHw;
-    unsigned int mciIer = 0, mciMr = 0;
-    unsigned int status;
+    uint32_t mciIer = 0, mciMr = 0;
+    uint32_t status;
 
     // Command is now being executed
     pMci->pCommand = pCommand;
@@ -640,9 +636,9 @@ unsigned char MCI_SendCommand(Mci *pMci, MciCmd *pCommand) {
 /// Return value, 0 for bus ready, 1 for bus busy
 /// \param pMci  Pointer to a MCI driver instance.
 //------------------------------------------------------------------------------
-unsigned char MCI_CheckBusy(Mci *pMci) {
+uint8_t MCI_CheckBusy(Mci *pMci) {
     AT91S_MCI *pMciHw = pMci->pMciHw;
-    unsigned int status;
+    uint32_t status;
     // Enable MCI clock
     MCI_Enable(pMci, ENABLE);
 
@@ -665,9 +661,9 @@ unsigned char MCI_CheckBusy(Mci *pMci) {
 /// Check BLKE bit of status register on the given MCI driver.
 /// \param pMci  Pointer to a MCI driver instance.
 //------------------------------------------------------------------------------
-unsigned char MCI_CheckBlke(Mci *pMci) {
+uint8_t MCI_CheckBlke(Mci *pMci) {
     AT91S_MCI *pMciHw = pMci->pMciHw;
-    unsigned int status;
+    uint32_t status;
 
     status = READ_MCI(pMciHw, MCI_SR);
 
@@ -687,11 +683,11 @@ void MCI_Handler(Mci *pMci) {
 
     AT91S_MCI *pMciHw = pMci->pMciHw;
     MciCmd *pCommand = pMci->pCommand;
-    unsigned int status;
-    unsigned char i;
-    unsigned int data;
+    uint32_t status;
+    uint8_t i;
+    uint32_t data;
 #if defined(at91rm9200)
-    unsigned int mciCr, mciSdcr, mciMr, mciDtor;
+    uint32_t mciCr, mciSdcr, mciMr, mciDtor;
 #endif
 
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -736,7 +732,7 @@ void MCI_Handler(Mci *pMci) {
 
         // Store the card response in the provided buffer
         if (pCommand->pResp) {
-            unsigned char resSize;
+            uint8_t resSize;
 
             switch (pCommand->resType) {
             case 1:
@@ -813,7 +809,7 @@ void MCI_Handler(Mci *pMci) {
 /// Returns 1 if the given MCI transfer is complete; otherwise returns 0.
 /// \param pCommand  Pointer to a MciCmd instance.
 //------------------------------------------------------------------------------
-unsigned char MCI_IsTxComplete(MciCmd *pCommand) {
+uint8_t MCI_IsTxComplete(MciCmd *pCommand) {
     if (pCommand->status != MCI_STATUS_PENDING) {
         if (pCommand->status != 0) {
 
@@ -897,7 +893,7 @@ unsigned char MCI_IsTxComplete(MciCmd *pCommand) {
 //------------------------------------------------------------------------------
 
 /// SD end-of-transfer callback function.
-typedef void(*SdCallback)(unsigned char status, void *pCommand);
+typedef void(*SdCallback)(uint8_t status, void *pCommand);
 
 //------------------------------------------------------------------------------
 /// SD Transfer Request prepared by the application upper layer. This structure
@@ -907,25 +903,25 @@ typedef void(*SdCallback)(unsigned char status, void *pCommand);
 typedef struct _SdCmd {
 
     /// Command status.
-    volatile char status;
+    volatile int8_t status;
     /// Command code.
-    unsigned int cmd;
+    uint32_t cmd;
     /// Command argument.
-    unsigned int arg;
+    uint32_t arg;
     /// Data buffer.
-    unsigned char *pData;
+    uint8_t *pData;
     /// Size of data buffer in bytes.
-    unsigned short blockSize;
+    uint16_t blockSize;
     /// Number of blocks to be transfered
-    unsigned short nbBlock;
+    uint16_t nbBlock;
     /// Indicate if continue to transfer data
-    unsigned char conTrans;
+    uint8_t conTrans;
     /// Indicates if the command is a read operation.
-    unsigned char isRead;
+    uint8_t isRead;
     /// Response buffer.
-    unsigned int  *pResp;
+    uint32_t  *pResp;
     /// SD card response type.
-    unsigned char  resType;
+    uint8_t  resType;
     /// Optional user-provided callback function.
     SdCallback callback;
     /// Optional argument to the callback function.
@@ -941,11 +937,11 @@ typedef struct {
     /// Pointer to a SPI peripheral.
     AT91S_MCI *pSdHw;
     /// SPI peripheral identifier.
-    unsigned char spiId;
+    uint8_t spiId;
     /// Pointer to currently executing command.
     SdCmd *pCommand;
     /// Mutex.
-    volatile char semaphore;
+    volatile int8_t semaphore;
 
 } SdDriver;
 
@@ -960,21 +956,21 @@ typedef struct _SdCard {
     /// Current MCI command being processed.
     SdCmd command;
     /// SD card current address.
-    unsigned short cardAddress;
+    uint16_t cardAddress;
     /// Card-specific data.
-    unsigned int csd[4];
+    uint32_t csd[4];
     /// Previous access block number.
-    unsigned int preBlock;
+    uint32_t preBlock;
     /// State after sd command complete
-    unsigned char state;
+    uint8_t state;
     /// Card type
-    unsigned char cardType;
+    uint8_t cardType;
     /// Card total size
-    unsigned int totalSize;
+    uint32_t totalSize;
     /// Card block number
-    unsigned int blockNr;
+    uint32_t blockNr;
     /// Card access mode
-    unsigned char mode;
+    uint8_t mode;
 
 } SdCard;
 
@@ -1177,11 +1173,11 @@ typedef struct _SdCard {
 /// \param pSd  Pointer to a SdCard driver instance.
 //------------------------------------------------------------------------------
 
-static unsigned char SendCommand(SdCard *pSd) {
+static uint8_t SendCommand(SdCard *pSd) {
     SdCmd *pCommand = &(pSd->command);
     SdDriver *pSdDriver = pSd->pSdDriver;
-    unsigned char error;
-    unsigned int i;
+    uint8_t error;
+    uint32_t i;
 
     // Send command
     error = MCI_SendCommand((Mci *)pSdDriver, (MciCmd *)pCommand);
@@ -1216,10 +1212,10 @@ static unsigned char SendCommand(SdCard *pSd) {
 /// Returns the command transfer result (see SendCommand).
 /// \param pSd  Pointer to a SdCard driver instance.
 //------------------------------------------------------------------------------
-static unsigned char Pon(SdCard *pSd) {
+static uint8_t Pon(SdCard *pSd) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned int response;
-    unsigned char error;
+    uint32_t response;
+    uint8_t error;
 
     memset(pCommand, 0, sizeof(SdCmd));
     // Fill command information
@@ -1239,10 +1235,10 @@ static unsigned char Pon(SdCard *pSd) {
 /// Returns the command transfer result (see SendCommand).
 /// \param pSd  Pointer to a SdCard driver instance.
 //------------------------------------------------------------------------------
-static unsigned char Cmd0(SdCard *pSd) {
+static uint8_t Cmd0(SdCard *pSd) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned int response;
-    unsigned char error;
+    uint32_t response;
+    uint8_t error;
 
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1265,10 +1261,10 @@ static unsigned char Cmd0(SdCard *pSd) {
 /// Returns the command transfer result (see SendCommand).
 /// \param pSd  Pointer to a SdCard driver instance.
 //------------------------------------------------------------------------------
-static unsigned char Cmd1(SdCard *pSd) {
+static uint8_t Cmd1(SdCard *pSd) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned char error;
-    unsigned int response;
+    uint8_t error;
+    uint32_t response;
 
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1302,7 +1298,7 @@ static unsigned char Cmd1(SdCard *pSd) {
 /// \param pSd  Pointer to a SD card driver instance.
 /// \param pCid  Buffer for storing the CID numbers.
 //------------------------------------------------------------------------------
-static unsigned char Cmd2(SdCard *pSd, unsigned int *pCid) {
+static uint8_t Cmd2(SdCard *pSd, uint32_t *pCid) {
     SdCmd *pCommand = &(pSd->command);
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1322,10 +1318,10 @@ static unsigned char Cmd2(SdCard *pSd, unsigned int *pCid) {
 /// Returns the command transfer result (see SendCommand).
 /// \param pSd  Pointer to a SD card driver instance.
 //------------------------------------------------------------------------------
-static unsigned char Cmd3(SdCard *pSd) {
+static uint8_t Cmd3(SdCard *pSd) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned int cardAddress;
-    unsigned char error;
+    uint32_t cardAddress;
+    uint8_t error;
 
     memset(pCommand, 0, sizeof(SdCmd));
     // Fill command information
@@ -1365,7 +1361,7 @@ static unsigned char Cmd3(SdCard *pSd) {
 /// \param pSd  Pointer to a SD card driver instance.
 /// \param address  Relative Card Address (0 deselects all).
 //------------------------------------------------------------------------------
-static unsigned char Cmd7(SdCard *pSd, unsigned int address) {
+static uint8_t Cmd7(SdCard *pSd, uint32_t address) {
     SdCmd *pCommand = &(pSd->command);
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1390,10 +1386,10 @@ static unsigned char Cmd7(SdCard *pSd, unsigned int address) {
 /// \param pSd  Pointer to a SD card driver instance.
 /// \param supplyVoltage  Expected supply voltage.
 //------------------------------------------------------------------------------
-static unsigned char Cmd8(SdCard *pSd, unsigned char supplyVoltage) {
+static uint8_t Cmd8(SdCard *pSd, uint8_t supplyVoltage) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned int response[2];
-    unsigned char error;
+    uint32_t response[2];
+    uint8_t error;
 
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1429,9 +1425,9 @@ static unsigned char Cmd8(SdCard *pSd, unsigned char supplyVoltage) {
 /// Returns the command transfer result (see SendCommand).
 /// \param pSd  Pointer to a SD card driver instance.
 //------------------------------------------------------------------------------
-static unsigned char Cmd9(SdCard *pSd) {
+static uint8_t Cmd9(SdCard *pSd) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned char error;
+    uint8_t error;
 
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1453,10 +1449,10 @@ static unsigned char Cmd9(SdCard *pSd) {
 /// \param pSd  Pointer to a SD card driver instance.
 /// \param pStatus  Pointer to a status variable.
 //------------------------------------------------------------------------------
-static unsigned char Cmd12(SdCard *pSd) {
+static uint8_t Cmd12(SdCard *pSd) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned char error;
-    unsigned int response;
+    uint8_t error;
+    uint32_t response;
 
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1480,9 +1476,9 @@ static unsigned char Cmd12(SdCard *pSd) {
 /// \param pSd  Pointer to a SD card driver instance.
 /// \param pStatus  Pointer to a status variable.
 //------------------------------------------------------------------------------
-static unsigned char Cmd13(SdCard *pSd, unsigned int *pStatus) {
+static uint8_t Cmd13(SdCard *pSd, uint32_t *pStatus) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned char error;
+    uint8_t error;
 
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1514,10 +1510,10 @@ static unsigned char Cmd13(SdCard *pSd, unsigned int *pStatus) {
 /// \param pSd  Pointer to a SD card driver instance.
 /// \param blockLength  Block length in bytes.
 //------------------------------------------------------------------------------
-static unsigned char Cmd16(SdCard *pSd, unsigned short blockLength) {
+static uint8_t Cmd16(SdCard *pSd, uint16_t blockLength) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned char error;
-    unsigned int response;
+    uint8_t error;
+    uint32_t response;
 
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1536,10 +1532,10 @@ static unsigned char Cmd16(SdCard *pSd, unsigned short blockLength) {
 }
 
 // erase block start
-unsigned char Cmd32(SdCard *pSd, unsigned short startsector) {
+uint8_t Cmd32(SdCard *pSd, uint16_t startsector) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned char error;
-    unsigned int response;
+    uint8_t error;
+    uint32_t response;
 
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1558,10 +1554,10 @@ unsigned char Cmd32(SdCard *pSd, unsigned short startsector) {
 }
 
 // erase block end
-unsigned char Cmd33(SdCard *pSd, unsigned short endsector) {
+uint8_t Cmd33(SdCard *pSd, uint16_t endsector) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned char error;
-    unsigned int response;
+    uint8_t error;
+    uint32_t response;
 
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1580,10 +1576,10 @@ unsigned char Cmd33(SdCard *pSd, unsigned short endsector) {
 }
 
 // erase
-unsigned char Cmd38(SdCard *pSd) {
+uint8_t Cmd38(SdCard *pSd) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned char error;
-    unsigned int response;
+    uint8_t error;
+    uint32_t response;
 
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1607,13 +1603,13 @@ unsigned char Cmd38(SdCard *pSd) {
 /// \param pData  Pointer to the application buffer to be filled.
 /// \param address  SD card address.
 //------------------------------------------------------------------------------
-static unsigned char Cmd17(SdCard *pSd,
-    unsigned short nbBlock,
-    unsigned char *pData,
-    unsigned int address) {
+static uint8_t Cmd17(SdCard *pSd,
+    uint16_t nbBlock,
+    uint8_t *pData,
+    uint32_t address) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned char error;
-    unsigned int response;
+    uint8_t error;
+    uint32_t response;
 
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1644,13 +1640,13 @@ static unsigned char Cmd17(SdCard *pSd,
 /// \param pData  Pointer to the application buffer to be filled.
 /// \param address  SD card address.
 //------------------------------------------------------------------------------
-static unsigned char Cmd18(SdCard *pSd,
-    unsigned short nbBlock,
-    unsigned char *pData,
-    unsigned int address) {
+static uint8_t Cmd18(SdCard *pSd,
+    uint16_t nbBlock,
+    uint8_t *pData,
+    uint32_t address) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned char error;
-    unsigned int response;
+    uint8_t error;
+    uint32_t response;
 
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1679,13 +1675,13 @@ static unsigned char Cmd18(SdCard *pSd,
 /// \param pData  Pointer to the application buffer to be filled.
 /// \param address  SD card address.
 //------------------------------------------------------------------------------
-static unsigned char Cmd24(SdCard *pSd,
-    unsigned short nbBlock,
-    unsigned char *pData,
-    unsigned int address) {
+static uint8_t Cmd24(SdCard *pSd,
+    uint16_t nbBlock,
+    uint8_t *pData,
+    uint32_t address) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned char error;
-    unsigned int response;
+    uint8_t error;
+    uint32_t response;
 
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1694,7 +1690,7 @@ static unsigned char Cmd24(SdCard *pSd,
     pCommand->arg = address;
     pCommand->blockSize = SD_BLOCK_SIZE;
     pCommand->nbBlock = nbBlock;
-    pCommand->pData = (unsigned char *)pData;
+    pCommand->pData = (uint8_t *)pData;
     pCommand->conTrans = MCI_NEW_TRANSFER;
     pCommand->resType = 1;
     pCommand->pResp = &response;
@@ -1714,13 +1710,13 @@ static unsigned char Cmd24(SdCard *pSd,
 /// \param pData  Pointer to the application buffer to be filled.
 /// \param address  SD card address.
 //------------------------------------------------------------------------------
-static unsigned char Cmd25(SdCard *pSd,
-    unsigned short nbBlock,
-    unsigned char *pData,
-    unsigned int address) {
+static uint8_t Cmd25(SdCard *pSd,
+    uint16_t nbBlock,
+    uint8_t *pData,
+    uint32_t address) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned char error;
-    unsigned int response;
+    uint8_t error;
+    uint32_t response;
 
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1729,7 +1725,7 @@ static unsigned char Cmd25(SdCard *pSd,
     pCommand->arg = address;
     pCommand->blockSize = SD_BLOCK_SIZE;
     pCommand->nbBlock = nbBlock;
-    pCommand->pData = (unsigned char *)pData;
+    pCommand->pData = (uint8_t *)pData;
     pCommand->conTrans = MCI_NEW_TRANSFER;
     pCommand->resType = 1;
     pCommand->pResp = &response;
@@ -1750,10 +1746,10 @@ static unsigned char Cmd25(SdCard *pSd,
 /// Returns the command transfer result (see SendCommand).
 /// \param pSd  Pointer to a SD card driver instance.
 //------------------------------------------------------------------------------
-static unsigned char Cmd55(SdCard *pSd) {
+static uint8_t Cmd55(SdCard *pSd) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned char error;
-    unsigned int response;
+    uint8_t error;
+    uint32_t response;
 
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1778,10 +1774,10 @@ static unsigned char Cmd55(SdCard *pSd) {
 /// \param pSd  Pointer to a SD card driver instance.
 /// \param pOcr   OCR value of the card
 //------------------------------------------------------------------------------
-static unsigned char Cmd58(SdCard *pSd, unsigned int *pOcr) {
+static uint8_t Cmd58(SdCard *pSd, uint32_t *pOcr) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned char error;
-    unsigned int response[2];
+    uint8_t error;
+    uint32_t response[2];
 
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1804,10 +1800,10 @@ static unsigned char Cmd58(SdCard *pSd, unsigned int *pOcr) {
 /// \param pSd  Pointer to a SD card driver instance.
 /// \param option  CRC option, 1 to turn on, 0 to trun off
 //------------------------------------------------------------------------------
-static unsigned char Cmd59(SdCard *pSd, unsigned char option) {
+static uint8_t Cmd59(SdCard *pSd, uint8_t option) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned char error;
-    unsigned int response;
+    uint8_t error;
+    uint32_t response;
 
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1833,10 +1829,10 @@ static unsigned char Cmd59(SdCard *pSd, unsigned char option) {
 /// \param pSd  Pointer to a SD card driver instance.
 /// \param busWidth  Bus width in bits.
 //------------------------------------------------------------------------------
-static unsigned char Acmd6(SdCard *pSd, unsigned char busWidth) {
+static uint8_t Acmd6(SdCard *pSd, uint8_t busWidth) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned char error;
-    unsigned int response;
+    uint8_t error;
+    uint32_t response;
 
 
     // Delay
@@ -1871,10 +1867,10 @@ static unsigned char Acmd6(SdCard *pSd, unsigned char busWidth) {
 /// \param hcs  Shall be true if Host support High capacity.
 /// \param pCCS  Set the pointed flag to 1 if hcs != 0 and SD OCR CCS flag is set.
 //------------------------------------------------------------------------------
-static unsigned char Acmd41(SdCard *pSd, unsigned char hcs, unsigned char *pCCS) {
+static uint8_t Acmd41(SdCard *pSd, uint8_t hcs, uint8_t *pCCS) {
     SdCmd *pCommand = &(pSd->command);
-    unsigned char error;
-    unsigned int response;
+    uint8_t error;
+    uint32_t response;
 
     do {
         error = Cmd55(pSd);
@@ -1916,10 +1912,10 @@ static unsigned char Acmd41(SdCard *pSd, unsigned char hcs, unsigned char *pCCS)
 /// \param pData  Pointer to the application buffer to be filled.
 /// \param address  SD card address.
 //------------------------------------------------------------------------------
-static unsigned char ContinuousRead(SdCard *pSd,
-    unsigned short nbBlock,
-    unsigned char *pData,
-    unsigned int address) {
+static uint8_t ContinuousRead(SdCard *pSd,
+    uint16_t nbBlock,
+    uint8_t *pData,
+    uint32_t address) {
     SdCmd *pCommand = &(pSd->command);
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1944,17 +1940,17 @@ static unsigned char ContinuousRead(SdCard *pSd,
 /// \param pData  Pointer to the application buffer to be filled.
 /// \param address  SD card address.
 //------------------------------------------------------------------------------
-static unsigned char ContinuousWrite(SdCard *pSd,
-    unsigned short nbBlock,
-    const unsigned char *pData,
-    unsigned int address) {
+static uint8_t ContinuousWrite(SdCard *pSd,
+    uint16_t nbBlock,
+    const uint8_t *pData,
+    uint32_t address) {
     SdCmd *pCommand = &(pSd->command);
 
     memset(pCommand, 0, sizeof(SdCmd));
     // Fill command information
     pCommand->blockSize = SD_BLOCK_SIZE;
     pCommand->nbBlock = nbBlock;
-    pCommand->pData = (unsigned char *)pData;
+    pCommand->pData = (uint8_t *)pData;
     pCommand->isRead = 0;
     pCommand->conTrans = MCI_CONTINUE_TRANSFER;
     // Set SD command state
@@ -1977,13 +1973,13 @@ static unsigned char ContinuousWrite(SdCard *pSd,
 //------------------------------------------------------------------------------
 
 
-static unsigned char MoveToTransferState(SdCard *pSd,
-    unsigned int address,
-    unsigned short nbBlocks,
-    unsigned char *pData,
-    unsigned char isRead, int32_t timeout) {
-    unsigned int status;
-    unsigned char error;
+static uint8_t MoveToTransferState(SdCard *pSd,
+    uint32_t address,
+    uint16_t nbBlocks,
+    uint8_t *pData,
+    uint8_t isRead, int32_t timeout) {
+    uint32_t status;
+    uint8_t error;
     int32_t trycnt = timeout;
 
     if ((pSd->state == SD_STATE_DATA)
@@ -2057,10 +2053,10 @@ static unsigned char MoveToTransferState(SdCard *pSd,
 /// \param nbBlocks Number of blocks to be read.
 /// \param pData  Data buffer whose size is at least the block size.
 //------------------------------------------------------------------------------
-unsigned char SD_ReadBlock(SdCard *pSd,
-    unsigned int address,
-    unsigned short nbBlocks,
-    unsigned char *pData, int32_t timeout) {
+uint8_t SD_ReadBlock(SdCard *pSd,
+    uint32_t address,
+    uint16_t nbBlocks,
+    uint8_t *pData, int32_t timeout) {
     return MoveToTransferState(pSd, address, nbBlocks, pData, 1, timeout);;
 }
 
@@ -2074,12 +2070,12 @@ unsigned char SD_ReadBlock(SdCard *pSd,
 /// \param nbBlocks Number of blocks to be read
 /// \param pData  Pointer to a 512 bytes buffer to be transfered
 //------------------------------------------------------------------------------
-unsigned char SD_WriteBlock(SdCard *pSd,
-    unsigned int address,
-    unsigned short nbBlocks,
-    const unsigned char *pData, int32_t timeout) {
+uint8_t SD_WriteBlock(SdCard *pSd,
+    uint32_t address,
+    uint16_t nbBlocks,
+    const uint8_t *pData, int32_t timeout) {
     return MoveToTransferState(pSd, address, nbBlocks,
-        (unsigned char *)pData, 0, timeout);
+        (uint8_t *)pData, 0, timeout);
 }
 
 //------------------------------------------------------------------------------
@@ -2092,7 +2088,7 @@ unsigned char SD_WriteBlock(SdCard *pSd,
 //------------------------------------------------------------------------------
 
 bool SD_ReadyToTransfer(SdCard *pSd, int32_t timeout) {
-    unsigned int status;
+    uint32_t status;
 
     while (Cmd13(pSd, &status) && timeout--) {
         AT91_Time_Delay(nullptr, 1);
@@ -2100,13 +2096,13 @@ bool SD_ReadyToTransfer(SdCard *pSd, int32_t timeout) {
 
     return timeout > 0;
 }
-unsigned char SD_MCI_Init(SdCard *pSd, SdDriver *pSdDriver) {
-    unsigned int sdCid[4];
-    unsigned char isCCSet;
-    unsigned char error;
-    unsigned int status;
-    unsigned char cmd8Retries = 2;
-    unsigned char cmd1Retries = 100;
+uint8_t SD_MCI_Init(SdCard *pSd, SdDriver *pSdDriver) {
+    uint32_t sdCid[4];
+    uint8_t isCCSet;
+    uint8_t error;
+    uint32_t status;
+    uint8_t cmd8Retries = 2;
+    uint8_t cmd1Retries = 100;
 
     // The command GO_IDLE_STATE (CMD0) is the software reset command and sets card into Idle State
     // regardless of the current card state.
@@ -2238,12 +2234,12 @@ unsigned char SD_MCI_Init(SdCard *pSd, SdDriver *pSdDriver) {
 /// \param pSd  Pointer to a SD card driver instance.
 /// \param pSdDriver  Pointer to SD driver already initialized.
 //------------------------------------------------------------------------------
-unsigned char SD_SPI_Init(SdCard *pSd, SdDriver *pSpi) {
-    unsigned char isCCSet;
-    unsigned char error;
-    unsigned char cmd8Retries = 2;
-    unsigned char cmd1Retries = 1;
-    unsigned int pOCR;
+uint8_t SD_SPI_Init(SdCard *pSd, SdDriver *pSpi) {
+    uint8_t isCCSet;
+    uint8_t error;
+    uint8_t cmd8Retries = 2;
+    uint8_t cmd1Retries = 1;
+    uint32_t pOCR;
 
     // The command GO_IDLE_STATE (CMD0) is the software reset command and sets card into Idle State
     // regardless of the current card state.
@@ -2356,8 +2352,8 @@ unsigned char SD_SPI_Init(SdCard *pSd, SdDriver *pSpi) {
 /// \param pSd  Pointer to a SD card driver instance.
 /// \param pSdDriver  Pointer to SD driver already initialized.
 //------------------------------------------------------------------------------
-unsigned char SD_Init(SdCard *pSd, SdDriver *pSdDriver) {
-    unsigned char error;
+uint8_t SD_Init(SdCard *pSd, SdDriver *pSdDriver) {
+    uint8_t error;
 
     // Initialize SdCard structure
     pSd->pSdDriver = pSdDriver;
@@ -2430,8 +2426,8 @@ unsigned char SD_Init(SdCard *pSd, SdDriver *pSdDriver) {
 /// \param pSd  Pointer to a SD card driver instance.
 /// \param pSdDriver  Pointer to MCI driver already initialized.
 //------------------------------------------------------------------------------
-unsigned char SD_Stop(SdCard *pSd, SdDriver *pSdDriver) {
-    unsigned char error;
+uint8_t SD_Stop(SdCard *pSd, SdDriver *pSdDriver) {
+    uint8_t error;
     SdCmd *pCommand = &(pSd->command);
 
     if (pCommand->conTrans == MCI_CONTINUE_TRANSFER) {
@@ -2588,7 +2584,7 @@ TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int3
 
     volatile uint32_t error = 0;
 
-    unsigned int status;
+    uint32_t status;
 
     while (sectorCount > 0) {
         if (SD_ReadyToTransfer(pSd, timeout) == false) {
@@ -2638,7 +2634,7 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32
 
     volatile uint32_t error = 0;
 
-    unsigned int status;
+    uint32_t status;
 
     uint8_t* pData = (uint8_t*)data;
 
