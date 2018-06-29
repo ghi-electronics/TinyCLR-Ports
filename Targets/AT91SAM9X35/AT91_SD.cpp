@@ -2090,6 +2090,16 @@ unsigned char SD_WriteBlock(SdCard *pSd,
 /// \param pSd  Pointer to a SD card driver instance.
 /// \param pSdDriver  Pointer to SD driver already initialized
 //------------------------------------------------------------------------------
+
+bool SD_ReadyToTransfer(SdCard *pSd, int32_t timeout) {
+    unsigned int status;
+
+    while (Cmd13(pSd, &status) && timeout--) {
+        AT91_Time_Delay(nullptr, 1);
+    }
+
+    return timeout > 0;
+}
 unsigned char SD_MCI_Init(SdCard *pSd, SdDriver *pSdDriver) {
     unsigned int sdCid[4];
     unsigned char isCCSet;
@@ -2581,17 +2591,11 @@ TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int3
     unsigned int status;
 
     while (sectorCount > 0) {
-		to = timeout;
+        if (SD_ReadyToTransfer(pSd, timeout) == false) {
+            return TinyCLR_Result::InvalidOperation;
+        }
 
-		while (Cmd13(pSd, &status) && to--) {
-			AT91_Time_Delay(nullptr, 1);
-		}
-		
-		if (!to) {
-			return TinyCLR_Result::InvalidOperation;
-		}
-		
-		to = timeout;
+        to = timeout;
         memcpy(sdController[controller].pBufferAligned, pData, AT91_SD_SECTOR_SIZE);
 
         if ((error = SD_WriteBlock(&sdDrv, sectorNum, 1, sdController[controller].pBufferAligned, timeout)) == 0) {
@@ -2639,18 +2643,12 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32
     uint8_t* pData = (uint8_t*)data;
 
     while (sectorCount > 0) {
+        if (SD_ReadyToTransfer(pSd, timeout) == false) {
+            return TinyCLR_Result::InvalidOperation;
+        }
+
         status = 0;
-			to = timeout;
-		
-		while (Cmd13(pSd, &status) && to--) {
-			AT91_Time_Delay(nullptr, 1);
-		}
-		
-		if (!to) {
-			return TinyCLR_Result::InvalidOperation;
-		}
-		
-		to = timeout;	
+        to = timeout;
         memset(sdController[controller].pBufferAligned, 0, AT91_SD_SECTOR_SIZE);
 
         if ((error = SD_ReadBlock(&sdDrv, sectorNum, 1, sdController[controller].pBufferAligned, timeout)) == 0) {
@@ -2704,32 +2702,31 @@ TinyCLR_Result AT91_SdCard_GetSectorMap(const TinyCLR_SdCard_Provider* self, int
 
     uint64_t MemCapacity = 0; //total memory size, in unit of byte
 
-    uint32_t Max_Trans_Speed = 0; 
+    uint32_t Max_Trans_Speed = 0;
 
-    TAAC = SD_CSD_TAAC(&sdDrv); 
-    NSAC = SD_CSD_NSAC(&sdDrv); 
-    MAX_RAN_SPEED = SD_CSD_TRAN_SPEED(&sdDrv); 
-    READ_BL_LEN = SD_CSD_READ_BL_LEN(&sdDrv); 
+    TAAC = SD_CSD_TAAC(&sdDrv);
+    NSAC = SD_CSD_NSAC(&sdDrv);
+    MAX_RAN_SPEED = SD_CSD_TRAN_SPEED(&sdDrv);
+    READ_BL_LEN = SD_CSD_READ_BL_LEN(&sdDrv);
 
     // Checks to see if the SD card is Version 1.0: Standard or Version 2.0: High Capacity
-    if (SD_CSD_STRUCTURE(&sdDrv) == 0x00)  
-    {
-        C_SIZE = SD_CSD_C_SIZE(&sdDrv); 
+    if (SD_CSD_STRUCTURE(&sdDrv) == 0x00) {
+        C_SIZE = SD_CSD_C_SIZE(&sdDrv);
 
-        C_SIZE_MULT = SD_CSD_C_SIZE_MULT(&sdDrv); 
+        C_SIZE_MULT = SD_CSD_C_SIZE_MULT(&sdDrv);
 
-        ERASE_BL_EN = (SD_CSD_ERASE_BLK_EN(&sdDrv) == 0x00) ? false : true; 
+        ERASE_BL_EN = (SD_CSD_ERASE_BLK_EN(&sdDrv) == 0x00) ? false : true;
 
-        SECTOR_SIZE = SD_CSD_SECTOR_SIZE(&sdDrv); 
+        SECTOR_SIZE = SD_CSD_SECTOR_SIZE(&sdDrv);
 
         MemCapacity = (C_SIZE + 1) * (0x1 << (C_SIZE_MULT + 2)) * (0x1 << READ_BL_LEN);
     }
     else {
-        C_SIZE = SD_CSD_C_SIZE_HC(&sdDrv); 
+        C_SIZE = SD_CSD_C_SIZE_HC(&sdDrv);
 
-        ERASE_BL_EN = (SD_CSD_ERASE_BLK_EN(&sdDrv) == 0x00) ? false : true; 
+        ERASE_BL_EN = (SD_CSD_ERASE_BLK_EN(&sdDrv) == 0x00) ? false : true;
 
-        SECTOR_SIZE = SD_CSD_SECTOR_SIZE(&sdDrv); 
+        SECTOR_SIZE = SD_CSD_SECTOR_SIZE(&sdDrv);
 
         MemCapacity = (uint64_t)(C_SIZE + 1) * 512 * 1024;
     }
