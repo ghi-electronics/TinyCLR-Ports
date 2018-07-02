@@ -2558,6 +2558,34 @@ TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_SdCard_Provider* self, int32_t 
 }
 
 TinyCLR_Result AT91_SdCard_Release(const TinyCLR_SdCard_Provider* self, int32_t controller) {
+    auto d0 = g_AT91_SdCard_Data0_Pins[controller];
+    auto d1 = g_AT91_SdCard_Data1_Pins[controller];
+    auto d2 = g_AT91_SdCard_Data2_Pins[controller];
+    auto d3 = g_AT91_SdCard_Data3_Pins[controller];
+    auto clk = g_AT91_SdCard_Clk_Pins[controller];
+    auto cmd = g_AT91_SdCard_Cmd_Pins[controller];
+
+    AT91_PMC &pmc = AT91::PMC();
+
+    pmc.DisablePeriphClock(AT91C_ID_HSMCI0); /* Disable clock to the Mci block */
+    pmc.DisablePeriphClock(AT91C_ID_DMAC0); /* Disable clock to the Dma block */
+
+    AT91_Interrupt_Deactivate(AT91C_ID_HSMCI0); /* Disable Interrupt */
+
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+
+    memoryProvider->Free(memoryProvider, sdController[controller].pBuffer);
+    memoryProvider->Free(memoryProvider, sdController[controller].sectorSizes);
+
+    AT91_Gpio_ClosePin(d0.number);
+    AT91_Gpio_ClosePin(d1.number);
+    AT91_Gpio_ClosePin(d2.number);
+    AT91_Gpio_ClosePin(d3.number);
+    AT91_Gpio_ClosePin(clk.number);
+    AT91_Gpio_ClosePin(cmd.number);
+
+    return TinyCLR_Result::Success;
+
     return TinyCLR_Result::Success;
 }
 
@@ -2618,7 +2646,7 @@ TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int3
 
         if (!to) {
             return TinyCLR_Result::TimedOut;
-        } 
+        }
     }
 
     return TinyCLR_Result::Success;
@@ -2675,7 +2703,7 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32
         if (error) {
             return TinyCLR_Result::InvalidOperation;
         }
-        
+
         if (!to) {
             return TinyCLR_Result::TimedOut;
         }
