@@ -17,7 +17,7 @@
 
 static const AT91_Gpio_PinConfiguration g_at91_pins[] = AT91_GPIO_PINS;
 
-#define AT91_Gpio_DebounceDefaultMilisecond   20
+#define AT91_Gpio_DebounceDefaultTicks   (20*10000) // 20ms in ticks
 #define AT91_Gpio_MaxPins                     SIZEOF_ARRAY(g_at91_pins)
 
 #define PIO_PPDDR(x)	(*(volatile unsigned long *)(0xFFFFF490 + (x * 0x200))) // Pull-down Disable Resistor Register -- Write Only
@@ -464,7 +464,7 @@ void AT91_Gpio_Reset() {
         auto& p = g_at91_pins[pin];
 
         g_pinReserved[pin] = false;
-        AT91_Gpio_SetDebounceTimeout(&gpioProvider, gpioController, pin, AT91_Gpio_DebounceDefaultMilisecond);
+        AT91_Gpio_SetDebounceTimeout(&gpioProvider, gpioController, pin, AT91_Gpio_DebounceDefaultTicks);
 
         if (p.apply) {
             AT91_Gpio_ConfigurePin(pin, p.direction, p.peripheralSelection, p.resistorMode);
