@@ -2610,10 +2610,15 @@ TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int3
 
         AT91_Cache_FlushCaches();
 
-        if (!to || error) {
+        DMA_DiableChannel();
 
+        if (error) {
             return TinyCLR_Result::InvalidOperation;
         }
+
+        if (!to) {
+            return TinyCLR_Result::TimedOut;
+        } 
     }
 
     return TinyCLR_Result::Success;
@@ -2665,8 +2670,14 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32
 
         AT91_Cache_FlushCaches();
 
-        if (!to || error) {
+        DMA_DiableChannel();
+
+        if (error) {
             return TinyCLR_Result::InvalidOperation;
+        }
+        
+        if (!to) {
+            return TinyCLR_Result::TimedOut;
         }
     }
     return TinyCLR_Result::Success;
