@@ -17,7 +17,7 @@
 #define DEVICE_TARGET LPC24
 #define DEVICE_NAME "EMX"
 #define DEVICE_MANUFACTURER "GHI Electronics, LLC"
-#define DEVICE_VERSION ((0ULL << 48) | (11ULL << 32) | (0ULL << 16) | (0ULL << 0))
+#define DEVICE_VERSION ((0ULL << 48) | (12ULL << 32) | (0ULL << 16) | (0ULL << 0))
 
 #define USB_DEBUGGER_VENDOR_ID 0x1B9F
 #define USB_DEBUGGER_PRODUCT_ID 0x5004
