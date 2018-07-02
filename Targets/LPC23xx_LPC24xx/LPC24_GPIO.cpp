@@ -91,7 +91,7 @@
 #define CLEAR_PIN_INTERRUPT(port, pin)                      *((volatile unsigned long *)(GPIO_BASE + IO0IntClr_OFFSET + port*0x10 )) =  (1u<<pin)
 
 // Driver
-#define LPC24_Gpio_DebounceDefaultMilisecond   20
+#define LPC24_Gpio_DebounceDefaultTicks   (20*10000) // 20ms in ticks
 #define LPC24_Gpio_MaxPins                     SIZEOF_ARRAY(g_lpc24_pins)
 
 static const LPC24_Gpio_PinConfiguration g_lpc24_pins[] = LPC24_GPIO_PINS;
@@ -463,7 +463,7 @@ void LPC24_Gpio_Reset() {
         auto& p = g_lpc24_pins[pin];
 
         g_pinReserved[pin] = false;
-        LPC24_Gpio_SetDebounceTimeout(&gpioProvider, gpioController, pin, LPC24_Gpio_DebounceDefaultMilisecond);
+        LPC24_Gpio_SetDebounceTimeout(&gpioProvider, gpioController, pin, LPC24_Gpio_DebounceDefaultTicks);
 
         if (p.apply) {
             LPC24_Gpio_ConfigurePin(pin, p.pinDirection, p.pinFunction, p.pinMode);

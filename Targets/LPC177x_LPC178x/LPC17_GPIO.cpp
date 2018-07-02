@@ -45,7 +45,7 @@ const char IOCON_Type[] = { 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'W', 'W', 'W', 'D
 static const LPC17_Gpio_PinConfiguration g_lpc17_pins[] = LPC17_GPIO_PINS;
 
 #define LPC17_Gpio_PinReserved                 1
-#define LPC17_Gpio_DebounceDefaultMilisecond   20
+#define LPC17_Gpio_DebounceDefaultTicks   (20*10000) // 20ms in ticks
 #define LPC17_Gpio_MaxPins                     SIZEOF_ARRAY(g_lpc17_pins)
 
 #define LPC17_GPIO_DEFAULT_CONTROLLER 0
@@ -440,7 +440,7 @@ void LPC17_Gpio_Reset() {
         auto& p = g_lpc17_pins[pin];
 
         g_pinReserved[pin] = 0;
-        LPC17_Gpio_SetDebounceTimeout(&gpioProvider, gpioController, pin, LPC17_Gpio_DebounceDefaultMilisecond);
+        LPC17_Gpio_SetDebounceTimeout(&gpioProvider, gpioController, pin, LPC17_Gpio_DebounceDefaultTicks);
 
         if (p.apply) {
             LPC17_Gpio_ConfigurePin(pin, p.direction, p.pinFunction, p.resistorMode, p.hysteresis, p.inputPolarity, p.slewRate, p.outputType);

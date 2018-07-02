@@ -20,7 +20,7 @@ static const STM32F4_Gpio_PinConfiguration g_stm32f4_pins[] = STM32F4_GPIO_PINS;
 
 static const int STM32F4_Gpio_MaxPins = SIZEOF_ARRAY(g_stm32f4_pins);
 
-#define STM32F4_Gpio_DebounceDefaultMilisecond     20
+#define STM32F4_Gpio_DebounceDefaultTicks     (20*10000) // 20ms in ticks
 #define STM32F4_Gpio_MaxInt                     16
 #define STM32F4_Gpio_PinReserved                 1
 
@@ -389,7 +389,7 @@ void STM32F4_Gpio_Reset() {
         auto& p = g_stm32f4_pins[i];
 
         g_pinReserved[i] = 0;
-        STM32F4_Gpio_SetDebounceTimeout(nullptr, gpioController, i, STM32F4_Gpio_DebounceDefaultMilisecond);
+        STM32F4_Gpio_SetDebounceTimeout(nullptr, gpioController, i, STM32F4_Gpio_DebounceDefaultTicks);
         STM32F4_Gpio_DisableInterrupt(i);
 
         if (p.apply) {
