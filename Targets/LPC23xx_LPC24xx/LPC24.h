@@ -281,6 +281,23 @@ TinyCLR_Result LPC24_Rtc_Release(const TinyCLR_Rtc_Provider* self);
 TinyCLR_Result LPC24_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime& value);
 TinyCLR_Result LPC24_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime value);
 
+////////////////////////////////////////////////////////////////////////////////
+//SD
+////////////////////////////////////////////////////////////////////////////////
+const TinyCLR_Api_Info* LPC24_SdCard_GetApi();
+
+TinyCLR_Result LPC24_SdCard_Acquire(const TinyCLR_SdCard_Provider* self, int32_t controller);
+TinyCLR_Result LPC24_SdCard_Release(const TinyCLR_SdCard_Provider* self, int32_t controller);
+TinyCLR_Result LPC24_SdCard_GetControllerCount(const TinyCLR_SdCard_Provider* self, int32_t& count);
+
+TinyCLR_Result LPC24_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, size_t& count, uint8_t* data, int32_t timeout);
+TinyCLR_Result LPC24_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, size_t& count, const uint8_t* data, int32_t timeout);
+TinyCLR_Result LPC24_SdCard_IsSectorErased(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, bool& erased);
+TinyCLR_Result LPC24_SdCard_EraseSector(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, size_t& count, int32_t timeout);
+TinyCLR_Result LPC24_SdCard_GetSectorMap(const TinyCLR_SdCard_Provider* self, int32_t controller, const size_t*& sizes, size_t& count, bool& isUniform);
+
+TinyCLR_Result LPC24_SdCard_Reset();
+
 //SPI
 const TinyCLR_Api_Info* LPC24_Spi_GetApi();
 void LPC24_Spi_Reset();

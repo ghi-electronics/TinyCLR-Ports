@@ -73,6 +73,14 @@
 
 #define INCLUDE_RTC
 
+#define INCLUDE_SD
+#define AT91_SD_DATA0_PINS { { PIN(A, 15), PS(A) } }
+#define AT91_SD_DATA1_PINS { { PIN(A, 18), PS(A) } }
+#define AT91_SD_DATA2_PINS { { PIN(A, 19), PS(A) } }
+#define AT91_SD_DATA3_PINS { { PIN(A, 20), PS(A) } }
+#define AT91_SD_CLK_PINS { { PIN(A, 17), PS(A) } }
+#define AT91_SD_CMD_PINS { { PIN(A, 16), PS(A) } }
+
 #define INCLUDE_SPI
 #define TOTAL_SPI_CONTROLLERS 2
 #define AT91_SPI_MISO_PINS { { PIN(A,11), PS(A) }, { PIN(A,21), PS(B) } }

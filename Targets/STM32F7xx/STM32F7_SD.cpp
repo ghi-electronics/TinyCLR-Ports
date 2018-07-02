@@ -1,4 +1,4 @@
-#include "STM32F4.h"
+#include "STM32F7.h"
 
 #ifdef INCLUDE_SD
 // sdio
@@ -7,40 +7,40 @@ typedef struct {
     uint32_t SDIO_ClockEdge;            /*!< Specifies the clock transition on which the bit capture is made.
                                              This parameter can be a value of @ref SDIO_Clock_Edge */
 
-    uint32_t SDIO_ClockBypass;          /*!< Specifies whether the SDIO Clock divider bypass is
+    uint32_t SDIO_ClockBypass;          /*!< Specifies whether the SDMMC1 Clock divider bypass is
                                              enabled or disabled.
                                              This parameter can be a value of @ref SDIO_Clock_Bypass */
 
-    uint32_t SDIO_ClockPowerSave;       /*!< Specifies whether SDIO Clock output is enabled or
+    uint32_t SDIO_ClockPowerSave;       /*!< Specifies whether SDMMC1 Clock output is enabled or
                                              disabled when the bus is idle.
                                              This parameter can be a value of @ref SDIO_Clock_Power_Save */
 
-    uint32_t SDIO_BusWide;              /*!< Specifies the SDIO bus width.
+    uint32_t SDIO_BusWide;              /*!< Specifies the SDMMC1 bus width.
                                              This parameter can be a value of @ref SDIO_Bus_Wide */
 
-    uint32_t SDIO_HardwareFlowControl;  /*!< Specifies whether the SDIO hardware flow control is enabled or disabled.
+    uint32_t SDIO_HardwareFlowControl;  /*!< Specifies whether the SDMMC1 hardware flow control is enabled or disabled.
                                              This parameter can be a value of @ref SDIO_Hardware_Flow_Control */
 
-    uint8_t SDIO_ClockDiv;              /*!< Specifies the clock frequency of the SDIO controller.
+    uint8_t SDIO_ClockDiv;              /*!< Specifies the clock frequency of the SDMMC1 controller.
                                              This parameter can be a value between 0x00 and 0xFF. */
 
 } SDIO_InitTypeDef;
 
 typedef struct {
-    uint32_t SDIO_Argument;  /*!< Specifies the SDIO command argument which is sent
+    uint32_t SDIO_Argument;  /*!< Specifies the SDMMC1 command argument which is sent
                                   to a card as part of a command message. If a command
                                   contains an argument, it must be loaded into this register
                                   before writing the command to the command register */
 
-    uint32_t SDIO_CmdIndex;  /*!< Specifies the SDIO command index. It must be lower than 0x40. */
+    uint32_t SDIO_CmdIndex;  /*!< Specifies the SDMMC1 command index. It must be lower than 0x40. */
 
-    uint32_t SDIO_Response;  /*!< Specifies the SDIO response type.
+    uint32_t SDIO_Response;  /*!< Specifies the SDMMC1 response type.
                                   This parameter can be a value of @ref SDIO_Response_Type */
 
-    uint32_t SDIO_Wait;      /*!< Specifies whether SDIO wait-for-interrupt request is enabled or disabled.
+    uint32_t SDIO_Wait;      /*!< Specifies whether SDMMC1 wait-for-interrupt request is enabled or disabled.
                                   This parameter can be a value of @ref SDIO_Wait_Interrupt_State */
 
-    uint32_t SDIO_CPSM;      /*!< Specifies whether SDIO Command path state machine (CPSM)
+    uint32_t SDIO_CPSM;      /*!< Specifies whether SDMMC1 Command path state machine (CPSM)
                                   is enabled or disabled.
                                   This parameter can be a value of @ref SDIO_CPSM_State */
 } SDIO_CmdInitTypeDef;
@@ -60,7 +60,7 @@ typedef struct {
     uint32_t SDIO_TransferMode;   /*!< Specifies whether data transfer is in stream or block mode.
                                        This parameter can be a value of @ref SDIO_Transfer_Type */
 
-    uint32_t SDIO_DPSM;           /*!< Specifies whether SDIO Data path state machine (DPSM)
+    uint32_t SDIO_DPSM;           /*!< Specifies whether SDMMC1 Data path state machine (DPSM)
                                        is enabled or disabled.
                                        This parameter can be a value of @ref SDIO_DPSM_State */
 } SDIO_DataInitTypeDef;
@@ -133,9 +133,9 @@ typedef struct {
                                     ((RESPONSE) == SDIO_Response_Short) || \
                                     ((RESPONSE) == SDIO_Response_Long))
 
-#define SDIO_Wait_No                        ((uint32_t)0x00000000) /*!< SDIO No Wait, TimeOut is enabled */
-#define SDIO_Wait_IT                        ((uint32_t)0x00000100) /*!< SDIO Wait Interrupt Request */
-#define SDIO_Wait_Pend                      ((uint32_t)0x00000200) /*!< SDIO Wait End of transfer */
+#define SDIO_Wait_No                        ((uint32_t)0x00000000) /*!< SDMMC1 No Wait, TimeOut is enabled */
+#define SDIO_Wait_IT                        ((uint32_t)0x00000100) /*!< SDMMC1 Wait Interrupt Request */
+#define SDIO_Wait_Pend                      ((uint32_t)0x00000200) /*!< SDMMC1 Wait End of transfer */
 #define IS_SDIO_WAIT(WAIT) (((WAIT) == SDIO_Wait_No) || ((WAIT) == SDIO_Wait_IT) || \
                             ((WAIT) == SDIO_Wait_Pend))
 
@@ -280,73 +280,73 @@ typedef struct {
 #define IS_SDIO_READWAIT_MODE(MODE) (((MODE) == SDIO_ReadWaitMode_CLK) || \
                                      ((MODE) == SDIO_ReadWaitMode_DATA2))
 
-#define SDIO_OFFSET                (SDIO_BASE - PERIPH_BASE)
+/* ------------ SDMMC1 registers bit address in the alias region ----------- */
 
 /* --- CLKCR Register ---*/
 /* Alias word address of CLKEN bit */
-#define CLKCR_OFFSET              (SDIO_OFFSET + 0x04)
+#define CLKCR_OFFSET              (SDMMC1_BASE + 0x04)
 #define CLKEN_BitNumber           0x08
-#define CLKCR_CLKEN_BB            (PERIPH_BB_BASE + (CLKCR_OFFSET * 32) + (CLKEN_BitNumber * 4))
+//#define CLKCR_CLKEN_BB            (PERIPH_BB_BASE + (CLKCR_OFFSET * 32) + (CLKEN_BitNumber * 4))
 
 /* --- CMD Register ---*/
 /* Alias word address of SDIOSUSPEND bit */
-#define CMD_OFFSET                (SDIO_OFFSET + 0x0C)
+#define CMD_OFFSET                (SDMMC1_BASE + 0x0C)
 #define SDIOSUSPEND_BitNumber     0x0B
-#define CMD_SDIOSUSPEND_BB        (PERIPH_BB_BASE + (CMD_OFFSET * 32) + (SDIOSUSPEND_BitNumber * 4))
+//#define CMD_SDIOSUSPEND_BB        (PERIPH_BB_BASE + (CMD_OFFSET * 32) + (SDIOSUSPEND_BitNumber * 4))
 
 /* Alias word address of ENCMDCOMPL bit */
 #define ENCMDCOMPL_BitNumber      0x0C
-#define CMD_ENCMDCOMPL_BB         (PERIPH_BB_BASE + (CMD_OFFSET * 32) + (ENCMDCOMPL_BitNumber * 4))
+//#define CMD_ENCMDCOMPL_BB         (PERIPH_BB_BASE + (CMD_OFFSET * 32) + (ENCMDCOMPL_BitNumber * 4))
 
 /* Alias word address of NIEN bit */
 #define NIEN_BitNumber            0x0D
-#define CMD_NIEN_BB               (PERIPH_BB_BASE + (CMD_OFFSET * 32) + (NIEN_BitNumber * 4))
+//#define CMD_NIEN_BB               (PERIPH_BB_BASE + (CMD_OFFSET * 32) + (NIEN_BitNumber * 4))
 
 /* Alias word address of ATACMD bit */
 #define ATACMD_BitNumber          0x0E
-#define CMD_ATACMD_BB             (PERIPH_BB_BASE + (CMD_OFFSET * 32) + (ATACMD_BitNumber * 4))
+//#define CMD_ATACMD_BB             (PERIPH_BB_BASE + (CMD_OFFSET * 32) + (ATACMD_BitNumber * 4))
 
 /* --- DCTRL Register ---*/
 /* Alias word address of DMAEN bit */
-#define DCTRL_OFFSET              (SDIO_OFFSET + 0x2C)
+#define DCTRL_OFFSET              (SDMMC1_BASE + 0x2C)
 #define DMAEN_BitNumber           0x03
-#define DCTRL_DMAEN_BB            (PERIPH_BB_BASE + (DCTRL_OFFSET * 32) + (DMAEN_BitNumber * 4))
+//#define DCTRL_DMAEN_BB            (PERIPH_BB_BASE + (DCTRL_OFFSET * 32) + (DMAEN_BitNumber * 4))
 
 /* Alias word address of RWSTART bit */
 #define RWSTART_BitNumber         0x08
-#define DCTRL_RWSTART_BB          (PERIPH_BB_BASE + (DCTRL_OFFSET * 32) + (RWSTART_BitNumber * 4))
+//#define DCTRL_RWSTART_BB          (PERIPH_BB_BASE + (DCTRL_OFFSET * 32) + (RWSTART_BitNumber * 4))
 
 /* Alias word address of RWSTOP bit */
 #define RWSTOP_BitNumber          0x09
-#define DCTRL_RWSTOP_BB           (PERIPH_BB_BASE + (DCTRL_OFFSET * 32) + (RWSTOP_BitNumber * 4))
+//#define DCTRL_RWSTOP_BB           (PERIPH_BB_BASE + (DCTRL_OFFSET * 32) + (RWSTOP_BitNumber * 4))
 
 /* Alias word address of RWMOD bit */
 #define RWMOD_BitNumber           0x0A
-#define DCTRL_RWMOD_BB            (PERIPH_BB_BASE + (DCTRL_OFFSET * 32) + (RWMOD_BitNumber * 4))
+//#define DCTRL_RWMOD_BB            (PERIPH_BB_BASE + (DCTRL_OFFSET * 32) + (RWMOD_BitNumber * 4))
 
 /* Alias word address of SDIOEN bit */
 #define SDIOEN_BitNumber          0x0B
-#define DCTRL_SDIOEN_BB           (PERIPH_BB_BASE + (DCTRL_OFFSET * 32) + (SDIOEN_BitNumber * 4))
+//#define DCTRL_SDIOEN_BB           (PERIPH_BB_BASE + (DCTRL_OFFSET * 32) + (SDIOEN_BitNumber * 4))
 
-/* ---------------------- SDIO registers bit mask ------------------------ */
+/* ---------------------- SDMMC1 registers bit mask ------------------------ */
 /* --- CLKCR Register ---*/
 /* CLKCR register clear mask */
 #define CLKCR_CLEAR_MASK         ((uint32_t)0xFFFF8100)
 
 /* --- PWRCTRL Register ---*/
-/* SDIO PWRCTRL Mask */
+/* SDMMC1 PWRCTRL Mask */
 #define PWR_PWRCTRL_MASK         ((uint32_t)0xFFFFFFFC)
 
 /* --- DCTRL Register ---*/
-/* SDIO DCTRL Clear Mask */
+/* SDMMC1 DCTRL Clear Mask */
 #define DCTRL_CLEAR_MASK         ((uint32_t)0xFFFFFF08)
 
 /* --- CMD Register ---*/
 /* CMD Register clear mask */
 #define CMD_CLEAR_MASK           ((uint32_t)0xFFFFF800)
 
-/* SDIO RESP Registers Address */
-#define SDIO_RESP_ADDR           ((uint32_t)(SDIO_BASE + 0x14))
+/* SDMMC1 RESP Registers Address */
+#define SDIO_RESP_ADDR           ((uint32_t)(SDMMC1_BASE + 0x14))
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -370,7 +370,7 @@ typedef struct {
     */
 
     /**
-      * @brief  Deinitializes the SDIO peripheral registers to their default reset values.
+      * @brief  Deinitializes the SDMMC1 peripheral registers to their default reset values.
       * @param  None
       * @retval None
       */
@@ -382,18 +382,18 @@ void SDIO_DeInit(void) {
 }
 
 /**
-  * @brief  Initializes the SDIO peripheral according to the specified
+  * @brief  Initializes the SDMMC1 peripheral according to the specified
   *         parameters in the SDIO_InitStruct.
   * @param  SDIO_InitStruct : pointer to a SDIO_InitTypeDef structure
-  *         that contains the configuration information for the SDIO peripheral.
+  *         that contains the configuration information for the SDMMC1 peripheral.
   * @retval None
   */
 void SDIO_Init(SDIO_InitTypeDef* SDIO_InitStruct) {
     uint32_t tmpreg = 0;
 
-    /*---------------------------- SDIO CLKCR Configuration ------------------------*/
-      /* Get the SDIO CLKCR value */
-    tmpreg = SDIO->CLKCR;
+    /*---------------------------- SDMMC1 CLKCR Configuration ------------------------*/
+      /* Get the SDMMC1 CLKCR value */
+    tmpreg = SDMMC1->CLKCR;
 
     /* Clear CLKDIV, PWRSAV, BYPASS, WIDBUS, NEGEDGE, HWFC_EN bits */
     tmpreg &= CLKCR_CLEAR_MASK;
@@ -408,8 +408,8 @@ void SDIO_Init(SDIO_InitTypeDef* SDIO_InitStruct) {
         SDIO_InitStruct->SDIO_ClockBypass | SDIO_InitStruct->SDIO_BusWide |
         SDIO_InitStruct->SDIO_ClockEdge | SDIO_InitStruct->SDIO_HardwareFlowControl);
 
-    /* Write to SDIO CLKCR */
-    SDIO->CLKCR = tmpreg;
+    /* Write to SDMMC1 CLKCR */
+    SDMMC1->CLKCR = tmpreg;
 }
 
 /**
@@ -429,27 +429,32 @@ void SDIO_StructInit(SDIO_InitTypeDef* SDIO_InitStruct) {
 }
 
 /**
-  * @brief  Enables or disables the SDIO Clock.
-  * @param  newState: new state of the SDIO Clock.
+  * @brief  Enables or disables the SDMMC1 Clock.
+  * @param  newState: new state of the SDMMC1 Clock.
   *         This parameter can be: true or false.
   * @retval None
   */
 void SDIO_ClockCmd(bool newState) {
 
-    *(uint32_t *)CLKCR_CLKEN_BB = (uint32_t)newState;
+    if (newState) {
+        *reinterpret_cast<uint32_t*>(CLKCR_OFFSET) |= (newState << CLKEN_BitNumber);
+    }
+    else {
+        *reinterpret_cast<uint32_t*>(CLKCR_OFFSET) &= ~(newState << CLKEN_BitNumber);
+    }
 }
 
 /**
   * @brief  Sets the power status of the controller.
   * @param  SDIO_PowerState: new state of the Power state.
   *          This parameter can be one of the following values:
-  *            @arg SDIO_PowerState_OFF: SDIO Power OFF
-  *            @arg SDIO_PowerState_ON: SDIO Power ON
+  *            @arg SDIO_PowerState_OFF: SDMMC1 Power OFF
+  *            @arg SDIO_PowerState_ON: SDMMC1 Power ON
   * @retval None
   */
 void SDIO_SetPowerState(uint32_t SDIO_PowerState) {
 
-    SDIO->POWER = SDIO_PowerState;
+    SDMMC1->POWER = SDIO_PowerState;
 }
 
 /**
@@ -462,7 +467,7 @@ void SDIO_SetPowerState(uint32_t SDIO_PowerState) {
   *            - 0x03: Power ON
   */
 uint32_t SDIO_GetPowerState(void) {
-    return (SDIO->POWER & (~PWR_PWRCTRL_MASK));
+    return (SDMMC1->POWER & (~PWR_PWRCTRL_MASK));
 }
 
 /**
@@ -485,10 +490,10 @@ uint32_t SDIO_GetPowerState(void) {
     */
 
     /**
-      * @brief  Initializes the SDIO Command according to the specified
+      * @brief  Initializes the SDMMC1 Command according to the specified
       *         parameters in the SDIO_CmdInitStruct and send the command.
       * @param  SDIO_CmdInitStruct : pointer to a SDIO_CmdInitTypeDef
-      *         structure that contains the configuration information for the SDIO
+      *         structure that contains the configuration information for the SDMMC1
       *         command.
       * @retval None
       */
@@ -496,13 +501,13 @@ void SDIO_SendCommand(SDIO_CmdInitTypeDef *SDIO_CmdInitStruct) {
     uint32_t tmpreg = 0;
 
 
-    /*---------------------------- SDIO ARG Configuration ------------------------*/
-      /* Set the SDIO Argument value */
-    SDIO->ARG = SDIO_CmdInitStruct->SDIO_Argument;
+    /*---------------------------- SDMMC1 ARG Configuration ------------------------*/
+      /* Set the SDMMC1 Argument value */
+    SDMMC1->ARG = SDIO_CmdInitStruct->SDIO_Argument;
 
-    /*---------------------------- SDIO CMD Configuration ------------------------*/
-      /* Get the SDIO CMD value */
-    tmpreg = SDIO->CMD;
+    /*---------------------------- SDMMC1 CMD Configuration ------------------------*/
+      /* Get the SDMMC1 CMD value */
+    tmpreg = SDMMC1->CMD;
     /* Clear CMDINDEX, WAITRESP, WAITINT, WAITPEND, CPSMEN bits */
     tmpreg &= CMD_CLEAR_MASK;
     /* Set CMDINDEX bits according to SDIO_CmdIndex value */
@@ -512,8 +517,8 @@ void SDIO_SendCommand(SDIO_CmdInitTypeDef *SDIO_CmdInitStruct) {
     tmpreg |= (uint32_t)SDIO_CmdInitStruct->SDIO_CmdIndex | SDIO_CmdInitStruct->SDIO_Response
         | SDIO_CmdInitStruct->SDIO_Wait | SDIO_CmdInitStruct->SDIO_CPSM;
 
-    /* Write to SDIO CMD */
-    SDIO->CMD = tmpreg;
+    /* Write to SDMMC1 CMD */
+    SDMMC1->CMD = tmpreg;
 }
 
 /**
@@ -537,12 +542,12 @@ void SDIO_CmdStructInit(SDIO_CmdInitTypeDef* SDIO_CmdInitStruct) {
   * @retval Returns the command index of the last command response received.
   */
 uint8_t SDIO_GetCommandResponse(void) {
-    return (uint8_t)(SDIO->RESPCMD);
+    return (uint8_t)(SDMMC1->RESPCMD);
 }
 
 /**
   * @brief  Returns response received from the card for the last command.
-  * @param  SDIO_RESP: Specifies the SDIO response register.
+  * @param  SDIO_RESP: Specifies the SDMMC1 response register.
   *          This parameter can be one of the following values:
   *            @arg SDIO_RESP1: Response Register 1
   *            @arg SDIO_RESP2: Response Register 2
@@ -578,10 +583,10 @@ uint32_t SDIO_GetResponse(uint32_t SDIO_RESP) {
     */
 
     /**
-      * @brief  Initializes the SDIO data path according to the specified
+      * @brief  Initializes the SDMMC1 data path according to the specified
       *         parameters in the SDIO_DataInitStruct.
       * @param  SDIO_DataInitStruct : pointer to a SDIO_DataInitTypeDef structure
-      *         that contains the configuration information for the SDIO command.
+      *         that contains the configuration information for the SDMMC1 command.
       * @retval None
       */
 void SDIO_DataConfig(SDIO_DataInitTypeDef* SDIO_DataInitStruct) {
@@ -589,17 +594,17 @@ void SDIO_DataConfig(SDIO_DataInitTypeDef* SDIO_DataInitStruct) {
 
 
 
-    /*---------------------------- SDIO DTIMER Configuration ---------------------*/
-      /* Set the SDIO Data TimeOut value */
-    SDIO->DTIMER = SDIO_DataInitStruct->SDIO_DataTimeOut;
+    /*---------------------------- SDMMC1 DTIMER Configuration ---------------------*/
+      /* Set the SDMMC1 Data TimeOut value */
+    SDMMC1->DTIMER = SDIO_DataInitStruct->SDIO_DataTimeOut;
 
-    /*---------------------------- SDIO DLEN Configuration -----------------------*/
-      /* Set the SDIO DataLength value */
-    SDIO->DLEN = SDIO_DataInitStruct->SDIO_DataLength;
+    /*---------------------------- SDMMC1 DLEN Configuration -----------------------*/
+      /* Set the SDMMC1 DataLength value */
+    SDMMC1->DLEN = SDIO_DataInitStruct->SDIO_DataLength;
 
-    /*---------------------------- SDIO DCTRL Configuration ----------------------*/
-      /* Get the SDIO DCTRL value */
-    tmpreg = SDIO->DCTRL;
+    /*---------------------------- SDMMC1 DCTRL Configuration ----------------------*/
+      /* Get the SDMMC1 DCTRL value */
+    tmpreg = SDMMC1->DCTRL;
     /* Clear DEN, DTMODE, DTDIR and DBCKSIZE bits */
     tmpreg &= DCTRL_CLEAR_MASK;
     /* Set DEN bit according to SDIO_DPSM value */
@@ -609,8 +614,8 @@ void SDIO_DataConfig(SDIO_DataInitTypeDef* SDIO_DataInitStruct) {
     tmpreg |= (uint32_t)SDIO_DataInitStruct->SDIO_DataBlockSize | SDIO_DataInitStruct->SDIO_TransferDir
         | SDIO_DataInitStruct->SDIO_TransferMode | SDIO_DataInitStruct->SDIO_DPSM;
 
-    /* Write to SDIO DCTRL */
-    SDIO->DCTRL = tmpreg;
+    /* Write to SDMMC1 DCTRL */
+    SDMMC1->DCTRL = tmpreg;
 }
 
 /**
@@ -635,7 +640,7 @@ void SDIO_DataStructInit(SDIO_DataInitTypeDef* SDIO_DataInitStruct) {
   * @retval Number of remaining data bytes to be transferred
   */
 uint32_t SDIO_GetDataCounter(void) {
-    return SDIO->DCOUNT;
+    return SDMMC1->DCOUNT;
 }
 
 /**
@@ -644,7 +649,7 @@ uint32_t SDIO_GetDataCounter(void) {
   * @retval Data received
   */
 uint32_t SDIO_ReadData(void) {
-    return SDIO->FIFO;
+    return SDMMC1->FIFO;
 }
 
 /**
@@ -653,7 +658,7 @@ uint32_t SDIO_ReadData(void) {
   * @retval None
   */
 void SDIO_WriteData(uint32_t Data) {
-    SDIO->FIFO = Data;
+    SDMMC1->FIFO = Data;
 }
 
 /**
@@ -662,22 +667,22 @@ void SDIO_WriteData(uint32_t Data) {
   * @retval Remaining number of words.
   */
 uint32_t SDIO_GetFIFOCount(void) {
-    return SDIO->FIFOCNT;
+    return SDMMC1->FIFOCNT;
 }
 
 /**
   * @}
   */
 
-  /** @defgroup SDIO_Group4 SDIO IO Cards mode management functions
-   *  @brief   SDIO IO Cards mode management functions
+  /** @defgroup SDIO_Group4 SDMMC1 IO Cards mode management functions
+   *  @brief   SDMMC1 IO Cards mode management functions
    *
   @verbatim
    ===============================================================================
-                SDIO IO Cards mode management functions
+                SDMMC1 IO Cards mode management functions
    ===============================================================================
 
-    This section provide functions allowing to program and read the SDIO IO Cards.
+    This section provide functions allowing to program and read the SDMMC1 IO Cards.
 
   @endverbatim
     * @{
@@ -685,25 +690,33 @@ uint32_t SDIO_GetFIFOCount(void) {
 
     /**
       * @brief  Starts the SD I/O Read Wait operation.
-      * @param  newState: new state of the Start SDIO Read Wait operation.
+      * @param  newState: new state of the Start SDMMC1 Read Wait operation.
       *         This parameter can be: true or false.
       * @retval None
       */
 void SDIO_StartSDIOReadWait(bool newState) {
-
-
-    *(uint32_t *)DCTRL_RWSTART_BB = (uint32_t)newState;
+    if (newState) {
+        *reinterpret_cast<uint32_t*>(DCTRL_OFFSET) |= (1 << RWSTART_BitNumber);
+    }
+    else {
+        *reinterpret_cast<uint32_t*>(DCTRL_OFFSET) &= ~(1 << RWSTART_BitNumber);
+    }
 }
 
 /**
   * @brief  Stops the SD I/O Read Wait operation.
-  * @param  newState: new state of the Stop SDIO Read Wait operation.
+  * @param  newState: new state of the Stop SDMMC1 Read Wait operation.
   *         This parameter can be: true or false.
   * @retval None
   */
 void SDIO_StopSDIOReadWait(bool newState) {
+    if (newState) {
+        *reinterpret_cast<uint32_t*>(DCTRL_OFFSET) |= (1 << RWSTOP_BitNumber);
+    }
+    else {
+        *reinterpret_cast<uint32_t*>(DCTRL_OFFSET) &= ~(1 << RWSTOP_BitNumber);
+    }
 
-    *(uint32_t *)DCTRL_RWSTOP_BB = (uint32_t)newState;
 }
 
 /**
@@ -715,19 +728,27 @@ void SDIO_StopSDIOReadWait(bool newState) {
   * @retval None
   */
 void SDIO_SetSDIOReadWaitMode(uint32_t SDIO_ReadWaitMode) {
-
-    *(uint32_t *)DCTRL_RWMOD_BB = SDIO_ReadWaitMode;
+    if (SDIO_ReadWaitMode) {
+        *reinterpret_cast<uint32_t*>(DCTRL_OFFSET) |= (1 << RWMOD_BitNumber);
+    }
+    else {
+        *reinterpret_cast<uint32_t*>(DCTRL_OFFSET) &= ~(1 << RWMOD_BitNumber);
+    }
 }
 
 /**
   * @brief  Enables or disables the SD I/O Mode Operation.
-  * @param  newState: new state of SDIO specific operation.
+  * @param  newState: new state of SDMMC1 specific operation.
   *         This parameter can be: true or false.
   * @retval None
   */
 void SDIO_SetSDIOOperation(bool newState) {
-
-    *(uint32_t *)DCTRL_SDIOEN_BB = (uint32_t)newState;
+    if (newState) {
+        *reinterpret_cast<uint32_t*>(DCTRL_OFFSET) |= (1 << SDIOEN_BitNumber);
+    }
+    else {
+        *reinterpret_cast<uint32_t*>(DCTRL_OFFSET) &= ~(1 << SDIOEN_BitNumber);
+    }
 }
 
 /**
@@ -737,8 +758,12 @@ void SDIO_SetSDIOOperation(bool newState) {
   * @retval None
   */
 void SDIO_SendSDIOSuspendCmd(bool newState) {
-
-    *(uint32_t *)CMD_SDIOSUSPEND_BB = (uint32_t)newState;
+    if (newState) {
+        *reinterpret_cast<uint32_t*>(CMD_OFFSET) |= (1 << SDIOSUSPEND_BitNumber);
+    }
+    else {
+        *reinterpret_cast<uint32_t*>(CMD_OFFSET) &= ~(1 << SDIOSUSPEND_BitNumber);
+    }
 }
 
 /**
@@ -766,8 +791,12 @@ void SDIO_SendSDIOSuspendCmd(bool newState) {
       * @retval None
       */
 void SDIO_CommandCompletionCmd(bool newState) {
-
-    *(uint32_t *)CMD_ENCMDCOMPL_BB = (uint32_t)newState;
+    if (newState) {
+        *reinterpret_cast<uint32_t*>(CMD_OFFSET) |= (1 << ENCMDCOMPL_BitNumber);
+    }
+    else {
+        *reinterpret_cast<uint32_t*>(CMD_OFFSET) &= ~(1 << ENCMDCOMPL_BitNumber);
+    }
 }
 
 /**
@@ -777,8 +806,12 @@ void SDIO_CommandCompletionCmd(bool newState) {
   * @retval None
   */
 void SDIO_CEATAITCmd(bool newState) {
-
-    *(uint32_t *)CMD_NIEN_BB = (uint32_t)((~((uint32_t)newState)) & ((uint32_t)0x1));
+    if (newState) {
+        *reinterpret_cast<uint32_t*>(CMD_OFFSET) |= (1 << NIEN_BitNumber);
+    }
+    else {
+        *reinterpret_cast<uint32_t*>(CMD_OFFSET) &= ~(1 << NIEN_BitNumber);
+    }
 }
 
 /**
@@ -788,8 +821,12 @@ void SDIO_CEATAITCmd(bool newState) {
   * @retval None
   */
 void SDIO_SendCEATACmd(bool newState) {
-
-    *(uint32_t *)CMD_ATACMD_BB = (uint32_t)newState;
+    if (newState) {
+        *reinterpret_cast<uint32_t*>(CMD_OFFSET) |= (1 << ATACMD_BitNumber);
+    }
+    else {
+        *reinterpret_cast<uint32_t*>(CMD_OFFSET) &= ~(1 << ATACMD_BitNumber);
+    }
 }
 
 /**
@@ -804,21 +841,25 @@ void SDIO_SendCEATACmd(bool newState) {
                 DMA transfers management functions
    ===============================================================================
 
-    This section provide functions allowing to program SDIO DMA transfer.
+    This section provide functions allowing to program SDMMC1 DMA transfer.
 
   @endverbatim
     * @{
     */
 
     /**
-      * @brief  Enables or disables the SDIO DMA request.
-      * @param  newState: new state of the selected SDIO DMA request.
+      * @brief  Enables or disables the SDMMC1 DMA request.
+      * @param  newState: new state of the selected SDMMC1 DMA request.
       *          This parameter can be: true or false.
       * @retval None
       */
 void SDIO_DMACmd(bool newState) {
-
-    *(uint32_t *)DCTRL_DMAEN_BB = (uint32_t)newState;
+    if (newState) {
+        *reinterpret_cast<uint32_t*>(DCTRL_OFFSET) |= (1 << DMAEN_BitNumber);
+    }
+    else {
+        *reinterpret_cast<uint32_t*>(DCTRL_OFFSET) &= ~(1 << DMAEN_BitNumber);
+    }
 }
 
 /**
@@ -839,8 +880,8 @@ void SDIO_DMACmd(bool newState) {
     */
 
     /**
-      * @brief  Enables or disables the SDIO interrupts.
-      * @param  SDIO_IT: specifies the SDIO interrupt sources to be enabled or disabled.
+      * @brief  Enables or disables the SDMMC1 interrupts.
+      * @param  SDIO_IT: specifies the SDMMC1 interrupt sources to be enabled or disabled.
       *          This parameter can be one or a combination of the following values:
       *            @arg SDIO_IT_CCRCFAIL: Command response received (CRC check failed) interrupt
       *            @arg SDIO_IT_DCRCFAIL: Data block sent/received (CRC check failed) interrupt
@@ -867,24 +908,24 @@ void SDIO_DMACmd(bool newState) {
       *            @arg SDIO_IT_RXDAVL:   Data available in receive FIFO interrupt
       *            @arg SDIO_IT_SDIOIT:   SD I/O interrupt received interrupt
       *            @arg SDIO_IT_CEATAEND: CE-ATA command completion signal received for CMD61 interrupt
-      * @param  newState: new state of the specified SDIO interrupts.
+      * @param  newState: new state of the specified SDMMC1 interrupts.
       *          This parameter can be: true or false.
       * @retval None
       */
 void SDIO_ITConfig(uint32_t SDIO_IT, bool newState) {
 
     if (newState != false) {
-        /* Enable the SDIO interrupts */
-        SDIO->MASK |= SDIO_IT;
+        /* Enable the SDMMC1 interrupts */
+        SDMMC1->MASK |= SDIO_IT;
     }
     else {
-        /* Disable the SDIO interrupts */
-        SDIO->MASK &= ~SDIO_IT;
+        /* Disable the SDMMC1 interrupts */
+        SDMMC1->MASK &= ~SDIO_IT;
     }
 }
 
 /**
-  * @brief  Checks whether the specified SDIO flag is set or not.
+  * @brief  Checks whether the specified SDMMC1 flag is set or not.
   * @param  SDIO_FLAG: specifies the flag to check.
   *          This parameter can be one of the following values:
   *            @arg SDIO_FLAG_CCRCFAIL: Command response received (CRC check failed)
@@ -917,7 +958,7 @@ bool SDIO_GetFlagStatus(uint32_t SDIO_FLAG) {
     bool bitstatus = false;
 
 
-    if ((SDIO->STA & SDIO_FLAG) != (uint32_t)false) {
+    if ((SDMMC1->STA & SDIO_FLAG) != (uint32_t)false) {
         bitstatus = true;
     }
     else {
@@ -927,7 +968,7 @@ bool SDIO_GetFlagStatus(uint32_t SDIO_FLAG) {
 }
 
 /**
-  * @brief  Clears the SDIO's pending flags.
+  * @brief  Clears the SDMMC1's pending flags.
   * @param  SDIO_FLAG: specifies the flag to clear.
   *          This parameter can be one or a combination of the following values:
   *            @arg SDIO_FLAG_CCRCFAIL: Command response received (CRC check failed)
@@ -947,12 +988,12 @@ bool SDIO_GetFlagStatus(uint32_t SDIO_FLAG) {
   */
 void SDIO_ClearFlag(uint32_t SDIO_FLAG) {
 
-    SDIO->ICR = SDIO_FLAG;
+    SDMMC1->ICR = SDIO_FLAG;
 }
 
 /**
-  * @brief  Checks whether the specified SDIO interrupt has occurred or not.
-  * @param  SDIO_IT: specifies the SDIO interrupt source to check.
+  * @brief  Checks whether the specified SDMMC1 interrupt has occurred or not.
+  * @param  SDIO_IT: specifies the SDMMC1 interrupt source to check.
   *          This parameter can be one of the following values:
   *            @arg SDIO_IT_CCRCFAIL: Command response received (CRC check failed) interrupt
   *            @arg SDIO_IT_DCRCFAIL: Data block sent/received (CRC check failed) interrupt
@@ -984,7 +1025,7 @@ void SDIO_ClearFlag(uint32_t SDIO_FLAG) {
 bool SDIO_GetITStatus(uint32_t SDIO_IT) {
     bool bitstatus = false;
 
-    if ((SDIO->STA & SDIO_IT) != (uint32_t)false) {
+    if ((SDMMC1->STA & SDIO_IT) != (uint32_t)false) {
         bitstatus = true;
     }
     else {
@@ -994,7 +1035,7 @@ bool SDIO_GetITStatus(uint32_t SDIO_IT) {
 }
 
 /**
-  * @brief  Clears the SDIO's interrupt pending bits.
+  * @brief  Clears the SDMMC1's interrupt pending bits.
   * @param  SDIO_IT: specifies the interrupt pending bit to clear.
   *          This parameter can be one or a combination of the following values:
   *            @arg SDIO_IT_CCRCFAIL: Command response received (CRC check failed) interrupt
@@ -1014,14 +1055,14 @@ bool SDIO_GetITStatus(uint32_t SDIO_IT) {
   */
 void SDIO_ClearITPendingBit(uint32_t SDIO_IT) {
 
-    SDIO->ICR = SDIO_IT;
+    SDMMC1->ICR = SDIO_IT;
 }
 
 // sdio_sd
 
 typedef enum {
     /**
-      * @brief  SDIO specific error defines
+      * @brief  SDMMC1 specific error defines
       */
     SD_CMD_CRC_FAIL = (1), /*!< Command response received (but CRC check failed) */
     SD_DATA_CRC_FAIL = (2), /*!< Data bock sent/received (CRC check Failed) */
@@ -1072,7 +1113,7 @@ typedef enum {
 } SD_Error;
 
 /**
-  * @brief  SDIO Transfer state
+  * @brief  SDMMC1 Transfer state
   */
 typedef enum {
     SD_TRANSFER_OK = 0,
@@ -1372,7 +1413,7 @@ static SD_Error CmdResp7Error(void);
 static SD_Error CmdResp3Error(void);
 static SD_Error CmdResp2Error(void);
 static SD_Error CmdResp6Error(uint8_t cmd, uint16_t *prca);
-static SD_Error SDEnWideBus(FunctionalState NewState);
+static SD_Error SDEnWideBus(FunctionalState newState);
 static SD_Error IsCardProgramming(uint8_t *pstatus);
 static SD_Error FindSCR(uint16_t rca, uint32_t *pscr);
 uint8_t convert_from_bytes_to_power_of_two(uint16_t NumberOfBytes);
@@ -1382,7 +1423,7 @@ uint8_t convert_from_bytes_to_power_of_two(uint16_t NumberOfBytes);
   */
 
   /**
-    * @brief  DeInitializes the SDIO interface.
+    * @brief  DeInitializes the SDMMC1 interface.
     * @param  None
     * @retval None
     */
@@ -1415,9 +1456,9 @@ SD_Error SD_Init(void) {
         return(errorstatus);
     }
 
-    /*!< Configure the SDIO peripheral */
+    /*!< Configure the SDMMC1 peripheral */
     /*!< SDIO_CK = SDIOCLK / (SDIO_TRANSFER_CLK_DIV + 2) */
-    /*!< on STM32F4xx devices, SDIOCLK is fixed to 48MHz */
+    /*!< on STM32F7xx devices, SDIOCLK is fixed to 48MHz */
     SDIO_InitStructure.SDIO_ClockDiv = SDIO_TRANSFER_CLK_DIV;
     SDIO_InitStructure.SDIO_ClockEdge = SDIO_ClockEdge_Rising;
     SDIO_InitStructure.SDIO_ClockBypass = SDIO_ClockBypass_Disable;
@@ -1514,9 +1555,9 @@ SD_Error SD_PowerON(void) {
     uint32_t SDType = SD_STD_CAPACITY;
 
     /*!< Power ON Sequence -----------------------------------------------------*/
-    /*!< Configure the SDIO peripheral */
+    /*!< Configure the SDMMC1 peripheral */
     /*!< SDIO_CK = SDIOCLK / (SDIO_INIT_CLK_DIV + 2) */
-    /*!< on STM32F4xx devices, SDIOCLK is fixed to 48MHz */
+    /*!< on STM32F7xx devices, SDIOCLK is fixed to 48MHz */
     /*!< SDIO_CK for initialization should not exceed 400 KHz */
     SDIO_InitStructure.SDIO_ClockDiv = SDIO_INIT_CLK_DIV;
     SDIO_InitStructure.SDIO_ClockEdge = SDIO_ClockEdge_Rising;
@@ -1529,7 +1570,7 @@ SD_Error SD_PowerON(void) {
     /*!< Set Power State to ON */
     SDIO_SetPowerState(SDIO_PowerState_ON);
 
-    /*!< Enable SDIO Clock */
+    /*!< Enable SDMMC1 Clock */
     SDIO_ClockCmd(ENABLE);
 
     /*!< CMD0: GO_IDLE_STATE ---------------------------------------------------*/
@@ -1638,7 +1679,7 @@ SD_Error SD_PowerON(void) {
 }
 
 /**
-  * @brief  Turns the SDIO output signals off.
+  * @brief  Turns the SDMMC1 output signals off.
   * @param  None
   * @retval SD_Error: SD Card Error code.
   */
@@ -2047,7 +2088,7 @@ SD_Error SD_EnableWideBusOperation(uint32_t WideMode) {
             errorstatus = SDEnWideBus(ENABLE);
 
             if (SD_OK == errorstatus) {
-                /*!< Configure the SDIO peripheral */
+                /*!< Configure the SDMMC1 peripheral */
                 SDIO_InitStructure.SDIO_ClockDiv = SDIO_TRANSFER_CLK_DIV;
                 SDIO_InitStructure.SDIO_ClockEdge = SDIO_ClockEdge_Rising;
                 SDIO_InitStructure.SDIO_ClockBypass = SDIO_ClockBypass_Disable;
@@ -2061,7 +2102,7 @@ SD_Error SD_EnableWideBusOperation(uint32_t WideMode) {
             errorstatus = SDEnWideBus(DISABLE);
 
             if (SD_OK == errorstatus) {
-                /*!< Configure the SDIO peripheral */
+                /*!< Configure the SDMMC1 peripheral */
                 SDIO_InitStructure.SDIO_ClockDiv = SDIO_TRANSFER_CLK_DIV;
                 SDIO_InitStructure.SDIO_ClockEdge = SDIO_ClockEdge_Rising;
                 SDIO_InitStructure.SDIO_ClockBypass = SDIO_ClockBypass_Disable;
@@ -2121,7 +2162,7 @@ SD_Error SD_ReadBlock(uint8_t *readbuff, uint32_t ReadAddr, uint16_t BlockSize) 
     TransferEnd = 0;
     StopCondition = 0;
     //while(SDIO_GetFlagStatus(SDIO_FLAG_RXFIFOE) != RESET);
-    SDIO->DCTRL = 0x0;
+    SDMMC1->DCTRL = 0x0;
 
 
     if (CardType == SDIO_HIGH_CAPACITY_SD_CARD) {
@@ -2168,7 +2209,7 @@ SD_Error SD_ReadBlock(uint8_t *readbuff, uint32_t ReadAddr, uint16_t BlockSize) 
 #if defined (SD_POLLING_MODE)
     /*!< In case of single block transfer, no need of stop transfer at all.*/
     /*!< Polling mode */
-    while (!(SDIO->STA &(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND | SDIO_FLAG_STBITERR))) {
+    while (!(SDMMC1->STA &(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND | SDIO_FLAG_STBITERR))) {
         if (SDIO_GetFlagStatus(SDIO_FLAG_RXFIFOHF) != RESET) {
             for (count = 0; count < 8; count++) {
                 *(tempbuff + count) = SDIO_ReadData();
@@ -2242,7 +2283,7 @@ SD_Error SD_ReadMultiBlocks(uint8_t *readbuff, uint32_t ReadAddr, uint16_t Block
     TransferEnd = 0;
     StopCondition = 1;
 
-    SDIO->DCTRL = 0x0;
+    SDMMC1->DCTRL = 0x0;
 
     if (CardType == SDIO_HIGH_CAPACITY_SD_CARD) {
         BlockSize = 512;
@@ -2288,7 +2329,7 @@ SD_Error SD_ReadMultiBlocks(uint8_t *readbuff, uint32_t ReadAddr, uint16_t Block
 #if defined (SD_POLLING_MODE)
     /*!< In case of single block transfer, no need of stop transfer at all.*/
     /*!< Polling mode */
-    while (!(SDIO->STA &(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND | SDIO_FLAG_STBITERR))) {
+    while (!(SDMMC1->STA &(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND | SDIO_FLAG_STBITERR))) {
         if (SDIO_GetFlagStatus(SDIO_FLAG_RXFIFOHF) != RESET) {
             for (count = 0; count < 8; count++) {
                 *(tempbuff + count) = SDIO_ReadData();
@@ -2337,7 +2378,7 @@ SD_Error SD_ReadMultiBlocks(uint8_t *readbuff, uint32_t ReadAddr, uint16_t Block
 }
 
 /**
-  * @brief  This function waits until the SDIO DMA data transfer is finished.
+  * @brief  This function waits until the SDMMC1 DMA data transfer is finished.
   *         This function should be called after SDIO_ReadMultiBlocks() function
   *         to insure that all data sent by the card are already transferred by
   *         the DMA controller.
@@ -2358,7 +2399,7 @@ SD_Error SD_WaitReadOperation(void) {
 
     timeout = SD_DATATIMEOUT;
 
-    while (((SDIO->STA & SDIO_FLAG_RXACT)) && (timeout > 0)) {
+    while (((SDMMC1->STA & SDIO_FLAG_RXACT)) && (timeout > 0)) {
         timeout--;
     }
 
@@ -2408,7 +2449,7 @@ SD_Error SD_WriteBlock(uint8_t *writebuff, uint32_t WriteAddr, uint16_t BlockSiz
     TransferEnd = 0;
     StopCondition = 0;
 
-    SDIO->DCTRL = 0x0;
+    SDMMC1->DCTRL = 0x0;
 
 
     if (CardType == SDIO_HIGH_CAPACITY_SD_CARD) {
@@ -2454,7 +2495,7 @@ SD_Error SD_WriteBlock(uint8_t *writebuff, uint32_t WriteAddr, uint16_t BlockSiz
 
     /*!< In case of single data block transfer no need of stop command at all */
 #if defined (SD_POLLING_MODE)
-    while (!(SDIO->STA & (SDIO_FLAG_DBCKEND | SDIO_FLAG_TXUNDERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_STBITERR))) {
+    while (!(SDMMC1->STA & (SDIO_FLAG_DBCKEND | SDIO_FLAG_TXUNDERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_STBITERR))) {
         if (SDIO_GetFlagStatus(SDIO_FLAG_TXFIFOHE) != RESET) {
             if ((512 - bytestransferred) < 32) {
                 restwords = ((512 - bytestransferred) % 4 == 0) ? ((512 - bytestransferred) / 4) : ((512 - bytestransferred) / 4 + 1);
@@ -2527,7 +2568,7 @@ SD_Error SD_WriteMultiBlocks(uint8_t *writebuff, uint32_t WriteAddr, uint16_t Bl
     TransferEnd = 0;
     StopCondition = 1;
 
-    SDIO->DCTRL = 0x0;
+    SDMMC1->DCTRL = 0x0;
 
     if (CardType == SDIO_HIGH_CAPACITY_SD_CARD) {
         BlockSize = 512;
@@ -2601,7 +2642,7 @@ SD_Error SD_WriteMultiBlocks(uint8_t *writebuff, uint32_t WriteAddr, uint16_t Bl
 
     /*!< In case of single data block transfer no need of stop command at all */
 #if defined (SD_POLLING_MODE)
-    while (!(SDIO->STA & (SDIO_FLAG_DBCKEND | SDIO_FLAG_TXUNDERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_STBITERR))) {
+    while (!(SDMMC1->STA & (SDIO_FLAG_DBCKEND | SDIO_FLAG_TXUNDERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_STBITERR))) {
         if (SDIO_GetFlagStatus(SDIO_FLAG_TXFIFOHE) != RESET) {
             if ((512 - bytestransferred) < 32) {
                 restwords = ((512 - bytestransferred) % 4 == 0) ? ((512 - bytestransferred) / 4) : ((512 - bytestransferred) / 4 + 1);
@@ -2649,7 +2690,7 @@ SD_Error SD_WriteMultiBlocks(uint8_t *writebuff, uint32_t WriteAddr, uint16_t Bl
 }
 
 /**
-  * @brief  This function waits until the SDIO DMA data transfer is finished.
+  * @brief  This function waits until the SDMMC1 DMA data transfer is finished.
   *         This function should be called after SDIO_WriteBlock() and
   *         SDIO_WriteMultiBlocks() function to insure that all data sent by the
   *         card are already transferred by the DMA controller.
@@ -2670,7 +2711,7 @@ SD_Error SD_WaitWriteOperation(void) {
 
     timeout = SD_DATATIMEOUT;
 
-    while (((SDIO->STA & SDIO_FLAG_TXACT)) && (timeout > 0)) {
+    while (((SDMMC1->STA & SDIO_FLAG_TXACT)) && (timeout > 0)) {
         timeout--;
     }
 
@@ -2703,7 +2744,7 @@ SD_Error SD_WaitWriteOperation(void) {
   *        - SD_TRANSFER_BUSY: Data transfer is acting
   */
 SDTransferState SD_GetTransferState(void) {
-    if (SDIO->STA & (SDIO_FLAG_TXACT | SDIO_FLAG_RXACT)) {
+    if (SDMMC1->STA & (SDIO_FLAG_TXACT | SDIO_FLAG_RXACT)) {
         return(SD_TRANSFER_BUSY);
     }
     else {
@@ -2750,7 +2791,7 @@ SD_Error SD_Erase(uint32_t startaddr, uint32_t endaddr) {
         return(errorstatus);
     }
 
-    maxdelay = 120000 / ((SDIO->CLKCR & 0xFF) + 2);
+    maxdelay = 120000 / ((SDMMC1->CLKCR & 0xFF) + 2);
 
     if (SDIO_GetResponse(SDIO_RESP1) & SD_CARD_LOCKED) {
         errorstatus = SD_LOCK_UNLOCK_FAILED;
@@ -2914,7 +2955,7 @@ SD_Error SD_SendSDStatus(uint32_t *psdstatus) {
         return(errorstatus);
     }
 
-    while (!(SDIO->STA &(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND | SDIO_FLAG_STBITERR))) {
+    while (!(SDMMC1->STA &(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND | SDIO_FLAG_STBITERR))) {
         if (SDIO_GetFlagStatus(SDIO_FLAG_RXFIFOHF) != RESET) {
             for (count = 0; count < 8; count++) {
                 *(psdstatus + count) = SDIO_ReadData();
@@ -2995,7 +3036,7 @@ SD_Error SD_ProcessIRQSrc(void) {
 }
 
 /**
-  * @brief  This function waits until the SDIO DMA data transfer is finished.
+  * @brief  This function waits until the SDMMC1 DMA data transfer is finished.
   * @param  None.
   * @retval None.
   */
@@ -3044,11 +3085,11 @@ static SD_Error CmdResp7Error(void) {
     uint32_t status;
     uint32_t timeout = SDIO_CMD0TIMEOUT;
 
-    status = SDIO->STA;
+    status = SDMMC1->STA;
 
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT)) && (timeout > 0)) {
         timeout--;
-        status = SDIO->STA;
+        status = SDMMC1->STA;
     }
 
     if ((timeout == 0) || (status & SDIO_FLAG_CTIMEOUT)) {
@@ -3077,10 +3118,10 @@ static SD_Error CmdResp1Error(uint8_t cmd) {
     uint32_t status;
     uint32_t response_r1;
 
-    status = SDIO->STA;
+    status = SDMMC1->STA;
 
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT))) {
-        status = SDIO->STA;
+        status = SDMMC1->STA;
     }
 
     if (status & SDIO_FLAG_CTIMEOUT) {
@@ -3197,10 +3238,10 @@ static SD_Error CmdResp3Error(void) {
     SD_Error errorstatus = SD_OK;
     uint32_t status;
 
-    status = SDIO->STA;
+    status = SDMMC1->STA;
 
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT))) {
-        status = SDIO->STA;
+        status = SDMMC1->STA;
     }
 
     if (status & SDIO_FLAG_CTIMEOUT) {
@@ -3222,10 +3263,10 @@ static SD_Error CmdResp2Error(void) {
     SD_Error errorstatus = SD_OK;
     uint32_t status;
 
-    status = SDIO->STA;
+    status = SDMMC1->STA;
 
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CTIMEOUT | SDIO_FLAG_CMDREND))) {
-        status = SDIO->STA;
+        status = SDMMC1->STA;
     }
 
     if (status & SDIO_FLAG_CTIMEOUT) {
@@ -3257,10 +3298,10 @@ static SD_Error CmdResp6Error(uint8_t cmd, uint16_t *prca) {
     uint32_t status;
     uint32_t response_r1;
 
-    status = SDIO->STA;
+    status = SDMMC1->STA;
 
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CTIMEOUT | SDIO_FLAG_CMDREND))) {
-        status = SDIO->STA;
+        status = SDMMC1->STA;
     }
 
     if (status & SDIO_FLAG_CTIMEOUT) {
@@ -3307,12 +3348,12 @@ static SD_Error CmdResp6Error(uint8_t cmd, uint16_t *prca) {
 }
 
 /**
-  * @brief  Enables or disables the SDIO wide bus mode.
-  * @param  NewState: new state of the SDIO wide bus mode.
+  * @brief  Enables or disables the SDMMC1 wide bus mode.
+  * @param  newState: new state of the SDMMC1 wide bus mode.
   *   This parameter can be: ENABLE or DISABLE.
   * @retval SD_Error: SD Card Error code.
   */
-static SD_Error SDEnWideBus(FunctionalState NewState) {
+static SD_Error SDEnWideBus(FunctionalState newState) {
     SD_Error errorstatus = SD_OK;
 
     uint32_t scr[2] = { 0, 0 };
@@ -3330,7 +3371,7 @@ static SD_Error SDEnWideBus(FunctionalState NewState) {
     }
 
     /*!< If wide bus operation to be enabled */
-    if (NewState == ENABLE) {
+    if (newState == ENABLE) {
         /*!< If requested card supports wide bus operation */
         if ((scr[1] & SD_WIDE_BUS_SUPPORT) != SD_ALLZERO) {
             /*!< Send CMD55 APP_CMD with argument as card's RCA.*/
@@ -3424,9 +3465,9 @@ static SD_Error IsCardProgramming(uint8_t *pstatus) {
     SDIO_CmdInitStructure.SDIO_CPSM = SDIO_CPSM_Enable;
     SDIO_SendCommand(&SDIO_CmdInitStructure);
 
-    status = SDIO->STA;
+    status = SDMMC1->STA;
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT))) {
-        status = SDIO->STA;
+        status = SDMMC1->STA;
     }
 
     if (status & SDIO_FLAG_CTIMEOUT) {
@@ -3603,7 +3644,7 @@ static SD_Error FindSCR(uint16_t rca, uint32_t *pscr) {
         return(errorstatus);
     }
 
-    while (!(SDIO->STA & (SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND | SDIO_FLAG_STBITERR))) {
+    while (!(SDMMC1->STA & (SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND | SDIO_FLAG_STBITERR))) {
         if (SDIO_GetFlagStatus(SDIO_FLAG_RXDAVL) != RESET) {
             *(tempscr + index) = SDIO_ReadData();
             index++;
@@ -3659,7 +3700,7 @@ uint8_t convert_from_bytes_to_power_of_two(uint16_t NumberOfBytes) {
 bool SD_GetStatus_WithTimeOut(int32_t timeout_us) {
     //while(SD_GetStatus() != SD_TRANSFER_OK);
     for (; timeout_us > 0; timeout_us--) {
-        STM32F4_Time_Delay(nullptr, 1);
+        STM32F7_Time_Delay(nullptr, 1);
         if (SD_GetStatus() == SD_TRANSFER_OK)
             return true;
     }
@@ -3671,8 +3712,8 @@ bool SD_GetStatus_WithTimeOut(int32_t timeout_us) {
 static TinyCLR_SdCard_Provider sdCardProvider;
 static TinyCLR_Api_Info sdApi;
 
-#define STM32F4_SD_SECTOR_SIZE 512
-#define STM32F4_SD_TIMEOUT 5000000
+#define STM32F7_SD_SECTOR_SIZE 512
+#define STM32F7_SD_TIMEOUT 5000000
 
 struct SdController {
     int32_t controller;
@@ -3681,30 +3722,30 @@ struct SdController {
     size_t  *sectorSizes;
 };
 
-static const STM32F4_Gpio_Pin g_STM32F4_SdCard_Data0_Pins[] = STM32F4_SD_DATA0_PINS;
-static const STM32F4_Gpio_Pin g_STM32F4_SdCard_Data1_Pins[] = STM32F4_SD_DATA1_PINS;
-static const STM32F4_Gpio_Pin g_STM32F4_SdCard_Data2_Pins[] = STM32F4_SD_DATA2_PINS;
-static const STM32F4_Gpio_Pin g_STM32F4_SdCard_Data3_Pins[] = STM32F4_SD_DATA3_PINS;
-static const STM32F4_Gpio_Pin g_STM32F4_SdCard_Clk_Pins[] = STM32F4_SD_CLK_PINS;
-static const STM32F4_Gpio_Pin g_STM32F4_SdCard_Cmd_Pins[] = STM32F4_SD_CMD_PINS;
+static const STM32F7_Gpio_Pin g_STM32F7_SdCard_Data0_Pins[] = STM32F7_SD_DATA0_PINS;
+static const STM32F7_Gpio_Pin g_STM32F7_SdCard_Data1_Pins[] = STM32F7_SD_DATA1_PINS;
+static const STM32F7_Gpio_Pin g_STM32F7_SdCard_Data2_Pins[] = STM32F7_SD_DATA2_PINS;
+static const STM32F7_Gpio_Pin g_STM32F7_SdCard_Data3_Pins[] = STM32F7_SD_DATA3_PINS;
+static const STM32F7_Gpio_Pin g_STM32F7_SdCard_Clk_Pins[] = STM32F7_SD_CLK_PINS;
+static const STM32F7_Gpio_Pin g_STM32F7_SdCard_Cmd_Pins[] = STM32F7_SD_CMD_PINS;
 
 SdController sdController[1];
 
-const TinyCLR_Api_Info* STM32F4_SdCard_GetApi() {
+const TinyCLR_Api_Info* STM32F7_SdCard_GetApi() {
     sdCardProvider.Parent = &sdApi;
 
-    sdCardProvider.Acquire = &STM32F4_SdCard_Acquire;
-    sdCardProvider.Release = &STM32F4_SdCard_Release;
-    sdCardProvider.GetControllerCount = &STM32F4_SdCard_GetControllerCount;
+    sdCardProvider.Acquire = &STM32F7_SdCard_Acquire;
+    sdCardProvider.Release = &STM32F7_SdCard_Release;
+    sdCardProvider.GetControllerCount = &STM32F7_SdCard_GetControllerCount;
 
-    sdCardProvider.WriteSectors = &STM32F4_SdCard_WriteSector;
-    sdCardProvider.ReadSectors = &STM32F4_SdCard_ReadSector;
-    sdCardProvider.EraseSectors = &STM32F4_SdCard_EraseSector;
-    sdCardProvider.IsSectorErased = &STM32F4_SdCard_IsSectorErased;
-    sdCardProvider.GetSectorMap = &STM32F4_SdCard_GetSectorMap;
+    sdCardProvider.WriteSectors = &STM32F7_SdCard_WriteSector;
+    sdCardProvider.ReadSectors = &STM32F7_SdCard_ReadSector;
+    sdCardProvider.EraseSectors = &STM32F7_SdCard_EraseSector;
+    sdCardProvider.IsSectorErased = &STM32F7_SdCard_IsSectorErased;
+    sdCardProvider.GetSectorMap = &STM32F7_SdCard_GetSectorMap;
 
     sdApi.Author = "GHI Electronics, LLC";
-    sdApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.SdCardProvider";
+    sdApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.SdCardProvider";
     sdApi.Type = TinyCLR_Api_Type::SdCardProvider;
     sdApi.Version = 0;
     sdApi.Implementation = &sdCardProvider;
@@ -3712,32 +3753,32 @@ const TinyCLR_Api_Info* STM32F4_SdCard_GetApi() {
     return &sdApi;
 }
 
-TinyCLR_Result STM32F4_SdCard_Acquire(const TinyCLR_SdCard_Provider* self, int32_t controller) {
+TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_SdCard_Provider* self, int32_t controller) {
     sdController[controller].controller = controller;
     // Initialize hal layer here
 
-    auto d0 = g_STM32F4_SdCard_Data0_Pins[controller];
-    auto d1 = g_STM32F4_SdCard_Data1_Pins[controller];
-    auto d2 = g_STM32F4_SdCard_Data2_Pins[controller];
-    auto d3 = g_STM32F4_SdCard_Data3_Pins[controller];
-    auto clk = g_STM32F4_SdCard_Clk_Pins[controller];
-    auto cmd = g_STM32F4_SdCard_Cmd_Pins[controller];
+    auto d0 = g_STM32F7_SdCard_Data0_Pins[controller];
+    auto d1 = g_STM32F7_SdCard_Data1_Pins[controller];
+    auto d2 = g_STM32F7_SdCard_Data2_Pins[controller];
+    auto d3 = g_STM32F7_SdCard_Data3_Pins[controller];
+    auto clk = g_STM32F7_SdCard_Clk_Pins[controller];
+    auto cmd = g_STM32F7_SdCard_Cmd_Pins[controller];
 
-    if (!STM32F4_GpioInternal_OpenPin(d0.number)
-        || !STM32F4_GpioInternal_OpenPin(d1.number)
-        || !STM32F4_GpioInternal_OpenPin(d2.number)
-        || !STM32F4_GpioInternal_OpenPin(d3.number)
-        || !STM32F4_GpioInternal_OpenPin(clk.number)
-        || !STM32F4_GpioInternal_OpenPin(cmd.number)
+    if (!STM32F7_GpioInternal_OpenPin(d0.number)
+        || !STM32F7_GpioInternal_OpenPin(d1.number)
+        || !STM32F7_GpioInternal_OpenPin(d2.number)
+        || !STM32F7_GpioInternal_OpenPin(d3.number)
+        || !STM32F7_GpioInternal_OpenPin(clk.number)
+        || !STM32F7_GpioInternal_OpenPin(cmd.number)
         )
         return TinyCLR_Result::SharingViolation;
 
-    STM32F4_GpioInternal_ConfigurePin(d0.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, d0.alternateFunction);
-    STM32F4_GpioInternal_ConfigurePin(d1.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, d1.alternateFunction);
-    STM32F4_GpioInternal_ConfigurePin(d2.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, d2.alternateFunction);
-    STM32F4_GpioInternal_ConfigurePin(d3.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, d3.alternateFunction);
-    STM32F4_GpioInternal_ConfigurePin(clk.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::None, clk.alternateFunction);
-    STM32F4_GpioInternal_ConfigurePin(cmd.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, cmd.alternateFunction);
+    STM32F7_GpioInternal_ConfigurePin(d0.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, d0.alternateFunction);
+    STM32F7_GpioInternal_ConfigurePin(d1.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, d1.alternateFunction);
+    STM32F7_GpioInternal_ConfigurePin(d2.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, d2.alternateFunction);
+    STM32F7_GpioInternal_ConfigurePin(d3.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, d3.alternateFunction);
+    STM32F7_GpioInternal_ConfigurePin(clk.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::None, clk.alternateFunction);
+    STM32F7_GpioInternal_ConfigurePin(cmd.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, cmd.alternateFunction);
 
     RCC->APB2ENR |= (1 << 11);
 
@@ -3757,13 +3798,13 @@ TinyCLR_Result STM32F4_SdCard_Acquire(const TinyCLR_SdCard_Provider* self, int32
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_SdCard_Release(const TinyCLR_SdCard_Provider* self, int32_t controller) {
-    auto d0 = g_STM32F4_SdCard_Data0_Pins[controller];
-    auto d1 = g_STM32F4_SdCard_Data1_Pins[controller];
-    auto d2 = g_STM32F4_SdCard_Data2_Pins[controller];
-    auto d3 = g_STM32F4_SdCard_Data3_Pins[controller];
-    auto clk = g_STM32F4_SdCard_Clk_Pins[controller];
-    auto cmd = g_STM32F4_SdCard_Cmd_Pins[controller];
+TinyCLR_Result STM32F7_SdCard_Release(const TinyCLR_SdCard_Provider* self, int32_t controller) {
+    auto d0 = g_STM32F7_SdCard_Data0_Pins[controller];
+    auto d1 = g_STM32F7_SdCard_Data1_Pins[controller];
+    auto d2 = g_STM32F7_SdCard_Data2_Pins[controller];
+    auto d3 = g_STM32F7_SdCard_Data3_Pins[controller];
+    auto clk = g_STM32F7_SdCard_Clk_Pins[controller];
+    auto cmd = g_STM32F7_SdCard_Cmd_Pins[controller];
 
     SD_DeInit();
 
@@ -3773,23 +3814,23 @@ TinyCLR_Result STM32F4_SdCard_Release(const TinyCLR_SdCard_Provider* self, int32
 
     memoryProvider->Free(memoryProvider, sdController[controller].sectorSizes);
 
-    STM32F4_GpioInternal_ClosePin(d0.number);
-    STM32F4_GpioInternal_ClosePin(d1.number);
-    STM32F4_GpioInternal_ClosePin(d2.number);
-    STM32F4_GpioInternal_ClosePin(d3.number);
-    STM32F4_GpioInternal_ClosePin(clk.number);
-    STM32F4_GpioInternal_ClosePin(cmd.number);
+    STM32F7_GpioInternal_ClosePin(d0.number);
+    STM32F7_GpioInternal_ClosePin(d1.number);
+    STM32F7_GpioInternal_ClosePin(d2.number);
+    STM32F7_GpioInternal_ClosePin(d3.number);
+    STM32F7_GpioInternal_ClosePin(clk.number);
+    STM32F7_GpioInternal_ClosePin(cmd.number);
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_SdCard_GetControllerCount(const TinyCLR_SdCard_Provider* self, int32_t& count) {
-    count = SIZEOF_ARRAY(g_STM32F4_SdCard_Data0_Pins);
+TinyCLR_Result STM32F7_SdCard_GetControllerCount(const TinyCLR_SdCard_Provider* self, int32_t& count) {
+    count = SIZEOF_ARRAY(g_STM32F7_SdCard_Data0_Pins);
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, size_t& count, const uint8_t* data, int32_t timeout) {
+TinyCLR_Result STM32F7_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, size_t& count, const uint8_t* data, int32_t timeout) {
     int32_t index = 0;
 
     int32_t to;
@@ -3804,11 +3845,11 @@ TinyCLR_Result STM32F4_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, i
         to = timeout;
 
         while (SD_GetStatus() != SD_TRANSFER_OK && to--) {
-            STM32F4_Time_Delay(nullptr, 1);
+            STM32F7_Time_Delay(nullptr, 1);
         }
 
-        if (to > 0 && SD_WriteBlock(&pData[index], sectorNum * STM32F4_SD_SECTOR_SIZE, STM32F4_SD_SECTOR_SIZE) == SD_OK) {
-            index += STM32F4_SD_SECTOR_SIZE;
+        if (to > 0 && SD_WriteBlock(&pData[index], sectorNum * STM32F7_SD_SECTOR_SIZE, STM32F7_SD_SECTOR_SIZE) == SD_OK) {
+            index += STM32F7_SD_SECTOR_SIZE;
             sectorNum++;
             sectorCount--;
         }
@@ -3822,9 +3863,10 @@ TinyCLR_Result STM32F4_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, i
     }
 
     return TinyCLR_Result::Success;
+
 }
 
-TinyCLR_Result STM32F4_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, size_t& count, uint8_t* data, int32_t timeout) {
+TinyCLR_Result STM32F7_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, size_t& count, uint8_t* data, int32_t timeout) {
     int32_t index = 0;
 
     int32_t to;
@@ -3837,12 +3879,12 @@ TinyCLR_Result STM32F4_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, in
         to = timeout;
 
         while (SD_GetStatus() != SD_TRANSFER_OK && to--) {
-            STM32F4_Time_Delay(nullptr, 1);
+            STM32F7_Time_Delay(nullptr, 1);
         }
 
-        if (to > 0 && SD_ReadBlock(&data[index], sectorNum * STM32F4_SD_SECTOR_SIZE, STM32F4_SD_SECTOR_SIZE) == SD_OK) {
+        if (to > 0 && SD_ReadBlock(&data[index], sectorNum * STM32F7_SD_SECTOR_SIZE, STM32F7_SD_SECTOR_SIZE) == SD_OK) {
 
-            index += STM32F4_SD_SECTOR_SIZE;
+            index += STM32F7_SD_SECTOR_SIZE;
             sectorNum++;
             sectorCount--;
         }
@@ -3858,29 +3900,29 @@ TinyCLR_Result STM32F4_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, in
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_SdCard_IsSectorErased(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, bool& erased) {
+TinyCLR_Result STM32F7_SdCard_IsSectorErased(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, bool& erased) {
     erased = true;
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_SdCard_EraseSector(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, size_t& count, int32_t timeout) {
-    uint32_t addressStart = sector * STM32F4_SD_SECTOR_SIZE;
+TinyCLR_Result STM32F7_SdCard_EraseSector(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, size_t& count, int32_t timeout) {
+    uint32_t addressStart = sector * STM32F7_SD_SECTOR_SIZE;
 
-    uint32_t addressEnd = addressStart + (count * STM32F4_SD_SECTOR_SIZE);
+    uint32_t addressEnd = addressStart + (count * STM32F7_SD_SECTOR_SIZE);
 
     return SD_Erase(addressStart, addressEnd) == SD_OK ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result STM32F4_SdCard_GetSectorMap(const TinyCLR_SdCard_Provider* self, int32_t controller, const size_t*& sizes, size_t& count, bool& isUniform) {
-    sdController[controller].sectorSizes[0] = STM32F4_SD_SECTOR_SIZE;
+TinyCLR_Result STM32F7_SdCard_GetSectorMap(const TinyCLR_SdCard_Provider* self, int32_t controller, const size_t*& sizes, size_t& count, bool& isUniform) {
+    sdController[controller].sectorSizes[0] = STM32F7_SD_SECTOR_SIZE;
 
     sizes = sdController[controller].sectorSizes;
-    count = SDCardInfo.CardCapacity / STM32F4_SD_SECTOR_SIZE;
+    count = SDCardInfo.CardCapacity / STM32F7_SD_SECTOR_SIZE;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_SdCard_Reset() {
+TinyCLR_Result STM32F7_SdCard_Reset() {
     return TinyCLR_Result::Success;
 }
 #endif // INCLUDE_SD

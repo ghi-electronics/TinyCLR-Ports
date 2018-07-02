@@ -37,6 +37,9 @@ void LPC24_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider, const Ti
 #ifdef INCLUDE_PWM
     LPC24_Pwm_Reset();
 #endif
+#ifdef INCLUDE_SD
+    LPC24_SdCard_Reset();
+#endif
 #ifdef INCLUDE_SPI
     LPC24_Spi_Reset();
 #endif
