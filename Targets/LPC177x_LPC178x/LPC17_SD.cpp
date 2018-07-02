@@ -1,3 +1,18 @@
+// Copyright Microsoft Corporation
+// Copyright GHI Electronics, LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include <string.h>
 
 #include "LPC17.h"
@@ -1333,6 +1348,7 @@ uint32_t MCI_Send_SDHC(void) {
         LPC17_Time_Delay(nullptr, 1000); // delay 1ms
         retryCount--;
     }
+
     return(false);
 }
 
@@ -2234,7 +2250,7 @@ TinyCLR_Result LPC17_SdCard_GetControllerCount(const TinyCLR_SdCard_Provider* se
 TinyCLR_Result LPC17_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, size_t& count, const uint8_t* data, int32_t timeout) {
     int32_t index = 0;
 
-    int32_t to;
+    int32_t to = timeout;
 
     auto sectorCount = count;
 
@@ -2253,6 +2269,10 @@ TinyCLR_Result LPC17_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int
         }
     }
 
+    if (!to) {
+        return TinyCLR_Result::TimedOut;
+    }
+
     return TinyCLR_Result::Success;
 
 }
@@ -2260,7 +2280,7 @@ TinyCLR_Result LPC17_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int
 TinyCLR_Result LPC17_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, size_t& count, uint8_t* data, int32_t timeout) {
     int32_t index = 0;
 
-    int32_t to;
+    int32_t to = timeout;
 
     auto sectorCount = count;
 
@@ -2275,6 +2295,10 @@ TinyCLR_Result LPC17_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int3
         else {
             return TinyCLR_Result::InvalidOperation;
         }
+    }
+
+    if (!to) {
+        return TinyCLR_Result::TimedOut;
     }
 
     return TinyCLR_Result::Success;

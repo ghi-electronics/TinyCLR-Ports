@@ -1,3 +1,18 @@
+// Copyright Microsoft Corporation
+// Copyright GHI Electronics, LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "AT91.h"
 
 #include <string.h>
@@ -6,9 +21,7 @@
 //SD timeout command
 #define TRANSFER_CMD_TIMEOUT 2000000
 
-
 // DMA
-
 #define MAX_GPDMA_CHANNELS 8
 #define DMA_SIZE        BLOCK_LENGTH    /* DMA_SIZE is the same BLOCK_LENGTH defined in mci.h */
 
@@ -52,7 +65,6 @@ uint32_t DMA_EnableChannel(void);
 uint32_t DMA_DiableChannel(void);
 void DMA_Enable(void);
 
-
 /******************************************************************************
 ** Function name:        DMA_Init
 **
@@ -80,7 +92,6 @@ uint32_t DMA_Init(void) {
 ** Returned value:        true or false
 **
 ******************************************************************************/
-
 uint32_t DMA_EnableChannel(void) {
     DMAC0_CHER_REG |= (1 << 0);                         // Enable chanel 0
     while ((DMAC0_CHSR_REG & (1 << 0)) == 0);
@@ -2617,6 +2628,7 @@ TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int3
         }
 
         to = timeout;
+
         memcpy(sdController[controller].pBufferAligned, pData, AT91_SD_SECTOR_SIZE);
 
         if ((error = SD_WriteBlock(&sdDrv, sectorNum, 1, sdController[controller].pBufferAligned, timeout)) == 0) {
@@ -2675,6 +2687,7 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32
 
         status = 0;
         to = timeout;
+
         memset(sdController[controller].pBufferAligned, 0, AT91_SD_SECTOR_SIZE);
 
         if ((error = SD_ReadBlock(&sdDrv, sectorNum, 1, sdController[controller].pBufferAligned, timeout)) == 0) {

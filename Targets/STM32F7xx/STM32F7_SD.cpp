@@ -1,6 +1,23 @@
+// Copyright Microsoft Corporation
+// Copyright Oberon microsystems, Inc
+// Copyright GHI Electronics, LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "STM32F7.h"
 
 #ifdef INCLUDE_SD
+
 // sdio
 typedef struct {
     uint32_t SDIO_ClockEdge;            /*!< Specifies the clock transition on which the bit capture is made.
@@ -67,7 +84,6 @@ typedef struct {
 
 
 /* Exported constants --------------------------------------------------------*/
-
 #define SDIO_ClockEdge_Rising               ((uint32_t)0x00000000)
 #define SDIO_ClockEdge_Falling              ((uint32_t)0x00002000)
 #define IS_SDIO_CLOCK_EDGE(EDGE) (((EDGE) == SDIO_ClockEdge_Rising) || \
@@ -3858,7 +3874,7 @@ TinyCLR_Result STM32F7_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, i
         }
 
         if (!to) {
-            return TinyCLR_Result::InvalidOperation;
+            return TinyCLR_Result::TimedOut;
         }
     }
 
@@ -3883,7 +3899,6 @@ TinyCLR_Result STM32F7_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, in
         }
 
         if (to > 0 && SD_ReadBlock(&data[index], sectorNum * STM32F7_SD_SECTOR_SIZE, STM32F7_SD_SECTOR_SIZE) == SD_OK) {
-
             index += STM32F7_SD_SECTOR_SIZE;
             sectorNum++;
             sectorCount--;
@@ -3893,7 +3908,7 @@ TinyCLR_Result STM32F7_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, in
         }
 
         if (!to) {
-            return TinyCLR_Result::InvalidOperation;
+            return TinyCLR_Result::TimedOut;
         }
     }
 
