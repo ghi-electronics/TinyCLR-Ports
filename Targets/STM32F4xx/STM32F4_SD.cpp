@@ -3679,7 +3679,6 @@ struct SdController {
     size_t  sectorCount;
 
     size_t  *sectorSizes;
-    uint8_t *pBuffer;
 };
 
 static const STM32F4_Gpio_Pin g_STM32F4_SdCard_Data0_Pins[] = STM32F4_SD_DATA0_PINS;
@@ -3690,10 +3689,6 @@ static const STM32F4_Gpio_Pin g_STM32F4_SdCard_Clk_Pins[] = STM32F4_SD_CLK_PINS;
 static const STM32F4_Gpio_Pin g_STM32F4_SdCard_Cmd_Pins[] = STM32F4_SD_CMD_PINS;
 
 SdController sdController[1];
-
-void STM32F4_SdCard_Interrupt(void* param) {
-    SD_ProcessIRQSrc();
-}
 
 const TinyCLR_Api_Info* STM32F4_SdCard_GetApi() {
     sdCardProvider.Parent = &sdApi;
@@ -3748,7 +3743,6 @@ TinyCLR_Result STM32F4_SdCard_Acquire(const TinyCLR_SdCard_Provider* self, int32
 
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-    sdController[controller].pBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, STM32F4_SD_SECTOR_SIZE);
     sdController[controller].sectorSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
 
     SD_DeInit();
@@ -3777,7 +3771,6 @@ TinyCLR_Result STM32F4_SdCard_Release(const TinyCLR_SdCard_Provider* self, int32
 
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-    memoryProvider->Free(memoryProvider, sdController[controller].pBuffer);
     memoryProvider->Free(memoryProvider, sdController[controller].sectorSizes);
 
     STM32F4_GpioInternal_ClosePin(d0.number);
@@ -3829,7 +3822,6 @@ TinyCLR_Result STM32F4_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, i
     }
 
     return TinyCLR_Result::Success;
-
 }
 
 TinyCLR_Result STM32F4_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, size_t& count, uint8_t* data, int32_t timeout) {

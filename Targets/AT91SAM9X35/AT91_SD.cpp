@@ -2442,10 +2442,7 @@ uint8_t SD_Stop(SdCard *pSd, SdDriver *pSdDriver) {
     return 0;
 }
 
-
-
 //AT91
-
 static TinyCLR_SdCard_Provider sdCardProvider;
 static TinyCLR_Api_Info sdApi;
 

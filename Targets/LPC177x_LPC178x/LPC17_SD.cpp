@@ -2128,7 +2128,6 @@ struct SdController {
     size_t  sectorCount;
 
     size_t  *sectorSizes;
-    uint8_t *pBuffer;
 };
 
 static const LPC17_Gpio_Pin g_LPC17_SdCard_Data0_Pins[] = LPC17_SD_DATA0_PINS;
@@ -2139,10 +2138,6 @@ static const LPC17_Gpio_Pin g_LPC17_SdCard_Clk_Pins[] = LPC17_SD_CLK_PINS;
 static const LPC17_Gpio_Pin g_LPC17_SdCard_Cmd_Pins[] = LPC17_SD_CMD_PINS;
 
 SdController sdController[1];
-
-void LPC17_SdCard_Interrupt(void* param) {
-
-}
 
 const TinyCLR_Api_Info* LPC17_SdCard_GetApi() {
     sdCardProvider.Parent = &sdApi;
@@ -2194,7 +2189,6 @@ TinyCLR_Result LPC17_SdCard_Acquire(const TinyCLR_SdCard_Provider* self, int32_t
 
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-    sdController[controller].pBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, LPC17_SD_SECTOR_SIZE);
     sdController[controller].sectorSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
 
     if (!MCI_And_Card_initialize())
@@ -2219,7 +2213,6 @@ TinyCLR_Result LPC17_SdCard_Release(const TinyCLR_SdCard_Provider* self, int32_t
 
     auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
 
-    memoryProvider->Free(memoryProvider, sdController[controller].pBuffer);
     memoryProvider->Free(memoryProvider, sdController[controller].sectorSizes);
 
     LPC17_Gpio_ClosePin(d0.number);
