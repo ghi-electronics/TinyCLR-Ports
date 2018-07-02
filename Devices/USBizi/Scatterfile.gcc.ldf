@@ -73,7 +73,7 @@ SECTIONS
         KEEP(* (.bss2.*))
     }>ERAM
 
-    ER_HEAP_BEGIN 0x40005F00 : ALIGN(0x8)
+    ER_HEAP_BEGIN 0x40006500 : ALIGN(0x8)
     {
         * (SectionForHeapBegin)
     }>IRAM
