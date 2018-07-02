@@ -2202,6 +2202,30 @@ TinyCLR_Result LPC24_SdCard_Acquire(const TinyCLR_SdCard_Provider* self, int32_t
 }
 
 TinyCLR_Result LPC24_SdCard_Release(const TinyCLR_SdCard_Provider* self, int32_t controller) {
+    auto d0 = g_LPC24_SdCard_Data0_Pins[controller];
+    auto d1 = g_LPC24_SdCard_Data1_Pins[controller];
+    auto d2 = g_LPC24_SdCard_Data2_Pins[controller];
+    auto d3 = g_LPC24_SdCard_Data3_Pins[controller];
+    auto clk = g_LPC24_SdCard_Clk_Pins[controller];
+    auto cmd = g_LPC24_SdCard_Cmd_Pins[controller];
+
+    LPC24XX::SYSCON().PCONP &= ~(1 << 28); /* Disable clock to the Mci block */
+
+    LPC24XX::SYSCON().PCONP &= ~(1 << 29); /* Disable clock to the Dma block */
+
+    LPC24_Interrupt_Deactivate(LPC24XX_VIC::c_IRQ_INDEX_SD); /* Disable Interrupt */
+
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+
+    memoryProvider->Free(memoryProvider, sdController[controller].pBuffer);
+    memoryProvider->Free(memoryProvider, sdController[controller].sectorSizes);
+
+    LPC24_Gpio_ClosePin(d0.number);
+    LPC24_Gpio_ClosePin(d1.number);
+    LPC24_Gpio_ClosePin(d2.number);
+    LPC24_Gpio_ClosePin(d3.number);
+    LPC24_Gpio_ClosePin(clk.number);
+    LPC24_Gpio_ClosePin(cmd.number);
 
     return TinyCLR_Result::Success;
 }
@@ -2235,7 +2259,6 @@ TinyCLR_Result LPC24_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int
     }
 
     return TinyCLR_Result::Success;
-
 }
 
 TinyCLR_Result LPC24_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, size_t& count, uint8_t* data, int32_t timeout) {
