@@ -13,6 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if defined(__GNUC__)
+// Temporary disable optimize
+#pragma GCC optimize 0
+#endif
+
 #include "AT91.h"
 
 #include <string.h>
@@ -2722,6 +2727,7 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32
             return TinyCLR_Result::TimedOut;
         }
     }
+
     return TinyCLR_Result::Success;
 }
 
