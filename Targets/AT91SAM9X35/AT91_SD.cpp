@@ -13,6 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if defined(__GNUC__)
+// Temporary disable optimize
+#pragma GCC optimize 0
+#endif
+
 #include "AT91.h"
 
 #include <string.h>
@@ -2623,6 +2628,8 @@ TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int3
     uint32_t status;
 
     while (sectorCount > 0) {
+        AT91_Cache_DisableCaches();
+
         if (SD_ReadyToTransfer(pSd, timeout) == false) {
             return TinyCLR_Result::InvalidOperation;
         }
@@ -2645,9 +2652,9 @@ TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int3
             sectorCount--;
         }
 
-        AT91_Cache_FlushCaches();
-
         DMA_DiableChannel();
+
+        AT91_Cache_EnableCaches();
 
         if (error) {
             return TinyCLR_Result::InvalidOperation;
@@ -2681,6 +2688,8 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32
     uint8_t* pData = (uint8_t*)data;
 
     while (sectorCount > 0) {
+        AT91_Cache_DisableCaches();
+
         if (SD_ReadyToTransfer(pSd, timeout) == false) {
             return TinyCLR_Result::InvalidOperation;
         }
@@ -2706,9 +2715,9 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32
             sectorCount--;
         }
 
-        AT91_Cache_FlushCaches();
-
         DMA_DiableChannel();
+
+        AT91_Cache_EnableCaches();
 
         if (error) {
             return TinyCLR_Result::InvalidOperation;
@@ -2718,6 +2727,7 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32
             return TinyCLR_Result::TimedOut;
         }
     }
+
     return TinyCLR_Result::Success;
 }
 
