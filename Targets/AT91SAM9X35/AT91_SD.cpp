@@ -13,11 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if defined(__GNUC__)
-// Temporary disable optimize
-#pragma GCC optimize 0
-#endif
-
 #include "AT91.h"
 
 #include <string.h>
@@ -587,9 +582,8 @@ void MCI_PreConfig(Mci *pMci, MciCmd *pCommand) {
 /// \param pCommand  Pointer to the command to execute.
 //------------------------------------------------------------------------------
 void MCI_SendCommand(Mci *pMci, MciCmd *pCommand) {
-    AT91PS_MCI pMciHw = pMci->pMciHw;
+    volatile AT91PS_MCI pMciHw = pMci->pMciHw;
     uint32_t mciIer = 0, mciMr = 0;
-    uint32_t status;
 
     // Command is now being executed
     pMci->pCommand = pCommand;
