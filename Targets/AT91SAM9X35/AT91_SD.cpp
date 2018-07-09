@@ -13,11 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#if defined(__GNUC__)
-// Temporary disable optimize
-#pragma GCC optimize 0
-#endif
-
 #include "AT91.h"
 
 #include <string.h>
@@ -64,10 +59,10 @@
 #define GPDMA_Source_Register_Channel            (*(volatile uint32_t *)(0xFFFFEC3C)) // chanel 0 default
 #define GPDMA_Destination_Register_Channel        (*(volatile uint32_t *)(0xFFFFEC40)) // chanel 0 default
 
-uint32_t DMA_Config(uint32_t DMAMode, uint8_t* pData);
-uint32_t DMA_Init(void);
-uint32_t DMA_EnableChannel(void);
-uint32_t DMA_DiableChannel(void);
+void DMA_Config(uint32_t DMAMode, uint8_t* pData);
+void DMA_Init(void);
+void DMA_EnableChannel(void);
+void DMA_DiableChannel(void);
 void DMA_Enable(void);
 
 /******************************************************************************
@@ -79,7 +74,7 @@ void DMA_Enable(void);
 ** Returned value:        true or false, false if ISR can't be installed.
 **
 ******************************************************************************/
-uint32_t DMA_Init(void) {
+void DMA_Init(void) {
     AT91_PMC &pmc = AT91::PMC();
     pmc.EnablePeriphClock(AT91C_ID_DMAC0);
 
@@ -97,26 +92,23 @@ uint32_t DMA_Init(void) {
 ** Returned value:        true or false
 **
 ******************************************************************************/
-uint32_t DMA_EnableChannel(void) {
+void DMA_EnableChannel() {
     DMAC0_CHER_REG |= (1 << 0);                         // Enable chanel 0
     while ((DMAC0_CHSR_REG & (1 << 0)) == 0);
 
 }
-uint32_t DMA_DiableChannel(void) {
-
+void DMA_DiableChannel() {
     DMAC0_CHDR_REG |= (1 << 0);                         // Enable chanel 0
     while ((DMAC0_CHSR_REG & (1 << 0)) == 1);
 }
 
 void DMA_Enable() {
-
     DMAC0_EN_REG = 0x01;    /* Enable DMA channels, little endian */
     while (!(DMAC0_EN_REG & 0x01));
 }
 
-uint32_t DMA_Config(uint32_t DMAMode, uint8_t* pData) {
-    uint32_t error_status;
-    error_status = DMAC0_EBCISR_REG;  // clear interrupt
+void DMA_Config(uint32_t DMAMode, uint8_t* pData) {
+    volatile uint32_t error_status = DMAC0_EBCISR_REG;
 
     if (DMAMode == P2M) // for read
     {
@@ -171,8 +163,6 @@ uint32_t DMA_Config(uint32_t DMAMode, uint8_t* pData) {
     }
 
     DMA_EnableChannel();
-
-    return (true);
 }
 
 // MCI
@@ -415,7 +405,7 @@ typedef struct {
 
 void MCI_SetSpeed(Mci *pMci, uint32_t mciSpeed);
 
-uint8_t MCI_SendCommand(Mci *pMci, MciCmd *pMciCmd);
+void MCI_SendCommand(Mci *pMci, MciCmd *pMciCmd);
 
 void MCI_Handler(Mci *pMci);
 
@@ -566,7 +556,12 @@ void MCI_SetBusWidth(Mci *pMci, uint8_t busWidth) {
 
     WRITE_MCI(pMciHw, MCI_SDCR, mciSdcr | busWidth);
 }
-uint8_t MCI_PreConfig(Mci *pMci, MciCmd *pCommand) {
+
+
+
+void MCI_PreConfig(Mci *pMci, MciCmd *pCommand) {
+    volatile uint32_t* ctrl = (volatile uint32_t *)(0xF0008054);
+
     uint32_t block_reg = (((pCommand->blockSize) << 16) | pCommand->nbBlock);
     uint32_t dma_config = 0 |            //OFFSET is 0
         (0 << 4) |        //CHKSIZE is 4
@@ -576,10 +571,7 @@ uint8_t MCI_PreConfig(Mci *pMci, MciCmd *pCommand) {
 
     WRITE_MCI(pMciHw, MCI_BLKR, block_reg); // set block size, block num
     WRITE_MCI(pMciHw, MCI_DMA, dma_config);
-    (*(volatile uint32_t *)(0xF0008054)) = //( 1<<0) | //FIFOMODE
-        (1 << 4);     //FERRCTRL
-
-
+    *ctrl = 1 << 4;
 }
 //------------------------------------------------------------------------------
 /// Starts a MCI  transfer. This is a non blocking function. It will return
@@ -589,10 +581,9 @@ uint8_t MCI_PreConfig(Mci *pMci, MciCmd *pCommand) {
 /// \param pMci  Pointer to an MCI driver instance.
 /// \param pCommand  Pointer to the command to execute.
 //------------------------------------------------------------------------------
-uint8_t MCI_SendCommand(Mci *pMci, MciCmd *pCommand) {
-    AT91PS_MCI pMciHw = pMci->pMciHw;
+void MCI_SendCommand(Mci *pMci, MciCmd *pCommand) {
+    volatile AT91PS_MCI pMciHw = pMci->pMciHw;
     uint32_t mciIer = 0, mciMr = 0;
-    uint32_t status;
 
     // Command is now being executed
     pMci->pCommand = pCommand;
@@ -632,8 +623,7 @@ uint8_t MCI_SendCommand(Mci *pMci, MciCmd *pCommand) {
     mciIer = AT91C_MCI_CMDRDY | STATUS_ERRORS;
 
     // Config Interrupt
-    mciIer &= ~(AT91C_MCI_UNRE | AT91C_MCI_OVRE \
-        | AT91C_MCI_DTOE | AT91C_MCI_DCRCE | AT91C_MCI_RCRCE);
+    mciIer &= ~(AT91C_MCI_UNRE | AT91C_MCI_OVRE | AT91C_MCI_DTOE | AT91C_MCI_DCRCE | AT91C_MCI_RCRCE);
 
     // Enable MCI clock - start transfer
     MCI_Enable(pMci, ENABLE);
@@ -643,8 +633,6 @@ uint8_t MCI_SendCommand(Mci *pMci, MciCmd *pCommand) {
 
     // Interrupt enable shall be done after PDC TXTEN and RXTEN
     WRITE_MCI(pMciHw, MCI_IER, mciIer);
-
-    return 0;
 }
 
 //------------------------------------------------------------------------------
@@ -1196,10 +1184,8 @@ static uint8_t SendCommand(SdCard *pSd) {
     uint32_t i;
 
     // Send command
-    error = MCI_SendCommand((Mci *)pSdDriver, (MciCmd *)pCommand);
-    if (error) {
-        return SD_ERROR_DRIVER;
-    }
+    MCI_SendCommand((Mci *)pSdDriver, (MciCmd *)pCommand);
+
     int timeout = TRANSFER_CMD_TIMEOUT;
     // Wait for command to complete
     while (!MCI_IsTxComplete((MciCmd *)pCommand)) {
@@ -2625,7 +2611,7 @@ TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int3
 
     volatile uint32_t error = 0;
 
-    uint32_t status;
+    volatile uint32_t status;
 
     while (sectorCount > 0) {
         AT91_Cache_DisableCaches();
@@ -2651,8 +2637,6 @@ TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int3
             sectorNum++;
             sectorCount--;
         }
-
-        DMA_DiableChannel();
 
         AT91_Cache_EnableCaches();
 
@@ -2683,7 +2667,7 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32
 
     volatile uint32_t error = 0;
 
-    uint32_t status;
+    volatile  uint32_t status;
 
     uint8_t* pData = (uint8_t*)data;
 
@@ -2714,8 +2698,6 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32
             sectorNum++;
             sectorCount--;
         }
-
-        DMA_DiableChannel();
 
         AT91_Cache_EnableCaches();
 

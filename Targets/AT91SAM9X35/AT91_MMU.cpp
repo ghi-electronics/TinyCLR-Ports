@@ -15,22 +15,14 @@
 
 #include "AT91.h"
 
-// the arm3.0 compiler optimizes out much of the boot strap code which causes
-// the device not to boot for RTM builds (optimization level 3), adding this pragma
-// assures that the compiler will use the proper optimization level for this code
-#if !defined(DEBUG)
-#pragma O2
-#endif
-
 //--//
 
-#pragma arm section code = "SectionForBootstrapOperations"
 
-uint32_t* __section("SectionForBootstrapOperations") ARM9_MMU::GetL1Entry(uint32_t* base, uint32_t address) {
+uint32_t* ARM9_MMU::GetL1Entry(uint32_t* base, uint32_t address) {
     return &base[address >> 20];
 }
 
-void __section("SectionForBootstrapOperations") ARM9_MMU::InitializeL1(uint32_t* baseOfTTBs) {
+void ARM9_MMU::InitializeL1(uint32_t* baseOfTTBs) {
     uint32_t* dst = baseOfTTBs;
     uint32_t* end = (uint32_t*)((uint32_t)baseOfTTBs + ARM9_MMU::c_TTB_size);
 
@@ -39,7 +31,7 @@ void __section("SectionForBootstrapOperations") ARM9_MMU::InitializeL1(uint32_t*
     } while (dst < end);
 }
 
-uint32_t __section("SectionForBootstrapOperations") ARM9_MMU::GenerateL1_Section(uint32_t address, uint32_t AP, uint32_t domain, bool Cachable, bool Buffered, bool Xtended) {
+uint32_t ARM9_MMU::GenerateL1_Section(uint32_t address, uint32_t AP, uint32_t domain, bool Cachable, bool Buffered, bool Xtended) {
     uint32_t ret;
 
     ret = (address & 0xFFF00000);
@@ -53,7 +45,7 @@ uint32_t __section("SectionForBootstrapOperations") ARM9_MMU::GenerateL1_Section
     return ret;
 }
 
-void __section("SectionForBootstrapOperations") ARM9_MMU::GenerateL1_Sections(uint32_t* baseOfTTBs, uint32_t mappedAddress, uint32_t physAddress, int32_t size, uint32_t AP, uint32_t domain, bool Cachable, bool Buffered, bool Xtended) {
+void ARM9_MMU::GenerateL1_Sections(uint32_t* baseOfTTBs, uint32_t mappedAddress, uint32_t physAddress, int32_t size, uint32_t AP, uint32_t domain, bool Cachable, bool Buffered, bool Xtended) {
     uint32_t* dst = ARM9_MMU::GetL1Entry(baseOfTTBs, mappedAddress);
 
     do {
@@ -74,20 +66,20 @@ extern "C"
     bool	AT91_CPU_IsMMUEnabled_asm();
 }
 
-void __section("SectionForBootstrapOperations") AT91_CPU_InvalidateTLBs() {
+void AT91_CPU_InvalidateTLBs() {
     AT91_CPU_InvalidateTLBs_asm();
 }
 
-void __section("SectionForBootstrapOperations") AT91_CPU_EnableMMU(void* TTB) {
+void AT91_CPU_EnableMMU(void* TTB) {
     AT91_CPU_EnableMMU_asm(TTB);
     AT91_CPU_InvalidateTLBs_asm();
 }
 
-void __section("SectionForBootstrapOperations") AT91_CPU_DisableMMU() {
+void AT91_CPU_DisableMMU() {
     AT91_CPU_DisableMMU_asm();
 }
 
-bool __section("SectionForBootstrapOperations") AT91_CPU_IsMMUEnabled() {
+bool AT91_CPU_IsMMUEnabled() {
     return AT91_CPU_IsMMUEnabled_asm();
 }
 
