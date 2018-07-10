@@ -2614,6 +2614,8 @@ TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int3
     volatile uint32_t status;
 
     while (sectorCount > 0) {
+        memcpy(sdController[controller].pBufferAligned, pData, AT91_SD_SECTOR_SIZE);
+
         AT91_Cache_DisableCaches();
 
         if (SD_ReadyToTransfer(pSd, timeout) == false) {
@@ -2621,8 +2623,6 @@ TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int3
         }
 
         to = timeout;
-
-        memcpy(sdController[controller].pBufferAligned, pData, AT91_SD_SECTOR_SIZE);
 
         if ((error = SD_WriteBlock(&sdDrv, sectorNum, 1, sdController[controller].pBufferAligned, timeout)) == 0) {
             to = timeout;
@@ -2632,10 +2632,6 @@ TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int3
                 to--;
                 status |= READ_MCI(pMciHw, MCI_SR);
             }
-
-            pData += AT91_SD_SECTOR_SIZE;
-            sectorNum++;
-            sectorCount--;
         }
 
         AT91_Cache_EnableCaches();
@@ -2647,6 +2643,10 @@ TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int3
         if (!to) {
             return TinyCLR_Result::TimedOut;
         }
+
+        pData += AT91_SD_SECTOR_SIZE;
+        sectorNum++;
+        sectorCount--;
     }
 
     return TinyCLR_Result::Success;
@@ -2672,6 +2672,8 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32
     uint8_t* pData = (uint8_t*)data;
 
     while (sectorCount > 0) {
+        memset(sdController[controller].pBufferAligned, 0, AT91_SD_SECTOR_SIZE);
+
         AT91_Cache_DisableCaches();
 
         if (SD_ReadyToTransfer(pSd, timeout) == false) {
@@ -2681,8 +2683,6 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32
         status = 0;
         to = timeout;
 
-        memset(sdController[controller].pBufferAligned, 0, AT91_SD_SECTOR_SIZE);
-
         if ((error = SD_ReadBlock(&sdDrv, sectorNum, 1, sdController[controller].pBufferAligned, timeout)) == 0) {
             to = timeout;
 
@@ -2691,12 +2691,6 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32
                 to--;
                 status |= READ_MCI(pMciHw, MCI_SR);
             }
-
-            memcpy(pData, sdController[controller].pBufferAligned, AT91_SD_SECTOR_SIZE);
-
-            pData += AT91_SD_SECTOR_SIZE;
-            sectorNum++;
-            sectorCount--;
         }
 
         AT91_Cache_EnableCaches();
@@ -2708,6 +2702,12 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32
         if (!to) {
             return TinyCLR_Result::TimedOut;
         }
+
+        memcpy(pData, sdController[controller].pBufferAligned, AT91_SD_SECTOR_SIZE);
+
+        pData += AT91_SD_SECTOR_SIZE;
+        sectorNum++;
+        sectorCount--;
     }
 
     return TinyCLR_Result::Success;
