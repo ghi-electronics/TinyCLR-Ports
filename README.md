@@ -1,7 +1,7 @@
 # TinyCLR Ports
 This repository hosts ports of TinyCLR to many different devices. For information on porting TinyCLR to your device or building a firmware for an existing port, see https://docs.ghielectronics.com/software/tinyclr/porting/intro.html.
 
-Some targets and devices are maintained by GHI Electronics while others are maintained by community contributions. Right now, the below devices and targets are officially supported and maintained by us: 
+Some targets and devices are maintained by GHI Electronics while others are maintained by community contributions. Right now, the below devices and targets are officially supported and maintained by us. See [the docs](http://docs.ghielectronics.com/software/tinyclr/boards/intro.html) for more information. 
 
 ## Devices
 - FEZCLR
@@ -9,17 +9,13 @@ Some targets and devices are maintained by GHI Electronics while others are main
 - G80
 - G120
 - G400
-- Cerb
-- EMX
-- EmbeddedMaster
-- USBizi
+- UC2550
+- UC5550
 
 ## Targets
 - STM32F4xx
 - STM32F7xx
 - LPC177x_LPC178x
-- LPC23xx_LPC24xx
-- AT91SAM9Rx64
 - AT91SAM9X35
 
 # Contributing
