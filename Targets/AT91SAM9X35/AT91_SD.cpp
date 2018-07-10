@@ -409,9 +409,9 @@ void MCI_SendCommand(Mci *pMci, MciCmd *pMciCmd);
 
 void MCI_Handler(Mci *pMci);
 
-uint8_t MCI_IsTxComplete(MciCmd *pMciCmd);
+bool MCI_IsTxComplete(MciCmd *pMciCmd);
 
-uint8_t MCI_CheckBusy(Mci *pMci);
+bool MCI_CheckBusy(Mci *pMci);
 
 void MCI_Close(Mci *pMci);
 
@@ -637,10 +637,10 @@ void MCI_SendCommand(Mci *pMci, MciCmd *pCommand) {
 
 //------------------------------------------------------------------------------
 /// Check NOTBUSY and DTIP bits of status register on the given MCI driver.
-/// Return value, 0 for bus ready, 1 for bus busy
+/// Return value, false for bus ready, true for bus busy
 /// \param pMci  Pointer to a MCI driver instance.
 //------------------------------------------------------------------------------
-uint8_t MCI_CheckBusy(Mci *pMci) {
+bool MCI_CheckBusy(Mci *pMci) {
     AT91S_MCI *pMciHw = pMci->pMciHw;
     uint32_t status;
     // Enable MCI clock
@@ -654,10 +654,10 @@ uint8_t MCI_CheckBusy(Mci *pMci) {
         // Disable MCI clock
         MCI_Enable(pMci, DISABLE);
 
-        return 0;
+        return false;
     }
     else {
-        return 1;
+        return true;
     }
 }
 
@@ -813,16 +813,8 @@ void MCI_Handler(Mci *pMci) {
 /// Returns 1 if the given MCI transfer is complete; otherwise returns 0.
 /// \param pCommand  Pointer to a MciCmd instance.
 //------------------------------------------------------------------------------
-uint8_t MCI_IsTxComplete(MciCmd *pCommand) {
-    if (pCommand->status != MCI_STATUS_PENDING) {
-        if (pCommand->status != 0) {
-
-        }
-        return 1;
-    }
-    else {
-        return 0;
-    }
+bool MCI_IsTxComplete(MciCmd *pCommand) {
+    return (pCommand->status != MCI_STATUS_PENDING) ? true : false;
 }
 
 // sdmmc
@@ -1188,13 +1180,13 @@ static uint8_t SendCommand(SdCard *pSd) {
 
     int timeout = TRANSFER_CMD_TIMEOUT;
     // Wait for command to complete
-    while (!MCI_IsTxComplete((MciCmd *)pCommand)) {
+    while (MCI_IsTxComplete((MciCmd *)pCommand) == false) {
         timeout--;
         if (timeout == 0) break;
     }
 
     if (pCommand->cmd == AT91C_STOP_TRANSMISSION_CMD) {
-        while (MCI_CheckBusy((Mci *)pSdDriver) != 0);
+        while (MCI_CheckBusy((Mci *)pSdDriver) == true);
     }
 
     // Delay between sending commands, only for MMC card test.
