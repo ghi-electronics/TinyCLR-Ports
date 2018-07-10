@@ -350,9 +350,6 @@ typedef struct {
 
 } Mci;
 
-/// Master clock frequency (when using board_lowlevel.c).
-#define BOARD_MCK               ((12000000 * 50 / 3) / 2)
-
 //------------------------------------------------------------------------------
 //         Local constants
 //------------------------------------------------------------------------------
@@ -467,8 +464,8 @@ void MCI_Init(
     // Set the Data Timeout Register
     WRITE_MCI(pMciHw, MCI_DTOR, DTOR_1MEGA_CYCLES);
 
-    // Set the Mode Register: 400KHz for MCK = 48MHz (CLKDIV = 58)
-    clkDiv = (BOARD_MCK / (400000 * 2)) - 1;
+    // Set the Mode Register: 400KHz to init the card
+    clkDiv = (AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / (400000 * 2)) - 1;
     WRITE_MCI(pMciHw, MCI_MR, (clkDiv | (AT91C_MCI_PWSDIV & (0x7 << 8))));
 
     // Set the SDCard Register
@@ -518,20 +515,16 @@ void MCI_SetSpeed(Mci *pMci, uint32_t mciSpeed) {
     uint32_t mciMr;
     uint32_t clkdiv;
 
-    // Set the Mode Register: 400KHz for MCK = 48MHz (CLKDIV = 58)
     mciMr = READ_MCI(pMciHw, MCI_MR) & (~AT91C_MCI_CLKDIV);
 
-    // Multimedia Card Interface clock (MCCK or MCI_CK) is Master Clock (MCK)
-    // divided by (2*(CLKDIV+1))
     if (mciSpeed > 0) {
+        clkdiv = (AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / (mciSpeed * 2));
 
-        clkdiv = (BOARD_MCK / (mciSpeed * 2));
         if (clkdiv > 0) {
             clkdiv -= 1;
         }
     }
     else {
-
         clkdiv = 0;
     }
 
