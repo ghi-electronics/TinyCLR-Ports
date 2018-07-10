@@ -108,7 +108,7 @@ void DMA_Enable() {
 }
 
 void DMA_Config(uint32_t DMAMode, uint8_t* pData) {
-    volatile uint32_t error_status = DMAC0_EBCISR_REG;
+    volatile uint32_t error_status = DMAC0_EBCISR_REG; // dump register
 
     if (DMAMode == P2M) // for read
     {
@@ -350,9 +350,6 @@ typedef struct {
 
 } Mci;
 
-/// Master clock frequency (when using board_lowlevel.c).
-#define BOARD_MCK               ((12000000 * 50 / 3) / 2)
-
 //------------------------------------------------------------------------------
 //         Local constants
 //------------------------------------------------------------------------------
@@ -382,10 +379,6 @@ typedef struct {
 #define SDCARD_APP_OP_COND_CMD      (41 | AT91C_MCI_SPCMD_NONE  | AT91C_MCI_RSPTYP_48   | AT91C_MCI_TRCMD_NO )
 #define MMC_SEND_OP_COND_CMD        (1  | AT91C_MCI_TRCMD_NO    | AT91C_MCI_SPCMD_NONE  | AT91C_MCI_RSPTYP_48 | AT91C_MCI_OPDCMD)
 
-
-#define DISABLE    0    // Disable MCI interface
-#define ENABLE     1    // Enable MCI interface
-
 //------------------------------------------------------------------------------
 //         Local macros
 //------------------------------------------------------------------------------
@@ -409,9 +402,9 @@ void MCI_SendCommand(Mci *pMci, MciCmd *pMciCmd);
 
 void MCI_Handler(Mci *pMci);
 
-uint8_t MCI_IsTxComplete(MciCmd *pMciCmd);
+bool MCI_IsTxComplete(MciCmd *pMciCmd);
 
-uint8_t MCI_CheckBusy(Mci *pMci);
+bool MCI_CheckBusy(Mci *pMci);
 
 void MCI_Close(Mci *pMci);
 
@@ -422,11 +415,11 @@ void MCI_SetBusWidth(Mci *pMci, uint8_t busWidth);
 /// \param pMci  Pointer to a MCI driver instance.
 /// \param enb  0 for disable MCI and 1 for enable MCI.
 //------------------------------------------------------------------------------
-void MCI_Enable(Mci *pMci, uint8_t enb) {
+void MCI_Enable(Mci *pMci, bool enb) {
     AT91S_MCI *pMciHw = pMci->pMciHw;
 
     // Set the Control Register: Enable/Disable MCI interface clock
-    if (enb == DISABLE) {
+    if (enb == false) {
         WRITE_MCI(pMciHw, MCI_CR, AT91C_MCI_MCIDIS);
     }
     else {
@@ -441,11 +434,7 @@ void MCI_Enable(Mci *pMci, uint8_t enb) {
 /// \param mciId  MCI peripheral identifier.
 /// \param mode  Slot and type of connected card.
 //------------------------------------------------------------------------------
-void MCI_Init(
-    Mci *pMci,
-    AT91S_MCI *pMciHw,
-    uint8_t mciId,
-    uint32_t mode) {
+void MCI_Init(Mci *pMci, AT91S_MCI *pMciHw, uint8_t mciId, uint32_t mode) {
     uint16_t clkDiv;
 
     // Initialize the MCI driver structure
@@ -471,8 +460,8 @@ void MCI_Init(
     // Set the Data Timeout Register
     WRITE_MCI(pMciHw, MCI_DTOR, DTOR_1MEGA_CYCLES);
 
-    // Set the Mode Register: 400KHz for MCK = 48MHz (CLKDIV = 58)
-    clkDiv = (BOARD_MCK / (400000 * 2)) - 1;
+    // Set the Mode Register: 400KHz to init the card
+    clkDiv = (AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / (400000 * 2)) - 1;
     WRITE_MCI(pMciHw, MCI_MR, (clkDiv | (AT91C_MCI_PWSDIV & (0x7 << 8))));
 
     // Set the SDCard Register
@@ -522,20 +511,16 @@ void MCI_SetSpeed(Mci *pMci, uint32_t mciSpeed) {
     uint32_t mciMr;
     uint32_t clkdiv;
 
-    // Set the Mode Register: 400KHz for MCK = 48MHz (CLKDIV = 58)
     mciMr = READ_MCI(pMciHw, MCI_MR) & (~AT91C_MCI_CLKDIV);
 
-    // Multimedia Card Interface clock (MCCK or MCI_CK) is Master Clock (MCK)
-    // divided by (2*(CLKDIV+1))
     if (mciSpeed > 0) {
+        clkdiv = (AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / (mciSpeed * 2));
 
-        clkdiv = (BOARD_MCK / (mciSpeed * 2));
         if (clkdiv > 0) {
             clkdiv -= 1;
         }
     }
     else {
-
         clkdiv = 0;
     }
 
@@ -595,7 +580,7 @@ void MCI_SendCommand(Mci *pMci, MciCmd *pCommand) {
     WRITE_PMC(AT91C_BASE_PMC, PMC_PCER, (1 << pMci->mciId));
 
     //Disable MCI clock for new transfer
-    MCI_Enable(pMci, DISABLE);
+    MCI_Enable(pMci, false);
 
     mciMr = READ_MCI(pMciHw, MCI_MR) & (~(AT91C_MCI_WRPROOF | AT91C_MCI_RDPROOF));
 
@@ -626,7 +611,7 @@ void MCI_SendCommand(Mci *pMci, MciCmd *pCommand) {
     mciIer &= ~(AT91C_MCI_UNRE | AT91C_MCI_OVRE | AT91C_MCI_DTOE | AT91C_MCI_DCRCE | AT91C_MCI_RCRCE);
 
     // Enable MCI clock - start transfer
-    MCI_Enable(pMci, ENABLE);
+    MCI_Enable(pMci, true);
     // Send the command
     WRITE_MCI(pMciHw, MCI_ARGR, pCommand->arg);
     WRITE_MCI(pMciHw, MCI_CMDR, pCommand->cmd);
@@ -637,14 +622,14 @@ void MCI_SendCommand(Mci *pMci, MciCmd *pCommand) {
 
 //------------------------------------------------------------------------------
 /// Check NOTBUSY and DTIP bits of status register on the given MCI driver.
-/// Return value, 0 for bus ready, 1 for bus busy
+/// Return value, false for bus ready, true for bus busy
 /// \param pMci  Pointer to a MCI driver instance.
 //------------------------------------------------------------------------------
-uint8_t MCI_CheckBusy(Mci *pMci) {
+bool MCI_CheckBusy(Mci *pMci) {
     AT91S_MCI *pMciHw = pMci->pMciHw;
     uint32_t status;
     // Enable MCI clock
-    MCI_Enable(pMci, ENABLE);
+    MCI_Enable(pMci, true);
 
     status = READ_MCI(pMciHw, MCI_SR);
 
@@ -652,12 +637,12 @@ uint8_t MCI_CheckBusy(Mci *pMci) {
         && ((status & AT91C_MCI_DTIP) == 0)) {
 
         // Disable MCI clock
-        MCI_Enable(pMci, DISABLE);
+        MCI_Enable(pMci, false);
 
-        return 0;
+        return false;
     }
     else {
-        return 1;
+        return true;
     }
 }
 
@@ -665,17 +650,17 @@ uint8_t MCI_CheckBusy(Mci *pMci) {
 /// Check BLKE bit of status register on the given MCI driver.
 /// \param pMci  Pointer to a MCI driver instance.
 //------------------------------------------------------------------------------
-uint8_t MCI_CheckBlke(Mci *pMci) {
+bool MCI_CheckBlke(Mci *pMci) {
     AT91S_MCI *pMciHw = pMci->pMciHw;
     uint32_t status;
 
     status = READ_MCI(pMciHw, MCI_SR);
 
     if ((status & AT91C_MCI_BLKE) != 0) {
-        return 0;
+        return false;
     }
     else {
-        return 1;
+        return true;
     }
 }
 
@@ -813,20 +798,14 @@ void MCI_Handler(Mci *pMci) {
 /// Returns 1 if the given MCI transfer is complete; otherwise returns 0.
 /// \param pCommand  Pointer to a MciCmd instance.
 //------------------------------------------------------------------------------
-uint8_t MCI_IsTxComplete(MciCmd *pCommand) {
-    if (pCommand->status != MCI_STATUS_PENDING) {
-        if (pCommand->status != 0) {
-
-        }
-        return 1;
-    }
-    else {
-        return 0;
-    }
+bool MCI_IsTxComplete(MciCmd *pCommand) {
+    return (pCommand->status != MCI_STATUS_PENDING) ? true : false;
 }
 
 // sdmmc
 
+/// There was no error with the SD driver.
+#define SD_ERROR_NO_ERROR        0
 /// There was an error with the SD driver.
 #define SD_ERROR_DRIVER          1
 /// The SD card did not answer the command.
@@ -994,7 +973,6 @@ typedef struct _SdCard {
 
 #define SD_ADDRESS(pSd, address) (((pSd)->cardType == CARD_SDHC) ? \
                                  (address):((address) << SD_BLOCK_SIZE_BIT))
-
 
 //-----------------------------------------------------------------------------
 /// MMC/SD in SPI mode reports R1 status always, and R2 for SEND_STATUS
@@ -1186,15 +1164,15 @@ static uint8_t SendCommand(SdCard *pSd) {
     // Send command
     MCI_SendCommand((Mci *)pSdDriver, (MciCmd *)pCommand);
 
-    int timeout = TRANSFER_CMD_TIMEOUT;
+    int32_t timeout = TRANSFER_CMD_TIMEOUT;
     // Wait for command to complete
-    while (!MCI_IsTxComplete((MciCmd *)pCommand)) {
+    while (MCI_IsTxComplete((MciCmd *)pCommand) == false) {
         timeout--;
         if (timeout == 0) break;
     }
 
     if (pCommand->cmd == AT91C_STOP_TRANSMISSION_CMD) {
-        while (MCI_CheckBusy((Mci *)pSdDriver) != 0);
+        while (MCI_CheckBusy((Mci *)pSdDriver) == true);
     }
 
     // Delay between sending commands, only for MMC card test.
@@ -1217,7 +1195,6 @@ static uint8_t SendCommand(SdCard *pSd) {
 static uint8_t Pon(SdCard *pSd) {
     SdCmd *pCommand = &(pSd->command);
     uint32_t response;
-    uint8_t error;
 
     memset(pCommand, 0, sizeof(SdCmd));
     // Fill command information
@@ -1228,8 +1205,7 @@ static uint8_t Pon(SdCard *pSd) {
     pSd->state = SD_STATE_STBY;
 
     // Send command
-    error = SendCommand(pSd);
-    return error;
+    return SendCommand(pSd);
 }
 
 //------------------------------------------------------------------------------
@@ -1240,8 +1216,6 @@ static uint8_t Pon(SdCard *pSd) {
 static uint8_t Cmd0(SdCard *pSd) {
     SdCmd *pCommand = &(pSd->command);
     uint32_t response;
-    uint8_t error;
-
 
     memset(pCommand, 0, sizeof(SdCmd));
     // Fill command information
@@ -1252,8 +1226,7 @@ static uint8_t Cmd0(SdCard *pSd) {
     pSd->state = SD_STATE_STBY;
 
     // send command
-    error = SendCommand(pSd);
-    return error;
+    return SendCommand(pSd);
 }
 
 //------------------------------------------------------------------------------
@@ -1285,7 +1258,7 @@ static uint8_t Cmd1(SdCard *pSd) {
         return error;
     }
     if ((response & AT91C_CARD_POWER_UP_BUSY) == AT91C_CARD_POWER_UP_BUSY) {
-        return 0;
+        return SD_ERROR_NO_ERROR;
     }
     else {
         return SD_ERROR_DRIVER;
@@ -1352,7 +1325,7 @@ static uint8_t Cmd3(SdCard *pSd) {
         pSd->cardAddress = 1;
     }
 
-    return 0;
+    return SD_ERROR_NO_ERROR;
 }
 
 //------------------------------------------------------------------------------
@@ -1393,7 +1366,6 @@ static uint8_t Cmd8(SdCard *pSd, uint8_t supplyVoltage) {
     uint32_t response[2];
     uint8_t error;
 
-
     memset(pCommand, 0, sizeof(SdCmd));
     // Fill command information
     pCommand->cmd = AT91C_SEND_IF_COND;
@@ -1414,7 +1386,7 @@ static uint8_t Cmd8(SdCard *pSd, uint8_t supplyVoltage) {
     // Bit 0 - 7: check pattern
     // Bit 8 -11: voltage accepted
     else if (!error && ((response[0] & 0x00000FFF) == ((supplyVoltage << 8) | 0xAA))) {
-        return 0;
+        return SD_ERROR_NO_ERROR;
     }
     else {
         return SD_ERROR_DRIVER;
@@ -1429,8 +1401,6 @@ static uint8_t Cmd8(SdCard *pSd, uint8_t supplyVoltage) {
 //------------------------------------------------------------------------------
 static uint8_t Cmd9(SdCard *pSd) {
     SdCmd *pCommand = &(pSd->command);
-    uint8_t error;
-
 
     memset(pCommand, 0, sizeof(SdCmd));
     // Fill command information
@@ -1442,8 +1412,7 @@ static uint8_t Cmd9(SdCard *pSd) {
     pSd->state = SD_STATE_STBY;
 
     // Send command
-    error = SendCommand(pSd);
-    return error;
+    return SendCommand(pSd);
 }
 
 //------------------------------------------------------------------------------
@@ -1453,9 +1422,7 @@ static uint8_t Cmd9(SdCard *pSd) {
 //------------------------------------------------------------------------------
 static uint8_t Cmd12(SdCard *pSd) {
     SdCmd *pCommand = &(pSd->command);
-    uint8_t error;
     uint32_t response;
-
 
     memset(pCommand, 0, sizeof(SdCmd));
     // Fill command information
@@ -1467,9 +1434,7 @@ static uint8_t Cmd12(SdCard *pSd) {
     pSd->state = SD_STATE_STBY;
 
     // Send command
-    error = SendCommand(pSd);
-
-    return error;
+    return SendCommand(pSd);
 }
 
 //------------------------------------------------------------------------------
@@ -1480,8 +1445,6 @@ static uint8_t Cmd12(SdCard *pSd) {
 //------------------------------------------------------------------------------
 static uint8_t Cmd13(SdCard *pSd, uint32_t *pStatus) {
     SdCmd *pCommand = &(pSd->command);
-    uint8_t error;
-
 
     memset(pCommand, 0, sizeof(SdCmd));
     // Fill command information
@@ -1493,9 +1456,7 @@ static uint8_t Cmd13(SdCard *pSd, uint32_t *pStatus) {
     pSd->state = SD_STATE_STBY;
 
     // Send command
-    error = SendCommand(pSd);
-
-    return error;
+    return SendCommand(pSd);
 }
 
 //------------------------------------------------------------------------------
@@ -1514,9 +1475,7 @@ static uint8_t Cmd13(SdCard *pSd, uint32_t *pStatus) {
 //------------------------------------------------------------------------------
 static uint8_t Cmd16(SdCard *pSd, uint16_t blockLength) {
     SdCmd *pCommand = &(pSd->command);
-    uint8_t error;
     uint32_t response;
-
 
     memset(pCommand, 0, sizeof(SdCmd));
     // Fill command information
@@ -1528,15 +1487,12 @@ static uint8_t Cmd16(SdCard *pSd, uint16_t blockLength) {
     pSd->state = SD_STATE_STBY;
 
     // Send command
-    error = SendCommand(pSd);
-
-    return error;
+    return SendCommand(pSd);
 }
 
 // erase block start
 uint8_t Cmd32(SdCard *pSd, uint16_t startsector) {
     SdCmd *pCommand = &(pSd->command);
-    uint8_t error;
     uint32_t response;
 
 
@@ -1550,17 +1506,13 @@ uint8_t Cmd32(SdCard *pSd, uint16_t startsector) {
     pSd->state = SD_STATE_STBY;
 
     // Send command
-    error = SendCommand(pSd);
-
-    return error;
+    return SendCommand(pSd);
 }
 
 // erase block end
 uint8_t Cmd33(SdCard *pSd, uint16_t endsector) {
     SdCmd *pCommand = &(pSd->command);
-    uint8_t error;
     uint32_t response;
-
 
     memset(pCommand, 0, sizeof(SdCmd));
     // Fill command information
@@ -1572,17 +1524,13 @@ uint8_t Cmd33(SdCard *pSd, uint16_t endsector) {
     pSd->state = SD_STATE_STBY;
 
     // Send command
-    error = SendCommand(pSd);
-
-    return error;
+    return SendCommand(pSd);
 }
 
 // erase
 uint8_t Cmd38(SdCard *pSd) {
     SdCmd *pCommand = &(pSd->command);
-    uint8_t error;
     uint32_t response;
-
 
     memset(pCommand, 0, sizeof(SdCmd));
     // Fill command information
@@ -1593,9 +1541,7 @@ uint8_t Cmd38(SdCard *pSd) {
     pSd->state = SD_STATE_STBY;
 
     // Send command
-    error = SendCommand(pSd);
-
-    return error;
+    return SendCommand(pSd);
 }
 //------------------------------------------------------------------------------
 /// Continously transfers datablocks from card to host until interrupted by a
@@ -1605,14 +1551,9 @@ uint8_t Cmd38(SdCard *pSd) {
 /// \param pData  Pointer to the application buffer to be filled.
 /// \param address  SD card address.
 //------------------------------------------------------------------------------
-static uint8_t Cmd17(SdCard *pSd,
-    uint16_t nbBlock,
-    uint8_t *pData,
-    uint32_t address) {
+static uint8_t Cmd17(SdCard *pSd, uint16_t nbBlock, uint8_t *pData, uint32_t address) {
     SdCmd *pCommand = &(pSd->command);
-    uint8_t error;
     uint32_t response;
-
 
     memset(pCommand, 0, sizeof(SdCmd));
     // Fill command information
@@ -1629,9 +1570,7 @@ static uint8_t Cmd17(SdCard *pSd,
     pSd->state = SD_STATE_DATA;
 
     // Send command
-    error = SendCommand(pSd);
-
-    return error;
+    return SendCommand(pSd);
 }
 
 //------------------------------------------------------------------------------
@@ -1642,14 +1581,9 @@ static uint8_t Cmd17(SdCard *pSd,
 /// \param pData  Pointer to the application buffer to be filled.
 /// \param address  SD card address.
 //------------------------------------------------------------------------------
-static uint8_t Cmd18(SdCard *pSd,
-    uint16_t nbBlock,
-    uint8_t *pData,
-    uint32_t address) {
+static uint8_t Cmd18(SdCard *pSd, uint16_t nbBlock, uint8_t *pData, uint32_t address) {
     SdCmd *pCommand = &(pSd->command);
-    uint8_t error;
     uint32_t response;
-
 
     memset(pCommand, 0, sizeof(SdCmd));
     // Fill command information
@@ -1666,9 +1600,7 @@ static uint8_t Cmd18(SdCard *pSd,
     pSd->state = SD_STATE_DATA;
 
     // Send command
-    error = SendCommand(pSd);
-
-    return error;
+    return SendCommand(pSd);
 }
 //------------------------------------------------------------------------------
 /// Write block command
@@ -1677,12 +1609,8 @@ static uint8_t Cmd18(SdCard *pSd,
 /// \param pData  Pointer to the application buffer to be filled.
 /// \param address  SD card address.
 //------------------------------------------------------------------------------
-static uint8_t Cmd24(SdCard *pSd,
-    uint16_t nbBlock,
-    uint8_t *pData,
-    uint32_t address) {
+static uint8_t Cmd24(SdCard *pSd, uint16_t nbBlock, uint8_t *pData, uint32_t address) {
     SdCmd *pCommand = &(pSd->command);
-    uint8_t error;
     uint32_t response;
 
 
@@ -1701,9 +1629,7 @@ static uint8_t Cmd24(SdCard *pSd,
     pSd->state = SD_STATE_RCV;
 
     // Send command
-    //return SendCommand(pSd);
-    error = SendCommand(pSd);
-    return error;
+    return SendCommand(pSd);
 }
 //------------------------------------------------------------------------------
 /// Write block command
@@ -1712,12 +1638,8 @@ static uint8_t Cmd24(SdCard *pSd,
 /// \param pData  Pointer to the application buffer to be filled.
 /// \param address  SD card address.
 //------------------------------------------------------------------------------
-static uint8_t Cmd25(SdCard *pSd,
-    uint16_t nbBlock,
-    uint8_t *pData,
-    uint32_t address) {
+static uint8_t Cmd25(SdCard *pSd, uint16_t nbBlock, uint8_t *pData, uint32_t address) {
     SdCmd *pCommand = &(pSd->command);
-    uint8_t error;
     uint32_t response;
 
 
@@ -1736,9 +1658,7 @@ static uint8_t Cmd25(SdCard *pSd,
     pSd->state = SD_STATE_RCV;
 
     // Send command
-    //return SendCommand(pSd);
-    error = SendCommand(pSd);
-    return error;
+    return SendCommand(pSd);
 }
 
 
@@ -1750,9 +1670,7 @@ static uint8_t Cmd25(SdCard *pSd,
 //------------------------------------------------------------------------------
 static uint8_t Cmd55(SdCard *pSd) {
     SdCmd *pCommand = &(pSd->command);
-    uint8_t error;
     uint32_t response;
-
 
     memset(pCommand, 0, sizeof(SdCmd));
     // Fill command information
@@ -1764,10 +1682,7 @@ static uint8_t Cmd55(SdCard *pSd) {
     pSd->state = SD_STATE_STBY;
 
     // Send command
-    //return SendCommand(pSd);
-    error = SendCommand(pSd);
-
-    return error;
+    return SendCommand(pSd);
 }
 
 //------------------------------------------------------------------------------
@@ -1778,7 +1693,6 @@ static uint8_t Cmd55(SdCard *pSd) {
 //------------------------------------------------------------------------------
 static uint8_t Cmd58(SdCard *pSd, uint32_t *pOcr) {
     SdCmd *pCommand = &(pSd->command);
-    uint8_t error;
     uint32_t response[2];
 
 
@@ -1792,8 +1706,7 @@ static uint8_t Cmd58(SdCard *pSd, uint32_t *pOcr) {
     pSd->state = SD_STATE_STBY;
 
     // Send command
-    error = SendCommand(pSd);
-    return error;
+    return SendCommand(pSd);
 }
 
 //------------------------------------------------------------------------------
@@ -1804,9 +1717,7 @@ static uint8_t Cmd58(SdCard *pSd, uint32_t *pOcr) {
 //------------------------------------------------------------------------------
 static uint8_t Cmd59(SdCard *pSd, uint8_t option) {
     SdCmd *pCommand = &(pSd->command);
-    uint8_t error;
     uint32_t response;
-
 
     memset(pCommand, 0, sizeof(SdCmd));
     // Fill command information
@@ -1819,9 +1730,7 @@ static uint8_t Cmd59(SdCard *pSd, uint8_t option) {
     pSd->state = SD_STATE_STBY;
 
     // Send command
-    error = SendCommand(pSd);
-
-    return error;
+    return SendCommand(pSd);
 }
 
 //------------------------------------------------------------------------------
@@ -1836,9 +1745,9 @@ static uint8_t Acmd6(SdCard *pSd, uint8_t busWidth) {
     uint8_t error;
     uint32_t response;
 
-
     // Delay
     error = Cmd55(pSd);
+
     if (error) {
         return error;
     }
@@ -1903,7 +1812,7 @@ static uint8_t Acmd41(SdCard *pSd, uint8_t hcs, uint8_t *pCCS) {
         *pCCS = ((response & AT91C_CCS) != 0);
     } while ((response & AT91C_CARD_POWER_UP_BUSY) != AT91C_CARD_POWER_UP_BUSY);
 
-    return 0;
+    return SD_ERROR_NO_ERROR;
 }
 
 //------------------------------------------------------------------------------
@@ -1914,10 +1823,7 @@ static uint8_t Acmd41(SdCard *pSd, uint8_t hcs, uint8_t *pCCS) {
 /// \param pData  Pointer to the application buffer to be filled.
 /// \param address  SD card address.
 //------------------------------------------------------------------------------
-static uint8_t ContinuousRead(SdCard *pSd,
-    uint16_t nbBlock,
-    uint8_t *pData,
-    uint32_t address) {
+static uint8_t ContinuousRead(SdCard *pSd, uint16_t nbBlock, uint8_t *pData, uint32_t address) {
     SdCmd *pCommand = &(pSd->command);
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1942,10 +1848,7 @@ static uint8_t ContinuousRead(SdCard *pSd,
 /// \param pData  Pointer to the application buffer to be filled.
 /// \param address  SD card address.
 //------------------------------------------------------------------------------
-static uint8_t ContinuousWrite(SdCard *pSd,
-    uint16_t nbBlock,
-    const uint8_t *pData,
-    uint32_t address) {
+static uint8_t ContinuousWrite(SdCard *pSd, uint16_t nbBlock, const uint8_t *pData, uint32_t address) {
     SdCmd *pCommand = &(pSd->command);
 
     memset(pCommand, 0, sizeof(SdCmd));
@@ -1975,11 +1878,7 @@ static uint8_t ContinuousWrite(SdCard *pSd,
 //------------------------------------------------------------------------------
 
 
-static uint8_t MoveToTransferState(SdCard *pSd,
-    uint32_t address,
-    uint16_t nbBlocks,
-    uint8_t *pData,
-    uint8_t isRead, int32_t timeout) {
+static uint8_t MoveToTransferState(SdCard *pSd, uint32_t address, uint16_t nbBlocks, uint8_t *pData, uint8_t isRead, int32_t timeout) {
     uint32_t status;
     uint8_t error;
     int32_t trycnt = timeout;
@@ -2010,7 +1909,6 @@ static uint8_t MoveToTransferState(SdCard *pSd,
                 return error;
             }
         }
-
 
         while (((status & STATUS_READY_FOR_DATA) == 0) ||
             ((status & STATUS_STATE) != STATUS_TRAN));
@@ -2055,10 +1953,7 @@ static uint8_t MoveToTransferState(SdCard *pSd,
 /// \param nbBlocks Number of blocks to be read.
 /// \param pData  Data buffer whose size is at least the block size.
 //------------------------------------------------------------------------------
-uint8_t SD_ReadBlock(SdCard *pSd,
-    uint32_t address,
-    uint16_t nbBlocks,
-    uint8_t *pData, int32_t timeout) {
+uint8_t SD_ReadBlock(SdCard *pSd, uint32_t address, uint16_t nbBlocks, uint8_t *pData, int32_t timeout) {
     return MoveToTransferState(pSd, address, nbBlocks, pData, 1, timeout);;
 }
 
@@ -2072,10 +1967,7 @@ uint8_t SD_ReadBlock(SdCard *pSd,
 /// \param nbBlocks Number of blocks to be read
 /// \param pData  Pointer to a 512 bytes buffer to be transfered
 //------------------------------------------------------------------------------
-uint8_t SD_WriteBlock(SdCard *pSd,
-    uint32_t address,
-    uint16_t nbBlocks,
-    const uint8_t *pData, int32_t timeout) {
+uint8_t SD_WriteBlock(SdCard *pSd, uint32_t address, uint16_t nbBlocks, const uint8_t *pData, int32_t timeout) {
     return MoveToTransferState(pSd, address, nbBlocks,
         (uint8_t *)pData, 0, timeout);
 }
@@ -2225,7 +2117,7 @@ uint8_t SD_MCI_Init(SdCard *pSd, SdDriver *pSdDriver) {
     else {
         MCI_SetBusWidth((Mci *)pSdDriver, MCI_SDCBUS_1BIT);
     }
-    return 0;
+    return SD_ERROR_NO_ERROR;
 }
 
 //------------------------------------------------------------------------------
@@ -2342,7 +2234,8 @@ uint8_t SD_SPI_Init(SdCard *pSd, SdDriver *pSpi) {
     if (error) {
         return error;
     }
-    return 0;
+
+    return SD_ERROR_NO_ERROR;
 }
 //
 
@@ -2418,7 +2311,7 @@ uint8_t SD_Init(SdCard *pSd, SdDriver *pSdDriver) {
         return SD_ERROR_NOT_INITIALIZED;
     }
     else {
-        return 0;
+        return SD_ERROR_NO_ERROR;
     }
 }
 
@@ -2441,7 +2334,7 @@ uint8_t SD_Stop(SdCard *pSd, SdDriver *pSdDriver) {
 
     MCI_Close((Mci *)pSdDriver);
 
-    return 0;
+    return SD_ERROR_NO_ERROR;
 }
 
 //AT91
@@ -2532,7 +2425,7 @@ TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_SdCard_Provider* self, int32_t 
 
     AT91_Interrupt_Activate(AT91C_ID_HSMCI0, (uint32_t*)&MCI_Handler, (void*)&mciDrv);
 
-    if (SD_Init(&sdDrv, (SdDriver *)&mciDrv)) {
+    if (SD_Init(&sdDrv, (SdDriver *)&mciDrv) != SD_ERROR_NO_ERROR) {
 
         return TinyCLR_Result::InvalidOperation;
     }
@@ -2624,7 +2517,7 @@ TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int3
 
         to = timeout;
 
-        if ((error = SD_WriteBlock(&sdDrv, sectorNum, 1, sdController[controller].pBufferAligned, timeout)) == 0) {
+        if ((error = SD_WriteBlock(&sdDrv, sectorNum, 1, sdController[controller].pBufferAligned, timeout)) == SD_ERROR_NO_ERROR) {
             to = timeout;
 
             while (to > 0 && (((status & AT91C_MCI_DMADONE) != AT91C_MCI_DMADONE) || ((status & AT91C_MCI_XFRDONE) != AT91C_MCI_XFRDONE) || ((status & AT91C_MCI_BLKE) != AT91C_MCI_BLKE))) {
@@ -2683,7 +2576,7 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32
         status = 0;
         to = timeout;
 
-        if ((error = SD_ReadBlock(&sdDrv, sectorNum, 1, sdController[controller].pBufferAligned, timeout)) == 0) {
+        if ((error = SD_ReadBlock(&sdDrv, sectorNum, 1, sdController[controller].pBufferAligned, timeout)) == SD_ERROR_NO_ERROR) {
             to = timeout;
 
             while (to > 0 && (((status & AT91C_MCI_DMADONE) != AT91C_MCI_DMADONE) || ((status & AT91C_MCI_XFRDONE) != AT91C_MCI_XFRDONE))) {
