@@ -18,29 +18,6 @@
 
 #ifdef INCLUDE_SD
 // sdio
-typedef struct {
-    uint32_t SDIO_ClockEdge;            /*!< Specifies the clock transition on which the bit capture is made.
-    uint32_t SDIO_ClockEdge;            /*!< Specifies the clock transition on which the bit capture is made.
-                                             This parameter can be a value of @ref SDIO_Clock_Edge */
-
-    uint32_t SDIO_ClockBypass;          /*!< Specifies whether the SDIO Clock divider bypass is
-                                             enabled or disabled.
-                                             This parameter can be a value of @ref SDIO_Clock_Bypass */
-
-    uint32_t SDIO_ClockPowerSave;       /*!< Specifies whether SDIO Clock output is enabled or
-                                             disabled when the bus is idle.
-                                             This parameter can be a value of @ref SDIO_Clock_Power_Save */
-
-    uint32_t SDIO_BusWide;              /*!< Specifies the SDIO bus width.
-                                             This parameter can be a value of @ref SDIO_Bus_Wide */
-
-    uint32_t SDIO_HardwareFlowControl;  /*!< Specifies whether the SDIO hardware flow control is enabled or disabled.
-                                             This parameter can be a value of @ref SDIO_Hardware_Flow_Control */
-
-    uint8_t SDIO_ClockDiv;              /*!< Specifies the clock frequency of the SDIO controller.
-                                             This parameter can be a value between 0x00 and 0xFF. */
-
-} SDIO_InitTypeDef;
 
 typedef struct {
     uint32_t SDIO_Argument;  /*!< Specifies the SDIO command argument which is sent
@@ -403,12 +380,8 @@ void SDIO_DeInit(void) {
   *         that contains the configuration information for the SDIO peripheral.
   * @retval None
   */
-void SDIO_Init(SDIO_InitTypeDef* SDIO_InitStruct) {
-    uint32_t tmpreg = 0;
-
-    /*---------------------------- SDIO CLKCR Configuration ------------------------*/
-      /* Get the SDIO CLKCR value */
-    tmpreg = SDIO->CLKCR;
+void SDIO_Init(uint32_t clockDiv, uint32_t clockPowerSave, uint32_t clockBypass, uint32_t clockEdge, uint32_t busWide, uint32_t hardwareFlowControl) {
+    uint32_t tmpreg = SDIO->CLKCR;
 
     /* Clear CLKDIV, PWRSAV, BYPASS, WIDBUS, NEGEDGE, HWFC_EN bits */
     tmpreg &= CLKCR_CLEAR_MASK;
@@ -419,28 +392,10 @@ void SDIO_Init(SDIO_InitTypeDef* SDIO_InitStruct) {
     /* Set WIDBUS bits according to SDIO_BusWide value */
     /* Set NEGEDGE bits according to SDIO_ClockEdge value */
     /* Set HWFC_EN bits according to SDIO_HardwareFlowControl value */
-    tmpreg |= (SDIO_InitStruct->SDIO_ClockDiv | SDIO_InitStruct->SDIO_ClockPowerSave |
-        SDIO_InitStruct->SDIO_ClockBypass | SDIO_InitStruct->SDIO_BusWide |
-        SDIO_InitStruct->SDIO_ClockEdge | SDIO_InitStruct->SDIO_HardwareFlowControl);
+    tmpreg |= (clockDiv | clockPowerSave | clockBypass | clockEdge | busWide | hardwareFlowControl);
 
     /* Write to SDIO CLKCR */
     SDIO->CLKCR = tmpreg;
-}
-
-/**
-  * @brief  Fills each SDIO_InitStruct member with its default value.
-  * @param  SDIO_InitStruct: pointer to an SDIO_InitTypeDef structure which
-  *         will be initialized.
-  * @retval None
-  */
-void SDIO_StructInit(SDIO_InitTypeDef* SDIO_InitStruct) {
-    /* SDIO_InitStruct members default value */
-    SDIO_InitStruct->SDIO_ClockDiv = 0x00;
-    SDIO_InitStruct->SDIO_ClockEdge = SDIO_ClockEdge_Rising;
-    SDIO_InitStruct->SDIO_ClockBypass = SDIO_ClockBypass_Disable;
-    SDIO_InitStruct->SDIO_ClockPowerSave = SDIO_ClockPowerSave_Disable;
-    SDIO_InitStruct->SDIO_BusWide = SDIO_BusWide_1b;
-    SDIO_InitStruct->SDIO_HardwareFlowControl = SDIO_HardwareFlowControl_Disable;
 }
 
 /**
@@ -1377,7 +1332,6 @@ SD_Error TransferError = SD_OK;
 uint32_t TransferEnd = 0, DMAEndOfTransfer = 0;
 SD_CardInfo SDCardInfo;
 
-SDIO_InitTypeDef SDIO_InitStructure;
 SDIO_CmdInitTypeDef SDIO_CmdInitStructure;
 SDIO_DataInitTypeDef SDIO_DataInitStructure;
 
@@ -1433,13 +1387,8 @@ SD_Error SD_Init(void) {
     /*!< Configure the SDIO peripheral */
     /*!< SDIO_CK = SDIOCLK / (SDIO_TRANSFER_CLK_DIV + 2) */
     /*!< on STM32F4xx devices, SDIOCLK is fixed to 48MHz */
-    SDIO_InitStructure.SDIO_ClockDiv = SDIO_TRANSFER_CLK_DIV;
-    SDIO_InitStructure.SDIO_ClockEdge = SDIO_ClockEdge_Rising;
-    SDIO_InitStructure.SDIO_ClockBypass = SDIO_ClockBypass_Disable;
-    SDIO_InitStructure.SDIO_ClockPowerSave = SDIO_ClockPowerSave_Disable;
-    SDIO_InitStructure.SDIO_BusWide = SDIO_BusWide_1b;
-    SDIO_InitStructure.SDIO_HardwareFlowControl = SDIO_HardwareFlowControl_Disable;
-    SDIO_Init(&SDIO_InitStructure);
+
+    SDIO_Init(SDIO_TRANSFER_CLK_DIV, SDIO_ClockPowerSave_Disable, SDIO_ClockBypass_Disable, SDIO_ClockEdge_Rising, SDIO_BusWide_1b, SDIO_HardwareFlowControl_Disable);
 
     /*----------------- Read CSD/CID MSD registers ------------------*/
     errorstatus = SD_GetCardInfo(&SDCardInfo);
@@ -1533,13 +1482,7 @@ SD_Error SD_PowerON(void) {
     /*!< SDIO_CK = SDIOCLK / (SDIO_INIT_CLK_DIV + 2) */
     /*!< on STM32F4xx devices, SDIOCLK is fixed to 48MHz */
     /*!< SDIO_CK for initialization should not exceed 400 KHz */
-    SDIO_InitStructure.SDIO_ClockDiv = SDIO_INIT_CLK_DIV;
-    SDIO_InitStructure.SDIO_ClockEdge = SDIO_ClockEdge_Rising;
-    SDIO_InitStructure.SDIO_ClockBypass = SDIO_ClockBypass_Disable;
-    SDIO_InitStructure.SDIO_ClockPowerSave = SDIO_ClockPowerSave_Disable;
-    SDIO_InitStructure.SDIO_BusWide = SDIO_BusWide_1b;
-    SDIO_InitStructure.SDIO_HardwareFlowControl = SDIO_HardwareFlowControl_Disable;
-    SDIO_Init(&SDIO_InitStructure);
+    SDIO_Init(SDIO_INIT_CLK_DIV, SDIO_ClockPowerSave_Disable, SDIO_ClockBypass_Disable, SDIO_ClockEdge_Rising, SDIO_BusWide_1b, SDIO_HardwareFlowControl_Disable);
 
     /*!< Set Power State to ON */
     SDIO_SetPowerState(SDIO_PowerState_ON);
@@ -2063,13 +2006,7 @@ SD_Error SD_EnableWideBusOperation(uint32_t WideMode) {
 
             if (SD_OK == errorstatus) {
                 /*!< Configure the SDIO peripheral */
-                SDIO_InitStructure.SDIO_ClockDiv = SDIO_TRANSFER_CLK_DIV;
-                SDIO_InitStructure.SDIO_ClockEdge = SDIO_ClockEdge_Rising;
-                SDIO_InitStructure.SDIO_ClockBypass = SDIO_ClockBypass_Disable;
-                SDIO_InitStructure.SDIO_ClockPowerSave = SDIO_ClockPowerSave_Disable;
-                SDIO_InitStructure.SDIO_BusWide = SDIO_BusWide_4b;
-                SDIO_InitStructure.SDIO_HardwareFlowControl = SDIO_HardwareFlowControl_Disable;
-                SDIO_Init(&SDIO_InitStructure);
+                SDIO_Init(SDIO_TRANSFER_CLK_DIV, SDIO_ClockPowerSave_Disable, SDIO_ClockBypass_Disable, SDIO_ClockEdge_Rising, SDIO_BusWide_4b, SDIO_HardwareFlowControl_Disable);
             }
         }
         else {
@@ -2077,13 +2014,7 @@ SD_Error SD_EnableWideBusOperation(uint32_t WideMode) {
 
             if (SD_OK == errorstatus) {
                 /*!< Configure the SDIO peripheral */
-                SDIO_InitStructure.SDIO_ClockDiv = SDIO_TRANSFER_CLK_DIV;
-                SDIO_InitStructure.SDIO_ClockEdge = SDIO_ClockEdge_Rising;
-                SDIO_InitStructure.SDIO_ClockBypass = SDIO_ClockBypass_Disable;
-                SDIO_InitStructure.SDIO_ClockPowerSave = SDIO_ClockPowerSave_Disable;
-                SDIO_InitStructure.SDIO_BusWide = SDIO_BusWide_1b;
-                SDIO_InitStructure.SDIO_HardwareFlowControl = SDIO_HardwareFlowControl_Disable;
-                SDIO_Init(&SDIO_InitStructure);
+                SDIO_Init(SDIO_TRANSFER_CLK_DIV, SDIO_ClockPowerSave_Disable, SDIO_ClockBypass_Disable, SDIO_ClockEdge_Rising, SDIO_BusWide_1b, SDIO_HardwareFlowControl_Disable);
             }
         }
     }
