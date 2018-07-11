@@ -18,27 +18,7 @@
 
 #ifdef INCLUDE_SD
 // sdio
-
-typedef struct {
-    uint32_t SDIO_DataTimeOut;    /*!< Specifies the data timeout period in card bus clock periods. */
-
-    uint32_t SDIO_DataLength;     /*!< Specifies the number of data bytes to be transferred. */
-
-    uint32_t SDIO_DataBlockSize;  /*!< Specifies the data block size for block transfer.
-                                       This parameter can be a value of @ref SDIO_Data_Block_Size */
-
-    uint32_t SDIO_TransferDir;    /*!< Specifies the data transfer direction, whether the transfer
-                                       is a read or write.
-                                       This parameter can be a value of @ref SDIO_Transfer_Direction */
-
-    uint32_t SDIO_TransferMode;   /*!< Specifies whether data transfer is in stream or block mode.
-                                       This parameter can be a value of @ref SDIO_Transfer_Type */
-
-    uint32_t SDIO_DPSM;           /*!< Specifies whether SDIO Data path state machine (DPSM)
-                                       is enabled or disabled.
-                                       This parameter can be a value of @ref SDIO_DPSM_State */
-} SDIO_DataInitTypeDef;
-
+#define SD_DATATIMEOUT                  ((uint32_t)0xFFFFFFFF)
 
 /* Exported constants --------------------------------------------------------*/
 #define SDIO_ClockEdge_Rising               ((uint32_t)0x00000000)
@@ -514,47 +494,28 @@ uint32_t SDIO_GetResponse(uint32_t SDIO_RESP) {
       *         that contains the configuration information for the SDIO command.
       * @retval None
       */
-void SDIO_DataConfig(SDIO_DataInitTypeDef* SDIO_DataInitStruct) {
-    uint32_t tmpreg = 0;
-
+void SDIO_DataConfig(uint32_t dataLength, uint32_t blockSize, uint32_t transferDir) {
     /*---------------------------- SDIO DTIMER Configuration ---------------------*/
       /* Set the SDIO Data TimeOut value */
-    SDIO->DTIMER = SDIO_DataInitStruct->SDIO_DataTimeOut;
+    SDIO->DTIMER = SD_DATATIMEOUT;
 
     /*---------------------------- SDIO DLEN Configuration -----------------------*/
       /* Set the SDIO DataLength value */
-    SDIO->DLEN = SDIO_DataInitStruct->SDIO_DataLength;
+    SDIO->DLEN = dataLength;
 
     /*---------------------------- SDIO DCTRL Configuration ----------------------*/
       /* Get the SDIO DCTRL value */
-    tmpreg = SDIO->DCTRL;
+    uint32_t tmpreg = SDIO->DCTRL;
     /* Clear DEN, DTMODE, DTDIR and DBCKSIZE bits */
     tmpreg &= DCTRL_CLEAR_MASK;
     /* Set DEN bit according to SDIO_DPSM value */
     /* Set DTMODE bit according to SDIO_TransferMode value */
     /* Set DTDIR bit according to SDIO_TransferDir value */
     /* Set DBCKSIZE bits according to SDIO_DataBlockSize value */
-    tmpreg |= (uint32_t)SDIO_DataInitStruct->SDIO_DataBlockSize | SDIO_DataInitStruct->SDIO_TransferDir
-        | SDIO_DataInitStruct->SDIO_TransferMode | SDIO_DataInitStruct->SDIO_DPSM;
+    tmpreg |= (uint32_t)blockSize | transferDir | SDIO_TransferMode_Block | SDIO_DPSM_Enable;
 
     /* Write to SDIO DCTRL */
     SDIO->DCTRL = tmpreg;
-}
-
-/**
-  * @brief  Fills each SDIO_DataInitStruct member with its default value.
-  * @param  SDIO_DataInitStruct: pointer to an SDIO_DataInitTypeDef structure
-  *         which will be initialized.
-  * @retval None
-  */
-void SDIO_DataStructInit(SDIO_DataInitTypeDef* SDIO_DataInitStruct) {
-    /* SDIO_DataInitStruct members default value */
-    SDIO_DataInitStruct->SDIO_DataTimeOut = 0xFFFFFFFF;
-    SDIO_DataInitStruct->SDIO_DataLength = 0x00;
-    SDIO_DataInitStruct->SDIO_DataBlockSize = SDIO_DataBlockSize_1b;
-    SDIO_DataInitStruct->SDIO_TransferDir = SDIO_TransferDir_ToCard;
-    SDIO_DataInitStruct->SDIO_TransferMode = SDIO_TransferMode_Block;
-    SDIO_DataInitStruct->SDIO_DPSM = SDIO_DPSM_Disable;
 }
 
 /**
@@ -1158,7 +1119,6 @@ SD_Error SD_SendSDStatus(uint32_t *psdstatus);
 #define SD_SINGLE_BUS_SUPPORT           ((uint32_t)0x00010000)
 #define SD_CARD_LOCKED                  ((uint32_t)0x02000000)
 
-#define SD_DATATIMEOUT                  ((uint32_t)0xFFFFFFFF)
 #define SD_0TO7BITS                     ((uint32_t)0x000000FF)
 #define SD_8TO15BITS                    ((uint32_t)0x0000FF00)
 #define SD_16TO23BITS                   ((uint32_t)0x00FF0000)
@@ -1181,8 +1141,6 @@ uint32_t StopCondition = 0;
 SD_Error TransferError = SD_OK;
 uint32_t TransferEnd = 0, DMAEndOfTransfer = 0;
 SD_CardInfo SDCardInfo;
-
-SDIO_DataInitTypeDef SDIO_DataInitStructure;
 
 static SD_Error CmdError(void);
 static SD_Error CmdResp1Error(uint8_t cmd);
@@ -1879,13 +1837,7 @@ SD_Error SD_ReadBlock(uint8_t *readbuff, uint32_t ReadAddr, uint16_t BlockSize) 
         return(errorstatus);
     }
 
-    SDIO_DataInitStructure.SDIO_DataTimeOut = SD_DATATIMEOUT;
-    SDIO_DataInitStructure.SDIO_DataLength = BlockSize;
-    SDIO_DataInitStructure.SDIO_DataBlockSize = (uint32_t)9 << 4;
-    SDIO_DataInitStructure.SDIO_TransferDir = SDIO_TransferDir_ToSDIO;
-    SDIO_DataInitStructure.SDIO_TransferMode = SDIO_TransferMode_Block;
-    SDIO_DataInitStructure.SDIO_DPSM = SDIO_DPSM_Enable;
-    SDIO_DataConfig(&SDIO_DataInitStructure);
+    SDIO_DataConfig(BlockSize, (uint32_t)9 << 4, SDIO_TransferDir_ToSDIO);
 
     /*!< Send CMD17 READ_SINGLE_BLOCK */
     SDIO_SendCommand((uint32_t)ReadAddr, SD_CMD_READ_SINGLE_BLOCK, SDIO_Response_Short);
@@ -1999,13 +1951,7 @@ SD_Error SD_WriteBlock(uint8_t *writebuff, uint32_t WriteAddr, uint16_t BlockSiz
         return(errorstatus);
     }
 
-    SDIO_DataInitStructure.SDIO_DataTimeOut = SD_DATATIMEOUT;
-    SDIO_DataInitStructure.SDIO_DataLength = BlockSize;
-    SDIO_DataInitStructure.SDIO_DataBlockSize = (uint32_t)9 << 4;
-    SDIO_DataInitStructure.SDIO_TransferDir = SDIO_TransferDir_ToCard;
-    SDIO_DataInitStructure.SDIO_TransferMode = SDIO_TransferMode_Block;
-    SDIO_DataInitStructure.SDIO_DPSM = SDIO_DPSM_Enable;
-    SDIO_DataConfig(&SDIO_DataInitStructure);
+    SDIO_DataConfig(BlockSize, (uint32_t)9 << 4, SDIO_TransferDir_ToCard);
 
     /*!< In case of single data block transfer no need of stop command at all */
 #if defined (SD_POLLING_MODE)
@@ -2148,13 +2094,7 @@ SD_Error SD_SendSDStatus(uint32_t *psdstatus) {
         return(errorstatus);
     }
 
-    SDIO_DataInitStructure.SDIO_DataTimeOut = SD_DATATIMEOUT;
-    SDIO_DataInitStructure.SDIO_DataLength = 64;
-    SDIO_DataInitStructure.SDIO_DataBlockSize = SDIO_DataBlockSize_64b;
-    SDIO_DataInitStructure.SDIO_TransferDir = SDIO_TransferDir_ToSDIO;
-    SDIO_DataInitStructure.SDIO_TransferMode = SDIO_TransferMode_Block;
-    SDIO_DataInitStructure.SDIO_DPSM = SDIO_DPSM_Enable;
-    SDIO_DataConfig(&SDIO_DataInitStructure);
+    SDIO_DataConfig(64, SDIO_DataBlockSize_64b, SDIO_TransferDir_ToSDIO);
 
     /*!< Send ACMD13 SD_APP_STAUS  with argument as card's RCA.*/
     SDIO_SendCommand(0, SD_CMD_SD_APP_STAUS, SDIO_Response_Short);
@@ -2615,13 +2555,8 @@ static SD_Error FindSCR(uint16_t rca, uint32_t *pscr) {
     if (errorstatus != SD_OK) {
         return(errorstatus);
     }
-    SDIO_DataInitStructure.SDIO_DataTimeOut = SD_DATATIMEOUT;
-    SDIO_DataInitStructure.SDIO_DataLength = 8;
-    SDIO_DataInitStructure.SDIO_DataBlockSize = SDIO_DataBlockSize_8b;
-    SDIO_DataInitStructure.SDIO_TransferDir = SDIO_TransferDir_ToSDIO;
-    SDIO_DataInitStructure.SDIO_TransferMode = SDIO_TransferMode_Block;
-    SDIO_DataInitStructure.SDIO_DPSM = SDIO_DPSM_Enable;
-    SDIO_DataConfig(&SDIO_DataInitStructure);
+
+    SDIO_DataConfig(8, SDIO_DataBlockSize_8b, SDIO_TransferDir_ToSDIO);
 
 
     /*!< Send ACMD51 SD_APP_SEND_SCR with argument as 0 */
