@@ -2712,14 +2712,7 @@ TinyCLR_Result STM32F4_SdCard_Acquire(const TinyCLR_SdCard_Provider* self, int32
 
     SD_DeInit();
 
-    int32_t to = 2;
-
-    SD_Error error = SD_Init();
-
-    if (error != SD_OK) // try one more time
-        return SD_Init() == SD_OK ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
-
-    return TinyCLR_Result::Success;
+    return SD_Init() == SD_OK ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
 }
 
 TinyCLR_Result STM32F4_SdCard_Release(const TinyCLR_SdCard_Provider* self, int32_t controller) {
