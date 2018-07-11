@@ -1,6 +1,8 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 #include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
+#ifdef INCLUDE_DAC
+
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::AcquireNative___VOID(const TinyCLR_Interop_MethodData md) {
     auto provider = (const TinyCLR_Dac_Provider*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::FIELD___nativeProvider___I);
 
@@ -112,3 +114,46 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     return TinyCLR_Result::InvalidOperation;
 }
+
+#else //INCLUDE_DAC
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::AcquireNative___VOID(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::ReleaseNative___VOID(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::get_ChannelCount___I4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::get_MaxValue___I4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::get_MinValue___I4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::get_ResolutionInBits___I4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::AcquireChannel___VOID__I4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::ReleaseChannel___VOID__I4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::WriteValue___VOID__I4__I4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DefaultDacControllerProvider::GetControllerCount___STATIC___I4__I(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+#endif //INCLUDE_DAC
