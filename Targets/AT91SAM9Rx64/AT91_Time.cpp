@@ -214,7 +214,7 @@ static TinyCLR_NativeTime_Provider timeProvider;
 static TinyCLR_Api_Info timeApi;
 
 const TinyCLR_Api_Info* AT91_Time_GetApi() {
-    timeProvider.Parent = &timeApi;
+    timeProvider.ApiInfo = &timeApi;
     timeProvider.ConvertNativeTimeToSystemTime = &AT91_Time_GetTimeForProcessorTicks;
     timeProvider.ConvertSystemTimeToNativeTime = &AT91_Time_TimeToTicks;
     timeProvider.GetNativeTime = &AT91_Time_GetCurrentProcessorTicks;

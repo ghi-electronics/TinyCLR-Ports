@@ -60,7 +60,7 @@ uint32_t setFieldValue(volatile uint32_t oldVal, uint32_t shift, uint32_t mask, 
 }
 
 const TinyCLR_Api_Info* LPC24_Uart_GetApi() {
-    uartProviders.Parent = &uartApi;
+    uartProviders.ApiInfo = &uartApi;
     uartProviders.Acquire = &LPC24_Uart_Acquire;
     uartProviders.Release = &LPC24_Uart_Release;
     uartProviders.SetActiveSettings = &LPC24_Uart_SetActiveSettings;

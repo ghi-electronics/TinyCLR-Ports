@@ -2218,7 +2218,7 @@ int32_t BinarySearch2(uint32_t *lowerBounds, uint32_t *upperBounds, int32_t firs
 }
 
 const TinyCLR_Api_Info* LPC17_Can_GetApi() {
-    canProvider.Parent = &canApi;
+    canProvider.ApiInfo = &canApi;
     canProvider.Acquire = &LPC17_Can_Acquire;
     canProvider.Release = &LPC17_Can_Release;
     canProvider.Reset = &LPC17_Can_SoftReset;

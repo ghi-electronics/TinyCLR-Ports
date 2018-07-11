@@ -227,7 +227,7 @@ uint32_t setFieldValue(volatile uint32_t oldVal, uint32_t shift, uint32_t mask, 
 }
 
 const TinyCLR_Api_Info* LPC17_Uart_GetApi() {
-    uartProviders.Parent = &uartApi;
+    uartProviders.ApiInfo = &uartApi;
     uartProviders.Acquire = &LPC17_Uart_Acquire;
     uartProviders.Release = &LPC17_Uart_Release;
     uartProviders.SetActiveSettings = &LPC17_Uart_SetActiveSettings;

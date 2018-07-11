@@ -2156,7 +2156,7 @@ static const LPC17_Gpio_Pin g_LPC17_SdCard_Cmd_Pins[] = LPC17_SD_CMD_PINS;
 SdController sdController[1];
 
 const TinyCLR_Api_Info* LPC17_SdCard_GetApi() {
-    sdCardProvider.Parent = &sdApi;
+    sdCardProvider.ApiInfo = &sdApi;
 
     sdCardProvider.Acquire = &LPC17_SdCard_Acquire;
     sdCardProvider.Release = &LPC17_SdCard_Release;

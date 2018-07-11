@@ -24,8 +24,8 @@ static TinyCLR_Interrupt_Provider interruptProvider;
 static TinyCLR_Api_Info interruptApi;
 
 const TinyCLR_Api_Info* LPC17_Interrupt_GetApi() {
-    interruptProvider.Parent = &interruptApi;
-    interruptProvider.Parent = &interruptApi;
+    interruptProvider.ApiInfo = &interruptApi;
+    interruptProvider.ApiInfo = &interruptApi;
     interruptProvider.Acquire = &LPC17_Interrupt_Acquire;
     interruptProvider.Release = &LPC17_Interrupt_Release;
     interruptProvider.Enable = &LPC17_Interrupt_GlobalEnabled;

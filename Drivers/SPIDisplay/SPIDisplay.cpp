@@ -11,7 +11,7 @@ static TinyCLR_Display_SpiConfiguration spiDisplayConfig;
 static const TinyCLR_Spi_Provider* spiDisplayBus;
 
 const TinyCLR_Api_Info* SPIDisplay_GetApi() {
-    spiDisplayProvider.Parent = &spiDisplayApi;
+    spiDisplayProvider.ApiInfo = &spiDisplayApi;
     spiDisplayProvider.Acquire = &SPIDisplay_Acquire;
     spiDisplayProvider.Release = &SPIDisplay_Release;
     spiDisplayProvider.Enable = &SPIDisplay_Enable;

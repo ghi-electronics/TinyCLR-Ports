@@ -20,7 +20,7 @@ static TinyCLR_Power_Provider powerProvider;
 static TinyCLR_Api_Info powerApi;
 
 const TinyCLR_Api_Info* STM32F4_Power_GetApi() {
-    powerProvider.Parent = &powerApi;
+    powerProvider.ApiInfo = &powerApi;
     powerProvider.Reset = &STM32F4_Power_Reset;
     powerProvider.Sleep = &STM32F4_Power_Sleep;
 
