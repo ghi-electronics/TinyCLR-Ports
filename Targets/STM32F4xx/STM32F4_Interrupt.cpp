@@ -26,8 +26,8 @@ static TinyCLR_Api_Info interruptApi;
 
 const TinyCLR_Api_Info* STM32F4_Interrupt_GetApi() {
     interruptProvider.ApiInfo = &interruptApi;
-    interruptProvider.Acquire = &STM32F4_Interrupt_Acquire;
-    interruptProvider.Release = &STM32F4_Interrupt_Release;
+    interruptProvider.Initialize = &STM32F4_Interrupt_Initialize;
+    interruptProvider.Uninitialize = &STM32F4_Interrupt_Uninitialize;
     interruptProvider.Enable = &STM32F4_Interrupt_Enable;
     interruptProvider.Disable = &STM32F4_Interrupt_Disable;
     interruptProvider.WaitForInterrupt = &STM32F4_Interrupt_WaitForInterrupt;
@@ -48,7 +48,7 @@ extern "C" {
     extern uint32_t __Vectors;
 }
 
-TinyCLR_Result STM32F4_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
+TinyCLR_Result STM32F4_Interrupt_Initialize(const TinyCLR_Interrupt_Provider* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
     uint32_t *irq_vectors = (uint32_t*)&__Vectors;
 
     // disable all interrupts
@@ -78,7 +78,7 @@ TinyCLR_Result STM32F4_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onIn
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Interrupt_Release() {
+TinyCLR_Result STM32F4_Interrupt_Uninitialize(const TinyCLR_Interrupt_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
@@ -124,7 +124,7 @@ bool STM32F4_DisableInterrupts_RaiiHelper::IsDisabled() {
     return (state & DISABLED_MASK) == DISABLED_MASK;
 }
 
-void STM32F4_DisableInterrupts_RaiiHelper::Acquire() {
+void STM32F4_DisableInterrupts_RaiiHelper::Initialize() {
     uint32_t Cp = state;
 
     if ((Cp & DISABLED_MASK) == DISABLED_MASK) {
@@ -134,7 +134,7 @@ void STM32F4_DisableInterrupts_RaiiHelper::Acquire() {
     }
 }
 
-void STM32F4_DisableInterrupts_RaiiHelper::Release() {
+void STM32F4_DisableInterrupts_RaiiHelper::Uninitialize() {
     uint32_t Cp = state;
 
     if ((Cp & DISABLED_MASK) == 0) {

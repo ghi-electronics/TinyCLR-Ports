@@ -41,8 +41,8 @@ static TinyCLR_Api_Info timeApi;
 
 const TinyCLR_Api_Info* STM32F4_Time_GetApi() {
     timeProvider.ApiInfo = &timeApi;
-    timeProvider.Acquire = &STM32F4_Time_Acquire;
-    timeProvider.Release = &STM32F4_Time_Release;
+    timeProvider.Initialize = &STM32F4_Time_Initialize;
+    timeProvider.Uninitialize = &STM32F4_Time_Uninitialize;
     timeProvider.GetNativeTime = &STM32F4_Time_GetCurrentProcessorTicks;
     timeProvider.ConvertNativeTimeToSystemTime = &STM32F4_Time_GetTimeForProcessorTicks;
     timeProvider.ConvertSystemTimeToNativeTime = &STM32F4_Time_GetProcessorTicksForTime;
@@ -168,7 +168,7 @@ extern "C" {
 
 }
 
-TinyCLR_Result STM32F4_Time_Acquire(const TinyCLR_NativeTime_Provider* self) {
+TinyCLR_Result STM32F4_Time_Initialize(const TinyCLR_NativeTime_Provider* self) {
     g_nextEvent = TIMER_IDLE_VALUE;
 
     g_STM32F4_Timer_Driver.m_lastRead = 0;
@@ -183,7 +183,7 @@ TinyCLR_Result STM32F4_Time_Acquire(const TinyCLR_NativeTime_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Time_Release(const TinyCLR_NativeTime_Provider* self) {
+TinyCLR_Result STM32F4_Time_Uninitialize(const TinyCLR_NativeTime_Provider* self) {
     SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
 
     return TinyCLR_Result::Success;
