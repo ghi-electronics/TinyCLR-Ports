@@ -124,7 +124,7 @@ bool STM32F4_DisableInterrupts_RaiiHelper::IsDisabled() {
     return (state & DISABLED_MASK) == DISABLED_MASK;
 }
 
-void STM32F4_DisableInterrupts_RaiiHelper::Initialize() {
+void STM32F4_DisableInterrupts_RaiiHelper::Acquire() {
     uint32_t Cp = state;
 
     if ((Cp & DISABLED_MASK) == DISABLED_MASK) {
@@ -134,7 +134,7 @@ void STM32F4_DisableInterrupts_RaiiHelper::Initialize() {
     }
 }
 
-void STM32F4_DisableInterrupts_RaiiHelper::Uninitialize() {
+void STM32F4_DisableInterrupts_RaiiHelper::Release() {
     uint32_t Cp = state;
 
     if ((Cp & DISABLED_MASK) == 0) {
