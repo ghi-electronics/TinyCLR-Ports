@@ -40,7 +40,12 @@ TinyCLR_Result SPIDisplay_Release(const TinyCLR_Display_Provider* self, int32_t 
 }
 
 TinyCLR_Result SPIDisplay_Enable(const TinyCLR_Display_Provider* self, int32_t controller) {
-    spiDisplayBus = reinterpret_cast<const TinyCLR_Spi_Provider*>(apiProvider->FindBySelector(apiProvider, spiDisplayConfig.SpiSelector, TinyCLR_Api_Type::SpiProvider));
+    auto res = apiProvider->Find(apiProvider, spiDisplayConfig.SpiSelector, TinyCLR_Api_Type::SpiProvider);
+
+    if (res == nullptr)
+        return TinyCLR_Result::InvalidOperation;
+
+    spiDisplayBus = reinterpret_cast<const TinyCLR_Spi_Provider*>(res->Implementation);
 
     return spiDisplayBus != nullptr ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
 }
