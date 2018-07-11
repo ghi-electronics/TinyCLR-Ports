@@ -1150,7 +1150,6 @@ static SD_Error CmdResp2Error(void);
 static SD_Error CmdResp6Error(uint8_t cmd, uint16_t *prca);
 static SD_Error SDEnWideBus(FunctionalState NewState);
 static SD_Error FindSCR(uint16_t rca, uint32_t *pscr);
-uint8_t convert_from_bytes_to_power_of_two(uint16_t NumberOfBytes);
 
 /** @defgroup STM324xG_EVAL_SDIO_SD_Private_Functions
   * @{
@@ -1861,14 +1860,12 @@ SD_Error SD_ReadBlock(uint8_t *readbuff, uint32_t ReadAddr, uint16_t BlockSize) 
     }
 
     if (SDIO_GetFlagStatus(SDIO_FLAG_DTIMEOUT) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_DTIMEOUT);
-        errorstatus = SD_DATA_TIMEOUT;
-        return(errorstatus);
+        SDIO_ClearFlag(SDIO_FLAG_DTIMEOUT);        
+        return(SD_DATA_TIMEOUT);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_DCRCFAIL) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_DCRCFAIL);
-        errorstatus = SD_DATA_CRC_FAIL;
-        return(errorstatus);
+        SDIO_ClearFlag(SDIO_FLAG_DCRCFAIL);        
+        return(SD_DATA_CRC_FAIL);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_RXOVERR) != RESET) {
         SDIO_ClearFlag(SDIO_FLAG_RXOVERR);
@@ -1876,9 +1873,8 @@ SD_Error SD_ReadBlock(uint8_t *readbuff, uint32_t ReadAddr, uint16_t BlockSize) 
         //    return(errorstatus);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_STBITERR) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_STBITERR);
-        errorstatus = SD_START_BIT_ERR;
-        return(errorstatus);
+        SDIO_ClearFlag(SDIO_FLAG_STBITERR);        
+        return(SD_START_BIT_ERR);
     }
     count = SD_DATATIMEOUT;
     while ((SDIO_GetFlagStatus(SDIO_FLAG_RXDAVL) != RESET) && (count > 0)) {
@@ -1973,14 +1969,12 @@ SD_Error SD_WriteBlock(uint8_t *writebuff, uint32_t WriteAddr, uint16_t BlockSiz
         }
     }
     if (SDIO_GetFlagStatus(SDIO_FLAG_DTIMEOUT) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_DTIMEOUT);
-        errorstatus = SD_DATA_TIMEOUT;
-        return(errorstatus);
+        SDIO_ClearFlag(SDIO_FLAG_DTIMEOUT);        
+        return(SD_DATA_TIMEOUT);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_DCRCFAIL) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_DCRCFAIL);
-        errorstatus = SD_DATA_CRC_FAIL;
-        return(errorstatus);
+        SDIO_ClearFlag(SDIO_FLAG_DCRCFAIL);        
+        return(SD_DATA_CRC_FAIL);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_TXUNDERR) != RESET) {
         SDIO_ClearFlag(SDIO_FLAG_TXUNDERR);
@@ -1988,9 +1982,8 @@ SD_Error SD_WriteBlock(uint8_t *writebuff, uint32_t WriteAddr, uint16_t BlockSiz
         // return(errorstatus);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_STBITERR) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_STBITERR);
-        errorstatus = SD_START_BIT_ERR;
-        return(errorstatus);
+        SDIO_ClearFlag(SDIO_FLAG_STBITERR);        
+        return(SD_START_BIT_ERR);
     }
 #elif defined (SD_DMA_MODE)
     SDIO_ITConfig(SDIO_IT_DCRCFAIL | SDIO_IT_DTIMEOUT | SDIO_IT_DATAEND | SDIO_IT_RXOVERR | SDIO_IT_STBITERR, ENABLE);
@@ -2115,24 +2108,20 @@ SD_Error SD_SendSDStatus(uint32_t *psdstatus) {
     }
 
     if (SDIO_GetFlagStatus(SDIO_FLAG_DTIMEOUT) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_DTIMEOUT);
-        errorstatus = SD_DATA_TIMEOUT;
-        return(errorstatus);
+        SDIO_ClearFlag(SDIO_FLAG_DTIMEOUT);        
+        return(SD_DATA_TIMEOUT);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_DCRCFAIL) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_DCRCFAIL);
-        errorstatus = SD_DATA_CRC_FAIL;
-        return(errorstatus);
+        SDIO_ClearFlag(SDIO_FLAG_DCRCFAIL);        
+        return(SD_DATA_CRC_FAIL);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_RXOVERR) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_RXOVERR);
-        errorstatus = SD_RX_OVERRUN;
-        return(errorstatus);
+        SDIO_ClearFlag(SDIO_FLAG_RXOVERR);        
+        return(SD_RX_OVERRUN);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_STBITERR) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_STBITERR);
-        errorstatus = SD_START_BIT_ERR;
-        return(errorstatus);
+        SDIO_ClearFlag(SDIO_FLAG_STBITERR);        
+        return(SD_START_BIT_ERR);
     }
 
     count = SD_DATATIMEOUT;
@@ -2576,24 +2565,20 @@ static SD_Error FindSCR(uint16_t rca, uint32_t *pscr) {
     }
 
     if (SDIO_GetFlagStatus(SDIO_FLAG_DTIMEOUT) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_DTIMEOUT);
-        errorstatus = SD_DATA_TIMEOUT;
-        return(errorstatus);
+        SDIO_ClearFlag(SDIO_FLAG_DTIMEOUT);        
+        return(SD_DATA_TIMEOUT);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_DCRCFAIL) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_DCRCFAIL);
-        errorstatus = SD_DATA_CRC_FAIL;
-        return(errorstatus);
+        SDIO_ClearFlag(SDIO_FLAG_DCRCFAIL);        
+        return(SD_DATA_CRC_FAIL);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_RXOVERR) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_RXOVERR);
-        errorstatus = SD_RX_OVERRUN;
-        return(errorstatus);
+        SDIO_ClearFlag(SDIO_FLAG_RXOVERR);        
+        return(SD_RX_OVERRUN);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_STBITERR) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_STBITERR);
-        errorstatus = SD_START_BIT_ERR;
-        return(errorstatus);
+        SDIO_ClearFlag(SDIO_FLAG_STBITERR);        
+        return(SD_START_BIT_ERR);
     }
 
     /*!< Clear all the static flags */
@@ -2604,31 +2589,6 @@ static SD_Error FindSCR(uint16_t rca, uint32_t *pscr) {
     *(pscr) = ((tempscr[1] & SD_0TO7BITS) << 24) | ((tempscr[1] & SD_8TO15BITS) << 8) | ((tempscr[1] & SD_16TO23BITS) >> 8) | ((tempscr[1] & SD_24TO31BITS) >> 24);
 
     return(errorstatus);
-}
-
-/**
-  * @brief  Converts the number of bytes in power of two and returns the power.
-  * @param  NumberOfBytes: number of bytes.
-  * @retval None
-  */
-uint8_t convert_from_bytes_to_power_of_two(uint16_t NumberOfBytes) {
-    uint8_t count = 0;
-
-    while (NumberOfBytes != 1) {
-        NumberOfBytes >>= 1;
-        count++;
-    }
-    return(count);
-}
-
-bool SD_GetStatus_WithTimeOut(int32_t timeout_us) {
-    //while(SD_GetStatus() != SD_TRANSFER_OK);
-    for (; timeout_us > 0; timeout_us--) {
-        STM32F4_Time_Delay(nullptr, 1);
-        if (SD_GetStatus() == SD_TRANSFER_OK)
-            return true;
-    }
-    return false;
 }
 
 // stm32f4
