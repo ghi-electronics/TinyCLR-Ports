@@ -42,7 +42,7 @@ static TinyCLR_Pwm_Provider pwmProviders;
 static TinyCLR_Api_Info pwmApi;
 
 const TinyCLR_Api_Info* AT91_Pwm_GetApi() {
-    pwmProviders.Parent = &pwmApi;
+    pwmProviders.ApiInfo = &pwmApi;
     pwmProviders.Acquire = &AT91_Pwm_Acquire;
     pwmProviders.Release = &AT91_Pwm_Release;
     pwmProviders.SetDesiredFrequency = &AT91_Pwm_SetDesiredFrequency;

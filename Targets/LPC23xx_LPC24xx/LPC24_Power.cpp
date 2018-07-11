@@ -24,7 +24,7 @@ static TinyCLR_Power_Provider powerProvider;
 static TinyCLR_Api_Info powerApi;
 
 const TinyCLR_Api_Info* LPC24_Power_GetApi() {
-    powerProvider.Parent = &powerApi;
+    powerProvider.ApiInfo = &powerApi;
     powerProvider.Acquire = &LPC24_Power_Acquire;
     powerProvider.Release = &LPC24_Power_Release;
     powerProvider.Reset = &LPC24_Power_Reset;

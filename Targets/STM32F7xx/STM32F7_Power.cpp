@@ -23,7 +23,7 @@ static TinyCLR_Power_Provider powerProvider;
 static TinyCLR_Api_Info powerApi;
 
 const TinyCLR_Api_Info* STM32F7_Power_GetApi() {
-    powerProvider.Parent = &powerApi;
+    powerProvider.ApiInfo = &powerApi;
     powerProvider.Acquire = &STM32F7_Power_Acquire;
     powerProvider.Release = &STM32F7_Power_Release;
     powerProvider.Reset = &STM32F7_Power_Reset;

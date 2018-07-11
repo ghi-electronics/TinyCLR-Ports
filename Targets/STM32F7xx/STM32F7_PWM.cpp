@@ -75,7 +75,7 @@ static TinyCLR_Pwm_Provider pwmProviders;
 static TinyCLR_Api_Info pwmApi;
 
 const TinyCLR_Api_Info* STM32F7_Pwm_GetApi() {
-    pwmProviders.Parent = &pwmApi;
+    pwmProviders.ApiInfo = &pwmApi;
     pwmProviders.Acquire = &STM32F7_Pwm_Acquire;
     pwmProviders.Release = &STM32F7_Pwm_Release;
     pwmProviders.AcquirePin = &STM32F7_Pwm_AcquirePin;

@@ -40,7 +40,7 @@ static TinyCLR_NativeTime_Provider timeProvider;
 static TinyCLR_Api_Info timeApi;
 
 const TinyCLR_Api_Info* STM32F7_Time_GetApi() {
-    timeProvider.Parent = &timeApi;
+    timeProvider.ApiInfo = &timeApi;
     timeProvider.Acquire = &STM32F7_Time_Acquire;
     timeProvider.Release = &STM32F7_Time_Release;
     timeProvider.GetNativeTime = &STM32F7_Time_GetCurrentProcessorTicks;

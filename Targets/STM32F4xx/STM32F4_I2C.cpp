@@ -58,7 +58,7 @@ static TinyCLR_I2c_Provider i2cProvider;
 static TinyCLR_Api_Info i2cApi;
 
 const TinyCLR_Api_Info* STM32F4_I2c_GetApi() {
-    i2cProvider.Parent = &i2cApi;
+    i2cProvider.ApiInfo = &i2cApi;
     i2cProvider.Acquire = &STM32F4_I2c_Acquire;
     i2cProvider.Release = &STM32F4_I2c_Release;
     i2cProvider.SetActiveSettings = &STM32F4_I2c_SetActiveSettings;

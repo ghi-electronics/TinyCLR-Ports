@@ -39,7 +39,7 @@ static TinyCLR_NativeTime_Provider timeProvider;
 static TinyCLR_Api_Info timeApi;
 
 const TinyCLR_Api_Info* LPC17_Time_GetApi() {
-    timeProvider.Parent = &timeApi;
+    timeProvider.ApiInfo = &timeApi;
     timeProvider.Acquire = &LPC17_Time_Acquire;
     timeProvider.Release = &LPC17_Time_Release;
     timeProvider.GetNativeTime = &LPC17_Time_GetCurrentProcessorTicks;

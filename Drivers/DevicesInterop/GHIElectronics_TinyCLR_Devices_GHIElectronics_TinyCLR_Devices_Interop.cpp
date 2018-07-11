@@ -80,7 +80,7 @@ uint64_t TinyCLR_Interop_CurrentTime() {
 void TinyCLR_Interop_Delay(uint32_t microseconds) {
     auto provider = (const TinyCLR_NativeTime_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::NativeTimeProvider);
 
-    provider->WaitMicroseconds(provider, microseconds);
+    provider->Wait(provider, provider->ConvertSystemTimeToNativeTime(provider, microseconds));
 }
 
 void TinyCLR_Interop_EnableInterrupt() {

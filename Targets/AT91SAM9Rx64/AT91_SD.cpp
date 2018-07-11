@@ -42,7 +42,7 @@ static const AT91_Gpio_Pin g_AT91_SdCard_Cmd_Pins[] = AT91_SD_CMD_PINS;
 SdController sdController[1];
 
 const TinyCLR_Api_Info* AT91_SdCard_GetApi() {
-    sdCardProvider.Parent = &sdApi;
+    sdCardProvider.ApiInfo = &sdApi;
 
     sdCardProvider.Acquire = &AT91_SdCard_Acquire;
     sdCardProvider.Release = &AT91_SdCard_Release;

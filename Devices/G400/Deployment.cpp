@@ -20,7 +20,7 @@ static TinyCLR_Deployment_Provider deploymentProvider;
 static TinyCLR_Api_Info deploymentApi;
 
 const TinyCLR_Api_Info* AT91_Deployment_GetApi() {
-    deploymentProvider.Parent = &deploymentApi;
+    deploymentProvider.ApiInfo = &deploymentApi;
     deploymentProvider.Acquire = &AT91_Deployment_Acquire;
     deploymentProvider.Release = &AT91_Deployment_Release;
     deploymentProvider.Read = &AT91_Deployment_Read;

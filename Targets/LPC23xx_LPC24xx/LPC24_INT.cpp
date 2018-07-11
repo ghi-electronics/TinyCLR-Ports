@@ -122,8 +122,8 @@ static TinyCLR_Interrupt_Provider interruptProvider;
 static TinyCLR_Api_Info interruptApi;
 
 const TinyCLR_Api_Info* LPC24_Interrupt_GetApi() {
-    interruptProvider.Parent = &interruptApi;
-    interruptProvider.Parent = &interruptApi;
+    interruptProvider.ApiInfo = &interruptApi;
+    interruptProvider.ApiInfo = &interruptApi;
     interruptProvider.Acquire = &LPC24_Interrupt_Acquire;
     interruptProvider.Release = &LPC24_Interrupt_Release;
 

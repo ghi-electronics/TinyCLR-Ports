@@ -1033,7 +1033,7 @@ TinyCLR_Result LPC24_Display_GetCapabilities(const TinyCLR_Display_Provider* sel
 }
 
 const TinyCLR_Api_Info* LPC24_Display_GetApi() {
-    displayProvider.Parent = &displayApi;
+    displayProvider.ApiInfo = &displayApi;
     displayProvider.Acquire = &LPC24_Display_Acquire;
     displayProvider.Release = &LPC24_Display_Release;
     displayProvider.Enable = &LPC24_Display_Enable;

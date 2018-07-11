@@ -29,7 +29,7 @@ static TinyCLR_Api_Info dacApi;
 bool g_stm32f7_dac_isOpened[STM32F7_DAC_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F7_Dac_GetApi() {
-    dacProvider.Parent = &dacApi;
+    dacProvider.ApiInfo = &dacApi;
     dacProvider.Acquire = &STM32F7_Dac_Acquire;
     dacProvider.Release = &STM32F7_Dac_Release;
     dacProvider.AcquireChannel = &STM32F7_Dac_AcquireChannel;

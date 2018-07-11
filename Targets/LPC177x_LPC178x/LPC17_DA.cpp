@@ -38,7 +38,7 @@ static const LPC17_Gpio_Pin g_lpc17_dac_pins[] = LPC17_DAC_PINS;
 bool g_lpc17_dac_isOpened[SIZEOF_ARRAY(g_lpc17_dac_pins)];
 
 const TinyCLR_Api_Info* LPC17_Dac_GetApi() {
-    dacProvider.Parent = &dacApi;
+    dacProvider.ApiInfo = &dacApi;
     dacProvider.Acquire = &LPC17_Dac_Acquire;
     dacProvider.Release = &LPC17_Dac_Release;
     dacProvider.AcquireChannel = &LPC17_Dac_AcquireChannel;

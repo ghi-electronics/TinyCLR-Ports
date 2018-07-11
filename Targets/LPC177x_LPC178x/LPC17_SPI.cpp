@@ -437,7 +437,7 @@ static TinyCLR_Api_Info spiApi;
 void LPC17_Spi_Reset();
 
 const TinyCLR_Api_Info* LPC17_Spi_GetApi() {
-    spiProviders.Parent = &spiApi;
+    spiProviders.ApiInfo = &spiApi;
     spiProviders.Acquire = &LPC17_Spi_Acquire;
     spiProviders.Release = &LPC17_Spi_Release;
     spiProviders.SetActiveSettings = &LPC17_Spi_SetActiveSettings;
