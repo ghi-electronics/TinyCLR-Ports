@@ -84,6 +84,8 @@ void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 }
 
 int main() {
+    apiProvider = nullptr;
+
     TARGET(_Startup_Initialize)();
 
     uint8_t* heapStart;
@@ -92,15 +94,12 @@ int main() {
     TARGET(_Startup_GetHeap)(heapStart, heapLength);
     TinyCLR_Startup_AddHeapRegion(heapStart, heapLength);
 
-    const TinyCLR_Api_Info* debuggerApi;
-    size_t debuggerIndex;
 
+    const TinyCLR_Api_Info* debuggerApi;
     const void* debuggerConfiguration;
 
-    apiProvider = nullptr;
-
-    TARGET(_Startup_GetDebuggerTransportProvider)(debuggerApi, debuggerIndex, debuggerConfiguration);
-    TinyCLR_Startup_SetDebuggerTransportProvider(debuggerApi, debuggerIndex, debuggerConfiguration);
+    TARGET(_Startup_GetDebuggerTransportProvider)(debuggerApi, debuggerConfiguration);
+    TinyCLR_Startup_SetDebuggerTransportProvider(debuggerApi, debuggerConfiguration);
 
 
     TinyCLR_Startup_SetDeviceInformation(DEVICE_NAME, DEVICE_MANUFACTURER, DEVICE_VERSION);
@@ -112,6 +111,7 @@ int main() {
 
     TARGET(_Startup_GetRunApp)(runApp);
     TinyCLR_Startup_Start(&OnSoftReset, runApp);
+
 
     return 0;
 }
