@@ -995,7 +995,7 @@ TinyCLR_Result LPC17_Display_GetCapabilities(const TinyCLR_Display_Provider* sel
 }
 
 const TinyCLR_Api_Info* LPC17_Display_GetApi() {
-    displayProvider.Parent = &displayApi;
+    displayProvider.ApiInfo = &displayApi;
     displayProvider.Acquire = &LPC17_Display_Acquire;
     displayProvider.Release = &LPC17_Display_Release;
     displayProvider.Enable = &LPC17_Display_Enable;

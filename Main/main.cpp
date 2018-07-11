@@ -24,27 +24,27 @@ void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 
 #ifdef INCLUDE_ADC
     apiProvider->Add(apiProvider, TARGET(_Adc_GetApi)());
-    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::AdcProvider, TARGET(_Adc_GetApi)()->Name);
+    apiProvider->SetDefaultName(apiProvider, TinyCLR_Api_Type::AdcProvider, TARGET(_Adc_GetApi)()->Name);
 #endif
 
 #ifdef INCLUDE_CAN
     apiProvider->Add(apiProvider, TARGET(_Can_GetApi)());
-    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::CanProvider, TARGET(_Can_GetApi)()->Name);
+    apiProvider->SetDefaultName(apiProvider, TinyCLR_Api_Type::CanProvider, TARGET(_Can_GetApi)()->Name);
 #endif
 
 #ifdef INCLUDE_DAC
     apiProvider->Add(apiProvider, TARGET(_Dac_GetApi)());
-    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::DacProvider, TARGET(_Dac_GetApi)()->Name);
+    apiProvider->SetDefaultName(apiProvider, TinyCLR_Api_Type::DacProvider, TARGET(_Dac_GetApi)()->Name);
 #endif
 
 #ifdef INCLUDE_DISPLAY
     apiProvider->Add(apiProvider, TARGET(_Display_GetApi)());
-    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::DisplayProvider, TARGET(_Display_GetApi)()->Name);
+    apiProvider->SetDefaultName(apiProvider, TinyCLR_Api_Type::DisplayProvider, TARGET(_Display_GetApi)()->Name);
 #endif
 
 #ifdef INCLUDE_GPIO
     apiProvider->Add(apiProvider, TARGET(_Gpio_GetApi)());
-    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::GpioProvider, TARGET(_Gpio_GetApi)()->Name);
+    apiProvider->SetDefaultName(apiProvider, TinyCLR_Api_Type::GpioProvider, TARGET(_Gpio_GetApi)()->Name);
 #endif
 
 #ifdef INCLUDE_I2C
@@ -57,12 +57,12 @@ void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 
 #ifdef INCLUDE_RTC
     apiProvider->Add(apiProvider, TARGET(_Rtc_GetApi)());
-    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::RtcProvider, TARGET(_Rtc_GetApi)()->Name);
+    apiProvider->SetDefaultName(apiProvider, TinyCLR_Api_Type::RtcProvider, TARGET(_Rtc_GetApi)()->Name);
 #endif
 
 #ifdef INCLUDE_SD
     apiProvider->Add(apiProvider, TARGET(_SdCard_GetApi)());
-    apiProvider->SetDefaultSelector(apiProvider, TinyCLR_Api_Type::SdCardProvider, TARGET(_SdCard_GetApi)()->Name);
+    apiProvider->SetDefaultName(apiProvider, TinyCLR_Api_Type::SdCardProvider, TARGET(_SdCard_GetApi)()->Name);
 #endif
 
 #ifdef INCLUDE_SPI
@@ -84,6 +84,8 @@ void OnSoftReset(const TinyCLR_Api_Provider* apiProvider) {
 }
 
 int main() {
+    apiProvider = nullptr;
+
     TARGET(_Startup_Initialize)();
 
     uint8_t* heapStart;
@@ -92,15 +94,12 @@ int main() {
     TARGET(_Startup_GetHeap)(heapStart, heapLength);
     TinyCLR_Startup_AddHeapRegion(heapStart, heapLength);
 
-    const TinyCLR_Api_Info* debuggerApi;
-    size_t debuggerIndex;
 
+    const TinyCLR_Api_Info* debuggerApi;
     const void* debuggerConfiguration;
 
-    apiProvider = nullptr;
-
-    TARGET(_Startup_GetDebuggerTransportProvider)(debuggerApi, debuggerIndex, debuggerConfiguration);
-    TinyCLR_Startup_SetDebuggerTransportProvider(debuggerApi, debuggerIndex, debuggerConfiguration);
+    TARGET(_Startup_GetDebuggerTransportProvider)(debuggerApi, debuggerConfiguration);
+    TinyCLR_Startup_SetDebuggerTransportProvider(debuggerApi, debuggerConfiguration);
 
 
     TinyCLR_Startup_SetDeviceInformation(DEVICE_NAME, DEVICE_MANUFACTURER, DEVICE_VERSION);
@@ -112,6 +111,7 @@ int main() {
 
     TARGET(_Startup_GetRunApp)(runApp);
     TinyCLR_Startup_Start(&OnSoftReset, runApp);
+
 
     return 0;
 }

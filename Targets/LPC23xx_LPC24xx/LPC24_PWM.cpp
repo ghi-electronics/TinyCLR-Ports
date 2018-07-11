@@ -77,7 +77,7 @@ static TinyCLR_Pwm_Provider pwmProviders;
 static TinyCLR_Api_Info pwmApi;
 
 const TinyCLR_Api_Info* LPC24_Pwm_GetApi() {
-    pwmProviders.Parent = &pwmApi;
+    pwmProviders.ApiInfo = &pwmApi;
     pwmProviders.Acquire = &LPC24_Pwm_Acquire;
     pwmProviders.Release = &LPC24_Pwm_Release;
     pwmProviders.SetDesiredFrequency = &LPC24_Pwm_SetDesiredFrequency;

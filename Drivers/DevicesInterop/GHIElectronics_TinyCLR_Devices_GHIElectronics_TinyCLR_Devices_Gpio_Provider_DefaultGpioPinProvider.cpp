@@ -5,7 +5,7 @@ void IsrProcedure(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t
     auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider));
 
     if (interopProvider != nullptr)
-        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Gpio.ValueChanged", self->Parent->Name, 0, (uint64_t)pin, (uint64_t)(pinState == TinyCLR_Gpio_PinValue::High), 0);
+        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Gpio.ValueChanged", self->ApiInfo->Name, 0, (uint64_t)pin, (uint64_t)(pinState == TinyCLR_Gpio_PinValue::High), 0);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_DefaultGpioPinProvider::get_DebounceTimeout___mscorlibSystemTimeSpan(const TinyCLR_Interop_MethodData md) {

@@ -287,7 +287,7 @@ static TinyCLR_Spi_Provider spiProviders;
 static TinyCLR_Api_Info spiApi;
 
 const TinyCLR_Api_Info* LPC24_Spi_GetApi() {
-    spiProviders.Parent = &spiApi;
+    spiProviders.ApiInfo = &spiApi;
     spiProviders.Acquire = &LPC24_Spi_Acquire;
     spiProviders.Release = &LPC24_Spi_Release;
     spiProviders.SetActiveSettings = &LPC24_Spi_SetActiveSettings;

@@ -1032,7 +1032,7 @@ bool CAN_ErrorHandler(uint8_t controller) {
 
 const TinyCLR_Api_Info* STM32F7_Can_GetApi() {
 
-    canProvider.Parent = &canApi;
+    canProvider.ApiInfo = &canApi;
     canProvider.Acquire = &STM32F7_Can_Acquire;
     canProvider.Release = &STM32F7_Can_Release;
     canProvider.Reset = &STM32F7_Can_SoftReset;

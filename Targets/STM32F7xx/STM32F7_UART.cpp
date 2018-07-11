@@ -77,7 +77,7 @@ static TinyCLR_Uart_Provider uartProviders;
 static TinyCLR_Api_Info uartApi;
 
 const TinyCLR_Api_Info* STM32F7_Uart_GetApi() {
-    uartProviders.Parent = &uartApi;
+    uartProviders.ApiInfo = &uartApi;
     uartProviders.Acquire = &STM32F7_Uart_Acquire;
     uartProviders.Release = &STM32F7_Uart_Release;
     uartProviders.SetActiveSettings = &STM32F7_Uart_SetActiveSettings;

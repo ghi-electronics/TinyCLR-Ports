@@ -2369,7 +2369,7 @@ static Mci mciDrv;
 static SdCard sdDrv;
 
 const TinyCLR_Api_Info* AT91_SdCard_GetApi() {
-    sdCardProvider.Parent = &sdApi;
+    sdCardProvider.ApiInfo = &sdApi;
 
     sdCardProvider.Acquire = &AT91_SdCard_Acquire;
     sdCardProvider.Release = &AT91_SdCard_Release;

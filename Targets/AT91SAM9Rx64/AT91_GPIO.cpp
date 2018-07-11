@@ -47,7 +47,7 @@ static TinyCLR_Gpio_Provider gpioProvider;
 static TinyCLR_Api_Info gpioApi;
 
 const TinyCLR_Api_Info* AT91_Gpio_GetApi() {
-    gpioProvider.Parent = &gpioApi;
+    gpioProvider.ApiInfo = &gpioApi;
     gpioProvider.Acquire = &AT91_Gpio_Acquire;
     gpioProvider.Release = &AT91_Gpio_Release;
     gpioProvider.AcquirePin = &AT91_Gpio_AcquirePin;

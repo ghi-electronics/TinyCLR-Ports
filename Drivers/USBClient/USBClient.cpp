@@ -727,7 +727,7 @@ bool TinyCLR_UsbClient_CanReceivePackage(USB_CONTROLLER_STATE* usbState, int32_t
 /// TinyCLR USBClient API
 ///////////////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* TinyCLR_UsbClient_GetApi() {
-    usbClientProvider.Parent = &usbClientApi;
+    usbClientProvider.ApiInfo = &usbClientApi;
     usbClientProvider.Acquire = &TinyCLR_UsbClient_Acquire;
     usbClientProvider.Release = &TinyCLR_UsbClient_Release;
     usbClientProvider.Open = &TinyCLR_UsbClient_Open;

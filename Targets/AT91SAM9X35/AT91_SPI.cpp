@@ -45,7 +45,7 @@ static TinyCLR_Spi_Provider spiProviders;
 static TinyCLR_Api_Info spiApi;
 
 const TinyCLR_Api_Info* AT91_Spi_GetApi() {
-    spiProviders.Parent = &spiApi;
+    spiProviders.ApiInfo = &spiApi;
     spiProviders.Acquire = &AT91_Spi_Acquire;
     spiProviders.Release = &AT91_Spi_Release;
     spiProviders.SetActiveSettings = &AT91_Spi_SetActiveSettings;

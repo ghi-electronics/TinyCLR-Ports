@@ -2616,7 +2616,7 @@ static const STM32F4_Gpio_Pin g_STM32F4_SdCard_Cmd_Pins[] = STM32F4_SD_CMD_PINS;
 SdController sdController[1];
 
 const TinyCLR_Api_Info* STM32F4_SdCard_GetApi() {
-    sdCardProvider.Parent = &sdApi;
+    sdCardProvider.ApiInfo = &sdApi;
 
     sdCardProvider.Acquire = &STM32F4_SdCard_Acquire;
     sdCardProvider.Release = &STM32F4_SdCard_Release;
