@@ -73,6 +73,7 @@ uint64_t STM32F4_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Provider
 TinyCLR_Result STM32F4_Time_SetTickCallback(const TinyCLR_NativeTime_Provider* self, TinyCLR_NativeTime_Callback callback);
 TinyCLR_Result STM32F4_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Provider* self, uint64_t processorTicks);
 void STM32F4_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds);
+void STM32F4_Time_DelayNative(const TinyCLR_NativeTime_Provider* self, uint64_t nativeTime);
 
 ////////////////////////////////////////////////////////////////////////////////
 //Startup

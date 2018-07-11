@@ -48,7 +48,7 @@ const TinyCLR_Api_Info* STM32F4_Time_GetApi() {
     timeProvider.ConvertSystemTimeToNativeTime = &STM32F4_Time_GetProcessorTicksForTime;
     timeProvider.SetCallback = &STM32F4_Time_SetTickCallback;
     timeProvider.ScheduleCallback = &STM32F4_Time_SetNextTickCallbackTime;
-    timeProvider.WaitMicroseconds = &STM32F4_Time_Delay;
+    timeProvider.Wait = &STM32F4_Time_DelayNative;
 
     timeApi.Author = "GHI Electronics, LLC";
     timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.NativeTimeProvider";
@@ -210,6 +210,14 @@ void STM32F4_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t micros
     // overhead cycles required to call this subroutine.
     int32_t iterations = (int32_t)microseconds - 5;      // Subtract off call & calculation overhead
     IDelayLoop(iterations);
+}
+
+void STM32F4_Time_DelayNative(const TinyCLR_NativeTime_Provider* self, uint64_t nativeTime) {
+    //TODO do inline later, don't call out to Delay
+
+    auto microseconds = STM32F4_Time_GetTimeForProcessorTicks(self, nativeTime) / 10;
+
+    STM32F4_Time_Delay(self, microseconds);
 }
 
 //******************** Profiler ********************
