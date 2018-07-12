@@ -29,8 +29,8 @@ static TinyCLR_Api_Info powerApi;
 
 const TinyCLR_Api_Info* LPC17_Power_GetApi() {
     powerProvider.ApiInfo = &powerApi;
-    powerProvider.Acquire = &LPC17_Power_Acquire;
-    powerProvider.Release = &LPC17_Power_Release;
+    powerProvider.Initialize = &LPC17_Power_Initialize;
+    powerProvider.Uninitialize = &LPC17_Power_Uninitialize;
     powerProvider.Reset = &LPC17_Power_Reset;
     powerProvider.Sleep = &LPC17_Power_Sleep;
 
@@ -88,10 +88,10 @@ void LPC17_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) {
     while (1); // wait for reset
 }
 
-TinyCLR_Result LPC17_Power_Acquire(const TinyCLR_Power_Provider* self) {
+TinyCLR_Result LPC17_Power_Initialize(const TinyCLR_Power_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Power_Release(const TinyCLR_Power_Provider* self) {
+TinyCLR_Result LPC17_Power_Uninitialize(const TinyCLR_Power_Provider* self) {
     return TinyCLR_Result::Success;
 }
