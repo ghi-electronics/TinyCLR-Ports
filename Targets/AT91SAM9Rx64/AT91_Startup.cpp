@@ -205,6 +205,7 @@ void AT91_Startup_Initialize() {
 }
 
 const TinyCLR_Startup_UsbDebuggerConfiguration AT91_Startup_UsbDebuggerConfiguration = {
+    USB_DEBUGGER_INDEX,
     USB_DEBUGGER_VENDOR_ID,
     USB_DEBUGGER_PRODUCT_ID,
     CONCAT(L,DEVICE_MANUFACTURER),
@@ -212,7 +213,11 @@ const TinyCLR_Startup_UsbDebuggerConfiguration AT91_Startup_UsbDebuggerConfigura
     0
 };
 
-void AT91_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index, const void*& configuration) {
+const TinyCLR_Startup_UartDebuggerConfiguration AT91_Startup_UartDebuggerConfiguration = {
+    UART_DEBUGGER_INDEX
+};
+
+void AT91_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value;
     auto provider = static_cast<const TinyCLR_Gpio_Provider*>(AT91_Gpio_GetApi()->Implementation);
@@ -224,13 +229,12 @@ void AT91_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, siz
     provider->ReleasePin(provider, gpioController, DEBUGGER_SELECTOR_PIN);
 
     if (value == DEBUGGER_SELECTOR_USB_STATE) {
-        api = AT91_UsbClient_GetApi();
-        index = USB_DEBUGGER_INDEX;
+        api = AT91_UsbClient_GetApi();        
         configuration = (const void*)&AT91_Startup_UsbDebuggerConfiguration;
     }
     else {
         api = AT91_Uart_GetApi();
-        index = UART_DEBUGGER_INDEX;
+        configuration = (const void*)&AT91_Startup_UartDebuggerConfiguration;
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;
