@@ -26,8 +26,8 @@ static TinyCLR_Api_Info interruptApi;
 const TinyCLR_Api_Info* LPC17_Interrupt_GetApi() {
     interruptProvider.ApiInfo = &interruptApi;
     interruptProvider.ApiInfo = &interruptApi;
-    interruptProvider.Acquire = &LPC17_Interrupt_Acquire;
-    interruptProvider.Release = &LPC17_Interrupt_Release;
+    interruptProvider.Initialize = &LPC17_Interrupt_Initialize;
+    interruptProvider.Uninitialize = &LPC17_Interrupt_Uninitialize;
     interruptProvider.Enable = &LPC17_Interrupt_GlobalEnabled;
     interruptProvider.Disable = &LPC17_Interrupt_GlobalDisabled;
     interruptProvider.WaitForInterrupt = &LPC17_Interrupt_GlobalWaitForInterrupt;
@@ -48,7 +48,7 @@ extern "C" {
     extern uint32_t __Vectors;
 }
 
-TinyCLR_Result LPC17_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
+TinyCLR_Result LPC17_Interrupt_Initialize(const TinyCLR_Interrupt_Provider* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
     uint32_t *irq_vectors = (uint32_t*)&__Vectors;
 
     // disable all interrupts
@@ -76,7 +76,7 @@ TinyCLR_Result LPC17_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInte
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Interrupt_Release() {
+TinyCLR_Result LPC17_Interrupt_Uninitialize(const TinyCLR_Interrupt_Provider* self) {
     return TinyCLR_Result::Success;
 }
 

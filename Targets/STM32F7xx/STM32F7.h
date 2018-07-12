@@ -31,8 +31,8 @@
 //Deployment
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F7_Deployment_GetApi();
-TinyCLR_Result STM32F7_Flash_Acquire(const TinyCLR_Deployment_Provider* self, bool& supportsXip);
-TinyCLR_Result STM32F7_Flash_Release(const TinyCLR_Deployment_Provider* self);
+TinyCLR_Result STM32F7_Flash_Initialize(const TinyCLR_Deployment_Provider* self, bool& supportXIP);
+TinyCLR_Result STM32F7_Flash_Uninitialize(const TinyCLR_Deployment_Provider* self);
 TinyCLR_Result STM32F7_Flash_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer);
 TinyCLR_Result STM32F7_Flash_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer);
 TinyCLR_Result STM32F7_Flash_EraseSector(const TinyCLR_Deployment_Provider* self, uint32_t sector);
@@ -43,8 +43,8 @@ TinyCLR_Result STM32F7_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* sel
 //Interrupt
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F7_Interrupt_GetApi();
-TinyCLR_Result STM32F7_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
-TinyCLR_Result STM32F7_Interrupt_Release();
+TinyCLR_Result STM32F7_Interrupt_Initialize(const TinyCLR_Interrupt_Provider* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
+TinyCLR_Result STM32F7_Interrupt_Uninitialize(const TinyCLR_Interrupt_Provider* self);
 bool STM32F7_Interrupt_Enable(bool force);
 bool STM32F7_Interrupt_Disable(bool force);
 void STM32F7_Interrupt_WaitForInterrupt();
@@ -55,8 +55,8 @@ void STM32F7_Interrupt_Restore();
 //Power
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F7_Power_GetApi();
-TinyCLR_Result STM32F7_Power_Acquire(const TinyCLR_Power_Provider* self);
-TinyCLR_Result STM32F7_Power_Release(const TinyCLR_Power_Provider* self);
+TinyCLR_Result STM32F7_Power_Initialize(const TinyCLR_Power_Provider* self);
+TinyCLR_Result STM32F7_Power_Uninitialize(const TinyCLR_Power_Provider* self);
 void STM32F7_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter);
 void STM32F7_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level);
 
@@ -64,22 +64,23 @@ void STM32F7_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep
 //Time
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F7_Time_GetApi();
-TinyCLR_Result STM32F7_Time_Acquire(const TinyCLR_NativeTime_Provider* self);
-TinyCLR_Result STM32F7_Time_Release(const TinyCLR_NativeTime_Provider* self);
+TinyCLR_Result STM32F7_Time_Initialize(const TinyCLR_NativeTime_Provider* self);
+TinyCLR_Result STM32F7_Time_Uninitialize(const TinyCLR_NativeTime_Provider* self);
 uint64_t STM32F7_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Provider* self);
 uint64_t STM32F7_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Provider* self, uint64_t ticks);
 uint64_t STM32F7_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Provider* self, uint64_t time);
 TinyCLR_Result STM32F7_Time_SetTickCallback(const TinyCLR_NativeTime_Provider* self, TinyCLR_NativeTime_Callback callback);
 TinyCLR_Result STM32F7_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Provider* self, uint64_t processorTicks);
 void STM32F7_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds);
-void STM32F7_Time_DelayNoInterrupt(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds);
+void STM32F7_Time_DelayNative(const TinyCLR_NativeTime_Provider* self, uint64_t nativeTime);
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //Startup
 ////////////////////////////////////////////////////////////////////////////////
 void STM32F7_Startup_Initialize();
 void STM32F7_Startup_GetHeap(uint8_t*& start, size_t& length);
-void STM32F7_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index, const void*& configuration);
+void STM32F7_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, const void*& configuration);
 void STM32F7_Startup_GetRunApp(bool& runApp);
 void STM32F7_Startup_CacheEnable(void);
 void STM32F7_Startup_CacheDisable(void);

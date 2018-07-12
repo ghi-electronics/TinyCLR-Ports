@@ -451,6 +451,7 @@ void STM32F7_Startup_Initialize() {
 }
 
 const TinyCLR_Startup_UsbDebuggerConfiguration STM32F7_Startup_UsbDebuggerConfiguration = {
+    USB_DEBUGGER_INDEX,
     USB_DEBUGGER_VENDOR_ID,
     USB_DEBUGGER_PRODUCT_ID,
     CONCAT(L,DEVICE_MANUFACTURER),
@@ -458,7 +459,11 @@ const TinyCLR_Startup_UsbDebuggerConfiguration STM32F7_Startup_UsbDebuggerConfig
     0
 };
 
-void STM32F7_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index, const void*& configuration) {
+const TinyCLR_Startup_UartDebuggerConfiguration LPC17_Startup_UartDebuggerConfiguration = {
+    UART_DEBUGGER_INDEX
+};
+
+void STM32F7_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN) && defined(DEBUGGER_SELECTOR_PULL) && defined(DEBUGGER_SELECTOR_USB_STATE)
     TinyCLR_Gpio_PinValue value;
     auto provider = static_cast<const TinyCLR_Gpio_Provider*>(STM32F7_Gpio_GetApi()->Implementation);
@@ -472,12 +477,11 @@ void STM32F7_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, 
 
     if (value == DEBUGGER_SELECTOR_USB_STATE) {
         api = STM32F7_UsbClient_GetApi();
-        index = USB_DEBUGGER_INDEX;
         configuration = (const void*)&STM32F7_Startup_UsbDebuggerConfiguration;
     }
     else {
         api = STM32F7_Uart_GetApi();
-        index = UART_DEBUGGER_INDEX;
+        configuration = (const void*)&LPC17_Startup_UartDebuggerConfiguration;
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;

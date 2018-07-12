@@ -41,14 +41,14 @@ static TinyCLR_Api_Info timeApi;
 
 const TinyCLR_Api_Info* STM32F7_Time_GetApi() {
     timeProvider.ApiInfo = &timeApi;
-    timeProvider.Acquire = &STM32F7_Time_Acquire;
-    timeProvider.Release = &STM32F7_Time_Release;
+    timeProvider.Initialize = &STM32F7_Time_Initialize;
+    timeProvider.Uninitialize = &STM32F7_Time_Uninitialize;
     timeProvider.GetNativeTime = &STM32F7_Time_GetCurrentProcessorTicks;
     timeProvider.ConvertNativeTimeToSystemTime = &STM32F7_Time_GetTimeForProcessorTicks;
     timeProvider.ConvertSystemTimeToNativeTime = &STM32F7_Time_GetProcessorTicksForTime;
     timeProvider.SetCallback = &STM32F7_Time_SetTickCallback;
     timeProvider.ScheduleCallback = &STM32F7_Time_SetNextTickCallbackTime;
-    timeProvider.WaitMicroseconds = &STM32F7_Time_Delay;
+    timeProvider.Wait = &STM32F7_Time_DelayNative;
 
     timeApi.Author = "GHI Electronics, LLC";
     timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.NativeTimeProvider";
@@ -168,7 +168,7 @@ extern "C" {
 
 }
 
-TinyCLR_Result STM32F7_Time_Acquire(const TinyCLR_NativeTime_Provider* self) {
+TinyCLR_Result STM32F7_Time_Initialize(const TinyCLR_NativeTime_Provider* self) {
     g_nextEvent = TIMER_IDLE_VALUE;
 
     g_STM32F7_Timer_Driver.m_lastRead = 0;
@@ -182,7 +182,7 @@ TinyCLR_Result STM32F7_Time_Acquire(const TinyCLR_NativeTime_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Time_Release(const TinyCLR_NativeTime_Provider* self) {
+TinyCLR_Result STM32F7_Time_Uninitialize(const TinyCLR_NativeTime_Provider* self) {
     SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
 
     return TinyCLR_Result::Success;
@@ -209,6 +209,14 @@ void STM32F7_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t micros
     // overhead cycles required to call this subroutine.
     int32_t iterations = (int32_t)microseconds - 5;      // Subtract off call & calculation overhead
     IDelayLoop(iterations);
+}
+
+void STM32F7_Time_DelayNative(const TinyCLR_NativeTime_Provider* self, uint64_t nativeTime) {
+    //TODO do inline later, don't call out to Delay
+
+    auto microseconds = STM32F7_Time_GetTimeForProcessorTicks(self, nativeTime) / 10;
+
+    STM32F7_Time_Delay(self, microseconds);
 }
 
 //******************** Profiler ********************

@@ -216,9 +216,9 @@ const TinyCLR_Api_Info* AT91_Time_GetApi() {
     timeProvider.GetNativeTime = &AT91_Time_GetCurrentProcessorTicks;
     timeProvider.SetCallback = &AT91_Time_SetTickCallback;
     timeProvider.ScheduleCallback = &AT91_Time_SetNextTickCallbackTime;
-    timeProvider.Acquire = &AT91_Time_Acquire;
-    timeProvider.Release = &AT91_Time_Release;
-    timeProvider.WaitMicroseconds = &AT91_Time_Delay;
+    timeProvider.Initialize = &AT91_Time_Initialize;
+    timeProvider.Uninitialize = &AT91_Time_Uninitialize;
+    timeProvider.Wait = &AT91_Time_DelayNative;
 
     timeApi.Author = "GHI Electronics, LLC";
     timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.NativeTimeProvider";
@@ -347,7 +347,7 @@ TinyCLR_Result AT91_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Provid
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Time_Acquire(const TinyCLR_NativeTime_Provider* self) {
+TinyCLR_Result AT91_Time_Initialize(const TinyCLR_NativeTime_Provider* self) {
     int32_t timer = AT91_TIME_DEFAULT_CONTROLLER_ID;
 
     g_AT91_TIME_Driver.m_lastRead = 0;
@@ -361,7 +361,7 @@ TinyCLR_Result AT91_Time_Acquire(const TinyCLR_NativeTime_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Time_Release(const TinyCLR_NativeTime_Provider* self) {
+TinyCLR_Result AT91_Time_Uninitialize(const TinyCLR_NativeTime_Provider* self) {
     int32_t timer = AT91_TIME_DEFAULT_CONTROLLER_ID;
 
     if (!AT91_TIMER_Driver::Uninitialize(AT91_TIMER_Driver::c_SystemTimer))
@@ -394,4 +394,10 @@ void AT91_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microseco
     IDelayLoop(iterations);
 }
 
+void AT91_Time_DelayNative(const TinyCLR_NativeTime_Provider* self, uint64_t nativeTime) {
+    //TODO do inline later, don't call out to Delay
 
+    auto microseconds = AT91_Time_GetTimeForProcessorTicks(self, nativeTime) / 10;
+
+    AT91_Time_Delay(self, microseconds);
+}

@@ -40,14 +40,14 @@ static TinyCLR_Api_Info timeApi;
 
 const TinyCLR_Api_Info* LPC17_Time_GetApi() {
     timeProvider.ApiInfo = &timeApi;
-    timeProvider.Acquire = &LPC17_Time_Acquire;
-    timeProvider.Release = &LPC17_Time_Release;
+    timeProvider.Initialize = &LPC17_Time_Initialize;
+    timeProvider.Uninitialize = &LPC17_Time_Uninitialize;
     timeProvider.GetNativeTime = &LPC17_Time_GetCurrentProcessorTicks;
     timeProvider.ConvertNativeTimeToSystemTime = &LPC17_Time_GetTimeForProcessorTicks;
     timeProvider.ConvertSystemTimeToNativeTime = &LPC17_Time_GetProcessorTicksForTime;
     timeProvider.SetCallback = &LPC17_Time_SetTickCallback;
     timeProvider.ScheduleCallback = &LPC17_Time_SetNextTickCallbackTime;
-    timeProvider.WaitMicroseconds = &LPC17_Time_Delay;
+    timeProvider.Wait = &LPC17_Time_DelayNative;
 
     timeApi.Author = "GHI Electronics, LLC";
     timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.NativeTimeProvider";
@@ -167,7 +167,7 @@ extern "C" {
 
 }
 
-TinyCLR_Result LPC17_Time_Acquire(const TinyCLR_NativeTime_Provider* self) {
+TinyCLR_Result LPC17_Time_Initialize(const TinyCLR_NativeTime_Provider* self) {
     g_nextEvent = TIMER_IDLE_VALUE;
 
     g_LPC17_Timer_Driver.m_lastRead = 0;
@@ -181,7 +181,7 @@ TinyCLR_Result LPC17_Time_Acquire(const TinyCLR_NativeTime_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Time_Release(const TinyCLR_NativeTime_Provider* self) {
+TinyCLR_Result LPC17_Time_Uninitialize(const TinyCLR_NativeTime_Provider* self) {
     SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
 
     return TinyCLR_Result::Success;
@@ -208,6 +208,14 @@ void LPC17_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microsec
     // overhead cycles required to call this subroutine.
     int32_t iterations = (int32_t)microseconds - 5;      // Subtract off call & calculation overhead
     IDelayLoop(iterations);
+}
+
+void LPC17_Time_DelayNative(const TinyCLR_NativeTime_Provider* self, uint64_t nativeTime) {
+    //TODO do inline later, don't call out to Delay
+
+    auto microseconds = LPC17_Time_GetTimeForProcessorTicks(self, nativeTime) / 10;
+
+    LPC17_Time_Delay(self, microseconds);
 }
 
 //******************** Profiler ********************

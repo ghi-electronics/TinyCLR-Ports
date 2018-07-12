@@ -24,8 +24,8 @@ static TinyCLR_Api_Info powerApi;
 
 const TinyCLR_Api_Info* STM32F7_Power_GetApi() {
     powerProvider.ApiInfo = &powerApi;
-    powerProvider.Acquire = &STM32F7_Power_Acquire;
-    powerProvider.Release = &STM32F7_Power_Release;
+    powerProvider.Initialize = &STM32F7_Power_Initialize;
+    powerProvider.Uninitialize = &STM32F7_Power_Uninitialize;
     powerProvider.Reset = &STM32F7_Power_Reset;
     powerProvider.Sleep = &STM32F7_Power_Sleep;
 
@@ -96,10 +96,10 @@ void STM32F7_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) 
     while (1); // wait for reset
 }
 
-TinyCLR_Result STM32F7_Power_Acquire(const TinyCLR_Power_Provider* self) {
+TinyCLR_Result STM32F7_Power_Initialize(const TinyCLR_Power_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Power_Release(const TinyCLR_Power_Provider* self) {
+TinyCLR_Result STM32F7_Power_Uninitialize(const TinyCLR_Power_Provider* self) {
     return TinyCLR_Result::Success;
 }
