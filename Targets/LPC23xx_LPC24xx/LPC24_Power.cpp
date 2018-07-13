@@ -24,9 +24,9 @@ static TinyCLR_Power_Provider powerProvider;
 static TinyCLR_Api_Info powerApi;
 
 const TinyCLR_Api_Info* LPC24_Power_GetApi() {
-    powerProvider.Parent = &powerApi;
-    powerProvider.Acquire = &LPC24_Power_Acquire;
-    powerProvider.Release = &LPC24_Power_Release;
+    powerProvider.ApiInfo = &powerApi;
+    powerProvider.Initialize = &LPC24_Power_Initialize;
+    powerProvider.Uninitialize = &LPC24_Power_Uninitialize;
     powerProvider.Reset = &LPC24_Power_Reset;
     powerProvider.Sleep = &LPC24_Power_Sleep;
 
@@ -92,10 +92,10 @@ void LPC24_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) {
     while (1); // wait for reset
 }
 
-TinyCLR_Result LPC24_Power_Acquire(const TinyCLR_Power_Provider* self) {
+TinyCLR_Result LPC24_Power_Initialize(const TinyCLR_Power_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Power_Release(const TinyCLR_Power_Provider* self) {
+TinyCLR_Result LPC24_Power_Uninitialize(const TinyCLR_Power_Provider* self) {
     return TinyCLR_Result::Success;
 }

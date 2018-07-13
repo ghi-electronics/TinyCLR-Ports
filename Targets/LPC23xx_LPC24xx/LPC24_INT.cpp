@@ -122,10 +122,9 @@ static TinyCLR_Interrupt_Provider interruptProvider;
 static TinyCLR_Api_Info interruptApi;
 
 const TinyCLR_Api_Info* LPC24_Interrupt_GetApi() {
-    interruptProvider.Parent = &interruptApi;
-    interruptProvider.Parent = &interruptApi;
-    interruptProvider.Acquire = &LPC24_Interrupt_Acquire;
-    interruptProvider.Release = &LPC24_Interrupt_Release;
+    interruptProvider.ApiInfo = &interruptApi;
+    interruptProvider.Initialize = &LPC24_Interrupt_Initialize;
+    interruptProvider.Uninitialize = &LPC24_Interrupt_Uninitialize;
 
     interruptProvider.IsDisabled = &LPC24_Interrupt_GlobalIsDisabled;
     interruptProvider.Enable = &LPC24_Interrupt_GlobalEnable;
@@ -142,7 +141,7 @@ const TinyCLR_Api_Info* LPC24_Interrupt_GetApi() {
     return &interruptApi;
 }
 
-TinyCLR_Result LPC24_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
+TinyCLR_Result LPC24_Interrupt_Initialize(const TinyCLR_Interrupt_Provider* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
     LPC24_Interrupt_Started = onInterruptStart;
     LPC24_Interrupt_Ended = onInterruptEnd;
 
@@ -162,7 +161,7 @@ TinyCLR_Result LPC24_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInte
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Interrupt_Release() {
+TinyCLR_Result LPC24_Interrupt_Uninitialize(const TinyCLR_Interrupt_Provider* self) {
     return TinyCLR_Result::Success;
 }
 

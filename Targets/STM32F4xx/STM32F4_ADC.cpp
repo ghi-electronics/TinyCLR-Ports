@@ -49,7 +49,7 @@ static TinyCLR_Api_Info adcApi;
 bool g_STM32F4_AD_IsOpened[STM32F4_AD_NUM];
 
 const TinyCLR_Api_Info* STM32F4_Adc_GetApi() {
-    adcProvider.Parent = &adcApi;
+    adcProvider.ApiInfo = &adcApi;
     adcProvider.Acquire = &STM32F4_Adc_Acquire;
     adcProvider.Release = &STM32F4_Adc_Release;
     adcProvider.AcquireChannel = &STM32F4_Adc_AcquireChannel;

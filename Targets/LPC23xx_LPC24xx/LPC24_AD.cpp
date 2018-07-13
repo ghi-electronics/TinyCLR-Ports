@@ -29,7 +29,7 @@ static TinyCLR_Api_Info adcApi;
 uint32_t g_lpc24_adc_isOpened;
 
 const TinyCLR_Api_Info* LPC24_Adc_GetApi() {
-    adcProvider.Parent = &adcApi;
+    adcProvider.ApiInfo = &adcApi;
     adcProvider.Acquire = &LPC24_Adc_Acquire;
     adcProvider.Release = &LPC24_Adc_Release;
     adcProvider.AcquireChannel = &LPC24_Adc_AcquireChannel;

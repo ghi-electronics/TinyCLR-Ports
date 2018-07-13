@@ -73,6 +73,14 @@
 
 #define INCLUDE_RTC
 
+#define INCLUDE_SD
+#define STM32F4_SD_DATA0_PINS { { PIN(C, 8), AF(12) } }
+#define STM32F4_SD_DATA1_PINS { { PIN(C, 9), AF(12) } }
+#define STM32F4_SD_DATA2_PINS { { PIN(C, 10), AF(12) } }
+#define STM32F4_SD_DATA3_PINS { { PIN(C, 11), AF(12) } }
+#define STM32F4_SD_CLK_PINS { { PIN(C, 12), AF(12) } }
+#define STM32F4_SD_CMD_PINS { { PIN(D, 2), AF(12) } }
+
 #define INCLUDE_SPI
 #define STM32F4_SPI_SCLK_PINS { { PIN(B, 3), AF(5) }, { PIN(B, 13), AF(5) } }
 #define STM32F4_SPI_MISO_PINS { { PIN(B, 4), AF(5) }, { PIN(B, 14), AF(5) } }

@@ -174,15 +174,15 @@ static TinyCLR_NativeTime_Provider timeProvider;
 static TinyCLR_Api_Info timeApi;
 
 const TinyCLR_Api_Info* LPC24_Time_GetApi() {
-    timeProvider.Parent = &timeApi;
+    timeProvider.ApiInfo = &timeApi;
     timeProvider.ConvertNativeTimeToSystemTime = &LPC24_Time_GetTimeForProcessorTicks;
     timeProvider.ConvertSystemTimeToNativeTime = &LPC24_Time_TimeToTicks;
     timeProvider.GetNativeTime = &LPC24_Time_GetCurrentProcessorTicks;
     timeProvider.SetCallback = &LPC24_Time_SetTickCallback;
     timeProvider.ScheduleCallback = &LPC24_Time_SetNextTickCallbackTime;
-    timeProvider.Acquire = &LPC24_Time_Acquire;
-    timeProvider.Release = &LPC24_Time_Release;
-    timeProvider.WaitMicroseconds = &LPC24_Time_Delay;
+    timeProvider.Initialize = &LPC24_Time_Initialize;
+    timeProvider.Uninitialize = &LPC24_Time_Uninitialize;
+    timeProvider.Wait = &LPC24_Time_DelayNative;
 
     timeApi.Author = "GHI Electronics, LLC";
     timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.NativeTimeProvider";
@@ -321,7 +321,7 @@ TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Provi
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Time_Acquire(const TinyCLR_NativeTime_Provider* self) {
+TinyCLR_Result LPC24_Time_Initialize(const TinyCLR_NativeTime_Provider* self) {
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
 
     g_LPC24_Timer_Controller.m_lastRead = 0;
@@ -337,7 +337,7 @@ TinyCLR_Result LPC24_Time_Acquire(const TinyCLR_NativeTime_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Time_Release(const TinyCLR_NativeTime_Provider* self) {
+TinyCLR_Result LPC24_Time_Uninitialize(const TinyCLR_NativeTime_Provider* self) {
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
 
     if (LPC24_Timer_Controller::Uninitialize(timer) == false)
@@ -368,6 +368,14 @@ void LPC24_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microsec
     // overhead cycles required to call this subroutine.
     int32_t iterations = (int32_t)microseconds - 5;      // Subtract off call & calculation overhead
     IDelayLoop(iterations);
+}
+
+void LPC24_Time_DelayNative(const TinyCLR_NativeTime_Provider* self, uint64_t nativeTime) {
+    //TODO do inline later, don't call out to Delay
+
+    auto microseconds = LPC24_Time_GetTimeForProcessorTicks(self, nativeTime) / 10;
+
+    LPC24_Time_Delay(self, microseconds);
 }
 
 //******************** Profiler ********************

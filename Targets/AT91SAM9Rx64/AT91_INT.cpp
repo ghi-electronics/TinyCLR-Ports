@@ -81,10 +81,10 @@ static TinyCLR_Interrupt_Provider interruptProvider;
 static TinyCLR_Api_Info interruptApi;
 
 const TinyCLR_Api_Info* AT91_Interrupt_GetApi() {
-    interruptProvider.Parent = &interruptApi;
-    interruptProvider.Parent = &interruptApi;
-    interruptProvider.Acquire = &AT91_Interrupt_Acquire;
-    interruptProvider.Release = &AT91_Interrupt_Release;
+    interruptProvider.ApiInfo = &interruptApi;
+    interruptProvider.ApiInfo = &interruptApi;
+    interruptProvider.Initialize = &AT91_Interrupt_Initialize;
+    interruptProvider.Uninitialize = &AT91_Interrupt_Uninitialize;
 
     interruptProvider.IsDisabled = &AT91_Interrupt_GlobalIsDisabled;
     interruptProvider.Enable = &AT91_Interrupt_GlobalEnable;
@@ -126,7 +126,7 @@ void AT91_Interrupt_StubIrqVector(void* Param) {
 
 }
 
-TinyCLR_Result AT91_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
+TinyCLR_Result AT91_Interrupt_Initialize(const TinyCLR_Interrupt_Provider* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
     AT91_Interrupt_Started = onInterruptStart;
     AT91_Interrupt_Ended = onInterruptEnd;
 
@@ -163,7 +163,7 @@ TinyCLR_Result AT91_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInter
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Interrupt_Release() {
+TinyCLR_Result AT91_Interrupt_Uninitialize(const TinyCLR_Interrupt_Provider* self) {
     return TinyCLR_Result::Success;
 }
 

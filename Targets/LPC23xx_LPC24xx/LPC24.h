@@ -361,8 +361,8 @@ TinyCLR_Result LPC24_Uart_GetControllerCount(const TinyCLR_Uart_Provider* self, 
 
 //Deployment
 const TinyCLR_Api_Info* LPC24_Deployment_GetApi();
-TinyCLR_Result LPC24_Deployment_Acquire(const TinyCLR_Deployment_Provider* self, bool &supportXIP);
-TinyCLR_Result LPC24_Deployment_Release(const TinyCLR_Deployment_Provider* self);
+TinyCLR_Result LPC24_Deployment_Initialize(const TinyCLR_Deployment_Provider* self, bool &supportXIP);
+TinyCLR_Result LPC24_Deployment_Uninitialize(const TinyCLR_Deployment_Provider* self);
 TinyCLR_Result LPC24_Deployment_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer);
 TinyCLR_Result LPC24_Deployment_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer);
 TinyCLR_Result LPC24_Deployment_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector);
@@ -403,8 +403,8 @@ public:
 #define INTERRUPT_STARTED_SCOPED(name) LPC24_SmartPtr_Interrupt name
 
 const TinyCLR_Api_Info* LPC24_Interrupt_GetApi();
-TinyCLR_Result LPC24_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
-TinyCLR_Result LPC24_Interrupt_Release();
+TinyCLR_Result LPC24_Interrupt_Initialize(const TinyCLR_Interrupt_Provider* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
+TinyCLR_Result LPC24_Interrupt_Uninitialize(const TinyCLR_Interrupt_Provider* self);
 bool LPC24_Interrupt_Activate(uint32_t Irq_Index, uint32_t *ISR, void* ISR_Param);
 bool LPC24_Interrupt_Deactivate(uint32_t Irq_Index);
 bool LPC24_Interrupt_Enable(uint32_t Irq_Index);
@@ -438,8 +438,8 @@ TinyCLR_Result LPC24_I2c_GetControllerCount(const TinyCLR_I2c_Provider* self, in
 
 // Time
 const TinyCLR_Api_Info* LPC24_Time_GetApi();
-TinyCLR_Result LPC24_Time_Acquire(const TinyCLR_NativeTime_Provider* self);
-TinyCLR_Result LPC24_Time_Release(const TinyCLR_NativeTime_Provider* self);
+TinyCLR_Result LPC24_Time_Initialize(const TinyCLR_NativeTime_Provider* self);
+TinyCLR_Result LPC24_Time_Uninitialize(const TinyCLR_NativeTime_Provider* self);
 uint64_t LPC24_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Provider* self, uint64_t ticks);
 uint64_t LPC24_Time_TimeToTicks(const TinyCLR_NativeTime_Provider* self, uint64_t time);
 uint64_t LPC24_Time_MillisecondsToTicks(const TinyCLR_NativeTime_Provider* self, uint64_t ticks);
@@ -450,14 +450,15 @@ TinyCLR_Result LPC24_Time_SetTickCallback(const TinyCLR_NativeTime_Provider* sel
 void LPC24_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds);
 void LPC24_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds);
 void LPC24_Time_GetDriftParameters(const TinyCLR_NativeTime_Provider* self, int32_t* a, int32_t* b, int64_t* c);
+void LPC24_Time_DelayNative(const TinyCLR_NativeTime_Provider* self, uint64_t nativeTime);
 
 // Power
 const TinyCLR_Api_Info* LPC24_Power_GetApi();
 void LPC24_Power_SetHandlers(void(*stop)(), void(*restart)());
 void LPC24_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level);
 void LPC24_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter);
-TinyCLR_Result LPC24_Power_Acquire(const TinyCLR_Power_Provider* self);
-TinyCLR_Result LPC24_Power_Release(const TinyCLR_Power_Provider* self);
+TinyCLR_Result LPC24_Power_Initialize(const TinyCLR_Power_Provider* self);
+TinyCLR_Result LPC24_Power_Uninitialize(const TinyCLR_Power_Provider* self);
 
 //UsbClient
 
@@ -521,7 +522,7 @@ TinyCLR_Result LPC24_Display_GetControllerCount(const TinyCLR_Display_Provider* 
 void LPC24_Startup_Initialize();
 void LPC24_Startup_GetHeap(uint8_t*& start, size_t& length);
 int32_t LPC24_Startup_GetDeviceId();
-void LPC24_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index, const void*& configuration);
+void LPC24_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, const void*& configuration);
 void LPC24_Startup_GetRunApp(bool& runApp);
 
 

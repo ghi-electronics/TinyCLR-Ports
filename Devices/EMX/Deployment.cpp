@@ -20,9 +20,9 @@ static TinyCLR_Deployment_Provider deploymentProvider;
 static TinyCLR_Api_Info deploymentApi;
 
 const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
-    deploymentProvider.Parent = &deploymentApi;
-    deploymentProvider.Acquire = &LPC24_Deployment_Acquire;
-    deploymentProvider.Release = &LPC24_Deployment_Release;
+    deploymentProvider.ApiInfo = &deploymentApi;
+    deploymentProvider.Initialize = &LPC24_Deployment_Initialize;
+    deploymentProvider.Uninitialize = &LPC24_Deployment_Uninitialize;
     deploymentProvider.Read = &LPC24_Deployment_Read;
     deploymentProvider.Write = &LPC24_Deployment_Write;
     deploymentProvider.EraseSector = &LPC24_Deployment_EraseBlock;
@@ -38,11 +38,11 @@ const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
     return &deploymentApi;
 }
 
-TinyCLR_Result LPC24_Deployment_Acquire(const TinyCLR_Deployment_Provider* self, bool& supportXIP) {
+TinyCLR_Result LPC24_Deployment_Initialize(const TinyCLR_Deployment_Provider* self, bool& supportXIP) {
     return AT49BV322DT_Flash_Acquire(supportXIP);
 }
 
-TinyCLR_Result LPC24_Deployment_Release(const TinyCLR_Deployment_Provider* self) {
+TinyCLR_Result LPC24_Deployment_Uninitialize(const TinyCLR_Deployment_Provider* self) {
     return AT49BV322DT_Flash_Release();
 }
 

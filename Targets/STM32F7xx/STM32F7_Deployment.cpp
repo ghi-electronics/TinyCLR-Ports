@@ -92,9 +92,9 @@ static TinyCLR_Deployment_Provider deploymentProvider;
 static TinyCLR_Api_Info deploymentApi;
 
 const TinyCLR_Api_Info* STM32F7_Deployment_GetApi() {
-    deploymentProvider.Parent = &deploymentApi;
-    deploymentProvider.Acquire = &STM32F7_Flash_Acquire;
-    deploymentProvider.Release = &STM32F7_Flash_Release;
+    deploymentProvider.ApiInfo = &deploymentApi;
+    deploymentProvider.Initialize = &STM32F7_Flash_Initialize;
+    deploymentProvider.Uninitialize = &STM32F7_Flash_Uninitialize;
     deploymentProvider.Read = &STM32F7_Flash_Read;
     deploymentProvider.Write = &STM32F7_Flash_Write;
     deploymentProvider.EraseSector = &STM32F7_Flash_EraseSector;
@@ -264,13 +264,13 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_EraseSector(
     TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Flash_Acquire(const TinyCLR_Deployment_Provider* self, bool& supportsXip) {
+TinyCLR_Result STM32F7_Flash_Initialize(const TinyCLR_Deployment_Provider* self, bool& supportsXip) {
     supportsXip = true;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Flash_Release(const TinyCLR_Deployment_Provider* self) {
+TinyCLR_Result STM32F7_Flash_Uninitialize(const TinyCLR_Deployment_Provider* self) {
     // UnInitialize Flash can be here
     return TinyCLR_Result::Success;
 }

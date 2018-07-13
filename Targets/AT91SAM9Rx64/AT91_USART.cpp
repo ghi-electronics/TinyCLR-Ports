@@ -53,7 +53,7 @@ static TinyCLR_Uart_Provider uartProviders;
 static TinyCLR_Api_Info uartApi;
 
 const TinyCLR_Api_Info* AT91_Uart_GetApi() {
-    uartProviders.Parent = &uartApi;
+    uartProviders.ApiInfo = &uartApi;
     uartProviders.Acquire = &AT91_Uart_Acquire;
     uartProviders.Release = &AT91_Uart_Release;
     uartProviders.SetActiveSettings = &AT91_Uart_SetActiveSettings;

@@ -29,7 +29,7 @@ static TinyCLR_Adc_Provider adcProvider;
 static TinyCLR_Api_Info adcApi;
 
 const TinyCLR_Api_Info *AT91_Adc_GetApi() {
-    adcProvider.Parent = &adcApi;
+    adcProvider.ApiInfo = &adcApi;
     adcProvider.Acquire = &AT91_Adc_Acquire;
     adcProvider.Release = &AT91_Adc_Release;
     adcProvider.AcquireChannel = &AT91_Adc_AcquireChannel;

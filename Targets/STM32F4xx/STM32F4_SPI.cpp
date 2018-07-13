@@ -56,7 +56,7 @@ static TinyCLR_Spi_Provider spiProviders;
 static TinyCLR_Api_Info spiApi;
 
 const TinyCLR_Api_Info* STM32F4_Spi_GetApi() {
-    spiProviders.Parent = &spiApi;
+    spiProviders.ApiInfo = &spiApi;
     spiProviders.Acquire = &STM32F4_Spi_Acquire;
     spiProviders.Release = &STM32F4_Spi_Release;
     spiProviders.SetActiveSettings = &STM32F4_Spi_SetActiveSettings;
