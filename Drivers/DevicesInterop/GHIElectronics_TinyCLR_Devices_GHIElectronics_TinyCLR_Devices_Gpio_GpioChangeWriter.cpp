@@ -168,7 +168,7 @@ struct OC {
 #define COMPLETION_LATENCY_SCHED_TIME	100
 volatile int32_t completionLatency;
 int32_t carrierFrequency_hz_latency = -1;
-static const TinyCLR_Gpio_Provider* gpioProvider = nullptr;
+static const TinyCLR_Gpio_Controller* gpioProvider = nullptr;
 
 void CompletionLatencyIsr(void* arg) {
     uint64_t end = TinyCLR_Interop_CurrentTime() / 10;
@@ -265,7 +265,7 @@ int8_t GpioChangeWriter::NativeConstructor(const TinyCLR_Interop_Manager* provid
         return 0;
     }
 
-    if (gpioProvider == nullptr && (gpioProvider = (const TinyCLR_Gpio_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider)) == nullptr) {
+    if (gpioProvider == nullptr && (gpioProvider = (const TinyCLR_Gpio_Controller*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider)) == nullptr) {
         result = TinyCLR_Result::InvalidOperation;
         return 0;
     }

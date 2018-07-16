@@ -48,7 +48,7 @@ static LPC24_I2c_Transaction   *g_currentI2cTransactionAction;
 static LPC24_I2c_Transaction   g_ReadI2cTransactionAction[SIZEOF_ARRAY(g_i2c_scl_pins)];
 static LPC24_I2c_Transaction   g_WriteI2cTransactionAction[SIZEOF_ARRAY(g_i2c_scl_pins)];
 
-static TinyCLR_I2c_Provider i2cProvider;
+static TinyCLR_I2c_Controller i2cProvider;
 static TinyCLR_Api_Info i2cApi;
 
 const TinyCLR_Api_Info* LPC24_I2c_GetApi() {
@@ -197,7 +197,7 @@ void LPC24_I2c_StopTransaction(int32_t controller) {
     g_currentI2cTransactionAction->isDone = true;
 }
 
-TinyCLR_Result LPC24_I2c_ReadTransaction(const TinyCLR_I2c_Provider* self, int32_t controller, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result LPC24_I2c_ReadTransaction(const TinyCLR_I2c_Controller* self, int32_t controller, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
@@ -230,7 +230,7 @@ TinyCLR_Result LPC24_I2c_ReadTransaction(const TinyCLR_I2c_Provider* self, int32
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result LPC24_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, int32_t controller, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result LPC24_I2c_WriteTransaction(const TinyCLR_I2c_Controller* self, int32_t controller, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
@@ -263,7 +263,7 @@ TinyCLR_Result LPC24_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, int3
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result LPC24_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result LPC24_I2c_WriteReadTransaction(const TinyCLR_I2c_Controller* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
@@ -309,7 +309,7 @@ TinyCLR_Result LPC24_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result LPC24_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int32_t controller, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed) {
+TinyCLR_Result LPC24_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, int32_t controller, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed) {
     uint32_t rateKhz;
 
     if (self == nullptr)
@@ -331,7 +331,7 @@ TinyCLR_Result LPC24_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_I2c_Acquire(const TinyCLR_I2c_Provider* self, int32_t controller) {
+TinyCLR_Result LPC24_I2c_Acquire(const TinyCLR_I2c_Controller* self, int32_t controller) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
@@ -358,7 +358,7 @@ TinyCLR_Result LPC24_I2c_Acquire(const TinyCLR_I2c_Provider* self, int32_t contr
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_I2c_Release(const TinyCLR_I2c_Provider* self, int32_t controller) {
+TinyCLR_Result LPC24_I2c_Release(const TinyCLR_I2c_Controller* self, int32_t controller) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
@@ -396,7 +396,7 @@ void LPC24_I2c_Reset() {
     }
 }
 
-TinyCLR_Result LPC24_I2c_GetControllerCount(const TinyCLR_I2c_Provider* self, int32_t& count) {
+TinyCLR_Result LPC24_I2c_GetControllerCount(const TinyCLR_I2c_Controller* self, int32_t& count) {
     count = SIZEOF_ARRAY(g_i2c_scl_pins);
 
     return TinyCLR_Result::Success;

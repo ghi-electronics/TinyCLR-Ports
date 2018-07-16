@@ -220,7 +220,7 @@ const TinyCLR_Startup_UartDebuggerConfiguration AT91_Startup_UartDebuggerConfigu
 void AT91_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Provider*>(AT91_Gpio_GetApi()->Implementation);
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(AT91_Gpio_GetApi()->Implementation);
     auto gpioController = 0; //TODO Temporary set to 0
 
     provider->AcquirePin(provider, gpioController, DEBUGGER_SELECTOR_PIN);
@@ -247,7 +247,7 @@ void AT91_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, con
 void AT91_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Provider*>(AT91_Gpio_GetApi()->Implementation);
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(AT91_Gpio_GetApi()->Implementation);
     auto gpioController = 0; //TODO Temporary set to 0
 
     provider->AcquirePin(provider, gpioController, RUN_APP_PIN);

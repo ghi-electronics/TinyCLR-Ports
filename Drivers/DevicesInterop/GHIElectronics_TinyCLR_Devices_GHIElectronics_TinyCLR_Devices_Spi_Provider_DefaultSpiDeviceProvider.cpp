@@ -2,7 +2,7 @@
 #include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_Provider_DefaultSpiDeviceProvider::TransferFullDuplexInternal___VOID__SZARRAY_U1__I4__SZARRAY_U1__I4__I4(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_Spi_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Spi_Controller*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
 
     uint8_t* writeData = nullptr;
     int32_t writeOffset = 0;
@@ -72,7 +72,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_Provider_DefaultSpiDeviceProvider::TransferSequentialInternal___VOID__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_Spi_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Spi_Controller*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
 
     uint8_t* writeData = nullptr;
     int32_t writeOffset = 0;
@@ -142,7 +142,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_Provider_DefaultSpiDeviceProvider::WriteInternal___VOID__SZARRAY_U1__I4__I4(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_Spi_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Spi_Controller*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
 
     uint8_t* data = nullptr;
     int32_t offset = 0;
@@ -201,7 +201,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_Provider_DefaultSpiDeviceProvider::ReadInternal___VOID__SZARRAY_U1__I4__I4(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_Spi_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Spi_Controller*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
 
     uint8_t* data = nullptr;
     int32_t offset = 0;

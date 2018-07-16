@@ -1,7 +1,7 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 #include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
-void IsrProcedure(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinValue pinState) {
+void IsrProcedure(const TinyCLR_Gpio_Controller* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinValue pinState) {
     auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Manager*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropManager));
 
     if (interopProvider != nullptr)
@@ -15,7 +15,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     int64_t value;
     uint32_t pin;
 
-    auto provider = (const TinyCLR_Gpio_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Gpio_Controller*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
 
     if (provider == nullptr) return TinyCLR_Result::ArgumentNull;
 
@@ -50,7 +50,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     uint32_t pin;
 
 
-    auto provider = (const TinyCLR_Gpio_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Gpio_Controller*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
     if (provider == nullptr) return TinyCLR_Result::ArgumentNull;
 
     TinyCLR_Interop_ClrValue fld;
@@ -81,7 +81,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_DefaultGpioPinProvider::Read___GHIElectronicsTinyCLRDevicesGpioProviderProviderGpioPinValue(const TinyCLR_Interop_MethodData md) {
     TinyCLR_Result result = TinyCLR_Result::Success;
 
-    auto provider = (const TinyCLR_Gpio_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Gpio_Controller*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
     if (provider == nullptr) return TinyCLR_Result::ArgumentNull;
 
     TinyCLR_Interop_ClrValue fld;
@@ -110,7 +110,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_DefaultGpioPinProvider::Write___VOID__GHIElectronicsTinyCLRDevicesGpioProviderProviderGpioPinValue(const TinyCLR_Interop_MethodData md) {
     TinyCLR_Result result = TinyCLR_Result::Success;
 
-    auto provider = (const TinyCLR_Gpio_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Gpio_Controller*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
     if (provider == nullptr) return TinyCLR_Result::ArgumentNull;
 
     TinyCLR_Interop_ClrValue fld;
@@ -151,7 +151,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     bool keepPinState = false;
 
-    auto provider = (const TinyCLR_Gpio_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Gpio_Controller*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
 
     auto result = TinyCLR_Result::NotSupported;
 

@@ -42,7 +42,7 @@
 #define PMC_MCKR        (*(reinterpret_cast<volatile uint32_t*>(AT91C_BASE_PMC + 0x0030)))
 #define PMC_SR          (*(reinterpret_cast<volatile uint32_t*>(AT91C_BASE_PMC + 0x0068)))
 
-static TinyCLR_Rtc_Provider rtcProvider;
+static TinyCLR_Rtc_Controller rtcProvider;
 static TinyCLR_Api_Info timeApi;
 
 const TinyCLR_Api_Info* AT91_Rtc_GetApi() {
@@ -75,7 +75,7 @@ uint32_t AT91_Rtc_BinaryCodedDecimalCombine(uint32_t tens, uint32_t ones) {
     return CombinedBinaryCodedDecimal;
 }
 
-TinyCLR_Result AT91_Rtc_Acquire(const TinyCLR_Rtc_Provider* self) {
+TinyCLR_Result AT91_Rtc_Acquire(const TinyCLR_Rtc_Controller* self) {
     if ((PMC_MCKR & AT91C_PMC_CSS) != 0) {
         volatile uint32_t dumpReg = SCKCR_SCKCR;
 
@@ -101,11 +101,11 @@ TinyCLR_Result AT91_Rtc_Acquire(const TinyCLR_Rtc_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Rtc_Release(const TinyCLR_Rtc_Provider* self) {
+TinyCLR_Result AT91_Rtc_Release(const TinyCLR_Rtc_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime& value) {
+TinyCLR_Result AT91_Rtc_GetNow(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value) {
     uint32_t calenderRegister = RTC_CALR;
     uint32_t timeRegister = RTC_TIMR;
     uint32_t fullYear = 0;
@@ -145,7 +145,7 @@ TinyCLR_Result AT91_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_Dat
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime value) {
+TinyCLR_Result AT91_Rtc_SetNow(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value) {
     uint32_t calenderRegister = 0;
     uint32_t timeRegister = 0;
     uint32_t lowerHundredYears = 0;

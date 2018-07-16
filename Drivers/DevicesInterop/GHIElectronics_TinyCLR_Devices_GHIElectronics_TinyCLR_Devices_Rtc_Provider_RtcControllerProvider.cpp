@@ -73,7 +73,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     interop->GetThisObject(interop, md.Stack, self);
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerProvider::FIELD___nativeProvider___I, fld);
 
-    auto provider = reinterpret_cast<const TinyCLR_Rtc_Provider*>(fld.Data.Numeric->I);
+    auto provider = reinterpret_cast<const TinyCLR_Rtc_Controller*>(fld.Data.Numeric->I);
 
     return provider->Acquire(provider);
 }
@@ -86,7 +86,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     interop->GetThisObject(interop, md.Stack, self);
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerProvider::FIELD___nativeProvider___I, fld);
 
-    auto provider = reinterpret_cast<const TinyCLR_Rtc_Provider*>(fld.Data.Numeric->I);
+    auto provider = reinterpret_cast<const TinyCLR_Rtc_Controller*>(fld.Data.Numeric->I);
 
     return provider->Release(provider);
 }
@@ -100,7 +100,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerProvider::FIELD___nativeProvider___I, fld);
     interop->GetReturn(interop, md.Stack, ret);
 
-    auto provider = reinterpret_cast<const TinyCLR_Rtc_Provider*>(fld.Data.Numeric->I);
+    auto provider = reinterpret_cast<const TinyCLR_Rtc_Controller*>(fld.Data.Numeric->I);
 
     TinyCLR_Rtc_DateTime now;
 
@@ -120,7 +120,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerProvider::FIELD___nativeProvider___I, fld);
     interop->GetArgument(interop, md.Stack, 1, arg);
 
-    auto provider = reinterpret_cast<const TinyCLR_Rtc_Provider*>(fld.Data.Numeric->I);
+    auto provider = reinterpret_cast<const TinyCLR_Rtc_Controller*>(fld.Data.Numeric->I);
     TinyCLR_Rtc_DateTime now;
 
     Interop_Rtc_ToSystemTime(arg.Data.Numeric->I8, &now);

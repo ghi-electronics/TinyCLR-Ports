@@ -40,7 +40,7 @@ const TinyCLR_Api_Info* AT91_Deployment_GetApi() {
 
 TinyCLR_Result AT91_Deployment_Initialize(const TinyCLR_Deployment_Controller* self, bool& supportXIP) {
     const TinyCLR_Api_Info* spiApi = CONCAT(DEVICE_TARGET, _Spi_GetApi)();
-    TinyCLR_Spi_Provider* spiProvider = (TinyCLR_Spi_Provider*)spiApi->Implementation;
+    TinyCLR_Spi_Controller* spiProvider = (TinyCLR_Spi_Controller*)spiApi->Implementation;
 
     const TinyCLR_Api_Info* timeApi = CONCAT(DEVICE_TARGET, _Time_GetApi)();;
     TinyCLR_NativeTime_Controller* timeProvider = (TinyCLR_NativeTime_Controller*)timeApi->Implementation;

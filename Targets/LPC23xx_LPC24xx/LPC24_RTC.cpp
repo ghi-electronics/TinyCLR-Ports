@@ -31,7 +31,7 @@
 #define RTC_YEAR 0xE002403C
 
 
-static TinyCLR_Rtc_Provider rtcProvider;
+static TinyCLR_Rtc_Controller rtcProvider;
 static TinyCLR_Api_Info timeApi;
 
 const TinyCLR_Api_Info* LPC24_Rtc_GetApi() {
@@ -50,7 +50,7 @@ const TinyCLR_Api_Info* LPC24_Rtc_GetApi() {
     return &timeApi;
 }
 
-TinyCLR_Result LPC24_Rtc_Acquire(const TinyCLR_Rtc_Provider* self) {
+TinyCLR_Result LPC24_Rtc_Acquire(const TinyCLR_Rtc_Controller* self) {
     LPC24XX::SYSCON().PCONP |= PCONP_PCRTC;
 
     uint32_t* rtc_ccr_reg = reinterpret_cast<uint32_t*>(RTC_CCR);
@@ -63,11 +63,11 @@ TinyCLR_Result LPC24_Rtc_Acquire(const TinyCLR_Rtc_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Rtc_Release(const TinyCLR_Rtc_Provider* self) {
+TinyCLR_Result LPC24_Rtc_Release(const TinyCLR_Rtc_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime& value) {
+TinyCLR_Result LPC24_Rtc_GetNow(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value) {
     uint32_t* rtc_ccr_reg = reinterpret_cast<uint32_t*>(RTC_CCR);
 
     if (*rtc_ccr_reg != (1 | (1 << 4))) {
@@ -101,7 +101,7 @@ TinyCLR_Result LPC24_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_Da
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime value) {
+TinyCLR_Result LPC24_Rtc_SetNow(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value) {
     uint32_t* rtc_ccr_reg = reinterpret_cast<uint32_t*>(RTC_CCR);
     if (*rtc_ccr_reg != (1 | (1 << 4))) {
         TinyCLR_Result::InvalidOperation;

@@ -2,7 +2,7 @@
 #include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cDeviceProvider::ReadInternal___VOID__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_I2c_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);;
+    auto provider = (const TinyCLR_I2c_Controller*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);;
 
     uint8_t* data = nullptr;
     int32_t offset = 0;
@@ -64,7 +64,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cDeviceProvider::WriteInternal___VOID__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_I2c_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_I2c_Controller*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
 
     uint8_t* data = nullptr;
     int32_t offset = 0;
@@ -125,7 +125,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cDeviceProvider::WriteReadInternal___VOID__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_I2c_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_I2c_Controller*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
 
     uint8_t* writeData = nullptr;
     int32_t writeOffset = 0;

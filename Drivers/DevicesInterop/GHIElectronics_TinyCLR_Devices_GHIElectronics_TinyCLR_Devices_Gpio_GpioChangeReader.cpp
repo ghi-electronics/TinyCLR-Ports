@@ -66,7 +66,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
 static bool ReadValue(uint8_t pin) {
 
-    auto provider = (const TinyCLR_Gpio_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
+    auto provider = (const TinyCLR_Gpio_Controller*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
 
     TinyCLR_Gpio_PinValue value;
 
@@ -112,7 +112,7 @@ int32_t GpioChangeReader::NativeRead(uint32_t pin, int8_t * initialState, TinyCL
         return 0;
     }
 
-    auto provider = (const TinyCLR_Gpio_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
+    auto provider = (const TinyCLR_Gpio_Controller*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
 
     if (provider == nullptr) {
         result = TinyCLR_Result::ArgumentNull;
@@ -130,7 +130,7 @@ int32_t GpioChangeReader::NativeRead(uint32_t pin, int8_t waitForState, TinyCLR_
         return 0;
     }
 
-    auto provider = (const TinyCLR_Gpio_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
+    auto provider = (const TinyCLR_Gpio_Controller*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
 
     if (provider == nullptr) {
         result = TinyCLR_Result::ArgumentNull;

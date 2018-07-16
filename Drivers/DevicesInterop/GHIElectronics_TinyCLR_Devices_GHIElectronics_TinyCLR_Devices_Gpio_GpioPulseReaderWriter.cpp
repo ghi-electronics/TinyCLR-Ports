@@ -81,7 +81,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 static bool ReadValue(uint8_t pin) {
     TinyCLR_Gpio_PinValue value;
 
-    auto gpioProvider = (const TinyCLR_Gpio_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
+    auto gpioProvider = (const TinyCLR_Gpio_Controller*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
 
     auto gpioController = 0; //TODO Temporary set to 0
 
@@ -98,7 +98,7 @@ int64_t GpioPulseReaderWriter::NativeReadDrainTime(const TinyCLR_Interop_Manager
     int64_t timeout = Get_timeout(provider, self);
     int64_t endTime = 0, start = 0, now = 0;
 
-    auto gpioProvider = (const TinyCLR_Gpio_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
+    auto gpioProvider = (const TinyCLR_Gpio_Controller*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
 
     if (gpioProvider == nullptr) {
         result = TinyCLR_Result::ArgumentNull;
@@ -138,7 +138,7 @@ int64_t GpioPulseReaderWriter::NativeReadEcho(const TinyCLR_Interop_Manager* pro
     int64_t endTime = GetMicroSeconds() + timeout;
     int64_t start = 0;
 
-    auto gpioProvider = (const TinyCLR_Gpio_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
+    auto gpioProvider = (const TinyCLR_Gpio_Controller*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
 
     if (gpioProvider == nullptr) {
         result = TinyCLR_Result::ArgumentNull;
@@ -180,7 +180,7 @@ void GpioPulseReaderWriter::NativeFinalize(const TinyCLR_Interop_Manager* provid
     uint8_t pulsePin = Get_pulsePin(provider, self);
     uint8_t echoPin = Get_echoPin(provider, self);
 
-    auto gpioProvider = (const TinyCLR_Gpio_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
+    auto gpioProvider = (const TinyCLR_Gpio_Controller*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
 
     auto gpioController = 0; //TODO Temporary set to 0
 

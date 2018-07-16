@@ -6,7 +6,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto arg2 = TinyCLR_Interop_GetArguments(md, 2);
 
-    auto provider = (const TinyCLR_Spi_Provider*)arg1.Data.Numeric->I4;
+    auto provider = (const TinyCLR_Spi_Controller*)arg1.Data.Numeric->I4;
 
     auto controller = arg2.Data.Numeric->I4;
 

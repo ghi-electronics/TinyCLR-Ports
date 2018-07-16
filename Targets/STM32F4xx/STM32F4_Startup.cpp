@@ -462,7 +462,7 @@ const TinyCLR_Startup_UartDebuggerConfiguration STM32F4_Startup_UartDebuggerConf
 void STM32F4_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN) && defined(DEBUGGER_SELECTOR_PULL) && defined(DEBUGGER_SELECTOR_USB_STATE)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Provider*>(STM32F4_Gpio_GetApi()->Implementation);
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(STM32F4_Gpio_GetApi()->Implementation);
 
     auto gpioController = 0; //TODO Temporary set to 0
 
@@ -490,7 +490,7 @@ void STM32F4_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, 
 void STM32F4_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN) && defined(RUN_APP_PULL) && defined(RUN_APP_STATE)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Provider*>(STM32F4_Gpio_GetApi()->Implementation);
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(STM32F4_Gpio_GetApi()->Implementation);
     auto gpioController = 0; //TODO Temporary set to 0
 
     provider->AcquirePin(provider, gpioController, RUN_APP_PIN);

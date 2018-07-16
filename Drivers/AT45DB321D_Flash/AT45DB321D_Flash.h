@@ -2,7 +2,7 @@
 
 #include <TinyCLR.h>
 
-TinyCLR_Result AT45DB321D_Flash_Acquire(const TinyCLR_Spi_Provider* spiProvider, int32_t controller, const TinyCLR_NativeTime_Controller* timeProvider, uint32_t chipSelectLine, bool& supportXIP);
+TinyCLR_Result AT45DB321D_Flash_Acquire(const TinyCLR_Spi_Controller* spiProvider, int32_t controller, const TinyCLR_NativeTime_Controller* timeProvider, uint32_t chipSelectLine, bool& supportXIP);
 TinyCLR_Result AT45DB321D_Flash_Release();
 TinyCLR_Result AT45DB321D_Flash_Read(uint32_t address, size_t length, uint8_t* buffer);
 TinyCLR_Result AT45DB321D_Flash_Write(uint32_t address, size_t length, const uint8_t* buffer);

@@ -11,7 +11,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___idx___I4, field_id);
 
     auto controller = field_id.Data.Numeric->I4;
-    auto provider = (const TinyCLR_Pwm_Provider*)fld.Data.Numeric->I;
+    auto provider = (const TinyCLR_Pwm_Controller*)fld.Data.Numeric->I;
 
     return provider->Acquire(provider, controller);
 }
@@ -25,7 +25,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___nativeProvider___I, fld);
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___idx___I4, field_id);
 
-    auto provider = (const TinyCLR_Pwm_Provider*)fld.Data.Numeric->I;
+    auto provider = (const TinyCLR_Pwm_Controller*)fld.Data.Numeric->I;
     auto controller = field_id.Data.Numeric->I4;
 
     return provider->Release(provider, controller);
@@ -40,7 +40,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___nativeProvider___I, fld);
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___idx___I4, field_id);
 
-    auto provider = (const TinyCLR_Pwm_Provider*)fld.Data.Numeric->I;
+    auto provider = (const TinyCLR_Pwm_Controller*)fld.Data.Numeric->I;
     auto controller = field_id.Data.Numeric->I4;
 
     auto ret = TinyCLR_Interop_GetReturn(md);
@@ -59,7 +59,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___nativeProvider___I, fld);
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___idx___I4, field_id);
 
-    auto provider = (const TinyCLR_Pwm_Provider*)fld.Data.Numeric->I;
+    auto provider = (const TinyCLR_Pwm_Controller*)fld.Data.Numeric->I;
     auto controller = field_id.Data.Numeric->I4;
 
     auto ret = TinyCLR_Interop_GetReturn(md);
@@ -78,7 +78,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___nativeProvider___I, fld);
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___idx___I4, field_id);
 
-    auto provider = (const TinyCLR_Pwm_Provider*)fld.Data.Numeric->I;
+    auto provider = (const TinyCLR_Pwm_Controller*)fld.Data.Numeric->I;
     auto controller = field_id.Data.Numeric->I4;
 
     auto ret = TinyCLR_Interop_GetReturn(md);
@@ -97,7 +97,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___nativeProvider___I, fld);
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___idx___I4, field_id);
 
-    auto provider = (const TinyCLR_Pwm_Provider*)fld.Data.Numeric->I;
+    auto provider = (const TinyCLR_Pwm_Controller*)fld.Data.Numeric->I;
     auto controller = field_id.Data.Numeric->I4;
 
     auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
@@ -118,7 +118,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___nativeProvider___I, fld);
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___idx___I4, field_id);
 
-    auto provider = (const TinyCLR_Pwm_Provider*)fld.Data.Numeric->I;
+    auto provider = (const TinyCLR_Pwm_Controller*)fld.Data.Numeric->I;
     auto controller = field_id.Data.Numeric->I4;
 
     auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
@@ -139,7 +139,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___nativeProvider___I, fld);
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___idx___I4, field_id);
 
-    auto provider = (const TinyCLR_Pwm_Provider*)fld.Data.Numeric->I;
+    auto provider = (const TinyCLR_Pwm_Controller*)fld.Data.Numeric->I;
     auto controller = field_id.Data.Numeric->I4;
     auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
 
@@ -159,7 +159,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___nativeProvider___I, fld);
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___idx___I4, field_id);
 
-    auto provider = (const TinyCLR_Pwm_Provider*)fld.Data.Numeric->I;
+    auto provider = (const TinyCLR_Pwm_Controller*)fld.Data.Numeric->I;
     auto controller = field_id.Data.Numeric->I4;
     auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
 
@@ -179,7 +179,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___nativeProvider___I, fld);
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___idx___I4, field_id);
 
-    auto provider = (const TinyCLR_Pwm_Provider*)fld.Data.Numeric->I;
+    auto provider = (const TinyCLR_Pwm_Controller*)fld.Data.Numeric->I;
     auto controller = field_id.Data.Numeric->I4;
 
     fld = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___ActualFrequency__BackingField___R8);
@@ -208,7 +208,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___nativeProvider___I, fld);
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::FIELD___idx___I4, field_id);
 
-    auto provider = (const TinyCLR_Pwm_Provider*)fld.Data.Numeric->I;
+    auto provider = (const TinyCLR_Pwm_Controller*)fld.Data.Numeric->I;
     auto controller = field_id.Data.Numeric->I4;
     auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
     auto arg2 = TinyCLR_Interop_GetArguments(md, 2);
@@ -228,7 +228,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto ret = TinyCLR_Interop_GetReturn(md);
 
-    auto provider = (const TinyCLR_Pwm_Provider*)(arg.Data.Numeric->I4);
+    auto provider = (const TinyCLR_Pwm_Controller*)(arg.Data.Numeric->I4);
 
     int32_t count;
 

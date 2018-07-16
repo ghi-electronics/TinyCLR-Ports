@@ -11,7 +11,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cControllerProvider::FIELD___nativeProvider___I, fld);
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cControllerProvider::FIELD___idx___I4, field_id);
 
-    auto provider = (const TinyCLR_I2c_Provider*)fld.Data.Numeric->I;
+    auto provider = (const TinyCLR_I2c_Controller*)fld.Data.Numeric->I;
     auto controller = field_id.Data.Numeric->I4;
 
     return provider->Acquire(provider, controller);
@@ -27,7 +27,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cControllerProvider::FIELD___nativeProvider___I, fld);
     interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cControllerProvider::FIELD___idx___I4, field_id);
 
-    auto provider = (const TinyCLR_I2c_Provider*)fld.Data.Numeric->I;
+    auto provider = (const TinyCLR_I2c_Controller*)fld.Data.Numeric->I;
     auto controller = field_id.Data.Numeric->I4;
 
     return provider->Release(provider, controller);
@@ -38,7 +38,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto ret = TinyCLR_Interop_GetReturn(md);
 
-    auto provider = (const TinyCLR_I2c_Provider*)(arg.Data.Numeric->I4);
+    auto provider = (const TinyCLR_I2c_Controller*)(arg.Data.Numeric->I4);
 
     int32_t count;
 

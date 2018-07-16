@@ -17,7 +17,7 @@ struct SoftwareI2CConfig {
     uint8_t address;	   // 7 bit address
     bool useSoftwarePullups;
 
-    const TinyCLR_Gpio_Provider* gpioProvider;
+    const TinyCLR_Gpio_Controller* gpioProvider;
     int32_t gpioController;
 } *softwareI2cConfig;
 
@@ -84,7 +84,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto prov = (const TinyCLR_Interop_Manager*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
-    i2c.gpioProvider = (const TinyCLR_Gpio_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
+    i2c.gpioProvider = (const TinyCLR_Gpio_Controller*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
 
     if (prov == nullptr || i2c.gpioProvider == nullptr)
         return TinyCLR_Result::ArgumentNull;
