@@ -2,7 +2,7 @@
 #include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::AcquireNative___VOID(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_Adc_Provider*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Adc_Controller*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
 
     auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___idx___I4).Data.Numeric->I;
 
@@ -10,7 +10,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::ReleaseNative___VOID(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_Adc_Provider*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Adc_Controller*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
 
     auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___idx___I4).Data.Numeric->I;
 
@@ -18,7 +18,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::get_ChannelMode___GHIElectronicsTinyCLRDevicesAdcProviderProviderAdcChannelMode(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_Adc_Provider*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Adc_Controller*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
 
     auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___idx___I4).Data.Numeric->I;
 
@@ -30,7 +30,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::set_ChannelMode___VOID__GHIElectronicsTinyCLRDevicesAdcProviderProviderAdcChannelMode(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_Adc_Provider*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Adc_Controller*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
 
     auto arg = TinyCLR_Interop_GetArguments(md, 1);
     auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___idx___I4).Data.Numeric->I;
@@ -39,7 +39,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::get_ChannelCount___I4(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_Adc_Provider*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Adc_Controller*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
 
     auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___idx___I4).Data.Numeric->I;
 
@@ -51,7 +51,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::get_MaxValue___I4(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_Adc_Provider*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Adc_Controller*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
 
     auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___idx___I4).Data.Numeric->I;
 
@@ -63,7 +63,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::get_MinValue___I4(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_Adc_Provider*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Adc_Controller*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
 
     auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___idx___I4).Data.Numeric->I;
 
@@ -75,7 +75,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::get_ResolutionInBits___I4(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_Adc_Provider*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Adc_Controller*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
 
     auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___idx___I4).Data.Numeric->I;
 
@@ -87,7 +87,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::IsChannelModeSupported___BOOLEAN__GHIElectronicsTinyCLRDevicesAdcProviderProviderAdcChannelMode(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_Adc_Provider*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Adc_Controller*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
 
     auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___idx___I4).Data.Numeric->I;
 
@@ -101,7 +101,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::AcquireChannel___VOID__I4(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_Adc_Provider*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Adc_Controller*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
 
     auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___idx___I4).Data.Numeric->I;
 
@@ -111,7 +111,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::ReleaseChannel___VOID__I4(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_Adc_Provider*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Adc_Controller*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
 
     auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___idx___I4).Data.Numeric->I;
 
@@ -121,7 +121,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::ReadValue___I4__I4(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_Adc_Provider*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_Adc_Controller*)TinyCLR_Interop_GetProvider(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___nativeProvider___I);
 
     auto controller = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_DefaultAdcControllerProvider::FIELD___idx___I4).Data.Numeric->I;
 
@@ -145,7 +145,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto ret = TinyCLR_Interop_GetReturn(md);
 
-    auto provider = (const TinyCLR_Adc_Provider*)(arg.Data.Numeric->I4);
+    auto provider = (const TinyCLR_Adc_Controller*)(arg.Data.Numeric->I4);
 
     int32_t count;
 

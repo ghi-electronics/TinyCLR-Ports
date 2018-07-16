@@ -43,7 +43,7 @@
 
 static const uint8_t g_STM32F4_AD_Pins[] = STM32F4_ADC_PINS;
 
-static TinyCLR_Adc_Provider adcProvider;
+static TinyCLR_Adc_Controller adcProvider;
 static TinyCLR_Api_Info adcApi;
 
 bool g_STM32F4_AD_IsOpened[STM32F4_AD_NUM];
@@ -73,15 +73,15 @@ const TinyCLR_Api_Info* STM32F4_Adc_GetApi() {
     return &adcApi;
 }
 
-TinyCLR_Result STM32F4_Adc_Acquire(const TinyCLR_Adc_Provider* self, int32_t controller) {
+TinyCLR_Result STM32F4_Adc_Acquire(const TinyCLR_Adc_Controller* self, int32_t controller) {
     return self == nullptr ? TinyCLR_Result::ArgumentNull : TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Adc_Release(const TinyCLR_Adc_Provider* self, int32_t controller) {
+TinyCLR_Result STM32F4_Adc_Release(const TinyCLR_Adc_Controller* self, int32_t controller) {
     return self == nullptr ? TinyCLR_Result::ArgumentNull : TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t channel) {
+TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Controller* self, int32_t controller, int32_t channel) {
     if (channel <= 15 && !STM32F4_GpioInternal_OpenPin(g_STM32F4_AD_Pins[channel]))
         return TinyCLR_Result::SharingViolation;
 
@@ -115,7 +115,7 @@ TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int3
     return TinyCLR_Result::ArgumentOutOfRange;
 }
 
-TinyCLR_Result STM32F4_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t channel) {
+TinyCLR_Result STM32F4_Adc_ReleaseChannel(const TinyCLR_Adc_Controller* self, int32_t controller, int32_t channel) {
     // free GPIO pin if this channel is listed in the STM32F4_AD_CHANNELS array
     // and if it's not one of the internally connected ones as these channels don't take any GPIO pins
     if (channel <= 15 && channel < STM32F4_AD_NUM)
@@ -127,7 +127,7 @@ TinyCLR_Result STM32F4_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int3
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t channel, int32_t& value) {
+TinyCLR_Result STM32F4_Adc_ReadValue(const TinyCLR_Adc_Controller* self, int32_t controller, int32_t channel, int32_t& value) {
     // check if this channel is listed in the STM32F4_AD_CHANNELS array
     const int MAX_SAMPLE_TIMES = 5;
 
@@ -169,31 +169,31 @@ TinyCLR_Result STM32F4_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t c
     return TinyCLR_Result::ArgumentOutOfRange;
 }
 
-int32_t STM32F4_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self, int32_t controller) {
+int32_t STM32F4_Adc_GetChannelCount(const TinyCLR_Adc_Controller* self, int32_t controller) {
     return STM32F4_AD_NUM;
 }
 
-int32_t STM32F4_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider* self, int32_t controller) {
+int32_t STM32F4_Adc_GetResolutionInBits(const TinyCLR_Adc_Controller* self, int32_t controller) {
     return 12;
 }
 
-int32_t STM32F4_Adc_GetMinValue(const TinyCLR_Adc_Provider* self, int32_t controller) {
+int32_t STM32F4_Adc_GetMinValue(const TinyCLR_Adc_Controller* self, int32_t controller) {
     return 0;
 }
 
-int32_t STM32F4_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self, int32_t controller) {
+int32_t STM32F4_Adc_GetMaxValue(const TinyCLR_Adc_Controller* self, int32_t controller) {
     return (1 << STM32F4_Adc_GetResolutionInBits(self, controller)) - 1;
 }
 
-TinyCLR_Adc_ChannelMode STM32F4_Adc_GetChannelMode(const TinyCLR_Adc_Provider* self, int32_t controller) {
+TinyCLR_Adc_ChannelMode STM32F4_Adc_GetChannelMode(const TinyCLR_Adc_Controller* self, int32_t controller) {
     return TinyCLR_Adc_ChannelMode::SingleEnded;
 }
 
-TinyCLR_Result STM32F4_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, int32_t controller, TinyCLR_Adc_ChannelMode mode) {
+TinyCLR_Result STM32F4_Adc_SetChannelMode(const TinyCLR_Adc_Controller* self, int32_t controller, TinyCLR_Adc_ChannelMode mode) {
     return mode == TinyCLR_Adc_ChannelMode::SingleEnded ? TinyCLR_Result::Success : TinyCLR_Result::NotSupported;
 }
 
-bool STM32F4_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, int32_t controller, TinyCLR_Adc_ChannelMode mode) {
+bool STM32F4_Adc_IsChannelModeSupported(const TinyCLR_Adc_Controller* self, int32_t controller, TinyCLR_Adc_ChannelMode mode) {
     return mode == TinyCLR_Adc_ChannelMode::SingleEnded;
 }
 
@@ -205,7 +205,7 @@ void STM32F4_Adc_Reset() {
     }
 }
 
-TinyCLR_Result STM32F4_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count) {
+TinyCLR_Result STM32F4_Adc_GetControllerCount(const TinyCLR_Adc_Controller* self, int32_t& count) {
     count = 1;
 
     return TinyCLR_Result::Success;
