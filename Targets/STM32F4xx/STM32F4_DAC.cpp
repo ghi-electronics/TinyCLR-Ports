@@ -29,12 +29,12 @@ static TinyCLR_Api_Info dacApi[TOTAL_DAC_CONTROLLERS];
 
 struct DacDriver {
     bool isOpened[STM32F4_DAC_CHANNEL_NUMS];
-}
+};
 
-static DacDriver dacDriver[TOTAL_DAC_CONTROLLERS];
+static DacDriver dacDrivers[TOTAL_DAC_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F4_Dac_GetApi() {
-    for (int32_t i = 0; i < TOTAL_POWER_CONTROLLERS; i++) {
+    for (int32_t i = 0; i < TOTAL_DAC_CONTROLLERS; i++) {
         dacControllers[i].ApiInfo = &dacApi[i];
         dacControllers[i].Acquire = &STM32F4_Dac_Acquire;
         dacControllers[i].Release = &STM32F4_Dac_Release;
@@ -47,14 +47,14 @@ const TinyCLR_Api_Info* STM32F4_Dac_GetApi() {
         dacControllers[i].GetChannelCount = &STM32F4_Dac_GetChannelCount;
 
         dacApi[i].Author = "GHI Electronics, LLC";
-        dacApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.DacProvider";
-        dacApi[i].Type = TinyCLR_Api_Type::DacProvider;
+        dacApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.DacController";
+        dacApi[i].Type = TinyCLR_Api_Type::DacController;
         dacApi[i].Version = 0;
         dacApi[i].Implementation = &dacControllers[i];
-        dacApi[i].State = &dacDriver[i];
+        dacApi[i].State = &dacDrivers[i];
     }
 
-    return &dacApi;
+    return (const TinyCLR_Api_Info*)&dacApi;
 }
 
 TinyCLR_Result STM32F4_Dac_Acquire(const TinyCLR_Dac_Controller* self) {
@@ -147,10 +147,10 @@ int32_t STM32F4_Dac_GetMaxValue(const TinyCLR_Dac_Controller* self) {
 
 void STM32F4_Dac_Reset() {
     for (auto c = 0; c < TOTAL_DAC_CONTROLLERS; c++) {
-        for (auto i = 0; i < STM32F4_Dac_GetChannelCount(&dacControllers[c], 0); i++) {
+        for (auto i = 0; i < STM32F4_Dac_GetChannelCount(&dacControllers[c]); i++) {
             STM32F4_Dac_ReleaseChannel(&dacControllers[c], i);
 
-            dacDriver[c].isOpened[i] = false;
+            dacDrivers[c].isOpened[i] = false;
         }
     }
 }
