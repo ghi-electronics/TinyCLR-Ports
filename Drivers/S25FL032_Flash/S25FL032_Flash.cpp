@@ -244,7 +244,7 @@ TinyCLR_Result S25FL032_Flash_EraseBlock(uint32_t sector) {
     TinyCLR_Result::Success;
 }
 
-TinyCLR_Result S25FL032_Flash_Acquire(const TinyCLR_Spi_Controller* spiProvider, int32_t controller, uint32_t chipSelectLine, bool& supportXIP) {
+TinyCLR_Result S25FL032_Flash_Acquire(const TinyCLR_Spi_Controller* spiProvider, uint32_t chipSelectLine, bool& supportXIP) {
     supportXIP = false;
 
     g_S25FL032_Flash_SpiControllerId = controller;

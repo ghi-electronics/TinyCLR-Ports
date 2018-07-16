@@ -343,7 +343,7 @@ TinyCLR_Result AT45DB321D_Flash_EraseBlock(uint32_t sector) {
     return TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result AT45DB321D_Flash_Acquire(const TinyCLR_Spi_Controller* spiProvider, int32_t controller, const TinyCLR_NativeTime_Controller* timeProvider, uint32_t chipSelectLine, bool& supportXIP) {
+TinyCLR_Result AT45DB321D_Flash_Acquire(const TinyCLR_Spi_Controller* spiProvider, const TinyCLR_NativeTime_Controller* timeProvider, uint32_t chipSelectLine, bool& supportXIP) {
 
     size_t writeLength;
     size_t readLength;

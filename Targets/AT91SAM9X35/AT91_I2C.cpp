@@ -53,7 +53,7 @@ const TinyCLR_Api_Info* AT91_I2c_GetApi() {
     return &i2cApi;
 }
 
-TinyCLR_Result AT91_I2c_ReadTransaction(const TinyCLR_I2c_Controller* self, int32_t controller, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result AT91_I2c_ReadTransaction(const TinyCLR_I2c_Controller* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
     uint32_t address;
@@ -123,7 +123,7 @@ TinyCLR_Result AT91_I2c_ReadTransaction(const TinyCLR_I2c_Controller* self, int3
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result AT91_I2c_WriteTransaction(const TinyCLR_I2c_Controller* self, int32_t controller, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result AT91_I2c_WriteTransaction(const TinyCLR_I2c_Controller* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
     uint32_t address;
@@ -204,7 +204,7 @@ TinyCLR_Result AT91_I2c_WriteTransaction(const TinyCLR_I2c_Controller* self, int
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result AT91_I2c_WriteReadTransaction(const TinyCLR_I2c_Controller* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result AT91_I2c_WriteReadTransaction(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
     if (writeLength > 3) {
         AT91_I2c_WriteTransaction(self, controller, writeBuffer, writeLength, result);
 
@@ -305,7 +305,7 @@ TinyCLR_Result AT91_I2c_WriteReadTransaction(const TinyCLR_I2c_Controller* self,
 #define MIN_CLK_RATE    (AT91_SYSTEM_PERIPHERAL_CLOCK_HZ/1000)/(128 *255+CLOCK_RATE_CONSTANT)
 #define MAX_CLK_RATE    400   //kHz
 
-TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, int32_t controller, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed) {
+TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed) {
     uint32_t rateKhz;
     uint8_t clockRate, clockRate2;
 
@@ -359,7 +359,7 @@ TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, in
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_I2c_Acquire(const TinyCLR_I2c_Controller* self, int32_t controller) {
+TinyCLR_Result AT91_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
@@ -382,7 +382,7 @@ TinyCLR_Result AT91_I2c_Acquire(const TinyCLR_I2c_Controller* self, int32_t cont
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_I2c_Release(const TinyCLR_I2c_Controller* self, int32_t controller) {
+TinyCLR_Result AT91_I2c_Release(const TinyCLR_I2c_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 

@@ -52,21 +52,21 @@ const TinyCLR_Api_Info* LPC24_Dac_GetApi() {
     return &dacApi;
 }
 
-TinyCLR_Result LPC24_Dac_Acquire(const TinyCLR_Dac_Controller* self, int32_t controller) {
+TinyCLR_Result LPC24_Dac_Acquire(const TinyCLR_Dac_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Dac_Release(const TinyCLR_Dac_Controller* self, int32_t controller) {
+TinyCLR_Result LPC24_Dac_Release(const TinyCLR_Dac_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Dac_AcquireChannel(const TinyCLR_Dac_Controller* self, int32_t controller, int32_t channel) {
+TinyCLR_Result LPC24_Dac_AcquireChannel(const TinyCLR_Dac_Controller* self, int32_t channel) {
     if (channel >= LPC24_Dac_GetChannelCount(self, controller))
         return TinyCLR_Result::ArgumentOutOfRange;
 
@@ -82,7 +82,7 @@ TinyCLR_Result LPC24_Dac_AcquireChannel(const TinyCLR_Dac_Controller* self, int3
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Dac_ReleaseChannel(const TinyCLR_Dac_Controller* self, int32_t controller, int32_t channel) {
+TinyCLR_Result LPC24_Dac_ReleaseChannel(const TinyCLR_Dac_Controller* self, int32_t channel) {
     if (channel >= LPC24_Dac_GetChannelCount(self, controller))
         return TinyCLR_Result::ArgumentOutOfRange;
 
@@ -94,7 +94,7 @@ TinyCLR_Result LPC24_Dac_ReleaseChannel(const TinyCLR_Dac_Controller* self, int3
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Dac_WriteValue(const TinyCLR_Dac_Controller* self, int32_t controller, int32_t channel, int32_t value) {
+TinyCLR_Result LPC24_Dac_WriteValue(const TinyCLR_Dac_Controller* self, int32_t channel, int32_t value) {
     if (channel >= LPC24_Dac_GetChannelCount(self, controller))
         return TinyCLR_Result::ArgumentOutOfRange;
 
@@ -111,19 +111,19 @@ TinyCLR_Result LPC24_Dac_WriteValue(const TinyCLR_Dac_Controller* self, int32_t 
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC24_Dac_GetChannelCount(const TinyCLR_Dac_Controller* self, int32_t controller) {
+int32_t LPC24_Dac_GetChannelCount(const TinyCLR_Dac_Controller* self) {
     return SIZEOF_ARRAY(g_LPC24_Dac_Pins);
 }
 
-int32_t LPC24_Dac_GetResolutionInBits(const TinyCLR_Dac_Controller* self, int32_t controller) {
+int32_t LPC24_Dac_GetResolutionInBits(const TinyCLR_Dac_Controller* self) {
     return LPC24_DAC_PRECISION_BITS;
 }
 
-int32_t LPC24_Dac_GetMinValue(const TinyCLR_Dac_Controller* self, int32_t controller) {
+int32_t LPC24_Dac_GetMinValue(const TinyCLR_Dac_Controller* self) {
     return 0;
 }
 
-int32_t LPC24_Dac_GetMaxValue(const TinyCLR_Dac_Controller* self, int32_t controller) {
+int32_t LPC24_Dac_GetMaxValue(const TinyCLR_Dac_Controller* self) {
     return ((1 << LPC24_DAC_PRECISION_BITS) - 1);
 }
 

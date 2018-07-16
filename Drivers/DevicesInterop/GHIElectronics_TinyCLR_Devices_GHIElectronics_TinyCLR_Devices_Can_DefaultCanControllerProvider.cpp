@@ -2,14 +2,14 @@
 #include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
 #ifdef INCLUDE_CAN
-void TinyCLR_Can_ErrorReceivedIsr(const TinyCLR_Can_Controller* self, int32_t controller, TinyCLR_Can_Error error) {
+void TinyCLR_Can_ErrorReceivedIsr(const TinyCLR_Can_Controller* self, TinyCLR_Can_Error error) {
     auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Manager*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropManager));
 
     if (interopProvider != nullptr)
         interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Can.ErrorReceived", self->ApiInfo->Name, controller, (uint64_t)error, 0, 0);
 }
 
-void TinyCLR_Can_MessageReceivedIsr(const TinyCLR_Can_Controller* self, int32_t controller, size_t count) {
+void TinyCLR_Can_MessageReceivedIsr(const TinyCLR_Can_Controller* self, size_t count) {
     auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Manager*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropManager));
 
     if (interopProvider != nullptr)

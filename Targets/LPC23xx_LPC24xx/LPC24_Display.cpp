@@ -879,7 +879,7 @@ void LPC24_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenHei
     }
 }
 
-TinyCLR_Result LPC24_Display_Acquire(const TinyCLR_Display_Controller* self, int32_t controller) {
+TinyCLR_Result LPC24_Display_Acquire(const TinyCLR_Display_Controller* self) {
     m_LPC24_Display_CurrentRotation = LPC24xx_LCD_Rotation::rotateNormal_0;
 
     if (!LPC24_Display_SetPinConfiguration(true)) {
@@ -889,7 +889,7 @@ TinyCLR_Result LPC24_Display_Acquire(const TinyCLR_Display_Controller* self, int
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Display_Release(const TinyCLR_Display_Controller* self, int32_t controller) {
+TinyCLR_Result LPC24_Display_Release(const TinyCLR_Display_Controller* self) {
     LPC24_Display_Uninitialize();
 
     LPC24_Display_SetPinConfiguration(false);
@@ -907,7 +907,7 @@ TinyCLR_Result LPC24_Display_Release(const TinyCLR_Display_Controller* self, int
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Display_Enable(const TinyCLR_Display_Controller* self, int32_t controller) {
+TinyCLR_Result LPC24_Display_Enable(const TinyCLR_Display_Controller* self) {
     if (m_LPC24_DisplayEnable || LPC24_Display_Initialize()) {
         m_LPC24_DisplayEnable = true;
 
@@ -917,7 +917,7 @@ TinyCLR_Result LPC24_Display_Enable(const TinyCLR_Display_Controller* self, int3
     return TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result LPC24_Display_Disable(const TinyCLR_Display_Controller* self, int32_t controller) {
+TinyCLR_Result LPC24_Display_Disable(const TinyCLR_Display_Controller* self) {
     LPC24_Display_Uninitialize();
 
     m_LPC24_DisplayEnable = false;
@@ -925,7 +925,7 @@ TinyCLR_Result LPC24_Display_Disable(const TinyCLR_Display_Controller* self, int
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Display_SetConfiguration(const TinyCLR_Display_Controller* self, int32_t controller, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration) {
+TinyCLR_Result LPC24_Display_SetConfiguration(const TinyCLR_Display_Controller* self, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration) {
     if (dataFormat != TinyCLR_Display_DataFormat::Rgb565) return TinyCLR_Result::NotSupported;
 
     if (configuration != nullptr) {
@@ -980,7 +980,7 @@ TinyCLR_Result LPC24_Display_SetConfiguration(const TinyCLR_Display_Controller* 
     return  TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Display_GetConfiguration(const TinyCLR_Display_Controller* self, int32_t controller, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration) {
+TinyCLR_Result LPC24_Display_GetConfiguration(const TinyCLR_Display_Controller* self, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration) {
     dataFormat = TinyCLR_Display_DataFormat::Rgb565;
     width = m_LPC24_DisplayWidth;
     height = m_LPC24_DisplayHeight;
@@ -1010,12 +1010,12 @@ TinyCLR_Result LPC24_Display_GetConfiguration(const TinyCLR_Display_Controller* 
     return TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result LPC24_Display_DrawBuffer(const TinyCLR_Display_Controller* self, int32_t controller, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data) {
+TinyCLR_Result LPC24_Display_DrawBuffer(const TinyCLR_Display_Controller* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data) {
     LPC24_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Display_WriteString(const TinyCLR_Display_Controller* self, int32_t controller, const char* buffer, size_t length) {
+TinyCLR_Result LPC24_Display_WriteString(const TinyCLR_Display_Controller* self, const char* buffer, size_t length) {
     for (size_t i = 0; i < length; i++)
         LPC24_Display_WriteFormattedChar(buffer[i]);
 
@@ -1024,7 +1024,7 @@ TinyCLR_Result LPC24_Display_WriteString(const TinyCLR_Display_Controller* self,
 
 TinyCLR_Display_DataFormat dataFormats[] = { TinyCLR_Display_DataFormat::Rgb565 };
 
-TinyCLR_Result LPC24_Display_GetCapabilities(const TinyCLR_Display_Controller* self, int32_t controller, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount) {
+TinyCLR_Result LPC24_Display_GetCapabilities(const TinyCLR_Display_Controller* self, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount) {
     type = TinyCLR_Display_InterfaceType::Parallel;
     supportedDataFormatCount = SIZEOF_ARRAY(dataFormats);
     supportedDataFormats = dataFormats;

@@ -237,7 +237,7 @@ void STM32F4_I2c_StopTransaction(int32_t controller) {
     g_currentI2cTransactionAction[controller]->isDone = true;
 }
 
-TinyCLR_Result STM32F4_I2c_Read(const TinyCLR_I2c_Controller* self, int32_t controller, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result STM32F4_I2c_Read(const TinyCLR_I2c_Controller* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
     g_ReadI2cTransactionAction[controller].isReadTransaction = true;
@@ -267,7 +267,7 @@ TinyCLR_Result STM32F4_I2c_Read(const TinyCLR_I2c_Controller* self, int32_t cont
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result STM32F4_I2c_Write(const TinyCLR_I2c_Controller* self, int32_t controller, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result STM32F4_I2c_Write(const TinyCLR_I2c_Controller* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
     g_WriteI2cTransactionAction[controller].isReadTransaction = false;
@@ -297,7 +297,7 @@ TinyCLR_Result STM32F4_I2c_Write(const TinyCLR_I2c_Controller* self, int32_t con
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result STM32F4_I2c_WriteRead(const TinyCLR_I2c_Controller* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result STM32F4_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
     g_WriteI2cTransactionAction[controller].isReadTransaction = false;
@@ -340,7 +340,7 @@ TinyCLR_Result STM32F4_I2c_WriteRead(const TinyCLR_I2c_Controller* self, int32_t
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result STM32F4_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, int32_t controller, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed) {
+TinyCLR_Result STM32F4_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed) {
     uint32_t rateKhz;
     uint32_t ccr;
 
@@ -367,7 +367,7 @@ TinyCLR_Result STM32F4_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self,
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Controller* self, int32_t controller) {
+TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
@@ -418,7 +418,7 @@ TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Controller* self, int32_t c
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_I2c_Release(const TinyCLR_I2c_Controller* self, int32_t controller) {
+TinyCLR_Result STM32F4_I2c_Release(const TinyCLR_I2c_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 

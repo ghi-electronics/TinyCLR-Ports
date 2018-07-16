@@ -1,7 +1,7 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 #include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
-void IsrProcedure(const TinyCLR_Gpio_Controller* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinValue pinState) {
+void IsrProcedure(const TinyCLR_Gpio_Controller* self, int32_t pin, TinyCLR_Gpio_PinValue pinState) {
     auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Manager*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropManager));
 
     if (interopProvider != nullptr)

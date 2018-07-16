@@ -2175,7 +2175,7 @@ const TinyCLR_Api_Info* LPC24_SdCard_GetApi() {
     return &sdApi;
 }
 
-TinyCLR_Result LPC24_SdCard_Acquire(const TinyCLR_SdCard_Controller* self, int32_t controller) {
+TinyCLR_Result LPC24_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
     sdController[controller].controller = controller;
 
     auto d0 = g_LPC24_SdCard_Data0_Pins[controller];
@@ -2211,7 +2211,7 @@ TinyCLR_Result LPC24_SdCard_Acquire(const TinyCLR_SdCard_Controller* self, int32
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_SdCard_Release(const TinyCLR_SdCard_Controller* self, int32_t controller) {
+TinyCLR_Result LPC24_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
     auto d0 = g_LPC24_SdCard_Data0_Pins[controller];
     auto d1 = g_LPC24_SdCard_Data1_Pins[controller];
     auto d2 = g_LPC24_SdCard_Data2_Pins[controller];
@@ -2245,7 +2245,7 @@ TinyCLR_Result LPC24_SdCard_GetControllerCount(const TinyCLR_SdCard_Controller* 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_SdCard_WriteSector(const TinyCLR_SdCard_Controller* self, int32_t controller, uint64_t sector, size_t& count, const uint8_t* data, int32_t timeout) {
+TinyCLR_Result LPC24_SdCard_WriteSector(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, const uint8_t* data, int32_t timeout) {
     int32_t index = 0;
 
     int32_t to = timeout;
@@ -2274,7 +2274,7 @@ TinyCLR_Result LPC24_SdCard_WriteSector(const TinyCLR_SdCard_Controller* self, i
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_SdCard_ReadSector(const TinyCLR_SdCard_Controller* self, int32_t controller, uint64_t sector, size_t& count, uint8_t* data, int32_t timeout) {
+TinyCLR_Result LPC24_SdCard_ReadSector(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, uint8_t* data, int32_t timeout) {
     int32_t index = 0;
 
     int32_t to = timeout;
@@ -2301,12 +2301,12 @@ TinyCLR_Result LPC24_SdCard_ReadSector(const TinyCLR_SdCard_Controller* self, in
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_SdCard_IsSectorErased(const TinyCLR_SdCard_Controller* self, int32_t controller, uint64_t sector, bool& erased) {
+TinyCLR_Result LPC24_SdCard_IsSectorErased(const TinyCLR_SdCard_Controller* self, uint64_t sector, bool& erased) {
     erased = true;
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_SdCard_EraseSector(const TinyCLR_SdCard_Controller* self, int32_t controller, uint64_t sector, size_t& count, int32_t timeout) {
+TinyCLR_Result LPC24_SdCard_EraseSector(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, int32_t timeout) {
     uint32_t addressStart = sector * LPC24_SD_SECTOR_SIZE;
 
     uint32_t addressEnd = addressStart + (count * LPC24_SD_SECTOR_SIZE);
@@ -2314,7 +2314,7 @@ TinyCLR_Result LPC24_SdCard_EraseSector(const TinyCLR_SdCard_Controller* self, i
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_SdCard_GetSectorMap(const TinyCLR_SdCard_Controller* self, int32_t controller, const size_t*& sizes, size_t& count, bool& isUniform) {
+TinyCLR_Result LPC24_SdCard_GetSectorMap(const TinyCLR_SdCard_Controller* self, const size_t*& sizes, size_t& count, bool& isUniform) {
     sdController[controller].sectorSizes[0] = LPC24_SD_SECTOR_SIZE;
 
     sizes = sdController[controller].sectorSizes;
