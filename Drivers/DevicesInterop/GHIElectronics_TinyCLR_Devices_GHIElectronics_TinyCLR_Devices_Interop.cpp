@@ -1,8 +1,8 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 #include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
-const void* TinyCLR_Interop_GetProvider(const TinyCLR_Interop_MethodData md, int32_t fieldId) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
+const void* TinyCLR_Interop_GetManager(const TinyCLR_Interop_MethodData md, int32_t fieldId) {
+    auto interop = (const TinyCLR_Interop_Manager*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
     const TinyCLR_Interop_ClrObject* self;
     TinyCLR_Interop_ClrValue fld;
@@ -18,7 +18,7 @@ const void* TinyCLR_Interop_GetProvider(const TinyCLR_Interop_MethodData md, int
 }
 
 TinyCLR_Interop_ClrValue TinyCLR_Interop_GetFieldInMethodData(const TinyCLR_Interop_MethodData md, int32_t fieldId) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
+    auto interop = (const TinyCLR_Interop_Manager*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
     const TinyCLR_Interop_ClrObject* self;
     TinyCLR_Interop_ClrValue fld;
@@ -31,7 +31,7 @@ TinyCLR_Interop_ClrValue TinyCLR_Interop_GetFieldInMethodData(const TinyCLR_Inte
 }
 
 TinyCLR_Interop_ClrValue TinyCLR_Interop_GetFieldInObject(const TinyCLR_Interop_MethodData md, const TinyCLR_Interop_ClrObject* self, int32_t fieldId) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
+    auto interop = (const TinyCLR_Interop_Manager*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
     TinyCLR_Interop_ClrValue fld;
 
@@ -42,7 +42,7 @@ TinyCLR_Interop_ClrValue TinyCLR_Interop_GetFieldInObject(const TinyCLR_Interop_
 
 
 TinyCLR_Interop_ClrValue TinyCLR_Interop_GetReturn(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
+    auto interop = (const TinyCLR_Interop_Manager*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
     TinyCLR_Interop_ClrValue ret;
 
@@ -57,7 +57,7 @@ TinyCLR_Interop_ClrValue TinyCLR_Interop_GetReturn(const TinyCLR_Interop_MethodD
 }
 
 TinyCLR_Interop_ClrValue TinyCLR_Interop_GetArguments(const TinyCLR_Interop_MethodData md, int32_t argIndex) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
+    auto interop = (const TinyCLR_Interop_Manager*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
     TinyCLR_Interop_ClrValue arg;
 
@@ -72,31 +72,31 @@ TinyCLR_Interop_ClrValue TinyCLR_Interop_GetArguments(const TinyCLR_Interop_Meth
 }
 
 uint64_t TinyCLR_Interop_CurrentTime() {
-    auto provider = (const TinyCLR_NativeTime_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::NativeTimeController);
+    auto provider = (const TinyCLR_NativeTime_Controller*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::NativeTimeController);
 
     return provider->ConvertNativeTimeToSystemTime(provider, provider->GetNativeTime(provider));
 }
 
 void TinyCLR_Interop_Delay(uint32_t microseconds) {
-    auto provider = (const TinyCLR_NativeTime_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::NativeTimeController);
+    auto provider = (const TinyCLR_NativeTime_Controller*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::NativeTimeController);
 
     provider->Wait(provider, provider->ConvertSystemTimeToNativeTime(provider, microseconds));
 }
 
 void TinyCLR_Interop_EnableInterrupt() {
-    auto provider = (const TinyCLR_Interrupt_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InterruptController);
+    auto provider = (const TinyCLR_Interrupt_Controller*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::InterruptController);
 
     provider->Enable(true);
 }
 
 void TinyCLR_Interop_DisableInterrupt() {
-    auto provider = (const TinyCLR_Interrupt_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InterruptController);
+    auto provider = (const TinyCLR_Interrupt_Controller*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::InterruptController);
 
     provider->Disable(true);
 }
 
 bool TinyCLR_Interop_GetStateInterrupt() {
-    auto provider = (const TinyCLR_Interrupt_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InterruptController);
+    auto provider = (const TinyCLR_Interrupt_Controller*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::InterruptController);
 
     return !provider->IsDisabled();
 }

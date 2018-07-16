@@ -16,23 +16,28 @@
 
 #include "STM32F4.h"
 
-static TinyCLR_Power_Controller powerProvider;
-static TinyCLR_Api_Info powerApi;
+#define TOTAL_POWER_CONTROLLERS 1
+
+static TinyCLR_Power_Controller powerControllers[TOTAL_POWER_CONTROLLERS];
+static TinyCLR_Api_Info powerApi[TOTAL_POWER_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F4_Power_GetApi() {
-    powerProvider.ApiInfo = &powerApi;
-    powerProvider.Initialize = &STM32F4_Power_Initialize;
-    powerProvider.Uninitialize = &STM32F4_Power_Uninitialize;
-    powerProvider.Reset = &STM32F4_Power_Reset;
-    powerProvider.Sleep = &STM32F4_Power_Sleep;
+    for (int32_t i = 0; i < TOTAL_POWER_CONTROLLERS; i++) {
+        powerControllers[i].ApiInfo = &powerApi[i];
+        powerControllers[i].Initialize = &STM32F4_Power_Initialize;
+        powerControllers[i].Uninitialize = &STM32F4_Power_Uninitialize;
+        powerControllers[i].Reset = &STM32F4_Power_Reset;
+        powerControllers[i].Sleep = &STM32F4_Power_Sleep;
 
-    powerApi.Author = "GHI Electronics, LLC";
-    powerApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.PowerController";
-    powerApi.Type = TinyCLR_Api_Type::PowerController;
-    powerApi.Version = 0;
-    powerApi.Implementation = &powerProvider;
+        powerApi[i].Author = "GHI Electronics, LLC";
+        powerApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.PowerController";
+        powerApi[i].Type = TinyCLR_Api_Type::PowerController;
+        powerApi[i].Version = 0;
+        powerApi[i].Implementation = &powerControllers[i];
+        powerApi[i].State = nullptr;
+    }
 
-    return &powerApi;
+    return (const TinyCLR_Api_Info*)&powerApi;
 }
 
 void STM32F4_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level) {

@@ -128,7 +128,7 @@ struct USB_PIPE_MAP {
 struct USB_CONTROLLER_STATE {
     bool                                                        initialized;
     uint8_t                                                     currentState;
-    uint8_t                                                     controllerNum;
+    uint8_t                                                     controllerIndex;
     uint32_t                                                    event;
 
     TinyCLR_UsbClient_DeviceDescriptor                          deviceDescriptor;

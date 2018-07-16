@@ -13,7 +13,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     auto controller = field_id.Data.Numeric->I4;
     auto provider = (const TinyCLR_Pwm_Controller*)fld.Data.Numeric->I;
 
-    return provider->Acquire(provider, controller);
+    return provider->Acquire(provider);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::ReleaseNative___VOID(const TinyCLR_Interop_MethodData md) {
@@ -28,7 +28,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     auto provider = (const TinyCLR_Pwm_Controller*)fld.Data.Numeric->I;
     auto controller = field_id.Data.Numeric->I4;
 
-    return provider->Release(provider, controller);
+    return provider->Release(provider);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::get_MaxFrequency___R8(const TinyCLR_Interop_MethodData md) {
@@ -45,7 +45,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto ret = TinyCLR_Interop_GetReturn(md);
 
-    ret.Data.Numeric->R8 = provider->GetMaxFrequency(provider, controller);
+    ret.Data.Numeric->R8 = provider->GetMaxFrequency(provider);
 
     return TinyCLR_Result::Success;
 }
@@ -64,7 +64,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto ret = TinyCLR_Interop_GetReturn(md);
 
-    ret.Data.Numeric->R8 = provider->GetMinFrequency(provider, controller);
+    ret.Data.Numeric->R8 = provider->GetMinFrequency(provider);
 
     return TinyCLR_Result::Success;
 }
@@ -83,7 +83,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto ret = TinyCLR_Interop_GetReturn(md);
 
-    ret.Data.Numeric->I4 = provider->GetPinCount(provider, controller);
+    ret.Data.Numeric->I4 = provider->GetPinCount(provider);
 
     return TinyCLR_Result::Success;
 }
@@ -104,7 +104,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto pinNumber = arg1.Data.Numeric->I4;
 
-    provider->DisablePin(provider, controller, pinNumber);
+    provider->DisablePin(provider, pinNumber);
 
     return TinyCLR_Result::Success;
 }
@@ -125,7 +125,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto pinNumber = arg1.Data.Numeric->I4;
 
-    provider->EnablePin(provider, controller, pinNumber);
+    provider->EnablePin(provider, pinNumber);
 
     return TinyCLR_Result::Success;
 }
@@ -145,7 +145,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto pinNumber = arg1.Data.Numeric->I4;
 
-    provider->AcquirePin(provider, controller, pinNumber);
+    provider->AcquirePin(provider, pinNumber);
 
     return TinyCLR_Result::Success;
 }
@@ -165,7 +165,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto pinNumber = arg1.Data.Numeric->I4;
 
-    provider->ReleasePin(provider, controller, pinNumber);
+    provider->ReleasePin(provider, pinNumber);
 
     return TinyCLR_Result::Success;
 }
@@ -188,7 +188,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     double desiredFrequency = arg1.Data.Numeric->R8;
 
-    provider->SetDesiredFrequency(provider, controller, desiredFrequency);
+    provider->SetDesiredFrequency(provider, desiredFrequency);
 
     fld.Data.Numeric->R8 = desiredFrequency;
 
@@ -218,25 +218,13 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     double dutyCycle = arg2.Data.Numeric->R8;
     bool invert = arg3.Data.Numeric->I1 != 0;
 
-    provider->SetPulseParameters(provider, controller, pinNumber, dutyCycle, invert);
+    provider->SetPulseParameters(provider, pinNumber, dutyCycle, invert);
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_DefaultPwmControllerProvider::GetControllerCount___STATIC___I4__I(const TinyCLR_Interop_MethodData md) {
-    auto arg = TinyCLR_Interop_GetArguments(md, 0);
 
-    auto ret = TinyCLR_Interop_GetReturn(md);
-
-    auto provider = (const TinyCLR_Pwm_Controller*)(arg.Data.Numeric->I4);
-
-    int32_t count;
-
-    if (provider->GetControllerCount(provider, count) == TinyCLR_Result::Success) {
-        ret.Data.Numeric->I4 = count;
-
-        return TinyCLR_Result::Success;
-    }
 
     return TinyCLR_Result::InvalidOperation;
 }

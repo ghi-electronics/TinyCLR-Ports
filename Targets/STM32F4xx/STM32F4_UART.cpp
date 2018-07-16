@@ -27,133 +27,143 @@
 #define STM32F4_UART_DATA_BIT_LENGTH_8    8
 #define STM32F4_UART_DATA_BIT_LENGTH_9    9
 
-bool STM32F4_Uart_TxHandshakeEnabledState(int controller);
-void STM32F4_Uart_TxBufferEmptyInterruptEnable(int controller, bool enable);
-void STM32F4_Uart_RxBufferFullInterruptEnable(int controller, bool enable);
+bool STM32F4_Uart_TxHandshakeEnabledState(int controllerIndex);
+void STM32F4_Uart_TxBufferEmptyInterruptEnable(int controllerIndex, bool enable);
+void STM32F4_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable);
 void STM32F4_Uart_Reset();
 
-typedef  USART_TypeDef* USART_TypeDef_Ptr;
+typedef USART_TypeDef* USART_TypeDef_Ptr;
 
-struct UartController {
-    uint8_t                             *TxBuffer;
-    uint8_t                             *RxBuffer;
+struct UartDriver {
+    int32_t controllerIndex;
 
-    size_t                              txBufferCount;
-    size_t                              txBufferIn;
-    size_t                              txBufferOut;
-    size_t                              txBufferSize;
+    uint8_t *TxBuffer;
+    uint8_t *RxBuffer;
 
-    size_t                              rxBufferCount;
-    size_t                              rxBufferIn;
-    size_t                              rxBufferOut;
-    size_t                              rxBufferSize;
+    size_t txBufferCount;
+    size_t txBufferIn;
+    size_t txBufferOut;
+    size_t txBufferSize;
 
-    USART_TypeDef_Ptr                   portPtr;
+    size_t rxBufferCount;
+    size_t rxBufferIn;
+    size_t rxBufferOut;
+    size_t rxBufferSize;
 
-    bool                                isOpened;
-    bool                                handshaking;
+    USART_TypeDef_Ptr portPtr;
 
-    TinyCLR_Uart_ErrorReceivedHandler   errorEventHandler;
-    TinyCLR_Uart_DataReceivedHandler    dataReceivedEventHandler;
+    bool isOpened;
+    bool handshaking;
 
-    const TinyCLR_Uart_Controller*        provider;
+    TinyCLR_Uart_ErrorReceivedHandler errorEventHandler;
+    TinyCLR_Uart_DataReceivedHandler dataReceivedEventHandler;
 
+    const TinyCLR_Uart_Controller* controller;
 };
 
-static const STM32F4_Gpio_Pin g_STM32F4_Uart_Tx_Pins[] = STM32F4_UART_TX_PINS;
-static const STM32F4_Gpio_Pin g_STM32F4_Uart_Rx_Pins[] = STM32F4_UART_RX_PINS;
-static const STM32F4_Gpio_Pin g_STM32F4_Uart_Cts_Pins[] = STM32F4_UART_CTS_PINS;
-static const STM32F4_Gpio_Pin g_STM32F4_Uart_Rts_Pins[] = STM32F4_UART_RTS_PINS;
-static const uint32_t g_STM32F4_Uart_RxDefaultBuffersSize[] = STM32F4_UART_DEFAULT_RX_BUFFER_SIZE;
-static const uint32_t g_STM32F4_Uart_TxDefaultBuffersSize[] = STM32F4_UART_DEFAULT_TX_BUFFER_SIZE;
+static const STM32F4_Gpio_Pin STM32F4_Uart_Tx_Pins[] = STM32F4_UART_TX_PINS;
+static const STM32F4_Gpio_Pin STM32F4_Uart_Rx_Pins[] = STM32F4_UART_RX_PINS;
+static const STM32F4_Gpio_Pin STM32F4_Uart_Cts_Pins[] = STM32F4_UART_CTS_PINS;
+static const STM32F4_Gpio_Pin STM32F4_Uart_Rts_Pins[] = STM32F4_UART_RTS_PINS;
+static const uint32_t STM32F4_Uart_RxDefaultBuffersSize[] = STM32F4_UART_DEFAULT_RX_BUFFER_SIZE;
+static const uint32_t STM32F4_Uart_TxDefaultBuffersSize[] = STM32F4_UART_DEFAULT_TX_BUFFER_SIZE;
 
-static const int TOTAL_UART_CONTROLLERS = SIZEOF_ARRAY(g_STM32F4_Uart_Tx_Pins);
+static const int TOTAL_UART_CONTROLLERS = SIZEOF_ARRAY(STM32F4_Uart_Tx_Pins);
 
-static UartController g_UartController[TOTAL_UART_CONTROLLERS];
+static USART_TypeDef_Ptr STM32F4_Uart_Ports[TOTAL_UART_CONTROLLERS];
 
-static USART_TypeDef_Ptr g_STM32F4_Uart_Ports[TOTAL_UART_CONTROLLERS];
-
-static TinyCLR_Uart_Controller uartProviders;
-static TinyCLR_Api_Info uartApi;
+static UartDriver uartDrivers[TOTAL_UART_CONTROLLERS];
+static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
+static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F4_Uart_GetApi() {
-    uartProviders.ApiInfo = &uartApi;
-    uartProviders.Acquire = &STM32F4_Uart_Acquire;
-    uartProviders.Release = &STM32F4_Uart_Release;
-    uartProviders.SetActiveSettings = &STM32F4_Uart_SetActiveSettings;
-    uartProviders.Flush = &STM32F4_Uart_Flush;
-    uartProviders.Read = &STM32F4_Uart_Read;
-    uartProviders.Write = &STM32F4_Uart_Write;
-    uartProviders.SetPinChangedHandler = &STM32F4_Uart_SetPinChangedHandler;
-    uartProviders.SetErrorReceivedHandler = &STM32F4_Uart_SetErrorReceivedHandler;
-    uartProviders.SetDataReceivedHandler = &STM32F4_Uart_SetDataReceivedHandler;
-    uartProviders.GetBreakSignalState = &STM32F4_Uart_GetBreakSignalState;
-    uartProviders.SetBreakSignalState = &STM32F4_Uart_SetBreakSignalState;
-    uartProviders.GetCarrierDetectState = &STM32F4_Uart_GetCarrierDetectState;
-    uartProviders.GetClearToSendState = &STM32F4_Uart_GetClearToSendState;
-    uartProviders.GetDataReadyState = &STM32F4_Uart_GetDataReadyState;
-    uartProviders.GetIsDataTerminalReadyEnabled = &STM32F4_Uart_GetIsDataTerminalReadyEnabled;
-    uartProviders.SetIsDataTerminalReadyEnabled = &STM32F4_Uart_SetIsDataTerminalReadyEnabled;
-    uartProviders.GetIsRequestToSendEnabled = &STM32F4_Uart_GetIsRequestToSendEnabled;
-    uartProviders.SetIsRequestToSendEnabled = &STM32F4_Uart_SetIsRequestToSendEnabled;
-    uartProviders.GetReadBufferSize = &STM32F4_Uart_GetReadBufferSize;
-    uartProviders.SetReadBufferSize = &STM32F4_Uart_SetReadBufferSize;
-    uartProviders.GetWriteBufferSize = &STM32F4_Uart_GetWriteBufferSize;
-    uartProviders.SetWriteBufferSize = &STM32F4_Uart_SetWriteBufferSize;
-    uartProviders.GetUnreadCount = &STM32F4_Uart_GetUnreadCount;
-    uartProviders.GetUnwrittenCount = &STM32F4_Uart_GetUnwrittenCount;
-    uartProviders.ClearReadBuffer = &STM32F4_Uart_ClearReadBuffer;
-    uartProviders.ClearWriteBuffer = &STM32F4_Uart_ClearWriteBuffer;
-    uartProviders.GetControllerCount = &STM32F4_Uart_GetControllerCount;
+    for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        uartControllers[i].ApiInfo = &uartApi[i];
+        uartControllers[i].Acquire = &STM32F4_Uart_Acquire;
+        uartControllers[i].Release = &STM32F4_Uart_Release;
+        uartControllers[i].SetActiveSettings = &STM32F4_Uart_SetActiveSettings;
+        uartControllers[i].Flush = &STM32F4_Uart_Flush;
+        uartControllers[i].Read = &STM32F4_Uart_Read;
+        uartControllers[i].Write = &STM32F4_Uart_Write;
+        uartControllers[i].SetPinChangedHandler = &STM32F4_Uart_SetPinChangedHandler;
+        uartControllers[i].SetErrorReceivedHandler = &STM32F4_Uart_SetErrorReceivedHandler;
+        uartControllers[i].SetDataReceivedHandler = &STM32F4_Uart_SetDataReceivedHandler;
+        uartControllers[i].GetBreakSignalState = &STM32F4_Uart_GetBreakSignalState;
+        uartControllers[i].SetBreakSignalState = &STM32F4_Uart_SetBreakSignalState;
+        uartControllers[i].GetCarrierDetectState = &STM32F4_Uart_GetCarrierDetectState;
+        uartControllers[i].GetClearToSendState = &STM32F4_Uart_GetClearToSendState;
+        uartControllers[i].GetDataReadyState = &STM32F4_Uart_GetDataReadyState;
+        uartControllers[i].GetIsDataTerminalReadyEnabled = &STM32F4_Uart_GetIsDataTerminalReadyEnabled;
+        uartControllers[i].SetIsDataTerminalReadyEnabled = &STM32F4_Uart_SetIsDataTerminalReadyEnabled;
+        uartControllers[i].GetIsRequestToSendEnabled = &STM32F4_Uart_GetIsRequestToSendEnabled;
+        uartControllers[i].SetIsRequestToSendEnabled = &STM32F4_Uart_SetIsRequestToSendEnabled;
+        uartControllers[i].GetReadBufferSize = &STM32F4_Uart_GetReadBufferSize;
+        uartControllers[i].SetReadBufferSize = &STM32F4_Uart_SetReadBufferSize;
+        uartControllers[i].GetWriteBufferSize = &STM32F4_Uart_GetWriteBufferSize;
+        uartControllers[i].SetWriteBufferSize = &STM32F4_Uart_SetWriteBufferSize;
+        uartControllers[i].GetUnreadCount = &STM32F4_Uart_GetUnreadCount;
+        uartControllers[i].GetUnwrittenCount = &STM32F4_Uart_GetUnwrittenCount;
+        uartControllers[i].ClearReadBuffer = &STM32F4_Uart_ClearReadBuffer;
+        uartControllers[i].ClearWriteBuffer = &STM32F4_Uart_ClearWriteBuffer;
 
-    uartApi.Author = "GHI Electronics, LLC";
-    uartApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.UartProvider";
-    uartApi.Type = TinyCLR_Api_Type::UartProvider;
-    uartApi.Version = 0;
-    uartApi.Implementation = &uartProviders;
+        uartApi[i].Author = "GHI Electronics, LLC";
+        uartApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.UartController";
+        uartApi[i].Type = TinyCLR_Api_Type::UartController;
+        uartApi[i].Version = 0;
+        uartApi[i].Implementation = &uartControllers[i];
+        uartApi[i].State = &uartDrivers[i];
 
-    if (TOTAL_UART_CONTROLLERS > 0) g_STM32F4_Uart_Ports[0] = USART1;
-    if (TOTAL_UART_CONTROLLERS > 1) g_STM32F4_Uart_Ports[1] = USART2;
+        uartDrivers[i].controllerIndex = i;
+    }
+
+    if (TOTAL_UART_CONTROLLERS > 0) STM32F4_Uart_Ports[0] = USART1;
+    if (TOTAL_UART_CONTROLLERS > 1) STM32F4_Uart_Ports[1] = USART2;
 #if !defined(STM32F401xE) && !defined(STM32F411xE)
-    if (TOTAL_UART_CONTROLLERS > 2) g_STM32F4_Uart_Ports[2] = USART3;
-    if (TOTAL_UART_CONTROLLERS > 3) g_STM32F4_Uart_Ports[3] = UART4;
-    if (TOTAL_UART_CONTROLLERS > 4) g_STM32F4_Uart_Ports[4] = UART5;
-    if (TOTAL_UART_CONTROLLERS > 5) g_STM32F4_Uart_Ports[5] = USART6;
+    if (TOTAL_UART_CONTROLLERS > 2) STM32F4_Uart_Ports[2] = USART3;
+    if (TOTAL_UART_CONTROLLERS > 3) STM32F4_Uart_Ports[3] = UART4;
+    if (TOTAL_UART_CONTROLLERS > 4) STM32F4_Uart_Ports[4] = UART5;
+    if (TOTAL_UART_CONTROLLERS > 5) STM32F4_Uart_Ports[5] = USART6;
 #ifdef UART7
-    if (TOTAL_UART_CONTROLLERS > 6) g_STM32F4_Uart_Ports[6] = UART7;
+    if (TOTAL_UART_CONTROLLERS > 6) STM32F4_Uart_Ports[6] = UART7;
 #ifdef UART8
-    if (TOTAL_UART_CONTROLLERS > 7) g_STM32F4_Uart_Ports[7] = UART8;
+    if (TOTAL_UART_CONTROLLERS > 7) STM32F4_Uart_Ports[7] = UART8;
 #ifdef UART9
-    if (TOTAL_UART_CONTROLLERS > 8) g_STM32F4_Uart_Ports[8] = UART9;
+    if (TOTAL_UART_CONTROLLERS > 8) STM32F4_Uart_Ports[8] = UART9;
 #endif
 #endif
 #endif
 #endif
-    return &uartApi;
+    return (const TinyCLR_Api_Info*)&uartApi;
 }
 
 TinyCLR_Result STM32F4_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t& size) {
-    size = g_UartController[controller].rxBufferSize == 0 ? g_STM32F4_Uart_RxDefaultBuffersSize[controller] : g_UartController[controller].rxBufferSize;
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+
+    int32_t controllerIndex = driver->controllerIndex;
+
+    size = driver->rxBufferSize == 0 ? STM32F4_Uart_RxDefaultBuffersSize[controllerIndex] : driver->rxBufferSize;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
 
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
 
-    if (g_UartController[controller].rxBufferSize) {
-        memoryProvider->Free(memoryProvider, g_UartController[controller].RxBuffer);
+    if (driver->rxBufferSize) {
+        memoryProvider->Free(memoryProvider, driver->RxBuffer);
     }
 
-    g_UartController[controller].rxBufferSize = size;
+    driver->rxBufferSize = size;
 
-    g_UartController[controller].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
+    driver->RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
 
-    if (g_UartController[controller].RxBuffer == nullptr) {
-        g_UartController[controller].rxBufferSize = 0;
+    if (driver->RxBuffer == nullptr) {
+        driver->rxBufferSize = 0;
 
         return TinyCLR_Result::OutOfMemory;
     }
@@ -162,27 +172,33 @@ TinyCLR_Result STM32F4_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* sel
 }
 
 TinyCLR_Result STM32F4_Uart_GetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t& size) {
-    size = g_UartController[controller].txBufferSize == 0 ? g_STM32F4_Uart_TxDefaultBuffersSize[controller] : g_UartController[controller].txBufferSize;
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+
+    int32_t controllerIndex = driver->controllerIndex;
+
+    size = driver->txBufferSize == 0 ? STM32F4_Uart_TxDefaultBuffersSize[controllerIndex] : driver->txBufferSize;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
 
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
 
-    if (g_UartController[controller].txBufferSize) {
-        memoryProvider->Free(memoryProvider, g_UartController[controller].TxBuffer);
+    if (driver->txBufferSize) {
+        memoryProvider->Free(memoryProvider, driver->TxBuffer);
     }
 
-    g_UartController[controller].txBufferSize = size;
+    driver->txBufferSize = size;
 
-    g_UartController[controller].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
+    driver->TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
 
-    if (g_UartController[controller].TxBuffer == nullptr) {
-        g_UartController[controller].txBufferSize = 0;
+    if (driver->TxBuffer == nullptr) {
+        driver->txBufferSize = 0;
 
         return TinyCLR_Result::OutOfMemory;
     }
@@ -190,67 +206,71 @@ TinyCLR_Result STM32F4_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* se
     return TinyCLR_Result::Success;
 }
 
-void STM32F4_Uart_IrqRx(int controller, uint16_t sr) {
+void STM32F4_Uart_IrqRx(int controllerIndex, uint16_t sr) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    uint8_t data = (uint8_t)(g_UartController[controller].portPtr->DR); // read RX data
+    auto driver = reinterpret_cast<UartDriver*>(&uartDrivers[controllerIndex]);
 
-    if (g_UartController[controller].rxBufferCount == g_UartController[controller].rxBufferSize) {
-        if (g_UartController[controller].errorEventHandler != nullptr)
-            g_UartController[controller].errorEventHandler(g_UartController[controller].provider, controller, TinyCLR_Uart_Error::ReceiveFull);
+    uint8_t data = (uint8_t)(driver->portPtr->DR); // read RX data
+
+    if (driver->rxBufferCount == driver->rxBufferSize) {
+        if (driver->errorEventHandler != nullptr)
+            driver->errorEventHandler(driver->controller, TinyCLR_Uart_Error::ReceiveFull);
 
         return;
     }
 
-    g_UartController[controller].RxBuffer[g_UartController[controller].rxBufferIn++] = data;
+    driver->RxBuffer[driver->rxBufferIn++] = data;
 
-    g_UartController[controller].rxBufferCount++;
+    driver->rxBufferCount++;
 
-    if (g_UartController[controller].rxBufferIn == g_UartController[controller].rxBufferSize)
-        g_UartController[controller].rxBufferIn = 0;
+    if (driver->rxBufferIn == driver->rxBufferSize)
+        driver->rxBufferIn = 0;
 
-    if (g_UartController[controller].dataReceivedEventHandler != nullptr)
-        g_UartController[controller].dataReceivedEventHandler(g_UartController[controller].provider, controller, 1);
+    if (driver->dataReceivedEventHandler != nullptr)
+        driver->dataReceivedEventHandler(driver->controller, 1);
 
-    if (g_UartController[controller].errorEventHandler != nullptr) {
+    if (driver->errorEventHandler != nullptr) {
         if (sr & USART_SR_ORE)
-            g_UartController[controller].errorEventHandler(g_UartController[controller].provider, controller, TinyCLR_Uart_Error::BufferOverrun);
+            driver->errorEventHandler(driver->controller, TinyCLR_Uart_Error::BufferOverrun);
 
         if (sr & USART_SR_FE)
-            g_UartController[controller].errorEventHandler(g_UartController[controller].provider, controller, TinyCLR_Uart_Error::Frame);
+            driver->errorEventHandler(driver->controller, TinyCLR_Uart_Error::Frame);
 
         if (sr & USART_SR_PE)
-            g_UartController[controller].errorEventHandler(g_UartController[controller].provider, controller, TinyCLR_Uart_Error::ReceiveParity);
+            driver->errorEventHandler(driver->controller, TinyCLR_Uart_Error::ReceiveParity);
     }
 }
 
-void STM32F4_Uart_IrqTx(int controller) {
+void STM32F4_Uart_IrqTx(int controllerIndex) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (STM32F4_Uart_TxHandshakeEnabledState(controller)) {
-        if (g_UartController[controller].txBufferCount > 0) {
-            uint8_t data = g_UartController[controller].TxBuffer[g_UartController[controller].txBufferOut++];
+    auto driver = reinterpret_cast<UartDriver*>(&uartDrivers[controllerIndex]);
 
-            g_UartController[controller].txBufferCount--;
+    if (STM32F4_Uart_TxHandshakeEnabledState(controllerIndex)) {
+        if (driver->txBufferCount > 0) {
+            uint8_t data = driver->TxBuffer[driver->txBufferOut++];
 
-            if (g_UartController[controller].txBufferOut == g_UartController[controller].txBufferSize)
-                g_UartController[controller].txBufferOut = 0;
+            driver->txBufferCount--;
 
-            g_UartController[controller].portPtr->DR = data; // write TX data
+            if (driver->txBufferOut == driver->txBufferSize)
+                driver->txBufferOut = 0;
+
+            driver->portPtr->DR = data; // write TX data
 
         }
         else {
-            STM32F4_Uart_TxBufferEmptyInterruptEnable(controller, false); // Disable interrupt when no more data to send.
+            STM32F4_Uart_TxBufferEmptyInterruptEnable(controllerIndex, false); // Disable interrupt when no more data to send.
         }
     }
 }
 
-void STM32F4_Uart_InterruptHandler(int8_t controller, uint16_t sr) {
+void STM32F4_Uart_InterruptHandler(int8_t controllerIndex, uint16_t sr) {
     if (sr & USART_SR_RXNE)
-        STM32F4_Uart_IrqRx(controller, sr);
+        STM32F4_Uart_IrqRx(controllerIndex, sr);
 
     if (sr & USART_SR_TXE)
-        STM32F4_Uart_IrqTx(controller);
+        STM32F4_Uart_IrqTx(controllerIndex);
 }
 
 void STM32F4_Uart_Interrupt0(void* param) {
@@ -313,62 +333,67 @@ void STM32F4_Uart_Interrupt8(void* param) {
 #endif
 
 TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
 
+    int32_t controllerIndex = driver->controllerIndex;
 
-    if (controller >= TOTAL_UART_CONTROLLERS)
+    if (controllerIndex >= TOTAL_UART_CONTROLLERS)
         return TinyCLR_Result::ArgumentInvalid;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (g_UartController[controller].isOpened || !STM32F4_GpioInternal_OpenPin(g_STM32F4_Uart_Rx_Pins[controller].number) || !STM32F4_GpioInternal_OpenPin(g_STM32F4_Uart_Tx_Pins[controller].number))
+    if (driver->isOpened || !STM32F4_GpioInternal_OpenPin(STM32F4_Uart_Rx_Pins[controllerIndex].number) || !STM32F4_GpioInternal_OpenPin(STM32F4_Uart_Tx_Pins[controllerIndex].number))
         return TinyCLR_Result::SharingViolation;
 
-    g_UartController[controller].txBufferCount = 0;
-    g_UartController[controller].txBufferIn = 0;
-    g_UartController[controller].txBufferOut = 0;
+    driver->txBufferCount = 0;
+    driver->txBufferIn = 0;
+    driver->txBufferOut = 0;
 
-    g_UartController[controller].rxBufferCount = 0;
-    g_UartController[controller].rxBufferIn = 0;
-    g_UartController[controller].rxBufferOut = 0;
+    driver->rxBufferCount = 0;
+    driver->rxBufferIn = 0;
+    driver->rxBufferOut = 0;
 
-    g_UartController[controller].portPtr = g_STM32F4_Uart_Ports[controller];
-    g_UartController[controller].provider = self;
+    driver->portPtr = STM32F4_Uart_Ports[controllerIndex];
+    driver->controller = self;
 
-    g_UartController[controller].handshaking = false;
+    driver->handshaking = false;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self, uint32_t baudRate, uint32_t dataBits, TinyCLR_Uart_Parity parity, TinyCLR_Uart_StopBitCount stopBits, TinyCLR_Uart_Handshake handshaking) {
-
     uint32_t clk;
 
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+
+    int32_t controllerIndex = driver->controllerIndex;
+
     // enable UART clock
-    if (controller == 5) { // COM6 on APB2
+    if (controllerIndex == 5) { // COM6 on APB2
         RCC->APB2ENR |= RCC_APB2ENR_USART6EN;
         clk = STM32F4_APB2_CLOCK_HZ;
     }
-    else if (controller == 0) { // COM1 on APB2
+    else if (controllerIndex == 0) { // COM1 on APB2
         RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
         clk = STM32F4_APB2_CLOCK_HZ;
     }
-    else if (controller < 5) { // COM2-5 on APB1
-        RCC->APB1ENR |= RCC_APB1ENR_USART2EN >> 1 << controller;
+    else if (controllerIndex < 5) { // COM2-5 on APB1
+        RCC->APB1ENR |= RCC_APB1ENR_USART2EN >> 1 << controllerIndex;
         clk = STM32F4_APB1_CLOCK_HZ;
     }
 #if !defined(STM32F401xE) && !defined(STM32F411xE)
 #ifdef UART7
-    else if (controller == 6) {
+    else if (controllerIndex == 6) {
         RCC->APB1ENR |= RCC_APB1ENR_UART7EN;
         clk = STM32F4_APB1_CLOCK_HZ;
     }
 #ifdef UART8
-    else if (controller == 7) {
+    else if (controllerIndex == 7) {
         RCC->APB1ENR |= RCC_APB1ENR_UART8EN;
         clk = STM32F4_APB1_CLOCK_HZ;
     }
 #ifdef UART9
-    else if (controller == 8) {
+    else if (controllerIndex == 8) {
         RCC->APB2ENR |= RCC_APB2ENR_UART9EN;
         clk = STM32F4_APB2_CLOCK_HZ;
     }
@@ -382,7 +407,7 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
     while ((clk / div) > baudRate)
         div++;
 
-    g_UartController[controller].portPtr->BRR = div;
+    driver->portPtr->BRR = div;
 
     // control
     uint16_t ctrl_cr1 = USART_CR1_TE | USART_CR1_RE;
@@ -402,7 +427,7 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
             return TinyCLR_Result::ArgumentInvalid;
     }
 
-    g_UartController[controller].portPtr->CR1 = ctrl_cr1;
+    driver->portPtr->CR1 = ctrl_cr1;
 
 
     uint32_t stopbit = USART_STOP_BITS_NONE;
@@ -420,7 +445,7 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
         break;
     }
 
-    g_UartController[controller].portPtr->CR2 = (uint16_t)(stopbit << 12);
+    driver->portPtr->CR2 = (uint16_t)(stopbit << 12);
 
     uint16_t ctrl_cr3 = 0;
 
@@ -428,7 +453,7 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
     case TinyCLR_Uart_Handshake::RequestToSend:
         ctrl_cr3 = USART_CR3_CTSE | USART_CR3_RTSE;
 
-        g_UartController[controller].handshaking = true;
+        driver->handshaking = true;
         break;
 
     case TinyCLR_Uart_Handshake::XOnXOff:
@@ -436,12 +461,12 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
         return TinyCLR_Result::NotSupported;
     }
 
-    g_UartController[controller].portPtr->CR3 = ctrl_cr3;
+    driver->portPtr->CR3 = ctrl_cr3;
 
-    auto& tx = g_STM32F4_Uart_Tx_Pins[controller];
-    auto& rx = g_STM32F4_Uart_Rx_Pins[controller];
-    auto& cts = g_STM32F4_Uart_Cts_Pins[controller];
-    auto& rts = g_STM32F4_Uart_Rts_Pins[controller];
+    auto& tx = STM32F4_Uart_Tx_Pins[controllerIndex];
+    auto& rx = STM32F4_Uart_Rx_Pins[controllerIndex];
+    auto& cts = STM32F4_Uart_Cts_Pins[controllerIndex];
+    auto& rts = STM32F4_Uart_Rts_Pins[controllerIndex];
 
     STM32F4_GpioInternal_ConfigurePin(rx.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::PullUp, rx.alternateFunction);
     STM32F4_GpioInternal_ConfigurePin(tx.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, tx.alternateFunction);
@@ -454,7 +479,7 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
         STM32F4_GpioInternal_ConfigurePin(rts.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, rts.alternateFunction);
     }
 
-    switch (controller) {
+    switch (controllerIndex) {
     case 0:
         STM32F4_InterruptInternal_Activate(USART1_IRQn, (uint32_t*)&STM32F4_Uart_Interrupt0, 0);
         break;
@@ -499,22 +524,22 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
 #endif
     }
 
-    g_UartController[controller].isOpened = true;
+    driver->isOpened = true;
 
-    if (g_UartController[controller].txBufferSize == 0) {
-        if (STM32F4_Uart_SetWriteBufferSize(self, controller, g_STM32F4_Uart_TxDefaultBuffersSize[controller]) != TinyCLR_Result::Success)
+    if (driver->txBufferSize == 0) {
+        if (STM32F4_Uart_SetWriteBufferSize(self, STM32F4_Uart_TxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
             return TinyCLR_Result::OutOfMemory;
     }
 
-    if (g_UartController[controller].rxBufferSize == 0) {
-        if (STM32F4_Uart_SetReadBufferSize(self, controller, g_STM32F4_Uart_RxDefaultBuffersSize[controller]) != TinyCLR_Result::Success)
+    if (driver->rxBufferSize == 0) {
+        if (STM32F4_Uart_SetReadBufferSize(self, STM32F4_Uart_RxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
             return TinyCLR_Result::OutOfMemory;
     }
 
-    STM32F4_Uart_TxBufferEmptyInterruptEnable(controller, true);
-    STM32F4_Uart_RxBufferFullInterruptEnable(controller, true);
+    STM32F4_Uart_TxBufferEmptyInterruptEnable(controllerIndex, true);
+    STM32F4_Uart_RxBufferFullInterruptEnable(controllerIndex, true);
 
-    g_UartController[controller].portPtr->CR1 |= USART_CR1_UE; // start uart
+    driver->portPtr->CR1 |= USART_CR1_UE; // start uart
 
     return ((cts.number == PIN_NONE || rts.number == PIN_NONE) && handshaking == TinyCLR_Uart_Handshake::RequestToSend) ? TinyCLR_Result::NotSupported : TinyCLR_Result::Success;
 }
@@ -522,11 +547,13 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
 TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Controller* self) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
 
+    int32_t controllerIndex = driver->controllerIndex;
 
-    g_UartController[controller].portPtr->CR1 = 0; // stop uart
+    driver->portPtr->CR1 = 0; // stop uart
 
-    switch (controller) {
+    switch (controllerIndex) {
     case 0:
         STM32F4_InterruptInternal_Deactivate(USART1_IRQn);
         break;
@@ -571,106 +598,110 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Controller* self) {
 #endif
     }
 
-    STM32F4_Uart_RxBufferFullInterruptEnable(controller, false);
-    STM32F4_Uart_TxBufferEmptyInterruptEnable(controller, false);
+    STM32F4_Uart_RxBufferFullInterruptEnable(controllerIndex, false);
+    STM32F4_Uart_TxBufferEmptyInterruptEnable(controllerIndex, false);
 
     // disable UART clock
-    if (controller == 5) { // COM6 on APB2
+    if (controllerIndex == 5) { // COM6 on APB2
         RCC->APB2ENR &= ~RCC_APB2ENR_USART6EN;
     }
-    else if (controller == 0) { // COM1 on APB2
+    else if (controllerIndex == 0) { // COM1 on APB2
         RCC->APB2ENR &= ~RCC_APB2ENR_USART1EN;
     }
-    else if (controller < 5) { // COM2-5 on APB1
-        RCC->APB1ENR &= ~(RCC_APB1ENR_USART2EN >> 1 << controller);
+    else if (controllerIndex < 5) { // COM2-5 on APB1
+        RCC->APB1ENR &= ~(RCC_APB1ENR_USART2EN >> 1 << controllerIndex);
     }
 #if !defined(STM32F401xE) && !defined(STM32F411xE)
 #ifdef UART7
-    else if (controller == 6) {
+    else if (controllerIndex == 6) {
         RCC->APB1ENR &= ~RCC_APB1ENR_UART7EN;
     }
 
 #ifdef UART8
-    else if (controller == 7) {
+    else if (controllerIndex == 7) {
         RCC->APB1ENR &= ~RCC_APB1ENR_UART8EN;
     }
 
 #ifdef UART9
-    else if (controller == 8) {
+    else if (controllerIndex == 8) {
         RCC->APB2ENR &= ~RCC_APB2ENR_UART9EN;
     }
 #endif
 #endif
 #endif
 #endif
-    if (apiProvider != nullptr) {
-        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    if (apiManager != nullptr) {
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-        if (g_UartController[controller].txBufferSize != 0) {
-            memoryProvider->Free(memoryProvider, g_UartController[controller].TxBuffer);
+        if (driver->txBufferSize != 0) {
+            memoryProvider->Free(memoryProvider, driver->TxBuffer);
 
-            g_UartController[controller].txBufferSize = 0;
+            driver->txBufferSize = 0;
         }
 
-        if (g_UartController[controller].rxBufferSize != 0) {
-            memoryProvider->Free(memoryProvider, g_UartController[controller].RxBuffer);
+        if (driver->rxBufferSize != 0) {
+            memoryProvider->Free(memoryProvider, driver->RxBuffer);
 
-            g_UartController[controller].rxBufferSize = 0;
-        }
-    }
-
-    if (g_UartController[controller].isOpened) {
-        STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Rx_Pins[controller].number);
-        STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Tx_Pins[controller].number);
-
-        if (g_UartController[controller].handshaking) {
-            STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Cts_Pins[controller].number);
-            STM32F4_GpioInternal_ClosePin(g_STM32F4_Uart_Rts_Pins[controller].number);
+            driver->rxBufferSize = 0;
         }
     }
 
-    g_UartController[controller].isOpened = false;
+    if (driver->isOpened) {
+        STM32F4_GpioInternal_ClosePin(STM32F4_Uart_Rx_Pins[controllerIndex].number);
+        STM32F4_GpioInternal_ClosePin(STM32F4_Uart_Tx_Pins[controllerIndex].number);
+
+        if (driver->handshaking) {
+            STM32F4_GpioInternal_ClosePin(STM32F4_Uart_Cts_Pins[controllerIndex].number);
+            STM32F4_GpioInternal_ClosePin(STM32F4_Uart_Rts_Pins[controllerIndex].number);
+        }
+    }
+
+    driver->isOpened = false;
 
     return TinyCLR_Result::Success;
 }
 
 void STM32F4_Uart_Reset() {
     for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
-        g_UartController[i].txBufferSize = 0;
-        g_UartController[i].rxBufferSize = 0;
+        uartDrivers[i].txBufferSize = 0;
+        uartDrivers[i].rxBufferSize = 0;
 
-        STM32F4_Uart_Release(&uartProviders, i);
+        STM32F4_Uart_Release(&uartControllers[i]);
 
-        g_UartController[i].isOpened = false;
+        uartDrivers[i].isOpened = false;
     }
 }
 
-void STM32F4_Uart_TxBufferEmptyInterruptEnable(int controller, bool enable) {
+void STM32F4_Uart_TxBufferEmptyInterruptEnable(int controllerIndex, bool enable) {
+    auto driver = &uartDrivers[controllerIndex];
+
     if (enable) {
-        g_UartController[controller].portPtr->CR1 |= USART_CR1_TXEIE;  // tx int enable
+        driver->portPtr->CR1 |= USART_CR1_TXEIE;  // tx int enable
     }
     else {
-        g_UartController[controller].portPtr->CR1 &= ~USART_CR1_TXEIE; // tx int disable
+        driver->portPtr->CR1 &= ~USART_CR1_TXEIE; // tx int disable
     }
 }
 
-void STM32F4_Uart_RxBufferFullInterruptEnable(int controller, bool enable) {
+void STM32F4_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable) {
+    auto driver = &uartDrivers[controllerIndex];
+
     if (enable) {
-        g_UartController[controller].portPtr->CR1 |= USART_CR1_RXNEIE;  // rx int enable
+        driver->portPtr->CR1 |= USART_CR1_RXNEIE;  // rx int enable
     }
     else {
-        g_UartController[controller].portPtr->CR1 &= ~USART_CR1_RXNEIE; // rx int disable
+        driver->portPtr->CR1 &= ~USART_CR1_RXNEIE; // rx int disable
     }
 }
 
-bool STM32F4_Uart_TxHandshakeEnabledState(int controller) {
+bool STM32F4_Uart_TxHandshakeEnabledState(int controllerIndex) {
+    auto driver = &uartDrivers[controllerIndex];
+
     // The state of the CTS input only matters if Flow Control is enabled
-    if (g_UartController[controller].portPtr->CR3 & USART_CR3_CTSE) {
+    if (driver->portPtr->CR3 & USART_CR3_CTSE) {
         TinyCLR_Gpio_PinValue value;
 
-        auto gpioController = 0; //TODO Temporary set to 0
-
-        STM32F4_Gpio_Read(nullptr, gpioController, g_STM32F4_Uart_Cts_Pins[controller].number, value);
+        STM32F4_Gpio_Read(nullptr, STM32F4_Uart_Cts_Pins[controllerIndex].number, value);
 
         return !(value == TinyCLR_Gpio_PinValue::High);
     }
@@ -679,10 +710,10 @@ bool STM32F4_Uart_TxHandshakeEnabledState(int controller) {
 }
 
 TinyCLR_Result STM32F4_Uart_Flush(const TinyCLR_Uart_Controller* self) {
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
 
-
-    if (g_UartController[controller].isOpened) {
-        while (g_UartController[controller].txBufferCount > 0) {
+    if (driver->isOpened) {
+        while (driver->txBufferCount > 0) {
             STM32F4_Time_Delay(nullptr, 1);
         }
     }
@@ -696,21 +727,23 @@ TinyCLR_Result STM32F4_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* b
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (g_UartController[controller].isOpened == false) {
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+
+    if (driver->isOpened == false) {
         return TinyCLR_Result::NotAvailable;
     }
 
-    length = std::min(g_UartController[controller].rxBufferCount, length);
+    length = std::min(driver->rxBufferCount, length);
 
     while (i < length) {
-        buffer[i++] = g_UartController[controller].RxBuffer[g_UartController[controller].rxBufferOut];
+        buffer[i++] = driver->RxBuffer[driver->rxBufferOut];
 
-        g_UartController[controller].rxBufferOut++;
+        driver->rxBufferOut++;
 
-        g_UartController[controller].rxBufferCount--;
+        driver->rxBufferCount--;
 
-        if (g_UartController[controller].rxBufferOut == g_UartController[controller].rxBufferSize)
-            g_UartController[controller].rxBufferOut = 0;
+        if (driver->rxBufferOut == driver->rxBufferSize)
+            driver->rxBufferOut = 0;
     }
 
     return TinyCLR_Result::Success;
@@ -722,33 +755,37 @@ TinyCLR_Result STM32F4_Uart_Write(const TinyCLR_Uart_Controller* self, const uin
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (g_UartController[controller].isOpened == false) {
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+
+    int32_t controllerIndex = driver->controllerIndex;
+
+    if (driver->isOpened == false) {
         return TinyCLR_Result::NotAvailable;
     }
 
-    length = std::min(g_UartController[controller].txBufferSize - g_UartController[controller].txBufferCount, length);
+    length = std::min(driver->txBufferSize - driver->txBufferCount, length);
 
-    if (g_UartController[controller].txBufferCount == g_UartController[controller].txBufferSize) {
-        if (g_UartController[controller].errorEventHandler != nullptr)
-            g_UartController[controller].errorEventHandler(g_UartController[controller].provider, controller, TinyCLR_Uart_Error::TransmitFull);
+    if (driver->txBufferCount == driver->txBufferSize) {
+        if (driver->errorEventHandler != nullptr)
+            driver->errorEventHandler(driver->controller, TinyCLR_Uart_Error::TransmitFull);
 
         return TinyCLR_Result::Success;
     }
 
     while (i < length) {
 
-        g_UartController[controller].TxBuffer[g_UartController[controller].txBufferIn] = buffer[i++];
+        driver->TxBuffer[driver->txBufferIn] = buffer[i++];
 
-        g_UartController[controller].txBufferCount++;
+        driver->txBufferCount++;
 
-        g_UartController[controller].txBufferIn++;
+        driver->txBufferIn++;
 
-        if (g_UartController[controller].txBufferIn == g_UartController[controller].txBufferSize)
-            g_UartController[controller].txBufferIn = 0;
+        if (driver->txBufferIn == driver->txBufferSize)
+            driver->txBufferIn = 0;
     }
 
     if (length > 0) {
-        STM32F4_Uart_TxBufferEmptyInterruptEnable(controller, true); // Enable Tx to start transfer
+        STM32F4_Uart_TxBufferEmptyInterruptEnable(controllerIndex, true); // Enable Tx to start transfer
     }
 
     return TinyCLR_Result::Success;
@@ -759,17 +796,17 @@ TinyCLR_Result STM32F4_Uart_SetPinChangedHandler(const TinyCLR_Uart_Controller* 
     return TinyCLR_Result::Success;
 }
 TinyCLR_Result STM32F4_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ErrorReceivedHandler handler) {
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
 
-
-    g_UartController[controller].errorEventHandler = handler;
+    driver->errorEventHandler = handler;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_DataReceivedHandler handler) {
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
 
-
-    g_UartController[controller].dataReceivedEventHandler = handler;
+    driver->dataReceivedEventHandler = handler;
 
     return TinyCLR_Result::Success;
 }
@@ -811,31 +848,33 @@ TinyCLR_Result STM32F4_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Control
 }
 
 TinyCLR_Result STM32F4_Uart_GetUnreadCount(const TinyCLR_Uart_Controller* self, size_t& count) {
-    count = g_UartController[controller].rxBufferCount;
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+
+    count = driver->rxBufferCount;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Uart_GetUnwrittenCount(const TinyCLR_Uart_Controller* self, size_t& count) {
-    count = g_UartController[controller].txBufferCount;
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+
+    count = driver->txBufferCount;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Uart_ClearReadBuffer(const TinyCLR_Uart_Controller* self) {
-    g_UartController[controller].rxBufferCount = g_UartController[controller].rxBufferIn = g_UartController[controller].rxBufferOut = 0;
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+
+    driver->rxBufferCount = driver->rxBufferIn = driver->rxBufferOut = 0;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self) {
-    g_UartController[controller].txBufferCount = g_UartController[controller].txBufferIn = g_UartController[controller].txBufferOut = 0;
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
 
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result STM32F4_Uart_GetControllerCount(const TinyCLR_Uart_Controller* self, int32_t& count) {
-    count = TOTAL_UART_CONTROLLERS;
+    driver->txBufferCount = driver->txBufferIn = driver->txBufferOut = 0;
 
     return TinyCLR_Result::Success;
 }

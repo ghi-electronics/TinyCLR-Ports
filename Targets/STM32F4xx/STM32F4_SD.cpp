@@ -1860,11 +1860,11 @@ SD_Error SD_ReadBlock(uint8_t *readbuff, uint32_t ReadAddr, uint16_t BlockSize) 
     }
 
     if (SDIO_GetFlagStatus(SDIO_FLAG_DTIMEOUT) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_DTIMEOUT);        
+        SDIO_ClearFlag(SDIO_FLAG_DTIMEOUT);
         return(SD_DATA_TIMEOUT);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_DCRCFAIL) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_DCRCFAIL);        
+        SDIO_ClearFlag(SDIO_FLAG_DCRCFAIL);
         return(SD_DATA_CRC_FAIL);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_RXOVERR) != RESET) {
@@ -1873,7 +1873,7 @@ SD_Error SD_ReadBlock(uint8_t *readbuff, uint32_t ReadAddr, uint16_t BlockSize) 
         //    return(errorstatus);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_STBITERR) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_STBITERR);        
+        SDIO_ClearFlag(SDIO_FLAG_STBITERR);
         return(SD_START_BIT_ERR);
     }
     count = SD_DATATIMEOUT;
@@ -1969,11 +1969,11 @@ SD_Error SD_WriteBlock(uint8_t *writebuff, uint32_t WriteAddr, uint16_t BlockSiz
         }
     }
     if (SDIO_GetFlagStatus(SDIO_FLAG_DTIMEOUT) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_DTIMEOUT);        
+        SDIO_ClearFlag(SDIO_FLAG_DTIMEOUT);
         return(SD_DATA_TIMEOUT);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_DCRCFAIL) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_DCRCFAIL);        
+        SDIO_ClearFlag(SDIO_FLAG_DCRCFAIL);
         return(SD_DATA_CRC_FAIL);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_TXUNDERR) != RESET) {
@@ -1982,7 +1982,7 @@ SD_Error SD_WriteBlock(uint8_t *writebuff, uint32_t WriteAddr, uint16_t BlockSiz
         // return(errorstatus);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_STBITERR) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_STBITERR);        
+        SDIO_ClearFlag(SDIO_FLAG_STBITERR);
         return(SD_START_BIT_ERR);
     }
 #elif defined (SD_DMA_MODE)
@@ -2108,19 +2108,19 @@ SD_Error SD_SendSDStatus(uint32_t *psdstatus) {
     }
 
     if (SDIO_GetFlagStatus(SDIO_FLAG_DTIMEOUT) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_DTIMEOUT);        
+        SDIO_ClearFlag(SDIO_FLAG_DTIMEOUT);
         return(SD_DATA_TIMEOUT);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_DCRCFAIL) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_DCRCFAIL);        
+        SDIO_ClearFlag(SDIO_FLAG_DCRCFAIL);
         return(SD_DATA_CRC_FAIL);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_RXOVERR) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_RXOVERR);        
+        SDIO_ClearFlag(SDIO_FLAG_RXOVERR);
         return(SD_RX_OVERRUN);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_STBITERR) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_STBITERR);        
+        SDIO_ClearFlag(SDIO_FLAG_STBITERR);
         return(SD_START_BIT_ERR);
     }
 
@@ -2565,19 +2565,19 @@ static SD_Error FindSCR(uint16_t rca, uint32_t *pscr) {
     }
 
     if (SDIO_GetFlagStatus(SDIO_FLAG_DTIMEOUT) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_DTIMEOUT);        
+        SDIO_ClearFlag(SDIO_FLAG_DTIMEOUT);
         return(SD_DATA_TIMEOUT);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_DCRCFAIL) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_DCRCFAIL);        
+        SDIO_ClearFlag(SDIO_FLAG_DCRCFAIL);
         return(SD_DATA_CRC_FAIL);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_RXOVERR) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_RXOVERR);        
+        SDIO_ClearFlag(SDIO_FLAG_RXOVERR);
         return(SD_RX_OVERRUN);
     }
     else if (SDIO_GetFlagStatus(SDIO_FLAG_STBITERR) != RESET) {
-        SDIO_ClearFlag(SDIO_FLAG_STBITERR);        
+        SDIO_ClearFlag(SDIO_FLAG_STBITERR);
         return(SD_START_BIT_ERR);
     }
 
@@ -2593,14 +2593,15 @@ static SD_Error FindSCR(uint16_t rca, uint32_t *pscr) {
 
 // stm32f4
 
-static TinyCLR_SdCard_Controller sdCardProvider;
-static TinyCLR_Api_Info sdApi;
-
 #define STM32F4_SD_SECTOR_SIZE 512
 #define STM32F4_SD_TIMEOUT 5000000
+#define TOTAL_SDCARD_CONTROLLERS 1
 
-struct SdController {
-    int32_t controller;
+static TinyCLR_SdCard_Controller sdCardProvider[TOTAL_SDCARD_CONTROLLERS];
+static TinyCLR_Api_Info sdApi[TOTAL_SDCARD_CONTROLLERS];
+
+struct SdCardDriver {
+    int32_t controllerIndex;
     size_t  sectorCount;
 
     size_t  *sectorSizes;
@@ -2613,40 +2614,45 @@ static const STM32F4_Gpio_Pin g_STM32F4_SdCard_Data3_Pins[] = STM32F4_SD_DATA3_P
 static const STM32F4_Gpio_Pin g_STM32F4_SdCard_Clk_Pins[] = STM32F4_SD_CLK_PINS;
 static const STM32F4_Gpio_Pin g_STM32F4_SdCard_Cmd_Pins[] = STM32F4_SD_CMD_PINS;
 
-SdController sdController[1];
+static SdCardDriver sdCardDrivers[TOTAL_SDCARD_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F4_SdCard_GetApi() {
-    sdCardProvider.ApiInfo = &sdApi;
+    for (auto i = 0; < TOTAL_SDCARD_CONTROLLERS; i++) {
+        sdCardProvider[i].ApiInfo = &sdApi[i];
 
-    sdCardProvider.Acquire = &STM32F4_SdCard_Acquire;
-    sdCardProvider.Release = &STM32F4_SdCard_Release;
-    sdCardProvider.GetControllerCount = &STM32F4_SdCard_GetControllerCount;
+        sdCardProvider[i].Acquire = &STM32F4_SdCard_Acquire;
+        sdCardProvider[i].Release = &STM32F4_SdCard_Release;
 
-    sdCardProvider.WriteSectors = &STM32F4_SdCard_WriteSector;
-    sdCardProvider.ReadSectors = &STM32F4_SdCard_ReadSector;
-    sdCardProvider.EraseSectors = &STM32F4_SdCard_EraseSector;
-    sdCardProvider.IsSectorErased = &STM32F4_SdCard_IsSectorErased;
-    sdCardProvider.GetSectorMap = &STM32F4_SdCard_GetSectorMap;
+        sdCardProvider[i].WriteSectors = &STM32F4_SdCard_WriteSector;
+        sdCardProvider[i].ReadSectors = &STM32F4_SdCard_ReadSector;
+        sdCardProvider[i].EraseSectors = &STM32F4_SdCard_EraseSector;
+        sdCardProvider[i].IsSectorErased = &STM32F4_SdCard_IsSectorErased;
+        sdCardProvider[i].GetSectorMap = &STM32F4_SdCard_GetSectorMap;
 
-    sdApi.Author = "GHI Electronics, LLC";
-    sdApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.SdCardProvider";
-    sdApi.Type = TinyCLR_Api_Type::SdCardProvider;
-    sdApi.Version = 0;
-    sdApi.Implementation = &sdCardProvider;
+        sdApi[i].Author = "GHI Electronics, LLC";
+        sdApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.SdCardController";
+        sdApi[i].Type = TinyCLR_Api_Type::SdCardController;
+        sdApi[i].Version = 0;
+        sdApi[i].Implementation = &sdCardProvider[i];
+        sdApi[i].State = &sdCardDrivers[i];
+
+        sdCardDrivers[i].controllerIndex = i;
+    }
 
     return &sdApi;
 }
 
 TinyCLR_Result STM32F4_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
-    sdController[controller].controller = controller;
-    // Initialize hal layer here
+    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
 
-    auto d0 = g_STM32F4_SdCard_Data0_Pins[controller];
-    auto d1 = g_STM32F4_SdCard_Data1_Pins[controller];
-    auto d2 = g_STM32F4_SdCard_Data2_Pins[controller];
-    auto d3 = g_STM32F4_SdCard_Data3_Pins[controller];
-    auto clk = g_STM32F4_SdCard_Clk_Pins[controller];
-    auto cmd = g_STM32F4_SdCard_Cmd_Pins[controller];
+    controllerIndex = driver->controllerIndex;
+
+    auto d0 = g_STM32F4_SdCard_Data0_Pins[controllerIndex];
+    auto d1 = g_STM32F4_SdCard_Data1_Pins[controllerIndex];
+    auto d2 = g_STM32F4_SdCard_Data2_Pins[controllerIndex];
+    auto d3 = g_STM32F4_SdCard_Data3_Pins[controllerIndex];
+    auto clk = g_STM32F4_SdCard_Clk_Pins[controllerIndex];
+    auto cmd = g_STM32F4_SdCard_Cmd_Pins[controllerIndex];
 
     if (!STM32F4_GpioInternal_OpenPin(d0.number)
         || !STM32F4_GpioInternal_OpenPin(d1.number)
@@ -2666,9 +2672,9 @@ TinyCLR_Result STM32F4_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
 
     RCC->APB2ENR |= (1 << 11);
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    sdController[controller].sectorSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
+    driver->sectorSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
 
     SD_DeInit();
 
@@ -2676,20 +2682,24 @@ TinyCLR_Result STM32F4_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
 }
 
 TinyCLR_Result STM32F4_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
-    auto d0 = g_STM32F4_SdCard_Data0_Pins[controller];
-    auto d1 = g_STM32F4_SdCard_Data1_Pins[controller];
-    auto d2 = g_STM32F4_SdCard_Data2_Pins[controller];
-    auto d3 = g_STM32F4_SdCard_Data3_Pins[controller];
-    auto clk = g_STM32F4_SdCard_Clk_Pins[controller];
-    auto cmd = g_STM32F4_SdCard_Cmd_Pins[controller];
+    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
+
+    controllerIndex = driver->controllerIndex;
+
+    auto d0 = g_STM32F4_SdCard_Data0_Pins[controllerIndex];
+    auto d1 = g_STM32F4_SdCard_Data1_Pins[controllerIndex];
+    auto d2 = g_STM32F4_SdCard_Data2_Pins[controllerIndex];
+    auto d3 = g_STM32F4_SdCard_Data3_Pins[controllerIndex];
+    auto clk = g_STM32F4_SdCard_Clk_Pins[controllerIndex];
+    auto cmd = g_STM32F4_SdCard_Cmd_Pins[controllerIndex];
 
     SD_DeInit();
 
     RCC->APB2ENR &= ~(1 << 11);
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    memoryProvider->Free(memoryProvider, sdController[controller].sectorSizes);
+    memoryProvider->Free(memoryProvider, driver->sectorSizes);
 
     STM32F4_GpioInternal_ClosePin(d0.number);
     STM32F4_GpioInternal_ClosePin(d1.number);
@@ -2697,12 +2707,6 @@ TinyCLR_Result STM32F4_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
     STM32F4_GpioInternal_ClosePin(d3.number);
     STM32F4_GpioInternal_ClosePin(clk.number);
     STM32F4_GpioInternal_ClosePin(cmd.number);
-
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result STM32F4_SdCard_GetControllerCount(const TinyCLR_SdCard_Controller* self, int32_t& count) {
-    count = SIZEOF_ARRAY(g_STM32F4_SdCard_Data0_Pins);
 
     return TinyCLR_Result::Success;
 }
@@ -2785,9 +2789,11 @@ TinyCLR_Result STM32F4_SdCard_EraseSector(const TinyCLR_SdCard_Controller* self,
 }
 
 TinyCLR_Result STM32F4_SdCard_GetSectorMap(const TinyCLR_SdCard_Controller* self, const size_t*& sizes, size_t& count, bool& isUniform) {
-    sdController[controller].sectorSizes[0] = STM32F4_SD_SECTOR_SIZE;
+    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
 
-    sizes = sdController[controller].sectorSizes;
+    driver->sectorSizes[0] = STM32F4_SD_SECTOR_SIZE;
+
+    sizes = driver->sectorSizes;
     count = SDCardInfo.CardCapacity / STM32F4_SD_SECTOR_SIZE;
 
     return TinyCLR_Result::Success;

@@ -218,12 +218,10 @@ void GpioChangeWriter::NativeDispose(const TinyCLR_Interop_Manager* provider, co
     if (!oc)
         return;
 
-    auto gpioController = 0; //TODO Temporary set to 0
+    gpioProvider->SetDriveMode(gpioProvider, (int32_t)oc->pin, TinyCLR_Gpio_PinDriveMode::InputPullUp);
+    gpioProvider->ReleasePin(gpioProvider, (int32_t)oc->pin);
 
-    gpioProvider->SetDriveMode(gpioProvider, gpioController, (int32_t)oc->pin, TinyCLR_Gpio_PinDriveMode::InputPullUp);
-    gpioProvider->ReleasePin(gpioProvider, gpioController, (int32_t)oc->pin);
-
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     if (oc->buffer != nullptr)
         memoryProvider->Free(memoryProvider, oc->buffer);
@@ -256,7 +254,7 @@ int8_t GpioChangeWriter::NativeConstructor(const TinyCLR_Interop_Manager* provid
 
     uint8_t param0 = Get_pin(provider, self);
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     OC *oc = (OC*)memoryProvider->Allocate(memoryProvider, sizeof(OC));
 
@@ -265,17 +263,15 @@ int8_t GpioChangeWriter::NativeConstructor(const TinyCLR_Interop_Manager* provid
         return 0;
     }
 
-    if (gpioProvider == nullptr && (gpioProvider = (const TinyCLR_Gpio_Controller*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider)) == nullptr) {
+    if (gpioProvider == nullptr && (gpioProvider = (const TinyCLR_Gpio_Controller*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::GpioController)) == nullptr) {
         result = TinyCLR_Result::InvalidOperation;
         return 0;
     }
 
     ComputeCompletionLatency();
 
-    auto gpioController = 0; //TODO Temporary set to 0
-
-    gpioProvider->SetDriveMode(gpioProvider, gpioController, (int32_t)param0, TinyCLR_Gpio_PinDriveMode::Output);
-    gpioProvider->Write(gpioProvider, gpioController, (int32_t)param0, param1 ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+    gpioProvider->SetDriveMode(gpioProvider, (int32_t)param0, TinyCLR_Gpio_PinDriveMode::Output);
+    gpioProvider->Write(gpioProvider, (int32_t)param0, param1 ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
 
     oc->pin = param0;
     oc->buffer = nullptr;
@@ -296,7 +292,7 @@ int8_t GpioChangeWriter::NativeConstructor(const TinyCLR_Interop_Manager* provid
         a = end - start;
 
         start = TinyCLR_Interop_CurrentTime();
-        gpioProvider->Write(gpioProvider, gpioController, (int32_t)oc->pin, param1 ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+        gpioProvider->Write(gpioProvider, (int32_t)oc->pin, param1 ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
         TinyCLR_Interop_Delay(10);
         end = TinyCLR_Interop_CurrentTime();
 
@@ -332,9 +328,7 @@ void GpioChangeWriter::NativeSet(const TinyCLR_Interop_Manager* provider, const 
 
     oc->isActive = false;
 
-    auto gpioController = 0; //TODO Temporary set to 0
-
-    gpioProvider->Write(gpioProvider, gpioController, (int32_t)oc->pin, param0 ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+    gpioProvider->Write(gpioProvider, (int32_t)oc->pin, param0 ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
 
 }
 
@@ -362,7 +356,7 @@ int8_t GpioChangeWriter::NativeSet(const TinyCLR_Interop_Manager* provider, cons
     oc->isActive = false;
 
     // is there data??
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     if (param3) {
         if (oc->buffer != nullptr)
@@ -396,9 +390,7 @@ int8_t GpioChangeWriter::NativeSet(const TinyCLR_Interop_Manager* provider, cons
 
         oc->currentState = param0;
 
-        auto gpioController = 0; //TODO Temporary set to 0
-
-        gpioProvider->Write(gpioProvider, gpioController, (int32_t)oc->pin, param0 ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+        gpioProvider->Write(gpioProvider, (int32_t)oc->pin, param0 ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
 
         oc->isActive = true;
     }
@@ -448,9 +440,7 @@ void GpioChangeWriter::NativeSet(const TinyCLR_Interop_Manager* provider, const 
         }
     }
 
-    auto gpioController = 0; //TODO Temporary set to 0
-
-    gpioProvider->Write(gpioProvider, gpioController, (int32_t)oc->pin, initialValue ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+    gpioProvider->Write(gpioProvider, (int32_t)oc->pin, initialValue ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
 
     for (i = 0; i < count; i++) {
         if (!(initialValue && carrierFrequency_hz)) {
@@ -459,16 +449,16 @@ void GpioChangeWriter::NativeSet(const TinyCLR_Interop_Manager* provider, const 
         else {
             fCount = (buffer[i] / (carrierFrequency_hz + carrierFrequency_hz_latency));
             for (f = 0; f < fCount; f += 2) {
-                gpioProvider->Write(gpioProvider, gpioController, (int32_t)oc->pin, TinyCLR_Gpio_PinValue::High);
+                gpioProvider->Write(gpioProvider, (int32_t)oc->pin, TinyCLR_Gpio_PinValue::High);
                 TinyCLR_Interop_Delay(carrierFrequency_hz);
 
-                gpioProvider->Write(gpioProvider, gpioController, (int32_t)oc->pin, TinyCLR_Gpio_PinValue::Low);
+                gpioProvider->Write(gpioProvider, (int32_t)oc->pin, TinyCLR_Gpio_PinValue::Low);
                 TinyCLR_Interop_Delay(carrierFrequency_hz);
             }
         }
 
         initialValue = !initialValue;
-        gpioProvider->Write(gpioProvider, gpioController, (int32_t)oc->pin, initialValue ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+        gpioProvider->Write(gpioProvider, (int32_t)oc->pin, initialValue ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
     }
 
     if (lastBitHoldTime_us) {
@@ -478,14 +468,14 @@ void GpioChangeWriter::NativeSet(const TinyCLR_Interop_Manager* provider, const 
         else {
             fCount = (lastBitHoldTime_us / (carrierFrequency_hz + carrierFrequency_hz_latency));
             for (f = 0; f < fCount; f += 2) {
-                gpioProvider->Write(gpioProvider, gpioController, (int32_t)oc->pin, TinyCLR_Gpio_PinValue::High);
+                gpioProvider->Write(gpioProvider, (int32_t)oc->pin, TinyCLR_Gpio_PinValue::High);
                 TinyCLR_Interop_Delay(carrierFrequency_hz);
 
-                gpioProvider->Write(gpioProvider, gpioController, (int32_t)oc->pin, TinyCLR_Gpio_PinValue::Low);
+                gpioProvider->Write(gpioProvider, (int32_t)oc->pin, TinyCLR_Gpio_PinValue::Low);
                 TinyCLR_Interop_Delay(carrierFrequency_hz);
             }
 
-            gpioProvider->Write(gpioProvider, gpioController, (int32_t)oc->pin, TinyCLR_Gpio_PinValue::High);
+            gpioProvider->Write(gpioProvider, (int32_t)oc->pin, TinyCLR_Gpio_PinValue::High);
         }
     }
 
