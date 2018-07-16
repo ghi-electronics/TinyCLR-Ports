@@ -1241,7 +1241,7 @@ TinyCLR_Result STM32F7_Can_Release(const TinyCLR_Can_Provider* self, int32_t con
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     RCC->APB1ENR &= ((controller == 0) ? ~RCC_APB1ENR_CAN1EN : ~RCC_APB1ENR_CAN2EN);
 
@@ -1368,7 +1368,7 @@ TinyCLR_Result STM32F7_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_
 
     CAN_TypeDef* CANx = ((controller == 0) ? CAN1 : CAN2);
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     if (canController[controller].canRxMessagesFifo == nullptr)
         canController[controller].canRxMessagesFifo = (STM32F7_Can_Message*)memoryProvider->Allocate(memoryProvider, canController[controller].can_rxBufferSize * sizeof(STM32F7_Can_Message));
@@ -1459,7 +1459,7 @@ TinyCLR_Result STM32F7_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, 
     uint32_t*filters32 = (uint32_t*)filters;
 
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     _matchFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
 
@@ -1485,7 +1485,7 @@ TinyCLR_Result STM32F7_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, int
     uint32_t* lowerBounds32 = (uint32_t *)lowerBounds;
     uint32_t* upperBounds32 = (uint32_t *)upperBounds;
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     _lowerBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
     _upperBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));

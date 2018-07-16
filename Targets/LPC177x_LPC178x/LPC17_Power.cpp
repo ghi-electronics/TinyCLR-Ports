@@ -24,7 +24,7 @@
 static void(*g_LPC17_stopHandler)();
 static void(*g_LPC17_restartHandler)();
 
-static TinyCLR_Power_Provider powerProvider;
+static TinyCLR_Power_Controller powerProvider;
 static TinyCLR_Api_Info powerApi;
 
 const TinyCLR_Api_Info* LPC17_Power_GetApi() {
@@ -48,7 +48,7 @@ void LPC17_Power_SetHandlers(void(*stop)(), void(*restart)()) {
     g_LPC17_restartHandler = restart;
 }
 
-void LPC17_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level) {
+void LPC17_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level) {
     switch (level) {
 
     case TinyCLR_Power_SleepLevel::Hibernate: // stop
@@ -73,7 +73,7 @@ void LPC17_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLe
     }
 }
 
-void LPC17_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) {
+void LPC17_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {
 #if defined RAM_BOOTLOADER_HOLD_VALUE && defined RAM_BOOTLOADER_HOLD_ADDRESS && RAM_BOOTLOADER_HOLD_ADDRESS > 0
     if (!runCoreAfter)
         *((uint32_t*)RAM_BOOTLOADER_HOLD_ADDRESS) = RAM_BOOTLOADER_HOLD_VALUE;
@@ -88,10 +88,10 @@ void LPC17_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) {
     while (1); // wait for reset
 }
 
-TinyCLR_Result LPC17_Power_Initialize(const TinyCLR_Power_Provider* self) {
+TinyCLR_Result LPC17_Power_Initialize(const TinyCLR_Power_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Power_Uninitialize(const TinyCLR_Power_Provider* self) {
+TinyCLR_Result LPC17_Power_Uninitialize(const TinyCLR_Power_Controller* self) {
     return TinyCLR_Result::Success;
 }

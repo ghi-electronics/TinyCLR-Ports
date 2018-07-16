@@ -118,7 +118,7 @@ void LPC24_Interrupt_StubIrqVector(void* Param) {
 TinyCLR_Interrupt_StartStopHandler LPC24_Interrupt_Started;
 TinyCLR_Interrupt_StartStopHandler LPC24_Interrupt_Ended;
 
-static TinyCLR_Interrupt_Provider interruptProvider;
+static TinyCLR_Interrupt_Controller interruptProvider;
 static TinyCLR_Api_Info interruptApi;
 
 const TinyCLR_Api_Info* LPC24_Interrupt_GetApi() {
@@ -141,7 +141,7 @@ const TinyCLR_Api_Info* LPC24_Interrupt_GetApi() {
     return &interruptApi;
 }
 
-TinyCLR_Result LPC24_Interrupt_Initialize(const TinyCLR_Interrupt_Provider* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
+TinyCLR_Result LPC24_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
     LPC24_Interrupt_Started = onInterruptStart;
     LPC24_Interrupt_Ended = onInterruptEnd;
 
@@ -161,7 +161,7 @@ TinyCLR_Result LPC24_Interrupt_Initialize(const TinyCLR_Interrupt_Provider* self
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Interrupt_Uninitialize(const TinyCLR_Interrupt_Provider* self) {
+TinyCLR_Result LPC24_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self) {
     return TinyCLR_Result::Success;
 }
 

@@ -20,7 +20,7 @@
 static void(*g_LPC24_stopHandler)();
 static void(*g_LPC24_restartHandler)();
 
-static TinyCLR_Power_Provider powerProvider;
+static TinyCLR_Power_Controller powerProvider;
 static TinyCLR_Api_Info powerApi;
 
 const TinyCLR_Api_Info* LPC24_Power_GetApi() {
@@ -44,7 +44,7 @@ void LPC24_Power_SetHandlers(void(*stop)(), void(*restart)()) {
     g_LPC24_restartHandler = restart;
 }
 
-void LPC24_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level) {
+void LPC24_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level) {
     switch (level) {
 
     case TinyCLR_Power_SleepLevel::Hibernate: // stop
@@ -67,7 +67,7 @@ void LPC24_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLe
     }
 }
 
-void LPC24_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) {
+void LPC24_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {
 #if defined RAM_BOOTLOADER_HOLD_VALUE && defined RAM_BOOTLOADER_HOLD_ADDRESS && RAM_BOOTLOADER_HOLD_ADDRESS > 0
     if (!runCoreAfter) {
         //See section 1.9 of UM10211.pdf. A write-back buffer holds the last written value. Two writes guarantee it'll appear after a reset.
@@ -92,10 +92,10 @@ void LPC24_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) {
     while (1); // wait for reset
 }
 
-TinyCLR_Result LPC24_Power_Initialize(const TinyCLR_Power_Provider* self) {
+TinyCLR_Result LPC24_Power_Initialize(const TinyCLR_Power_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Power_Uninitialize(const TinyCLR_Power_Provider* self) {
+TinyCLR_Result LPC24_Power_Uninitialize(const TinyCLR_Power_Controller* self) {
     return TinyCLR_Result::Success;
 }

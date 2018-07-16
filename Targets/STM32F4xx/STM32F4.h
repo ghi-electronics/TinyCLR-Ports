@@ -31,21 +31,21 @@
 //Deployment
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F4_Deployment_GetApi();
-TinyCLR_Result STM32F4_Flash_Initialize(const TinyCLR_Deployment_Provider* self, bool& supportsXip);
-TinyCLR_Result STM32F4_Flash_Uninitialize(const TinyCLR_Deployment_Provider* self);
-TinyCLR_Result STM32F4_Flash_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer);
-TinyCLR_Result STM32F4_Flash_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer);
-TinyCLR_Result STM32F4_Flash_EraseSector(const TinyCLR_Deployment_Provider* self, uint32_t sector);
-TinyCLR_Result STM32F4_Flash_IsSectorErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool& erased);
-TinyCLR_Result STM32F4_Flash_GetSectorMap(const TinyCLR_Deployment_Provider* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count);
+TinyCLR_Result STM32F4_Flash_Initialize(const TinyCLR_Deployment_Controller* self, bool& supportsXip);
+TinyCLR_Result STM32F4_Flash_Uninitialize(const TinyCLR_Deployment_Controller* self);
+TinyCLR_Result STM32F4_Flash_Read(const TinyCLR_Deployment_Controller* self, uint32_t address, size_t length, uint8_t* buffer);
+TinyCLR_Result STM32F4_Flash_Write(const TinyCLR_Deployment_Controller* self, uint32_t address, size_t length, const uint8_t* buffer);
+TinyCLR_Result STM32F4_Flash_EraseSector(const TinyCLR_Deployment_Controller* self, uint32_t sector);
+TinyCLR_Result STM32F4_Flash_IsSectorErased(const TinyCLR_Deployment_Controller* self, uint32_t sector, bool& erased);
+TinyCLR_Result STM32F4_Flash_GetSectorMap(const TinyCLR_Deployment_Controller* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count);
 void STM32F4_Deplpoyment_Reset();
 
 ////////////////////////////////////////////////////////////////////////////////
 //Interrupt
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F4_Interrupt_GetApi();
-TinyCLR_Result STM32F4_Interrupt_Initialize(const TinyCLR_Interrupt_Provider* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
-TinyCLR_Result STM32F4_Interrupt_Uninitialize(const TinyCLR_Interrupt_Provider* self);
+TinyCLR_Result STM32F4_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
+TinyCLR_Result STM32F4_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self);
 bool STM32F4_Interrupt_Enable(bool force);
 bool STM32F4_Interrupt_Disable(bool force);
 void STM32F4_Interrupt_WaitForInterrupt();
@@ -56,24 +56,24 @@ void STM32F4_Interrupt_Restore();
 //Power
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F4_Power_GetApi();
-TinyCLR_Result STM32F4_Power_Initialize(const TinyCLR_Power_Provider* self);
-TinyCLR_Result STM32F4_Power_Uninitialize(const TinyCLR_Power_Provider* self);
-void STM32F4_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter);
-void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level);
+TinyCLR_Result STM32F4_Power_Initialize(const TinyCLR_Power_Controller* self);
+TinyCLR_Result STM32F4_Power_Uninitialize(const TinyCLR_Power_Controller* self);
+void STM32F4_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter);
+void STM32F4_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level);
 
 ////////////////////////////////////////////////////////////////////////////////
 //Time
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F4_Time_GetApi();
-TinyCLR_Result STM32F4_Time_Initialize(const TinyCLR_NativeTime_Provider* self);
-TinyCLR_Result STM32F4_Time_Uninitialize(const TinyCLR_NativeTime_Provider* self);
-uint64_t STM32F4_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Provider* self);
-uint64_t STM32F4_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Provider* self, uint64_t ticks);
-uint64_t STM32F4_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Provider* self, uint64_t time);
-TinyCLR_Result STM32F4_Time_SetTickCallback(const TinyCLR_NativeTime_Provider* self, TinyCLR_NativeTime_Callback callback);
-TinyCLR_Result STM32F4_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Provider* self, uint64_t processorTicks);
-void STM32F4_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds);
-void STM32F4_Time_DelayNative(const TinyCLR_NativeTime_Provider* self, uint64_t nativeTime);
+TinyCLR_Result STM32F4_Time_Initialize(const TinyCLR_NativeTime_Controller* self);
+TinyCLR_Result STM32F4_Time_Uninitialize(const TinyCLR_NativeTime_Controller* self);
+uint64_t STM32F4_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self);
+uint64_t STM32F4_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Controller* self, uint64_t ticks);
+uint64_t STM32F4_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Controller* self, uint64_t time);
+TinyCLR_Result STM32F4_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* self, TinyCLR_NativeTime_Callback callback);
+TinyCLR_Result STM32F4_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Controller* self, uint64_t processorTicks);
+void STM32F4_Time_Delay(const TinyCLR_NativeTime_Controller* self, uint64_t microseconds);
+void STM32F4_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_t nativeTime);
 
 ////////////////////////////////////////////////////////////////////////////////
 //Startup
@@ -413,7 +413,7 @@ TinyCLR_Result STM32F4_Display_SetConfiguration(const TinyCLR_Display_Provider* 
 TinyCLR_Result STM32F4_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t controller, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data);
 TinyCLR_Result STM32F4_Display_WriteString(const TinyCLR_Display_Provider* self, int32_t controller, const char* buffer, size_t length);
 
-void STM32F4_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider, const TinyCLR_Interop_Provider* interopProvider);
-void STM32F4_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider, const TinyCLR_Interop_Provider* interopProvider);
+void STM32F4_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiProvider, const TinyCLR_Interop_Manager* interopProvider);
+void STM32F4_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiProvider, const TinyCLR_Interop_Manager* interopProvider);
 
-extern const TinyCLR_Api_Provider* apiProvider;
+extern const TinyCLR_Api_Manager* apiProvider;

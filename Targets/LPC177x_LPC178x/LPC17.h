@@ -306,14 +306,14 @@ TinyCLR_Result LPC17_Uart_GetControllerCount(const TinyCLR_Uart_Provider* self, 
 
 //Deployment
 const TinyCLR_Api_Info* LPC17_Deployment_GetApi();
-TinyCLR_Result LPC17_Deployment_Initialize(const TinyCLR_Deployment_Provider* self, bool& supportXIP);
-TinyCLR_Result LPC17_Deployment_Uninitialize(const TinyCLR_Deployment_Provider* self);
-TinyCLR_Result LPC17_Deployment_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer);
-TinyCLR_Result LPC17_Deployment_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer);
-TinyCLR_Result LPC17_Deployment_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector);
-TinyCLR_Result LPC17_Deployment_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool& erased);
-TinyCLR_Result LPC17_Deployment_GetBytesPerSector(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size);
-TinyCLR_Result LPC17_Deployment_GetSectorMap(const TinyCLR_Deployment_Provider* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count);
+TinyCLR_Result LPC17_Deployment_Initialize(const TinyCLR_Deployment_Controller* self, bool& supportXIP);
+TinyCLR_Result LPC17_Deployment_Uninitialize(const TinyCLR_Deployment_Controller* self);
+TinyCLR_Result LPC17_Deployment_Read(const TinyCLR_Deployment_Controller* self, uint32_t address, size_t length, uint8_t* buffer);
+TinyCLR_Result LPC17_Deployment_Write(const TinyCLR_Deployment_Controller* self, uint32_t address, size_t length, const uint8_t* buffer);
+TinyCLR_Result LPC17_Deployment_EraseBlock(const TinyCLR_Deployment_Controller* self, uint32_t sector);
+TinyCLR_Result LPC17_Deployment_IsBlockErased(const TinyCLR_Deployment_Controller* self, uint32_t sector, bool& erased);
+TinyCLR_Result LPC17_Deployment_GetBytesPerSector(const TinyCLR_Deployment_Controller* self, uint32_t address, int32_t& size);
+TinyCLR_Result LPC17_Deployment_GetSectorMap(const TinyCLR_Deployment_Controller* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count);
 
 // Interrupt
 class LPC17_SmartPtr_IRQ {
@@ -344,8 +344,8 @@ public:
 #define INTERRUPT_STARTED_SCOPED(name) LPC17_SmartPtr_Interrupt name
 
 const TinyCLR_Api_Info* LPC17_Interrupt_GetApi();
-TinyCLR_Result LPC17_Interrupt_Initialize(const TinyCLR_Interrupt_Provider* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
-TinyCLR_Result LPC17_Interrupt_Uninitialize(const TinyCLR_Interrupt_Provider* self);
+TinyCLR_Result LPC17_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
+TinyCLR_Result LPC17_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self);
 bool LPC17_Interrupt_Activate(uint32_t Irq_Index, uint32_t *ISR, void* ISR_Param);
 bool LPC17_Interrupt_Deactivate(uint32_t Irq_Index);
 bool LPC17_Interrupt_Enable(uint32_t Irq_Index);
@@ -377,23 +377,23 @@ TinyCLR_Result LPC17_I2c_GetControllerCount(const TinyCLR_I2c_Provider* self, in
 
 // Time
 const TinyCLR_Api_Info* LPC17_Time_GetApi();
-TinyCLR_Result LPC17_Time_Initialize(const TinyCLR_NativeTime_Provider* self);
-TinyCLR_Result LPC17_Time_Uninitialize(const TinyCLR_NativeTime_Provider* self);
-uint64_t LPC17_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Provider* self);
-uint64_t LPC17_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Provider* self, uint64_t ticks);
-uint64_t LPC17_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Provider* self, uint64_t time);
-TinyCLR_Result LPC17_Time_SetTickCallback(const TinyCLR_NativeTime_Provider* self, TinyCLR_NativeTime_Callback callback);
-TinyCLR_Result LPC17_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Provider* self, uint64_t processorTicks);
-void LPC17_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds);
-void LPC17_Time_DelayNative(const TinyCLR_NativeTime_Provider* self, uint64_t nativeTime);
+TinyCLR_Result LPC17_Time_Initialize(const TinyCLR_NativeTime_Controller* self);
+TinyCLR_Result LPC17_Time_Uninitialize(const TinyCLR_NativeTime_Controller* self);
+uint64_t LPC17_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self);
+uint64_t LPC17_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Controller* self, uint64_t ticks);
+uint64_t LPC17_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Controller* self, uint64_t time);
+TinyCLR_Result LPC17_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* self, TinyCLR_NativeTime_Callback callback);
+TinyCLR_Result LPC17_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Controller* self, uint64_t processorTicks);
+void LPC17_Time_Delay(const TinyCLR_NativeTime_Controller* self, uint64_t microseconds);
+void LPC17_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_t nativeTime);
 
 // Power
 const TinyCLR_Api_Info* LPC17_Power_GetApi();
 void LPC17_Power_SetHandlers(void(*stop)(), void(*restart)());
-void LPC17_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level);
-void LPC17_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter);
-TinyCLR_Result LPC17_Power_Initialize(const TinyCLR_Power_Provider* self);
-TinyCLR_Result LPC17_Power_Uninitialize(const TinyCLR_Power_Provider* self);
+void LPC17_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level);
+void LPC17_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter);
+TinyCLR_Result LPC17_Power_Initialize(const TinyCLR_Power_Controller* self);
+TinyCLR_Result LPC17_Power_Uninitialize(const TinyCLR_Power_Controller* self);
 
 //UsbClient
 const TinyCLR_Api_Info* LPC17_UsbClient_GetApi();
@@ -430,10 +430,10 @@ void LPC17_Startup_GetHeap(uint8_t*& start, size_t& length);
 void LPC17_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, const void*& configuration);
 void LPC17_Startup_GetRunApp(bool& runApp);
 
-void LPC17_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider, const TinyCLR_Interop_Provider* interopProvider);
-void LPC17_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider, const TinyCLR_Interop_Provider* interopProvider);
+void LPC17_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiProvider, const TinyCLR_Interop_Manager* interopProvider);
+void LPC17_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiProvider, const TinyCLR_Interop_Manager* interopProvider);
 
-extern const TinyCLR_Api_Provider* apiProvider;
+extern const TinyCLR_Api_Manager* apiProvider;
 
 //System Control Block
 #define PCON_OFFSET 0xC0

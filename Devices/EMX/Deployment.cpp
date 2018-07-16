@@ -16,7 +16,7 @@
 #include <LPC24.h>
 #include "../../Drivers/AT49BV322DT_Flash/AT49BV322DT_Flash.h"
 
-static TinyCLR_Deployment_Provider deploymentProvider;
+static TinyCLR_Deployment_Controller deploymentProvider;
 static TinyCLR_Api_Info deploymentApi;
 
 const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
@@ -38,39 +38,39 @@ const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
     return &deploymentApi;
 }
 
-TinyCLR_Result LPC24_Deployment_Initialize(const TinyCLR_Deployment_Provider* self, bool& supportXIP) {
+TinyCLR_Result LPC24_Deployment_Initialize(const TinyCLR_Deployment_Controller* self, bool& supportXIP) {
     return AT49BV322DT_Flash_Acquire(supportXIP);
 }
 
-TinyCLR_Result LPC24_Deployment_Uninitialize(const TinyCLR_Deployment_Provider* self) {
+TinyCLR_Result LPC24_Deployment_Uninitialize(const TinyCLR_Deployment_Controller* self) {
     return AT49BV322DT_Flash_Release();
 }
 
-TinyCLR_Result LPC24_Deployment_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer) {
+TinyCLR_Result LPC24_Deployment_Read(const TinyCLR_Deployment_Controller* self, uint32_t address, size_t length, uint8_t* buffer) {
     return AT49BV322DT_Flash_Read(address, length, buffer);
 }
 
-TinyCLR_Result LPC24_Deployment_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer) {
+TinyCLR_Result LPC24_Deployment_Write(const TinyCLR_Deployment_Controller* self, uint32_t address, size_t length, const uint8_t* buffer) {
     return AT49BV322DT_Flash_Write(address, length, buffer);;
 }
 
-TinyCLR_Result LPC24_Deployment_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
+TinyCLR_Result LPC24_Deployment_EraseBlock(const TinyCLR_Deployment_Controller* self, uint32_t sector) {
     sector += LPC24_DEPLOYMENT_SECTOR_START;
 
     return AT49BV322DT_Flash_EraseBlock(sector);
 }
 
-TinyCLR_Result LPC24_Deployment_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool& erased) {
+TinyCLR_Result LPC24_Deployment_IsBlockErased(const TinyCLR_Deployment_Controller* self, uint32_t sector, bool& erased) {
     sector += LPC24_DEPLOYMENT_SECTOR_START;
 
     return AT49BV322DT_Flash_IsBlockErased(sector, erased);
 }
 
-TinyCLR_Result LPC24_Deployment_GetBytesPerSector(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size) {
+TinyCLR_Result LPC24_Deployment_GetBytesPerSector(const TinyCLR_Deployment_Controller* self, uint32_t address, int32_t& size) {
     return AT49BV322DT_Flash_GetBytesPerSector(address, size);
 }
 
-TinyCLR_Result LPC24_Deployment_GetSectorMap(const TinyCLR_Deployment_Provider* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
+TinyCLR_Result LPC24_Deployment_GetSectorMap(const TinyCLR_Deployment_Controller* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
     AT49BV322DT_Flash_GetSectorMap(addresses, sizes, count);
 
     addresses += LPC24_DEPLOYMENT_SECTOR_START;

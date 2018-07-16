@@ -2,25 +2,25 @@
 #include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
 struct GpioPulseReaderWriter {
-    static int8_t& Get_disposed(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::FIELD___disposed___BOOLEAN, val); return val.Data.Numeric->I1; }
-    static int32_t& Get_timeout(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::FIELD___timeout___I4, val); return val.Data.Numeric->I4; }
-    static int32_t& Get_pulseLength(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::FIELD___pulseLength___I4, val); return val.Data.Numeric->I4; }
-    static int8_t& Get_pulseState(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::FIELD___pulseState___BOOLEAN, val); return val.Data.Numeric->I1; }
-    static int8_t& Get_echoState(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::FIELD___echoState___BOOLEAN, val); return val.Data.Numeric->I1; }
-    static uint8_t& Get_pulsePin(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::FIELD___pulsePin___I4, val); return val.Data.Numeric->U1; }
-    static uint8_t& Get_echoPin(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::FIELD___echoPin___I4, val); return val.Data.Numeric->U1; }
-    static int32_t& Get_mode(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::FIELD___mode___GHIElectronicsTinyCLRDevicesGpioGpioPulseReaderWriterMode, val); return val.Data.Numeric->I4; }
-    static int32_t& Get_driveMode(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::FIELD___driveMode___I4, val); return val.Data.Numeric->I4; }
+    static int8_t& Get_disposed(const TinyCLR_Interop_Manager* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::FIELD___disposed___BOOLEAN, val); return val.Data.Numeric->I1; }
+    static int32_t& Get_timeout(const TinyCLR_Interop_Manager* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::FIELD___timeout___I4, val); return val.Data.Numeric->I4; }
+    static int32_t& Get_pulseLength(const TinyCLR_Interop_Manager* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::FIELD___pulseLength___I4, val); return val.Data.Numeric->I4; }
+    static int8_t& Get_pulseState(const TinyCLR_Interop_Manager* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::FIELD___pulseState___BOOLEAN, val); return val.Data.Numeric->I1; }
+    static int8_t& Get_echoState(const TinyCLR_Interop_Manager* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::FIELD___echoState___BOOLEAN, val); return val.Data.Numeric->I1; }
+    static uint8_t& Get_pulsePin(const TinyCLR_Interop_Manager* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::FIELD___pulsePin___I4, val); return val.Data.Numeric->U1; }
+    static uint8_t& Get_echoPin(const TinyCLR_Interop_Manager* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::FIELD___echoPin___I4, val); return val.Data.Numeric->U1; }
+    static int32_t& Get_mode(const TinyCLR_Interop_Manager* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::FIELD___mode___GHIElectronicsTinyCLRDevicesGpioGpioPulseReaderWriterMode, val); return val.Data.Numeric->I4; }
+    static int32_t& Get_driveMode(const TinyCLR_Interop_Manager* provider, const TinyCLR_Interop_ClrObject* self) { TinyCLR_Interop_ClrValue val; provider->GetField(provider, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::FIELD___driveMode___I4, val); return val.Data.Numeric->I4; }
 
-    static int64_t NativeReadDrainTime(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self, TinyCLR_Result& result);
-    static int64_t NativeReadEcho(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self, int8_t param0, TinyCLR_Result& result);
-    static void NativeFinalize(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self, TinyCLR_Result& result);
+    static int64_t NativeReadDrainTime(const TinyCLR_Interop_Manager* provider, const TinyCLR_Interop_ClrObject* self, TinyCLR_Result& result);
+    static int64_t NativeReadEcho(const TinyCLR_Interop_Manager* provider, const TinyCLR_Interop_ClrObject* self, int8_t param0, TinyCLR_Result& result);
+    static void NativeFinalize(const TinyCLR_Interop_Manager* provider, const TinyCLR_Interop_ClrObject* self, TinyCLR_Result& result);
 };
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::NativeReadDrainTime___I8(const TinyCLR_Interop_MethodData md) {
     TinyCLR_Result result = TinyCLR_Result::Success;
     {
-        auto provider = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
+        auto provider = (const TinyCLR_Interop_Manager*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
         if (provider != nullptr) {
             const TinyCLR_Interop_ClrObject* self;
@@ -40,7 +40,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::NativeReadEcho___I8__BOOLEAN(const TinyCLR_Interop_MethodData md) {
     TinyCLR_Result result = TinyCLR_Result::Success;
     {
-        auto provider = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
+        auto provider = (const TinyCLR_Interop_Manager*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
         if (provider != nullptr) {
             const TinyCLR_Interop_ClrObject* self;
@@ -61,7 +61,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::NativeFinalize___VOID(const TinyCLR_Interop_MethodData md) {
     TinyCLR_Result result = TinyCLR_Result::Success;
     {
-        auto provider = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
+        auto provider = (const TinyCLR_Interop_Manager*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
         if (provider != nullptr) {
             const TinyCLR_Interop_ClrObject* self;
@@ -90,7 +90,7 @@ static bool ReadValue(uint8_t pin) {
     return value == TinyCLR_Gpio_PinValue::High;
 }
 
-int64_t GpioPulseReaderWriter::NativeReadDrainTime(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self, TinyCLR_Result& result) {
+int64_t GpioPulseReaderWriter::NativeReadDrainTime(const TinyCLR_Interop_Manager* provider, const TinyCLR_Interop_ClrObject* self, TinyCLR_Result& result) {
     uint8_t pulsePin = Get_pulsePin(provider, self);
     int64_t pulseLength = Get_pulseLength(provider, self);
     int8_t pulseState = Get_pulseState(provider, self);
@@ -127,7 +127,7 @@ int64_t GpioPulseReaderWriter::NativeReadDrainTime(const TinyCLR_Interop_Provide
     }
 }
 
-int64_t GpioPulseReaderWriter::NativeReadEcho(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self, int8_t readUntil, TinyCLR_Result& result) {
+int64_t GpioPulseReaderWriter::NativeReadEcho(const TinyCLR_Interop_Manager* provider, const TinyCLR_Interop_ClrObject* self, int8_t readUntil, TinyCLR_Result& result) {
     uint8_t pulsePin = Get_pulsePin(provider, self);
     int64_t pulseLength = Get_pulseLength(provider, self);
     int8_t pulseState = Get_pulseState(provider, self);
@@ -176,7 +176,7 @@ int64_t GpioPulseReaderWriter::NativeReadEcho(const TinyCLR_Interop_Provider* pr
     return GetMicroSeconds() - start;
 }
 
-void GpioPulseReaderWriter::NativeFinalize(const TinyCLR_Interop_Provider* provider, const TinyCLR_Interop_ClrObject* self, TinyCLR_Result& result) {
+void GpioPulseReaderWriter::NativeFinalize(const TinyCLR_Interop_Manager* provider, const TinyCLR_Interop_ClrObject* self, TinyCLR_Result& result) {
     uint8_t pulsePin = Get_pulsePin(provider, self);
     uint8_t echoPin = Get_echoPin(provider, self);
 

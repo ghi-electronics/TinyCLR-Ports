@@ -1,6 +1,6 @@
 #include "SPIDisplay.h"
 
-extern const TinyCLR_Api_Provider* apiProvider;
+extern const TinyCLR_Api_Manager* apiProvider;
 
 static TinyCLR_Display_Provider spiDisplayProvider;
 static TinyCLR_Api_Info spiDisplayApi;

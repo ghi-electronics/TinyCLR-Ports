@@ -2666,7 +2666,7 @@ TinyCLR_Result STM32F4_SdCard_Acquire(const TinyCLR_SdCard_Provider* self, int32
 
     RCC->APB2ENR |= (1 << 11);
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     sdController[controller].sectorSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
 
@@ -2687,7 +2687,7 @@ TinyCLR_Result STM32F4_SdCard_Release(const TinyCLR_SdCard_Provider* self, int32
 
     RCC->APB2ENR &= ~(1 << 11);
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     memoryProvider->Free(memoryProvider, sdController[controller].sectorSizes);
 

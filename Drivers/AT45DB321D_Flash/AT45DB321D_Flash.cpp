@@ -52,7 +52,7 @@
 #define AT45DB321D_SPI_CLOCK_HZ 20000000
 
 const TinyCLR_Spi_Provider* g_AT45DB321D_Flash_SpiProvider;
-const TinyCLR_NativeTime_Provider* g_AT45DB321D_Flash_TimeProvider;
+const TinyCLR_NativeTime_Controller* g_AT45DB321D_Flash_TimeProvider;
 
 uint32_t g_AT45DB321D_Flash_SpiChipSelectLine;
 uint32_t g_AT45DB321D_Flash_SpiControllerId;
@@ -343,7 +343,7 @@ TinyCLR_Result AT45DB321D_Flash_EraseBlock(uint32_t sector) {
     return TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result AT45DB321D_Flash_Acquire(const TinyCLR_Spi_Provider* spiProvider, int32_t controller, const TinyCLR_NativeTime_Provider* timeProvider, uint32_t chipSelectLine, bool& supportXIP) {
+TinyCLR_Result AT45DB321D_Flash_Acquire(const TinyCLR_Spi_Provider* spiProvider, int32_t controller, const TinyCLR_NativeTime_Controller* timeProvider, uint32_t chipSelectLine, bool& supportXIP) {
 
     size_t writeLength;
     size_t readLength;

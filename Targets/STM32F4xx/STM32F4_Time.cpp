@@ -36,7 +36,7 @@ struct STM32F4_Timer_Driver {
 
 };
 
-static TinyCLR_NativeTime_Provider timeProvider;
+static TinyCLR_NativeTime_Controller timeProvider;
 static TinyCLR_Api_Info timeApi;
 
 const TinyCLR_Api_Info* STM32F4_Time_GetApi() {
@@ -63,14 +63,14 @@ static uint64_t g_nextEvent;   // tick time of next event to be scheduled
 
 STM32F4_Timer_Driver g_STM32F4_Timer_Driver;
 
-uint64_t STM32F4_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Provider* self, uint64_t ticks) {
+uint64_t STM32F4_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Controller* self, uint64_t ticks) {
     ticks *= (10000000 / SLOW_CLOCKS_TEN_MHZ_GCD);
     ticks /= (SLOW_CLOCKS_PER_SECOND / SLOW_CLOCKS_TEN_MHZ_GCD);
 
     return ticks;
 }
 
-uint64_t STM32F4_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Provider* self, uint64_t time) {
+uint64_t STM32F4_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Controller* self, uint64_t time) {
     time /= 10;
 
 #if 1000000 <= SLOW_CLOCKS_PER_SECOND
@@ -80,7 +80,7 @@ uint64_t STM32F4_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Provider
 #endif
 }
 
-uint64_t STM32F4_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Provider* self) {
+uint64_t STM32F4_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t tick_spent;
@@ -106,7 +106,7 @@ uint64_t STM32F4_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Provider
     return (uint64_t)(g_STM32F4_Timer_Driver.m_lastRead);
 }
 
-TinyCLR_Result STM32F4_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Provider* self, uint64_t processorTicks) {
+TinyCLR_Result STM32F4_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Controller* self, uint64_t processorTicks) {
     uint64_t ticks;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -168,7 +168,7 @@ extern "C" {
 
 }
 
-TinyCLR_Result STM32F4_Time_Initialize(const TinyCLR_NativeTime_Provider* self) {
+TinyCLR_Result STM32F4_Time_Initialize(const TinyCLR_NativeTime_Controller* self) {
     g_nextEvent = TIMER_IDLE_VALUE;
 
     g_STM32F4_Timer_Driver.m_lastRead = 0;
@@ -183,13 +183,13 @@ TinyCLR_Result STM32F4_Time_Initialize(const TinyCLR_NativeTime_Provider* self) 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Time_Uninitialize(const TinyCLR_NativeTime_Provider* self) {
+TinyCLR_Result STM32F4_Time_Uninitialize(const TinyCLR_NativeTime_Controller* self) {
     SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Time_SetTickCallback(const TinyCLR_NativeTime_Provider* self, TinyCLR_NativeTime_Callback callback) {
+TinyCLR_Result STM32F4_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* self, TinyCLR_NativeTime_Callback callback) {
     if (g_STM32F4_Timer_Driver.m_DequeuAndExecute != nullptr) return TinyCLR_Result::InvalidOperation;
 
     g_STM32F4_Timer_Driver.m_DequeuAndExecute = callback;
@@ -199,7 +199,7 @@ TinyCLR_Result STM32F4_Time_SetTickCallback(const TinyCLR_NativeTime_Provider* s
 
 extern "C" void IDelayLoop(int32_t iterations);
 
-void STM32F4_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds) {
+void STM32F4_Time_Delay(const TinyCLR_NativeTime_Controller* self, uint64_t microseconds) {
 
     // iterations must be signed so that negative iterations will result in the minimum delay
 
@@ -212,7 +212,7 @@ void STM32F4_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t micros
     IDelayLoop(iterations);
 }
 
-void STM32F4_Time_DelayNative(const TinyCLR_NativeTime_Provider* self, uint64_t nativeTime) {
+void STM32F4_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_t nativeTime) {
     //TODO do inline later, don't call out to Delay
 
     auto microseconds = STM32F4_Time_GetTimeForProcessorTicks(self, nativeTime) / 10;

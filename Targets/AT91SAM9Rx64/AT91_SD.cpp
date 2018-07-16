@@ -94,7 +94,7 @@ TinyCLR_Result AT91_SdCard_Release(const TinyCLR_SdCard_Provider* self, int32_t 
     auto clk = g_AT91_SdCard_Clk_Pins[controller];
     auto cmd = g_AT91_SdCard_Cmd_Pins[controller];
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     memoryProvider->Free(memoryProvider, sdController[controller].pBuffer);
     memoryProvider->Free(memoryProvider, sdController[controller].sectorSizes);

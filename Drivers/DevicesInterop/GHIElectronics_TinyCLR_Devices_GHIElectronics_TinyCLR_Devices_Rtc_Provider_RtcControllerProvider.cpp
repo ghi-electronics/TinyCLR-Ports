@@ -66,7 +66,7 @@ void Interop_Rtc_ToSystemTime(uint64_t time, TinyCLR_Rtc_DateTime* systemTime) {
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerProvider::Acquire___VOID(const TinyCLR_Interop_MethodData md) {
-    auto interop = reinterpret_cast<const TinyCLR_Interop_Provider*>(md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager));
+    auto interop = reinterpret_cast<const TinyCLR_Interop_Manager*>(md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager));
 
     const TinyCLR_Interop_ClrObject* self;
     TinyCLR_Interop_ClrValue fld;
@@ -79,7 +79,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerProvider::Release___VOID(const TinyCLR_Interop_MethodData md) {
-    auto interop = reinterpret_cast<const TinyCLR_Interop_Provider*>(md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager));
+    auto interop = reinterpret_cast<const TinyCLR_Interop_Manager*>(md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager));
 
     const TinyCLR_Interop_ClrObject* self;
     TinyCLR_Interop_ClrValue fld;
@@ -92,7 +92,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerProvider::get_Now___mscorlibSystemDateTime(const TinyCLR_Interop_MethodData md) {
-    auto interop = reinterpret_cast<const TinyCLR_Interop_Provider*>(md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager));
+    auto interop = reinterpret_cast<const TinyCLR_Interop_Manager*>(md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager));
 
     const TinyCLR_Interop_ClrObject* self;
     TinyCLR_Interop_ClrValue fld, ret;
@@ -112,7 +112,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerProvider::set_Now___VOID__mscorlibSystemDateTime(const TinyCLR_Interop_MethodData md) {
-    auto interop = reinterpret_cast<const TinyCLR_Interop_Provider*>(md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager));
+    auto interop = reinterpret_cast<const TinyCLR_Interop_Manager*>(md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager));
 
     const TinyCLR_Interop_ClrObject* self;
     TinyCLR_Interop_ClrValue fld, arg;

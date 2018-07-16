@@ -105,7 +105,7 @@ TinyCLR_Result LPC24_Uart_GetReadBufferSize(const TinyCLR_Uart_Provider* self, i
 }
 
 TinyCLR_Result LPC24_Uart_SetReadBufferSize(const TinyCLR_Uart_Provider* self, int32_t controller, size_t size) {
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
@@ -134,7 +134,7 @@ TinyCLR_Result LPC24_Uart_GetWriteBufferSize(const TinyCLR_Uart_Provider* self, 
 }
 
 TinyCLR_Result LPC24_Uart_SetWriteBufferSize(const TinyCLR_Uart_Provider* self, int32_t controller, size_t size) {
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
@@ -513,7 +513,7 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, i
         LPC24XX_USART::UART_FCR_RFR |
         LPC24XX_USART::UART_FCR_FME;
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     if (g_UartController[controller].txBufferSize == 0) {
         g_UartController[controller].txBufferSize = g_LPC24_Uart_TxDefaultBuffersSize[controller];
@@ -601,7 +601,7 @@ TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Provider* self, int32_t con
         break;
     }
     if (apiProvider != nullptr) {
-        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
         if (g_UartController[controller].txBufferSize != 0) {
             memoryProvider->Free(memoryProvider, g_UartController[controller].TxBuffer);
