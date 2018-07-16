@@ -119,7 +119,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto res = provider->GetCapabilities(provider, controller, type, supportedDataFormats, supportedDataFormatCount);
 
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+    auto interop = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
     const TinyCLR_Interop_ClrObject* self;
 

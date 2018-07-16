@@ -225,8 +225,8 @@ const TinyCLR_Api_Info* AT91_Time_GetApi() {
     timeProvider.Wait = &AT91_Time_DelayNative;
 
     timeApi.Author = "GHI Electronics, LLC";
-    timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.NativeTimeProvider";
-    timeApi.Type = TinyCLR_Api_Type::NativeTimeProvider;
+    timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.NativeTimeController";
+    timeApi.Type = TinyCLR_Api_Type::NativeTimeController;
     timeApi.Version = 0;
     timeApi.Implementation = &timeProvider;
 

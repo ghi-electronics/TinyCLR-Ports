@@ -93,8 +93,8 @@ const TinyCLR_Api_Info* AT91_Interrupt_GetApi() {
     interruptProvider.WaitForInterrupt = &AT91_Interrupt_GlobalWaitForInterrupt;
 
     interruptApi.Author = "GHI Electronics, LLC";
-    interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.InterruptProvider";
-    interruptApi.Type = TinyCLR_Api_Type::InterruptProvider;
+    interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.InterruptController";
+    interruptApi.Type = TinyCLR_Api_Type::InterruptController;
     interruptApi.Version = 0;
     interruptApi.Implementation = &interruptProvider;
 

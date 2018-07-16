@@ -30,8 +30,8 @@ const TinyCLR_Api_Info* AT91_Deployment_GetApi() {
     deploymentProvider.GetSectorMap = &AT91_Deployment_GetSectorMap;
 
     deploymentApi.Author = "GHI Electronics, LLC";
-    deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT45DB321D.DeploymentProvider";
-    deploymentApi.Type = TinyCLR_Api_Type::DeploymentProvider;
+    deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT45DB321D.DeploymentController";
+    deploymentApi.Type = TinyCLR_Api_Type::DeploymentController;
     deploymentApi.Version = 0;
     deploymentApi.Implementation = &deploymentProvider;
 

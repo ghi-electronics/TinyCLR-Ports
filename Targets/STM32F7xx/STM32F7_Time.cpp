@@ -51,8 +51,8 @@ const TinyCLR_Api_Info* STM32F7_Time_GetApi() {
     timeProvider.Wait = &STM32F7_Time_DelayNative;
 
     timeApi.Author = "GHI Electronics, LLC";
-    timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.NativeTimeProvider";
-    timeApi.Type = TinyCLR_Api_Type::NativeTimeProvider;
+    timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.NativeTimeController";
+    timeApi.Type = TinyCLR_Api_Type::NativeTimeController;
     timeApi.Version = 0;
     timeApi.Implementation = &timeProvider;
 

@@ -2,7 +2,7 @@
 #include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_Provider_DefaultSpiControllerProvider::AcquireNative___VOID(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+    auto interop = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
     const TinyCLR_Interop_ClrObject* self;
     TinyCLR_Interop_ClrValue field_provider, field_controller;
@@ -17,7 +17,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_Provider_DefaultSpiControllerProvider::ReleaseNative___VOID(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+    auto interop = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
     const TinyCLR_Interop_ClrObject* self;
     TinyCLR_Interop_ClrValue field_provider, field_controller;

@@ -2039,7 +2039,7 @@ static TinyCLR_Api_Info canApi;
 void CAN_DisableExplicitFilters(int32_t controller) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     if (canController[controller].canDataFilter.matchFiltersSize && canController[controller].canDataFilter.matchFilters != nullptr) {
         memoryProvider->Free(memoryProvider, canController[controller].canDataFilter.matchFilters);
@@ -2051,7 +2051,7 @@ void CAN_DisableExplicitFilters(int32_t controller) {
 void CAN_DisableGroupFilters(int32_t controller) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     if (canController[controller].canDataFilter.groupFiltersSize) {
         if (canController[controller].canDataFilter.lowerBoundFilters != nullptr)
@@ -2439,7 +2439,7 @@ TinyCLR_Result LPC17_Can_Release(const TinyCLR_Can_Provider* self, int32_t contr
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     if (canController[controller].canRxMessagesFifo != nullptr) {
         memoryProvider->Free(memoryProvider, canController[controller].canRxMessagesFifo);
@@ -2582,7 +2582,7 @@ TinyCLR_Result LPC17_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_t 
 
     LPC17xx_SYSCON &SYSCON = *(LPC17xx_SYSCON *)(size_t)(LPC17xx_SYSCON::c_SYSCON_Base);
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     if (canController[controller].canRxMessagesFifo == nullptr)
         canController[controller].canRxMessagesFifo = (LPC17_Can_Message*)memoryProvider->Allocate(memoryProvider, canController[controller].can_rxBufferSize * sizeof(LPC17_Can_Message));
@@ -2645,7 +2645,7 @@ TinyCLR_Result LPC17_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, in
     uint32_t *_matchFilters;
     uint32_t *filters32 = (uint32_t*)filters;
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     _matchFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
 
@@ -2673,7 +2673,7 @@ TinyCLR_Result LPC17_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, int32
     uint32_t *lowerBounds32 = (uint32_t *)lowerBounds;
     uint32_t *upperBounds32 = (uint32_t *)upperBounds;
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     _lowerBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
     _upperBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));

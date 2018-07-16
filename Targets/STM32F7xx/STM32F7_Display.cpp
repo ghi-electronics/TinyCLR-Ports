@@ -1042,7 +1042,7 @@ TinyCLR_Result STM32F7_Display_Release(const TinyCLR_Display_Provider* self, int
     m_STM32F7_DisplayEnable = false;
 
     if (m_STM32F7_Display_VituralRam != nullptr) {
-        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
         memoryProvider->Free(memoryProvider, m_STM32F7_Display_VituralRam);
 
@@ -1107,7 +1107,7 @@ TinyCLR_Result STM32F7_Display_SetConfiguration(const TinyCLR_Display_Provider* 
             break;
         }
 
-        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
         if (m_STM32F7_Display_VituralRam != nullptr) {
             memoryProvider->Free(memoryProvider, m_STM32F7_Display_VituralRam);

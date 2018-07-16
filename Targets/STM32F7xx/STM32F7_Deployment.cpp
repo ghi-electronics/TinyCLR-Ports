@@ -102,8 +102,8 @@ const TinyCLR_Api_Info* STM32F7_Deployment_GetApi() {
     deploymentProvider.GetSectorMap = &STM32F7_Flash_GetSectorMap;
 
     deploymentApi.Author = "GHI Electronics, LLC";
-    deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.DeploymentProvider";
-    deploymentApi.Type = TinyCLR_Api_Type::DeploymentProvider;
+    deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.DeploymentController";
+    deploymentApi.Type = TinyCLR_Api_Type::DeploymentController;
     deploymentApi.Version = 0;
     deploymentApi.Implementation = &deploymentProvider;
 

@@ -21,7 +21,7 @@ struct GpioChangeWriter {
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioChangeWriter::NativeConstructor___BOOLEAN__BOOLEAN(const TinyCLR_Interop_MethodData md) {
     TinyCLR_Result result = TinyCLR_Result::Success;
     {
-        auto provider = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+        auto provider = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
         if (provider != nullptr) {
             const TinyCLR_Interop_ClrObject* self;
@@ -43,7 +43,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     TinyCLR_Result result = TinyCLR_Result::Success;
     {
-        auto provider = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+        auto provider = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
         if (provider != nullptr) {
             const TinyCLR_Interop_ClrObject* self;
@@ -60,7 +60,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioChangeWriter::NativeIsActive___BOOLEAN(const TinyCLR_Interop_MethodData md) {
     TinyCLR_Result result = TinyCLR_Result::Success;
     {
-        auto provider = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+        auto provider = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
         if (provider != nullptr) {
             const TinyCLR_Interop_ClrObject* self;
@@ -79,7 +79,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioChangeWriter::NativeSet___VOID__BOOLEAN(const TinyCLR_Interop_MethodData md) {
     TinyCLR_Result result = TinyCLR_Result::Success;
     {
-        auto provider = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+        auto provider = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
         if (provider != nullptr) {
             const TinyCLR_Interop_ClrObject* self;
@@ -98,7 +98,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioChangeWriter::NativeSet___BOOLEAN__BOOLEAN__SZARRAY_U4__I4__I4__BOOLEAN(const TinyCLR_Interop_MethodData md) {
     TinyCLR_Result result = TinyCLR_Result::Success;
     {
-        auto provider = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+        auto provider = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
         if (provider != nullptr) {
             const TinyCLR_Interop_ClrObject* self;
@@ -126,7 +126,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioChangeWriter::NativeSet___VOID__BOOLEAN__SZARRAY_U4__I4__I4__U4__BOOLEAN__U4(const TinyCLR_Interop_MethodData md) {
     TinyCLR_Result result = TinyCLR_Result::Success;
     {
-        auto provider = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+        auto provider = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
         if (provider != nullptr) {
             const TinyCLR_Interop_ClrObject* self;
@@ -223,7 +223,7 @@ void GpioChangeWriter::NativeDispose(const TinyCLR_Interop_Provider* provider, c
     gpioProvider->SetDriveMode(gpioProvider, gpioController, (int32_t)oc->pin, TinyCLR_Gpio_PinDriveMode::InputPullUp);
     gpioProvider->ReleasePin(gpioProvider, gpioController, (int32_t)oc->pin);
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     if (oc->buffer != nullptr)
         memoryProvider->Free(memoryProvider, oc->buffer);
@@ -256,7 +256,7 @@ int8_t GpioChangeWriter::NativeConstructor(const TinyCLR_Interop_Provider* provi
 
     uint8_t param0 = Get_pin(provider, self);
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     OC *oc = (OC*)memoryProvider->Allocate(memoryProvider, sizeof(OC));
 
@@ -362,7 +362,7 @@ int8_t GpioChangeWriter::NativeSet(const TinyCLR_Interop_Provider* provider, con
     oc->isActive = false;
 
     // is there data??
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     if (param3) {
         if (oc->buffer != nullptr)

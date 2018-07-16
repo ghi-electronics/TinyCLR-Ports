@@ -1271,7 +1271,7 @@ TinyCLR_Result AT91_Display_Release(const TinyCLR_Display_Provider* self, int32_
     m_AT91_DisplayEnable = false;
 
     if (m_AT91_Display_VituralRam != nullptr) {
-        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
         memoryProvider->Free(memoryProvider, m_AT91_Display_VituralRam);
 
@@ -1336,7 +1336,7 @@ TinyCLR_Result AT91_Display_SetConfiguration(const TinyCLR_Display_Provider* sel
             break;
         }
 
-        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
         if (m_AT91_Display_VituralRam != nullptr) {
             memoryProvider->Free(memoryProvider, m_AT91_Display_VituralRam);

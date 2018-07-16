@@ -20,7 +20,7 @@ struct GpioPulseReaderWriter {
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::NativeReadDrainTime___I8(const TinyCLR_Interop_MethodData md) {
     TinyCLR_Result result = TinyCLR_Result::Success;
     {
-        auto provider = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+        auto provider = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
         if (provider != nullptr) {
             const TinyCLR_Interop_ClrObject* self;
@@ -40,7 +40,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::NativeReadEcho___I8__BOOLEAN(const TinyCLR_Interop_MethodData md) {
     TinyCLR_Result result = TinyCLR_Result::Success;
     {
-        auto provider = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+        auto provider = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
         if (provider != nullptr) {
             const TinyCLR_Interop_ClrObject* self;
@@ -61,7 +61,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_GpioPulseReaderWriter::NativeFinalize___VOID(const TinyCLR_Interop_MethodData md) {
     TinyCLR_Result result = TinyCLR_Result::Success;
     {
-        auto provider = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+        auto provider = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
         if (provider != nullptr) {
             const TinyCLR_Interop_ClrObject* self;

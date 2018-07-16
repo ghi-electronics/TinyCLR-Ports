@@ -747,7 +747,7 @@ const TinyCLR_Api_Info* TinyCLR_UsbClient_GetApi() {
     usbClientApi.Implementation = &usbClientProvider;
 
     if (apiProvider != nullptr) {
-        auto memoryProvider = reinterpret_cast<const TinyCLR_Memory_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider));
+        auto memoryProvider = reinterpret_cast<const TinyCLR_Memory_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager));
 
         usbClient_State = reinterpret_cast<USB_CONTROLLER_STATE*>(memoryProvider->Allocate(memoryProvider, sizeof(USB_CONTROLLER_STATE)));
     }
@@ -776,7 +776,7 @@ TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self,
     usbState->deviceStatus = USB_STATUS_DEVICE_SELF_POWERED;
 
     if (apiProvider != nullptr) {
-        auto memoryProvider = reinterpret_cast<const TinyCLR_Memory_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider));
+        auto memoryProvider = reinterpret_cast<const TinyCLR_Memory_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager));
 
         usbState->queues = reinterpret_cast<USB_PACKET64**>(memoryProvider->Allocate(memoryProvider, usbState->totalEndpointsCount * sizeof(uint32_t)));
         usbState->currentPacketOffset = reinterpret_cast<uint8_t*>(memoryProvider->Allocate(memoryProvider, usbState->totalEndpointsCount * sizeof(uint8_t)));
@@ -846,7 +846,7 @@ TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Provider* self,
         TinyCLR_UsbClient_Delay(100000); // 100ms
 
         if (apiProvider != nullptr) {
-            auto memoryProvider = reinterpret_cast<const TinyCLR_Memory_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider));
+            auto memoryProvider = reinterpret_cast<const TinyCLR_Memory_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager));
 
             memoryProvider->Free(memoryProvider, usbState->queues);
             memoryProvider->Free(memoryProvider, usbState->currentPacketOffset);
@@ -881,7 +881,7 @@ TinyCLR_Result TinyCLR_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, in
 
     if (apiProvider != nullptr) {
         for (auto i = 0; i < 2; i++) {
-            auto memoryProvider = reinterpret_cast<const TinyCLR_Memory_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider));
+            auto memoryProvider = reinterpret_cast<const TinyCLR_Memory_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager));
             auto endpoint = (i == 0) ? writeEp : readEp;
 
             if (memoryProvider != nullptr && endpoint < usbState->totalEndpointsCount) {
@@ -933,7 +933,7 @@ TinyCLR_Result TinyCLR_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, i
             TinyCLR_UsbClient_ClearEndpoints(usbState, endpoint);
 
             if (apiProvider != nullptr) {
-                auto memoryProvider = reinterpret_cast<const TinyCLR_Memory_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider));
+                auto memoryProvider = reinterpret_cast<const TinyCLR_Memory_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager));
 
                 if (usbState->queues[endpoint] != nullptr)
                     memoryProvider->Free(memoryProvider, usbState->queues[endpoint]);

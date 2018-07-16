@@ -2,14 +2,14 @@
 #include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
 void PinChangedIsr(const TinyCLR_Uart_Provider* self, int32_t controller, TinyCLR_Uart_PinChange pinChange) {
-    auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider));
+    auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropManager));
 
     if (interopProvider != nullptr)
         interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Uart.PinChanged", self->ApiInfo->Name, controller, (uint64_t)pinChange, 0, 0);
 }
 
 void ErrorReceivedIsr(const TinyCLR_Uart_Provider* self, int32_t controller, TinyCLR_Uart_Error error) {
-    auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider));
+    auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropManager));
 
     if (interopProvider != nullptr)
         interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Uart.ErrorReceived", self->ApiInfo->Name, controller, (uint64_t)error, 0, 0);

@@ -29,8 +29,8 @@ const TinyCLR_Api_Info* AT91_Power_GetApi() {
     powerProvider.Sleep = &AT91_Power_Sleep;
 
     powerApi.Author = "GHI Electronics, LLC";
-    powerApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.PowerProvider";
-    powerApi.Type = TinyCLR_Api_Type::PowerProvider;
+    powerApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.PowerController";
+    powerApi.Type = TinyCLR_Api_Type::PowerController;
     powerApi.Version = 0;
     powerApi.Implementation = &powerProvider;
 

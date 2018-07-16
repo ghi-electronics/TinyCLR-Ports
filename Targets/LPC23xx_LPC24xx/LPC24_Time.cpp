@@ -185,8 +185,8 @@ const TinyCLR_Api_Info* LPC24_Time_GetApi() {
     timeProvider.Wait = &LPC24_Time_DelayNative;
 
     timeApi.Author = "GHI Electronics, LLC";
-    timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.NativeTimeProvider";
-    timeApi.Type = TinyCLR_Api_Type::NativeTimeProvider;
+    timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.NativeTimeController";
+    timeApi.Type = TinyCLR_Api_Type::NativeTimeController;
     timeApi.Version = 0;
     timeApi.Implementation = &timeProvider;
 

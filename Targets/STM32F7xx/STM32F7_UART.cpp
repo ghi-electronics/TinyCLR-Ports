@@ -137,7 +137,7 @@ TinyCLR_Result STM32F7_Uart_GetReadBufferSize(const TinyCLR_Uart_Provider* self,
 }
 
 TinyCLR_Result STM32F7_Uart_SetReadBufferSize(const TinyCLR_Uart_Provider* self, int32_t controller, size_t size) {
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
@@ -166,7 +166,7 @@ TinyCLR_Result STM32F7_Uart_GetWriteBufferSize(const TinyCLR_Uart_Provider* self
 }
 
 TinyCLR_Result STM32F7_Uart_SetWriteBufferSize(const TinyCLR_Uart_Provider* self, int32_t controller, size_t size) {
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
@@ -566,7 +566,7 @@ TinyCLR_Result STM32F7_Uart_Release(const TinyCLR_Uart_Provider* self, int32_t c
 #endif
 
     if (apiProvider != nullptr) {
-        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
         if (g_UartController[controller].txBufferSize != 0) {
             memoryProvider->Free(memoryProvider, g_UartController[controller].TxBuffer);

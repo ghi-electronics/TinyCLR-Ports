@@ -133,8 +133,8 @@ const TinyCLR_Api_Info* LPC24_Interrupt_GetApi() {
     interruptProvider.WaitForInterrupt = &LPC24_Interrupt_GlobalWaitForInterrupt;
 
     interruptApi.Author = "GHI Electronics, LLC";
-    interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.InterruptProvider";
-    interruptApi.Type = TinyCLR_Api_Type::InterruptProvider;
+    interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.InterruptController";
+    interruptApi.Type = TinyCLR_Api_Type::InterruptController;
     interruptApi.Version = 0;
     interruptApi.Implementation = &interruptProvider;
 

@@ -35,8 +35,8 @@ const TinyCLR_Api_Info* STM32F4_Interrupt_GetApi() {
     interruptProvider.Restore = &STM32F4_Interrupt_Restore;
 
     interruptApi.Author = "GHI Electronics, LLC";
-    interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.InterruptProvider";
-    interruptApi.Type = TinyCLR_Api_Type::InterruptProvider;
+    interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.InterruptController";
+    interruptApi.Type = TinyCLR_Api_Type::InterruptController;
     interruptApi.Version = 0;
     interruptApi.Implementation = &interruptProvider;
 

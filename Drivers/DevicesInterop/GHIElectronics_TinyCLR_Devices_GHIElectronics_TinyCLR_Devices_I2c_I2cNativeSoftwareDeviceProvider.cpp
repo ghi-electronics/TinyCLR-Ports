@@ -82,7 +82,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     TinyCLR_Interop_ClrValue ret;
 
-    auto prov = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+    auto prov = (const TinyCLR_Interop_Provider*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
     i2c.gpioProvider = (const TinyCLR_Gpio_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::GpioProvider);
 
