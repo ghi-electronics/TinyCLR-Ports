@@ -297,8 +297,10 @@ typedef struct {
 
 } STM32F4_Can_Message;
 
-struct STM32F4_Can_Controller {
-    const TinyCLR_Can_Provider* provider;
+struct CanDriver {
+    int32_t controllerIndex;
+
+    const TinyCLR_Can_Controller* provider;
 
     STM32F4_Can_Message *canRxMessagesFifo;
 
@@ -328,10 +330,10 @@ static const uint32_t g_STM32F4_Can_defaultBuffersSize[] = STM32F4_CAN_BUFFER_DE
 
 static const int TOTAL_CAN_CONTROLLERS = SIZEOF_ARRAY(g_STM32F4_Can_Tx_Pins);
 
-static STM32F4_Can_Controller canController[TOTAL_CAN_CONTROLLERS];
+static CanDriver canDrivers[TOTAL_CAN_CONTROLLERS];
 
-static TinyCLR_Can_Provider canProvider;
-static TinyCLR_Api_Info canApi;
+static TinyCLR_Can_Controller canControllers[TOTAL_CAN_CONTROLLERS];;
+static TinyCLR_Api_Info canApi[TOTAL_CAN_CONTROLLERS];;
 
 bool InsertionSort2CheckOverlap(uint32_t* lowerBounds, uint32_t* upperBounds, int32_t length) {
 
@@ -979,32 +981,34 @@ ITStatus CAN_GetITStatus(CAN_TypeDef* CANx, uint32_t CAN_IT) {
 }
 
 
-bool CAN_ErrorHandler(uint8_t controller) {
+bool CAN_ErrorHandler(uint8_t controllerIndex) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    CAN_TypeDef* CANx = ((controller == 0) ? CAN1 : CAN2);
+    auto driver = &canDrivers[controllerIndex];
+
+    CAN_TypeDef* CANx = ((controllerIndex == 0) ? CAN1 : CAN2);
 
     if (CAN_GetITStatus(CANx, CAN_IT_FF0)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_FF0);
-        canController[controller].errorEventHandler(canController[controller].provider, controller, TinyCLR_Can_Error::ReadBufferFull);
+        driver->errorEventHandler(driver->provider, TinyCLR_Can_Error::ReadBufferFull);
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_FOV0)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_FOV0);
-        canController[controller].errorEventHandler(canController[controller].provider, controller, TinyCLR_Can_Error::ReadBufferOverrun);
+        driver->errorEventHandler(driver->provider, TinyCLR_Can_Error::ReadBufferOverrun);
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_BOF)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_BOF);
-        canController[controller].errorEventHandler(canController[controller].provider, controller, TinyCLR_Can_Error::BusOff);
+        driver->errorEventHandler(driver->provider, TinyCLR_Can_Error::BusOff);
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_EPV)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_EPV);
-        canController[controller].errorEventHandler(canController[controller].provider, controller, TinyCLR_Can_Error::Passive);
+        driver->errorEventHandler(driver->provider, TinyCLR_Can_Error::Passive);
 
         return true;
     }
@@ -1014,13 +1018,13 @@ bool CAN_ErrorHandler(uint8_t controller) {
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_ERR)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_ERR);
-        canController[controller].errorEventHandler(canController[controller].provider, controller, TinyCLR_Can_Error::Passive);
+        driver->errorEventHandler(driver->provider, TinyCLR_Can_Error::Passive);
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_EWG)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_EWG);
-        canController[controller].errorEventHandler(canController[controller].provider, controller, TinyCLR_Can_Error::Passive);
+        driver->errorEventHandler(driver->provider, TinyCLR_Can_Error::Passive);
     }
 
     return false;
@@ -1028,66 +1032,77 @@ bool CAN_ErrorHandler(uint8_t controller) {
 
 
 const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
-    canProvider.ApiInfo = &canApi;
-    canProvider.Acquire = &STM32F4_Can_Acquire;
-    canProvider.Release = &STM32F4_Can_Release;
-    canProvider.Reset = &STM32F4_Can_SoftReset;
-    canProvider.WriteMessage = &STM32F4_Can_WriteMessage;
-    canProvider.ReadMessage = &STM32F4_Can_ReadMessage;
-    canProvider.SetBitTiming = &STM32F4_Can_SetBitTiming;
-    canProvider.GetUnreadMessageCount = &STM32F4_Can_GetUnreadMessageCount;
-    canProvider.SetMessageReceivedHandler = &STM32F4_Can_SetMessageReceivedHandler;
-    canProvider.SetErrorReceivedHandler = &STM32F4_Can_SetErrorReceivedHandler;
-    canProvider.SetExplicitFilters = &STM32F4_Can_SetExplicitFilters;
-    canProvider.SetGroupFilters = &STM32F4_Can_SetGroupFilters;
-    canProvider.ClearReadBuffer = &STM32F4_Can_ClearReadBuffer;
-    canProvider.IsWritingAllowed = &STM32F4_Can_IsWritingAllowed;
-    canProvider.GetWriteErrorCount = &STM32F4_Can_GetWriteErrorCount;
-    canProvider.GetReadErrorCount = &STM32F4_Can_GetReadErrorCount;
-    canProvider.GetSourceClock = &STM32F4_Can_GetSourceClock;
-    canProvider.GetReadBufferSize = STM32F4_Can_GetReadBufferSize;
-    canProvider.SetReadBufferSize = STM32F4_Can_SetReadBufferSize;
-    canProvider.GetWriteBufferSize = STM32F4_Can_GetWriteBufferSize;
-    canProvider.SetWriteBufferSize = STM32F4_Can_SetWriteBufferSize;
-    canProvider.GetControllerCount = STM32F4_Can_GetControllerCount;
+    for (int32_t i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
+        canControllers[i].ApiInfo = &canApi[i];
+        canControllers[i].Acquire = &STM32F4_Can_Acquire;
+        canControllers[i].Release = &STM32F4_Can_Release;
+        canControllers[i].Reset = &STM32F4_Can_SoftReset;
+        canControllers[i].WriteMessage = &STM32F4_Can_WriteMessage;
+        canControllers[i].ReadMessage = &STM32F4_Can_ReadMessage;
+        canControllers[i].SetBitTiming = &STM32F4_Can_SetBitTiming;
+        canControllers[i].GetUnreadMessageCount = &STM32F4_Can_GetUnreadMessageCount;
+        canControllers[i].SetMessageReceivedHandler = &STM32F4_Can_SetMessageReceivedHandler;
+        canControllers[i].SetErrorReceivedHandler = &STM32F4_Can_SetErrorReceivedHandler;
+        canControllers[i].SetExplicitFilters = &STM32F4_Can_SetExplicitFilters;
+        canControllers[i].SetGroupFilters = &STM32F4_Can_SetGroupFilters;
+        canControllers[i].ClearReadBuffer = &STM32F4_Can_ClearReadBuffer;
+        canControllers[i].IsWritingAllowed = &STM32F4_Can_IsWritingAllowed;
+        canControllers[i].GetWriteErrorCount = &STM32F4_Can_GetWriteErrorCount;
+        canControllers[i].GetReadErrorCount = &STM32F4_Can_GetReadErrorCount;
+        canControllers[i].GetSourceClock = &STM32F4_Can_GetSourceClock;
+        canControllers[i].GetReadBufferSize = STM32F4_Can_GetReadBufferSize;
+        canControllers[i].SetReadBufferSize = STM32F4_Can_SetReadBufferSize;
+        canControllers[i].GetWriteBufferSize = STM32F4_Can_GetWriteBufferSize;
+        canControllers[i].SetWriteBufferSize = STM32F4_Can_SetWriteBufferSize;
 
-    canApi.Author = "GHI Electronics, LLC";
-    canApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.CanProvider";
-    canApi.Type = TinyCLR_Api_Type::CanProvider;
-    canApi.Version = 0;
-    canApi.Implementation = &canProvider;
+        canApi[i].Author = "GHI Electronics, LLC";
+        canApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.CanController";
+        canApi[i].Type = TinyCLR_Api_Type::CanController;
+        canApi[i].Version = 0;
+        canApi[i].Implementation = &canControllers[i];
+        canApi[i].State = &canDrivers[i];
 
-    return &canApi;
+        canDrivers[i].controllerIndex = i;
+    }
+
+    return (const TinyCLR_Api_Info*)&canApi;
 }
 
-TinyCLR_Result STM32F4_Can_GetReadBufferSize(const TinyCLR_Can_Provider* self, int32_t controller, size_t& size) {
+TinyCLR_Result STM32F4_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self, size_t& size) {
+    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
 
-    size = canController[controller].can_rxBufferSize == 0 ? g_STM32F4_Can_defaultBuffersSize[controller] : canController[controller].can_rxBufferSize;
+    int32_t controllerIndex = driver->controllerIndex;
+
+    size = driver->can_rxBufferSize == 0 ? g_STM32F4_Can_defaultBuffersSize[controllerIndex] : driver->can_rxBufferSize;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, int32_t controller, size_t size) {
+TinyCLR_Result STM32F4_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
+    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+
+    int32_t controllerIndex = driver->controllerIndex;
 
     if (size > 3) {
-        canController[controller].can_rxBufferSize = size;
+        driver->can_rxBufferSize = size;
         return TinyCLR_Result::Success;
     }
     else {
-        canController[controller].can_rxBufferSize = g_STM32F4_Can_defaultBuffersSize[controller];
+        driver->can_rxBufferSize = g_STM32F4_Can_defaultBuffersSize[controllerIndex];
         return TinyCLR_Result::ArgumentInvalid;;
     }
 }
 
-TinyCLR_Result STM32F4_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, int32_t controller, size_t& size) {
+TinyCLR_Result STM32F4_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self, size_t& size) {
     size = 1;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, int32_t controller, size_t size) {
+TinyCLR_Result STM32F4_Can_SetWriteBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
+    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
 
-    canController[controller].can_txBufferSize = 1;
+    driver->can_txBufferSize = 1;
 
     return size == 1 ? TinyCLR_Result::Success : TinyCLR_Result::NotSupported;
 }
@@ -1095,8 +1110,11 @@ TinyCLR_Result STM32F4_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, 
 uint32_t STM32_Can_GetLocalTime() {
     return STM32F4_Time_GetTimeForProcessorTicks(nullptr, STM32F4_Time_GetCurrentProcessorTicks(nullptr));
 }
-void STM32_Can_RxInterruptHandler(int32_t controller) {
+
+void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
     DISABLE_INTERRUPTS_SCOPED(irq);
+
+    auto driver = reinterpret_cast<CanDriver*>(&canDrivers[controllerIndex]);
 
     uint32_t* pDest;
 
@@ -1109,11 +1127,11 @@ void STM32_Can_RxInterruptHandler(int32_t controller) {
 
     char passed = 0;
 
-    CAN_TypeDef* CANx = ((controller == 0) ? CAN1 : CAN2);
+    CAN_TypeDef* CANx = ((controllerIndex == 0) ? CAN1 : CAN2);
 
     STM32F4_Can_RxMessage rxMessage;
 
-    uint32_t error = CAN_ErrorHandler(controller);
+    uint32_t error = CAN_ErrorHandler(controllerIndex);
 
     CAN_Receive(CANx, CAN_FIFO0, &rxMessage);
 
@@ -1134,14 +1152,14 @@ void STM32_Can_RxInterruptHandler(int32_t controller) {
     rtrmode = (((rxMessage.RTR) & 0x02) != 0) ? true : false;
 
     // Filter
-    if (canController[controller].canDataFilter.groupFiltersSize || canController[controller].canDataFilter.matchFiltersSize) {
-        if (canController[controller].canDataFilter.groupFiltersSize) {
-            if (BinarySearch2(canController[controller].canDataFilter.lowerBoundFilters, canController[controller].canDataFilter.upperBoundFilters, 0, canController[controller].canDataFilter.groupFiltersSize - 1, msgid) >= 0)
+    if (driver->canDataFilter.groupFiltersSize || driver->canDataFilter.matchFiltersSize) {
+        if (driver->canDataFilter.groupFiltersSize) {
+            if (BinarySearch2(driver->canDataFilter.lowerBoundFilters, driver->canDataFilter.upperBoundFilters, 0, driver->canDataFilter.groupFiltersSize - 1, msgid) >= 0)
                 passed = 1;
         }
 
-        if (!passed && canController[controller].canDataFilter.matchFiltersSize) {
-            if (BinarySearch(canController[controller].canDataFilter.matchFilters, 0, canController[controller].canDataFilter.matchFiltersSize - 1, msgid) >= 0)
+        if (!passed && driver->canDataFilter.matchFiltersSize) {
+            if (BinarySearch(driver->canDataFilter.matchFilters, 0, driver->canDataFilter.matchFiltersSize - 1, msgid) >= 0)
                 passed = 1;
         }
 
@@ -1150,11 +1168,11 @@ void STM32_Can_RxInterruptHandler(int32_t controller) {
         }
     }
 
-    if (canController[controller].can_rx_count > canController[controller].can_rxBufferSize - 3) {
+    if (driver->can_rx_count > driver->can_rxBufferSize - 3) {
         return;
     }
 
-    STM32F4_Can_Message *can_msg = &canController[controller].canRxMessagesFifo[canController[controller].can_rx_in];
+    STM32F4_Can_Message *can_msg = &driver->canRxMessagesFifo[driver->can_rx_in];
 
     uint64_t t = STM32_Can_GetLocalTime();
 
@@ -1174,14 +1192,14 @@ void STM32_Can_RxInterruptHandler(int32_t controller) {
 
     can_msg->length = len;
 
-    canController[controller].can_rx_count++;
-    canController[controller].can_rx_in++;
+    driver->can_rx_count++;
+    driver->can_rx_in++;
 
-    if (canController[controller].can_rx_in == canController[controller].can_rxBufferSize) {
-        canController[controller].can_rx_in = 0;
+    if (driver->can_rx_in == driver->can_rxBufferSize) {
+        driver->can_rx_in = 0;
     }
 
-    canController[controller].messageReceivedEventHandler(canController[controller].provider, controller, canController[controller].can_rx_count);
+    driver->messageReceivedEventHandler(driver->provider, driver->can_rx_count);
 
     return;
 }
@@ -1202,88 +1220,102 @@ void STM32F4_Can_RxInterruptHandler1(void *param) {
     STM32_Can_RxInterruptHandler(1);
 }
 
-TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Provider* self, int32_t controller) {
+TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    if (!STM32F4_GpioInternal_OpenPin(g_STM32F4_Can_Tx_Pins[controller].number))
+    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+
+    int32_t controllerIndex = driver->controllerIndex;
+
+    if (!STM32F4_GpioInternal_OpenPin(g_STM32F4_Can_Tx_Pins[controllerIndex].number))
         return TinyCLR_Result::SharingViolation;
 
-    if (!STM32F4_GpioInternal_OpenPin(g_STM32F4_Can_Rx_Pins[controller].number))
+    if (!STM32F4_GpioInternal_OpenPin(g_STM32F4_Can_Rx_Pins[controllerIndex].number))
         return TinyCLR_Result::SharingViolation;
 
     // set pin as analog
-    STM32F4_GpioInternal_ConfigurePin(g_STM32F4_Can_Tx_Pins[controller].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, g_STM32F4_Can_Tx_Pins[controller].alternateFunction);
-    STM32F4_GpioInternal_ConfigurePin(g_STM32F4_Can_Rx_Pins[controller].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, g_STM32F4_Can_Rx_Pins[controller].alternateFunction);
+    STM32F4_GpioInternal_ConfigurePin(g_STM32F4_Can_Tx_Pins[controllerIndex].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, g_STM32F4_Can_Tx_Pins[controllerIndex].alternateFunction);
+    STM32F4_GpioInternal_ConfigurePin(g_STM32F4_Can_Rx_Pins[controllerIndex].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, g_STM32F4_Can_Rx_Pins[controllerIndex].alternateFunction);
 
-    canController[controller].can_rx_count = 0;
-    canController[controller].can_rx_in = 0;
-    canController[controller].can_rx_out = 0;
-    canController[controller].baudrate = 0;
-    canController[controller].can_rxBufferSize = g_STM32F4_Can_defaultBuffersSize[controller];
-    canController[controller].provider = self;
+    driver->can_rx_count = 0;
+    driver->can_rx_in = 0;
+    driver->can_rx_out = 0;
+    driver->baudrate = 0;
+    driver->can_rxBufferSize = g_STM32F4_Can_defaultBuffersSize[controllerIndex];
+    driver->provider = self;
 
-    canController[controller].canRxMessagesFifo = nullptr;
+    driver->canRxMessagesFifo = nullptr;
 
-    canController[controller].isOpened = true;
+    driver->isOpened = true;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_Release(const TinyCLR_Can_Provider* self, int32_t controller) {
+TinyCLR_Result STM32F4_Can_Release(const TinyCLR_Can_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
 
-    RCC->APB1ENR &= ((controller == 0) ? ~RCC_APB1ENR_CAN1EN : ~RCC_APB1ENR_CAN2EN);
+    int32_t controllerIndex = driver->controllerIndex;
 
-    if (canController[controller].canRxMessagesFifo != nullptr) {
-        memoryProvider->Free(memoryProvider, canController[controller].canRxMessagesFifo);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-        canController[controller].canRxMessagesFifo = nullptr;
+    RCC->APB1ENR &= ((controllerIndex == 0) ? ~RCC_APB1ENR_CAN1EN : ~RCC_APB1ENR_CAN2EN);
+
+    if (driver->canRxMessagesFifo != nullptr) {
+        memoryProvider->Free(memoryProvider, driver->canRxMessagesFifo);
+
+        driver->canRxMessagesFifo = nullptr;
     }
 
-    if (canController[controller].isOpened) {
-        STM32F4_GpioInternal_ClosePin(g_STM32F4_Can_Tx_Pins[controller].number);
-        STM32F4_GpioInternal_ClosePin(g_STM32F4_Can_Rx_Pins[controller].number);
+    if (driver->isOpened) {
+        STM32F4_GpioInternal_ClosePin(g_STM32F4_Can_Tx_Pins[controllerIndex].number);
+        STM32F4_GpioInternal_ClosePin(g_STM32F4_Can_Rx_Pins[controllerIndex].number);
     }
 
-    canController[controller].isOpened = false;
+    driver->isOpened = false;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_SoftReset(const TinyCLR_Can_Provider* self, int32_t controller) {
+TinyCLR_Result STM32F4_Can_SoftReset(const TinyCLR_Can_Controller* self) {
+    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
 
-    CAN_TypeDef* CANx = ((controller == 0) ? CAN1 : CAN2);
+    int32_t controllerIndex = driver->controllerIndex;
 
-    canController[controller].can_rx_count = 0;
-    canController[controller].can_rx_in = 0;
-    canController[controller].can_rx_out = 0;
+    CAN_TypeDef* CANx = ((controllerIndex == 0) ? CAN1 : CAN2);
 
-    RCC->APB1RSTR |= ((controller == 0) ? RCC_APB1ENR_CAN1EN : RCC_APB1ENR_CAN2EN);
+    driver->can_rx_count = 0;
+    driver->can_rx_in = 0;
+    driver->can_rx_out = 0;
+
+    RCC->APB1RSTR |= ((controllerIndex == 0) ? RCC_APB1ENR_CAN1EN : RCC_APB1ENR_CAN2EN);
 
     STM32F4_Time_Delay(nullptr, 1000);
 
-    RCC->APB1RSTR &= ((controller == 0) ? ~RCC_APB1ENR_CAN1EN : ~RCC_APB1ENR_CAN2EN);
+    RCC->APB1RSTR &= ((controllerIndex == 0) ? ~RCC_APB1ENR_CAN1EN : ~RCC_APB1ENR_CAN2EN);
 
-    RCC->APB1ENR |= ((controller == 0) ? RCC_APB1ENR_CAN1EN : (RCC_APB1ENR_CAN1EN | RCC_APB1ENR_CAN2EN));
+    RCC->APB1ENR |= ((controllerIndex == 0) ? RCC_APB1ENR_CAN1EN : (RCC_APB1ENR_CAN1EN | RCC_APB1ENR_CAN2EN));
 
-    CAN_Initialize(CANx, &canController[controller].initTypeDef);
+    CAN_Initialize(CANx, &driver->initTypeDef);
 
-    CAN_FilterInit(&canController[controller].filterInitTypeDef);
+    CAN_FilterInit(&driver->filterInitTypeDef);
 
     CANx->IER |= (CAN_IT_FMP0 | CAN_IT_FF0 | CAN_IT_FOV0 | CAN_IT_EWG | CAN_IT_EPV | CAN_IT_BOF | CAN_IT_LEC | CAN_IT_ERR);
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_WriteMessage(const TinyCLR_Can_Provider* self, int32_t controller, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length) {
+TinyCLR_Result STM32F4_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length) {
+    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+
+    int32_t controllerIndex = driver->controllerIndex;
 
     uint32_t* data32 = (uint32_t*)data;
 
-    CAN_TypeDef* CANx = ((controller == 0) ? CAN1 : CAN2);
+    CAN_TypeDef* CANx = ((controllerIndex == 0) ? CAN1 : CAN2);
 
     uint32_t i = 0;
 
@@ -1321,28 +1353,30 @@ TinyCLR_Result STM32F4_Can_WriteMessage(const TinyCLR_Can_Provider* self, int32_
     if (txmailbox == CAN_TxStatus_NoMailBox || i == CAN_GetTransferTimeout()) {
 
         CAN_CancelTransmit(CANx, txmailbox);
-        CAN_ErrorHandler(controller);
+        CAN_ErrorHandler(controllerIndex);
         return TinyCLR_Result::InvalidOperation;
     }
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_ReadMessage(const TinyCLR_Can_Provider* self, int32_t controller, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length) {
+TinyCLR_Result STM32F4_Can_ReadMessage(const TinyCLR_Can_Controller* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length) {
+    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+
     STM32F4_Can_Message *can_msg;
 
     uint32_t* data32 = (uint32_t*)data;
 
-    if (canController[controller].can_rx_count) {
+    if (driver->can_rx_count) {
         DISABLE_INTERRUPTS_SCOPED(irq);
 
-        can_msg = &canController[controller].canRxMessagesFifo[canController[controller].can_rx_out];
-        canController[controller].can_rx_out++;
+        can_msg = &driver->canRxMessagesFifo[driver->can_rx_out];
+        driver->can_rx_out++;
 
-        if (canController[controller].can_rx_out == canController[controller].can_rxBufferSize)
-            canController[controller].can_rx_out = 0;
+        if (driver->can_rx_out == driver->can_rxBufferSize)
+            driver->can_rx_out = 0;
 
-        canController[controller].can_rx_count--;
+        driver->can_rx_count--;
 
         arbitrationId = can_msg->MsgID;
         isExtendedId = can_msg->extendedId;
@@ -1356,60 +1390,63 @@ TinyCLR_Result STM32F4_Can_ReadMessage(const TinyCLR_Can_Provider* self, int32_t
     }
 
     return TinyCLR_Result::Success;
-
 }
 
-TinyCLR_Result STM32F4_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_t controller, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
-    CAN_TypeDef* CANx = ((controller == 0) ? CAN1 : CAN2);
+TinyCLR_Result STM32F4_Can_SetBitTiming(const TinyCLR_Can_Controller* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
 
-    if (canController[controller].canRxMessagesFifo == nullptr)
-        canController[controller].canRxMessagesFifo = (STM32F4_Can_Message*)memoryProvider->Allocate(memoryProvider, canController[controller].can_rxBufferSize * sizeof(STM32F4_Can_Message));
+    int32_t controllerIndex = driver->controllerIndex;
 
-    if (canController[controller].canRxMessagesFifo == nullptr) {
+    CAN_TypeDef* CANx = ((controllerIndex == 0) ? CAN1 : CAN2);
+
+    if (driver->canRxMessagesFifo == nullptr)
+        driver->canRxMessagesFifo = (STM32F4_Can_Message*)memoryProvider->Allocate(memoryProvider, driver->can_rxBufferSize * sizeof(STM32F4_Can_Message));
+
+    if (driver->canRxMessagesFifo == nullptr) {
         return TinyCLR_Result::OutOfMemory;
     }
 
-    RCC->APB1RSTR |= ((controller == 0) ? RCC_APB1ENR_CAN1EN : RCC_APB1ENR_CAN2EN);
+    RCC->APB1RSTR |= ((controllerIndex == 0) ? RCC_APB1ENR_CAN1EN : RCC_APB1ENR_CAN2EN);
 
     STM32F4_Time_Delay(nullptr, 1000);
 
-    RCC->APB1RSTR &= ((controller == 0) ? ~RCC_APB1ENR_CAN1EN : ~RCC_APB1ENR_CAN2EN);
+    RCC->APB1RSTR &= ((controllerIndex == 0) ? ~RCC_APB1ENR_CAN1EN : ~RCC_APB1ENR_CAN2EN);
 
-    RCC->APB1ENR |= ((controller == 0) ? RCC_APB1ENR_CAN1EN : (RCC_APB1ENR_CAN1EN | RCC_APB1ENR_CAN2EN));
+    RCC->APB1ENR |= ((controllerIndex == 0) ? RCC_APB1ENR_CAN1EN : (RCC_APB1ENR_CAN1EN | RCC_APB1ENR_CAN2EN));
 
-    canController[controller].baudrate = (((synchronizationJumpWidth - 1) << 24) | ((phase2 - 1) << 20) | ((phase1 - 1) << 16) | baudratePrescaler);
+    driver->baudrate = (((synchronizationJumpWidth - 1) << 24) | ((phase2 - 1) << 20) | ((phase1 - 1) << 16) | baudratePrescaler);
 
-    canController[controller].initTypeDef.CAN_TTCM = DISABLE;
-    canController[controller].initTypeDef.CAN_ABOM = DISABLE;
-    canController[controller].initTypeDef.CAN_AWUM = DISABLE;
-    canController[controller].initTypeDef.CAN_NART = DISABLE;
-    canController[controller].initTypeDef.CAN_RFLM = DISABLE;
-    canController[controller].initTypeDef.CAN_TXFP = DISABLE;
-    canController[controller].initTypeDef.CAN_Mode = CAN_Mode_Normal;
+    driver->initTypeDef.CAN_TTCM = DISABLE;
+    driver->initTypeDef.CAN_ABOM = DISABLE;
+    driver->initTypeDef.CAN_AWUM = DISABLE;
+    driver->initTypeDef.CAN_NART = DISABLE;
+    driver->initTypeDef.CAN_RFLM = DISABLE;
+    driver->initTypeDef.CAN_TXFP = DISABLE;
+    driver->initTypeDef.CAN_Mode = CAN_Mode_Normal;
 
-    canController[controller].initTypeDef.CAN_SJW = ((canController[controller].baudrate >> 24) & 0x03);
-    canController[controller].initTypeDef.CAN_BS2 = ((canController[controller].baudrate >> 20) & 0x07);
-    canController[controller].initTypeDef.CAN_BS1 = ((canController[controller].baudrate >> 16) & 0x0F);
-    canController[controller].initTypeDef.CAN_Prescaler = ((canController[controller].baudrate >> 0) & 0x3FF);
+    driver->initTypeDef.CAN_SJW = ((driver->baudrate >> 24) & 0x03);
+    driver->initTypeDef.CAN_BS2 = ((driver->baudrate >> 20) & 0x07);
+    driver->initTypeDef.CAN_BS1 = ((driver->baudrate >> 16) & 0x0F);
+    driver->initTypeDef.CAN_Prescaler = ((driver->baudrate >> 0) & 0x3FF);
 
-    CAN_Initialize(CANx, &canController[controller].initTypeDef);
+    CAN_Initialize(CANx, &driver->initTypeDef);
 
-    canController[controller].filterInitTypeDef.CAN_FilterNumber = (controller == 0 ? 0 : 14);
+    driver->filterInitTypeDef.CAN_FilterNumber = (controllerIndex == 0 ? 0 : 14);
 
-    canController[controller].filterInitTypeDef.CAN_FilterMode = CAN_FilterMode_IdMask;
-    canController[controller].filterInitTypeDef.CAN_FilterScale = CAN_FilterScale_32bit;
-    canController[controller].filterInitTypeDef.CAN_FilterIdHigh = 0x0000;
-    canController[controller].filterInitTypeDef.CAN_FilterIdLow = 0x0000;
-    canController[controller].filterInitTypeDef.CAN_FilterMaskIdHigh = 0x0000;
-    canController[controller].filterInitTypeDef.CAN_FilterMaskIdLow = 0x0000;
-    canController[controller].filterInitTypeDef.CAN_FilterFIFOAssignment = 0;
-    canController[controller].filterInitTypeDef.CAN_FilterActivation = ENABLE;
+    driver->filterInitTypeDef.CAN_FilterMode = CAN_FilterMode_IdMask;
+    driver->filterInitTypeDef.CAN_FilterScale = CAN_FilterScale_32bit;
+    driver->filterInitTypeDef.CAN_FilterIdHigh = 0x0000;
+    driver->filterInitTypeDef.CAN_FilterIdLow = 0x0000;
+    driver->filterInitTypeDef.CAN_FilterMaskIdHigh = 0x0000;
+    driver->filterInitTypeDef.CAN_FilterMaskIdLow = 0x0000;
+    driver->filterInitTypeDef.CAN_FilterFIFOAssignment = 0;
+    driver->filterInitTypeDef.CAN_FilterActivation = ENABLE;
 
-    CAN_FilterInit(&canController[controller].filterInitTypeDef);
+    CAN_FilterInit(&driver->filterInitTypeDef);
 
-    if (controller == 0) {
+    if (controllerIndex == 0) {
         STM32F4_InterruptInternal_Activate(CAN1_TX_IRQn, (uint32_t*)&STM32F4_Can_TxInterruptHandler0, 0);
         STM32F4_InterruptInternal_Activate(CAN1_RX0_IRQn, (uint32_t*)&STM32F4_Can_RxInterruptHandler0, 0);
     }
@@ -1423,9 +1460,10 @@ TinyCLR_Result STM32F4_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_GetUnreadMessageCount(const TinyCLR_Can_Provider* self, int32_t controller, size_t& count) {
+TinyCLR_Result STM32F4_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self, size_t& count) {
+    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
 
-    count = canController[controller].can_rx_count;
+    count = driver->can_rx_count;
 
     if (!count)
         return TinyCLR_Result::NoDataAvailable;
@@ -1433,25 +1471,29 @@ TinyCLR_Result STM32F4_Can_GetUnreadMessageCount(const TinyCLR_Can_Provider* sel
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_SetMessageReceivedHandler(const TinyCLR_Can_Provider* self, int32_t controller, TinyCLR_Can_MessageReceivedHandler handler) {
+TinyCLR_Result STM32F4_Can_SetMessageReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_MessageReceivedHandler handler) {
+    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
 
-    canController[controller].messageReceivedEventHandler = handler;
-
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result STM32F4_Can_SetErrorReceivedHandler(const TinyCLR_Can_Provider* self, int32_t controller, TinyCLR_Can_ErrorReceivedHandler handler) {
-
-    canController[controller].errorEventHandler = handler;
+    driver->messageReceivedEventHandler = handler;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, int32_t controller, uint8_t* filters, size_t length) {
+TinyCLR_Result STM32F4_Can_SetErrorReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_ErrorReceivedHandler handler) {
+    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+
+    driver->errorEventHandler = handler;
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Can_SetExplicitFilters(const TinyCLR_Can_Controller* self, uint8_t* filters, size_t length) {
     uint32_t*_matchFilters;
     uint32_t*filters32 = (uint32_t*)filters;
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
 
     _matchFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
 
@@ -1465,19 +1507,24 @@ TinyCLR_Result STM32F4_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, 
     {
         DISABLE_INTERRUPTS_SCOPED(irq);
 
-        canController[controller].canDataFilter.matchFiltersSize = length;
-        canController[controller].canDataFilter.matchFilters = _matchFilters;
+        auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+
+
+        driver->canDataFilter.matchFiltersSize = length;
+        driver->canDataFilter.matchFilters = _matchFilters;
     }
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, int32_t controller, uint8_t* lowerBounds, uint8_t* upperBounds, size_t length) {
+TinyCLR_Result STM32F4_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, uint8_t* lowerBounds, uint8_t* upperBounds, size_t length) {
     uint32_t* _lowerBoundFilters, *_upperBoundFilters;
     uint32_t* lowerBounds32 = (uint32_t *)lowerBounds;
     uint32_t* upperBounds32 = (uint32_t *)upperBounds;
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     _lowerBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
     _upperBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
@@ -1504,24 +1551,32 @@ TinyCLR_Result STM32F4_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, int
     {
         DISABLE_INTERRUPTS_SCOPED(irq);
 
-        canController[controller].canDataFilter.groupFiltersSize = length;
-        canController[controller].canDataFilter.lowerBoundFilters = _lowerBoundFilters;
-        canController[controller].canDataFilter.upperBoundFilters = _upperBoundFilters;
+        auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+
+        driver->canDataFilter.groupFiltersSize = length;
+        driver->canDataFilter.lowerBoundFilters = _lowerBoundFilters;
+        driver->canDataFilter.upperBoundFilters = _upperBoundFilters;
     }
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_ClearReadBuffer(const TinyCLR_Can_Provider* self, int32_t controller) {
-    canController[controller].can_rx_count = 0;
-    canController[controller].can_rx_in = 0;
-    canController[controller].can_rx_out = 0;
+TinyCLR_Result STM32F4_Can_ClearReadBuffer(const TinyCLR_Can_Controller* self) {
+    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+
+    driver->can_rx_count = 0;
+    driver->can_rx_in = 0;
+    driver->can_rx_out = 0;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_IsWritingAllowed(const TinyCLR_Can_Provider* self, int32_t controller, bool& allowed) {
-    CAN_TypeDef* CANx = ((controller == 0) ? CAN1 : CAN2);
+TinyCLR_Result STM32F4_Can_IsWritingAllowed(const TinyCLR_Can_Controller* self, bool& allowed) {
+    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+
+    int32_t controllerIndex = driver->controllerIndex;
+
+    CAN_TypeDef* CANx = ((controllerIndex == 0) ? CAN1 : CAN2);
 
     allowed = false;
 
@@ -1530,25 +1585,31 @@ TinyCLR_Result STM32F4_Can_IsWritingAllowed(const TinyCLR_Can_Provider* self, in
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_GetReadErrorCount(const TinyCLR_Can_Provider* self, int32_t controller, size_t& count) {
+TinyCLR_Result STM32F4_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self, size_t& count) {
+    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
 
-    CAN_TypeDef* CANx = ((controller == 0) ? CAN1 : CAN2);
+    int32_t controllerIndex = driver->controllerIndex;
+
+    CAN_TypeDef* CANx = ((controllerIndex == 0) ? CAN1 : CAN2);
 
     count = (uint8_t)((CANx->ESR & CAN_ESR_REC) >> 24);;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, int32_t controller, size_t& count) {
+TinyCLR_Result STM32F4_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self, size_t& count) {
+    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
 
-    CAN_TypeDef* CANx = ((controller == 0) ? CAN1 : CAN2);
+    int32_t controllerIndex = driver->controllerIndex;
+
+    CAN_TypeDef* CANx = ((controllerIndex == 0) ? CAN1 : CAN2);
 
     count = (uint8_t)((CANx->ESR & CAN_ESR_REC) >> 16);;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, int32_t controller, uint32_t& sourceClock) {
+TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Controller* self, uint32_t& sourceClock) {
     sourceClock = STM32F4_APB1_CLOCK_HZ;
 
     return TinyCLR_Result::Success;
@@ -1556,17 +1617,12 @@ TinyCLR_Result STM32F4_Can_GetSourceClock(const TinyCLR_Can_Provider* self, int3
 
 void STM32F4_Can_Reset() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
-        canController[i].canRxMessagesFifo = nullptr;
+        canDrivers[i].canRxMessagesFifo = nullptr;
 
-        STM32F4_Can_Release(&canProvider, i);
+        STM32F4_Can_Release(&canControllers[i]);
 
-        canController[i].isOpened = false;
+        canDrivers[i].isOpened = false;
     }
 }
 
-TinyCLR_Result STM32F4_Can_GetControllerCount(const TinyCLR_Can_Provider* self, int32_t& count) {
-    count = TOTAL_CAN_CONTROLLERS;
-
-    return TinyCLR_Result::Success;
-}
 #endif // INCLUDE_CAN

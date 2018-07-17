@@ -16,7 +16,7 @@
 #include <AT91.h>
 #include "../../Drivers/AT45DB321D_Flash/AT45DB321D_Flash.h"
 
-static TinyCLR_Deployment_Provider deploymentProvider;
+static TinyCLR_Deployment_Controller deploymentProvider;
 static TinyCLR_Api_Info deploymentApi;
 
 const TinyCLR_Api_Info* AT91_Deployment_GetApi() {
@@ -30,53 +30,53 @@ const TinyCLR_Api_Info* AT91_Deployment_GetApi() {
     deploymentProvider.GetSectorMap = &AT91_Deployment_GetSectorMap;
 
     deploymentApi.Author = "GHI Electronics, LLC";
-    deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT45DB321D.DeploymentProvider";
-    deploymentApi.Type = TinyCLR_Api_Type::DeploymentProvider;
+    deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT45DB321D.DeploymentController";
+    deploymentApi.Type = TinyCLR_Api_Type::DeploymentController;
     deploymentApi.Version = 0;
     deploymentApi.Implementation = &deploymentProvider;
 
     return &deploymentApi;
 }
 
-TinyCLR_Result AT91_Deployment_Initialize(const TinyCLR_Deployment_Provider* self, bool& supportXIP) {
+TinyCLR_Result AT91_Deployment_Initialize(const TinyCLR_Deployment_Controller* self, bool& supportXIP) {
     const TinyCLR_Api_Info* spiApi = CONCAT(DEVICE_TARGET, _Spi_GetApi)();
-    TinyCLR_Spi_Provider* spiProvider = (TinyCLR_Spi_Provider*)spiApi->Implementation;
+    TinyCLR_Spi_Controller* spiProvider = (TinyCLR_Spi_Controller*)spiApi->Implementation;
 
     const TinyCLR_Api_Info* timeApi = CONCAT(DEVICE_TARGET, _Time_GetApi)();;
-    TinyCLR_NativeTime_Provider* timeProvider = (TinyCLR_NativeTime_Provider*)timeApi->Implementation;
+    TinyCLR_NativeTime_Controller* timeProvider = (TinyCLR_NativeTime_Controller*)timeApi->Implementation;
 
     return AT45DB321D_Flash_Acquire(spiProvider, AT91_DEPLOYMENT_SPI_PORT, timeProvider, AT91_DEPLOYMENT_SPI_ENABLE_PIN, supportXIP);
 }
 
-TinyCLR_Result AT91_Deployment_Uninitialize(const TinyCLR_Deployment_Provider* self) {
+TinyCLR_Result AT91_Deployment_Uninitialize(const TinyCLR_Deployment_Controller* self) {
     return AT45DB321D_Flash_Release();
 }
 
-TinyCLR_Result AT91_Deployment_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer) {
+TinyCLR_Result AT91_Deployment_Read(const TinyCLR_Deployment_Controller* self, uint32_t address, size_t length, uint8_t* buffer) {
     return AT45DB321D_Flash_Read(address, length, buffer);
 }
 
-TinyCLR_Result AT91_Deployment_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer) {
+TinyCLR_Result AT91_Deployment_Write(const TinyCLR_Deployment_Controller* self, uint32_t address, size_t length, const uint8_t* buffer) {
     return AT45DB321D_Flash_Write(address, length, buffer);;
 }
 
-TinyCLR_Result AT91_Deployment_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector) {
+TinyCLR_Result AT91_Deployment_EraseBlock(const TinyCLR_Deployment_Controller* self, uint32_t sector) {
     sector += AT91_DEPLOYMENT_SECTOR_START;
 
     return AT45DB321D_Flash_EraseBlock(sector);
 }
 
-TinyCLR_Result AT91_Deployment_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool& erased) {
+TinyCLR_Result AT91_Deployment_IsBlockErased(const TinyCLR_Deployment_Controller* self, uint32_t sector, bool& erased) {
     sector += AT91_DEPLOYMENT_SECTOR_START;
 
     return AT45DB321D_Flash_IsBlockErased(sector, erased);
 }
 
-TinyCLR_Result AT91_Deployment_GetBytesPerSector(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size) {
+TinyCLR_Result AT91_Deployment_GetBytesPerSector(const TinyCLR_Deployment_Controller* self, uint32_t address, int32_t& size) {
     return AT45DB321D_Flash_GetBytesPerSector(address, size);
 }
 
-TinyCLR_Result AT91_Deployment_GetSectorMap(const TinyCLR_Deployment_Provider* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
+TinyCLR_Result AT91_Deployment_GetSectorMap(const TinyCLR_Deployment_Controller* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
     AT45DB321D_Flash_GetSectorMap(addresses, sizes, count);
 
     addresses += AT91_DEPLOYMENT_SECTOR_START;

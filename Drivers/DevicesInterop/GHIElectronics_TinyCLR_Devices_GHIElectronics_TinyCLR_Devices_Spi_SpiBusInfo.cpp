@@ -6,7 +6,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto arg2 = TinyCLR_Interop_GetArguments(md, 2);
 
-    auto provider = (const TinyCLR_Spi_Provider*)arg1.Data.Numeric->I4;
+    auto provider = (const TinyCLR_Spi_Controller*)arg1.Data.Numeric->I4;
 
     auto controller = arg2.Data.Numeric->I4;
 
@@ -23,16 +23,16 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
         auto maxClock = TinyCLR_Interop_GetFieldInObject(md, thisObject.Object, FIELD___MaxClockFrequency__BackingField___I4);
         auto chipselectLineCount = TinyCLR_Interop_GetFieldInObject(md, thisObject.Object, FIELD___ChipSelectLineCount__BackingField___I4);
 
-        minClock.Data.Numeric->I4 = provider->GetMinClockFrequency(provider, controller);
-        maxClock.Data.Numeric->I4 = provider->GetMaxClockFrequency(provider, controller);
-        chipselectLineCount.Data.Numeric->I4 = provider->GetChipSelectLineCount(provider, controller);
+        minClock.Data.Numeric->I4 = provider->GetMinClockFrequency(provider);
+        maxClock.Data.Numeric->I4 = provider->GetMaxClockFrequency(provider);
+        chipselectLineCount.Data.Numeric->I4 = provider->GetChipSelectLineCount(provider);
 
         int32_t ptr[10];
         size_t ptrLen = 10;
 
-        provider->GetSupportedDataBitLengths(provider, controller, ptr, ptrLen);
+        provider->GetSupportedDataBitLengths(provider, ptr, ptrLen);
 
-        auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+        auto interop = (const TinyCLR_Interop_Manager*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
         const TinyCLR_Interop_ClrObject* self;
 

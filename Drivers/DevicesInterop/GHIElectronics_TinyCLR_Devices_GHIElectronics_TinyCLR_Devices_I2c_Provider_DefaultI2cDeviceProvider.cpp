@@ -2,7 +2,7 @@
 #include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cDeviceProvider::ReadInternal___VOID__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_I2c_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);;
+    auto provider = (const TinyCLR_I2c_Controller*)TinyCLR_Interop_GetManager(md, FIELD___nativeProvider___I);;
 
     uint8_t* data = nullptr;
     int32_t offset = 0;
@@ -45,9 +45,9 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
         auto fieldParentObject = TinyCLR_Interop_GetFieldInObject(md, fieldParent.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cControllerProvider::FIELD___idx___I4);
         auto controller = fieldParentObject.Data.Numeric->I4;
 
-        provider->SetActiveSettings(provider, controller, slaveAddress, busSpeed);
+        provider->SetActiveSettings(provider, slaveAddress, busSpeed);
 
-        if (provider->Read(provider, controller, data + offset, length, result) != TinyCLR_Result::Success) {
+        if (provider->Read(provider, data + offset, length, result) != TinyCLR_Result::Success) {
             return TinyCLR_Result::InvalidOperation;
         }
         else {
@@ -64,7 +64,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cDeviceProvider::WriteInternal___VOID__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_I2c_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_I2c_Controller*)TinyCLR_Interop_GetManager(md, FIELD___nativeProvider___I);
 
     uint8_t* data = nullptr;
     int32_t offset = 0;
@@ -107,9 +107,9 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
         auto fieldParentObject = TinyCLR_Interop_GetFieldInObject(md, fieldParent.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cControllerProvider::FIELD___idx___I4);
         auto controller = fieldParentObject.Data.Numeric->I4;
 
-        provider->SetActiveSettings(provider, controller, slaveAddress, busSpeed);
+        provider->SetActiveSettings(provider, slaveAddress, busSpeed);
 
-        if (provider->Write(provider, controller, data + offset, length, result) != TinyCLR_Result::Success) {
+        if (provider->Write(provider, data + offset, length, result) != TinyCLR_Result::Success) {
             return TinyCLR_Result::InvalidOperation;
         }
         else {
@@ -125,7 +125,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cDeviceProvider::WriteReadInternal___VOID__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4__BYREF_U4__BYREF_GHIElectronicsTinyCLRDevicesI2cProviderProviderI2cTransferStatus(const TinyCLR_Interop_MethodData md) {
-    auto provider = (const TinyCLR_I2c_Provider*)TinyCLR_Interop_GetProvider(md, FIELD___nativeProvider___I);
+    auto provider = (const TinyCLR_I2c_Controller*)TinyCLR_Interop_GetManager(md, FIELD___nativeProvider___I);
 
     uint8_t* writeData = nullptr;
     int32_t writeOffset = 0;
@@ -182,9 +182,9 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
         auto fieldParentObject = TinyCLR_Interop_GetFieldInObject(md, fieldParent.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_DefaultI2cControllerProvider::FIELD___idx___I4);
         auto controller = fieldParentObject.Data.Numeric->I4;
 
-        provider->SetActiveSettings(provider, controller, slaveAddress, busSpeed);
+        provider->SetActiveSettings(provider, slaveAddress, busSpeed);
 
-        if (provider->WriteRead(provider, controller, writeData + writeOffset, writeLength, readData + readOffset, readLength, result) != TinyCLR_Result::Success) {
+        if (provider->WriteRead(provider, writeData + writeOffset, writeLength, readData + readOffset, readLength, result) != TinyCLR_Result::Success) {
             return TinyCLR_Result::NullReference;
         }
         else {

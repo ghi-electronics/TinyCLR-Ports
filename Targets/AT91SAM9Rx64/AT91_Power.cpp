@@ -18,7 +18,7 @@
 static void(*g_AT91_stopHandler)();
 static void(*g_AT91_restartHandler)();
 
-static TinyCLR_Power_Provider powerProvider;
+static TinyCLR_Power_Controller powerProvider;
 static TinyCLR_Api_Info powerApi;
 
 const TinyCLR_Api_Info* AT91_Power_GetApi() {
@@ -29,8 +29,8 @@ const TinyCLR_Api_Info* AT91_Power_GetApi() {
     powerProvider.Sleep = &AT91_Power_Sleep;
 
     powerApi.Author = "GHI Electronics, LLC";
-    powerApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.PowerProvider";
-    powerApi.Type = TinyCLR_Api_Type::PowerProvider;
+    powerApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.PowerController";
+    powerApi.Type = TinyCLR_Api_Type::PowerController;
     powerApi.Version = 0;
     powerApi.Implementation = &powerProvider;
 
@@ -42,7 +42,7 @@ void AT91_Power_SetHandlers(void(*stop)(), void(*restart)()) {
     g_AT91_restartHandler = restart;
 }
 
-void AT91_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level) {
+void AT91_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level) {
     switch (level) {
 
     case TinyCLR_Power_SleepLevel::Hibernate: // stop
@@ -76,7 +76,7 @@ void AT91_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLev
     }
 }
 
-void AT91_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) {
+void AT91_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {
 #if defined RAM_BOOTLOADER_HOLD_VALUE && defined RAM_BOOTLOADER_HOLD_ADDRESS && RAM_BOOTLOADER_HOLD_ADDRESS > 0
     if (!runCoreAfter) {
         //See section 1.9 of UM10211.pdf. A write-back buffer holds the last written value. Two writes guarantee it'll appear after a reset.
@@ -94,10 +94,10 @@ void AT91_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) {
     while (1); // wait for reset
 }
 
-TinyCLR_Result AT91_Power_Initialize(const TinyCLR_Power_Provider* self) {
+TinyCLR_Result AT91_Power_Initialize(const TinyCLR_Power_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Power_Uninitialize(const TinyCLR_Power_Provider* self) {
+TinyCLR_Result AT91_Power_Uninitialize(const TinyCLR_Power_Controller* self) {
     return TinyCLR_Result::Success;
 }

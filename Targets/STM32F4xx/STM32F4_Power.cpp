@@ -16,26 +16,31 @@
 
 #include "STM32F4.h"
 
-static TinyCLR_Power_Provider powerProvider;
-static TinyCLR_Api_Info powerApi;
+#define TOTAL_POWER_CONTROLLERS 1
+
+static TinyCLR_Power_Controller powerControllers[TOTAL_POWER_CONTROLLERS];
+static TinyCLR_Api_Info powerApi[TOTAL_POWER_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F4_Power_GetApi() {
-    powerProvider.ApiInfo = &powerApi;
-    powerProvider.Initialize = &STM32F4_Power_Initialize;
-    powerProvider.Uninitialize = &STM32F4_Power_Uninitialize;
-    powerProvider.Reset = &STM32F4_Power_Reset;
-    powerProvider.Sleep = &STM32F4_Power_Sleep;
+    for (int32_t i = 0; i < TOTAL_POWER_CONTROLLERS; i++) {
+        powerControllers[i].ApiInfo = &powerApi[i];
+        powerControllers[i].Initialize = &STM32F4_Power_Initialize;
+        powerControllers[i].Uninitialize = &STM32F4_Power_Uninitialize;
+        powerControllers[i].Reset = &STM32F4_Power_Reset;
+        powerControllers[i].Sleep = &STM32F4_Power_Sleep;
 
-    powerApi.Author = "GHI Electronics, LLC";
-    powerApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.PowerProvider";
-    powerApi.Type = TinyCLR_Api_Type::PowerProvider;
-    powerApi.Version = 0;
-    powerApi.Implementation = &powerProvider;
+        powerApi[i].Author = "GHI Electronics, LLC";
+        powerApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.PowerController";
+        powerApi[i].Type = TinyCLR_Api_Type::PowerController;
+        powerApi[i].Version = 0;
+        powerApi[i].Implementation = &powerControllers[i];
+        powerApi[i].State = nullptr;
+    }
 
-    return &powerApi;
+    return (const TinyCLR_Api_Info*)&powerApi;
 }
 
-void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level) {
+void STM32F4_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level) {
     switch (level) {
     case TinyCLR_Power_SleepLevel::Hibernate:
         //TODO
@@ -53,7 +58,7 @@ void STM32F4_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep
     }
 }
 
-void STM32F4_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) {
+void STM32F4_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {
 #if defined BOOTLOADER_HOLD_VALUE && defined BOOTLOADER_HOLD_ADDRESS && BOOTLOADER_HOLD_ADDRESS > 0
     if (!runCoreAfter)
         *((uint32_t*)BOOTLOADER_HOLD_ADDRESS) = BOOTLOADER_HOLD_VALUE;
@@ -65,10 +70,10 @@ void STM32F4_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) 
     while (1); // wait for reset
 }
 
-TinyCLR_Result STM32F4_Power_Initialize(const TinyCLR_Power_Provider* self) {
+TinyCLR_Result STM32F4_Power_Initialize(const TinyCLR_Power_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Power_Uninitialize(const TinyCLR_Power_Provider* self) {
+TinyCLR_Result STM32F4_Power_Uninitialize(const TinyCLR_Power_Controller* self) {
     return TinyCLR_Result::Success;
 }

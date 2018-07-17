@@ -20,7 +20,7 @@
 TinyCLR_Interrupt_StartStopHandler LPC17_Interrupt_Started;
 TinyCLR_Interrupt_StartStopHandler LPC17_Interrupt_Ended;
 
-static TinyCLR_Interrupt_Provider interruptProvider;
+static TinyCLR_Interrupt_Controller interruptProvider;
 static TinyCLR_Api_Info interruptApi;
 
 const TinyCLR_Api_Info* LPC17_Interrupt_GetApi() {
@@ -35,8 +35,8 @@ const TinyCLR_Api_Info* LPC17_Interrupt_GetApi() {
     interruptProvider.Restore = &LPC17_Interrupt_GlobalRestore;
 
     interruptApi.Author = "GHI Electronics, LLC";
-    interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.InterruptProvider";
-    interruptApi.Type = TinyCLR_Api_Type::InterruptProvider;
+    interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.InterruptController";
+    interruptApi.Type = TinyCLR_Api_Type::InterruptController;
     interruptApi.Version = 0;
     interruptApi.Implementation = &interruptProvider;
 
@@ -48,7 +48,7 @@ extern "C" {
     extern uint32_t __Vectors;
 }
 
-TinyCLR_Result LPC17_Interrupt_Initialize(const TinyCLR_Interrupt_Provider* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
+TinyCLR_Result LPC17_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
     uint32_t *irq_vectors = (uint32_t*)&__Vectors;
 
     // disable all interrupts
@@ -76,7 +76,7 @@ TinyCLR_Result LPC17_Interrupt_Initialize(const TinyCLR_Interrupt_Provider* self
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Interrupt_Uninitialize(const TinyCLR_Interrupt_Provider* self) {
+TinyCLR_Result LPC17_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self) {
     return TinyCLR_Result::Success;
 }
 

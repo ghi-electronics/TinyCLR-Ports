@@ -100,7 +100,7 @@ struct LPC24_Int_State {
     int64_t                                    debounce; // debounce
     uint64_t                                    lastDebounceTicks;
 
-    const TinyCLR_Gpio_Provider*                controller; // controller
+    const TinyCLR_Gpio_Controller*                controller; // controller
     TinyCLR_Gpio_ValueChangedHandler            ISR; // interrupt handler
     TinyCLR_Gpio_PinValue                       currentValue;
 };
@@ -110,7 +110,7 @@ static int64_t                     g_debounceTicksPin[LPC24_Gpio_MaxPins] __attr
 static LPC24_Int_State              g_int_state[LPC24_Gpio_MaxPins] __attribute__((section(".bss2.g_int_state"))); // interrupt state
 static TinyCLR_Gpio_PinDriveMode    g_pinDriveMode[LPC24_Gpio_MaxPins] __attribute__((section(".bss2.g_pinDriveMode")));
 
-static TinyCLR_Gpio_Provider gpioProvider;
+static TinyCLR_Gpio_Controller gpioProvider;
 static TinyCLR_Api_Info gpioApi;
 
 #define LPC24_GPIO_DEFAULT_CONTROLLER 0
@@ -141,11 +141,11 @@ const TinyCLR_Api_Info* LPC24_Gpio_GetApi() {
     return &gpioApi;
 }
 
-TinyCLR_Result LPC24_Gpio_Acquire(const TinyCLR_Gpio_Provider* self, int32_t controller) {
+TinyCLR_Result LPC24_Gpio_Acquire(const TinyCLR_Gpio_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Gpio_Release(const TinyCLR_Gpio_Provider* self, int32_t controller) {
+TinyCLR_Result LPC24_Gpio_Release(const TinyCLR_Gpio_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
@@ -188,7 +188,7 @@ void LPC24_Gpio_InterruptHandler(void* param) {
     }
 }
 
-TinyCLR_Result LPC24_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR) {
+TinyCLR_Result LPC24_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Controller* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR) {
     LPC24_Int_State* state = &g_int_state[pin];
 
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -346,7 +346,7 @@ void LPC24_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode mode) {
     }
 }
 
-TinyCLR_Result LPC24_Gpio_Read(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinValue& value) {
+TinyCLR_Result LPC24_Gpio_Read(const TinyCLR_Gpio_Controller* self, int32_t pin, TinyCLR_Gpio_PinValue& value) {
     if (pin >= LPC24_Gpio_MaxPins || pin < 0)
         return TinyCLR_Result::ArgumentOutOfRange;
 
@@ -355,7 +355,7 @@ TinyCLR_Result LPC24_Gpio_Read(const TinyCLR_Gpio_Provider* self, int32_t contro
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinValue value) {
+TinyCLR_Result LPC24_Gpio_Write(const TinyCLR_Gpio_Controller* self, int32_t pin, TinyCLR_Gpio_PinValue value) {
     if (pin >= LPC24_Gpio_MaxPins || pin < 0)
         return TinyCLR_Result::ArgumentOutOfRange;
 
@@ -364,7 +364,7 @@ TinyCLR_Result LPC24_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t contr
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin) {
+TinyCLR_Result LPC24_Gpio_AcquirePin(const TinyCLR_Gpio_Controller* self, int32_t pin) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -377,7 +377,7 @@ TinyCLR_Result LPC24_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin) {
+TinyCLR_Result LPC24_Gpio_ReleasePin(const TinyCLR_Gpio_Controller* self, int32_t pin) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -389,7 +389,7 @@ TinyCLR_Result LPC24_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t 
     return TinyCLR_Result::Success;
 }
 
-bool LPC24_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinDriveMode mode) {
+bool LPC24_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Controller* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode) {
 
     switch (mode) {
     case TinyCLR_Gpio_PinDriveMode::Output:
@@ -402,11 +402,11 @@ bool LPC24_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_t 
     return false;
 }
 
-TinyCLR_Gpio_PinDriveMode LPC24_Gpio_GetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin) {
+TinyCLR_Gpio_PinDriveMode LPC24_Gpio_GetDriveMode(const TinyCLR_Gpio_Controller* self, int32_t pin) {
     return g_pinDriveMode[pin];
 }
 
-TinyCLR_Result LPC24_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinDriveMode driveMode) {
+TinyCLR_Result LPC24_Gpio_SetDriveMode(const TinyCLR_Gpio_Controller* self, int32_t pin, TinyCLR_Gpio_PinDriveMode driveMode) {
     if (pin >= LPC24_Gpio_MaxPins || pin < 0)
         return TinyCLR_Result::ArgumentOutOfRange;
 
@@ -440,17 +440,17 @@ TinyCLR_Result LPC24_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_
     return TinyCLR_Result::Success;
 }
 
-uint64_t LPC24_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin) {
+uint64_t LPC24_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Controller* self, int32_t pin) {
     return g_debounceTicksPin[pin];
 }
 
-TinyCLR_Result LPC24_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, uint64_t debounceTicks) {
+TinyCLR_Result LPC24_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Controller* self, int32_t pin, uint64_t debounceTicks) {
     g_debounceTicksPin[pin] = debounceTicks;
 
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC24_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self, int32_t controller) {
+int32_t LPC24_Gpio_GetPinCount(const TinyCLR_Gpio_Controller* self) {
     return LPC24_Gpio_MaxPins;
 }
 
@@ -474,7 +474,7 @@ void LPC24_Gpio_Reset() {
     }
 }
 
-TinyCLR_Result LPC24_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, int32_t& count) {
+TinyCLR_Result LPC24_Gpio_GetControllerCount(const TinyCLR_Gpio_Controller* self, int32_t& count) {
     count = 1;
 
     return TinyCLR_Result::Success;

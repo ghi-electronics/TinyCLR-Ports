@@ -431,7 +431,7 @@ struct SpiController {
 
 static SpiController g_SpiController[TOTAL_SPI_CONTROLLERS];
 
-static TinyCLR_Spi_Provider spiProviders;
+static TinyCLR_Spi_Controller spiProviders;
 static TinyCLR_Api_Info spiApi;
 
 void LPC17_Spi_Reset();
@@ -577,14 +577,14 @@ bool LPC17_Spi_Transaction_nWrite16_nRead16(int32_t controller) {
     return true;
 }
 
-TinyCLR_Result LPC17_Spi_TransferSequential(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
+TinyCLR_Result LPC17_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
     if (LPC17_Spi_Write(self, controller, writeBuffer, writeLength) != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
 
     return LPC17_Spi_Read(self, controller, readBuffer, readLength);
 }
 
-TinyCLR_Result LPC17_Spi_TransferFullDuplex(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
+TinyCLR_Result LPC17_Spi_TransferFullDuplex(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
     if (controller >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
@@ -612,7 +612,7 @@ TinyCLR_Result LPC17_Spi_TransferFullDuplex(const TinyCLR_Spi_Provider* self, in
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Spi_Read(const TinyCLR_Spi_Provider* self, int32_t controller, uint8_t* buffer, size_t& length) {
+TinyCLR_Result LPC17_Spi_Read(const TinyCLR_Spi_Controller* self, uint8_t* buffer, size_t& length) {
     if (controller >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
@@ -639,7 +639,7 @@ TinyCLR_Result LPC17_Spi_Read(const TinyCLR_Spi_Provider* self, int32_t controll
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Spi_Write(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* buffer, size_t& length) {
+TinyCLR_Result LPC17_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8_t* buffer, size_t& length) {
     if (controller >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
@@ -666,7 +666,7 @@ TinyCLR_Result LPC17_Spi_Write(const TinyCLR_Spi_Provider* self, int32_t control
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int32_t controller, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode) {
+TinyCLR_Result LPC17_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode) {
     if (controller >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
@@ -777,7 +777,7 @@ TinyCLR_Result LPC17_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Spi_Acquire(const TinyCLR_Spi_Provider* self, int32_t controller) {
+TinyCLR_Result LPC17_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
@@ -826,7 +826,7 @@ TinyCLR_Result LPC17_Spi_Acquire(const TinyCLR_Spi_Provider* self, int32_t contr
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Provider* self, int32_t controller) {
+TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
@@ -872,20 +872,20 @@ TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Provider* self, int32_t contr
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC17_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller) {
+int32_t LPC17_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self) {
     // CPSDVSR min 2, max 254
     // SCR min 0, max 127
     return (LPC17_AHB_CLOCK_HZ / 2) / (254 * (127 + 1));
 
 }
 
-int32_t LPC17_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller) {
+int32_t LPC17_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self) {
     // CPSDVSR min 2, max 254
     // SCR min 0, max 127
     return (LPC17_AHB_CLOCK_HZ / 2) / (2 * (0 + 1));
 }
 
-int32_t LPC17_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self, int32_t controller) {
+int32_t LPC17_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self) {
     // This could maintain a map of the actual pins
     // that are available for a particular port.
     // (Not all pins can be mapped to all ports.)
@@ -904,7 +904,7 @@ int32_t LPC17_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self, int32
 static const int32_t dataBitsCount = 2;
 static int32_t dataBits[dataBitsCount] = { 8, 16 };
 
-TinyCLR_Result LPC17_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* self, int32_t controller, int32_t* dataBitLengths, size_t& dataBitLengthsCount) {
+TinyCLR_Result LPC17_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller* self, int32_t* dataBitLengths, size_t& dataBitLengthsCount) {
     if (dataBitLengths != nullptr)
         memcpy(dataBitLengths, dataBits, (dataBitsCount < dataBitLengthsCount ? dataBitsCount : dataBitLengthsCount) * sizeof(int32_t));
 
@@ -921,7 +921,7 @@ void LPC17_Spi_Reset() {
     }
 }
 
-TinyCLR_Result LPC17_Spi_GetControllerCount(const TinyCLR_Spi_Provider* self, int32_t& count) {
+TinyCLR_Result LPC17_Spi_GetControllerCount(const TinyCLR_Spi_Controller* self, int32_t& count) {
     count = TOTAL_SPI_CONTROLLERS;
 
     return TinyCLR_Result::Success;

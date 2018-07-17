@@ -77,7 +77,7 @@ AT91_Interrupt_Vectors s_IsrTable[] =
 TinyCLR_Interrupt_StartStopHandler AT91_Interrupt_Started;
 TinyCLR_Interrupt_StartStopHandler AT91_Interrupt_Ended;
 
-static TinyCLR_Interrupt_Provider interruptProvider;
+static TinyCLR_Interrupt_Controller interruptProvider;
 static TinyCLR_Api_Info interruptApi;
 
 const TinyCLR_Api_Info* AT91_Interrupt_GetApi() {
@@ -93,8 +93,8 @@ const TinyCLR_Api_Info* AT91_Interrupt_GetApi() {
     interruptProvider.WaitForInterrupt = &AT91_Interrupt_GlobalWaitForInterrupt;
 
     interruptApi.Author = "GHI Electronics, LLC";
-    interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.InterruptProvider";
-    interruptApi.Type = TinyCLR_Api_Type::InterruptProvider;
+    interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.InterruptController";
+    interruptApi.Type = TinyCLR_Api_Type::InterruptController;
     interruptApi.Version = 0;
     interruptApi.Implementation = &interruptProvider;
 
@@ -126,7 +126,7 @@ void AT91_Interrupt_StubIrqVector(void* Param) {
 
 }
 
-TinyCLR_Result AT91_Interrupt_Initialize(const TinyCLR_Interrupt_Provider* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
+TinyCLR_Result AT91_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
     AT91_Interrupt_Started = onInterruptStart;
     AT91_Interrupt_Ended = onInterruptEnd;
 
@@ -163,7 +163,7 @@ TinyCLR_Result AT91_Interrupt_Initialize(const TinyCLR_Interrupt_Provider* self,
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Interrupt_Uninitialize(const TinyCLR_Interrupt_Provider* self) {
+TinyCLR_Result AT91_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
