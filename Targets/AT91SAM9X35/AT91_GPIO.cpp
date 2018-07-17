@@ -40,10 +40,10 @@ struct AT91_Int_State {
     TinyCLR_Gpio_PinValue                       currentValue;
 };
 
-static bool                     	g_pinReserved[AT91_Gpio_MaxPins];
-static int64_t                     g_debounceTicksPin[AT91_Gpio_MaxPins];
-static AT91_Int_State              	g_int_state[AT91_Gpio_MaxPins]; // interrupt state
-static TinyCLR_Gpio_PinDriveMode    g_pinDriveMode[AT91_Gpio_MaxPins];
+static bool                     	pinReserved[AT91_Gpio_MaxPins];
+static int64_t                     gpioDebounceInTicks[AT91_Gpio_MaxPins];
+static AT91_Int_State              	gpioInterruptState[AT91_Gpio_MaxPins]; // interrupt state
+static TinyCLR_Gpio_PinDriveMode    pinDriveMode[AT91_Gpio_MaxPins];
 
 static TinyCLR_Gpio_Controller gpioProvider;
 static TinyCLR_Api_Info gpioApi;
@@ -106,10 +106,10 @@ void AT91_Gpio_InterruptHandler(void* param) {
 
             bool executeIsr = true;
 
-            AT91_Int_State* state = &g_int_state[bitIndex + port * 32];;
+            AT91_Int_State* state = &gpioInterruptState[bitIndex + port * 32];;
 
             if (state->debounce) {
-                if ((AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr)) - state->lastDebounceTicks) >= g_debounceTicksPin[state->pin]) {
+                if ((AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr)) - state->lastDebounceTicks) >= gpioDebounceInTicks[state->pin]) {
                     state->lastDebounceTicks = AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr));
                 }
                 else {
@@ -132,7 +132,7 @@ void AT91_Gpio_InterruptHandler(void* param) {
 }
 
 TinyCLR_Result AT91_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Controller* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR) {
-    AT91_Int_State* state = &g_int_state[pin];
+    AT91_Int_State* state = &gpioInterruptState[pin];
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -141,7 +141,7 @@ TinyCLR_Result AT91_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Controller* s
 
     AT91_PIO &pioX = AT91::PIO(port);
 
-    AT91_Gpio_EnableInputPin(pin, g_pinDriveMode[pin]);
+    AT91_Gpio_EnableInputPin(pin, pinDriveMode[pin]);
 
     auto gpioController = 0; //TODO Temporary set to 0
 
@@ -168,10 +168,10 @@ bool AT91_Gpio_OpenPin(int32_t pin) {
     if (pin >= AT91_Gpio_MaxPins || pin < 0)
         return false;
 
-    if (g_pinReserved[pin])
+    if (pinReserved[pin])
         return false;
 
-    g_pinReserved[pin] = true;
+    pinReserved[pin] = true;
 
     return true;
 }
@@ -180,7 +180,7 @@ bool AT91_Gpio_ClosePin(int32_t pin) {
     if (pin >= AT91_Gpio_MaxPins || pin < 0)
         return false;
 
-    g_pinReserved[pin] = false;
+    pinReserved[pin] = false;
 
     // reset to default state
     return AT91_Gpio_ConfigurePin(pin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::Inactive);
@@ -393,7 +393,7 @@ bool AT91_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Controller* self, int32_t
 }
 
 TinyCLR_Gpio_PinDriveMode AT91_Gpio_GetDriveMode(const TinyCLR_Gpio_Controller* self, int32_t pin) {
-    return g_pinDriveMode[pin];
+    return pinDriveMode[pin];
 }
 
 TinyCLR_Result AT91_Gpio_SetDriveMode(const TinyCLR_Gpio_Controller* self, int32_t pin, TinyCLR_Gpio_PinDriveMode driveMode) {
@@ -425,17 +425,17 @@ TinyCLR_Result AT91_Gpio_SetDriveMode(const TinyCLR_Gpio_Controller* self, int32
         return  TinyCLR_Result::NotSupported;
     }
 
-    g_pinDriveMode[pin] = driveMode;
+    pinDriveMode[pin] = driveMode;
 
     return TinyCLR_Result::Success;
 }
 
 uint64_t AT91_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Controller* self, int32_t pin) {
-    return g_debounceTicksPin[pin];
+    return gpioDebounceInTicks[pin];
 }
 
 TinyCLR_Result AT91_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Controller* self, int32_t pin, uint64_t debounceTicks) {
-    g_debounceTicksPin[pin] = debounceTicks;
+    gpioDebounceInTicks[pin] = debounceTicks;
 
     return TinyCLR_Result::Success;
 }
@@ -463,7 +463,7 @@ void AT91_Gpio_Reset() {
     for (auto pin = 0; pin < AT91_Gpio_GetPinCount(&gpioProvider, gpioController); pin++) {
         auto& p = g_at91_pins[pin];
 
-        g_pinReserved[pin] = false;
+        pinReserved[pin] = false;
         AT91_Gpio_SetDebounceTimeout(&gpioProvider, gpioController, pin, AT91_Gpio_DebounceDefaultTicks);
 
         if (p.apply) {

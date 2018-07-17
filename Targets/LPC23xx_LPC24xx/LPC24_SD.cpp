@@ -2132,7 +2132,7 @@ int32_t MCI_Cmd_SendIfCond(void) {
 
 // LPC24
 static TinyCLR_SdCard_Controller sdCardProvider;
-static TinyCLR_Api_Info sdApi;
+static TinyCLR_Api_Info sdCardApi;
 
 #define LPC24_SD_SECTOR_SIZE 512
 #define LPC24_SD_TIMEOUT 5000000
@@ -2154,7 +2154,7 @@ static const LPC24_Gpio_Pin g_LPC24_SdCard_Cmd_Pins[] = LPC24_SD_CMD_PINS;
 SdController sdController[1];
 
 const TinyCLR_Api_Info* LPC24_SdCard_GetApi() {
-    sdCardProvider.ApiInfo = &sdApi;
+    sdCardProvider.ApiInfo = &sdCardApi;
 
     sdCardProvider.Acquire = &LPC24_SdCard_Acquire;
     sdCardProvider.Release = &LPC24_SdCard_Release;
@@ -2166,13 +2166,13 @@ const TinyCLR_Api_Info* LPC24_SdCard_GetApi() {
     sdCardProvider.IsSectorErased = &LPC24_SdCard_IsSectorErased;
     sdCardProvider.GetSectorMap = &LPC24_SdCard_GetSectorMap;
 
-    sdApi.Author = "GHI Electronics, LLC";
-    sdApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.SdCardProvider";
-    sdApi.Type = TinyCLR_Api_Type::SdCardProvider;
-    sdApi.Version = 0;
-    sdApi.Implementation = &sdCardProvider;
+    sdCardApi.Author = "GHI Electronics, LLC";
+    sdCardApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.SdCardProvider";
+    sdCardApi.Type = TinyCLR_Api_Type::SdCardProvider;
+    sdCardApi.Version = 0;
+    sdCardApi.Implementation = &sdCardProvider;
 
-    return &sdApi;
+    return &sdCardApi;
 }
 
 TinyCLR_Result LPC24_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {

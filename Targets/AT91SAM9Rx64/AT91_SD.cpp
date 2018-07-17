@@ -19,7 +19,7 @@
 // stm32f4
 
 static TinyCLR_SdCard_Controller sdCardProvider;
-static TinyCLR_Api_Info sdApi;
+static TinyCLR_Api_Info sdCardApi;
 
 #define AT91_SD_SECTOR_SIZE 512
 #define AT91_SD_TIMEOUT 5000000
@@ -42,7 +42,7 @@ static const AT91_Gpio_Pin g_AT91_SdCard_Cmd_Pins[] = AT91_SD_CMD_PINS;
 SdController sdController[1];
 
 const TinyCLR_Api_Info* AT91_SdCard_GetApi() {
-    sdCardProvider.ApiInfo = &sdApi;
+    sdCardProvider.ApiInfo = &sdCardApi;
 
     sdCardProvider.Acquire = &AT91_SdCard_Acquire;
     sdCardProvider.Release = &AT91_SdCard_Release;
@@ -54,13 +54,13 @@ const TinyCLR_Api_Info* AT91_SdCard_GetApi() {
     sdCardProvider.IsSectorErased = &AT91_SdCard_IsSectorErased;
     sdCardProvider.GetSectorMap = &AT91_SdCard_GetSectorMap;
 
-    sdApi.Author = "GHI Electronics, LLC";
-    sdApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.SdCardProvider";
-    sdApi.Type = TinyCLR_Api_Type::SdCardProvider;
-    sdApi.Version = 0;
-    sdApi.Implementation = &sdCardProvider;
+    sdCardApi.Author = "GHI Electronics, LLC";
+    sdCardApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.SdCardProvider";
+    sdCardApi.Type = TinyCLR_Api_Type::SdCardProvider;
+    sdCardApi.Version = 0;
+    sdCardApi.Implementation = &sdCardProvider;
 
-    return &sdApi;
+    return &sdCardApi;
 }
 
 TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
