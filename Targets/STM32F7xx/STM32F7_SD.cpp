@@ -2653,7 +2653,7 @@ static SD_Error FindSCR(uint16_t rca, uint32_t *pscr) {
 #define TOTAL_SDCARD_CONTROLLERS 1
 
 static TinyCLR_SdCard_Controller sdCardProvider[TOTAL_SDCARD_CONTROLLERS];
-static TinyCLR_Api_Info sdApi[TOTAL_SDCARD_CONTROLLERS];
+static TinyCLR_Api_Info sdCardApi[TOTAL_SDCARD_CONTROLLERS];
 
 struct SdCardDriver {
     int32_t controllerIndex;
@@ -2673,7 +2673,7 @@ static SdCardDriver sdCardDrivers[TOTAL_SDCARD_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F7_SdCard_GetApi() {
     for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
-        sdCardProvider[i].ApiInfo = &sdApi[i];
+        sdCardProvider[i].ApiInfo = &sdCardApi[i];
 
         sdCardProvider[i].Acquire = &STM32F7_SdCard_Acquire;
         sdCardProvider[i].Release = &STM32F7_SdCard_Release;
@@ -2684,17 +2684,17 @@ const TinyCLR_Api_Info* STM32F7_SdCard_GetApi() {
         sdCardProvider[i].IsSectorErased = &STM32F7_SdCard_IsSectorErased;
         sdCardProvider[i].GetSectorMap = &STM32F7_SdCard_GetSectorMap;
 
-        sdApi[i].Author = "GHI Electronics, LLC";
-        sdApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.SdCardController";
-        sdApi[i].Type = TinyCLR_Api_Type::SdCardController;
-        sdApi[i].Version = 0;
-        sdApi[i].Implementation = &sdCardProvider[i];
-        sdApi[i].State = &sdCardDrivers[i];
+        sdCardApi[i].Author = "GHI Electronics, LLC";
+        sdCardApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.SdCardController";
+        sdCardApi[i].Type = TinyCLR_Api_Type::SdCardController;
+        sdCardApi[i].Version = 0;
+        sdCardApi[i].Implementation = &sdCardProvider[i];
+        sdCardApi[i].State = &sdCardDrivers[i];
 
         sdCardDrivers[i].controllerIndex = i;
     }
 
-    return (const TinyCLR_Api_Info*)&sdApi;
+    return (const TinyCLR_Api_Info*)&sdCardApi;
 }
 
 TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {

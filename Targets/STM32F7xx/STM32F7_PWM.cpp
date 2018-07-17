@@ -48,7 +48,7 @@ typedef  TIM_TypeDef* ptr_TIM_TypeDef;
 struct PwmDriver {
     int32_t controllerIndex;
 
-    ptr_TIM_TypeDef     timerdef;
+    ptr_TIM_TypeDef     timReg;
     STM32F7_Gpio_Pin         gpioPin[PWM_PER_CONTROLLER];
 
     bool                invert[PWM_PER_CONTROLLER];
@@ -109,7 +109,7 @@ const TinyCLR_Api_Info* STM32F7_Pwm_GetApi() {
 TinyCLR_Result STM32F7_Pwm_AcquirePin(const TinyCLR_Pwm_Controller* self, int32_t pin) {
     auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
 
-    ptr_TIM_TypeDef treg = driver->timerdef;
+    ptr_TIM_TypeDef treg = driver->timReg;
 
     auto actualPin = STM32F7_Pwm_GetGpioPinForChannel(self, pin);
 
@@ -147,7 +147,7 @@ TinyCLR_Result STM32F7_Pwm_AcquirePin(const TinyCLR_Pwm_Controller* self, int32_
 TinyCLR_Result STM32F7_Pwm_ReleasePin(const TinyCLR_Pwm_Controller* self, int32_t pin) {
     auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
 
-    ptr_TIM_TypeDef treg = driver->timerdef;
+    ptr_TIM_TypeDef treg = driver->timReg;
 
     auto actualPin = STM32F7_Pwm_GetGpioPinForChannel(self, pin);
 
@@ -194,7 +194,7 @@ double STM32F7_Pwm_GetActualFrequency(const TinyCLR_Pwm_Controller* self) {
 
     double freq = driver->theoryFreq;
 
-    ptr_TIM_TypeDef treg = driver->timerdef;
+    ptr_TIM_TypeDef treg = driver->timReg;
 
     STM32F7_Pwm_GetScaleFactor(freq, period, scale);
 
@@ -271,7 +271,7 @@ double STM32F7_Pwm_GetActualFrequency(const TinyCLR_Pwm_Controller* self) {
 TinyCLR_Result STM32F7_Pwm_EnablePin(const TinyCLR_Pwm_Controller* self, int32_t pin) {
     auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
 
-    ptr_TIM_TypeDef treg = driver->timerdef;
+    ptr_TIM_TypeDef treg = driver->timReg;
 
     auto actualPin = STM32F7_Pwm_GetGpioPinForChannel(self, pin);
 
@@ -294,7 +294,7 @@ TinyCLR_Result STM32F7_Pwm_EnablePin(const TinyCLR_Pwm_Controller* self, int32_t
 TinyCLR_Result STM32F7_Pwm_DisablePin(const TinyCLR_Pwm_Controller* self, int32_t pin) {
     auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
 
-    ptr_TIM_TypeDef treg = driver->timerdef;
+    ptr_TIM_TypeDef treg = driver->timReg;
 
     auto actualPin = STM32F7_Pwm_GetGpioPinForChannel(self, pin);
 
@@ -325,7 +325,7 @@ STM32F7_Gpio_Pin* STM32F7_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Controller*
 double STM32F7_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Controller* self) {
     auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
 
-    ptr_TIM_TypeDef treg = driver->timerdef;
+    ptr_TIM_TypeDef treg = driver->timReg;
 
     if ((uint32_t)treg & 0x10000)
         return STM32F7_APB2_CLOCK_HZ; // max can be Systemclock / 2 MHz on some PWM
@@ -340,7 +340,7 @@ double STM32F7_Pwm_GetMinFrequency(const TinyCLR_Pwm_Controller* self) {
 TinyCLR_Result STM32F7_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self, int32_t pin, double dutyCycle, bool invertPolarity) {
     auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
 
-    ptr_TIM_TypeDef treg = driver->timerdef;
+    ptr_TIM_TypeDef treg = driver->timReg;
 
     uint32_t duration = (uint32_t)(dutyCycle * driver->period);
 
@@ -433,21 +433,21 @@ TinyCLR_Result STM32F7_Pwm_Release(const TinyCLR_Pwm_Controller* self) {
 }
 
 void STM32F7_Pwm_Reset() {
-    if (TOTAL_PWM_CONTROLLERS > 0) pwmDrivers[0].timerdef = TIM1;
-    if (TOTAL_PWM_CONTROLLERS > 1) pwmDrivers[1].timerdef = TIM2;
-    if (TOTAL_PWM_CONTROLLERS > 2) pwmDrivers[2].timerdef = TIM3;
-    if (TOTAL_PWM_CONTROLLERS > 3) pwmDrivers[3].timerdef = TIM4;
+    if (TOTAL_PWM_CONTROLLERS > 0) pwmDrivers[0].timReg = TIM1;
+    if (TOTAL_PWM_CONTROLLERS > 1) pwmDrivers[1].timReg = TIM2;
+    if (TOTAL_PWM_CONTROLLERS > 2) pwmDrivers[2].timReg = TIM3;
+    if (TOTAL_PWM_CONTROLLERS > 3) pwmDrivers[3].timReg = TIM4;
 #if !defined(STM32F701xE) && !defined(STM32F711xE)
-    if (TOTAL_PWM_CONTROLLERS > 4) pwmDrivers[4].timerdef = TIM5;
-    if (TOTAL_PWM_CONTROLLERS > 5) pwmDrivers[5].timerdef = TIM6;
-    if (TOTAL_PWM_CONTROLLERS > 6) pwmDrivers[6].timerdef = TIM7;
-    if (TOTAL_PWM_CONTROLLERS > 7) pwmDrivers[7].timerdef = TIM8;
-    if (TOTAL_PWM_CONTROLLERS > 8) pwmDrivers[8].timerdef = TIM9;
-    if (TOTAL_PWM_CONTROLLERS > 9) pwmDrivers[9].timerdef = TIM10;
-    if (TOTAL_PWM_CONTROLLERS > 10) pwmDrivers[10].timerdef = TIM11;
-    if (TOTAL_PWM_CONTROLLERS > 11) pwmDrivers[11].timerdef = TIM12;
-    if (TOTAL_PWM_CONTROLLERS > 12) pwmDrivers[12].timerdef = TIM13;
-    if (TOTAL_PWM_CONTROLLERS > 13) pwmDrivers[13].timerdef = TIM14;
+    if (TOTAL_PWM_CONTROLLERS > 4) pwmDrivers[4].timReg = TIM5;
+    if (TOTAL_PWM_CONTROLLERS > 5) pwmDrivers[5].timReg = TIM6;
+    if (TOTAL_PWM_CONTROLLERS > 6) pwmDrivers[6].timReg = TIM7;
+    if (TOTAL_PWM_CONTROLLERS > 7) pwmDrivers[7].timReg = TIM8;
+    if (TOTAL_PWM_CONTROLLERS > 8) pwmDrivers[8].timReg = TIM9;
+    if (TOTAL_PWM_CONTROLLERS > 9) pwmDrivers[9].timReg = TIM10;
+    if (TOTAL_PWM_CONTROLLERS > 10) pwmDrivers[10].timReg = TIM11;
+    if (TOTAL_PWM_CONTROLLERS > 11) pwmDrivers[11].timReg = TIM12;
+    if (TOTAL_PWM_CONTROLLERS > 12) pwmDrivers[12].timReg = TIM13;
+    if (TOTAL_PWM_CONTROLLERS > 13) pwmDrivers[13].timReg = TIM14;
 #endif
 
     for (auto controllerIndex = 0u; controllerIndex < TOTAL_PWM_CONTROLLERS; controllerIndex++) {

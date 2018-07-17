@@ -26,13 +26,13 @@ typedef  SPI_TypeDef* ptr_SPI_TypeDef;
 #define DATA_BIT_LENGTH_16  16
 #define DATA_BIT_LENGTH_8   8
 
-static const STM32F4_Gpio_Pin g_STM32F4_Spi_Sclk_Pins[] = STM32F4_SPI_SCLK_PINS;
-static const STM32F4_Gpio_Pin g_STM32F4_Spi_Miso_Pins[] = STM32F4_SPI_MISO_PINS;
-static const STM32F4_Gpio_Pin g_STM32F4_Spi_Mosi_Pins[] = STM32F4_SPI_MOSI_PINS;
+static const STM32F4_Gpio_Pin spiClkPins[] = STM32F4_SPI_SCLK_PINS;
+static const STM32F4_Gpio_Pin spiMisoPins[] = STM32F4_SPI_MISO_PINS;
+static const STM32F4_Gpio_Pin spiMosiPins[] = STM32F4_SPI_MOSI_PINS;
 
-static const int TOTAL_SPI_CONTROLLERS = SIZEOF_ARRAY(g_STM32F4_Spi_Sclk_Pins);
+static const int TOTAL_SPI_CONTROLLERS = SIZEOF_ARRAY(spiClkPins);
 
-static ptr_SPI_TypeDef g_STM32_Spi_Port[TOTAL_SPI_CONTROLLERS];
+static ptr_SPI_TypeDef spiPortRegs[TOTAL_SPI_CONTROLLERS];
 
 struct SpiDriver {
     int32_t controllerIndex;
@@ -83,17 +83,17 @@ const TinyCLR_Api_Info* STM32F4_Spi_GetApi() {
     }
 
 #ifdef SPI1
-    if (TOTAL_SPI_CONTROLLERS > 0) g_STM32_Spi_Port[0] = SPI1;
+    if (TOTAL_SPI_CONTROLLERS > 0) spiPortRegs[0] = SPI1;
 #ifdef SPI2
-    if (TOTAL_SPI_CONTROLLERS > 1) g_STM32_Spi_Port[1] = SPI2;
+    if (TOTAL_SPI_CONTROLLERS > 1) spiPortRegs[1] = SPI2;
 #ifdef SPI3
-    if (TOTAL_SPI_CONTROLLERS > 2) g_STM32_Spi_Port[2] = SPI3;
+    if (TOTAL_SPI_CONTROLLERS > 2) spiPortRegs[2] = SPI3;
 #ifdef SPI4
-    if (TOTAL_SPI_CONTROLLERS > 3) g_STM32_Spi_Port[3] = SPI4;
+    if (TOTAL_SPI_CONTROLLERS > 3) spiPortRegs[3] = SPI4;
 #ifdef SPI5
-    if (TOTAL_SPI_CONTROLLERS > 4) g_STM32_Spi_Port[4] = SPI5;
+    if (TOTAL_SPI_CONTROLLERS > 4) spiPortRegs[4] = SPI5;
 #ifdef SPI6
-    if (TOTAL_SPI_CONTROLLERS > 5) g_STM32_Spi_Port[5] = SPI6;
+    if (TOTAL_SPI_CONTROLLERS > 5) spiPortRegs[5] = SPI6;
 #endif
 #endif
 #endif
@@ -116,7 +116,7 @@ bool STM32F4_Spi_Transaction_Start(int32_t controllerIndex) {
 bool STM32F4_Spi_Transaction_Stop(int32_t controllerIndex) {
     auto driver = &spiDrivers[controllerIndex];
 
-    ptr_SPI_TypeDef spi = g_STM32_Spi_Port[controllerIndex];
+    ptr_SPI_TypeDef spi = spiPortRegs[controllerIndex];
 
     while (spi->SR & SPI_SR_BSY); // wait for completion
 
@@ -131,7 +131,7 @@ bool STM32F4_Spi_Transaction_Stop(int32_t controllerIndex) {
 bool STM32F4_Spi_Transaction_nWrite8_nRead8(int32_t controllerIndex) {
     auto driver = &spiDrivers[controllerIndex];
 
-    ptr_SPI_TypeDef spi = g_STM32_Spi_Port[controllerIndex];
+    ptr_SPI_TypeDef spi = spiPortRegs[controllerIndex];
 
     uint8_t* outBuf = driver->writeBuffer;
     uint8_t* inBuf = driver->readBuffer;
@@ -272,7 +272,7 @@ TinyCLR_Result STM32F4_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self,
     driver->spiMode = mode;
     driver->clockFrequency = clockFrequency;
 
-    ptr_SPI_TypeDef spi = g_STM32_Spi_Port[controllerIndex];
+    ptr_SPI_TypeDef spi = spiPortRegs[controllerIndex];
 
 
     uint32_t cr1 = SPI_CR1_DFF | SPI_CR1_CPOL | SPI_CR1_CPHA | SPI_CR1_BR_2 | SPI_CR1_BR_1 | SPI_CR1_BR_0;
@@ -346,9 +346,9 @@ TinyCLR_Result STM32F4_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
     if (controllerIndex >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
-    auto& sclk = g_STM32F4_Spi_Sclk_Pins[controllerIndex];
-    auto& miso = g_STM32F4_Spi_Miso_Pins[controllerIndex];
-    auto& mosi = g_STM32F4_Spi_Mosi_Pins[controllerIndex];
+    auto& sclk = spiClkPins[controllerIndex];
+    auto& miso = spiMisoPins[controllerIndex];
+    auto& mosi = spiMosiPins[controllerIndex];
 
     driver->chipSelectLine = PIN_NONE;
     driver->dataBitLength = 0;
@@ -398,7 +398,7 @@ TinyCLR_Result STM32F4_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
 #endif
     }
 
-    ptr_SPI_TypeDef spi = g_STM32_Spi_Port[controllerIndex];
+    ptr_SPI_TypeDef spi = spiPortRegs[controllerIndex];
 
     spi->CR1 = SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_MSTR | SPI_CR1_SPE;
 
@@ -457,9 +457,9 @@ TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Controller* self) {
     }
 
     if (driver->isOpened) {
-        auto& sclk = g_STM32F4_Spi_Sclk_Pins[controllerIndex];
-        auto& miso = g_STM32F4_Spi_Miso_Pins[controllerIndex];
-        auto& mosi = g_STM32F4_Spi_Mosi_Pins[controllerIndex];
+        auto& sclk = spiClkPins[controllerIndex];
+        auto& miso = spiMisoPins[controllerIndex];
+        auto& mosi = spiMosiPins[controllerIndex];
 
         STM32F4_GpioInternal_ClosePin(sclk.number);
         STM32F4_GpioInternal_ClosePin(miso.number);
