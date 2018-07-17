@@ -2203,7 +2203,7 @@ TinyCLR_Result LPC17_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
     LPC17_Gpio_ConfigurePin(clk.number, LPC17_Gpio_Direction::Input, clk.pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
     LPC17_Gpio_ConfigurePin(cmd.number, LPC17_Gpio_Direction::Input, cmd.pinFunction, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     sdController[controller].sectorSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
 
@@ -2227,7 +2227,7 @@ TinyCLR_Result LPC17_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
 
     LPC17_Interrupt_Deactivate(DMA_IRQn); /* Disable Interrupt */
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     memoryProvider->Free(memoryProvider, sdController[controller].sectorSizes);
 

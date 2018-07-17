@@ -38,6 +38,7 @@ TinyCLR_Result STM32F7_Flash_Write(const TinyCLR_Deployment_Controller* self, ui
 TinyCLR_Result STM32F7_Flash_EraseSector(const TinyCLR_Deployment_Controller* self, uint32_t sector);
 TinyCLR_Result STM32F7_Flash_IsSectorErased(const TinyCLR_Deployment_Controller* self, uint32_t sector, bool& erased);
 TinyCLR_Result STM32F7_Flash_GetSectorMap(const TinyCLR_Deployment_Controller* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count);
+void STM32F7_Deplpoyment_Reset();
 
 ////////////////////////////////////////////////////////////////////////////////
 //Interrupt
@@ -80,7 +81,7 @@ void STM32F7_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_
 ////////////////////////////////////////////////////////////////////////////////
 void STM32F7_Startup_Initialize();
 void STM32F7_Startup_GetHeap(uint8_t*& start, size_t& length);
-void STM32F7_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, const void*& configuration);
+void STM32F7_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration);
 void STM32F7_Startup_GetRunApp(bool& runApp);
 void STM32F7_Startup_CacheEnable(void);
 void STM32F7_Startup_CacheDisable(void);
@@ -406,7 +407,7 @@ TinyCLR_Result STM32F7_Display_SetConfiguration(const TinyCLR_Display_Controller
 TinyCLR_Result STM32F7_Display_DrawBuffer(const TinyCLR_Display_Controller* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data);
 TinyCLR_Result STM32F7_Display_WriteString(const TinyCLR_Display_Controller* self, const char* buffer, size_t length);
 
-void STM32F7_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiProvider, const TinyCLR_Interop_Manager* interopProvider);
-void STM32F7_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiProvider, const TinyCLR_Interop_Manager* interopProvider);
+void STM32F7_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider);
+void STM32F7_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider);
 
-extern const TinyCLR_Api_Manager* apiProvider;
+extern const TinyCLR_Api_Manager* apiManager;

@@ -857,7 +857,7 @@ TinyCLR_Result LPC17_Display_Release(const TinyCLR_Display_Controller* self) {
     m_LPC17_DisplayEnable = false;
 
     if (m_LPC17_Display_VituralRam != nullptr) {
-        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
         memoryProvider->Free(memoryProvider, m_LPC17_Display_VituralRam);
 
@@ -922,7 +922,7 @@ TinyCLR_Result LPC17_Display_SetConfiguration(const TinyCLR_Display_Controller* 
             break;
         }
 
-        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
         if (m_LPC17_Display_VituralRam != nullptr) {
             memoryProvider->Free(memoryProvider, m_LPC17_Display_VituralRam);

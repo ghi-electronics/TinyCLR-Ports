@@ -42,27 +42,29 @@ const TinyCLR_Startup_UsbDebuggerConfiguration LPC24_Startup_UsbDebuggerConfigur
     CONCAT(L,DEVICE_NAME),
     0
 };
-void LPC24_Startup_GetDebuggerTransportManager(const TinyCLR_Api_Info*& api, size_t& index, const void*& configuration) {
+
+const TinyCLR_Startup_UartDebuggerConfiguration AT91_Startup_UartDebuggerConfiguration = {
+   
+};
+
+void LPC24_Startup_GetDebuggerTransportManager(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value, valueUsbActive;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetApi()->Implementation);
-    auto gpioController = 0; //TODO Temporary set to 0
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetApi()->Implementation);    
 
-    provider->AcquirePin(provider, gpioController, DEBUGGER_SELECTOR_PIN);
-    provider->SetDriveMode(provider, gpioController, DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
-    provider->Read(provider, gpioController, DEBUGGER_SELECTOR_PIN, value);
-    provider->ReleasePin(provider, gpioController, DEBUGGER_SELECTOR_PIN);
+    provider->AcquirePin(provider, DEBUGGER_SELECTOR_PIN);
+    provider->SetDriveMode(provider, DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
+    provider->Read(provider, DEBUGGER_SELECTOR_PIN, value);
+    provider->ReleasePin(provider, DEBUGGER_SELECTOR_PIN);
 
     valueUsbActive = DEBUGGER_SELECTOR_USB_STATE;
 
     if (value == valueUsbActive) {
-        api = LPC24_UsbClient_GetApi();
-        index = USB_DEBUGGER_INDEX;
+        api = LPC24_UsbClient_GetApi();        
         configuration = (const void*)&LPC24_Startup_UsbDebuggerConfiguration;
     }
     else {
-        api = LPC24_Uart_GetApi();
-        index = UART_DEBUGGER_INDEX;
+        api = LPC24_Uart_GetApi();        
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;
@@ -75,13 +77,12 @@ void LPC24_Startup_GetDebuggerTransportManager(const TinyCLR_Api_Info*& api, siz
 void LPC24_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetApi()->Implementation);
-    auto gpioController = 0; //TODO Temporary set to 0
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetApi()->Implementation);    
 
-    provider->AcquirePin(provider, gpioController, RUN_APP_PIN);
-    provider->SetDriveMode(provider, gpioController, RUN_APP_PIN, RUN_APP_PULL);
-    provider->Read(provider, gpioController, RUN_APP_PIN, value);
-    provider->ReleasePin(provider, gpioController, RUN_APP_PIN);
+    provider->AcquirePin(provider, RUN_APP_PIN);
+    provider->SetDriveMode(provider, RUN_APP_PIN, RUN_APP_PULL);
+    provider->Read(provider, RUN_APP_PIN, value);
+    provider->ReleasePin(provider, RUN_APP_PIN);
 
     runApp = value == RUN_APP_STATE;
 #elif defined(RUN_APP_FORCE_STATE)

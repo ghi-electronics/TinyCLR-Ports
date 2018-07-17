@@ -427,13 +427,13 @@ TinyCLR_Result LPC17_Display_GetControllerCount(const TinyCLR_Display_Controller
 //Startup
 void LPC17_Startup_Initialize();
 void LPC17_Startup_GetHeap(uint8_t*& start, size_t& length);
-void LPC17_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, const void*& configuration);
+void LPC17_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration);
 void LPC17_Startup_GetRunApp(bool& runApp);
 
-void LPC17_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiProvider, const TinyCLR_Interop_Manager* interopProvider);
-void LPC17_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiProvider, const TinyCLR_Interop_Manager* interopProvider);
+void LPC17_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider);
+void LPC17_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider);
 
-extern const TinyCLR_Api_Manager* apiProvider;
+extern const TinyCLR_Api_Manager* apiManager;
 
 //System Control Block
 #define PCON_OFFSET 0xC0

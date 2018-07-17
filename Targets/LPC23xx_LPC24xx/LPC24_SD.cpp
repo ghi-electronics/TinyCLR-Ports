@@ -2201,7 +2201,7 @@ TinyCLR_Result LPC24_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
     LPC24_Gpio_ConfigurePin(clk.number, LPC24_Gpio_Direction::Input, clk.pinFunction, LPC24_Gpio_PinMode::Inactive);
     LPC24_Gpio_ConfigurePin(cmd.number, LPC24_Gpio_Direction::Input, cmd.pinFunction, LPC24_Gpio_PinMode::PullUp);
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     sdController[controller].sectorSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
 
@@ -2225,7 +2225,7 @@ TinyCLR_Result LPC24_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
 
     LPC24_Interrupt_Deactivate(LPC24XX_VIC::c_IRQ_INDEX_SD); /* Disable Interrupt */
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     memoryProvider->Free(memoryProvider, sdController[controller].sectorSizes);
 

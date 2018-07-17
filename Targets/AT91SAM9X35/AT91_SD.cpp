@@ -2432,7 +2432,7 @@ TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
 
     MCI_SetSpeed(&mciDrv, 8000000);
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     sdController[controller].pBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, AT91_SD_SECTOR_SIZE + 4);
 
@@ -2464,7 +2464,7 @@ TinyCLR_Result AT91_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
 
     AT91_Interrupt_Deactivate(AT91C_ID_HSMCI0); /* Disable Interrupt */
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     memoryProvider->Free(memoryProvider, sdController[controller].pBuffer);
     memoryProvider->Free(memoryProvider, sdController[controller].sectorSizes);

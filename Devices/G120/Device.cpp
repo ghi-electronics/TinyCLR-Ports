@@ -51,9 +51,9 @@ int32_t LPC17_Startup_GetDeviceId() {
         LPC17_Gpio_EnableInputPin(G120E_DETECT2_PIN, TinyCLR_Gpio_PinDriveMode::InputPullUp);
         LPC17_Gpio_EnableInputPin(G120E_DETECT3_PIN, TinyCLR_Gpio_PinDriveMode::InputPullUp);
 
-        LPC17_Gpio_Read(provider, gpioController, G120E_DETECT1_PIN, value1);
-        LPC17_Gpio_Read(provider, gpioController, G120E_DETECT2_PIN, value2);
-        LPC17_Gpio_Read(provider, gpioController, G120E_DETECT3_PIN, value3);
+        LPC17_Gpio_Read(provider, G120E_DETECT1_PIN, value1);
+        LPC17_Gpio_Read(provider, G120E_DETECT2_PIN, value2);
+        LPC17_Gpio_Read(provider, G120E_DETECT3_PIN, value3);
 
         if ((G120E_DETECT1_STATE == value1) && (G120E_DETECT2_STATE == value2) && (G120E_DETECT3_STATE == value3))
             lpc178_deviceId = LPC17_G120E;
@@ -83,8 +83,7 @@ TinyCLR_Gpio_PinValue LPC17_Startup_GetDebuggerSelectorUsbState() {
         return G120E_DEBUGGER_SELECTOR_USB_STATE;
 }
 
-const TinyCLR_Startup_UsbDebuggerConfiguration LPC17_Startup_UsbDebuggerConfiguration = {
-    USB_DEBUGGER_INDEX,
+const TinyCLR_Startup_UsbDebuggerConfiguration LPC17_Startup_UsbDebuggerConfiguration = {    
     USB_DEBUGGER_VENDOR_ID,
     USB_DEBUGGER_PRODUCT_ID,
     CONCAT(L,DEVICE_MANUFACTURER),
@@ -92,20 +91,18 @@ const TinyCLR_Startup_UsbDebuggerConfiguration LPC17_Startup_UsbDebuggerConfigur
     0
 };
 
-const TinyCLR_Startup_UartDebuggerConfiguration LPC17_Startup_UartDebuggerConfiguration = {
-    UART_DEBUGGER_INDEX
+const TinyCLR_Startup_UartDebuggerConfiguration LPC17_Startup_UartDebuggerConfiguration = {    
 };
 
 void LPC17_Startup_GetDebuggerTransportManager(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value, valueUsbActive;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC17_Gpio_GetApi()->Implementation);
-    auto gpioController = 0; //TODO Temporary set to 0
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC17_Gpio_GetApi()->Implementation);    
 
-    provider->AcquirePin(provider, gpioController, LPC17_Startup_GetDebuggerSelectorPin());
-    provider->SetDriveMode(provider, gpioController, LPC17_Startup_GetDebuggerSelectorPin(), LPC17_Startup_GetDebuggerSelectorPull());
-    provider->Read(provider, gpioController, LPC17_Startup_GetDebuggerSelectorPin(), value);
-    provider->ReleasePin(provider, gpioController, LPC17_Startup_GetDebuggerSelectorPin());
+    provider->AcquirePin(provider, LPC17_Startup_GetDebuggerSelectorPin());
+    provider->SetDriveMode(provider, LPC17_Startup_GetDebuggerSelectorPin(), LPC17_Startup_GetDebuggerSelectorPull());
+    provider->Read(provider, LPC17_Startup_GetDebuggerSelectorPin(), value);
+    provider->ReleasePin(provider, LPC17_Startup_GetDebuggerSelectorPin());
 
     valueUsbActive = LPC17_Startup_GetDebuggerSelectorUsbState();
 
@@ -128,13 +125,12 @@ void LPC17_Startup_GetDebuggerTransportManager(const TinyCLR_Api_Info*& api, con
 void LPC17_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC17_Gpio_GetApi()->Implementation);
-    auto gpioController = 0; //TODO Temporary set to 0
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC17_Gpio_GetApi()->Implementation);    
 
-    provider->AcquirePin(provider, gpioController, RUN_APP_PIN);
-    provider->SetDriveMode(provider, gpioController, RUN_APP_PIN, RUN_APP_PULL);
-    provider->Read(provider, gpioController, RUN_APP_PIN, value);
-    provider->ReleasePin(provider, gpioController, RUN_APP_PIN);
+    provider->AcquirePin(provider, RUN_APP_PIN);
+    provider->SetDriveMode(provider, RUN_APP_PIN, RUN_APP_PULL);
+    provider->Read(provider, RUN_APP_PIN, value);
+    provider->ReleasePin(provider, RUN_APP_PIN);
 
     runApp = value == RUN_APP_STATE;
 #elif defined(RUN_APP_FORCE_STATE)

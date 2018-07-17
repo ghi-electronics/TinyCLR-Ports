@@ -106,9 +106,6 @@ const TinyCLR_Api_Info* STM32F7_I2c_GetApi() {
     if (TOTAL_I2C_CONTROLLERS > 1)
         g_STM32_I2c_Port[1] = I2C2;
 
-    if (TOTAL_I2C_CONTROLLERS > 2)
-        g_STM32_I2c_Port[2] = I2C3;
-
     return (const TinyCLR_Api_Info*)&i2cApi;
 }
 
@@ -173,6 +170,9 @@ void STM32F7_I2C_ER_Interrupt(int32_t controllerIndex) {// Error Interrupt Handl
     INTERRUPT_STARTED_SCOPED(isr);
 
     auto& I2Cx = g_STM32_I2c_Port[controllerIndex];
+    
+    auto driver = &i2cDrivers[controllerIndex];
+    
     /* I2C Bus error interrupt occurred ------------------------------------*/
     if ((STM32F7_I2c_GetFlag(I2Cx, I2C_ISR_BERR) == SET) && (STM32F7_I2c_GetInterruptSource(I2Cx, I2C_CR1_ERRIE) == SET)) {
         /* Clear BERR flag */
@@ -192,7 +192,7 @@ void STM32F7_I2C_ER_Interrupt(int32_t controllerIndex) {// Error Interrupt Handl
         STM32F7_I2c_ClearFlag(I2Cx, I2C_ISR_ARLO);
     }
 
-    if (g_currentI2cTransactionAction != nullptr)
+    if (driver->currentI2cTransactionAction != nullptr)
         driver->currentI2cTransactionAction->result = TinyCLR_I2c_TransferStatus::SlaveAddressNotAcknowledged;
 
     STM32F7_I2c_StopTransaction(controllerIndex);
@@ -319,6 +319,8 @@ void STM32F7_I2c_StartTransaction(int32_t controllerIndex) {
 
 void STM32F7_I2c_StopTransaction(int32_t controllerIndex) {
     auto& I2Cx = g_STM32_I2c_Port[controllerIndex];
+    
+    auto driver = &i2cDrivers[controllerIndex];
 
     I2Cx->CR2 |= I2C_CR2_STOP;  // send stop
     STM32F7_I2c_InterruptDisable(I2Cx, I2C_CR1_ERRIE | I2C_CR1_TCIE | I2C_CR1_STOPIE | I2C_CR1_NACKIE | I2C_CR1_TXIE | I2C_CR1_RXIE); // disable interrupts
@@ -509,13 +511,6 @@ TinyCLR_Result STM32F7_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
         STM32F7_InterruptInternal_Activate(I2C2_EV_IRQn, (uint32_t*)&STM32F7_I2C2_EV_Interrupt, 0);
         STM32F7_InterruptInternal_Activate(I2C2_ER_IRQn, (uint32_t*)&STM32F7_I2C2_ER_Interrupt, 0);
         break;
-
-    case 2:
-        RCC->APB1ENR |= RCC_APB1ENR_I2C3EN; // enable I2C clock
-        RCC->APB1RSTR = RCC_APB1RSTR_I2C3RST; // reset I2C peripheral
-        STM32F7_InterruptInternal_Activate(I2C3_EV_IRQn, (uint32_t*)&STM32F7_I2C3_EV_Interrupt, 0);
-        STM32F7_InterruptInternal_Activate(I2C3_ER_IRQn, (uint32_t*)&STM32F7_I2C3_ER_Interrupt, 0);
-        break;
     }
 
     RCC->APB1RSTR = 0;
@@ -553,16 +548,9 @@ TinyCLR_Result STM32F7_I2c_Release(const TinyCLR_I2c_Controller* self) {
 
         STM32F7_I2c_Disable(I2Cx);
         RCC->APB1ENR &= ~RCC_APB1ENR_I2C2EN; // disable I2C clock
-        break;
-
-    case 2:
-        STM32F7_InterruptInternal_Deactivate(I2C3_EV_IRQn);
-        STM32F7_InterruptInternal_Deactivate(I2C3_ER_IRQn);
-
-        STM32F7_I2c_Disable(I3Cx);
-        RCC->APB1ENR &= ~RCC_APB1ENR_I2C3EN; // disable I2C clock
-        break;
+        break;    
     }
+
     if (driver->i2cConfiguration.isOpened) {
         auto& scl = g_STM32F7_I2c_Scl_Pins[controllerIndex];
         auto& sda = g_STM32F7_I2c_Sda_Pins[controllerIndex];

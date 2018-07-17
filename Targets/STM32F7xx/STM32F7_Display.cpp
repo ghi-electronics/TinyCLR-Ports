@@ -17,6 +17,8 @@
 #include <string.h>
 #include "STM32F7.h"
 
+#ifdef INCLUDE_DISPLAY
+
 #define MAX_LAYER  2
 
 /**
@@ -1044,7 +1046,7 @@ TinyCLR_Result STM32F7_Display_Release(const TinyCLR_Display_Controller* self) {
     m_STM32F7_DisplayEnable = false;
 
     if (m_STM32F7_Display_VituralRam != nullptr) {
-        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
         memoryProvider->Free(memoryProvider, m_STM32F7_Display_VituralRam);
 
@@ -1109,7 +1111,7 @@ TinyCLR_Result STM32F7_Display_SetConfiguration(const TinyCLR_Display_Controller
             break;
         }
 
-        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
         if (m_STM32F7_Display_VituralRam != nullptr) {
             memoryProvider->Free(memoryProvider, m_STM32F7_Display_VituralRam);
@@ -1195,8 +1197,8 @@ const TinyCLR_Api_Info* STM32F7_Display_GetApi() {
         displayControllers[i].WriteString = &STM32F7_Display_WriteString;
 
         displayApi[i].Author = "GHI Electronics, LLC";
-        displayApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.DisplayProvider";
-        displayApi[i].Type = TinyCLR_Api_Type::DisplayProvider;
+        displayApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.DisplayController";
+        displayApi[i].Type = TinyCLR_Api_Type::DisplayController;
         displayApi[i].Version = 0;
         displayApi[i].Implementation = &displayControllers[i];
         displayApi[i].State = nullptr;
@@ -1204,7 +1206,7 @@ const TinyCLR_Api_Info* STM32F7_Display_GetApi() {
 
     m_STM32F7_Display_VituralRam = nullptr;
 
-    return &displayApi;
+    return (const TinyCLR_Api_Info*)&displayApi;
 }
 
 void STM32F7_Display_Reset() {
@@ -1215,3 +1217,4 @@ void STM32F7_Display_Reset() {
 
     m_STM32F7_DisplayEnable = false;
 }
+#endif

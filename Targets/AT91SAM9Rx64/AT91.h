@@ -27,8 +27,8 @@
 #define CHARIZE2(c) #c
 #define CHARIZE(c) (CHARIZE2(c)[0])
 
-void AT91_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiProvider, const TinyCLR_Interop_Manager* interopProvider);
-void AT91_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiProvider, const TinyCLR_Interop_Manager* interopProvider);
+void AT91_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider);
+void AT91_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider);
 
 //
 //  PERIPHERAL ID DEFINITIONS FOR AT91SAM9RL64
@@ -146,7 +146,7 @@ void AT91_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiProvider, cons
 #define AT91C_SHDWC__SHUTDOWN_KEY   0xA5000000   // reset key
 #define AT91C_SHDWC__SHDW           0x01         // processor reset bit
 
-extern const TinyCLR_Api_Manager* apiProvider;
+extern const TinyCLR_Api_Manager* apiManager;
 
 struct AT91_PMC {
     static const uint32_t c_Base = AT91C_BASE_PMC;
@@ -1549,7 +1549,7 @@ struct AT91_WATCHDOG {
 //Startup
 void AT91_Startup_Initialize();
 void AT91_Startup_GetHeap(uint8_t*& start, size_t& length);
-void AT91_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, const void*& configuration);
+void AT91_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration);
 void AT91_Startup_GetRunApp(bool& runApp);
 
 struct AT91 {

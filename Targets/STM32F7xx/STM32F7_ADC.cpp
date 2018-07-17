@@ -24,19 +24,21 @@
 
 #define STM32F7_AD_NUM 18 // number of channels
 
+#define TOTAL_ADC_CONTROLLERS 1
+
 static const uint32_t adcPins[] = STM32F7_ADC_PINS;
 
-static TinyCLR_Adc_Controller adcControllers[TOTAL_ADC_CONTROLLER];
-static TinyCLR_Api_Info adcApi[TOTAL_ADC_CONTROLLER];
+static TinyCLR_Adc_Controller adcControllers[TOTAL_ADC_CONTROLLERS];
+static TinyCLR_Api_Info adcApi[TOTAL_ADC_CONTROLLERS];
 
 struct AdcDriver {
     bool isOpen[STM32F7_AD_NUM];
 };
 
-AdcDriver adcDriver[TOTAL_ADC_CONTROLLER];
+AdcDriver adcDrivers[TOTAL_ADC_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F7_Adc_GetApi() {
-    for (int32_t i = 0; i < TOTAL_ADC_CONTROLLER; i++) {
+    for (int32_t i = 0; i < TOTAL_ADC_CONTROLLERS; i++) {
         adcControllers[i].ApiInfo = &adcApi[i];
         adcControllers[i].Acquire = &STM32F7_Adc_Acquire;
         adcControllers[i].Release = &STM32F7_Adc_Release;
@@ -56,7 +58,7 @@ const TinyCLR_Api_Info* STM32F7_Adc_GetApi() {
         adcApi[i].Type = TinyCLR_Api_Type::AdcController;
         adcApi[i].Version = 0;
         adcApi[i].Implementation = &adcControllers[i];
-        adcApi[i].State = &adcDriver[i];
+        adcApi[i].State = &adcDrivers[i];
     }
 
     return (const TinyCLR_Api_Info*)&adcApi;
@@ -182,11 +184,11 @@ bool STM32F7_Adc_IsChannelModeSupported(const TinyCLR_Adc_Controller* self, Tiny
 }
 
 void STM32F7_Adc_Reset() {
-    for (auto c = 0; c < TOTAL_ADC_CONTROLLER; c++) {
+    for (auto c = 0; c < TOTAL_ADC_CONTROLLERS; c++) {
         for (auto i = 0; i < STM32F7_AD_NUM; i++) {
             STM32F7_Adc_ReleaseChannel(&adcControllers[c], i);
 
-            adcDriver[c].isOpen[i] = false;
+            adcDrivers[c].isOpen[i] = false;
         }
     }
 }

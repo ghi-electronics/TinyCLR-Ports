@@ -17,7 +17,7 @@
 
 #include "LPC17.h"
 
-void LPC17_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider, const TinyCLR_Interop_Provider* interopProvider) {
+void LPC17_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider) {
 #ifdef INCLUDE_ADC
     LPC17_Adc_Reset();
 #endif
