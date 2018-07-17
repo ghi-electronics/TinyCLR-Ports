@@ -1050,10 +1050,10 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
         canControllers[i].GetWriteErrorCount = &STM32F4_Can_GetWriteErrorCount;
         canControllers[i].GetReadErrorCount = &STM32F4_Can_GetReadErrorCount;
         canControllers[i].GetSourceClock = &STM32F4_Can_GetSourceClock;
-        canControllers[i].GetReadBufferSize = STM32F4_Can_GetReadBufferSize;
-        canControllers[i].SetReadBufferSize = STM32F4_Can_SetReadBufferSize;
-        canControllers[i].GetWriteBufferSize = STM32F4_Can_GetWriteBufferSize;
-        canControllers[i].SetWriteBufferSize = STM32F4_Can_SetWriteBufferSize;
+        canControllers[i].GetReadBufferSize = &STM32F4_Can_GetReadBufferSize;
+        canControllers[i].SetReadBufferSize = &STM32F4_Can_SetReadBufferSize;
+        canControllers[i].GetWriteBufferSize = &STM32F4_Can_GetWriteBufferSize;
+        canControllers[i].SetWriteBufferSize = &STM32F4_Can_SetWriteBufferSize;
 
         canApi[i].Author = "GHI Electronics, LLC";
         canApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.CanController";
