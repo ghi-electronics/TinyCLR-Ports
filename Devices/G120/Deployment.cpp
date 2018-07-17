@@ -16,33 +16,33 @@
 #include <LPC17.h>
 #include "../../Drivers/S25FL032_Flash/S25FL032_Flash.h"
 
-static TinyCLR_Deployment_Controller deploymentProvider;
+static TinyCLR_Deployment_Controller deploymentManager;
 static TinyCLR_Api_Info deploymentApi;
 
 const TinyCLR_Api_Info* LPC17_Deployment_GetApi() {
-    deploymentProvider.ApiInfo = &deploymentApi;
-    deploymentProvider.Initialize = &LPC17_Deployment_Initialize;
-    deploymentProvider.Uninitialize = &LPC17_Deployment_Uninitialize;
-    deploymentProvider.Read = &LPC17_Deployment_Read;
-    deploymentProvider.Write = &LPC17_Deployment_Write;
-    deploymentProvider.EraseSector = &LPC17_Deployment_EraseBlock;
-    deploymentProvider.IsSectorErased = &LPC17_Deployment_IsBlockErased;
-    deploymentProvider.GetSectorMap = &LPC17_Deployment_GetSectorMap;
+    deploymentManager.ApiInfo = &deploymentApi;
+    deploymentManager.Initialize = &LPC17_Deployment_Initialize;
+    deploymentManager.Uninitialize = &LPC17_Deployment_Uninitialize;
+    deploymentManager.Read = &LPC17_Deployment_Read;
+    deploymentManager.Write = &LPC17_Deployment_Write;
+    deploymentManager.EraseSector = &LPC17_Deployment_EraseBlock;
+    deploymentManager.IsSectorErased = &LPC17_Deployment_IsBlockErased;
+    deploymentManager.GetSectorMap = &LPC17_Deployment_GetSectorMap;
 
     deploymentApi.Author = "GHI Electronics, LLC";
     deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.S25FL032.DeploymentController";
     deploymentApi.Type = TinyCLR_Api_Type::DeploymentController;
     deploymentApi.Version = 0;
-    deploymentApi.Implementation = &deploymentProvider;
+    deploymentApi.Implementation = &deploymentManager;
 
     return &deploymentApi;
 }
 
 TinyCLR_Result LPC17_Deployment_Initialize(const TinyCLR_Deployment_Controller* self, bool& supportXIP) {
     const TinyCLR_Api_Info* spiApi = CONCAT(DEVICE_TARGET, _Spi_GetApi)();
-    TinyCLR_Spi_Controller* spiProvider = (TinyCLR_Spi_Controller*)spiApi->Implementation;
+    TinyCLR_Spi_Controller* spiManager = (TinyCLR_Spi_Controller*)spiApi->Implementation;
 
-    return S25FL032_Flash_Acquire(spiProvider, LPC17_DEPLOYMENT_SPI_PORT, LPC17_DEPLOYMENT_SPI_ENABLE_PIN, supportXIP);
+    return S25FL032_Flash_Acquire(spiManager, LPC17_DEPLOYMENT_SPI_PORT, LPC17_DEPLOYMENT_SPI_ENABLE_PIN, supportXIP);
 }
 
 TinyCLR_Result LPC17_Deployment_Uninitialize(const TinyCLR_Deployment_Controller* self) {

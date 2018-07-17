@@ -16,36 +16,36 @@
 #include <AT91.h>
 #include "../../Drivers/AT45DB321D_Flash/AT45DB321D_Flash.h"
 
-static TinyCLR_Deployment_Controller deploymentProvider;
+static TinyCLR_Deployment_Controller deploymentManager;
 static TinyCLR_Api_Info deploymentApi;
 
 const TinyCLR_Api_Info* AT91_Deployment_GetApi() {
-    deploymentProvider.ApiInfo = &deploymentApi;
-    deploymentProvider.Initialize = &AT91_Deployment_Initialize;
-    deploymentProvider.Uninitialize = &AT91_Deployment_Uninitialize;
-    deploymentProvider.Read = &AT91_Deployment_Read;
-    deploymentProvider.Write = &AT91_Deployment_Write;
-    deploymentProvider.EraseSector = &AT91_Deployment_EraseBlock;
-    deploymentProvider.IsSectorErased = &AT91_Deployment_IsBlockErased;
-    deploymentProvider.GetSectorMap = &AT91_Deployment_GetSectorMap;
+    deploymentManager.ApiInfo = &deploymentApi;
+    deploymentManager.Initialize = &AT91_Deployment_Initialize;
+    deploymentManager.Uninitialize = &AT91_Deployment_Uninitialize;
+    deploymentManager.Read = &AT91_Deployment_Read;
+    deploymentManager.Write = &AT91_Deployment_Write;
+    deploymentManager.EraseSector = &AT91_Deployment_EraseBlock;
+    deploymentManager.IsSectorErased = &AT91_Deployment_IsBlockErased;
+    deploymentManager.GetSectorMap = &AT91_Deployment_GetSectorMap;
 
     deploymentApi.Author = "GHI Electronics, LLC";
     deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT45DB321D.DeploymentController";
     deploymentApi.Type = TinyCLR_Api_Type::DeploymentController;
     deploymentApi.Version = 0;
-    deploymentApi.Implementation = &deploymentProvider;
+    deploymentApi.Implementation = &deploymentManager;
 
     return &deploymentApi;
 }
 
 TinyCLR_Result AT91_Deployment_Initialize(const TinyCLR_Deployment_Controller* self, bool& supportXIP) {
     const TinyCLR_Api_Info* spiApi = CONCAT(DEVICE_TARGET, _Spi_GetApi)();
-    TinyCLR_Spi_Controller* spiProvider = (TinyCLR_Spi_Controller*)spiApi->Implementation;
+    TinyCLR_Spi_Controller* spiManager = (TinyCLR_Spi_Controller*)spiApi->Implementation;
 
     const TinyCLR_Api_Info* timeApi = CONCAT(DEVICE_TARGET, _Time_GetApi)();;
-    TinyCLR_NativeTime_Controller* timeProvider = (TinyCLR_NativeTime_Controller*)timeApi->Implementation;
+    TinyCLR_NativeTime_Controller* timeManager = (TinyCLR_NativeTime_Controller*)timeApi->Implementation;
 
-    return AT45DB321D_Flash_Acquire(spiProvider, AT91_DEPLOYMENT_SPI_PORT, timeProvider, AT91_DEPLOYMENT_SPI_ENABLE_PIN, supportXIP);
+    return AT45DB321D_Flash_Acquire(spiManager, AT91_DEPLOYMENT_SPI_PORT, timeManager, AT91_DEPLOYMENT_SPI_ENABLE_PIN, supportXIP);
 }
 
 TinyCLR_Result AT91_Deployment_Uninitialize(const TinyCLR_Deployment_Controller* self) {
