@@ -210,7 +210,7 @@ bool STM32F4_Adc_IsChannelModeSupported(const TinyCLR_Adc_Controller* self, Tiny
 }
 
 void STM32F4_Adc_Reset() {
-    for (auto c = 0; c < STM32F4_AD_NUM; c++) {
+    for (auto c = 0; c < TOTAL_ADC_CONTROLLER; c++) {
         for (auto i = 0; i < STM32F4_AD_NUM; i++) {
             STM32F4_Adc_ReleaseChannel(&adcControllers[c], i);
 
