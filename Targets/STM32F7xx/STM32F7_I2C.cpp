@@ -71,11 +71,11 @@ static STM32F7_I2c_Transaction   *g_currentI2cTransactionAction[TOTAL_I2C_CONTRO
 static STM32F7_I2c_Transaction   g_ReadI2cTransactionAction[TOTAL_I2C_CONTROLLERS];
 static STM32F7_I2c_Transaction   g_WriteI2cTransactionAction[TOTAL_I2C_CONTROLLERS];
 
-static TinyCLR_I2c_Provider i2cProvider;
+static TinyCLR_I2c_Controller i2cProvider;
 static TinyCLR_Api_Info i2cApi;
 
 const TinyCLR_Api_Info* STM32F7_I2c_GetApi() {
-    i2cProvider.Parent = &i2cApi;
+    i2cProvider.ApiInfo = &i2cApi;
     i2cProvider.Acquire = &STM32F7_I2c_Acquire;
     i2cProvider.Release = &STM32F7_I2c_Release;
     i2cProvider.SetActiveSettings = &STM32F7_I2c_SetActiveSettings;
@@ -308,7 +308,7 @@ void STM32F7_I2c_StopTransaction(int32_t controller) {
     g_currentI2cTransactionAction[controller]->isDone = true;
 }
 
-TinyCLR_Result STM32F7_I2c_Read(const TinyCLR_I2c_Provider* self, int32_t controller, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result STM32F7_I2c_Read(const TinyCLR_I2c_Controller* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
     g_ReadI2cTransactionAction[controller].isReadTransaction = true;
@@ -338,7 +338,7 @@ TinyCLR_Result STM32F7_I2c_Read(const TinyCLR_I2c_Provider* self, int32_t contro
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result STM32F7_I2c_Write(const TinyCLR_I2c_Provider* self, int32_t controller, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result STM32F7_I2c_Write(const TinyCLR_I2c_Controller* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
     g_WriteI2cTransactionAction[controller].isReadTransaction = false;
@@ -368,7 +368,7 @@ TinyCLR_Result STM32F7_I2c_Write(const TinyCLR_I2c_Provider* self, int32_t contr
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result STM32F7_I2c_WriteRead(const TinyCLR_I2c_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result STM32F7_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
     g_WriteI2cTransactionAction[controller].isReadTransaction = false;
@@ -411,7 +411,7 @@ TinyCLR_Result STM32F7_I2c_WriteRead(const TinyCLR_I2c_Provider* self, int32_t c
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result STM32F7_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int32_t controller, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed) {
+TinyCLR_Result STM32F7_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed) {
     uint32_t rateKhz;
     uint32_t ccr;
 
@@ -445,7 +445,7 @@ TinyCLR_Result STM32F7_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, i
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_I2c_Acquire(const TinyCLR_I2c_Provider* self, int32_t controller) {
+TinyCLR_Result STM32F7_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
@@ -482,7 +482,7 @@ TinyCLR_Result STM32F7_I2c_Acquire(const TinyCLR_I2c_Provider* self, int32_t con
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_I2c_Release(const TinyCLR_I2c_Provider* self, int32_t controller) {
+TinyCLR_Result STM32F7_I2c_Release(const TinyCLR_I2c_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
@@ -542,7 +542,7 @@ void STM32F7_I2c_Reset() {
     }
 }
 
-TinyCLR_Result STM32F7_I2c_GetControllerCount(const TinyCLR_I2c_Provider* self, int32_t& count) {
+TinyCLR_Result STM32F7_I2c_GetControllerCount(const TinyCLR_I2c_Controller* self, int32_t& count) {
     count = TOTAL_I2C_CONTROLLERS;
 
     return TinyCLR_Result::Success;

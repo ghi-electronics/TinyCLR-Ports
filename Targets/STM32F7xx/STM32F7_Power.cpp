@@ -19,26 +19,26 @@
 #define PWR_MAINREGULATOR_ON                        ((uint32_t)0x00000000U)
 #define PWR_LOWPOWERREGULATOR_ON                    PWR_CR1_LPDS
 
-static TinyCLR_Power_Provider powerProvider;
+static TinyCLR_Power_Controller powerProvider;
 static TinyCLR_Api_Info powerApi;
 
 const TinyCLR_Api_Info* STM32F7_Power_GetApi() {
-    powerProvider.Parent = &powerApi;
-    powerProvider.Acquire = &STM32F7_Power_Acquire;
-    powerProvider.Release = &STM32F7_Power_Release;
+    powerProvider.ApiInfo = &powerApi;
+    powerProvider.Initialize = &STM32F7_Power_Initialize;
+    powerProvider.Uninitialize = &STM32F7_Power_Uninitialize;
     powerProvider.Reset = &STM32F7_Power_Reset;
     powerProvider.Sleep = &STM32F7_Power_Sleep;
 
     powerApi.Author = "GHI Electronics, LLC";
-    powerApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.PowerProvider";
-    powerApi.Type = TinyCLR_Api_Type::PowerProvider;
+    powerApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.PowerController";
+    powerApi.Type = TinyCLR_Api_Type::PowerController;
     powerApi.Version = 0;
     powerApi.Implementation = &powerProvider;
 
     return &powerApi;
 }
 
-void STM32F7_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level) {
+void STM32F7_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level) {
     uint32_t tmpreg = 0;
     switch (level) {
 
@@ -84,7 +84,7 @@ void STM32F7_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_Sleep
     }
 }
 
-void STM32F7_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) {
+void STM32F7_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {
 #if defined BOOTLOADER_HOLD_VALUE && defined BOOTLOADER_HOLD_ADDRESS && BOOTLOADER_HOLD_ADDRESS > 0
     if (!runCoreAfter)
         *((uint32_t*)BOOTLOADER_HOLD_ADDRESS) = BOOTLOADER_HOLD_VALUE;
@@ -96,10 +96,10 @@ void STM32F7_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) 
     while (1); // wait for reset
 }
 
-TinyCLR_Result STM32F7_Power_Acquire(const TinyCLR_Power_Provider* self) {
+TinyCLR_Result STM32F7_Power_Initialize(const TinyCLR_Power_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Power_Release(const TinyCLR_Power_Provider* self) {
+TinyCLR_Result STM32F7_Power_Uninitialize(const TinyCLR_Power_Controller* self) {
     return TinyCLR_Result::Success;
 }

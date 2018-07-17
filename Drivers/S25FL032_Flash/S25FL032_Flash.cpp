@@ -20,7 +20,7 @@
 
 #define SPI_CLOCK_RATE_HZ 20000000
 
-const TinyCLR_Spi_Provider* g_S25FL032_Flash_SpiProvider;
+const TinyCLR_Spi_Controller* g_S25FL032_Flash_SpiProvider;
 int32_t g_S25FL032_Flash_SpiControllerId;
 uint32_t g_S25FL032_Flash_SpiChipSelectLine;
 
@@ -244,7 +244,7 @@ TinyCLR_Result S25FL032_Flash_EraseBlock(uint32_t sector) {
     TinyCLR_Result::Success;
 }
 
-TinyCLR_Result S25FL032_Flash_Acquire(const TinyCLR_Spi_Provider* spiProvider, int32_t controller, uint32_t chipSelectLine, bool& supportXIP) {
+TinyCLR_Result S25FL032_Flash_Acquire(const TinyCLR_Spi_Controller* spiProvider, uint32_t chipSelectLine, bool& supportXIP) {
     supportXIP = false;
 
     g_S25FL032_Flash_SpiControllerId = controller;

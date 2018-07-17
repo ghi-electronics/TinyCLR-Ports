@@ -14,11 +14,11 @@
 
 #include "LPC17.h"
 
-static TinyCLR_Rtc_Provider rtcProvider;
+static TinyCLR_Rtc_Controller rtcProvider;
 static TinyCLR_Api_Info timeApi;
 
 const TinyCLR_Api_Info* LPC17_Rtc_GetApi() {
-    rtcProvider.Parent = &timeApi;
+    rtcProvider.ApiInfo = &timeApi;
     rtcProvider.Acquire = &LPC17_Rtc_Acquire;
     rtcProvider.Release = &LPC17_Rtc_Release;
     rtcProvider.GetNow = &LPC17_Rtc_GetNow;
@@ -33,7 +33,7 @@ const TinyCLR_Api_Info* LPC17_Rtc_GetApi() {
     return &timeApi;
 }
 
-TinyCLR_Result LPC17_Rtc_Acquire(const TinyCLR_Rtc_Provider* self) {
+TinyCLR_Result LPC17_Rtc_Acquire(const TinyCLR_Rtc_Controller* self) {
     LPC_SC->PCONP |= PCONP_PCRTC;
 
     if (LPC_RTC->CCR != 1) {
@@ -44,11 +44,11 @@ TinyCLR_Result LPC17_Rtc_Acquire(const TinyCLR_Rtc_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Rtc_Release(const TinyCLR_Rtc_Provider* self) {
+TinyCLR_Result LPC17_Rtc_Release(const TinyCLR_Rtc_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime& value) {
+TinyCLR_Result LPC17_Rtc_GetNow(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value) {
     if (LPC_RTC->CCR != 1) {
         TinyCLR_Result::InvalidOperation;
     }
@@ -67,7 +67,7 @@ TinyCLR_Result LPC17_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_Da
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime value) {
+TinyCLR_Result LPC17_Rtc_SetNow(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value) {
     if (LPC_RTC->CCR != 1) {
         TinyCLR_Result::InvalidOperation;
     }

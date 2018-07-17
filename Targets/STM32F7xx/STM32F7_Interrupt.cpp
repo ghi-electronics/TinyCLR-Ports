@@ -21,13 +21,13 @@
 TinyCLR_Interrupt_StartStopHandler STM32F7_Interrupt_Started;
 TinyCLR_Interrupt_StartStopHandler STM32F7_Interrupt_Ended;
 
-static TinyCLR_Interrupt_Provider interruptProvider;
+static TinyCLR_Interrupt_Controller interruptProvider;
 static TinyCLR_Api_Info interruptApi;
 
 const TinyCLR_Api_Info* STM32F7_Interrupt_GetApi() {
-    interruptProvider.Parent = &interruptApi;
-    interruptProvider.Acquire = &STM32F7_Interrupt_Acquire;
-    interruptProvider.Release = &STM32F7_Interrupt_Release;
+    interruptProvider.ApiInfo = &interruptApi;
+    interruptProvider.Initialize = &STM32F7_Interrupt_Initialize;
+    interruptProvider.Uninitialize = &STM32F7_Interrupt_Uninitialize;
     interruptProvider.Enable = &STM32F7_Interrupt_Enable;
     interruptProvider.Disable = &STM32F7_Interrupt_Disable;
     interruptProvider.WaitForInterrupt = &STM32F7_Interrupt_WaitForInterrupt;
@@ -35,8 +35,8 @@ const TinyCLR_Api_Info* STM32F7_Interrupt_GetApi() {
     interruptProvider.Restore = &STM32F7_Interrupt_Restore;
 
     interruptApi.Author = "GHI Electronics, LLC";
-    interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.InterruptProvider";
-    interruptApi.Type = TinyCLR_Api_Type::InterruptProvider;
+    interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.InterruptController";
+    interruptApi.Type = TinyCLR_Api_Type::InterruptController;
     interruptApi.Version = 0;
     interruptApi.Implementation = &interruptProvider;
 
@@ -48,7 +48,7 @@ extern "C" {
     extern uint32_t __Vectors;
 }
 
-TinyCLR_Result STM32F7_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
+TinyCLR_Result STM32F7_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
     uint32_t *irq_vectors = (uint32_t*)&__Vectors;
 
     // disable all interrupts
@@ -78,7 +78,7 @@ TinyCLR_Result STM32F7_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onIn
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Interrupt_Release() {
+TinyCLR_Result STM32F7_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self) {
     return TinyCLR_Result::Success;
 }
 

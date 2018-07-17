@@ -24,19 +24,19 @@
 static void(*g_LPC17_stopHandler)();
 static void(*g_LPC17_restartHandler)();
 
-static TinyCLR_Power_Provider powerProvider;
+static TinyCLR_Power_Controller powerProvider;
 static TinyCLR_Api_Info powerApi;
 
 const TinyCLR_Api_Info* LPC17_Power_GetApi() {
-    powerProvider.Parent = &powerApi;
-    powerProvider.Acquire = &LPC17_Power_Acquire;
-    powerProvider.Release = &LPC17_Power_Release;
+    powerProvider.ApiInfo = &powerApi;
+    powerProvider.Initialize = &LPC17_Power_Initialize;
+    powerProvider.Uninitialize = &LPC17_Power_Uninitialize;
     powerProvider.Reset = &LPC17_Power_Reset;
     powerProvider.Sleep = &LPC17_Power_Sleep;
 
     powerApi.Author = "GHI Electronics, LLC";
-    powerApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.PowerProvider";
-    powerApi.Type = TinyCLR_Api_Type::PowerProvider;
+    powerApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.PowerController";
+    powerApi.Type = TinyCLR_Api_Type::PowerController;
     powerApi.Version = 0;
     powerApi.Implementation = &powerProvider;
 
@@ -48,7 +48,7 @@ void LPC17_Power_SetHandlers(void(*stop)(), void(*restart)()) {
     g_LPC17_restartHandler = restart;
 }
 
-void LPC17_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level) {
+void LPC17_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level) {
     switch (level) {
 
     case TinyCLR_Power_SleepLevel::Hibernate: // stop
@@ -73,7 +73,7 @@ void LPC17_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLe
     }
 }
 
-void LPC17_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) {
+void LPC17_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {
 #if defined RAM_BOOTLOADER_HOLD_VALUE && defined RAM_BOOTLOADER_HOLD_ADDRESS && RAM_BOOTLOADER_HOLD_ADDRESS > 0
     if (!runCoreAfter)
         *((uint32_t*)RAM_BOOTLOADER_HOLD_ADDRESS) = RAM_BOOTLOADER_HOLD_VALUE;
@@ -88,10 +88,10 @@ void LPC17_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter) {
     while (1); // wait for reset
 }
 
-TinyCLR_Result LPC17_Power_Acquire(const TinyCLR_Power_Provider* self) {
+TinyCLR_Result LPC17_Power_Initialize(const TinyCLR_Power_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Power_Release(const TinyCLR_Power_Provider* self) {
+TinyCLR_Result LPC17_Power_Uninitialize(const TinyCLR_Power_Controller* self) {
     return TinyCLR_Result::Success;
 }

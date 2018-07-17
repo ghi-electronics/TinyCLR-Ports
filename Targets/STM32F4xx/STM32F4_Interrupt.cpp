@@ -18,29 +18,34 @@
 
 #define DISABLED_MASK  0x00000001
 
+#define TOTAL_INTERRUPT_CONTROLLERS 1
+
 TinyCLR_Interrupt_StartStopHandler STM32F4_Interrupt_Started;
 TinyCLR_Interrupt_StartStopHandler STM32F4_Interrupt_Ended;
 
-static TinyCLR_Interrupt_Provider interruptProvider;
-static TinyCLR_Api_Info interruptApi;
+static TinyCLR_Interrupt_Controller interruptControllers[TOTAL_INTERRUPT_CONTROLLERS];
+static TinyCLR_Api_Info interruptApi[TOTAL_INTERRUPT_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F4_Interrupt_GetApi() {
-    interruptProvider.Parent = &interruptApi;
-    interruptProvider.Acquire = &STM32F4_Interrupt_Acquire;
-    interruptProvider.Release = &STM32F4_Interrupt_Release;
-    interruptProvider.Enable = &STM32F4_Interrupt_Enable;
-    interruptProvider.Disable = &STM32F4_Interrupt_Disable;
-    interruptProvider.WaitForInterrupt = &STM32F4_Interrupt_WaitForInterrupt;
-    interruptProvider.IsDisabled = &STM32F4_Interrupt_IsDisabled;
-    interruptProvider.Restore = &STM32F4_Interrupt_Restore;
+    for (int32_t i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
+        interruptControllers[i].ApiInfo = &interruptApi[i];
+        interruptControllers[i].Initialize = &STM32F4_Interrupt_Initialize;
+        interruptControllers[i].Uninitialize = &STM32F4_Interrupt_Uninitialize;
+        interruptControllers[i].Enable = &STM32F4_Interrupt_Enable;
+        interruptControllers[i].Disable = &STM32F4_Interrupt_Disable;
+        interruptControllers[i].WaitForInterrupt = &STM32F4_Interrupt_WaitForInterrupt;
+        interruptControllers[i].IsDisabled = &STM32F4_Interrupt_IsDisabled;
+        interruptControllers[i].Restore = &STM32F4_Interrupt_Restore;
 
-    interruptApi.Author = "GHI Electronics, LLC";
-    interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.InterruptProvider";
-    interruptApi.Type = TinyCLR_Api_Type::InterruptProvider;
-    interruptApi.Version = 0;
-    interruptApi.Implementation = &interruptProvider;
+        interruptApi[i].Author = "GHI Electronics, LLC";
+        interruptApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.InterruptController";
+        interruptApi[i].Type = TinyCLR_Api_Type::InterruptController;
+        interruptApi[i].Version = 0;
+        interruptApi[i].Implementation = &interruptControllers[i];
+        interruptApi[i].State = nullptr;
+    }
 
-    return &interruptApi;
+    return (const TinyCLR_Api_Info*)&interruptApi;
 }
 
 extern "C" {
@@ -48,7 +53,7 @@ extern "C" {
     extern uint32_t __Vectors;
 }
 
-TinyCLR_Result STM32F4_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
+TinyCLR_Result STM32F4_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
     uint32_t *irq_vectors = (uint32_t*)&__Vectors;
 
     // disable all interrupts
@@ -78,7 +83,7 @@ TinyCLR_Result STM32F4_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onIn
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Interrupt_Release() {
+TinyCLR_Result STM32F4_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self) {
     return TinyCLR_Result::Success;
 }
 

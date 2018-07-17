@@ -150,27 +150,27 @@ struct LPC24_Gpio_PinConfiguration {
 #define DEFAULT() INIT(Input, Inactive, PinFunction0, false, true)
 #define NO_INIT() INIT(Input, Inactive, PinFunction0, false, false)
 
-void LPC24_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider, const TinyCLR_Interop_Provider* interopProvider);
-void LPC24_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider, const TinyCLR_Interop_Provider* interopProvider);
+void LPC24_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiProvider, const TinyCLR_Interop_Manager* interopProvider);
+void LPC24_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiProvider, const TinyCLR_Interop_Manager* interopProvider);
 
-extern const TinyCLR_Api_Provider* apiProvider;
+extern const TinyCLR_Api_Manager* apiProvider;
 
 void LPC24_Gpio_Reset();
 const TinyCLR_Api_Info* LPC24_Gpio_GetApi();
-TinyCLR_Result LPC24_Gpio_Acquire(const TinyCLR_Gpio_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Gpio_Release(const TinyCLR_Gpio_Provider* self, int32_t controller);
+TinyCLR_Result LPC24_Gpio_Acquire(const TinyCLR_Gpio_Controller* self);
+TinyCLR_Result LPC24_Gpio_Release(const TinyCLR_Gpio_Controller* self);
 TinyCLR_Result LPC24_Gpio_EnableAlternatePin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor, uint32_t alternate);
-TinyCLR_Result LPC24_Gpio_Read(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinValue& value);
-TinyCLR_Result LPC24_Gpio_Write(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinValue value);
-TinyCLR_Result LPC24_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, uint64_t debounceTicks);
-TinyCLR_Result LPC24_Gpio_SetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
-TinyCLR_Result LPC24_Gpio_AcquirePin(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
-bool LPC24_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
-TinyCLR_Gpio_PinDriveMode LPC24_Gpio_GetDriveMode(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
-uint64_t LPC24_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
-int32_t LPC24_Gpio_GetPinCount(const TinyCLR_Gpio_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR);
-TinyCLR_Result LPC24_Gpio_ReleasePin(const TinyCLR_Gpio_Provider* self, int32_t controller, int32_t pin);
+TinyCLR_Result LPC24_Gpio_Read(const TinyCLR_Gpio_Controller* self, int32_t pin, TinyCLR_Gpio_PinValue& value);
+TinyCLR_Result LPC24_Gpio_Write(const TinyCLR_Gpio_Controller* self, int32_t pin, TinyCLR_Gpio_PinValue value);
+TinyCLR_Result LPC24_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Controller* self, int32_t pin, uint64_t debounceTicks);
+TinyCLR_Result LPC24_Gpio_SetDriveMode(const TinyCLR_Gpio_Controller* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
+TinyCLR_Result LPC24_Gpio_AcquirePin(const TinyCLR_Gpio_Controller* self, int32_t pin);
+bool LPC24_Gpio_IsDriveModeSupported(const TinyCLR_Gpio_Controller* self, int32_t pin, TinyCLR_Gpio_PinDriveMode mode);
+TinyCLR_Gpio_PinDriveMode LPC24_Gpio_GetDriveMode(const TinyCLR_Gpio_Controller* self, int32_t pin);
+uint64_t LPC24_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Controller* self, int32_t pin);
+int32_t LPC24_Gpio_GetPinCount(const TinyCLR_Gpio_Controller* self);
+TinyCLR_Result LPC24_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Controller* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler ISR);
+TinyCLR_Result LPC24_Gpio_ReleasePin(const TinyCLR_Gpio_Controller* self, int32_t pin);
 void LPC24_Gpio_EnableOutputPin(int32_t pin, bool initialState);
 void LPC24_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
 bool LPC24_Gpio_OpenPin(int32_t pin);
@@ -178,7 +178,7 @@ bool LPC24_Gpio_ClosePin(int32_t pin);
 bool LPC24_Gpio_ReadPin(int32_t pin);
 void LPC24_Gpio_WritePin(int32_t pin, bool value);
 bool LPC24_Gpio_ConfigurePin(int32_t pin, LPC24_Gpio_Direction pinDir, LPC24_Gpio_PinFunction alternateFunction, LPC24_Gpio_PinMode pullResistor);
-TinyCLR_Result LPC24_Gpio_GetControllerCount(const TinyCLR_Gpio_Provider* self, int32_t& count);
+TinyCLR_Result LPC24_Gpio_GetControllerCount(const TinyCLR_Gpio_Controller* self, int32_t& count);
 
 // ADC
 const TinyCLR_Api_Info* LPC24_Adc_GetApi();
@@ -186,58 +186,58 @@ void LPC24_Adc_Reset();
 int32_t LPC24_Adc_GetChannelCount();
 int32_t LPC24_Adc_GetPin(int32_t channel);
 LPC24_Gpio_PinFunction LPC24_Adc_GetPinFunction(int32_t channel);
-TinyCLR_Result LPC24_Adc_Acquire(const TinyCLR_Adc_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Adc_Release(const TinyCLR_Adc_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t channel);
-TinyCLR_Result LPC24_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t channel);
-TinyCLR_Result LPC24_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t channel, int32_t& value);
-int32_t LPC24_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self, int32_t controller);
-int32_t LPC24_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider* self, int32_t controller);
-int32_t LPC24_Adc_GetMinValue(const TinyCLR_Adc_Provider* self, int32_t controller);
-int32_t LPC24_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self, int32_t controller);
-TinyCLR_Adc_ChannelMode LPC24_Adc_GetChannelMode(const TinyCLR_Adc_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, int32_t controller, TinyCLR_Adc_ChannelMode mode);
-bool LPC24_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, int32_t controller, TinyCLR_Adc_ChannelMode mode);
-TinyCLR_Result LPC24_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count);
+TinyCLR_Result LPC24_Adc_Acquire(const TinyCLR_Adc_Controller* self);
+TinyCLR_Result LPC24_Adc_Release(const TinyCLR_Adc_Controller* self);
+TinyCLR_Result LPC24_Adc_AcquireChannel(const TinyCLR_Adc_Controller* self, int32_t channel);
+TinyCLR_Result LPC24_Adc_ReleaseChannel(const TinyCLR_Adc_Controller* self, int32_t channel);
+TinyCLR_Result LPC24_Adc_ReadValue(const TinyCLR_Adc_Controller* self, int32_t channel, int32_t& value);
+int32_t LPC24_Adc_GetChannelCount(const TinyCLR_Adc_Controller* self);
+int32_t LPC24_Adc_GetResolutionInBits(const TinyCLR_Adc_Controller* self);
+int32_t LPC24_Adc_GetMinValue(const TinyCLR_Adc_Controller* self);
+int32_t LPC24_Adc_GetMaxValue(const TinyCLR_Adc_Controller* self);
+TinyCLR_Adc_ChannelMode LPC24_Adc_GetChannelMode(const TinyCLR_Adc_Controller* self);
+TinyCLR_Result LPC24_Adc_SetChannelMode(const TinyCLR_Adc_Controller* self, TinyCLR_Adc_ChannelMode mode);
+bool LPC24_Adc_IsChannelModeSupported(const TinyCLR_Adc_Controller* self, TinyCLR_Adc_ChannelMode mode);
+TinyCLR_Result LPC24_Adc_GetControllerCount(const TinyCLR_Adc_Controller* self, int32_t& count);
 
 // CAN
 const TinyCLR_Api_Info* LPC24_Can_GetApi();
-TinyCLR_Result LPC24_Can_Acquire(const TinyCLR_Can_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Can_Release(const TinyCLR_Can_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Can_SoftReset(const TinyCLR_Can_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Can_WriteMessage(const TinyCLR_Can_Provider* self, int32_t controller, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length);
-TinyCLR_Result LPC24_Can_ReadMessage(const TinyCLR_Can_Provider* self, int32_t controller, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length);
-TinyCLR_Result LPC24_Can_SetBitTiming(const TinyCLR_Can_Provider* self, int32_t controller, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling);
-TinyCLR_Result LPC24_Can_GetUnreadMessageCount(const TinyCLR_Can_Provider* self, int32_t controller, size_t& count);
-TinyCLR_Result LPC24_Can_SetMessageReceivedHandler(const TinyCLR_Can_Provider* self, int32_t controller, TinyCLR_Can_MessageReceivedHandler handler);
-TinyCLR_Result LPC24_Can_SetErrorReceivedHandler(const TinyCLR_Can_Provider* self, int32_t controller, TinyCLR_Can_ErrorReceivedHandler handler);
-TinyCLR_Result LPC24_Can_SetExplicitFilters(const TinyCLR_Can_Provider* self, int32_t controller, uint8_t* filters, size_t length);
-TinyCLR_Result LPC24_Can_SetGroupFilters(const TinyCLR_Can_Provider* self, int32_t controller, uint8_t* lowerBounds, uint8_t* upperBounds, size_t length);
-TinyCLR_Result LPC24_Can_ClearReadBuffer(const TinyCLR_Can_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Can_IsWritingAllowed(const TinyCLR_Can_Provider* self, int32_t controller, bool& allowed);
-TinyCLR_Result LPC24_Can_GetWriteErrorCount(const TinyCLR_Can_Provider* self, int32_t controller, size_t& count);
-TinyCLR_Result LPC24_Can_GetReadErrorCount(const TinyCLR_Can_Provider* self, int32_t controller, size_t& count);
-TinyCLR_Result LPC24_Can_GetSourceClock(const TinyCLR_Can_Provider* self, int32_t controller, uint32_t& sourceClock);
-TinyCLR_Result LPC24_Can_SetReadBufferSize(const TinyCLR_Can_Provider* self, int32_t controller, size_t size);
-TinyCLR_Result LPC24_Can_GetReadBufferSize(const TinyCLR_Can_Provider* self, int32_t controller, size_t& size);
-TinyCLR_Result LPC24_Can_GetWriteBufferSize(const TinyCLR_Can_Provider* self, int32_t controller, size_t& size);
-TinyCLR_Result LPC24_Can_SetWriteBufferSize(const TinyCLR_Can_Provider* self, int32_t controller, size_t size);
-TinyCLR_Result LPC24_Can_GetControllerCount(const TinyCLR_Can_Provider* self, int32_t& count);
+TinyCLR_Result LPC24_Can_Acquire(const TinyCLR_Can_Controller* self);
+TinyCLR_Result LPC24_Can_Release(const TinyCLR_Can_Controller* self);
+TinyCLR_Result LPC24_Can_SoftReset(const TinyCLR_Can_Controller* self);
+TinyCLR_Result LPC24_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length);
+TinyCLR_Result LPC24_Can_ReadMessage(const TinyCLR_Can_Controller* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length);
+TinyCLR_Result LPC24_Can_SetBitTiming(const TinyCLR_Can_Controller* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling);
+TinyCLR_Result LPC24_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self, size_t& count);
+TinyCLR_Result LPC24_Can_SetMessageReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_MessageReceivedHandler handler);
+TinyCLR_Result LPC24_Can_SetErrorReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_ErrorReceivedHandler handler);
+TinyCLR_Result LPC24_Can_SetExplicitFilters(const TinyCLR_Can_Controller* self, uint8_t* filters, size_t length);
+TinyCLR_Result LPC24_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, uint8_t* lowerBounds, uint8_t* upperBounds, size_t length);
+TinyCLR_Result LPC24_Can_ClearReadBuffer(const TinyCLR_Can_Controller* self);
+TinyCLR_Result LPC24_Can_IsWritingAllowed(const TinyCLR_Can_Controller* self, bool& allowed);
+TinyCLR_Result LPC24_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self, size_t& count);
+TinyCLR_Result LPC24_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self, size_t& count);
+TinyCLR_Result LPC24_Can_GetSourceClock(const TinyCLR_Can_Controller* self, uint32_t& sourceClock);
+TinyCLR_Result LPC24_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, size_t size);
+TinyCLR_Result LPC24_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self, size_t& size);
+TinyCLR_Result LPC24_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self, size_t& size);
+TinyCLR_Result LPC24_Can_SetWriteBufferSize(const TinyCLR_Can_Controller* self, size_t size);
+TinyCLR_Result LPC24_Can_GetControllerCount(const TinyCLR_Can_Controller* self, int32_t& count);
 void LPC24_Can_Reset();
 
 //DAC
 const TinyCLR_Api_Info* LPC24_Dac_GetApi();
 void LPC24_Dac_Reset();
-TinyCLR_Result LPC24_Dac_Acquire(const TinyCLR_Dac_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Dac_Release(const TinyCLR_Dac_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel);
-TinyCLR_Result LPC24_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel);
-TinyCLR_Result LPC24_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel, int32_t value);
-int32_t LPC24_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self, int32_t controller);
-int32_t LPC24_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self, int32_t controller);
-int32_t LPC24_Dac_GetMinValue(const TinyCLR_Dac_Provider* self, int32_t controller);
-int32_t LPC24_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t& count);
+TinyCLR_Result LPC24_Dac_Acquire(const TinyCLR_Dac_Controller* self);
+TinyCLR_Result LPC24_Dac_Release(const TinyCLR_Dac_Controller* self);
+TinyCLR_Result LPC24_Dac_AcquireChannel(const TinyCLR_Dac_Controller* self, int32_t channel);
+TinyCLR_Result LPC24_Dac_ReleaseChannel(const TinyCLR_Dac_Controller* self, int32_t channel);
+TinyCLR_Result LPC24_Dac_WriteValue(const TinyCLR_Dac_Controller* self, int32_t channel, int32_t value);
+int32_t LPC24_Dac_GetChannelCount(const TinyCLR_Dac_Controller* self);
+int32_t LPC24_Dac_GetResolutionInBits(const TinyCLR_Dac_Controller* self);
+int32_t LPC24_Dac_GetMinValue(const TinyCLR_Dac_Controller* self);
+int32_t LPC24_Dac_GetMaxValue(const TinyCLR_Dac_Controller* self);
+TinyCLR_Result LPC24_Dac_GetControllerCount(const TinyCLR_Dac_Controller* self, int32_t& count);
 
 // PWM
 struct PwmController {
@@ -259,42 +259,42 @@ const TinyCLR_Api_Info* LPC24_Pwm_GetApi();
 void LPC24_Pwm_Reset();
 void LPC24_Pwm_ResetController(int32_t controller);
 LPC24_Gpio_Pin LPC24_Pwm_GetPins(int32_t controller, int32_t channel);
-TinyCLR_Result LPC24_Pwm_Acquire(const TinyCLR_Pwm_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Pwm_Release(const TinyCLR_Pwm_Provider* self, int32_t controller);
-int32_t LPC24_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin);
-TinyCLR_Result LPC24_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller, double& frequency);
-TinyCLR_Result LPC24_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin);
-TinyCLR_Result LPC24_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin);
-TinyCLR_Result LPC24_Pwm_EnablePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin);
-TinyCLR_Result LPC24_Pwm_DisablePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin);
-TinyCLR_Result LPC24_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin, double dutyCycle, bool invertPolarity);
-double LPC24_Pwm_GetMinFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller);
-double LPC24_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller);
-double LPC24_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller);
-int32_t LPC24_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Pwm_GetControllerCount(const TinyCLR_Pwm_Provider* self, int32_t& count);
+TinyCLR_Result LPC24_Pwm_Acquire(const TinyCLR_Pwm_Controller* self);
+TinyCLR_Result LPC24_Pwm_Release(const TinyCLR_Pwm_Controller* self);
+int32_t LPC24_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Controller* self, int32_t pin);
+TinyCLR_Result LPC24_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Controller* self, double& frequency);
+TinyCLR_Result LPC24_Pwm_AcquirePin(const TinyCLR_Pwm_Controller* self, int32_t pin);
+TinyCLR_Result LPC24_Pwm_ReleasePin(const TinyCLR_Pwm_Controller* self, int32_t pin);
+TinyCLR_Result LPC24_Pwm_EnablePin(const TinyCLR_Pwm_Controller* self, int32_t pin);
+TinyCLR_Result LPC24_Pwm_DisablePin(const TinyCLR_Pwm_Controller* self, int32_t pin);
+TinyCLR_Result LPC24_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self, int32_t pin, double dutyCycle, bool invertPolarity);
+double LPC24_Pwm_GetMinFrequency(const TinyCLR_Pwm_Controller* self);
+double LPC24_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Controller* self);
+double LPC24_Pwm_GetActualFrequency(const TinyCLR_Pwm_Controller* self);
+int32_t LPC24_Pwm_GetPinCount(const TinyCLR_Pwm_Controller* self);
+TinyCLR_Result LPC24_Pwm_GetControllerCount(const TinyCLR_Pwm_Controller* self, int32_t& count);
 
 //RTC
 const TinyCLR_Api_Info* LPC24_Rtc_GetApi();
-TinyCLR_Result LPC24_Rtc_Acquire(const TinyCLR_Rtc_Provider* self);
-TinyCLR_Result LPC24_Rtc_Release(const TinyCLR_Rtc_Provider* self);
-TinyCLR_Result LPC24_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime& value);
-TinyCLR_Result LPC24_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime value);
+TinyCLR_Result LPC24_Rtc_Acquire(const TinyCLR_Rtc_Controller* self);
+TinyCLR_Result LPC24_Rtc_Release(const TinyCLR_Rtc_Controller* self);
+TinyCLR_Result LPC24_Rtc_GetNow(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value);
+TinyCLR_Result LPC24_Rtc_SetNow(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value);
 
 ////////////////////////////////////////////////////////////////////////////////
 //SD
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* LPC24_SdCard_GetApi();
 
-TinyCLR_Result LPC24_SdCard_Acquire(const TinyCLR_SdCard_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_SdCard_Release(const TinyCLR_SdCard_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_SdCard_GetControllerCount(const TinyCLR_SdCard_Provider* self, int32_t& count);
+TinyCLR_Result LPC24_SdCard_Acquire(const TinyCLR_SdCard_Controller* self);
+TinyCLR_Result LPC24_SdCard_Release(const TinyCLR_SdCard_Controller* self);
+TinyCLR_Result LPC24_SdCard_GetControllerCount(const TinyCLR_SdCard_Controller* self, int32_t& count);
 
-TinyCLR_Result LPC24_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, size_t& count, uint8_t* data, int32_t timeout);
-TinyCLR_Result LPC24_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, size_t& count, const uint8_t* data, int32_t timeout);
-TinyCLR_Result LPC24_SdCard_IsSectorErased(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, bool& erased);
-TinyCLR_Result LPC24_SdCard_EraseSector(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, size_t& count, int32_t timeout);
-TinyCLR_Result LPC24_SdCard_GetSectorMap(const TinyCLR_SdCard_Provider* self, int32_t controller, const size_t*& sizes, size_t& count, bool& isUniform);
+TinyCLR_Result LPC24_SdCard_ReadSector(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, uint8_t* data, int32_t timeout);
+TinyCLR_Result LPC24_SdCard_WriteSector(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, const uint8_t* data, int32_t timeout);
+TinyCLR_Result LPC24_SdCard_IsSectorErased(const TinyCLR_SdCard_Controller* self, uint64_t sector, bool& erased);
+TinyCLR_Result LPC24_SdCard_EraseSector(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, int32_t timeout);
+TinyCLR_Result LPC24_SdCard_GetSectorMap(const TinyCLR_SdCard_Controller* self, const size_t*& sizes, size_t& count, bool& isUniform);
 
 TinyCLR_Result LPC24_SdCard_Reset();
 
@@ -304,18 +304,18 @@ void LPC24_Spi_Reset();
 bool LPC24_Spi_Transaction_Start(int32_t controller);
 bool LPC24_Spi_Transaction_Stop(int32_t controller);
 bool LPC24_Spi_Transaction_nWrite8_nRead8(int32_t controller);
-TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int32_t controller, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode);
-TinyCLR_Result LPC24_Spi_Read(const TinyCLR_Spi_Provider* self, int32_t controller, uint8_t* buffer, size_t& length);
-TinyCLR_Result LPC24_Spi_Write(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* buffer, size_t& length);
-TinyCLR_Result LPC24_Spi_TransferFullDuplex(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength);
-TinyCLR_Result LPC24_Spi_TransferSequential(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength);
-int32_t LPC24_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self, int32_t controller);
-int32_t LPC24_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller);
-int32_t LPC24_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* self, int32_t controller, int32_t* dataBitLengths, size_t& dataBitLengthsCount);
-TinyCLR_Result LPC24_Spi_GetControllerCount(const TinyCLR_Spi_Provider* self, int32_t& count);
+TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Controller* self);
+TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Controller* self);
+TinyCLR_Result LPC24_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode);
+TinyCLR_Result LPC24_Spi_Read(const TinyCLR_Spi_Controller* self, uint8_t* buffer, size_t& length);
+TinyCLR_Result LPC24_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8_t* buffer, size_t& length);
+TinyCLR_Result LPC24_Spi_TransferFullDuplex(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength);
+TinyCLR_Result LPC24_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength);
+int32_t LPC24_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self);
+int32_t LPC24_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self);
+int32_t LPC24_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self);
+TinyCLR_Result LPC24_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller* self, int32_t* dataBitLengths, size_t& dataBitLengthsCount);
+TinyCLR_Result LPC24_Spi_GetControllerCount(const TinyCLR_Spi_Controller* self, int32_t& count);
 
 //Uart
 const TinyCLR_Api_Info* LPC24_Uart_GetApi();
@@ -331,46 +331,46 @@ LPC24_Gpio_PinFunction LPC24_Uart_GetCtsAlternateFunction(int32_t controller);
 bool LPC24_Uart_TxHandshakeEnabledState(int controller);
 void LPC24_Uart_TxBufferEmptyInterruptEnable(int controller, bool enable);
 void LPC24_Uart_RxBufferFullInterruptEnable(int controller, bool enable);
-TinyCLR_Result LPC24_Uart_Acquire(const TinyCLR_Uart_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, int32_t controller, uint32_t baudRate, uint32_t dataBits, TinyCLR_Uart_Parity parity, TinyCLR_Uart_StopBitCount stopBits, TinyCLR_Uart_Handshake handshaking);
-TinyCLR_Result LPC24_Uart_Flush(const TinyCLR_Uart_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Uart_Read(const TinyCLR_Uart_Provider* self, int32_t controller, uint8_t* buffer, size_t& length);
-TinyCLR_Result LPC24_Uart_Write(const TinyCLR_Uart_Provider* self, int32_t controller, const uint8_t* buffer, size_t& length);
-TinyCLR_Result LPC24_Uart_SetPinChangedHandler(const TinyCLR_Uart_Provider* self, int32_t controller, TinyCLR_Uart_PinChangedHandler handler);
-TinyCLR_Result LPC24_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Provider* self, int32_t controller, TinyCLR_Uart_ErrorReceivedHandler handler);
-TinyCLR_Result LPC24_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Provider* self, int32_t controller, TinyCLR_Uart_DataReceivedHandler handler);
-TinyCLR_Result LPC24_Uart_GetBreakSignalState(const TinyCLR_Uart_Provider* self, int32_t controller, bool& state);
-TinyCLR_Result LPC24_Uart_SetBreakSignalState(const TinyCLR_Uart_Provider* self, int32_t controller, bool state);
-TinyCLR_Result LPC24_Uart_GetCarrierDetectState(const TinyCLR_Uart_Provider* self, int32_t controller, bool& state);
-TinyCLR_Result LPC24_Uart_GetClearToSendState(const TinyCLR_Uart_Provider* self, int32_t controller, bool& state);
-TinyCLR_Result LPC24_Uart_GetDataReadyState(const TinyCLR_Uart_Provider* self, int32_t controller, bool& state);
-TinyCLR_Result LPC24_Uart_GetIsDataTerminalReadyEnabled(const TinyCLR_Uart_Provider* self, int32_t controller, bool& state);
-TinyCLR_Result LPC24_Uart_SetIsDataTerminalReadyEnabled(const TinyCLR_Uart_Provider* self, int32_t controller, bool state);
-TinyCLR_Result LPC24_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Provider* self, int32_t controller, bool& state);
-TinyCLR_Result LPC24_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Provider* self, int32_t controller, bool state);
-TinyCLR_Result LPC24_Uart_GetReadBufferSize(const TinyCLR_Uart_Provider* self, int32_t controller, size_t& size);
-TinyCLR_Result LPC24_Uart_SetReadBufferSize(const TinyCLR_Uart_Provider* self, int32_t controller, size_t size);
-TinyCLR_Result LPC24_Uart_GetWriteBufferSize(const TinyCLR_Uart_Provider* self, int32_t controller, size_t& size);
-TinyCLR_Result LPC24_Uart_SetWriteBufferSize(const TinyCLR_Uart_Provider* self, int32_t controller, size_t size);
-TinyCLR_Result LPC24_Uart_GetUnreadCount(const TinyCLR_Uart_Provider* self, int32_t controller, size_t& count);
-TinyCLR_Result LPC24_Uart_GetUnwrittenCount(const TinyCLR_Uart_Provider* self, int32_t controller, size_t& count);
-TinyCLR_Result LPC24_Uart_ClearReadBuffer(const TinyCLR_Uart_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Uart_ClearWriteBuffer(const TinyCLR_Uart_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Uart_GetControllerCount(const TinyCLR_Uart_Provider* self, int32_t& count);
+TinyCLR_Result LPC24_Uart_Acquire(const TinyCLR_Uart_Controller* self);
+TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Controller* self);
+TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self, uint32_t baudRate, uint32_t dataBits, TinyCLR_Uart_Parity parity, TinyCLR_Uart_StopBitCount stopBits, TinyCLR_Uart_Handshake handshaking);
+TinyCLR_Result LPC24_Uart_Flush(const TinyCLR_Uart_Controller* self);
+TinyCLR_Result LPC24_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* buffer, size_t& length);
+TinyCLR_Result LPC24_Uart_Write(const TinyCLR_Uart_Controller* self, const uint8_t* buffer, size_t& length);
+TinyCLR_Result LPC24_Uart_SetPinChangedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_PinChangedHandler handler);
+TinyCLR_Result LPC24_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ErrorReceivedHandler handler);
+TinyCLR_Result LPC24_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_DataReceivedHandler handler);
+TinyCLR_Result LPC24_Uart_GetBreakSignalState(const TinyCLR_Uart_Controller* self, bool& state);
+TinyCLR_Result LPC24_Uart_SetBreakSignalState(const TinyCLR_Uart_Controller* self, bool state);
+TinyCLR_Result LPC24_Uart_GetCarrierDetectState(const TinyCLR_Uart_Controller* self, bool& state);
+TinyCLR_Result LPC24_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* self, bool& state);
+TinyCLR_Result LPC24_Uart_GetDataReadyState(const TinyCLR_Uart_Controller* self, bool& state);
+TinyCLR_Result LPC24_Uart_GetIsDataTerminalReadyEnabled(const TinyCLR_Uart_Controller* self, bool& state);
+TinyCLR_Result LPC24_Uart_SetIsDataTerminalReadyEnabled(const TinyCLR_Uart_Controller* self, bool state);
+TinyCLR_Result LPC24_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool& state);
+TinyCLR_Result LPC24_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool state);
+TinyCLR_Result LPC24_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t& size);
+TinyCLR_Result LPC24_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t size);
+TinyCLR_Result LPC24_Uart_GetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t& size);
+TinyCLR_Result LPC24_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t size);
+TinyCLR_Result LPC24_Uart_GetUnreadCount(const TinyCLR_Uart_Controller* self, size_t& count);
+TinyCLR_Result LPC24_Uart_GetUnwrittenCount(const TinyCLR_Uart_Controller* self, size_t& count);
+TinyCLR_Result LPC24_Uart_ClearReadBuffer(const TinyCLR_Uart_Controller* self);
+TinyCLR_Result LPC24_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self);
+TinyCLR_Result LPC24_Uart_GetControllerCount(const TinyCLR_Uart_Controller* self, int32_t& count);
 
 //Deployment
 const TinyCLR_Api_Info* LPC24_Deployment_GetApi();
-TinyCLR_Result LPC24_Deployment_Acquire(const TinyCLR_Deployment_Provider* self, bool &supportXIP);
-TinyCLR_Result LPC24_Deployment_Release(const TinyCLR_Deployment_Provider* self);
-TinyCLR_Result LPC24_Deployment_Read(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, uint8_t* buffer);
-TinyCLR_Result LPC24_Deployment_Write(const TinyCLR_Deployment_Provider* self, uint32_t address, size_t length, const uint8_t* buffer);
-TinyCLR_Result LPC24_Deployment_EraseBlock(const TinyCLR_Deployment_Provider* self, uint32_t sector);
-TinyCLR_Result LPC24_Deployment_IsBlockErased(const TinyCLR_Deployment_Provider* self, uint32_t sector, bool &erased);
-TinyCLR_Result LPC24_Deployment_GetBytesPerSector(const TinyCLR_Deployment_Provider* self, uint32_t address, int32_t& size);
-TinyCLR_Result LPC24_Deployment_GetSectorMap(const TinyCLR_Deployment_Provider* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count);
+TinyCLR_Result LPC24_Deployment_Initialize(const TinyCLR_Deployment_Controller* self, bool &supportXIP);
+TinyCLR_Result LPC24_Deployment_Uninitialize(const TinyCLR_Deployment_Controller* self);
+TinyCLR_Result LPC24_Deployment_Read(const TinyCLR_Deployment_Controller* self, uint32_t address, size_t length, uint8_t* buffer);
+TinyCLR_Result LPC24_Deployment_Write(const TinyCLR_Deployment_Controller* self, uint32_t address, size_t length, const uint8_t* buffer);
+TinyCLR_Result LPC24_Deployment_EraseBlock(const TinyCLR_Deployment_Controller* self, uint32_t sector);
+TinyCLR_Result LPC24_Deployment_IsBlockErased(const TinyCLR_Deployment_Controller* self, uint32_t sector, bool &erased);
+TinyCLR_Result LPC24_Deployment_GetBytesPerSector(const TinyCLR_Deployment_Controller* self, uint32_t address, int32_t& size);
+TinyCLR_Result LPC24_Deployment_GetSectorMap(const TinyCLR_Deployment_Controller* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count);
 bool LPC24_Deployment_PageProgram(uint32_t byteAddress, uint32_t NumberOfBytesToWrite, const uint8_t * pointerToWriteBuffer);
-bool LPC24_Deployment_IsSupportsXIP(const TinyCLR_Deployment_Provider* self);
+bool LPC24_Deployment_IsSupportsXIP(const TinyCLR_Deployment_Controller* self);
 uint32_t LPC24_Flash_GetPartId();
 
 // Interrupt
@@ -403,8 +403,8 @@ public:
 #define INTERRUPT_STARTED_SCOPED(name) LPC24_SmartPtr_Interrupt name
 
 const TinyCLR_Api_Info* LPC24_Interrupt_GetApi();
-TinyCLR_Result LPC24_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
-TinyCLR_Result LPC24_Interrupt_Release();
+TinyCLR_Result LPC24_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
+TinyCLR_Result LPC24_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self);
 bool LPC24_Interrupt_Activate(uint32_t Irq_Index, uint32_t *ISR, void* ISR_Param);
 bool LPC24_Interrupt_Deactivate(uint32_t Irq_Index);
 bool LPC24_Interrupt_Enable(uint32_t Irq_Index);
@@ -426,38 +426,39 @@ extern TinyCLR_Interrupt_StartStopHandler LPC24_Interrupt_Ended;
 // I2C
 const TinyCLR_Api_Info* LPC24_I2c_GetApi();
 void LPC24_I2c_Reset();
-TinyCLR_Result LPC24_I2c_Acquire(const TinyCLR_I2c_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_I2c_Release(const TinyCLR_I2c_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_I2c_SetActiveSettings(const TinyCLR_I2c_Provider* self, int32_t controller, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed);
-TinyCLR_Result LPC24_I2c_ReadTransaction(const TinyCLR_I2c_Provider* self, int32_t controller, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
-TinyCLR_Result LPC24_I2c_WriteTransaction(const TinyCLR_I2c_Provider* self, int32_t controller, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
-TinyCLR_Result LPC24_I2c_WriteReadTransaction(const TinyCLR_I2c_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result);
+TinyCLR_Result LPC24_I2c_Acquire(const TinyCLR_I2c_Controller* self);
+TinyCLR_Result LPC24_I2c_Release(const TinyCLR_I2c_Controller* self);
+TinyCLR_Result LPC24_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed);
+TinyCLR_Result LPC24_I2c_ReadTransaction(const TinyCLR_I2c_Controller* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
+TinyCLR_Result LPC24_I2c_WriteTransaction(const TinyCLR_I2c_Controller* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
+TinyCLR_Result LPC24_I2c_WriteReadTransaction(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result);
 void LPC24_I2c_StartTransaction(int32_t channel);
 void LPC24_I2c_StopTransaction(int32_t channel);
-TinyCLR_Result LPC24_I2c_GetControllerCount(const TinyCLR_I2c_Provider* self, int32_t& count);
+TinyCLR_Result LPC24_I2c_GetControllerCount(const TinyCLR_I2c_Controller* self, int32_t& count);
 
 // Time
 const TinyCLR_Api_Info* LPC24_Time_GetApi();
-TinyCLR_Result LPC24_Time_Acquire(const TinyCLR_NativeTime_Provider* self);
-TinyCLR_Result LPC24_Time_Release(const TinyCLR_NativeTime_Provider* self);
-uint64_t LPC24_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Provider* self, uint64_t ticks);
-uint64_t LPC24_Time_TimeToTicks(const TinyCLR_NativeTime_Provider* self, uint64_t time);
-uint64_t LPC24_Time_MillisecondsToTicks(const TinyCLR_NativeTime_Provider* self, uint64_t ticks);
-uint64_t LPC24_Time_MicrosecondsToTicks(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds);
-uint64_t LPC24_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Provider* self);
-TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Provider* self, uint64_t processorTicks);
-TinyCLR_Result LPC24_Time_SetTickCallback(const TinyCLR_NativeTime_Provider* self, TinyCLR_NativeTime_Callback callback);
-void LPC24_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds);
-void LPC24_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds);
-void LPC24_Time_GetDriftParameters(const TinyCLR_NativeTime_Provider* self, int32_t* a, int32_t* b, int64_t* c);
+TinyCLR_Result LPC24_Time_Initialize(const TinyCLR_NativeTime_Controller* self);
+TinyCLR_Result LPC24_Time_Uninitialize(const TinyCLR_NativeTime_Controller* self);
+uint64_t LPC24_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Controller* self, uint64_t ticks);
+uint64_t LPC24_Time_TimeToTicks(const TinyCLR_NativeTime_Controller* self, uint64_t time);
+uint64_t LPC24_Time_MillisecondsToTicks(const TinyCLR_NativeTime_Controller* self, uint64_t ticks);
+uint64_t LPC24_Time_MicrosecondsToTicks(const TinyCLR_NativeTime_Controller* self, uint64_t microseconds);
+uint64_t LPC24_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self);
+TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Controller* self, uint64_t processorTicks);
+TinyCLR_Result LPC24_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* self, TinyCLR_NativeTime_Callback callback);
+void LPC24_Time_Delay(const TinyCLR_NativeTime_Controller* self, uint64_t microseconds);
+void LPC24_Time_Delay(const TinyCLR_NativeTime_Controller* self, uint64_t microseconds);
+void LPC24_Time_GetDriftParameters(const TinyCLR_NativeTime_Controller* self, int32_t* a, int32_t* b, int64_t* c);
+void LPC24_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_t nativeTime);
 
 // Power
 const TinyCLR_Api_Info* LPC24_Power_GetApi();
 void LPC24_Power_SetHandlers(void(*stop)(), void(*restart)());
-void LPC24_Power_Sleep(const TinyCLR_Power_Provider* self, TinyCLR_Power_SleepLevel level);
-void LPC24_Power_Reset(const TinyCLR_Power_Provider* self, bool runCoreAfter);
-TinyCLR_Result LPC24_Power_Acquire(const TinyCLR_Power_Provider* self);
-TinyCLR_Result LPC24_Power_Release(const TinyCLR_Power_Provider* self);
+void LPC24_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level);
+void LPC24_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter);
+TinyCLR_Result LPC24_Power_Initialize(const TinyCLR_Power_Controller* self);
+TinyCLR_Result LPC24_Power_Uninitialize(const TinyCLR_Power_Controller* self);
 
 //UsbClient
 
@@ -506,22 +507,22 @@ uint8_t TinyCLR_UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState);
 // LCD
 void LPC24_Display_Reset();
 const TinyCLR_Api_Info* LPC24_Display_GetApi();
-TinyCLR_Result LPC24_Display_Acquire(const TinyCLR_Display_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Display_Release(const TinyCLR_Display_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Display_Enable(const TinyCLR_Display_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Display_Disable(const TinyCLR_Display_Provider* self, int32_t controller);
-TinyCLR_Result LPC24_Display_GetCapabilities(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount);
-TinyCLR_Result LPC24_Display_GetConfiguration(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration);
-TinyCLR_Result LPC24_Display_SetConfiguration(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration);
-TinyCLR_Result LPC24_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t controller, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data);
-TinyCLR_Result LPC24_Display_WriteString(const TinyCLR_Display_Provider* self, int32_t controller, const char* buffer, size_t length);
-TinyCLR_Result LPC24_Display_GetControllerCount(const TinyCLR_Display_Provider* self, int32_t& count);
+TinyCLR_Result LPC24_Display_Acquire(const TinyCLR_Display_Controller* self);
+TinyCLR_Result LPC24_Display_Release(const TinyCLR_Display_Controller* self);
+TinyCLR_Result LPC24_Display_Enable(const TinyCLR_Display_Controller* self);
+TinyCLR_Result LPC24_Display_Disable(const TinyCLR_Display_Controller* self);
+TinyCLR_Result LPC24_Display_GetCapabilities(const TinyCLR_Display_Controller* self, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount);
+TinyCLR_Result LPC24_Display_GetConfiguration(const TinyCLR_Display_Controller* self, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration);
+TinyCLR_Result LPC24_Display_SetConfiguration(const TinyCLR_Display_Controller* self, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration);
+TinyCLR_Result LPC24_Display_DrawBuffer(const TinyCLR_Display_Controller* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data);
+TinyCLR_Result LPC24_Display_WriteString(const TinyCLR_Display_Controller* self, const char* buffer, size_t length);
+TinyCLR_Result LPC24_Display_GetControllerCount(const TinyCLR_Display_Controller* self, int32_t& count);
 
 //Startup
 void LPC24_Startup_Initialize();
 void LPC24_Startup_GetHeap(uint8_t*& start, size_t& length);
 int32_t LPC24_Startup_GetDeviceId();
-void LPC24_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index, const void*& configuration);
+void LPC24_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, const void*& configuration);
 void LPC24_Startup_GetRunApp(bool& runApp);
 
 

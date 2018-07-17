@@ -24,11 +24,11 @@
 #define TOUCHSCREEN_ADC_CONTROLLER_TRIGGER_REGISTER                        (*reinterpret_cast<volatile unsigned long *>(0xFFFD0008)) // TSADCC_TRGR
 #define TOUCHSCREEN_ADC_CONTROLLER_CHANNEL_DATA_REGISTER_BASE_ADDRESS      0xFFFD0030 // TSADCC_TRGR
 
-static TinyCLR_Adc_Provider adcProvider;
+static TinyCLR_Adc_Controller adcProvider;
 static TinyCLR_Api_Info adcApi;
 
 const TinyCLR_Api_Info *AT91_Adc_GetApi() {
-    adcProvider.Parent = &adcApi;
+    adcProvider.ApiInfo = &adcApi;
     adcProvider.Acquire = &AT91_Adc_Acquire;
     adcProvider.Release = &AT91_Adc_Release;
     adcProvider.AcquireChannel = &AT91_Adc_AcquireChannel;
@@ -67,7 +67,7 @@ AT91_Gpio_PeripheralSelection AT91_Adc_GetPeripheralSelection(int32_t channel) {
     return  g_at91_adc_pins[channel].peripheralSelection;
 }
 
-TinyCLR_Result AT91_Adc_Acquire(const TinyCLR_Adc_Provider *self, int32_t controller) {
+TinyCLR_Result AT91_Adc_Acquire(const TinyCLR_Adc_Controller *self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
@@ -79,7 +79,7 @@ TinyCLR_Result AT91_Adc_Acquire(const TinyCLR_Adc_Provider *self, int32_t contro
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Adc_Release(const TinyCLR_Adc_Provider *self, int32_t controller) {
+TinyCLR_Result AT91_Adc_Release(const TinyCLR_Adc_Controller *self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
@@ -93,7 +93,7 @@ int32_t AT91_Adc_GetPinForChannel(int32_t channel) {
     return AT91_Adc_GetPin(channel);
 }
 
-TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Provider *self, int32_t controller, int32_t channel) {
+TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Controller *self, int32_t channel) {
     if (channel >= AT91_Adc_GetChannelCount())
         return TinyCLR_Result::ArgumentOutOfRange;
 
@@ -115,7 +115,7 @@ TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Provider *self, int32_t
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Adc_ReleaseChannel(const TinyCLR_Adc_Provider *self, int32_t controller, int32_t channel) {
+TinyCLR_Result AT91_Adc_ReleaseChannel(const TinyCLR_Adc_Controller *self, int32_t channel) {
     if (g_at91_adc_isOpened[channel])
         AT91_Gpio_ClosePin(AT91_Adc_GetPin(channel));
 
@@ -161,7 +161,7 @@ void AT91_Adc_SortArray(uint32_t *arrayToSort) {
     }
 }
 
-TinyCLR_Result AT91_Adc_ReadValue(const TinyCLR_Adc_Provider *self, int32_t controller, int32_t channel, int32_t &value) {
+TinyCLR_Result AT91_Adc_ReadValue(const TinyCLR_Adc_Controller *self, int32_t channel, int32_t &value) {
     uint32_t arrayValuesToSort[MAX_AVERAGE_AMOUNT];
     uint32_t valueToStoreInArray;
 
@@ -184,31 +184,31 @@ TinyCLR_Result AT91_Adc_ReadValue(const TinyCLR_Adc_Provider *self, int32_t cont
     return TinyCLR_Result::Success;
 }
 
-int32_t AT91_Adc_GetChannelCount(const TinyCLR_Adc_Provider *self, int32_t controller) {
+int32_t AT91_Adc_GetChannelCount(const TinyCLR_Adc_Controller *self) {
     return AT91_Adc_GetChannelCount();
 }
 
-int32_t AT91_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider *self, int32_t controller) {
+int32_t AT91_Adc_GetResolutionInBits(const TinyCLR_Adc_Controller *self) {
     return 10;
 }
 
-int32_t AT91_Adc_GetMinValue(const TinyCLR_Adc_Provider *self, int32_t controller) {
+int32_t AT91_Adc_GetMinValue(const TinyCLR_Adc_Controller *self) {
     return 0;
 }
 
-int32_t AT91_Adc_GetMaxValue(const TinyCLR_Adc_Provider *self, int32_t controller) {
+int32_t AT91_Adc_GetMaxValue(const TinyCLR_Adc_Controller *self) {
     return (1 << AT91_Adc_GetResolutionInBits(self, 0)) - 1;
 }
 
-TinyCLR_Adc_ChannelMode AT91_Adc_GetChannelMode(const TinyCLR_Adc_Provider *self, int32_t controller) {
+TinyCLR_Adc_ChannelMode AT91_Adc_GetChannelMode(const TinyCLR_Adc_Controller *self) {
     return TinyCLR_Adc_ChannelMode::SingleEnded;
 }
 
-TinyCLR_Result AT91_Adc_SetChannelMode(const TinyCLR_Adc_Provider *self, int32_t controller, TinyCLR_Adc_ChannelMode mode) {
+TinyCLR_Result AT91_Adc_SetChannelMode(const TinyCLR_Adc_Controller *self, TinyCLR_Adc_ChannelMode mode) {
     return mode == TinyCLR_Adc_ChannelMode::SingleEnded ? TinyCLR_Result::Success : TinyCLR_Result::NotSupported;
 }
 
-bool AT91_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider *self, int32_t controller, TinyCLR_Adc_ChannelMode mode) {
+bool AT91_Adc_IsChannelModeSupported(const TinyCLR_Adc_Controller *self, TinyCLR_Adc_ChannelMode mode) {
     return mode == TinyCLR_Adc_ChannelMode::SingleEnded;
 }
 
@@ -220,7 +220,7 @@ void AT91_Adc_Reset() {
     }
 }
 
-TinyCLR_Result AT91_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count) {
+TinyCLR_Result AT91_Adc_GetControllerCount(const TinyCLR_Adc_Controller* self, int32_t& count) {
     count = 1;
 
     return TinyCLR_Result::Success;

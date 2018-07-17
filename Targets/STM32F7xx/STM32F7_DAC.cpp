@@ -23,13 +23,13 @@
 #define STM32F7_DAC_FIRST_PIN           4       // channel 0 pin (A4)
 #define STM32F7_DAC_RESOLUTION_INT_BIT    12      // max resolution in bit
 
-static TinyCLR_Dac_Provider dacProvider;
+static TinyCLR_Dac_Controller dacProvider;
 static TinyCLR_Api_Info dacApi;
 
 bool g_stm32f7_dac_isOpened[STM32F7_DAC_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F7_Dac_GetApi() {
-    dacProvider.Parent = &dacApi;
+    dacProvider.ApiInfo = &dacApi;
     dacProvider.Acquire = &STM32F7_Dac_Acquire;
     dacProvider.Release = &STM32F7_Dac_Release;
     dacProvider.AcquireChannel = &STM32F7_Dac_AcquireChannel;
@@ -50,21 +50,21 @@ const TinyCLR_Api_Info* STM32F7_Dac_GetApi() {
     return &dacApi;
 }
 
-TinyCLR_Result STM32F7_Dac_Acquire(const TinyCLR_Dac_Provider* self, int32_t controller) {
+TinyCLR_Result STM32F7_Dac_Acquire(const TinyCLR_Dac_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Dac_Release(const TinyCLR_Dac_Provider* self, int32_t controller) {
+TinyCLR_Result STM32F7_Dac_Release(const TinyCLR_Dac_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel) {
+TinyCLR_Result STM32F7_Dac_AcquireChannel(const TinyCLR_Dac_Controller* self, int32_t channel) {
     if (!STM32F7_GpioInternal_OpenPin(STM32F7_DAC_FIRST_PIN + channel))
         return TinyCLR_Result::SharingViolation;
 
@@ -86,7 +86,7 @@ TinyCLR_Result STM32F7_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int3
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel) {
+TinyCLR_Result STM32F7_Dac_ReleaseChannel(const TinyCLR_Dac_Controller* self, int32_t channel) {
     auto gpioController = 0; //TODO Temporary set to 0
 
     TinyCLR_Result releasePin = STM32F7_Gpio_ReleasePin(nullptr, gpioController, STM32F7_DAC_FIRST_PIN + channel);
@@ -114,7 +114,7 @@ TinyCLR_Result STM32F7_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int3
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel, int32_t value) {
+TinyCLR_Result STM32F7_Dac_WriteValue(const TinyCLR_Dac_Controller* self, int32_t channel, int32_t value) {
     value &= 0x00000FFF;
 
     if (channel)
@@ -125,19 +125,19 @@ TinyCLR_Result STM32F7_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t 
     return TinyCLR_Result::Success;
 }
 
-int32_t STM32F7_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self, int32_t controller) {
+int32_t STM32F7_Dac_GetChannelCount(const TinyCLR_Dac_Controller* self) {
     return STM32F7_DAC_CONTROLLERS;
 }
 
-int32_t STM32F7_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self, int32_t controller) {
+int32_t STM32F7_Dac_GetResolutionInBits(const TinyCLR_Dac_Controller* self) {
     return STM32F7_DAC_RESOLUTION_INT_BIT;
 }
 
-int32_t STM32F7_Dac_GetMinValue(const TinyCLR_Dac_Provider* self, int32_t controller) {
+int32_t STM32F7_Dac_GetMinValue(const TinyCLR_Dac_Controller* self) {
     return 0;
 }
 
-int32_t STM32F7_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self, int32_t controller) {
+int32_t STM32F7_Dac_GetMaxValue(const TinyCLR_Dac_Controller* self) {
     return ((1 << STM32F7_DAC_RESOLUTION_INT_BIT) - 1);
 }
 
@@ -149,7 +149,7 @@ void STM32F7_Dac_Reset() {
     }
 }
 
-TinyCLR_Result STM32F7_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t& count) {
+TinyCLR_Result STM32F7_Dac_GetControllerCount(const TinyCLR_Dac_Controller* self, int32_t& count) {
     count = 1;
 
     return TinyCLR_Result::Success;

@@ -39,7 +39,7 @@ struct LPC24_Uart_Controller {
     TinyCLR_Uart_ErrorReceivedHandler   errorEventHandler;
     TinyCLR_Uart_DataReceivedHandler    dataReceivedEventHandler;
 
-    const TinyCLR_Uart_Provider*        provider;
+    const TinyCLR_Uart_Controller*        provider;
     int32_t                             controller;
 
 };
@@ -48,7 +48,7 @@ static LPC24_Uart_Controller g_UartController[TOTAL_UART_CONTROLLERS];
 
 #define SET_BITS(Var,Shift,Mask,fieldsMask) {Var = setFieldValue(Var,Shift,Mask,fieldsMask);}
 
-static TinyCLR_Uart_Provider uartProviders;
+static TinyCLR_Uart_Controller uartProviders;
 static TinyCLR_Api_Info uartApi;
 
 uint32_t setFieldValue(volatile uint32_t oldVal, uint32_t shift, uint32_t mask, uint32_t val) {
@@ -60,7 +60,7 @@ uint32_t setFieldValue(volatile uint32_t oldVal, uint32_t shift, uint32_t mask, 
 }
 
 const TinyCLR_Api_Info* LPC24_Uart_GetApi() {
-    uartProviders.Parent = &uartApi;
+    uartProviders.ApiInfo = &uartApi;
     uartProviders.Acquire = &LPC24_Uart_Acquire;
     uartProviders.Release = &LPC24_Uart_Release;
     uartProviders.SetActiveSettings = &LPC24_Uart_SetActiveSettings;
@@ -98,14 +98,14 @@ const TinyCLR_Api_Info* LPC24_Uart_GetApi() {
     return &uartApi;
 }
 
-TinyCLR_Result LPC24_Uart_GetReadBufferSize(const TinyCLR_Uart_Provider* self, int32_t controller, size_t& size) {
+TinyCLR_Result LPC24_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t& size) {
     size = g_UartController[controller].rxBufferSize == 0 ? g_LPC24_Uart_RxDefaultBuffersSize[controller] : g_UartController[controller].rxBufferSize;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Uart_SetReadBufferSize(const TinyCLR_Uart_Provider* self, int32_t controller, size_t size) {
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+TinyCLR_Result LPC24_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
@@ -127,14 +127,14 @@ TinyCLR_Result LPC24_Uart_SetReadBufferSize(const TinyCLR_Uart_Provider* self, i
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Uart_GetWriteBufferSize(const TinyCLR_Uart_Provider* self, int32_t controller, size_t& size) {
+TinyCLR_Result LPC24_Uart_GetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t& size) {
     size = g_UartController[controller].txBufferSize == 0 ? g_LPC24_Uart_TxDefaultBuffersSize[controller] : g_UartController[controller].txBufferSize;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Uart_SetWriteBufferSize(const TinyCLR_Uart_Provider* self, int32_t controller, size_t size) {
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+TinyCLR_Result LPC24_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
@@ -312,7 +312,7 @@ void LPC24_Uart_InterruptHandler(void *param) {
 }
 
 
-TinyCLR_Result LPC24_Uart_Acquire(const TinyCLR_Uart_Provider* self, int32_t controller) {
+TinyCLR_Result LPC24_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
 
 
     if (controller >= TOTAL_UART_CONTROLLERS)
@@ -387,7 +387,7 @@ void LPC24_Uart_SetClock(int32_t controller, int32_t pclkSel) {
 
     }
 }
-TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, int32_t controller, uint32_t baudRate, uint32_t dataBits, TinyCLR_Uart_Parity parity, TinyCLR_Uart_StopBitCount stopBits, TinyCLR_Uart_Handshake handshaking) {
+TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self, uint32_t baudRate, uint32_t dataBits, TinyCLR_Uart_Parity parity, TinyCLR_Uart_StopBitCount stopBits, TinyCLR_Uart_Handshake handshaking) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -513,7 +513,7 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, i
         LPC24XX_USART::UART_FCR_RFR |
         LPC24XX_USART::UART_FCR_FME;
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
     if (g_UartController[controller].txBufferSize == 0) {
         g_UartController[controller].txBufferSize = g_LPC24_Uart_TxDefaultBuffersSize[controller];
@@ -551,7 +551,7 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, i
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Provider* self, int32_t controller) {
+TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Controller* self) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
 
@@ -601,7 +601,7 @@ TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Provider* self, int32_t con
         break;
     }
     if (apiProvider != nullptr) {
-        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
 
         if (g_UartController[controller].txBufferSize != 0) {
             memoryProvider->Free(memoryProvider, g_UartController[controller].TxBuffer);
@@ -650,7 +650,7 @@ bool LPC24_Uart_TxHandshakeEnabledState(int controller) {
     return true; // If this handshake input is not being used, it is assumed to be good
 }
 
-TinyCLR_Result LPC24_Uart_Flush(const TinyCLR_Uart_Provider* self, int32_t controller) {
+TinyCLR_Result LPC24_Uart_Flush(const TinyCLR_Uart_Controller* self) {
 
 
     if (g_UartController[controller].isOpened == false)
@@ -666,7 +666,7 @@ TinyCLR_Result LPC24_Uart_Flush(const TinyCLR_Uart_Provider* self, int32_t contr
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Uart_Read(const TinyCLR_Uart_Provider* self, int32_t controller, uint8_t* buffer, size_t& length) {
+TinyCLR_Result LPC24_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* buffer, size_t& length) {
 
     size_t i = 0;;
 
@@ -694,7 +694,7 @@ TinyCLR_Result LPC24_Uart_Read(const TinyCLR_Uart_Provider* self, int32_t contro
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Uart_Write(const TinyCLR_Uart_Provider* self, int32_t controller, const uint8_t* buffer, size_t& length) {
+TinyCLR_Result LPC24_Uart_Write(const TinyCLR_Uart_Controller* self, const uint8_t* buffer, size_t& length) {
 
     int32_t i = 0;
 
@@ -736,11 +736,11 @@ TinyCLR_Result LPC24_Uart_Write(const TinyCLR_Uart_Provider* self, int32_t contr
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Uart_SetPinChangedHandler(const TinyCLR_Uart_Provider* self, int32_t controller, TinyCLR_Uart_PinChangedHandler handler) {
+TinyCLR_Result LPC24_Uart_SetPinChangedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_PinChangedHandler handler) {
     //TODO
     return TinyCLR_Result::Success;
 }
-TinyCLR_Result LPC24_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Provider* self, int32_t controller, TinyCLR_Uart_ErrorReceivedHandler handler) {
+TinyCLR_Result LPC24_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ErrorReceivedHandler handler) {
 
 
     g_UartController[controller].errorEventHandler = handler;
@@ -748,7 +748,7 @@ TinyCLR_Result LPC24_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Provider* s
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Provider* self, int32_t controller, TinyCLR_Uart_DataReceivedHandler handler) {
+TinyCLR_Result LPC24_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_DataReceivedHandler handler) {
 
 
     g_UartController[controller].dataReceivedEventHandler = handler;
@@ -756,61 +756,61 @@ TinyCLR_Result LPC24_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Provider* se
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Uart_GetBreakSignalState(const TinyCLR_Uart_Provider* self, int32_t controller, bool& state) {
+TinyCLR_Result LPC24_Uart_GetBreakSignalState(const TinyCLR_Uart_Controller* self, bool& state) {
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result LPC24_Uart_SetBreakSignalState(const TinyCLR_Uart_Provider* self, int32_t controller, bool state) {
+TinyCLR_Result LPC24_Uart_SetBreakSignalState(const TinyCLR_Uart_Controller* self, bool state) {
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result LPC24_Uart_GetCarrierDetectState(const TinyCLR_Uart_Provider* self, int32_t controller, bool& state) {
+TinyCLR_Result LPC24_Uart_GetCarrierDetectState(const TinyCLR_Uart_Controller* self, bool& state) {
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result LPC24_Uart_GetClearToSendState(const TinyCLR_Uart_Provider* self, int32_t controller, bool& state) {
+TinyCLR_Result LPC24_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* self, bool& state) {
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result LPC24_Uart_GetDataReadyState(const TinyCLR_Uart_Provider* self, int32_t controller, bool& state) {
+TinyCLR_Result LPC24_Uart_GetDataReadyState(const TinyCLR_Uart_Controller* self, bool& state) {
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result LPC24_Uart_GetIsDataTerminalReadyEnabled(const TinyCLR_Uart_Provider* self, int32_t controller, bool& state) {
+TinyCLR_Result LPC24_Uart_GetIsDataTerminalReadyEnabled(const TinyCLR_Uart_Controller* self, bool& state) {
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result LPC24_Uart_SetIsDataTerminalReadyEnabled(const TinyCLR_Uart_Provider* self, int32_t controller, bool state) {
+TinyCLR_Result LPC24_Uart_SetIsDataTerminalReadyEnabled(const TinyCLR_Uart_Controller* self, bool state) {
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result LPC24_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Provider* self, int32_t controller, bool& state) {
+TinyCLR_Result LPC24_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool& state) {
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result LPC24_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Provider* self, int32_t controller, bool state) {
+TinyCLR_Result LPC24_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool state) {
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result LPC24_Uart_GetUnreadCount(const TinyCLR_Uart_Provider* self, int32_t controller, size_t& count) {
+TinyCLR_Result LPC24_Uart_GetUnreadCount(const TinyCLR_Uart_Controller* self, size_t& count) {
     count = g_UartController[controller].rxBufferCount;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Uart_GetUnwrittenCount(const TinyCLR_Uart_Provider* self, int32_t controller, size_t& count) {
+TinyCLR_Result LPC24_Uart_GetUnwrittenCount(const TinyCLR_Uart_Controller* self, size_t& count) {
     count = g_UartController[controller].txBufferCount;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Uart_ClearReadBuffer(const TinyCLR_Uart_Provider* self, int32_t controller) {
+TinyCLR_Result LPC24_Uart_ClearReadBuffer(const TinyCLR_Uart_Controller* self) {
     g_UartController[controller].rxBufferCount = g_UartController[controller].rxBufferIn = g_UartController[controller].rxBufferOut = 0;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Uart_ClearWriteBuffer(const TinyCLR_Uart_Provider* self, int32_t controller) {
+TinyCLR_Result LPC24_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self) {
     g_UartController[controller].txBufferCount = g_UartController[controller].txBufferIn = g_UartController[controller].txBufferOut = 0;
 
     return TinyCLR_Result::Success;
@@ -827,7 +827,7 @@ void LPC24_Uart_Reset() {
     }
 }
 
-TinyCLR_Result LPC24_Uart_GetControllerCount(const TinyCLR_Uart_Provider* self, int32_t& count) {
+TinyCLR_Result LPC24_Uart_GetControllerCount(const TinyCLR_Uart_Controller* self, int32_t& count) {
     count = TOTAL_UART_CONTROLLERS;
 
     return TinyCLR_Result::Success;

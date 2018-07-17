@@ -75,11 +75,11 @@
 
 #define RTC_TIMEOUT 0xFFFFFF
 
-static TinyCLR_Rtc_Provider rtcProvider;
+static TinyCLR_Rtc_Controller rtcProvider;
 static TinyCLR_Api_Info timeApi;
 
 const TinyCLR_Api_Info* STM32F7_Rtc_GetApi() {
-    rtcProvider.Parent = &timeApi;
+    rtcProvider.ApiInfo = &timeApi;
     rtcProvider.Acquire = &STM32F7_Rtc_Acquire;
     rtcProvider.Release = &STM32F7_Rtc_Release;
     rtcProvider.GetNow = &STM32F7_Rtc_GetNow;
@@ -216,7 +216,7 @@ TinyCLR_Result STM32F7_Rtc_Initialize() {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Rtc_Acquire(const TinyCLR_Rtc_Provider* self) {
+TinyCLR_Result STM32F7_Rtc_Acquire(const TinyCLR_Rtc_Controller* self) {
     if (STM32F7_Rtc_Configuration() != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
 
@@ -226,11 +226,11 @@ TinyCLR_Result STM32F7_Rtc_Acquire(const TinyCLR_Rtc_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Rtc_Release(const TinyCLR_Rtc_Provider* self) {
+TinyCLR_Result STM32F7_Rtc_Release(const TinyCLR_Rtc_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime& value) {
+TinyCLR_Result STM32F7_Rtc_GetNow(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value) {
     uint32_t  time;
     uint32_t  date;
 
@@ -262,7 +262,7 @@ TinyCLR_Result STM32F7_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime value) {
+TinyCLR_Result STM32F7_Rtc_SetNow(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value) {
     uint32_t  time;
     uint32_t  date;
 

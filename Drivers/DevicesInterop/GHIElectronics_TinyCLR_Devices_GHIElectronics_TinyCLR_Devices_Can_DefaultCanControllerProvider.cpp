@@ -1,37 +1,33 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 #include "GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
-void TinyCLR_Can_ErrorReceivedIsr(const TinyCLR_Can_Provider* self, int32_t controller, TinyCLR_Can_Error error) {
-    auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider));
+#ifdef INCLUDE_CAN
+void TinyCLR_Can_ErrorReceivedIsr(const TinyCLR_Can_Controller* self, TinyCLR_Can_Error error) {
+    auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::InteropManager));
+
+    int32_t controllerIndex = *(reinterpret_cast<int32_t*>(self->ApiInfo->State));
 
     if (interopProvider != nullptr)
-        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Can.ErrorReceived", self->Parent->Name, controller, (uint64_t)error, 0, 0);
+        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Can.ErrorReceived", self->ApiInfo->Name, controllerIndex, (uint64_t)error, 0, 0);
 }
 
-void TinyCLR_Can_MessageReceivedIsr(const TinyCLR_Can_Provider* self, int32_t controller, size_t count) {
-    auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Provider*>(apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::InteropProvider));
+void TinyCLR_Can_MessageReceivedIsr(const TinyCLR_Can_Controller* self, size_t count) {
+    auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::InteropManager));
+
+    int32_t controllerIndex = *(reinterpret_cast<int32_t*>(self->ApiInfo->State));
 
     if (interopProvider != nullptr)
-        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Can.MessageReceived", self->Parent->Name, controller, (uint64_t)count, 0, 0);
+        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Can.MessageReceived", self->ApiInfo->Name, controllerIndex, (uint64_t)count, 0, 0);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::NativeAcquire___VOID(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
-
-    const TinyCLR_Interop_ClrObject* self;
-    TinyCLR_Interop_ClrValue fld, fieldChannelId;
-
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-
-    auto controller = fieldChannelId.Data.Numeric->I4;
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
 
     if (provider != nullptr) {
-        if (provider->Acquire(provider, controller) == TinyCLR_Result::Success) {
-            provider->SetMessageReceivedHandler(provider, controller, TinyCLR_Can_MessageReceivedIsr);
-            provider->SetErrorReceivedHandler(provider, controller, TinyCLR_Can_ErrorReceivedIsr);
+        if (provider->Acquire(provider) == TinyCLR_Result::Success) {
+            provider->SetMessageReceivedHandler(provider, TinyCLR_Can_MessageReceivedIsr);
+            provider->SetErrorReceivedHandler(provider, TinyCLR_Can_ErrorReceivedIsr);
 
             return TinyCLR_Result::Success;
         }
@@ -43,45 +39,26 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::NativeRelease___VOID(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
-
-    const TinyCLR_Interop_ClrObject* self;
-    TinyCLR_Interop_ClrValue fld, fieldChannelId;
-
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
-    auto controller = fieldChannelId.Data.Numeric->I4;
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
 
     if (provider != nullptr)
-        provider->Release(provider, controller);
+        provider->Release(provider);
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::SetBitTiming___VOID__GHIElectronicsTinyCLRDevicesCanCanBitTiming(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+    auto arg = TinyCLR_Interop_GetArguments(md, 1);
+    auto arg1 = TinyCLR_Interop_GetFieldInObject(md, arg.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_CanBitTiming::FIELD___Propagation__BackingField___I4);
+    auto arg2 = TinyCLR_Interop_GetFieldInObject(md, arg.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_CanBitTiming::FIELD___Phase1__BackingField___I4);
+    auto arg3 = TinyCLR_Interop_GetFieldInObject(md, arg.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_CanBitTiming::FIELD___Phase2__BackingField___I4);
+    auto arg4 = TinyCLR_Interop_GetFieldInObject(md, arg.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_CanBitTiming::FIELD___BaudratePrescaler__BackingField___I4);
+    auto arg5 = TinyCLR_Interop_GetFieldInObject(md, arg.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_CanBitTiming::FIELD___SynchronizationJumpWidth__BackingField___I4);
+    auto arg6 = TinyCLR_Interop_GetFieldInObject(md, arg.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_CanBitTiming::FIELD___UseMultiBitSampling__BackingField___BOOLEAN);
 
-    const TinyCLR_Interop_ClrObject* self;
-    TinyCLR_Interop_ClrValue fld, arg, arg1, arg2, arg3, arg4, arg5, arg6;
-    TinyCLR_Interop_ClrValue fieldChannelId;
-
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-    interop->GetArgument(interop, md.Stack, 1, arg);
-
-    interop->GetField(interop, arg.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_CanBitTiming::FIELD___Propagation__BackingField___I4, arg1);
-    interop->GetField(interop, arg.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_CanBitTiming::FIELD___Phase1__BackingField___I4, arg2);
-    interop->GetField(interop, arg.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_CanBitTiming::FIELD___Phase2__BackingField___I4, arg3);
-    interop->GetField(interop, arg.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_CanBitTiming::FIELD___BaudratePrescaler__BackingField___I4, arg4);
-    interop->GetField(interop, arg.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_CanBitTiming::FIELD___SynchronizationJumpWidth__BackingField___I4, arg5);
-    interop->GetField(interop, arg.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_CanBitTiming::FIELD___UseMultiBitSampling__BackingField___BOOLEAN, arg6);
-
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
-    auto controller = fieldChannelId.Data.Numeric->I4;
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
 
     int32_t propagation = arg1.Data.Numeric->I4;
     int32_t phase1 = arg2.Data.Numeric->I4;
@@ -92,13 +69,13 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     int32_t useMultiBitSampling = arg6.Data.Numeric->Boolean;
 
     if (provider != nullptr)
-        provider->SetBitTiming(provider, controller, propagation, phase1, phase2, brp, synchronizationJumpWidth, useMultiBitSampling);
+        provider->SetBitTiming(provider, propagation, phase1, phase2, brp, synchronizationJumpWidth, useMultiBitSampling);
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::ReadMessages___I4__SZARRAY_GHIElectronicsTinyCLRDevicesCanCanMessage__I4__I4(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+    auto interop = (const TinyCLR_Interop_Manager*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
     uint8_t* data;
 
@@ -114,33 +91,27 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     int32_t count;
     int32_t sent = 0;
 
-    const TinyCLR_Interop_ClrObject* self;
     const TinyCLR_Interop_ClrObject* msgObj;
 
-    TinyCLR_Interop_ClrValue fld, managedValueMessages, managedValueOffset, managedValueCount, ret;
+    TinyCLR_Interop_ClrValue managedValueMessages, managedValueOffset, managedValueCount, ret;
     TinyCLR_Interop_ClrValue fldData, fldarbID, fldLen, fldRtr, fldEid, fldts;
-    TinyCLR_Interop_ClrValue fieldChannelId;
 
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-
-    interop->GetArgument(interop, md.Stack, 1, managedValueMessages);
-    interop->GetArgument(interop, md.Stack, 2, managedValueOffset);
-    interop->GetArgument(interop, md.Stack, 3, managedValueCount);
-    interop->GetReturn(interop, md.Stack, ret);
+    managedValueMessages = TinyCLR_Interop_GetArguments(md, 1);
+    managedValueOffset = TinyCLR_Interop_GetArguments(md, 2);
+    managedValueCount = TinyCLR_Interop_GetArguments(md, 3);
+    ret = TinyCLR_Interop_GetReturn(md);
 
     offset = managedValueOffset.Data.Numeric->I4;
     count = managedValueCount.Data.Numeric->I4;
 
     auto msgArray = (TinyCLR_Interop_ClrObjectReference*)managedValueMessages.Data.SzArray.Data;
 
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
-    auto controller = fieldChannelId.Data.Numeric->I4;
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
 
     size_t availableMsgCount;
 
-    provider->GetUnreadMessageCount(provider, controller, availableMsgCount);
+    provider->GetUnreadMessageCount(provider, availableMsgCount);
 
     int32_t read = 0;
 
@@ -167,7 +138,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
         data = (uint8_t*)fldData.Data.SzArray.Data;
 
 
-        if (provider->ReadMessage(provider, controller, arbID, extendedId, remoteTransmissionRequest, ts, data, length) != TinyCLR_Result::Success)
+        if (provider->ReadMessage(provider, arbID, extendedId, remoteTransmissionRequest, ts, data, length) != TinyCLR_Result::Success)
             break;
 
         fldarbID.Data.Numeric->I4 = arbID;
@@ -186,7 +157,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::WriteMessages___I4__SZARRAY_GHIElectronicsTinyCLRDevicesCanCanMessage__I4__I4(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+    auto interop = (const TinyCLR_Interop_Manager*)md.ApiManager.FindDefault(&md.ApiManager, TinyCLR_Api_Type::InteropManager);
 
     uint8_t* data;
 
@@ -201,29 +172,23 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     int32_t count;
     int32_t sent = 0;
 
-    const TinyCLR_Interop_ClrObject* self;
     const TinyCLR_Interop_ClrObject* msgObj;
 
-    TinyCLR_Interop_ClrValue fld, managedValueMessages, managedValueOffset, managedValueCount, ret;
+    TinyCLR_Interop_ClrValue managedValueMessages, managedValueOffset, managedValueCount, ret;
     TinyCLR_Interop_ClrValue fldData, fldarbID, fldLen, fldRtr, fldEid;
-    TinyCLR_Interop_ClrValue fieldChannelId;
 
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-
-    interop->GetArgument(interop, md.Stack, 1, managedValueMessages);
-    interop->GetArgument(interop, md.Stack, 2, managedValueOffset);
-    interop->GetArgument(interop, md.Stack, 3, managedValueCount);
-    interop->GetReturn(interop, md.Stack, ret);
+    managedValueMessages = TinyCLR_Interop_GetArguments(md, 1);
+    managedValueOffset = TinyCLR_Interop_GetArguments(md, 2);
+    managedValueCount = TinyCLR_Interop_GetArguments(md, 3);
+    ret = TinyCLR_Interop_GetReturn(md);
 
     offset = managedValueOffset.Data.Numeric->I4;
     count = managedValueCount.Data.Numeric->I4;
 
     auto msgArray = (TinyCLR_Interop_ClrObjectReference*)managedValueMessages.Data.SzArray.Data;
 
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
-    auto controller = fieldChannelId.Data.Numeric->I4;
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
 
     int i = 0;
 
@@ -248,7 +213,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
         remoteTransmissionRequest = (fldRtr.Data.Numeric->I4 != 0) ? true : false;
         extendedId = (fldEid.Data.Numeric->I4 != 0) ? true : false;
 
-        if (provider->WriteMessage(provider, controller, arbID, extendedId, remoteTransmissionRequest, data, length) != TinyCLR_Result::Success)
+        if (provider->WriteMessage(provider, arbID, extendedId, remoteTransmissionRequest, data, length) != TinyCLR_Result::Success)
             break;
 
         msgArray++;
@@ -261,22 +226,14 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::get_UnreadMessageCount___I4(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
 
-    const TinyCLR_Interop_ClrObject* self;
-    TinyCLR_Interop_ClrValue fld, ret, fieldChannelId;
-
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-    interop->GetReturn(interop, md.Stack, ret);
-
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
-    auto controller = fieldChannelId.Data.Numeric->I4;
+    auto ret = TinyCLR_Interop_GetReturn(md);
 
     size_t availableMsgCount;
 
-    provider->GetUnreadMessageCount(provider, controller, availableMsgCount);
+    provider->GetUnreadMessageCount(provider, availableMsgCount);
 
     ret.Data.Numeric->I4 = availableMsgCount;
 
@@ -287,22 +244,14 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::get_UnwrittenMessageCount___I4(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
 
-    const TinyCLR_Interop_ClrObject* self;
-    TinyCLR_Interop_ClrValue fld, ret, fieldChannelId;
-
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-    interop->GetReturn(interop, md.Stack, ret);
-
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
-    auto controller = fieldChannelId.Data.Numeric->I4;
+    auto ret = TinyCLR_Interop_GetReturn(md);
 
     size_t availableMsgCount;
 
-    provider->GetUnwrittenMessageCount(provider, controller, availableMsgCount);
+    provider->GetUnwrittenMessageCount(provider, availableMsgCount);
 
     ret.Data.Numeric->I4 = availableMsgCount;
 
@@ -313,36 +262,17 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::Reset___VOID(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
 
-    const TinyCLR_Interop_ClrObject* self;
-    TinyCLR_Interop_ClrValue fld, ret, fieldChannelId;
-
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-    interop->GetReturn(interop, md.Stack, ret);
-
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
-    auto controller = fieldChannelId.Data.Numeric->I4;
-
-    return provider->Reset(provider, controller);
+    return provider->Reset(provider);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::SetExplicitFilters___VOID__SZARRAY_U4(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
 
-    const TinyCLR_Interop_ClrObject* self;
-    TinyCLR_Interop_ClrValue fld, fldData, arg1, fieldChannelId;
-
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
-    auto controller = fieldChannelId.Data.Numeric->I4;
-
-    interop->GetArgument(interop, md.Stack, 1, arg1);
+    auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
 
     uint8_t* filterData = (uint8_t*)arg1.Data.SzArray.Data;
 
@@ -351,27 +281,15 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     if (filterData == nullptr || length == 0)
         return  TinyCLR_Result::NullReference;
 
-    return provider->SetExplicitFilters(provider, controller, filterData, length);
+    return provider->SetExplicitFilters(provider, filterData, length);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::SetGroupFilters___VOID__SZARRAY_U4__SZARRAY_U4(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
 
-    const TinyCLR_Interop_ClrObject* self;
-
-    TinyCLR_Interop_ClrValue fld, fldData1, fldData2;
-    TinyCLR_Interop_ClrValue arg1, arg2;
-    TinyCLR_Interop_ClrValue fieldChannelId;
-
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
-    auto controller = fieldChannelId.Data.Numeric->I4;
-
-    interop->GetArgument(interop, md.Stack, 1, arg1);
-    interop->GetArgument(interop, md.Stack, 2, arg2);
+    auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
+    auto arg2 = TinyCLR_Interop_GetArguments(md, 2);
 
     uint8_t* lowerBounds = (uint8_t*)arg1.Data.SzArray.Data;
     uint8_t* upperBounds = (uint8_t*)arg2.Data.SzArray.Data;
@@ -381,60 +299,32 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     if (lowerBounds == nullptr || upperBounds == nullptr || length == 0)
         return  TinyCLR_Result::NullReference;
 
-    return provider->SetGroupFilters(provider, controller, lowerBounds, upperBounds, length);
+    return provider->SetGroupFilters(provider, lowerBounds, upperBounds, length);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::ClearReadBuffer___VOID(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
 
-    const TinyCLR_Interop_ClrObject* self;
-    TinyCLR_Interop_ClrValue fld, fieldChannelId;
-
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
-    auto controller = fieldChannelId.Data.Numeric->I4;
-
-    return provider->ClearReadBuffer(provider, controller);
+    return provider->ClearReadBuffer(provider);
 }
 
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::ClearWriteBuffer___VOID(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
 
-    const TinyCLR_Interop_ClrObject* self;
-    TinyCLR_Interop_ClrValue fld, fieldChannelId;
-
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
-    auto controller = fieldChannelId.Data.Numeric->I4;
-
-    return provider->ClearWriteBuffer(provider, controller);
+    return provider->ClearWriteBuffer(provider);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::get_IsWritingAllowed___BOOLEAN(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
-
-    const TinyCLR_Interop_ClrObject* self;
-    TinyCLR_Interop_ClrValue fld, ret, fieldChannelId;
-
-
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-    interop->GetReturn(interop, md.Stack, ret);
-
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
-    auto controller = fieldChannelId.Data.Numeric->I4;
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
+    auto ret = TinyCLR_Interop_GetReturn(md);
 
     bool val = true;
 
-    provider->IsWritingAllowed(provider, controller, val);
+    provider->IsWritingAllowed(provider, val);
 
     ret.Data.Numeric->I4 = val;
 
@@ -442,22 +332,13 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::get_ReadErrorCount___I4(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
-
-    const TinyCLR_Interop_ClrObject* self;
-    TinyCLR_Interop_ClrValue fld, ret, fieldChannelId;
-
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-    interop->GetReturn(interop, md.Stack, ret);
-
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
-    auto controller = fieldChannelId.Data.Numeric->I4;
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
+    auto ret = TinyCLR_Interop_GetReturn(md);
 
     size_t val = 0;
 
-    provider->GetReadErrorCount(provider, controller, val);
+    provider->GetReadErrorCount(provider, val);
 
     ret.Data.Numeric->I4 = val;
 
@@ -465,22 +346,13 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::get_WriteErrorCount___I4(const TinyCLR_Interop_MethodData md) {
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
+    auto ret = TinyCLR_Interop_GetReturn(md);
+
     size_t val = 0;
 
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
-
-    const TinyCLR_Interop_ClrObject* self;
-    TinyCLR_Interop_ClrValue fld, ret, fieldChannelId;
-
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-    interop->GetReturn(interop, md.Stack, ret);
-
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
-    auto controller = fieldChannelId.Data.Numeric->I4;
-
-    provider->GetWriteErrorCount(provider, controller, val);
+    provider->GetWriteErrorCount(provider, val);
 
     ret.Data.Numeric->I4 = val;
 
@@ -488,22 +360,13 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::get_SourceClock___U4(const TinyCLR_Interop_MethodData md) {
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
+    auto ret = TinyCLR_Interop_GetReturn(md);
+
     uint32_t val = 0;
 
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
-
-    const TinyCLR_Interop_ClrObject* self;
-    TinyCLR_Interop_ClrValue fld, ret, fieldChannelId;
-
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-    interop->GetReturn(interop, md.Stack, ret);
-
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
-    auto controller = fieldChannelId.Data.Numeric->I4;
-
-    provider->GetSourceClock(provider, controller, val);
+    provider->GetSourceClock(provider, val);
 
     ret.Data.Numeric->U4 = val;
 
@@ -511,20 +374,12 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::get_ReadBufferSize___U4(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
-
-    const TinyCLR_Interop_ClrObject* self;
-    TinyCLR_Interop_ClrValue fld, ret, fieldChannelId;
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetReturn(interop, md.Stack, ret);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
-    auto controller = fieldChannelId.Data.Numeric->I4;
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
+    auto ret = TinyCLR_Interop_GetReturn(md);
 
     size_t val;
-    auto result = provider->GetReadBufferSize(provider, controller, val);
+    auto result = provider->GetReadBufferSize(provider, val);
 
     ret.Data.Numeric->U4 = val;
 
@@ -532,36 +387,20 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::set_ReadBufferSize___VOID__U4(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
+    auto arg = TinyCLR_Interop_GetArguments(md, 1);
 
-    const TinyCLR_Interop_ClrObject* self;
-    TinyCLR_Interop_ClrValue fld, arg, fieldChannelId;
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetArgument(interop, md.Stack, 1, arg);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
-    auto controller = fieldChannelId.Data.Numeric->I4;
-
-    return provider->SetReadBufferSize(provider, controller, (size_t)arg.Data.Numeric->U4);
+    return provider->SetReadBufferSize(provider, (size_t)arg.Data.Numeric->U4);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::get_WriteBufferSize___U4(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
-
-    const TinyCLR_Interop_ClrObject* self;
-    TinyCLR_Interop_ClrValue fld, ret, fieldChannelId;
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetReturn(interop, md.Stack, ret);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
-    auto controller = fieldChannelId.Data.Numeric->I4;
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
+    auto ret = TinyCLR_Interop_GetReturn(md);
 
     size_t val;
-    auto result = provider->GetWriteBufferSize(provider, controller, val);
+    auto result = provider->GetWriteBufferSize(provider, val);
 
     ret.Data.Numeric->U4 = val;
 
@@ -569,35 +408,101 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::set_WriteBufferSize___VOID__U4(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Provider*)md.ApiProvider.FindDefault(&md.ApiProvider, TinyCLR_Api_Type::InteropProvider);
+    auto provider = (const TinyCLR_Can_Controller*)TinyCLR_Interop_GetManager(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I);
+    auto controllerIndex = TinyCLR_Interop_GetFieldInMethodData(md, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4).Data.Numeric->I4;
+    auto arg = TinyCLR_Interop_GetArguments(md, 1);
 
-    const TinyCLR_Interop_ClrObject* self;
-    TinyCLR_Interop_ClrValue fld, arg, fieldChannelId;
-    interop->GetThisObject(interop, md.Stack, self);
-    interop->GetArgument(interop, md.Stack, 1, arg);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___nativeProvider___I, fld);
-    interop->GetField(interop, self, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::FIELD___idx___I4, fieldChannelId);
-
-    auto provider = (const TinyCLR_Can_Provider*)fld.Data.Numeric->I;
-    auto controller = fieldChannelId.Data.Numeric->I4;
-
-    return provider->SetWriteBufferSize(provider, controller, (size_t)arg.Data.Numeric->U4);
+    return provider->SetWriteBufferSize(provider, (size_t)arg.Data.Numeric->U4);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::GetControllerCount___STATIC___I4__I(const TinyCLR_Interop_MethodData md) {
-    auto arg = TinyCLR_Interop_GetArguments(md, 0);
-
-    auto ret = TinyCLR_Interop_GetReturn(md);
-
-    auto provider = (const TinyCLR_Can_Provider*)(arg.Data.Numeric->I4);
-
-    int32_t count;
-
-    if (provider->GetControllerCount(provider, count) == TinyCLR_Result::Success) {
-        ret.Data.Numeric->I4 = count;
-
-        return TinyCLR_Result::Success;
-    }
 
     return TinyCLR_Result::InvalidOperation;
 }
+
+#else
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::NativeAcquire___VOID(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::NativeRelease___VOID(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::SetBitTiming___VOID__GHIElectronicsTinyCLRDevicesCanCanBitTiming(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::ReadMessages___I4__SZARRAY_GHIElectronicsTinyCLRDevicesCanCanMessage__I4__I4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::WriteMessages___I4__SZARRAY_GHIElectronicsTinyCLRDevicesCanCanMessage__I4__I4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::get_UnreadMessageCount___I4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::get_UnwrittenMessageCount___I4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::Reset___VOID(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::SetExplicitFilters___VOID__SZARRAY_U4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::SetGroupFilters___VOID__SZARRAY_U4__SZARRAY_U4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::ClearReadBuffer___VOID(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::ClearWriteBuffer___VOID(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::get_IsWritingAllowed___BOOLEAN(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::get_ReadErrorCount___I4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::get_WriteErrorCount___I4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::get_SourceClock___U4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::get_ReadBufferSize___U4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::set_ReadBufferSize___VOID__U4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::get_WriteBufferSize___U4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::set_WriteBufferSize___VOID__U4(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_DefaultCanControllerProvider::GetControllerCount___STATIC___I4__I(const TinyCLR_Interop_MethodData md) {
+    return TinyCLR_Result::NotImplemented;
+}
+#endif //INCLUDE_CAN

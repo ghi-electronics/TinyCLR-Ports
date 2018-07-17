@@ -30,7 +30,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static TinyCLR_Dac_Provider dacProvider;
+static TinyCLR_Dac_Controller dacProvider;
 static TinyCLR_Api_Info dacApi;
 
 static const LPC17_Gpio_Pin g_lpc17_dac_pins[] = LPC17_DAC_PINS;
@@ -38,7 +38,7 @@ static const LPC17_Gpio_Pin g_lpc17_dac_pins[] = LPC17_DAC_PINS;
 bool g_lpc17_dac_isOpened[SIZEOF_ARRAY(g_lpc17_dac_pins)];
 
 const TinyCLR_Api_Info* LPC17_Dac_GetApi() {
-    dacProvider.Parent = &dacApi;
+    dacProvider.ApiInfo = &dacApi;
     dacProvider.Acquire = &LPC17_Dac_Acquire;
     dacProvider.Release = &LPC17_Dac_Release;
     dacProvider.AcquireChannel = &LPC17_Dac_AcquireChannel;
@@ -59,21 +59,21 @@ const TinyCLR_Api_Info* LPC17_Dac_GetApi() {
     return &dacApi;
 }
 
-TinyCLR_Result LPC17_Dac_Acquire(const TinyCLR_Dac_Provider* self, int32_t controller) {
+TinyCLR_Result LPC17_Dac_Acquire(const TinyCLR_Dac_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Dac_Release(const TinyCLR_Dac_Provider* self, int32_t controller) {
+TinyCLR_Result LPC17_Dac_Release(const TinyCLR_Dac_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel) {
+TinyCLR_Result LPC17_Dac_AcquireChannel(const TinyCLR_Dac_Controller* self, int32_t channel) {
     if (channel >= SIZEOF_ARRAY(g_lpc17_dac_pins))
         return TinyCLR_Result::ArgumentOutOfRange;
 
@@ -89,7 +89,7 @@ TinyCLR_Result LPC17_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel) {
+TinyCLR_Result LPC17_Dac_ReleaseChannel(const TinyCLR_Dac_Controller* self, int32_t channel) {
     if (channel >= SIZEOF_ARRAY(g_lpc17_dac_pins))
         return TinyCLR_Result::ArgumentOutOfRange;
 
@@ -104,7 +104,7 @@ TinyCLR_Result LPC17_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel, int32_t value) {
+TinyCLR_Result LPC17_Dac_WriteValue(const TinyCLR_Dac_Controller* self, int32_t channel, int32_t value) {
     if (channel >= SIZEOF_ARRAY(g_lpc17_dac_pins))
         return TinyCLR_Result::ArgumentOutOfRange;
 
@@ -121,19 +121,19 @@ TinyCLR_Result LPC17_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t co
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC17_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self, int32_t controller) {
+int32_t LPC17_Dac_GetChannelCount(const TinyCLR_Dac_Controller* self) {
     return SIZEOF_ARRAY(g_lpc17_dac_pins);
 }
 
-int32_t LPC17_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self, int32_t controller) {
+int32_t LPC17_Dac_GetResolutionInBits(const TinyCLR_Dac_Controller* self) {
     return LPC17_DAC_PRECISION_BITS;
 }
 
-int32_t LPC17_Dac_GetMinValue(const TinyCLR_Dac_Provider* self, int32_t controller) {
+int32_t LPC17_Dac_GetMinValue(const TinyCLR_Dac_Controller* self) {
     return 0;
 }
 
-int32_t LPC17_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self, int32_t controller) {
+int32_t LPC17_Dac_GetMaxValue(const TinyCLR_Dac_Controller* self) {
     return ((1 << LPC17_DAC_PRECISION_BITS) - 1);
 }
 
@@ -145,7 +145,7 @@ void LPC17_Dac_Reset() {
     }
 }
 
-TinyCLR_Result LPC17_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t& count) {
+TinyCLR_Result LPC17_Dac_GetControllerCount(const TinyCLR_Dac_Controller* self, int32_t& count) {
     count = 1;
 
     return TinyCLR_Result::Success;
