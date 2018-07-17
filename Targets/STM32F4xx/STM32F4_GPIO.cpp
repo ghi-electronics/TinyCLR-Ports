@@ -18,9 +18,9 @@
 
 #define TOTAL_GPIO_CONTROLLERS 1
 
-#define TOTAL_GPIO_PINS SIZEOF_ARRAY(stm32f4_pins)
+#define TOTAL_GPIO_PINS SIZEOF_ARRAY(gpioPins)
 
-static const STM32F4_Gpio_PinConfiguration stm32f4_pins[] = STM32F4_GPIO_PINS;
+static const STM32F4_Gpio_PinConfiguration gpioPins[] = STM32F4_GPIO_PINS;
 
 #define TOTAL_GPIO_INTERRUPT_PINS 16
 
@@ -398,7 +398,7 @@ int32_t STM32F4_Gpio_GetPinCount(const TinyCLR_Gpio_Controller* self) {
 
 void STM32F4_Gpio_Reset() {
     for (int i = 0; i < TOTAL_GPIO_PINS; i++) {
-        auto& p = stm32f4_pins[i];
+        auto& p = gpioPins[i];
 
         g_pinReserved[i] = 0;
         STM32F4_Gpio_SetDebounceTimeout(nullptr, i, DEBOUNCE_DEFAULT_TICKS);
