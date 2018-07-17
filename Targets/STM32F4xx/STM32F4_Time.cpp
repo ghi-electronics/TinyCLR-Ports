@@ -58,7 +58,7 @@ const TinyCLR_Api_Info* STM32F4_Time_GetApi() {
         timeApi[i].Type = TinyCLR_Api_Type::NativeTimeController;
         timeApi[i].Version = 0;
         timeApi[i].Implementation = &timeControllers[i];
-        timeApi[i].State = nullptr;
+        timeApi[i].State = &timerDrivers[i];
     }
 
     return (const TinyCLR_Api_Info*)&timeApi;
