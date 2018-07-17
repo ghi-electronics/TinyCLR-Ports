@@ -38,14 +38,14 @@
 void STM32F7_I2c_StartTransaction(int32_t controllerIndex);
 void STM32F7_I2c_StopTransaction(int32_t controllerIndex);
 
-static const STM32F7_Gpio_Pin g_STM32F7_I2c_Scl_Pins[] = STM32F7_I2C_SCL_PINS;
-static const STM32F7_Gpio_Pin g_STM32F7_I2c_Sda_Pins[] = STM32F7_I2C_SDA_PINS;
+static const STM32F7_Gpio_Pin i2cSclPins[] = STM32F7_I2C_SCL_PINS;
+static const STM32F7_Gpio_Pin i2cSdaPins[] = STM32F7_I2C_SDA_PINS;
 
-static const int TOTAL_I2C_CONTROLLERS = SIZEOF_ARRAY(g_STM32F7_I2c_Scl_Pins);
+static const int TOTAL_I2C_CONTROLLERS = SIZEOF_ARRAY(i2cSclPins);
 
-static I2C_TypeDef* g_STM32_I2c_Port[TOTAL_I2C_CONTROLLERS];
+static I2C_TypeDef* i2cPorts[TOTAL_I2C_CONTROLLERS];
 
-struct STM32F7_I2c_Configuration {
+struct I2cConfiguration {
 
     int32_t     address;
     uint8_t     clockRate;
@@ -53,7 +53,7 @@ struct STM32F7_I2c_Configuration {
 
     bool        isOpened;
 };
-struct STM32F7_I2c_Transaction {
+struct I2cTransaction {
     bool                        isReadTransaction;
     bool                        repeatedStart;
     bool                        isDone;
@@ -69,16 +69,16 @@ struct STM32F7_I2c_Transaction {
 struct I2cDriver {
     int32_t controllerIndex;
 
-    STM32F7_I2c_Configuration i2cConfiguration;
-    STM32F7_I2c_Transaction   *currentI2cTransactionAction;
-    STM32F7_I2c_Transaction   readI2cTransactionAction;
-    STM32F7_I2c_Transaction   writeI2cTransactionAction;
+    I2cConfiguration i2cConfiguration;
+    I2cTransaction   *currentI2cTransactionAction;
+    I2cTransaction   readI2cTransactionAction;
+    I2cTransaction   writeI2cTransactionAction;
 };
 
 static I2cDriver i2cDrivers[TOTAL_I2C_CONTROLLERS];
 
-static TinyCLR_I2c_Controller i2cControllers[TOTAL_I2C_CONTROLLERS];;
-static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];;
+static TinyCLR_I2c_Controller i2cControllers[TOTAL_I2C_CONTROLLERS];
+static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F7_I2c_GetApi() {
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
@@ -101,10 +101,10 @@ const TinyCLR_Api_Info* STM32F7_I2c_GetApi() {
     }
 
     if (TOTAL_I2C_CONTROLLERS > 0)
-        g_STM32_I2c_Port[0] = I2C1;
+        i2cPorts[0] = I2C1;
 
     if (TOTAL_I2C_CONTROLLERS > 1)
-        g_STM32_I2c_Port[1] = I2C2;
+        i2cPorts[1] = I2C2;
 
     return (const TinyCLR_Api_Info*)&i2cApi;
 }
@@ -147,7 +147,7 @@ void STM32F7_I2c_InternalTransferConfig(int32_t controllerIndex, uint16_t device
         deviceAddress += 1;
     }
 
-    auto& I2Cx = g_STM32_I2c_Port[controllerIndex];
+    auto& I2Cx = i2cPorts[controllerIndex];
 
     /* Get the CR2 register value */
     tmpreg = I2Cx->CR2;
@@ -169,7 +169,7 @@ void STM32F7_I2c_InternalTransferConfig(int32_t controllerIndex, uint16_t device
 void STM32F7_I2C_ER_Interrupt(int32_t controllerIndex) {// Error Interrupt Handler
     INTERRUPT_STARTED_SCOPED(isr);
 
-    auto& I2Cx = g_STM32_I2c_Port[controllerIndex];
+    auto& I2Cx = i2cPorts[controllerIndex];
     
     auto driver = &i2cDrivers[controllerIndex];
     
@@ -209,11 +209,11 @@ void STM32F7_I2C2_ER_Interrupt(void *param) {
 void STM32F7_I2C_EV_Interrupt(int32_t controllerIndex) {// Event Interrupt Handler
     INTERRUPT_STARTED_SCOPED(isr);
 
-    auto& I2Cx = g_STM32_I2c_Port[controllerIndex];
+    auto& I2Cx = i2cPorts[controllerIndex];
 
     auto driver = &i2cDrivers[controllerIndex];
 
-    STM32F7_I2c_Transaction *transaction = driver->currentI2cTransactionAction;
+    I2cTransaction *transaction = driver->currentI2cTransactionAction;
 
     int todo = transaction->bytesToTransfer;
 
@@ -283,11 +283,11 @@ void STM32F7_I2C2_EV_Interrupt(void* param) {
     STM32F7_I2C_EV_Interrupt(1);
 }
 void STM32F7_I2c_StartTransaction(int32_t controllerIndex) {
-    auto& I2Cx = g_STM32_I2c_Port[controllerIndex];
+    auto& I2Cx = i2cPorts[controllerIndex];
 
     auto driver = &i2cDrivers[controllerIndex];
 
-    STM32F7_I2c_Transaction *transaction = driver->currentI2cTransactionAction;
+    I2cTransaction *transaction = driver->currentI2cTransactionAction;
 
     uint32_t ccr = driver->i2cConfiguration.clockRate + (driver->i2cConfiguration.clockRate2 << 8);
 
@@ -318,7 +318,7 @@ void STM32F7_I2c_StartTransaction(int32_t controllerIndex) {
 }
 
 void STM32F7_I2c_StopTransaction(int32_t controllerIndex) {
-    auto& I2Cx = g_STM32_I2c_Port[controllerIndex];
+    auto& I2Cx = i2cPorts[controllerIndex];
     
     auto driver = &i2cDrivers[controllerIndex];
 
@@ -487,9 +487,9 @@ TinyCLR_Result STM32F7_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
 
     auto controllerIndex = driver->controllerIndex;
 
-    auto& I2Cx = g_STM32_I2c_Port[controllerIndex];
-    auto& scl = g_STM32F7_I2c_Scl_Pins[controllerIndex];
-    auto& sda = g_STM32F7_I2c_Sda_Pins[controllerIndex];
+    auto& I2Cx = i2cPorts[controllerIndex];
+    auto& scl = i2cSclPins[controllerIndex];
+    auto& sda = i2cSdaPins[controllerIndex];
 
     if (!STM32F7_GpioInternal_OpenPin(sda.number) || !STM32F7_GpioInternal_OpenPin(scl.number))
         return TinyCLR_Result::SharingViolation;
@@ -528,7 +528,7 @@ TinyCLR_Result STM32F7_I2c_Release(const TinyCLR_I2c_Controller* self) {
 
     auto controllerIndex = driver->controllerIndex;
 
-    auto& I2Cx = g_STM32_I2c_Port[controllerIndex];
+    auto& I2Cx = i2cPorts[controllerIndex];
 
     STM32F7_I2c_InterruptDisable(I2Cx, I2C_CR1_ERRIE | I2C_CR1_TCIE | I2C_CR1_STOPIE | I2C_CR1_NACKIE | I2C_CR1_TXIE | I2C_CR1_RXIE); // disable interrupts
     switch (controllerIndex) {
@@ -552,8 +552,8 @@ TinyCLR_Result STM32F7_I2c_Release(const TinyCLR_I2c_Controller* self) {
     }
 
     if (driver->i2cConfiguration.isOpened) {
-        auto& scl = g_STM32F7_I2c_Scl_Pins[controllerIndex];
-        auto& sda = g_STM32F7_I2c_Sda_Pins[controllerIndex];
+        auto& scl = i2cSclPins[controllerIndex];
+        auto& sda = i2cSdaPins[controllerIndex];
 
         STM32F7_GpioInternal_ClosePin(sda.number);
         STM32F7_GpioInternal_ClosePin(scl.number);
