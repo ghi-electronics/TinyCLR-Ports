@@ -366,8 +366,10 @@ uint32_t STM32F7_Display_GetPixelClockDivider();
 int32_t STM32F7_Display_GetOrientation();
 uint32_t* STM32F7_Display_GetFrameBuffer();
 
-static TinyCLR_Display_Controller displayProvider;
-static TinyCLR_Api_Info displayApi;
+#define TOTAL_DISPLAY_CONTROLLERS 1
+
+static TinyCLR_Display_Controller displayControllers[TOTAL_DISPLAY_CONTROLLERS];
+static TinyCLR_Api_Info displayApi[TOTAL_DISPLAY_CONTROLLERS];
 
 bool STM32F7_Ltdc_Initialize(LTDC_HandleTypeDef *hltdc) {
     uint32_t tmp = 0, tmp1 = 0;
@@ -1180,23 +1182,25 @@ TinyCLR_Result STM32F7_Display_GetCapabilities(const TinyCLR_Display_Controller*
 }
 
 const TinyCLR_Api_Info* STM32F7_Display_GetApi() {
-    displayProvider.ApiInfo = &displayApi;
-    displayProvider.Acquire = &STM32F7_Display_Acquire;
-    displayProvider.Release = &STM32F7_Display_Release;
-    displayProvider.Enable = &STM32F7_Display_Enable;
-    displayProvider.Disable = &STM32F7_Display_Disable;
-    displayProvider.SetConfiguration = &STM32F7_Display_SetConfiguration;
-    displayProvider.GetConfiguration = &STM32F7_Display_GetConfiguration;
-    displayProvider.GetCapabilities = &STM32F7_Display_GetCapabilities;
-    displayProvider.DrawBuffer = &STM32F7_Display_DrawBuffer;
-    displayProvider.WriteString = &STM32F7_Display_WriteString;
-    displayProvider.GetControllerCount = &STM32F7_Display_GetControllerCount;
+    for (auto i = 0; i < TOTAL_DISPLAY_CONTROLLERS; i++) {
+        displayControllers[i].ApiInfo = &displayApi[i];
+        displayControllers[i].Acquire = &STM32F7_Display_Acquire;
+        displayControllers[i].Release = &STM32F7_Display_Release;
+        displayControllers[i].Enable = &STM32F7_Display_Enable;
+        displayControllers[i].Disable = &STM32F7_Display_Disable;
+        displayControllers[i].SetConfiguration = &STM32F7_Display_SetConfiguration;
+        displayControllers[i].GetConfiguration = &STM32F7_Display_GetConfiguration;
+        displayControllers[i].GetCapabilities = &STM32F7_Display_GetCapabilities;
+        displayControllers[i].DrawBuffer = &STM32F7_Display_DrawBuffer;
+        displayControllers[i].WriteString = &STM32F7_Display_WriteString;
 
-    displayApi.Author = "GHI Electronics, LLC";
-    displayApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.DisplayProvider";
-    displayApi.Type = TinyCLR_Api_Type::DisplayProvider;
-    displayApi.Version = 0;
-    displayApi.Implementation = &displayProvider;
+        displayApi[i].Author = "GHI Electronics, LLC";
+        displayApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.DisplayProvider";
+        displayApi[i].Type = TinyCLR_Api_Type::DisplayProvider;
+        displayApi[i].Version = 0;
+        displayApi[i].Implementation = &displayControllers[i];
+        displayApi[i].State = nullptr;
+    }
 
     m_STM32F7_Display_VituralRam = nullptr;
 
@@ -1207,13 +1211,7 @@ void STM32F7_Display_Reset() {
     STM32F7_Display_Clear();
 
     if (m_STM32F7_DisplayEnable)
-        STM32F7_Display_Release(&displayProvider, 0);
+        STM32F7_Display_Release(&displayControllers[0]);
 
     m_STM32F7_DisplayEnable = false;
-}
-
-TinyCLR_Result STM32F7_Display_GetControllerCount(const TinyCLR_Display_Controller* self, int32_t& count) {
-    count = 1;
-
-    return TinyCLR_Result::Success;
 }

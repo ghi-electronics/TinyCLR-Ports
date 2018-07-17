@@ -375,7 +375,7 @@ void SDIO_ClockCmd(bool newState) {
 }
 
 /**
-  * @brief  Sets the power status of the controller.
+  * @brief  Sets the power status of the controllerIndex.
   * @param  SDIO_PowerState: new state of the Power state.
   *          This parameter can be one of the following values:
   *            @arg SDIO_PowerState_OFF: SDMMC1 Power OFF
@@ -388,9 +388,9 @@ void SDIO_SetPowerState(uint32_t SDIO_PowerState) {
 }
 
 /**
-  * @brief  Gets the power status of the controller.
+  * @brief  Gets the power status of the controllerIndex.
   * @param  None
-  * @retval Power status of the controller. The returned value can be one of the
+  * @retval Power status of the controllerIndex. The returned value can be one of the
   *         following values:
   *            - 0x00: Power OFF
   *            - 0x02: Power UP
@@ -882,7 +882,7 @@ typedef enum {
     SD_COM_CRC_FAILED = (15), /*!< CRC check of the previous command failed */
     SD_ILLEGAL_CMD = (16), /*!< Command is not legal for the card state */
     SD_CARD_ECC_FAILED = (17), /*!< Card internal ECC was applied but failed to correct the data */
-    SD_CC_ERROR = (18), /*!< Internal card controller error */
+    SD_CC_ERROR = (18), /*!< Internal card controllerIndex error */
     SD_GENERAL_UNKNOWN_ERROR = (19), /*!< General or Unknown error */
     SD_STREAM_READ_UNDERRUN = (20), /*!< The card could not sustain data transfer in stream read operation. */
     SD_STREAM_WRITE_OVERRUN = (21), /*!< The card could not sustain data programming in stream mode */
@@ -1855,7 +1855,7 @@ SD_Error SD_SelectDeselect(uint32_t addr) {
   * @note   This operation should be followed by two functions to check if the
   *         DMA Controller and SD Card status.
   *          - SD_ReadWaitOperation(): this function insure that the DMA
-  *            controller has finished all data transfer.
+  *            controllerIndex has finished all data transfer.
   *          - SD_GetStatus(): to check that the SD Card has finished the
   *            data transfer and it is ready for data.
   * @param  readbuff: pointer to the buffer that will contain the received data
@@ -1955,7 +1955,7 @@ SD_Error SD_ReadBlock(uint8_t *readbuff, uint32_t ReadAddr, uint16_t BlockSize) 
   * @note   This operation should be followed by two functions to check if the
   *         DMA Controller and SD Card status.
   *          - SD_ReadWaitOperation(): this function insure that the DMA
-  *            controller has finished all data transfer.
+  *            controllerIndex has finished all data transfer.
   *          - SD_GetStatus(): to check that the SD Card has finished the
   *            data transfer and it is ready for data.
   * @param  writebuff: pointer to the buffer that contain the data to be transferred.
@@ -2646,62 +2646,68 @@ static SD_Error FindSCR(uint16_t rca, uint32_t *pscr) {
     return(errorstatus);
 }
 
-// stm32f4
-
-static TinyCLR_SdCard_Controller sdCardProvider;
-static TinyCLR_Api_Info sdApi;
+// stm32f7
 
 #define STM32F7_SD_SECTOR_SIZE 512
 #define STM32F7_SD_TIMEOUT 5000000
+#define TOTAL_SDCARD_CONTROLLERS 1
 
-struct SdController {
-    int32_t controller;
+static TinyCLR_SdCard_Controller sdCardProvider[TOTAL_SDCARD_CONTROLLERS];
+static TinyCLR_Api_Info sdApi[TOTAL_SDCARD_CONTROLLERS];
+
+struct SdCardDriver {
+    int32_t controllerIndex;
     size_t  sectorCount;
 
     size_t  *sectorSizes;
 };
 
-static const STM32F7_Gpio_Pin g_STM32F7_SdCard_Data0_Pins[] = STM32F7_SD_DATA0_PINS;
-static const STM32F7_Gpio_Pin g_STM32F7_SdCard_Data1_Pins[] = STM32F7_SD_DATA1_PINS;
-static const STM32F7_Gpio_Pin g_STM32F7_SdCard_Data2_Pins[] = STM32F7_SD_DATA2_PINS;
-static const STM32F7_Gpio_Pin g_STM32F7_SdCard_Data3_Pins[] = STM32F7_SD_DATA3_PINS;
-static const STM32F7_Gpio_Pin g_STM32F7_SdCard_Clk_Pins[] = STM32F7_SD_CLK_PINS;
-static const STM32F7_Gpio_Pin g_STM32F7_SdCard_Cmd_Pins[] = STM32F7_SD_CMD_PINS;
+static const STM32F7_Gpio_Pin sdCardData0Pins[] = STM32F7_SD_DATA0_PINS;
+static const STM32F7_Gpio_Pin sdCardData1Pins[] = STM32F7_SD_DATA1_PINS;
+static const STM32F7_Gpio_Pin sdCardData2Pins[] = STM32F7_SD_DATA2_PINS;
+static const STM32F7_Gpio_Pin sdCardData3Pins[] = STM32F7_SD_DATA3_PINS;
+static const STM32F7_Gpio_Pin sdCardClkPins[] = STM32F7_SD_CLK_PINS;
+static const STM32F7_Gpio_Pin sdCardCmdPins[] = STM32F7_SD_CMD_PINS;
 
-SdController sdController[1];
+static SdCardDriver sdCardDrivers[TOTAL_SDCARD_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F7_SdCard_GetApi() {
-    sdCardProvider.ApiInfo = &sdApi;
+    for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
+        sdCardProvider[i].ApiInfo = &sdApi[i];
 
-    sdCardProvider.Acquire = &STM32F7_SdCard_Acquire;
-    sdCardProvider.Release = &STM32F7_SdCard_Release;
-    sdCardProvider.GetControllerCount = &STM32F7_SdCard_GetControllerCount;
+        sdCardProvider[i].Acquire = &STM32F7_SdCard_Acquire;
+        sdCardProvider[i].Release = &STM32F7_SdCard_Release;
 
-    sdCardProvider.WriteSectors = &STM32F7_SdCard_WriteSector;
-    sdCardProvider.ReadSectors = &STM32F7_SdCard_ReadSector;
-    sdCardProvider.EraseSectors = &STM32F7_SdCard_EraseSector;
-    sdCardProvider.IsSectorErased = &STM32F7_SdCard_IsSectorErased;
-    sdCardProvider.GetSectorMap = &STM32F7_SdCard_GetSectorMap;
+        sdCardProvider[i].WriteSectors = &STM32F7_SdCard_WriteSector;
+        sdCardProvider[i].ReadSectors = &STM32F7_SdCard_ReadSector;
+        sdCardProvider[i].EraseSectors = &STM32F7_SdCard_EraseSector;
+        sdCardProvider[i].IsSectorErased = &STM32F7_SdCard_IsSectorErased;
+        sdCardProvider[i].GetSectorMap = &STM32F7_SdCard_GetSectorMap;
 
-    sdApi.Author = "GHI Electronics, LLC";
-    sdApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.SdCardProvider";
-    sdApi.Type = TinyCLR_Api_Type::SdCardProvider;
-    sdApi.Version = 0;
-    sdApi.Implementation = &sdCardProvider;
+        sdApi[i].Author = "GHI Electronics, LLC";
+        sdApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.SdCardController";
+        sdApi[i].Type = TinyCLR_Api_Type::SdCardController;
+        sdApi[i].Version = 0;
+        sdApi[i].Implementation = &sdCardProvider[i];
+        sdApi[i].State = &sdCardDrivers[i];
 
-    return &sdApi;
+        sdCardDrivers[i].controllerIndex = i;
+    }
+
+    return (const TinyCLR_Api_Info*)&sdApi;
 }
 
 TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
-    sdController[controller].controller = controller;
-    // Initialize hal layer here
+    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
 
-    auto d0 = g_STM32F7_SdCard_Data0_Pins[controller];
-    auto d1 = g_STM32F7_SdCard_Data1_Pins[controller];
-    auto d2 = g_STM32F7_SdCard_Data2_Pins[controller];
-    auto d3 = g_STM32F7_SdCard_Data3_Pins[controller];
-    auto clk = g_STM32F7_SdCard_Clk_Pins[controller];
-    auto cmd = g_STM32F7_SdCard_Cmd_Pins[controller];
+    auto controllerIndex = driver->controllerIndex;
+
+    auto d0 = sdCardData0Pins[controllerIndex];
+    auto d1 = sdCardData1Pins[controllerIndex];
+    auto d2 = sdCardData2Pins[controllerIndex];
+    auto d3 = sdCardData3Pins[controllerIndex];
+    auto clk = sdCardClkPins[controllerIndex];
+    auto cmd = sdCardCmdPins[controllerIndex];
 
     if (!STM32F7_GpioInternal_OpenPin(d0.number)
         || !STM32F7_GpioInternal_OpenPin(d1.number)
@@ -2721,9 +2727,9 @@ TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
 
     RCC->APB2ENR |= (1 << 11);
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    sdController[controller].sectorSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
+    driver->sectorSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
 
     SD_DeInit();
 
@@ -2731,20 +2737,24 @@ TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
 }
 
 TinyCLR_Result STM32F7_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
-    auto d0 = g_STM32F7_SdCard_Data0_Pins[controller];
-    auto d1 = g_STM32F7_SdCard_Data1_Pins[controller];
-    auto d2 = g_STM32F7_SdCard_Data2_Pins[controller];
-    auto d3 = g_STM32F7_SdCard_Data3_Pins[controller];
-    auto clk = g_STM32F7_SdCard_Clk_Pins[controller];
-    auto cmd = g_STM32F7_SdCard_Cmd_Pins[controller];
+    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
+
+    auto controllerIndex = driver->controllerIndex;
+
+    auto d0 = sdCardData0Pins[controllerIndex];
+    auto d1 = sdCardData1Pins[controllerIndex];
+    auto d2 = sdCardData2Pins[controllerIndex];
+    auto d3 = sdCardData3Pins[controllerIndex];
+    auto clk = sdCardClkPins[controllerIndex];
+    auto cmd = sdCardCmdPins[controllerIndex];
 
     SD_DeInit();
 
     RCC->APB2ENR &= ~(1 << 11);
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    memoryProvider->Free(memoryProvider, sdController[controller].sectorSizes);
+    memoryProvider->Free(memoryProvider, driver->sectorSizes);
 
     STM32F7_GpioInternal_ClosePin(d0.number);
     STM32F7_GpioInternal_ClosePin(d1.number);
@@ -2752,12 +2762,6 @@ TinyCLR_Result STM32F7_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
     STM32F7_GpioInternal_ClosePin(d3.number);
     STM32F7_GpioInternal_ClosePin(clk.number);
     STM32F7_GpioInternal_ClosePin(cmd.number);
-
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result STM32F7_SdCard_GetControllerCount(const TinyCLR_SdCard_Controller* self, int32_t& count) {
-    count = SIZEOF_ARRAY(g_STM32F7_SdCard_Data0_Pins);
 
     return TinyCLR_Result::Success;
 }
@@ -2840,9 +2844,11 @@ TinyCLR_Result STM32F7_SdCard_EraseSector(const TinyCLR_SdCard_Controller* self,
 }
 
 TinyCLR_Result STM32F7_SdCard_GetSectorMap(const TinyCLR_SdCard_Controller* self, const size_t*& sizes, size_t& count, bool& isUniform) {
-    sdController[controller].sectorSizes[0] = STM32F7_SD_SECTOR_SIZE;
+    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
 
-    sizes = sdController[controller].sectorSizes;
+    driver->sectorSizes[0] = STM32F7_SD_SECTOR_SIZE;
+
+    sizes = driver->sectorSizes;
     count = SDCardInfo.CardCapacity / STM32F7_SD_SECTOR_SIZE;
 
     return TinyCLR_Result::Success;

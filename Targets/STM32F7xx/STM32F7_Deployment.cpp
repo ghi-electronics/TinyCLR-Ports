@@ -22,6 +22,8 @@
 #include "STM32F7.h"
 #include <stdio.h>
 
+#define TOTAL_DEPLOYMENT_CONTROLLERS 1
+
 #ifndef STM32F7_FLASH
 #define STM32F7_FLASH               ((FLASH_TypeDef *) FLASH_R_BASE)
 #endif
@@ -62,15 +64,11 @@
 #define SECTOR_MASK               ((uint32_t)0xFFFFFF07)
 
 
-typedef uint32_t CHIP_WORD;
-
-struct STM32F4_Flash_Deployment {
+struct DeploymentSector {
     uint32_t id;
     uint32_t address;
     uint32_t size;
 };
-
-#define FLASH_CR_PSIZE_BITS FLASH_CR_PSIZE_0 // 16 bit programming
 
 #if STM32F7_SUPPLY_VOLTAGE_MV < 2100
 #error 16 bit Flash programming not allowed for voltages below 2.1V
@@ -81,38 +79,38 @@ struct STM32F4_Flash_Deployment {
 
 TinyCLR_Result STM32F7_Flash_GetSectorSizeForAddress(const TinyCLR_Deployment_Controller* self, uint32_t address, int32_t& size);
 
-static const STM32F4_Flash_Deployment deploymentSectors[] = DEPLOYMENT_SECTORS;
+static const DeploymentSector deploymentSectors[] = DEPLOYMENT_SECTORS;
 uint32_t deploymentSectorAddress[SIZEOF_ARRAY(deploymentSectors)];
 uint32_t deploymentSectorSize[SIZEOF_ARRAY(deploymentSectors)];
 
 static const uint32_t STM32F7_FLASH_KEY1 = 0x45670123;
 static const uint32_t STM32F7_FLASH_KEY2 = 0xcdef89ab;
 
-static TinyCLR_Deployment_Controller deploymentProvider;
-static TinyCLR_Api_Info deploymentApi;
+static TinyCLR_Deployment_Controller deploymentControllers[TOTAL_DEPLOYMENT_CONTROLLERS];
+static TinyCLR_Api_Info deploymentApi[TOTAL_DEPLOYMENT_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F7_Deployment_GetApi() {
-    deploymentProvider.ApiInfo = &deploymentApi;
-    deploymentProvider.Initialize = &STM32F7_Flash_Initialize;
-    deploymentProvider.Uninitialize = &STM32F7_Flash_Uninitialize;
-    deploymentProvider.Read = &STM32F7_Flash_Read;
-    deploymentProvider.Write = &STM32F7_Flash_Write;
-    deploymentProvider.EraseSector = &STM32F7_Flash_EraseSector;
-    deploymentProvider.IsSectorErased = &STM32F7_Flash_IsSectorErased;
-    deploymentProvider.GetSectorMap = &STM32F7_Flash_GetSectorMap;
+    for (int32_t i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
+        deploymentControllers[i].ApiInfo = &deploymentApi[i];
+        deploymentControllers[i].Initialize = &STM32F7_Flash_Initialize;
+        deploymentControllers[i].Uninitialize = &STM32F7_Flash_Uninitialize;
+        deploymentControllers[i].Read = &STM32F7_Flash_Read;
+        deploymentControllers[i].Write = &STM32F7_Flash_Write;
+        deploymentControllers[i].EraseSector = &STM32F7_Flash_EraseSector;
+        deploymentControllers[i].IsSectorErased = &STM32F7_Flash_IsSectorErased;
+        deploymentControllers[i].GetSectorMap = &STM32F7_Flash_GetSectorMap;
 
-    deploymentApi.Author = "GHI Electronics, LLC";
-    deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.DeploymentController";
-    deploymentApi.Type = TinyCLR_Api_Type::DeploymentController;
-    deploymentApi.Version = 0;
-    deploymentApi.Implementation = &deploymentProvider;
-
-    for (int32_t i = 0; i < SIZEOF_ARRAY(deploymentSectors); i++) {
-        deploymentSectorAddress[i] = deploymentSectors[i].address;
-        deploymentSectorSize[i] = deploymentSectors[i].size;
+        deploymentApi[i].Author = "GHI Electronics, LLC";
+        deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.DeploymentController";
+        deploymentApi[i].Type = TinyCLR_Api_Type::DeploymentController;
+        deploymentApi[i].Version = 0;
+        deploymentApi[i].Implementation = &deploymentControllers[i];
+        deploymentApi[i].State = nullptr;
     }
 
-    return &deploymentApi;
+    STM32F7_Deplpoyment_Reset();
+
+    return (const TinyCLR_Api_Info*)&deploymentApi;
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_Read(const TinyCLR_Deployment_Controller* self, uint32_t address, size_t length, uint8_t* buffer) {
@@ -122,21 +120,19 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_Read(const T
     if (STM32F7_Flash_GetSectorSizeForAddress(self, address, bytePerSector) != TinyCLR_Result::Success)
         return TinyCLR_Result::IndexOutOfRange;
 
-    CHIP_WORD* ChipAddress = (CHIP_WORD *)address;
-    CHIP_WORD* EndAddress = (CHIP_WORD *)(address + length);
-    CHIP_WORD *pBuf = (CHIP_WORD *)buffer;
+    uint32_t* addressStart = reinterpret_cast<uint32_t*>(address);
+    uint32_t* addressEnd = reinterpret_cast<uint32_t*>(address + length);
+    uint32_t* pBuf = (uint32_t*)buffer;
 
-    while (ChipAddress < EndAddress) {
-        *pBuf++ = *ChipAddress++;
+    while (addressStart < addressEnd) {
+        *pBuf++ = *addressStart++;
     }
 
     return TinyCLR_Result::Success;
 }
 
-volatile uint32_t debugflashstatus = 0;
 
 TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_Write(const TinyCLR_Deployment_Controller* self, uint32_t address, size_t length, const uint8_t* buffer) {
-    volatile int32_t timeout = 2000000; // 2 seconds
     int32_t bytePerSector = 0;
 
     STM32F7_Startup_CacheDisable();
@@ -145,20 +141,24 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_Write(const 
     if (STM32F7_Flash_GetSectorSizeForAddress(self, address, bytePerSector) != TinyCLR_Result::Success)
         return TinyCLR_Result::IndexOutOfRange;
 
-    STM32F7_FLASH->KEYR = STM32F7_FLASH_KEY1;
-    STM32F7_FLASH->KEYR = STM32F7_FLASH_KEY2;
+    if (STM32F7_FLASH->CR & FLASH_CR_LOCK) { // unlock
+        STM32F7_FLASH->KEYR = STM32F7_FLASH_KEY1;
+        STM32F7_FLASH->KEYR = STM32F7_FLASH_KEY2;
+    }
 
     while (STM32F7_FLASH->SR & FLASH_SR_BSY);
 
     STM32F7_FLASH->SR = (FLASH_SR_EOP | FLASH_SR_OPERR | FLASH_SR_WRPERR | FLASH_SR_PGAERR | FLASH_SR_PGPERR | FLASH_SR_ERSERR);
 
-    CHIP_WORD* ChipAddress = (CHIP_WORD *)address;
-    CHIP_WORD* EndAddress = (CHIP_WORD *)(address + length);
-    CHIP_WORD *pBuf = (CHIP_WORD *)buffer;
+    uint32_t* addressStart = reinterpret_cast<uint32_t*>(address);
+    uint32_t* addressEnd = reinterpret_cast<uint32_t*>(address + length);
+    uint32_t* pBuf = (uint32_t*)buffer;
 
     // enable programming
-    while (ChipAddress < EndAddress) {
-        if (*ChipAddress != *pBuf) {
+    auto timeout = 10000000; // 10 seconds for a sector
+
+    while (addressStart < addressEnd) {
+        if (*addressStart != *pBuf) {
 
             STM32F7_FLASH->CR &= CR_PSIZE_MASK;
             STM32F7_FLASH->CR |= FLASH_PSIZE_WORD;
@@ -166,29 +166,35 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_Write(const 
             STM32F7_FLASH->CR |= FLASH_CR_PG;
 
             // write data
-            *ChipAddress = *pBuf;
+            *addressStart = *pBuf;
 
             __DSB();
 
             // wait for completion
+            timeout = 10000000;
+
             while (((STM32F7_FLASH->SR & FLASH_SR_EOP) == 0) || (STM32F7_FLASH->SR & FLASH_SR_BSY)) {
-                STM32F7_Time_Delay(nullptr, 1); // asure host recognizes reattach
+                STM32F7_Time_Delay(nullptr, 1);
                 timeout--;
 
                 if (timeout == 0)
-                    return TinyCLR_Result::InvalidOperation;
+                    goto end_programing;
             }
 
             STM32F7_FLASH->SR |= FLASH_SR_EOP;
 
-            if (*ChipAddress != *pBuf) {
-                return TinyCLR_Result::InvalidOperation;
+            if (*addressStart != *pBuf) {
+                timeout = 0; // to return InvalidOperation
+
+                goto end_programing;
             }
         }
 
-        ChipAddress++;
+        addressStart++;
         pBuf++;
     }
+
+end_programing:
 
     STM32F7_FLASH->CR &= (~FLASH_CR_PG);
 
@@ -197,28 +203,25 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_Write(const 
 
     STM32F7_Startup_CacheEnable();
 
-    return TinyCLR_Result::Success;
+    return timeout != 0 ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_IsSectorErased(const TinyCLR_Deployment_Controller* self, uint32_t sector, bool &erased) {
     if (sector >= SIZEOF_ARRAY(deploymentSectors)) return TinyCLR_Result::IndexOutOfRange;
 
-    uint32_t address = deploymentSectorAddress[sector];
-    size_t length = deploymentSectorSize[sector];
-
-    CHIP_WORD* ChipAddress = (CHIP_WORD *)address;
-    CHIP_WORD* EndAddress = (CHIP_WORD *)(address + length);
+    uint32_t* addressStart = reinterpret_cast<uint32_t*>(deploymentSectors[sector].address);
+    uint32_t* addressEnd = reinterpret_cast<uint32_t*>(deploymentSectors[sector].address + deploymentSectors[sector].size);
 
     erased = true;
 
-    while (ChipAddress < EndAddress) {
-        if (*ChipAddress != (CHIP_WORD)-1) {
+    while (addressStart < addressEnd) {
+        if (*addressStart != 0xFFFFFFFF) {
             erased = false;
 
             break;
         }
 
-        ChipAddress++;
+        addressStart++;
     }
 
     return TinyCLR_Result::Success;
@@ -277,13 +280,13 @@ TinyCLR_Result STM32F7_Flash_Uninitialize(const TinyCLR_Deployment_Controller* s
 
 
 TinyCLR_Result STM32F7_Flash_GetSectorSizeForAddress(const TinyCLR_Deployment_Controller* self, uint32_t address, int32_t& size) {
-    int32_t sectors = SIZEOF_ARRAY(deploymentSectorAddress);
+    int32_t sectors = SIZEOF_ARRAY(deploymentSectors);
 
     size = 0;
 
     for (int32_t i = 0; i < sectors; i++) {
-        if (address >= deploymentSectorAddress[i] && address < deploymentSectorAddress[i] + deploymentSectorSize[i]) {
-            size = deploymentSectorSize[i];
+        if (address >= deploymentSectors[i].address && address < deploymentSectors[i].address + deploymentSectors[i].size) {
+            size = deploymentSectors[i].size;
 
             break;
         }
@@ -297,6 +300,12 @@ TinyCLR_Result STM32F7_Flash_GetSectorMap(const TinyCLR_Deployment_Controller* s
     sizes = deploymentSectorSize;
     count = SIZEOF_ARRAY(deploymentSectorAddress);
 
-    return TinyCLR_Result::Success;
+    return count > 0 ? TinyCLR_Result::Success : TinyCLR_Result::NotImplemented;
 }
 
+void STM32F7_Deplpoyment_Reset() {
+    for (int32_t i = 0; i < SIZEOF_ARRAY(deploymentSectors); i++) {
+        deploymentSectorAddress[i] = deploymentSectors[i].address;
+        deploymentSectorSize[i] = deploymentSectors[i].size;
+    }
+}

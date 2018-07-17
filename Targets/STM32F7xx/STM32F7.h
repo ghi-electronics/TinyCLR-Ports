@@ -102,7 +102,6 @@ int32_t STM32F7_Adc_GetMaxValue(const TinyCLR_Adc_Controller* self);
 int32_t STM32F7_Adc_GetResolutionInBits(const TinyCLR_Adc_Controller* self);
 int32_t STM32F7_Adc_GetChannelCount(const TinyCLR_Adc_Controller* self);
 void STM32F7_Adc_Reset();
-TinyCLR_Result STM32F7_Adc_GetControllerCount(const TinyCLR_Adc_Controller* self, int32_t& count);
 
 ////////////////////////////////////////////////////////////////////////////////
 //CAN
@@ -129,7 +128,6 @@ TinyCLR_Result STM32F7_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self,
 TinyCLR_Result STM32F7_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self, size_t& size);
 TinyCLR_Result STM32F7_Can_SetWriteBufferSize(const TinyCLR_Can_Controller* self, size_t size);
 void STM32F7_Can_Reset();
-TinyCLR_Result STM32F7_Can_GetControllerCount(const TinyCLR_Can_Controller* self, int32_t& count);
 
 ////////////////////////////////////////////////////////////////////////////////
 //DAC
@@ -145,7 +143,6 @@ int32_t STM32F7_Dac_GetMaxValue(const TinyCLR_Dac_Controller* self);
 int32_t STM32F7_Dac_GetResolutionInBits(const TinyCLR_Dac_Controller* self);
 int32_t STM32F7_Dac_GetChannelCount(const TinyCLR_Dac_Controller* self);
 void STM32F7_Dac_Reset();
-TinyCLR_Result STM32F7_Dac_GetControllerCount(const TinyCLR_Dac_Controller* self, int32_t& count);
 
 ////////////////////////////////////////////////////////////////////////////////
 //GPIO
@@ -164,7 +161,6 @@ uint64_t STM32F7_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Controller* self, in
 TinyCLR_Result STM32F7_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Controller* self, int32_t pin, uint64_t debounceTicks);
 TinyCLR_Result STM32F7_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Controller* self, int32_t pin, TinyCLR_Gpio_ValueChangedHandler handler);
 int32_t STM32F7_Gpio_GetPinCount(const TinyCLR_Gpio_Controller* self);
-TinyCLR_Result STM32F7_Gpio_GetControllerCount(const TinyCLR_Gpio_Controller* self, int32_t& count);
 
 ////////////////////////////////////////////////////////////////////////////////
 //I2C
@@ -177,7 +173,6 @@ TinyCLR_Result STM32F7_I2c_Read(const TinyCLR_I2c_Controller* self, uint8_t* buf
 TinyCLR_Result STM32F7_I2c_Write(const TinyCLR_I2c_Controller* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result);
 TinyCLR_Result STM32F7_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result);
 void STM32F7_I2c_Reset();
-TinyCLR_Result STM32F7_I2c_GetControllerCount(const TinyCLR_I2c_Controller* self, int32_t& count);
 
 ////////////////////////////////////////////////////////////////////////////////
 //PWM
@@ -196,7 +191,6 @@ double STM32F7_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Controller* self);
 double STM32F7_Pwm_GetActualFrequency(const TinyCLR_Pwm_Controller* self);
 int32_t STM32F7_Pwm_GetPinCount(const TinyCLR_Pwm_Controller* self);
 void STM32F7_Pwm_Reset();
-TinyCLR_Result STM32F7_Pwm_GetControllerCount(const TinyCLR_Pwm_Controller* self, int32_t& count);
 
 ////////////////////////////////////////////////////////////////////////////////
 //RTC
@@ -214,7 +208,6 @@ const TinyCLR_Api_Info* STM32F7_SdCard_GetApi();
 
 TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_SdCard_Controller* self);
 TinyCLR_Result STM32F7_SdCard_Release(const TinyCLR_SdCard_Controller* self);
-TinyCLR_Result STM32F7_SdCard_GetControllerCount(const TinyCLR_SdCard_Controller* self, int32_t& count);
 
 TinyCLR_Result STM32F7_SdCard_ReadSector(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, uint8_t* data, int32_t timeout);
 TinyCLR_Result STM32F7_SdCard_WriteSector(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, const uint8_t* data, int32_t timeout);
@@ -240,7 +233,6 @@ int32_t STM32F7_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self);
 int32_t STM32F7_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self);
 TinyCLR_Result STM32F7_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller* self, int32_t* dataBitLengths, size_t& dataBitLengthsCount);
 void STM32F7_Spi_Reset();
-TinyCLR_Result STM32F7_Spi_GetControllerCount(const TinyCLR_Spi_Controller* self, int32_t& count);
 
 ////////////////////////////////////////////////////////////////////////////////
 //UART
@@ -272,7 +264,6 @@ TinyCLR_Result STM32F7_Uart_GetUnreadCount(const TinyCLR_Uart_Controller* self, 
 TinyCLR_Result STM32F7_Uart_GetUnwrittenCount(const TinyCLR_Uart_Controller* self, size_t& count);
 TinyCLR_Result STM32F7_Uart_ClearReadBuffer(const TinyCLR_Uart_Controller* self);
 TinyCLR_Result STM32F7_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self);
-TinyCLR_Result STM32F7_Uart_GetControllerCount(const TinyCLR_Uart_Controller* self, int32_t& count);
 void STM32F7_Uart_Reset();
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -414,7 +405,6 @@ TinyCLR_Result STM32F7_Display_GetConfiguration(const TinyCLR_Display_Controller
 TinyCLR_Result STM32F7_Display_SetConfiguration(const TinyCLR_Display_Controller* self, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration);
 TinyCLR_Result STM32F7_Display_DrawBuffer(const TinyCLR_Display_Controller* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data);
 TinyCLR_Result STM32F7_Display_WriteString(const TinyCLR_Display_Controller* self, const char* buffer, size_t length);
-TinyCLR_Result STM32F7_Display_GetControllerCount(const TinyCLR_Display_Controller* self, int32_t& count);
 
 void STM32F7_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiProvider, const TinyCLR_Interop_Manager* interopProvider);
 void STM32F7_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiProvider, const TinyCLR_Interop_Manager* interopProvider);
