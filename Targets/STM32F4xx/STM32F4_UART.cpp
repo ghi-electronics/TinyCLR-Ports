@@ -61,14 +61,14 @@ struct UartDriver {
     const TinyCLR_Uart_Controller* controller;
 };
 
-static const STM32F4_Gpio_Pin STM32F4_Uart_Tx_Pins[] = STM32F4_UART_TX_PINS;
-static const STM32F4_Gpio_Pin STM32F4_Uart_Rx_Pins[] = STM32F4_UART_RX_PINS;
-static const STM32F4_Gpio_Pin STM32F4_Uart_Cts_Pins[] = STM32F4_UART_CTS_PINS;
-static const STM32F4_Gpio_Pin STM32F4_Uart_Rts_Pins[] = STM32F4_UART_RTS_PINS;
+static const STM32F4_Gpio_Pin UartTxPins[] = STM32F4_UART_TX_PINS;
+static const STM32F4_Gpio_Pin UartRxPins[] = STM32F4_UART_RX_PINS;
+static const STM32F4_Gpio_Pin UartCtsPins[] = STM32F4_UART_CTS_PINS;
+static const STM32F4_Gpio_Pin UartRtsPins[] = STM32F4_UART_RTS_PINS;
 static const uint32_t STM32F4_Uart_RxDefaultBuffersSize[] = STM32F4_UART_DEFAULT_RX_BUFFER_SIZE;
 static const uint32_t STM32F4_Uart_TxDefaultBuffersSize[] = STM32F4_UART_DEFAULT_TX_BUFFER_SIZE;
 
-static const int TOTAL_UART_CONTROLLERS = SIZEOF_ARRAY(STM32F4_Uart_Tx_Pins);
+static const int TOTAL_UART_CONTROLLERS = SIZEOF_ARRAY(UartTxPins);
 
 static USART_TypeDef_Ptr STM32F4_Uart_Ports[TOTAL_UART_CONTROLLERS];
 
@@ -342,7 +342,7 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (driver->isOpened || !STM32F4_GpioInternal_OpenPin(STM32F4_Uart_Rx_Pins[controllerIndex].number) || !STM32F4_GpioInternal_OpenPin(STM32F4_Uart_Tx_Pins[controllerIndex].number))
+    if (driver->isOpened || !STM32F4_GpioInternal_OpenPin(UartRxPins[controllerIndex].number) || !STM32F4_GpioInternal_OpenPin(UartTxPins[controllerIndex].number))
         return TinyCLR_Result::SharingViolation;
 
     driver->txBufferCount = 0;
@@ -463,10 +463,10 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
 
     driver->portPtr->CR3 = ctrl_cr3;
 
-    auto& tx = STM32F4_Uart_Tx_Pins[controllerIndex];
-    auto& rx = STM32F4_Uart_Rx_Pins[controllerIndex];
-    auto& cts = STM32F4_Uart_Cts_Pins[controllerIndex];
-    auto& rts = STM32F4_Uart_Rts_Pins[controllerIndex];
+    auto& tx = UartTxPins[controllerIndex];
+    auto& rx = UartRxPins[controllerIndex];
+    auto& cts = UartCtsPins[controllerIndex];
+    auto& rts = UartRtsPins[controllerIndex];
 
     STM32F4_GpioInternal_ConfigurePin(rx.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::PullUp, rx.alternateFunction);
     STM32F4_GpioInternal_ConfigurePin(tx.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, tx.alternateFunction);
@@ -647,12 +647,12 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Controller* self) {
     }
 
     if (driver->isOpened) {
-        STM32F4_GpioInternal_ClosePin(STM32F4_Uart_Rx_Pins[controllerIndex].number);
-        STM32F4_GpioInternal_ClosePin(STM32F4_Uart_Tx_Pins[controllerIndex].number);
+        STM32F4_GpioInternal_ClosePin(UartRxPins[controllerIndex].number);
+        STM32F4_GpioInternal_ClosePin(UartTxPins[controllerIndex].number);
 
         if (driver->handshaking) {
-            STM32F4_GpioInternal_ClosePin(STM32F4_Uart_Cts_Pins[controllerIndex].number);
-            STM32F4_GpioInternal_ClosePin(STM32F4_Uart_Rts_Pins[controllerIndex].number);
+            STM32F4_GpioInternal_ClosePin(UartCtsPins[controllerIndex].number);
+            STM32F4_GpioInternal_ClosePin(UartRtsPins[controllerIndex].number);
         }
     }
 
@@ -701,7 +701,7 @@ bool STM32F4_Uart_TxHandshakeEnabledState(int controllerIndex) {
     if (driver->portPtr->CR3 & USART_CR3_CTSE) {
         TinyCLR_Gpio_PinValue value;
 
-        STM32F4_Gpio_Read(nullptr, STM32F4_Uart_Cts_Pins[controllerIndex].number, value);
+        STM32F4_Gpio_Read(nullptr, UartCtsPins[controllerIndex].number, value);
 
         return !(value == TinyCLR_Gpio_PinValue::High);
     }
