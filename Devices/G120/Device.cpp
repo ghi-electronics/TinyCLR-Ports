@@ -83,7 +83,7 @@ TinyCLR_Gpio_PinValue LPC17_Startup_GetDebuggerSelectorUsbState() {
         return G120E_DEBUGGER_SELECTOR_USB_STATE;
 }
 
-const TinyCLR_Startup_UsbDebuggerConfiguration LPC17_Startup_UsbDebuggerConfiguration = {    
+const TinyCLR_Startup_UsbDebuggerConfiguration LPC17_Startup_UsbDebuggerConfiguration = {
     USB_DEBUGGER_VENDOR_ID,
     USB_DEBUGGER_PRODUCT_ID,
     CONCAT(L,DEVICE_MANUFACTURER),
@@ -91,13 +91,13 @@ const TinyCLR_Startup_UsbDebuggerConfiguration LPC17_Startup_UsbDebuggerConfigur
     0
 };
 
-const TinyCLR_Startup_UartDebuggerConfiguration LPC17_Startup_UartDebuggerConfiguration = {    
+const TinyCLR_Startup_UartDebuggerConfiguration LPC17_Startup_UartDebuggerConfiguration = {
 };
 
-void LPC17_Startup_GetDebuggerTransportManager(const TinyCLR_Api_Info*& api, const void*& configuration) {
+void LPC17_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value, valueUsbActive;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC17_Gpio_GetApi()->Implementation);    
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC17_Gpio_GetApi()->Implementation);
 
     provider->AcquirePin(provider, LPC17_Startup_GetDebuggerSelectorPin());
     provider->SetDriveMode(provider, LPC17_Startup_GetDebuggerSelectorPin(), LPC17_Startup_GetDebuggerSelectorPull());
@@ -125,7 +125,7 @@ void LPC17_Startup_GetDebuggerTransportManager(const TinyCLR_Api_Info*& api, con
 void LPC17_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC17_Gpio_GetApi()->Implementation);    
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC17_Gpio_GetApi()->Implementation);
 
     provider->AcquirePin(provider, RUN_APP_PIN);
     provider->SetDriveMode(provider, RUN_APP_PIN, RUN_APP_PULL);
@@ -141,81 +141,81 @@ void LPC17_Startup_GetRunApp(bool& runApp) {
 }
 
 // PWM
-const LPC17_Gpio_Pin g_lpc17_g120_pwm_pins[TOTAL_PWM_CONTROLLER][MAX_PWM_PER_CONTROLLER] = LPC17_G120_PWM_PINS;
-const LPC17_Gpio_Pin g_lpc17_g120e_pwm_pins[TOTAL_PWM_CONTROLLER][MAX_PWM_PER_CONTROLLER] = LPC17_G120E_PWM_PINS;
+const LPC17_Gpio_Pin g120PwmPins[TOTAL_PWM_CONTROLLERS][MAX_PWM_PER_CONTROLLER] = LPC17_G120_PWM_PINS;
+const LPC17_Gpio_Pin g120ePwmPins[TOTAL_PWM_CONTROLLERS][MAX_PWM_PER_CONTROLLER] = LPC17_G120E_PWM_PINS;
 
 LPC17_Gpio_Pin LPC17_Pwm_GetPins(int32_t controller, int32_t channel) {
     if (LPC17_Startup_GetDeviceId() == LPC17_G120) {
-        return g_lpc17_g120_pwm_pins[controller][channel];
+        return g120PwmPins[controller][channel];
     }
     else {
-        return g_lpc17_g120e_pwm_pins[controller][channel];
+        return g120ePwmPins[controller][channel];
     }
 }
 
 // Uart
-static const LPC17_Gpio_Pin g_lpc17_g120_uart_tx_pins[] = LPC17_G120_UART_TX_PINS;
-static const LPC17_Gpio_Pin g_lpc17_g120_uart_rx_pins[] = LPC17_G120_UART_RX_PINS;
-static const LPC17_Gpio_Pin g_lpc17_g120_uart_rts_pins[] = LPC17_G120_UART_RTS_PINS;
-static const LPC17_Gpio_Pin g_lpc17_g120_uart_cts_pins[] = LPC17_G120_UART_CTS_PINS;
+static const LPC17_Gpio_Pin g120UartTxPins[] = LPC17_G120_UART_TX_PINS;
+static const LPC17_Gpio_Pin g120UartRxPins[] = LPC17_G120_UART_RX_PINS;
+static const LPC17_Gpio_Pin g120UartRtsPins[] = LPC17_G120_UART_RTS_PINS;
+static const LPC17_Gpio_Pin g120UartCtsPins[] = LPC17_G120_UART_CTS_PINS;
 
-static const LPC17_Gpio_Pin g_lpc17_g120e_uart_tx_pins[] = LPC17_G120E_UART_TX_PINS;
-static const LPC17_Gpio_Pin g_lpc17_g120e_uart_rx_pins[] = LPC17_G120E_UART_RX_PINS;
-static const LPC17_Gpio_Pin g_lpc17_g120e_uart_rts_pins[] = LPC17_G120E_UART_RTS_PINS;
-static const LPC17_Gpio_Pin g_lpc17_g120e_uart_cts_pins[] = LPC17_G120E_UART_CTS_PINS;
+static const LPC17_Gpio_Pin g120eUartTxPins[] = LPC17_G120E_UART_TX_PINS;
+static const LPC17_Gpio_Pin g120eUartRxPins[] = LPC17_G120E_UART_RX_PINS;
+static const LPC17_Gpio_Pin g120eUartRtsPins[] = LPC17_G120E_UART_RTS_PINS;
+static const LPC17_Gpio_Pin g120eUartCtsPins[] = LPC17_G120E_UART_CTS_PINS;
 
 int32_t LPC17_Uart_GetTxPin(int32_t portNum) {
     if (LPC17_Startup_GetDeviceId() == LPC17_G120)
-        return g_lpc17_g120_uart_tx_pins[portNum].number;
+        return g120UartTxPins[portNum].number;
     else
-        return g_lpc17_g120e_uart_tx_pins[portNum].number;
+        return g120eUartTxPins[portNum].number;
 }
 
 int32_t LPC17_Uart_GetRxPin(int32_t portNum) {
     if (LPC17_Startup_GetDeviceId() == LPC17_G120)
-        return g_lpc17_g120_uart_rx_pins[portNum].number;
+        return g120UartRxPins[portNum].number;
     else
-        return g_lpc17_g120e_uart_rx_pins[portNum].number;
+        return g120eUartRxPins[portNum].number;
 }
 
 int32_t LPC17_Uart_GetRtsPin(int32_t portNum) {
     if (LPC17_Startup_GetDeviceId() == LPC17_G120)
-        return g_lpc17_g120_uart_rts_pins[portNum].number;
+        return g120UartRtsPins[portNum].number;
     else
-        return g_lpc17_g120e_uart_rts_pins[portNum].number;
+        return g120eUartRtsPins[portNum].number;
 }
 
 int32_t LPC17_Uart_GetCtsPin(int32_t portNum) {
     if (LPC17_Startup_GetDeviceId() == LPC17_G120)
-        return g_lpc17_g120_uart_cts_pins[portNum].number;
+        return g120UartCtsPins[portNum].number;
     else
-        return g_lpc17_g120e_uart_cts_pins[portNum].number;
+        return g120eUartCtsPins[portNum].number;
 }
 
 LPC17_Gpio_PinFunction LPC17_Uart_GetTxAlternateFunction(int32_t portNum) {
     if (LPC17_Startup_GetDeviceId() == LPC17_G120)
-        return g_lpc17_g120_uart_tx_pins[portNum].pinFunction;
+        return g120UartTxPins[portNum].pinFunction;
     else
-        return g_lpc17_g120e_uart_tx_pins[portNum].pinFunction;
+        return g120eUartTxPins[portNum].pinFunction;
 }
 
 LPC17_Gpio_PinFunction LPC17_Uart_GetRxAlternateFunction(int32_t portNum) {
     if (LPC17_Startup_GetDeviceId() == LPC17_G120)
-        return g_lpc17_g120_uart_rx_pins[portNum].pinFunction;
+        return g120UartRxPins[portNum].pinFunction;
     else
-        return g_lpc17_g120e_uart_rx_pins[portNum].pinFunction;
+        return g120eUartRxPins[portNum].pinFunction;
 }
 
 LPC17_Gpio_PinFunction LPC17_Uart_GetRtsAlternateFunction(int32_t portNum) {
     if (LPC17_Startup_GetDeviceId() == LPC17_G120)
-        return g_lpc17_g120_uart_rts_pins[portNum].pinFunction;
+        return g120UartRtsPins[portNum].pinFunction;
     else
-        return g_lpc17_g120e_uart_rts_pins[portNum].pinFunction;
+        return g120eUartRtsPins[portNum].pinFunction;
 }
 
 LPC17_Gpio_PinFunction LPC17_Uart_GetCtsAlternateFunction(int32_t portNum) {
     if (LPC17_Startup_GetDeviceId() == LPC17_G120)
-        return g_lpc17_g120_uart_cts_pins[portNum].pinFunction;
+        return g120UartCtsPins[portNum].pinFunction;
     else
-        return g_lpc17_g120e_uart_cts_pins[portNum].pinFunction;
+        return g120eUartCtsPins[portNum].pinFunction;
 }

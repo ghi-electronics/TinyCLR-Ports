@@ -17,30 +17,34 @@
 
 #define DISABLED_MASK  0x00000001
 
+#define TOTAL_INTERRUPT_CONTROLLERS 1
+
 TinyCLR_Interrupt_StartStopHandler LPC17_Interrupt_Started;
 TinyCLR_Interrupt_StartStopHandler LPC17_Interrupt_Ended;
 
-static TinyCLR_Interrupt_Controller interruptProvider;
-static TinyCLR_Api_Info interruptApi;
+static TinyCLR_Interrupt_Controller interruptControllers[TOTAL_INTERRUPT_CONTROLLERS];
+static TinyCLR_Api_Info interruptApi[TOTAL_INTERRUPT_CONTROLLERS];
 
 const TinyCLR_Api_Info* LPC17_Interrupt_GetApi() {
-    interruptProvider.ApiInfo = &interruptApi;
-    interruptProvider.ApiInfo = &interruptApi;
-    interruptProvider.Initialize = &LPC17_Interrupt_Initialize;
-    interruptProvider.Uninitialize = &LPC17_Interrupt_Uninitialize;
-    interruptProvider.Enable = &LPC17_Interrupt_GlobalEnabled;
-    interruptProvider.Disable = &LPC17_Interrupt_GlobalDisabled;
-    interruptProvider.WaitForInterrupt = &LPC17_Interrupt_GlobalWaitForInterrupt;
-    interruptProvider.IsDisabled = &LPC17_Interrupt_GlobalIsDisabled;
-    interruptProvider.Restore = &LPC17_Interrupt_GlobalRestore;
+    for (int32_t i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
+        interruptControllers[i].ApiInfo = &interruptApi[i];
+        interruptControllers[i].Initialize = &LPC17_Interrupt_Initialize;
+        interruptControllers[i].Uninitialize = &LPC17_Interrupt_Uninitialize;
+        interruptControllers[i].Enable = &LPC17_Interrupt_GlobalEnabled;
+        interruptControllers[i].Disable = &LPC17_Interrupt_GlobalDisabled;
+        interruptControllers[i].WaitForInterrupt = &LPC17_Interrupt_GlobalWaitForInterrupt;
+        interruptControllers[i].IsDisabled = &LPC17_Interrupt_GlobalIsDisabled;
+        interruptControllers[i].Restore = &LPC17_Interrupt_GlobalRestore;
 
-    interruptApi.Author = "GHI Electronics, LLC";
-    interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.InterruptController";
-    interruptApi.Type = TinyCLR_Api_Type::InterruptController;
-    interruptApi.Version = 0;
-    interruptApi.Implementation = &interruptProvider;
+        interruptApi[i].Author = "GHI Electronics, LLC";
+        interruptApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.InterruptController";
+        interruptApi[i].Type = TinyCLR_Api_Type::InterruptController;
+        interruptApi[i].Version = 0;
+        interruptApi[i].Implementation = &interruptControllers[i];
+        interruptApi[i].State = nullptr;
+    }
 
-    return &interruptApi;
+    return (const TinyCLR_Api_Info*)&interruptApi;
 }
 
 extern "C" {

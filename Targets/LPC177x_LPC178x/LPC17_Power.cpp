@@ -21,46 +21,51 @@
 #define LPC_SC_PCON_PM1_Pos            1                                             /*!< Power mode control bit 0. */
 #define LPC_SC_PCON_PM1_Msk            (1UL << LPC_SC_PCON_PM0_Pos)                  /*!< LPC_SC_PCON_PM0_Msk. */
 
-static void(*g_LPC17_stopHandler)();
-static void(*g_LPC17_restartHandler)();
+static void(*PowerStopHandler)();
+static void(*PowerRestartHandler)();
 
-static TinyCLR_Power_Controller powerProvider;
-static TinyCLR_Api_Info powerApi;
+#define TOTAL_POWER_CONTROLLERS 1
+
+static TinyCLR_Power_Controller powerControllers[TOTAL_POWER_CONTROLLERS];
+static TinyCLR_Api_Info powerApi[TOTAL_POWER_CONTROLLERS];
 
 const TinyCLR_Api_Info* LPC17_Power_GetApi() {
-    powerProvider.ApiInfo = &powerApi;
-    powerProvider.Initialize = &LPC17_Power_Initialize;
-    powerProvider.Uninitialize = &LPC17_Power_Uninitialize;
-    powerProvider.Reset = &LPC17_Power_Reset;
-    powerProvider.Sleep = &LPC17_Power_Sleep;
+    for (int32_t i = 0; i < TOTAL_POWER_CONTROLLERS; i++) {
+        powerControllers[i].ApiInfo = &powerApi[i];
+        powerControllers[i].Initialize = &LPC17_Power_Initialize;
+        powerControllers[i].Uninitialize = &LPC17_Power_Uninitialize;
+        powerControllers[i].Reset = &LPC17_Power_Reset;
+        powerControllers[i].Sleep = &LPC17_Power_Sleep;
 
-    powerApi.Author = "GHI Electronics, LLC";
-    powerApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.PowerController";
-    powerApi.Type = TinyCLR_Api_Type::PowerController;
-    powerApi.Version = 0;
-    powerApi.Implementation = &powerProvider;
+        powerApi[i].Author = "GHI Electronics, LLC";
+        powerApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.PowerController";
+        powerApi[i].Type = TinyCLR_Api_Type::PowerController;
+        powerApi[i].Version = 0;
+        powerApi[i].Implementation = &powerControllers[i];
+        powerApi[i].State = nullptr;
+    }
 
-    return &powerApi;
+    return (const TinyCLR_Api_Info*)&powerApi;
 }
 
 void LPC17_Power_SetHandlers(void(*stop)(), void(*restart)()) {
-    g_LPC17_stopHandler = stop;
-    g_LPC17_restartHandler = restart;
+    PowerStopHandler = stop;
+    PowerRestartHandler = restart;
 }
 
 void LPC17_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level) {
     switch (level) {
 
     case TinyCLR_Power_SleepLevel::Hibernate: // stop
-        if (g_LPC17_stopHandler != 0)
-            g_LPC17_stopHandler();
+        if (PowerStopHandler != 0)
+            PowerStopHandler();
 
         return;
 
     case TinyCLR_Power_SleepLevel::Off: // standby
         // stop peripherals if needed
-        if (g_LPC17_stopHandler != 0)
-            g_LPC17_stopHandler();
+        if (PowerStopHandler != 0)
+            PowerStopHandler();
 
         __WFI(); // soft power off, never returns
         return;

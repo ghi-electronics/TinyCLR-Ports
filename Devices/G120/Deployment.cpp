@@ -16,33 +16,39 @@
 #include <LPC17.h>
 #include "../../Drivers/S25FL032_Flash/S25FL032_Flash.h"
 
-static TinyCLR_Deployment_Controller deploymentManager;
-static TinyCLR_Api_Info deploymentApi;
+#define TOTAL_DEPLOYMENT_CONTROLLERS 1
+
+static TinyCLR_Deployment_Controller deploymentControllers[TOTAL_DEPLOYMENT_CONTROLLERS];
+static TinyCLR_Api_Info deploymentApi[TOTAL_DEPLOYMENT_CONTROLLERS];
 
 const TinyCLR_Api_Info* LPC17_Deployment_GetApi() {
-    deploymentManager.ApiInfo = &deploymentApi;
-    deploymentManager.Initialize = &LPC17_Deployment_Initialize;
-    deploymentManager.Uninitialize = &LPC17_Deployment_Uninitialize;
-    deploymentManager.Read = &LPC17_Deployment_Read;
-    deploymentManager.Write = &LPC17_Deployment_Write;
-    deploymentManager.EraseSector = &LPC17_Deployment_EraseBlock;
-    deploymentManager.IsSectorErased = &LPC17_Deployment_IsBlockErased;
-    deploymentManager.GetSectorMap = &LPC17_Deployment_GetSectorMap;
+    for (int32_t i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
+        deploymentControllers[i].ApiInfo = &deploymentApi[i];
+        deploymentControllers[i].Initialize = &LPC17_Deployment_Initialize;
+        deploymentControllers[i].Uninitialize = &LPC17_Deployment_Uninitialize;
+        deploymentControllers[i].Read = &LPC17_Deployment_Read;
+        deploymentControllers[i].Write = &LPC17_Deployment_Write;
+        deploymentControllers[i].EraseSector = &LPC17_Deployment_EraseSector;
+        deploymentControllers[i].IsSectorErased = &LPC17_Deployment_IsSectorErased;
+        deploymentControllers[i].GetSectorMap = &LPC17_Deployment_GetSectorMap;
 
-    deploymentApi.Author = "GHI Electronics, LLC";
-    deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.S25FL032.DeploymentController";
-    deploymentApi.Type = TinyCLR_Api_Type::DeploymentController;
-    deploymentApi.Version = 0;
-    deploymentApi.Implementation = &deploymentManager;
+        deploymentApi[i].Author = "GHI Electronics, LLC";
+        deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.DeploymentController";
+        deploymentApi[i].Type = TinyCLR_Api_Type::DeploymentController;
+        deploymentApi[i].Version = 0;
+        deploymentApi[i].Implementation = &deploymentControllers[i];
+        deploymentApi[i].State = nullptr;
+    }
 
-    return &deploymentApi;
+    return (const TinyCLR_Api_Info*)&deploymentApi;
 }
 
 TinyCLR_Result LPC17_Deployment_Initialize(const TinyCLR_Deployment_Controller* self, bool& supportXIP) {
-    const TinyCLR_Api_Info* spiApi = CONCAT(DEVICE_TARGET, _Spi_GetApi)();
-    TinyCLR_Spi_Controller* spiManager = (TinyCLR_Spi_Controller*)spiApi->Implementation;
+    const TinyCLR_Api_Info* spiApi = &CONCAT(DEVICE_TARGET, _Spi_GetApi)()[LPC17_DEPLOYMENT_SPI_PORT];
 
-    return S25FL032_Flash_Acquire(spiManager, LPC17_DEPLOYMENT_SPI_PORT, LPC17_DEPLOYMENT_SPI_ENABLE_PIN, supportXIP);
+    TinyCLR_Spi_Controller* spiController = (TinyCLR_Spi_Controller*)spiApi->Implementation;
+
+    return S25FL032_Flash_Acquire(spiController, LPC17_DEPLOYMENT_SPI_ENABLE_PIN, supportXIP);
 }
 
 TinyCLR_Result LPC17_Deployment_Uninitialize(const TinyCLR_Deployment_Controller* self) {
@@ -57,13 +63,13 @@ TinyCLR_Result LPC17_Deployment_Write(const TinyCLR_Deployment_Controller* self,
     return S25FL032_Flash_Write(address, length, buffer);;
 }
 
-TinyCLR_Result LPC17_Deployment_EraseBlock(const TinyCLR_Deployment_Controller* self, uint32_t sector) {
+TinyCLR_Result LPC17_Deployment_EraseSector(const TinyCLR_Deployment_Controller* self, uint32_t sector) {
     sector += LPC17_DEPLOYMENT_SECTOR_START;
 
     return S25FL032_Flash_EraseBlock(sector);
 }
 
-TinyCLR_Result LPC17_Deployment_IsBlockErased(const TinyCLR_Deployment_Controller* self, uint32_t sector, bool& erased) {
+TinyCLR_Result LPC17_Deployment_IsSectorErased(const TinyCLR_Deployment_Controller* self, uint32_t sector, bool& erased) {
     sector += LPC17_DEPLOYMENT_SECTOR_START;
 
     return S25FL032_Flash_IsBlockErased(sector, erased);

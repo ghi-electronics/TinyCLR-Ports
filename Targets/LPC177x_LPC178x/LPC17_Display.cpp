@@ -394,8 +394,10 @@ uint32_t LPC17_Display_GetPixelClockDivider();
 int32_t LPC17_Display_GetOrientation();
 uint32_t* LPC17_Display_GetFrameBuffer();
 
-static TinyCLR_Display_Controller displayProvider;
-static TinyCLR_Api_Info displayApi;
+#define TOTAL_DISPLAY_CONTROLLERS 1
+
+static TinyCLR_Display_Controller displayControllers[TOTAL_DISPLAY_CONTROLLERS];
+static TinyCLR_Api_Info displayApi[TOTAL_DISPLAY_CONTROLLERS];
 
 bool LPC17_Display_Initialize() {
     int32_t i;
@@ -995,41 +997,37 @@ TinyCLR_Result LPC17_Display_GetCapabilities(const TinyCLR_Display_Controller* s
 }
 
 const TinyCLR_Api_Info* LPC17_Display_GetApi() {
-    displayProvider.ApiInfo = &displayApi;
-    displayProvider.Acquire = &LPC17_Display_Acquire;
-    displayProvider.Release = &LPC17_Display_Release;
-    displayProvider.Enable = &LPC17_Display_Enable;
-    displayProvider.Disable = &LPC17_Display_Disable;
-    displayProvider.SetConfiguration = &LPC17_Display_SetConfiguration;
-    displayProvider.GetConfiguration = &LPC17_Display_GetConfiguration;
-    displayProvider.GetCapabilities = &LPC17_Display_GetCapabilities;
-    displayProvider.DrawBuffer = &LPC17_Display_DrawBuffer;
-    displayProvider.WriteString = &LPC17_Display_WriteString;
-    displayProvider.GetControllerCount = &LPC17_Display_GetControllerCount;
+    for (auto i = 0; i < TOTAL_DISPLAY_CONTROLLERS; i++) {
+        displayControllers[i].ApiInfo = &displayApi[i];
+        displayControllers[i].Acquire = &LPC17_Display_Acquire;
+        displayControllers[i].Release = &LPC17_Display_Release;
+        displayControllers[i].Enable = &LPC17_Display_Enable;
+        displayControllers[i].Disable = &LPC17_Display_Disable;
+        displayControllers[i].SetConfiguration = &LPC17_Display_SetConfiguration;
+        displayControllers[i].GetConfiguration = &LPC17_Display_GetConfiguration;
+        displayControllers[i].GetCapabilities = &LPC17_Display_GetCapabilities;
+        displayControllers[i].DrawBuffer = &LPC17_Display_DrawBuffer;
+        displayControllers[i].WriteString = &LPC17_Display_WriteString;
 
-    displayApi.Author = "GHI Electronics, LLC";
-    displayApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.DisplayProvider";
-    displayApi.Type = TinyCLR_Api_Type::DisplayProvider;
-    displayApi.Version = 0;
-    displayApi.Implementation = &displayProvider;
+        displayApi[i].Author = "GHI Electronics, LLC";
+        displayApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.DisplayController";
+        displayApi[i].Type = TinyCLR_Api_Type::DisplayController;
+        displayApi[i].Version = 0;
+        displayApi[i].Implementation = &displayControllers[i];
+        displayApi[i].State = nullptr;
+    }
 
     m_LPC17_Display_VituralRam = nullptr;
 
-    return &displayApi;
+    return (const TinyCLR_Api_Info*)&displayApi;;
 }
 
 void LPC17_Display_Reset() {
     LPC17_Display_Clear();
 
     if (m_LPC17_DisplayEnable)
-        LPC17_Display_Release(&displayProvider, 0);
+        LPC17_Display_Release(&displayControllers[0]);
 
     m_LPC17_DisplayEnable = false;
-}
-
-TinyCLR_Result LPC17_Display_GetControllerCount(const TinyCLR_Display_Controller* self, int32_t& count) {
-    count = 1;
-
-    return TinyCLR_Result::Success;
 }
 
