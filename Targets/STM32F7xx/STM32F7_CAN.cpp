@@ -324,11 +324,11 @@ struct CanDriver {
     bool isOpened;
 };
 
-static const STM32F7_Gpio_Pin g_STM32F7_Can_Tx_Pins[] = STM32F7_CAN_TX_PINS;
-static const STM32F7_Gpio_Pin g_STM32F7_Can_Rx_Pins[] = STM32F7_CAN_RX_PINS;
-static const uint32_t g_STM32F7_Can_defaultBuffersSize[] = STM32F7_CAN_BUFFER_DEFAULT_SIZE;
+static const STM32F7_Gpio_Pin canTxPins[] = STM32F7_CAN_TX_PINS;
+static const STM32F7_Gpio_Pin canRxPins[] = STM32F7_CAN_RX_PINS;
+static const uint32_t canDefaultBuffersSize[] = STM32F7_CAN_BUFFER_DEFAULT_SIZE;
 
-static const int TOTAL_CAN_CONTROLLERS = SIZEOF_ARRAY(g_STM32F7_Can_Tx_Pins);
+static const int TOTAL_CAN_CONTROLLERS = SIZEOF_ARRAY(canTxPins);
 
 static CanDriver canDrivers[TOTAL_CAN_CONTROLLERS];
 
@@ -1073,7 +1073,7 @@ TinyCLR_Result STM32F7_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self,
 
     int32_t controllerIndex = driver->controllerIndex;
 
-    size = driver->can_rxBufferSize == 0 ? g_STM32F7_Can_defaultBuffersSize[controllerIndex] : driver->can_rxBufferSize;
+    size = driver->can_rxBufferSize == 0 ? canDefaultBuffersSize[controllerIndex] : driver->can_rxBufferSize;
 
     return TinyCLR_Result::Success;
 }
@@ -1088,7 +1088,7 @@ TinyCLR_Result STM32F7_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self,
         return TinyCLR_Result::Success;
     }
     else {
-        driver->can_rxBufferSize = g_STM32F7_Can_defaultBuffersSize[controllerIndex];
+        driver->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
         return TinyCLR_Result::ArgumentInvalid;;
     }
 }
@@ -1227,21 +1227,21 @@ TinyCLR_Result STM32F7_Can_Acquire(const TinyCLR_Can_Controller* self) {
 
     int32_t controllerIndex = driver->controllerIndex;
 
-    if (!STM32F7_GpioInternal_OpenPin(g_STM32F7_Can_Tx_Pins[controllerIndex].number))
+    if (!STM32F7_GpioInternal_OpenPin(canTxPins[controllerIndex].number))
         return TinyCLR_Result::SharingViolation;
 
-    if (!STM32F7_GpioInternal_OpenPin(g_STM32F7_Can_Rx_Pins[controllerIndex].number))
+    if (!STM32F7_GpioInternal_OpenPin(canRxPins[controllerIndex].number))
         return TinyCLR_Result::SharingViolation;
 
     // set pin as analog
-    STM32F7_GpioInternal_ConfigurePin(g_STM32F7_Can_Tx_Pins[controllerIndex].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, g_STM32F7_Can_Tx_Pins[controllerIndex].alternateFunction);
-    STM32F7_GpioInternal_ConfigurePin(g_STM32F7_Can_Rx_Pins[controllerIndex].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, g_STM32F7_Can_Rx_Pins[controllerIndex].alternateFunction);
+    STM32F7_GpioInternal_ConfigurePin(canTxPins[controllerIndex].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, canTxPins[controllerIndex].alternateFunction);
+    STM32F7_GpioInternal_ConfigurePin(canRxPins[controllerIndex].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, canRxPins[controllerIndex].alternateFunction);
 
     driver->can_rx_count = 0;
     driver->can_rx_in = 0;
     driver->can_rx_out = 0;
     driver->baudrate = 0;
-    driver->can_rxBufferSize = g_STM32F7_Can_defaultBuffersSize[controllerIndex];
+    driver->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
     driver->provider = self;
 
     driver->canRxMessagesFifo = nullptr;
@@ -1270,8 +1270,8 @@ TinyCLR_Result STM32F7_Can_Release(const TinyCLR_Can_Controller* self) {
     }
 
     if (driver->isOpened) {
-        STM32F7_GpioInternal_ClosePin(g_STM32F7_Can_Tx_Pins[controllerIndex].number);
-        STM32F7_GpioInternal_ClosePin(g_STM32F7_Can_Rx_Pins[controllerIndex].number);
+        STM32F7_GpioInternal_ClosePin(canTxPins[controllerIndex].number);
+        STM32F7_GpioInternal_ClosePin(canRxPins[controllerIndex].number);
     }
 
     driver->isOpened = false;
