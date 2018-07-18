@@ -1019,7 +1019,7 @@ const TinyCLR_Api_Info* LPC17_Display_GetApi() {
 
     m_LPC17_Display_VituralRam = nullptr;
 
-    return (const TinyCLR_Api_Info*)&displayApi;;
+    return (const TinyCLR_Api_Info*)&displayApi;
 }
 
 void LPC17_Display_Reset() {
