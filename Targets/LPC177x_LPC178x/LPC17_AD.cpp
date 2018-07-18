@@ -239,7 +239,7 @@ struct AdcDriver {
     bool isOpen[SIZEOF_ARRAY(adcPins)];
 };
 
-AdcDriver adcDrivers[TOTAL_ADC_CONTROLLERS];
+static AdcDriver adcDrivers[TOTAL_ADC_CONTROLLERS];
 
 const TinyCLR_Api_Info* LPC17_Adc_GetApi() {
     for (int32_t i = 0; i < TOTAL_ADC_CONTROLLERS; i++) {

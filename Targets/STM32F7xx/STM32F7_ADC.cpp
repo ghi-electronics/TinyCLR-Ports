@@ -35,7 +35,7 @@ struct AdcDriver {
     bool isOpen[STM32F7_AD_NUM];
 };
 
-AdcDriver adcDrivers[TOTAL_ADC_CONTROLLERS];
+static AdcDriver adcDrivers[TOTAL_ADC_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F7_Adc_GetApi() {
     for (int32_t i = 0; i < TOTAL_ADC_CONTROLLERS; i++) {
