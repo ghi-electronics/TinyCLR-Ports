@@ -893,8 +893,8 @@ TinyCLR_Result AT91_Deployment_Initialize(const TinyCLR_Deployment_Controller* s
 TinyCLR_Result AT91_Deployment_Uninitialize(const TinyCLR_Deployment_Controller* self);
 TinyCLR_Result AT91_Deployment_Read(const TinyCLR_Deployment_Controller* self, uint32_t address, size_t length, uint8_t* buffer);
 TinyCLR_Result AT91_Deployment_Write(const TinyCLR_Deployment_Controller* self, uint32_t address, size_t length, const uint8_t* buffer);
-TinyCLR_Result AT91_Deployment_EraseBlock(const TinyCLR_Deployment_Controller* self, uint32_t sector);
-TinyCLR_Result AT91_Deployment_IsBlockErased(const TinyCLR_Deployment_Controller* self, uint32_t sector, bool &erased);
+TinyCLR_Result AT91_Deployment_EraseSector(const TinyCLR_Deployment_Controller* self, uint32_t sector);
+TinyCLR_Result AT91_Deployment_IsSectorErased(const TinyCLR_Deployment_Controller* self, uint32_t sector, bool &erased);
 TinyCLR_Result AT91_Deployment_GetBytesPerSector(const TinyCLR_Deployment_Controller* self, uint32_t address, int32_t& size);
 TinyCLR_Result AT91_Deployment_GetSectorMap(const TinyCLR_Deployment_Controller* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count);
 

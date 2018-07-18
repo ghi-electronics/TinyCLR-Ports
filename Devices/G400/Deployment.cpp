@@ -16,36 +16,42 @@
 #include <AT91.h>
 #include "../../Drivers/AT45DB321D_Flash/AT45DB321D_Flash.h"
 
-static TinyCLR_Deployment_Controller deploymentManager;
-static TinyCLR_Api_Info deploymentApi;
+#define TOTAL_DEPLOYMENT_CONTROLLERS 1
+
+static TinyCLR_Deployment_Controller deploymentControllers[TOTAL_DEPLOYMENT_CONTROLLERS];
+static TinyCLR_Api_Info deploymentApi[TOTAL_DEPLOYMENT_CONTROLLERS];
 
 const TinyCLR_Api_Info* AT91_Deployment_GetApi() {
-    deploymentManager.ApiInfo = &deploymentApi;
-    deploymentManager.Initialize = &AT91_Deployment_Initialize;
-    deploymentManager.Uninitialize = &AT91_Deployment_Uninitialize;
-    deploymentManager.Read = &AT91_Deployment_Read;
-    deploymentManager.Write = &AT91_Deployment_Write;
-    deploymentManager.EraseSector = &AT91_Deployment_EraseBlock;
-    deploymentManager.IsSectorErased = &AT91_Deployment_IsBlockErased;
-    deploymentManager.GetSectorMap = &AT91_Deployment_GetSectorMap;
+    for (int32_t i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
+        deploymentControllers[i].ApiInfo = &deploymentApi[i];
+        deploymentControllers[i].Initialize = &AT91_Deployment_Initialize;
+        deploymentControllers[i].Uninitialize = &AT91_Deployment_Uninitialize;
+        deploymentControllers[i].Read = &AT91_Deployment_Read;
+        deploymentControllers[i].Write = &AT91_Deployment_Write;
+        deploymentControllers[i].EraseSector = &AT91_Deployment_EraseSector;
+        deploymentControllers[i].IsSectorErased = &AT91_Deployment_IsSectorErased;
+        deploymentControllers[i].GetSectorMap = &AT91_Deployment_GetSectorMap;
 
-    deploymentApi.Author = "GHI Electronics, LLC";
-    deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT45DB321D.DeploymentController";
-    deploymentApi.Type = TinyCLR_Api_Type::DeploymentController;
-    deploymentApi.Version = 0;
-    deploymentApi.Implementation = &deploymentManager;
+        deploymentApi[i].Author = "GHI Electronics, LLC";
+        deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.DeploymentController";
+        deploymentApi[i].Type = TinyCLR_Api_Type::DeploymentController;
+        deploymentApi[i].Version = 0;
+        deploymentApi[i].Implementation = &deploymentControllers[i];
+        deploymentApi[i].State = nullptr;
+    }
 
-    return &deploymentApi;
+    return (const TinyCLR_Api_Info*)&deploymentApi;
 }
 
+
 TinyCLR_Result AT91_Deployment_Initialize(const TinyCLR_Deployment_Controller* self, bool& supportXIP) {
-    const TinyCLR_Api_Info* spiApi = CONCAT(DEVICE_TARGET, _Spi_GetApi)();
-    TinyCLR_Spi_Controller* spiManager = (TinyCLR_Spi_Controller*)spiApi->Implementation;
+    const TinyCLR_Api_Info* spiApi = &CONCAT(DEVICE_TARGET, _Spi_GetApi)()[AT91_DEPLOYMENT_SPI_PORT];
+    TinyCLR_Spi_Controller* spiController = (TinyCLR_Spi_Controller*)spiApi->Implementation;
 
-    const TinyCLR_Api_Info* timeApi = CONCAT(DEVICE_TARGET, _Time_GetApi)();;
-    TinyCLR_NativeTime_Controller* timeManager = (TinyCLR_NativeTime_Controller*)timeApi->Implementation;
+    const TinyCLR_Api_Info* timeApi = &CONCAT(DEVICE_TARGET, _Time_GetApi)()[0];
+    TinyCLR_NativeTime_Controller* timerController = (TinyCLR_NativeTime_Controller*)timeApi->Implementation;
 
-    return AT45DB321D_Flash_Acquire(spiManager, AT91_DEPLOYMENT_SPI_PORT, timeManager, AT91_DEPLOYMENT_SPI_ENABLE_PIN, supportXIP);
+    return AT45DB321D_Flash_Acquire(spiController, timerController, AT91_DEPLOYMENT_SPI_ENABLE_PIN, supportXIP);
 }
 
 TinyCLR_Result AT91_Deployment_Uninitialize(const TinyCLR_Deployment_Controller* self) {
@@ -60,13 +66,13 @@ TinyCLR_Result AT91_Deployment_Write(const TinyCLR_Deployment_Controller* self, 
     return AT45DB321D_Flash_Write(address, length, buffer);;
 }
 
-TinyCLR_Result AT91_Deployment_EraseBlock(const TinyCLR_Deployment_Controller* self, uint32_t sector) {
+TinyCLR_Result AT91_Deployment_EraseSector(const TinyCLR_Deployment_Controller* self, uint32_t sector) {
     sector += AT91_DEPLOYMENT_SECTOR_START;
 
     return AT45DB321D_Flash_EraseBlock(sector);
 }
 
-TinyCLR_Result AT91_Deployment_IsBlockErased(const TinyCLR_Deployment_Controller* self, uint32_t sector, bool& erased) {
+TinyCLR_Result AT91_Deployment_IsSectorErased(const TinyCLR_Deployment_Controller* self, uint32_t sector, bool& erased) {
     sector += AT91_DEPLOYMENT_SECTOR_START;
 
     return AT45DB321D_Flash_IsBlockErased(sector, erased);

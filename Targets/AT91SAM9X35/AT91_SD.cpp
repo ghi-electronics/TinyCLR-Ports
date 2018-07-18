@@ -2338,14 +2338,16 @@ uint8_t SD_Stop(SdCard *pSd, SdDriver *pSdDriver) {
 }
 
 //AT91
-static TinyCLR_SdCard_Controller sdCardProvider;
-static TinyCLR_Api_Info sdCardApi;
+#define TOTAL_SDCARD_CONTROLLERS 1
+
+static TinyCLR_SdCard_Controller sdCardControllers[TOTAL_SDCARD_CONTROLLERS];
+static TinyCLR_Api_Info sdCardApi[TOTAL_SDCARD_CONTROLLERS];
 
 #define AT91_SD_SECTOR_SIZE 512
 #define AT91_SD_TIMEOUT 5000000
 
-struct SdController {
-    int32_t controller;
+struct SdCardDriver {
+    int32_t controllerIndex;
     size_t  sectorCount;
 
     size_t  *sectorSizes;
@@ -2353,14 +2355,14 @@ struct SdController {
     uint8_t *pBufferAligned;
 };
 
-static const AT91_Gpio_Pin g_AT91_SdCard_Data0_Pins[] = AT91_SD_DATA0_PINS;
-static const AT91_Gpio_Pin g_AT91_SdCard_Data1_Pins[] = AT91_SD_DATA1_PINS;
-static const AT91_Gpio_Pin g_AT91_SdCard_Data2_Pins[] = AT91_SD_DATA2_PINS;
-static const AT91_Gpio_Pin g_AT91_SdCard_Data3_Pins[] = AT91_SD_DATA3_PINS;
-static const AT91_Gpio_Pin g_AT91_SdCard_Clk_Pins[] = AT91_SD_CLK_PINS;
-static const AT91_Gpio_Pin g_AT91_SdCard_Cmd_Pins[] = AT91_SD_CMD_PINS;
+static const AT91_Gpio_Pin sdCardData0Pins[] = AT91_SD_DATA0_PINS;
+static const AT91_Gpio_Pin sdCardData1Pins[] = AT91_SD_DATA1_PINS;
+static const AT91_Gpio_Pin sdCardData2Pins[] = AT91_SD_DATA2_PINS;
+static const AT91_Gpio_Pin sdCardData3Pins[] = AT91_SD_DATA3_PINS;
+static const AT91_Gpio_Pin sdCardClkPins[] = AT91_SD_CLK_PINS;
+static const AT91_Gpio_Pin sdCardCmdPins[] = AT91_SD_CMD_PINS;
 
-SdController sdController[1];
+static SdCardDriver sdCardDrivers[TOTAL_SDCARD_CONTROLLERS];
 
 /// MCI driver instance.
 static Mci mciDrv;
@@ -2369,36 +2371,40 @@ static Mci mciDrv;
 static SdCard sdDrv;
 
 const TinyCLR_Api_Info* AT91_SdCard_GetApi() {
-    sdCardProvider.ApiInfo = &sdCardApi;
+    for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
+        sdCardControllers[i].ApiInfo = &sdCardApi[i];
 
-    sdCardProvider.Acquire = &AT91_SdCard_Acquire;
-    sdCardProvider.Release = &AT91_SdCard_Release;
-    sdCardProvider.GetControllerCount = &AT91_SdCard_GetControllerCount;
+        sdCardControllers[i].Acquire = &AT91_SdCard_Acquire;
+        sdCardControllers[i].Release = &AT91_SdCard_Release;
 
-    sdCardProvider.WriteSectors = &AT91_SdCard_WriteSector;
-    sdCardProvider.ReadSectors = &AT91_SdCard_ReadSector;
-    sdCardProvider.EraseSectors = &AT91_SdCard_EraseSector;
-    sdCardProvider.IsSectorErased = &AT91_SdCard_IsSectorErased;
-    sdCardProvider.GetSectorMap = &AT91_SdCard_GetSectorMap;
+        sdCardControllers[i].WriteSectors = &AT91_SdCard_WriteSector;
+        sdCardControllers[i].ReadSectors = &AT91_SdCard_ReadSector;
+        sdCardControllers[i].EraseSectors = &AT91_SdCard_EraseSector;
+        sdCardControllers[i].IsSectorErased = &AT91_SdCard_IsSectorErased;
+        sdCardControllers[i].GetSectorMap = &AT91_SdCard_GetSectorMap;
 
-    sdCardApi.Author = "GHI Electronics, LLC";
-    sdCardApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.SdCardProvider";
-    sdCardApi.Type = TinyCLR_Api_Type::SdCardProvider;
-    sdCardApi.Version = 0;
-    sdCardApi.Implementation = &sdCardProvider;
+        sdCardApi[i].Author = "GHI Electronics, LLC";
+        sdCardApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.SdCardController";
+        sdCardApi[i].Type = TinyCLR_Api_Type::SdCardController;
+        sdCardApi[i].Version = 0;
+        sdCardApi[i].Implementation = &sdCardControllers[i];
+        sdCardApi[i].State = &sdCardDrivers[i];
+    }
 
-    return &sdCardApi;
+    return (const TinyCLR_Api_Info*)&sdCardApi;
 }
 
 TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
-    sdController[controller].controller = controller;
+    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
 
-    auto d0 = g_AT91_SdCard_Data0_Pins[controller];
-    auto d1 = g_AT91_SdCard_Data1_Pins[controller];
-    auto d2 = g_AT91_SdCard_Data2_Pins[controller];
-    auto d3 = g_AT91_SdCard_Data3_Pins[controller];
-    auto clk = g_AT91_SdCard_Clk_Pins[controller];
-    auto cmd = g_AT91_SdCard_Cmd_Pins[controller];
+    auto controllerIndex = driver->controllerIndex;
+
+    auto d0 = sdCardData0Pins[controllerIndex];
+    auto d1 = sdCardData1Pins[controllerIndex];
+    auto d2 = sdCardData2Pins[controllerIndex];
+    auto d3 = sdCardData3Pins[controllerIndex];
+    auto clk = sdCardClkPins[controllerIndex];
+    auto cmd = sdCardCmdPins[controllerIndex];
 
     if (!AT91_Gpio_OpenPin(d0.number)
         || !AT91_Gpio_OpenPin(d1.number)
@@ -2434,28 +2440,32 @@ TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
 
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    sdController[controller].pBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, AT91_SD_SECTOR_SIZE + 4);
+    driver->pBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, AT91_SD_SECTOR_SIZE + 4);
 
-    uint32_t alignAddress = (uint32_t)sdController[controller].pBuffer;
+    uint32_t alignAddress = (uint32_t)driver->pBuffer;
 
     while (alignAddress % 4 > 0) {
         alignAddress++;
     }
 
-    sdController[controller].pBufferAligned = (uint8_t*)alignAddress;
+    driver->pBufferAligned = (uint8_t*)alignAddress;
 
-    sdController[controller].sectorSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
+    driver->sectorSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
-    auto d0 = g_AT91_SdCard_Data0_Pins[controller];
-    auto d1 = g_AT91_SdCard_Data1_Pins[controller];
-    auto d2 = g_AT91_SdCard_Data2_Pins[controller];
-    auto d3 = g_AT91_SdCard_Data3_Pins[controller];
-    auto clk = g_AT91_SdCard_Clk_Pins[controller];
-    auto cmd = g_AT91_SdCard_Cmd_Pins[controller];
+    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
+
+    auto controllerIndex = driver->controllerIndex;
+
+    auto d0 = sdCardData0Pins[controllerIndex];
+    auto d1 = sdCardData1Pins[controllerIndex];
+    auto d2 = sdCardData2Pins[controllerIndex];
+    auto d3 = sdCardData3Pins[controllerIndex];
+    auto clk = sdCardClkPins[controllerIndex];
+    auto cmd = sdCardCmdPins[controllerIndex];
 
     AT91_PMC &pmc = AT91::PMC();
 
@@ -2466,8 +2476,8 @@ TinyCLR_Result AT91_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
 
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    memoryProvider->Free(memoryProvider, sdController[controller].pBuffer);
-    memoryProvider->Free(memoryProvider, sdController[controller].sectorSizes);
+    memoryProvider->Free(memoryProvider, driver->pBuffer);
+    memoryProvider->Free(memoryProvider, driver->sectorSizes);
 
     AT91_Gpio_ClosePin(d0.number);
     AT91_Gpio_ClosePin(d1.number);
@@ -2477,12 +2487,6 @@ TinyCLR_Result AT91_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
     AT91_Gpio_ClosePin(cmd.number);
 
     return TinyCLR_Result::Success;
-
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result AT91_SdCard_GetControllerCount(const TinyCLR_SdCard_Controller* self, int32_t& count) {
-    count = SIZEOF_ARRAY(g_AT91_SdCard_Data0_Pins);
 
     return TinyCLR_Result::Success;
 }
@@ -2506,8 +2510,12 @@ TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Controller* self, ui
 
     volatile uint32_t status;
 
+    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
+
+    auto controllerIndex = driver->controllerIndex;
+
     while (sectorCount > 0) {
-        memcpy(sdController[controller].pBufferAligned, pData, AT91_SD_SECTOR_SIZE);
+        memcpy(driver->pBufferAligned, pData, AT91_SD_SECTOR_SIZE);
 
         AT91_Cache_DisableCaches();
 
@@ -2517,7 +2525,7 @@ TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Controller* self, ui
 
         to = timeout;
 
-        if ((error = SD_WriteBlock(&sdDrv, sectorNum, 1, sdController[controller].pBufferAligned, timeout)) == SD_ERROR_NO_ERROR) {
+        if ((error = SD_WriteBlock(&sdDrv, sectorNum, 1, driver->pBufferAligned, timeout)) == SD_ERROR_NO_ERROR) {
             to = timeout;
 
             while (to > 0 && (((status & AT91C_MCI_DMADONE) != AT91C_MCI_DMADONE) || ((status & AT91C_MCI_XFRDONE) != AT91C_MCI_XFRDONE) || ((status & AT91C_MCI_BLKE) != AT91C_MCI_BLKE))) {
@@ -2564,8 +2572,12 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Controller* self, uin
 
     uint8_t* pData = (uint8_t*)data;
 
+    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
+
+    auto controllerIndex = driver->controllerIndex;
+
     while (sectorCount > 0) {
-        memset(sdController[controller].pBufferAligned, 0, AT91_SD_SECTOR_SIZE);
+        memset(driver->pBufferAligned, 0, AT91_SD_SECTOR_SIZE);
 
         AT91_Cache_DisableCaches();
 
@@ -2576,7 +2588,7 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Controller* self, uin
         status = 0;
         to = timeout;
 
-        if ((error = SD_ReadBlock(&sdDrv, sectorNum, 1, sdController[controller].pBufferAligned, timeout)) == SD_ERROR_NO_ERROR) {
+        if ((error = SD_ReadBlock(&sdDrv, sectorNum, 1, driver->pBufferAligned, timeout)) == SD_ERROR_NO_ERROR) {
             to = timeout;
 
             while (to > 0 && (((status & AT91C_MCI_DMADONE) != AT91C_MCI_DMADONE) || ((status & AT91C_MCI_XFRDONE) != AT91C_MCI_XFRDONE))) {
@@ -2596,7 +2608,7 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Controller* self, uin
             return TinyCLR_Result::TimedOut;
         }
 
-        memcpy(pData, sdController[controller].pBufferAligned, AT91_SD_SECTOR_SIZE);
+        memcpy(pData, driver->pBufferAligned, AT91_SD_SECTOR_SIZE);
 
         pData += AT91_SD_SECTOR_SIZE;
         sectorNum++;
@@ -2620,7 +2632,9 @@ TinyCLR_Result AT91_SdCard_EraseSector(const TinyCLR_SdCard_Controller* self, ui
 }
 
 TinyCLR_Result AT91_SdCard_GetSectorMap(const TinyCLR_SdCard_Controller* self, const size_t*& sizes, size_t& count, bool& isUniform) {
-    sdController[controller].sectorSizes[0] = AT91_SD_SECTOR_SIZE;
+    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
+
+    driver->sectorSizes[0] = AT91_SD_SECTOR_SIZE;
 
     uint8_t C_SIZE_MULT = 0;
 
@@ -2661,7 +2675,7 @@ TinyCLR_Result AT91_SdCard_GetSectorMap(const TinyCLR_SdCard_Controller* self, c
         MemCapacity = (uint64_t)(C_SIZE + 1) * 512 * 1024;
     }
 
-    sizes = sdController[controller].sectorSizes;
+    sizes = driver->sectorSizes;
     count = MemCapacity / AT91_SD_SECTOR_SIZE;
 
     return TinyCLR_Result::Success;

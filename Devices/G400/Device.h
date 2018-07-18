@@ -68,7 +68,7 @@
 
 #define INCLUDE_PWM
 #define MAX_PWM_PER_CONTROLLER 1
-#define TOTAL_PWM_CONTROLLER 4
+#define TOTAL_PWM_CONTROLLERS 4
 #define AT91_PWM_PINS { { { PIN(C,18), PS(C) } }, { { PIN(C,19), PS(C) } }, { { PIN(C,20), PS(C) } }, { { PIN(C,21), PS(C) } } }
 
 #define INCLUDE_RTC
