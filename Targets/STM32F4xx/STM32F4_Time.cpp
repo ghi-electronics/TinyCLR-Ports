@@ -36,7 +36,7 @@ struct TimerDriver {
     static void Reload(uint32_t value);
 };
 
-TimerDriver timerDrivers[TOTAL_TIME_CONTROLLERS];
+static TimerDriver timerDrivers[TOTAL_TIME_CONTROLLERS];
 
 static TinyCLR_NativeTime_Controller timeControllers[TOTAL_TIME_CONTROLLERS];
 static TinyCLR_Api_Info timeApi[TOTAL_TIME_CONTROLLERS];

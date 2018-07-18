@@ -88,7 +88,7 @@ struct TimerDriver {
 // LPC24 TIMER driver
 //////////////////////////////////////////////////////////////////////////////
 
-TimerDriver timerDrivers[TOTAL_TIME_CONTROLLERS];
+static TimerDriver timerDrivers[TOTAL_TIME_CONTROLLERS];
 
 bool TimerDriver::Initialize(uint32_t timer, uint32_t* ISR, void* ISR_Param) {
     DISABLE_INTERRUPTS_SCOPED(irq);
