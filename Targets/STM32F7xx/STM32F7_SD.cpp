@@ -2652,7 +2652,7 @@ static SD_Error FindSCR(uint16_t rca, uint32_t *pscr) {
 #define STM32F7_SD_TIMEOUT 5000000
 #define TOTAL_SDCARD_CONTROLLERS 1
 
-static TinyCLR_SdCard_Controller sdCardProvider[TOTAL_SDCARD_CONTROLLERS];
+static TinyCLR_SdCard_Controller sdCardControllers[TOTAL_SDCARD_CONTROLLERS];
 static TinyCLR_Api_Info sdCardApi[TOTAL_SDCARD_CONTROLLERS];
 
 struct SdCardDriver {
@@ -2673,22 +2673,22 @@ static SdCardDriver sdCardDrivers[TOTAL_SDCARD_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F7_SdCard_GetApi() {
     for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
-        sdCardProvider[i].ApiInfo = &sdCardApi[i];
+        sdCardControllers[i].ApiInfo = &sdCardApi[i];
 
-        sdCardProvider[i].Acquire = &STM32F7_SdCard_Acquire;
-        sdCardProvider[i].Release = &STM32F7_SdCard_Release;
+        sdCardControllers[i].Acquire = &STM32F7_SdCard_Acquire;
+        sdCardControllers[i].Release = &STM32F7_SdCard_Release;
 
-        sdCardProvider[i].WriteSectors = &STM32F7_SdCard_WriteSector;
-        sdCardProvider[i].ReadSectors = &STM32F7_SdCard_ReadSector;
-        sdCardProvider[i].EraseSectors = &STM32F7_SdCard_EraseSector;
-        sdCardProvider[i].IsSectorErased = &STM32F7_SdCard_IsSectorErased;
-        sdCardProvider[i].GetSectorMap = &STM32F7_SdCard_GetSectorMap;
+        sdCardControllers[i].WriteSectors = &STM32F7_SdCard_WriteSector;
+        sdCardControllers[i].ReadSectors = &STM32F7_SdCard_ReadSector;
+        sdCardControllers[i].EraseSectors = &STM32F7_SdCard_EraseSector;
+        sdCardControllers[i].IsSectorErased = &STM32F7_SdCard_IsSectorErased;
+        sdCardControllers[i].GetSectorMap = &STM32F7_SdCard_GetSectorMap;
 
         sdCardApi[i].Author = "GHI Electronics, LLC";
         sdCardApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.SdCardController";
         sdCardApi[i].Type = TinyCLR_Api_Type::SdCardController;
         sdCardApi[i].Version = 0;
-        sdCardApi[i].Implementation = &sdCardProvider[i];
+        sdCardApi[i].Implementation = &sdCardControllers[i];
         sdCardApi[i].State = &sdCardDrivers[i];
 
         sdCardDrivers[i].controllerIndex = i;
