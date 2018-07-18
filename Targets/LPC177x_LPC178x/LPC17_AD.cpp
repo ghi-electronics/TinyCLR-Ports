@@ -372,7 +372,7 @@ void LPC17_Adc_Reset() {
 
     for (auto c = 0; c < TOTAL_ADC_CONTROLLERS; c++) {
         for (auto ch = 0; ch < SIZEOF_ARRAY(adcPins); ch++) {
-            LPC17_Adc_ReleaseChannel(&adcControllers[0], ch);
+            LPC17_Adc_ReleaseChannel(&adcControllers[c], ch);
 
             adcDrivers[c].isOpen[ch] = false;
         }
