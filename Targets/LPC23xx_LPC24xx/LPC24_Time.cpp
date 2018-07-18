@@ -17,6 +17,8 @@
 
 #define TIMER_IDLE_VALUE  0x0000FFFFFFFFFFFFFull
 
+#define TOTAL_TIME_CONTROLLERS 1
+
 #define CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS 3
 #define  LPC24_TIME_OVERFLOW_FLAG 0x80000000
 
@@ -29,7 +31,7 @@
 // LPC24 TIMER driver
 //
 
-struct LPC24_Timer_Controller {
+struct TimerDriver {
     bool m_configured;
 
     uint64_t m_lastRead;
@@ -86,12 +88,14 @@ struct LPC24_Timer_Controller {
 // LPC24 TIMER driver
 //////////////////////////////////////////////////////////////////////////////
 
-LPC24_Timer_Controller g_LPC24_Timer_Controller;
+TimerDriver timerDrivers[TOTAL_TIME_CONTROLLERS];
 
-bool LPC24_Timer_Controller::Initialize(uint32_t timer, uint32_t* ISR, void* ISR_Param) {
+bool TimerDriver::Initialize(uint32_t timer, uint32_t* ISR, void* ISR_Param) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (g_LPC24_Timer_Controller.m_configured == true) return false;
+    auto driver = &timerDrivers[LPC24_TIME_DEFAULT_CONTROLLER_ID];
+
+    if (driver->m_configured == true) return false;
 
     //--//
 
@@ -105,16 +109,17 @@ bool LPC24_Timer_Controller::Initialize(uint32_t timer, uint32_t* ISR, void* ISR
 
     //--//
 
-    g_LPC24_Timer_Controller.m_configured = true;
+    driver->m_configured = true;
 
     return true;
 }
 
-bool LPC24_Timer_Controller::Uninitialize(uint32_t timer) {
-
+bool TimerDriver::Uninitialize(uint32_t timer) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (g_LPC24_Timer_Controller.m_configured == false) return false;
+    auto driver = &timerDrivers[LPC24_TIME_DEFAULT_CONTROLLER_ID];
+
+    if (driver->m_configured == false) return false;
 
     //--//
 
@@ -129,14 +134,14 @@ bool LPC24_Timer_Controller::Uninitialize(uint32_t timer) {
 
     //--//
 
-    g_LPC24_Timer_Controller.m_configured = false;
+    driver->m_configured = false;
 
     return true;
 }
 
 #pragma arm section code = "SectionForFlashOperations"
 
-uint32_t __section("SectionForFlashOperations") LPC24_Timer_Controller::ReadCounter(uint32_t timer) {
+uint32_t __section("SectionForFlashOperations") TimerDriver::ReadCounter(uint32_t timer) {
 
     LPC24XX_TIMER& TIMER = LPC24XX::TIMER(timer);
 
@@ -149,48 +154,54 @@ uint32_t __section("SectionForFlashOperations") LPC24_Timer_Controller::ReadCoun
 void LPC24_Time_InterruptHandler(void* Param) {
     TinyCLR_NativeTime_Controller *provider = (TinyCLR_NativeTime_Controller*)Param;
 
+    auto driver = reinterpret_cast<TimerDriver*>(provider->ApiInfo->State);
+
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
 
-    if (LPC24_Timer_Controller::DidCompareHit(timer)) {
-        LPC24_Timer_Controller::ResetCompareHit(timer);
+    if (TimerDriver::DidCompareHit(timer)) {
+        TimerDriver::ResetCompareHit(timer);
     }
 
-    g_LPC24_Timer_Controller.m_lastRead = LPC24_Time_GetCurrentProcessorTicks(provider);
+    driver->m_lastRead = LPC24_Time_GetCurrentProcessorTicks(provider);
 
-    if (g_LPC24_Timer_Controller.m_lastRead >= g_LPC24_Timer_Controller.m_nextCompare) {
+    if (driver->m_lastRead >= driver->m_nextCompare) {
         // this also schedules the next one, if there is one
-        g_LPC24_Timer_Controller.m_DequeuAndExecute();
+        driver->m_DequeuAndExecute();
     }
     else {
         //
         // Because we are limited in the resolution of timer,
         // resetting the compare will properly configure the next interrupt.
         //
-        LPC24_Time_SetNextTickCallbackTime(provider, g_LPC24_Timer_Controller.m_nextCompare);
+        LPC24_Time_SetNextTickCallbackTime(provider, driver->m_nextCompare);
     }
 }
 
-static TinyCLR_NativeTime_Controller timeProvider;
-static TinyCLR_Api_Info timeApi;
+
+static TinyCLR_NativeTime_Controller timerControllers[TOTAL_TIME_CONTROLLERS];
+static TinyCLR_Api_Info timeApi[TOTAL_TIME_CONTROLLERS];
 
 const TinyCLR_Api_Info* LPC24_Time_GetApi() {
-    timeProvider.ApiInfo = &timeApi;
-    timeProvider.ConvertNativeTimeToSystemTime = &LPC24_Time_GetTimeForProcessorTicks;
-    timeProvider.ConvertSystemTimeToNativeTime = &LPC24_Time_TimeToTicks;
-    timeProvider.GetNativeTime = &LPC24_Time_GetCurrentProcessorTicks;
-    timeProvider.SetCallback = &LPC24_Time_SetTickCallback;
-    timeProvider.ScheduleCallback = &LPC24_Time_SetNextTickCallbackTime;
-    timeProvider.Initialize = &LPC24_Time_Initialize;
-    timeProvider.Uninitialize = &LPC24_Time_Uninitialize;
-    timeProvider.Wait = &LPC24_Time_DelayNative;
+    for (auto i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
+        timerControllers[i].ApiInfo = &timeApi[i];
+        timerControllers[i].ConvertNativeTimeToSystemTime = &LPC24_Time_GetTimeForProcessorTicks;
+        timerControllers[i].ConvertSystemTimeToNativeTime = &LPC24_Time_TimeToTicks;
+        timerControllers[i].GetNativeTime = &LPC24_Time_GetCurrentProcessorTicks;
+        timerControllers[i].SetCallback = &LPC24_Time_SetTickCallback;
+        timerControllers[i].ScheduleCallback = &LPC24_Time_SetNextTickCallbackTime;
+        timerControllers[i].Initialize = &LPC24_Time_Initialize;
+        timerControllers[i].Uninitialize = &LPC24_Time_Uninitialize;
+        timerControllers[i].Wait = &LPC24_Time_DelayNative;
 
-    timeApi.Author = "GHI Electronics, LLC";
-    timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.NativeTimeController";
-    timeApi.Type = TinyCLR_Api_Type::NativeTimeController;
-    timeApi.Version = 0;
-    timeApi.Implementation = &timeProvider;
+        timeApi[i].Author = "GHI Electronics, LLC";
+        timeApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.NativeTimeController";
+        timeApi[i].Type = TinyCLR_Api_Type::NativeTimeController;
+        timeApi[i].Version = 0;
+        timeApi[i].Implementation = &timerControllers[i];
+        timeApi[i].State = &timerDrivers[i];
+    }
 
-    return &timeApi;
+    return (const TinyCLR_Api_Info*)&timeApi;
 }
 
 uint32_t LPC24_Time_GetSystemClock(const TinyCLR_NativeTime_Controller* self) {
@@ -234,9 +245,11 @@ uint64_t LPC24_Time_MicrosecondsToTicks(const TinyCLR_NativeTime_Controller* sel
 uint64_t LPC24_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self) {
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
 
-    uint64_t lastValue = g_LPC24_Timer_Controller.m_lastRead;
+    auto driver = reinterpret_cast<TimerDriver*>(self->ApiInfo->State);
 
-    uint32_t value = LPC24_Timer_Controller::ReadCounter(timer);
+    uint64_t lastValue = driver->m_lastRead;
+
+    uint32_t value = TimerDriver::ReadCounter(timer);
 
     uint32_t resHigh = (uint32_t)(lastValue >> 32);
     uint32_t resLow = (uint32_t)lastValue;
@@ -253,25 +266,27 @@ uint64_t LPC24_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller
 TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Controller* self, uint64_t processorTicks) {
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
 
+    auto driver = reinterpret_cast<TimerDriver*>(self->ApiInfo->State);
+
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    g_LPC24_Timer_Controller.m_nextCompare = processorTicks;
+    driver->m_nextCompare = processorTicks;
 
-    if (g_LPC24_Timer_Controller.m_nextCompare >= TIMER_IDLE_VALUE && g_LPC24_Timer_Controller.m_lastRead >= TIMER_IDLE_VALUE) {
-        g_LPC24_Timer_Controller.m_nextCompare = g_LPC24_Timer_Controller.m_nextCompare > g_LPC24_Timer_Controller.m_lastRead ? (g_LPC24_Timer_Controller.m_nextCompare - g_LPC24_Timer_Controller.m_lastRead) : 0;
+    if (driver->m_nextCompare >= TIMER_IDLE_VALUE && driver->m_lastRead >= TIMER_IDLE_VALUE) {
+        driver->m_nextCompare = driver->m_nextCompare > driver->m_lastRead ? (driver->m_nextCompare - driver->m_lastRead) : 0;
 
-        g_LPC24_Timer_Controller.m_lastRead = 0;
+        driver->m_lastRead = 0;
     }
 
-    uint32_t highComp = (uint32_t)(g_LPC24_Timer_Controller.m_nextCompare >> 32);
-    uint32_t lowComp = (uint32_t)g_LPC24_Timer_Controller.m_nextCompare;
+    uint32_t highComp = (uint32_t)(driver->m_nextCompare >> 32);
+    uint32_t lowComp = (uint32_t)driver->m_nextCompare;
 
-    uint32_t highRead = (uint32_t)(g_LPC24_Timer_Controller.m_lastRead >> 32);
-    uint32_t lowRead = (uint32_t)g_LPC24_Timer_Controller.m_lastRead;
+    uint32_t highRead = (uint32_t)(driver->m_lastRead >> 32);
+    uint32_t lowRead = (uint32_t)driver->m_lastRead;
 
     bool fForceInterrupt = false;
 
-    uint32_t lowReadNew = LPC24_Timer_Controller::ReadCounter(timer);
+    uint32_t lowReadNew = TimerDriver::ReadCounter(timer);
 
     if ((lowRead & LPC24_TIME_OVERFLOW_FLAG) != (lowReadNew & LPC24_TIME_OVERFLOW_FLAG)) {
         fForceInterrupt = true;
@@ -301,9 +316,9 @@ TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Contr
                 nextComp = lowComp;
             }
 
-            LPC24_Timer_Controller::SetCompare(timer, nextComp);
+            TimerDriver::SetCompare(timer, nextComp);
 
-            lowReadNew = LPC24_Timer_Controller::ReadCounter(timer);
+            lowReadNew = TimerDriver::ReadCounter(timer);
 
             int32_t diff = nextComp - lowReadNew;
 
@@ -315,7 +330,7 @@ TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Contr
 
     if (fForceInterrupt) {
         // Force interrupt to process this.
-        LPC24_Timer_Controller::ForceInterrupt(timer);
+        TimerDriver::ForceInterrupt(timer);
     }
 
     return TinyCLR_Result::Success;
@@ -324,15 +339,17 @@ TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Contr
 TinyCLR_Result LPC24_Time_Initialize(const TinyCLR_NativeTime_Controller* self) {
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
 
-    g_LPC24_Timer_Controller.m_lastRead = 0;
-    g_LPC24_Timer_Controller.m_nextCompare = TIMER_IDLE_VALUE;
+    auto driver = reinterpret_cast<TimerDriver*>(self->ApiInfo->State);
 
-    if (!LPC24_Timer_Controller::Initialize(timer, (uint32_t*)&LPC24_Time_InterruptHandler, (void*)self))
+    driver->m_lastRead = 0;
+    driver->m_nextCompare = TIMER_IDLE_VALUE;
+
+    if (!TimerDriver::Initialize(timer, (uint32_t*)&LPC24_Time_InterruptHandler, (void*)self))
         return TinyCLR_Result::InvalidOperation;
 
-    LPC24_Timer_Controller::SetCompare(timer, LPC24_TIME_OVERFLOW_FLAG);
+    TimerDriver::SetCompare(timer, LPC24_TIME_OVERFLOW_FLAG);
 
-    LPC24_Timer_Controller::EnableCompareInterrupt(timer);
+    TimerDriver::EnableCompareInterrupt(timer);
 
     return TinyCLR_Result::Success;
 }
@@ -340,17 +357,19 @@ TinyCLR_Result LPC24_Time_Initialize(const TinyCLR_NativeTime_Controller* self) 
 TinyCLR_Result LPC24_Time_Uninitialize(const TinyCLR_NativeTime_Controller* self) {
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
 
-    if (LPC24_Timer_Controller::Uninitialize(timer) == false)
+    if (TimerDriver::Uninitialize(timer) == false)
         return TinyCLR_Result::InvalidOperation;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* self, TinyCLR_NativeTime_Callback callback) {
-    if (g_LPC24_Timer_Controller.m_DequeuAndExecute != nullptr)
+    auto driver = reinterpret_cast<TimerDriver*>(self->ApiInfo->State);
+
+    if (driver->m_DequeuAndExecute != nullptr)
         return TinyCLR_Result::InvalidOperation;
 
-    g_LPC24_Timer_Controller.m_DequeuAndExecute = callback;
+    driver->m_DequeuAndExecute = callback;
 
     return TinyCLR_Result::Success;
 }

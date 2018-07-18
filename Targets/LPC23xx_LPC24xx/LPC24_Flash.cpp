@@ -32,32 +32,37 @@ typedef void(*IAP)(uint32_t[], uint32_t[]);
 
 #define LPC24_AHB_CLOCK_HZ 72000000
 
+#define TOTAL_DEPLOYMENT_CONTROLLERS 1
+
 const uint32_t flashAddresses[] = { INTERNAL_FLASH_SECTOR_ADDRESS };
 const uint32_t flashSize[] = { INTERNAL_FLASH_SECTOR_SIZE };
 
 static uint32_t deploymentAddress[DEPLOYMENT_SECTOR_NUM];
 static uint32_t deploymentSize[DEPLOYMENT_SECTOR_NUM];
 
-static TinyCLR_Deployment_Controller deploymentProvider;
-static TinyCLR_Api_Info deploymentApi;
+static TinyCLR_Deployment_Controller deploymentControllers[TOTAL_DEPLOYMENT_CONTROLLERS];
+static TinyCLR_Api_Info deploymentApi[TOTAL_DEPLOYMENT_CONTROLLERS];
 
 static uint8_t data256[INTERNAL_FLASH_PROGRAM_SIZE_256];
 
 const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
-    deploymentProvider.ApiInfo = &deploymentApi;
-    deploymentProvider.Acquire = &LPC24_Deployment_Acquire;
-    deploymentProvider.Release = &LPC24_Deployment_Release;
-    deploymentProvider.Read = &LPC24_Deployment_Read;
-    deploymentProvider.Write = &LPC24_Deployment_Write;
-    deploymentProvider.EraseSector = &LPC24_Deployment_EraseBlock;
-    deploymentProvider.IsSectorErased = &LPC24_Deployment_IsBlockErased;
-    deploymentProvider.GetSectorMap = &LPC24_Deployment_GetSectorMap;
+    for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
+        deploymentControllers[i].ApiInfo = &deploymentApi[i];
+        deploymentControllers[i].Acquire = &LPC24_Deployment_Acquire;
+        deploymentControllers[i].Release = &LPC24_Deployment_Release;
+        deploymentControllers[i].Read = &LPC24_Deployment_Read;
+        deploymentControllers[i].Write = &LPC24_Deployment_Write;
+        deploymentControllers[i].EraseSector = &LPC24_Deployment_EraseBlock;
+        deploymentControllers[i].IsSectorErased = &LPC24_Deployment_IsBlockErased;
+        deploymentControllers[i].GetSectorMap = &LPC24_Deployment_GetSectorMap;
 
-    deploymentApi.Author = "GHI Electronics, LLC";
-    deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.DeploymentController";
-    deploymentApi.Type = TinyCLR_Api_Type::DeploymentController;
-    deploymentApi.Version = 0;
-    deploymentApi.Implementation = &deploymentProvider;
+        deploymentApi[i].Author = "GHI Electronics, LLC";
+        deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.DeploymentController";
+        deploymentApi[i].Type = TinyCLR_Api_Type::DeploymentController;
+        deploymentApi[i].Version = 0;
+        deploymentApi[i].Implementation = &deploymentControllers[i];
+        deploymentApi[i].State = nullptr;
+    }
 
     return &deploymentApi;
 }

@@ -22,34 +22,41 @@
 #define LPC24_DAC_MAX_VALUE 	(1<<LPC24_DAC_PRECISION_BITS)
 
 ///////////////////////////////////////////////////////////////////////////////
+#define TOTAL_DAC_CONTROLLERS 1
 
-static TinyCLR_Dac_Controller dacProvider;
-static TinyCLR_Api_Info dacApi;
+static TinyCLR_Dac_Controller dacControllers[TOTAL_DAC_CONTROLLERS];
+static TinyCLR_Api_Info dacApi[TOTAL_DAC_CONTROLLERS];
 
-static const LPC24_Gpio_Pin g_LPC24_Dac_Pins[] = LPC24_DAC_PINS;
+static const LPC24_Gpio_Pin dacPins[] = LPC24_DAC_PINS;
 
-bool g_LPC24_Dac_IsOpened[SIZEOF_ARRAY(g_LPC24_Dac_Pins)];
+struct DacDriver {
+    bool isOpened[SIZEOF_ARRAY(dacPins)];
+};
+
+static DacDriver dacDrivers[TOTAL_DAC_CONTROLLERS];
 
 const TinyCLR_Api_Info* LPC24_Dac_GetApi() {
-    dacProvider.ApiInfo = &dacApi;
-    dacProvider.Acquire = &LPC24_Dac_Acquire;
-    dacProvider.Release = &LPC24_Dac_Release;
-    dacProvider.AcquireChannel = &LPC24_Dac_AcquireChannel;
-    dacProvider.ReleaseChannel = &LPC24_Dac_ReleaseChannel;
-    dacProvider.WriteValue = &LPC24_Dac_WriteValue;
-    dacProvider.GetChannelCount = &LPC24_Dac_GetChannelCount;
-    dacProvider.GetResolutionInBits = &LPC24_Dac_GetResolutionInBits;
-    dacProvider.GetMinValue = &LPC24_Dac_GetMinValue;
-    dacProvider.GetMaxValue = &LPC24_Dac_GetMaxValue;
-    dacProvider.GetControllerCount = &LPC24_Dac_GetControllerCount;
+    for (int32_t i = 0; i < TOTAL_DAC_CONTROLLERS; i++) {
+        dacControllers[i].ApiInfo = &dacApi[i];
+        dacControllers[i].Acquire = &LPC24_Dac_Acquire;
+        dacControllers[i].Release = &LPC24_Dac_Release;
+        dacControllers[i].AcquireChannel = &LPC24_Dac_AcquireChannel;
+        dacControllers[i].ReleaseChannel = &LPC24_Dac_ReleaseChannel;
+        dacControllers[i].WriteValue = &LPC24_Dac_WriteValue;
+        dacControllers[i].GetMinValue = &LPC24_Dac_GetMinValue;
+        dacControllers[i].GetMaxValue = &LPC24_Dac_GetMaxValue;
+        dacControllers[i].GetResolutionInBits = &LPC24_Dac_GetResolutionInBits;
+        dacControllers[i].GetChannelCount = &LPC24_Dac_GetChannelCount;
 
-    dacApi.Author = "GHI Electronics, LLC";
-    dacApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.DacProvider";
-    dacApi.Type = TinyCLR_Api_Type::DacProvider;
-    dacApi.Version = 0;
-    dacApi.Implementation = &dacProvider;
+        dacApi[i].Author = "GHI Electronics, LLC";
+        dacApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.DacController";
+        dacApi[i].Type = TinyCLR_Api_Type::DacController;
+        dacApi[i].Version = 0;
+        dacApi[i].Implementation = &dacControllers[i];
+        dacApi[i].State = &dacDrivers[i];
+    }
 
-    return &dacApi;
+    return (const TinyCLR_Api_Info*)&dacApi;
 }
 
 TinyCLR_Result LPC24_Dac_Acquire(const TinyCLR_Dac_Controller* self) {
@@ -67,35 +74,38 @@ TinyCLR_Result LPC24_Dac_Release(const TinyCLR_Dac_Controller* self) {
 }
 
 TinyCLR_Result LPC24_Dac_AcquireChannel(const TinyCLR_Dac_Controller* self, int32_t channel) {
-    if (channel >= LPC24_Dac_GetChannelCount(self, controller))
+    if (channel >= LPC24_Dac_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    if (!LPC24_Gpio_OpenPin(g_LPC24_Dac_Pins[channel].number))
+    if (!LPC24_Gpio_OpenPin(dacPins[channel].number))
         return TinyCLR_Result::SharingViolation;
 
-    LPC24_Gpio_ConfigurePin(g_LPC24_Dac_Pins[channel].number, LPC24_Gpio_Direction::Input, g_LPC24_Dac_Pins[channel].pinFunction, LPC24_Gpio_PinMode::Inactive);
+    auto driver = reinterpret_cast<DacDriver*>(self->ApiInfo->State);
+
+    LPC24_Gpio_ConfigurePin(dacPins[channel].number, LPC24_Gpio_Direction::Input, dacPins[channel].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
     DACR = (0 << 6); // This sets the initial starting voltage at 0
 
-    g_LPC24_Dac_IsOpened[channel] = true;
+    driver->isOpened[channel] = true;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Dac_ReleaseChannel(const TinyCLR_Dac_Controller* self, int32_t channel) {
-    if (channel >= LPC24_Dac_GetChannelCount(self, controller))
+    if (channel >= LPC24_Dac_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    if (g_LPC24_Dac_IsOpened[channel])
-        LPC24_Gpio_ClosePin(g_LPC24_Dac_Pins[channel].number);
+    auto driver = reinterpret_cast<DacDriver*>(self->ApiInfo->State);
+    if (driver->isOpened[channel])
+        LPC24_Gpio_ClosePin(dacPins[channel].number);
 
-    g_LPC24_Dac_IsOpened[channel] = false;
+    driver->isOpened[channel] = false;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Dac_WriteValue(const TinyCLR_Dac_Controller* self, int32_t channel, int32_t value) {
-    if (channel >= LPC24_Dac_GetChannelCount(self, controller))
+    if (channel >= LPC24_Dac_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 
     if (value > LPC24_DAC_MAX_VALUE) {
@@ -112,7 +122,7 @@ TinyCLR_Result LPC24_Dac_WriteValue(const TinyCLR_Dac_Controller* self, int32_t 
 }
 
 int32_t LPC24_Dac_GetChannelCount(const TinyCLR_Dac_Controller* self) {
-    return SIZEOF_ARRAY(g_LPC24_Dac_Pins);
+    return SIZEOF_ARRAY(dacPins);
 }
 
 int32_t LPC24_Dac_GetResolutionInBits(const TinyCLR_Dac_Controller* self) {
@@ -128,16 +138,12 @@ int32_t LPC24_Dac_GetMaxValue(const TinyCLR_Dac_Controller* self) {
 }
 
 void LPC24_Dac_Reset() {
-    for (auto ch = 0; ch < LPC24_Dac_GetChannelCount(&dacProvider, 0); ch++) {
-        LPC24_Dac_ReleaseChannel(&dacProvider, 0, ch);
+    for (auto c = 0; c < TOTAL_DAC_CONTROLLERS; c++) {
+        for (auto ch = 0; ch < LPC24_Dac_GetChannelCount(&dacControllers[c]); ch++) {
+            LPC24_Dac_ReleaseChannel(&dacControllers[c], ch);
 
-        g_LPC24_Dac_IsOpened[ch] = false;
+            dacDrivers[c].isOpened[ch] = false;
+        }
     }
-}
-
-TinyCLR_Result LPC24_Dac_GetControllerCount(const TinyCLR_Dac_Controller* self, int32_t& count) {
-    count = 1;
-
-    return TinyCLR_Result::Success;
 }
 

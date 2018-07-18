@@ -23,34 +23,42 @@
 #define ADC_DATA_BASE_ADDRESS	0xE0034010
 #define ADC_GLOBAR_DATA_ADDRESS 0xE0034004
 
-static TinyCLR_Adc_Controller adcProvider;
-static TinyCLR_Api_Info adcApi;
+#define TOTAL_ADC_CONTROLLERS 1
 
-uint32_t g_lpc24_adc_isOpened;
+static TinyCLR_Adc_Controller adcControllers[TOTAL_ADC_CONTROLLERS];
+static TinyCLR_Api_Info adcApi[TOTAL_ADC_CONTROLLERS];
+
+struct AdcDriver {
+    static uint8_t isOpen;
+};
+
+uint8_t AdcDriver::isOpen;
 
 const TinyCLR_Api_Info* LPC24_Adc_GetApi() {
-    adcProvider.ApiInfo = &adcApi;
-    adcProvider.Acquire = &LPC24_Adc_Acquire;
-    adcProvider.Release = &LPC24_Adc_Release;
-    adcProvider.AcquireChannel = &LPC24_Adc_AcquireChannel;
-    adcProvider.ReleaseChannel = &LPC24_Adc_ReleaseChannel;
-    adcProvider.IsChannelModeSupported = &LPC24_Adc_IsChannelModeSupported;
-    adcProvider.ReadValue = &LPC24_Adc_ReadValue;
-    adcProvider.GetMinValue = &LPC24_Adc_GetMinValue;
-    adcProvider.GetMaxValue = &LPC24_Adc_GetMaxValue;
-    adcProvider.GetResolutionInBits = &LPC24_Adc_GetResolutionInBits;
-    adcProvider.GetChannelCount = &LPC24_Adc_GetChannelCount;
-    adcProvider.GetChannelMode = &LPC24_Adc_GetChannelMode;
-    adcProvider.SetChannelMode = &LPC24_Adc_SetChannelMode;
-    adcProvider.GetControllerCount = &LPC24_Adc_GetControllerCount;
+    for (int32_t i = 0; i < TOTAL_ADC_CONTROLLERS; i++) {
+        adcControllers[i].ApiInfo = &adcApi[i];
+        adcControllers[i].Acquire = &LPC24_Adc_Acquire;
+        adcControllers[i].Release = &LPC24_Adc_Release;
+        adcControllers[i].AcquireChannel = &LPC24_Adc_AcquireChannel;
+        adcControllers[i].ReleaseChannel = &LPC24_Adc_ReleaseChannel;
+        adcControllers[i].ReadValue = &LPC24_Adc_ReadValue;
+        adcControllers[i].SetChannelMode = &LPC24_Adc_SetChannelMode;
+        adcControllers[i].GetChannelMode = &LPC24_Adc_GetChannelMode;
+        adcControllers[i].IsChannelModeSupported = &LPC24_Adc_IsChannelModeSupported;
+        adcControllers[i].GetMinValue = &LPC24_Adc_GetMinValue;
+        adcControllers[i].GetMaxValue = &LPC24_Adc_GetMaxValue;
+        adcControllers[i].GetResolutionInBits = &LPC24_Adc_GetResolutionInBits;
+        adcControllers[i].GetChannelCount = &LPC24_Adc_GetChannelCount;
 
-    adcApi.Author = "GHI Electronics, LLC";
-    adcApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.AdcProvider";
-    adcApi.Type = TinyCLR_Api_Type::AdcProvider;
-    adcApi.Version = 0;
-    adcApi.Implementation = &adcProvider;
+        adcApi[i].Author = "GHI Electronics, LLC";
+        adcApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.AdcController";
+        adcApi[i].Type = TinyCLR_Api_Type::AdcController;
+        adcApi[i].Version = 0;
+        adcApi[i].Implementation = &adcControllers[i];
+        adcApi[i].State = nullptr;
+    }
 
-    return &adcApi;
+    return (const TinyCLR_Api_Info*)&adcApi;
 }
 
 TinyCLR_Result LPC24_Adc_Acquire(const TinyCLR_Adc_Controller* self) {
@@ -94,18 +102,22 @@ TinyCLR_Result LPC24_Adc_AcquireChannel(const TinyCLR_Adc_Controller* self, int3
         (0 << 17) |//10 bits
         (1 << 21);//operational
 
-    g_lpc24_adc_isOpened |= (1 << channel);
+    auto driver = reinterpret_cast<AdcDriver*>(self->ApiInfo->State);
+
+    driver->isOpen |= (1 << channel);
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Adc_ReleaseChannel(const TinyCLR_Adc_Controller* self, int32_t channel) {
-    if (g_lpc24_adc_isOpened & (1 << channel)) {
+    auto driver = reinterpret_cast<AdcDriver*>(self->ApiInfo->State);
+
+    if (driver->isOpen & (1 << channel)) {
         LPC24_Gpio_ClosePin(LPC24_Adc_GetPin(channel));
 
     }
 
-    g_lpc24_adc_isOpened &= ~(1 << channel);
+    driver->isOpen &= ~(1 << channel);
 
     return TinyCLR_Result::Success;
 }
@@ -146,7 +158,7 @@ int32_t LPC24_Adc_GetMinValue(const TinyCLR_Adc_Controller* self) {
 }
 
 int32_t LPC24_Adc_GetMaxValue(const TinyCLR_Adc_Controller* self) {
-    return (1 << LPC24_Adc_GetResolutionInBits(self, controller)) - 1;
+    return (1 << LPC24_Adc_GetResolutionInBits(self)) - 1;
 }
 
 TinyCLR_Adc_ChannelMode LPC24_Adc_GetChannelMode(const TinyCLR_Adc_Controller* self) {
@@ -162,17 +174,13 @@ bool LPC24_Adc_IsChannelModeSupported(const TinyCLR_Adc_Controller* self, TinyCL
 }
 
 void LPC24_Adc_Reset() {
-    for (auto ch = 0; ch < LPC24_Adc_GetChannelCount(); ch++) {
-        LPC24_Adc_ReleaseChannel(&adcProvider, 0, ch);
+    for (auto c = 0; c < TOTAL_ADC_CONTROLLERS; c++) {
+        for (auto ch = 0; ch < LPC24_Adc_GetChannelCount(); ch++) {
+            LPC24_Adc_ReleaseChannel(&adcControllers[c], ch);
+        }
+
+        AdcDriver::isOpen = 0;
     }
 
-    g_lpc24_adc_isOpened = 0;
-
     LPC24XX::SYSCON().PCONP &= ~(PCONP_PCAD);
-}
-
-TinyCLR_Result LPC24_Adc_GetControllerCount(const TinyCLR_Adc_Controller* self, int32_t& count) {
-    count = 1;
-
-    return TinyCLR_Result::Success;
 }

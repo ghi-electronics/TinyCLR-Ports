@@ -16,10 +16,11 @@
 #include <algorithm>
 #include "LPC24.h"
 
-static const uint32_t g_LPC24_Uart_TxDefaultBuffersSize[] = LPC24_UART_DEFAULT_TX_BUFFER_SIZE;
-static const uint32_t g_LPC24_Uart_RxDefaultBuffersSize[] = LPC24_UART_DEFAULT_RX_BUFFER_SIZE;
+static const uint32_t uartTxDefaultBuffersSize[] = LPC24_UART_DEFAULT_TX_BUFFER_SIZE;
+static const uint32_t uartRxDefaultBuffersSize[] = LPC24_UART_DEFAULT_RX_BUFFER_SIZE;
 
-struct LPC24_Uart_Controller {
+struct UartDriver {
+    int32_t controllerIndex;
 
     uint8_t                             *TxBuffer;
     uint8_t                             *RxBuffer;
@@ -39,17 +40,11 @@ struct LPC24_Uart_Controller {
     TinyCLR_Uart_ErrorReceivedHandler   errorEventHandler;
     TinyCLR_Uart_DataReceivedHandler    dataReceivedEventHandler;
 
-    const TinyCLR_Uart_Controller*        provider;
-    int32_t                             controller;
+    const TinyCLR_Uart_Controller*        controller;
 
 };
 
-static LPC24_Uart_Controller g_UartController[TOTAL_UART_CONTROLLERS];
-
 #define SET_BITS(Var,Shift,Mask,fieldsMask) {Var = setFieldValue(Var,Shift,Mask,fieldsMask);}
-
-static TinyCLR_Uart_Controller uartProviders;
-static TinyCLR_Api_Info uartApi;
 
 uint32_t setFieldValue(volatile uint32_t oldVal, uint32_t shift, uint32_t mask, uint32_t val) {
     volatile uint32_t temp = oldVal;
@@ -59,47 +54,59 @@ uint32_t setFieldValue(volatile uint32_t oldVal, uint32_t shift, uint32_t mask, 
     return temp;
 }
 
+static UartDriver uartDrivers[TOTAL_UART_CONTROLLERS];
+static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
+static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
+
 const TinyCLR_Api_Info* LPC24_Uart_GetApi() {
-    uartProviders.ApiInfo = &uartApi;
-    uartProviders.Acquire = &LPC24_Uart_Acquire;
-    uartProviders.Release = &LPC24_Uart_Release;
-    uartProviders.SetActiveSettings = &LPC24_Uart_SetActiveSettings;
-    uartProviders.Flush = &LPC24_Uart_Flush;
-    uartProviders.Read = &LPC24_Uart_Read;
-    uartProviders.Write = &LPC24_Uart_Write;
-    uartProviders.SetPinChangedHandler = &LPC24_Uart_SetPinChangedHandler;
-    uartProviders.SetErrorReceivedHandler = &LPC24_Uart_SetErrorReceivedHandler;
-    uartProviders.SetDataReceivedHandler = &LPC24_Uart_SetDataReceivedHandler;
-    uartProviders.GetBreakSignalState = &LPC24_Uart_GetBreakSignalState;
-    uartProviders.SetBreakSignalState = &LPC24_Uart_SetBreakSignalState;
-    uartProviders.GetCarrierDetectState = &LPC24_Uart_GetCarrierDetectState;
-    uartProviders.GetClearToSendState = &LPC24_Uart_GetClearToSendState;
-    uartProviders.GetDataReadyState = &LPC24_Uart_GetDataReadyState;
-    uartProviders.GetIsDataTerminalReadyEnabled = &LPC24_Uart_GetIsDataTerminalReadyEnabled;
-    uartProviders.SetIsDataTerminalReadyEnabled = &LPC24_Uart_SetIsDataTerminalReadyEnabled;
-    uartProviders.GetIsRequestToSendEnabled = &LPC24_Uart_GetIsRequestToSendEnabled;
-    uartProviders.SetIsRequestToSendEnabled = &LPC24_Uart_SetIsRequestToSendEnabled;
-    uartProviders.GetReadBufferSize = &LPC24_Uart_GetReadBufferSize;
-    uartProviders.SetReadBufferSize = &LPC24_Uart_SetReadBufferSize;
-    uartProviders.GetWriteBufferSize = &LPC24_Uart_GetWriteBufferSize;
-    uartProviders.SetWriteBufferSize = &LPC24_Uart_SetWriteBufferSize;
-    uartProviders.GetUnreadCount = &LPC24_Uart_GetUnreadCount;
-    uartProviders.GetUnwrittenCount = &LPC24_Uart_GetUnwrittenCount;
-    uartProviders.ClearReadBuffer = &LPC24_Uart_ClearReadBuffer;
-    uartProviders.ClearWriteBuffer = &LPC24_Uart_ClearWriteBuffer;
-    uartProviders.GetControllerCount = &LPC24_Uart_GetControllerCount;
+    for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        uartControllers[i].ApiInfo = &uartApi[i];
+        uartControllers[i].Acquire = &LPC24_Uart_Acquire;
+        uartControllers[i].Release = &LPC24_Uart_Release;
+        uartControllers[i].SetActiveSettings = &LPC24_Uart_SetActiveSettings;
+        uartControllers[i].Flush = &LPC24_Uart_Flush;
+        uartControllers[i].Read = &LPC24_Uart_Read;
+        uartControllers[i].Write = &LPC24_Uart_Write;
+        uartControllers[i].SetPinChangedHandler = &LPC24_Uart_SetPinChangedHandler;
+        uartControllers[i].SetErrorReceivedHandler = &LPC24_Uart_SetErrorReceivedHandler;
+        uartControllers[i].SetDataReceivedHandler = &LPC24_Uart_SetDataReceivedHandler;
+        uartControllers[i].GetBreakSignalState = &LPC24_Uart_GetBreakSignalState;
+        uartControllers[i].SetBreakSignalState = &LPC24_Uart_SetBreakSignalState;
+        uartControllers[i].GetCarrierDetectState = &LPC24_Uart_GetCarrierDetectState;
+        uartControllers[i].GetClearToSendState = &LPC24_Uart_GetClearToSendState;
+        uartControllers[i].GetDataReadyState = &LPC24_Uart_GetDataReadyState;
+        uartControllers[i].GetIsDataTerminalReadyEnabled = &LPC24_Uart_GetIsDataTerminalReadyEnabled;
+        uartControllers[i].SetIsDataTerminalReadyEnabled = &LPC24_Uart_SetIsDataTerminalReadyEnabled;
+        uartControllers[i].GetIsRequestToSendEnabled = &LPC24_Uart_GetIsRequestToSendEnabled;
+        uartControllers[i].SetIsRequestToSendEnabled = &LPC24_Uart_SetIsRequestToSendEnabled;
+        uartControllers[i].GetReadBufferSize = &LPC24_Uart_GetReadBufferSize;
+        uartControllers[i].SetReadBufferSize = &LPC24_Uart_SetReadBufferSize;
+        uartControllers[i].GetWriteBufferSize = &LPC24_Uart_GetWriteBufferSize;
+        uartControllers[i].SetWriteBufferSize = &LPC24_Uart_SetWriteBufferSize;
+        uartControllers[i].GetUnreadCount = &LPC24_Uart_GetUnreadCount;
+        uartControllers[i].GetUnwrittenCount = &LPC24_Uart_GetUnwrittenCount;
+        uartControllers[i].ClearReadBuffer = &LPC24_Uart_ClearReadBuffer;
+        uartControllers[i].ClearWriteBuffer = &LPC24_Uart_ClearWriteBuffer;
 
-    uartApi.Author = "GHI Electronics, LLC";
-    uartApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.UartProvider";
-    uartApi.Type = TinyCLR_Api_Type::UartProvider;
-    uartApi.Version = 0;
-    uartApi.Implementation = &uartProviders;
+        uartApi[i].Author = "GHI Electronics, LLC";
+        uartApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.UartController";
+        uartApi[i].Type = TinyCLR_Api_Type::UartController;
+        uartApi[i].Version = 0;
+        uartApi[i].Implementation = &uartControllers[i];
+        uartApi[i].State = &uartDrivers[i];
 
-    return &uartApi;
+        uartDrivers[i].controllerIndex = i;
+    }
+
+    return (const TinyCLR_Api_Info*)&uartApi;
 }
 
 TinyCLR_Result LPC24_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t& size) {
-    size = g_UartController[controller].rxBufferSize == 0 ? g_LPC24_Uart_RxDefaultBuffersSize[controller] : g_UartController[controller].rxBufferSize;
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+
+    auto controllerIndex = driver->controllerIndex;
+
+    size = driver->rxBufferSize == 0 ? uartRxDefaultBuffersSize[controllerIndex] : driver->rxBufferSize;
 
     return TinyCLR_Result::Success;
 }
@@ -107,19 +114,21 @@ TinyCLR_Result LPC24_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self,
 TinyCLR_Result LPC24_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
 
-    if (g_UartController[controller].rxBufferSize) {
-        memoryProvider->Free(memoryProvider, g_UartController[controller].RxBuffer);
+    if (driver->rxBufferSize) {
+        memoryProvider->Free(memoryProvider, driver->RxBuffer);
     }
 
-    g_UartController[controller].rxBufferSize = size;
+    driver->rxBufferSize = size;
 
-    g_UartController[controller].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
+    driver->RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
 
-    if (g_UartController[controller].RxBuffer == nullptr) {
-        g_UartController[controller].rxBufferSize = 0;
+    if (driver->RxBuffer == nullptr) {
+        driver->rxBufferSize = 0;
 
         return TinyCLR_Result::OutOfMemory;
     }
@@ -128,7 +137,11 @@ TinyCLR_Result LPC24_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self,
 }
 
 TinyCLR_Result LPC24_Uart_GetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t& size) {
-    size = g_UartController[controller].txBufferSize == 0 ? g_LPC24_Uart_TxDefaultBuffersSize[controller] : g_UartController[controller].txBufferSize;
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+
+    auto controllerIndex = driver->controllerIndex;
+
+    size = driver->txBufferSize == 0 ? uartTxDefaultBuffersSize[controllerIndex] : driver->txBufferSize;
 
     return TinyCLR_Result::Success;
 }
@@ -136,37 +149,43 @@ TinyCLR_Result LPC24_Uart_GetWriteBufferSize(const TinyCLR_Uart_Controller* self
 TinyCLR_Result LPC24_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
 
-    if (g_UartController[controller].txBufferSize) {
-        memoryProvider->Free(memoryProvider, g_UartController[controller].TxBuffer);
+    if (driver->txBufferSize) {
+        memoryProvider->Free(memoryProvider, driver->TxBuffer);
     }
 
-    g_UartController[controller].txBufferSize = size;
+    driver->txBufferSize = size;
 
-    g_UartController[controller].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
+    driver->TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
 
-    if (g_UartController[controller].TxBuffer == nullptr) {
-        g_UartController[controller].txBufferSize = 0;
+    if (driver->TxBuffer == nullptr) {
+        driver->txBufferSize = 0;
 
         return TinyCLR_Result::OutOfMemory;
     }
 
     return TinyCLR_Result::Success;
 }
-void LPC24_Uart_PinConfiguration(int controller, bool enable) {
+
+
+void LPC24_Uart_PinConfiguration(int controllerIndex, bool enable) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    uint32_t txPin = LPC24_Uart_GetTxPin(controller);
-    uint32_t rxPin = LPC24_Uart_GetRxPin(controller);
-    uint32_t ctsPin = LPC24_Uart_GetCtsPin(controller);
-    uint32_t rtsPin = LPC24_Uart_GetRtsPin(controller);
+    auto driver = &uartDrivers[controllerIndex];
 
-    LPC24_Gpio_PinFunction txPinMode = LPC24_Uart_GetTxAlternateFunction(controller);
-    LPC24_Gpio_PinFunction rxPinMode = LPC24_Uart_GetRxAlternateFunction(controller);
-    LPC24_Gpio_PinFunction ctsPinMode = LPC24_Uart_GetCtsAlternateFunction(controller);
-    LPC24_Gpio_PinFunction rtsPinMode = LPC24_Uart_GetRtsAlternateFunction(controller);
+    int32_t txPin = LPC24_Uart_GetTxPin(controllerIndex);
+    int32_t rxPin = LPC24_Uart_GetRxPin(controllerIndex);
+    int32_t ctsPin = LPC24_Uart_GetCtsPin(controllerIndex);
+    int32_t rtsPin = LPC24_Uart_GetRtsPin(controllerIndex);
+
+    LPC24_Gpio_PinFunction txPinMode = LPC24_Uart_GetTxAlternateFunction(controllerIndex);
+    LPC24_Gpio_PinFunction rxPinMode = LPC24_Uart_GetRxAlternateFunction(controllerIndex);
+    LPC24_Gpio_PinFunction ctsPinMode = LPC24_Uart_GetCtsAlternateFunction(controllerIndex);
+    LPC24_Gpio_PinFunction rtsPinMode = LPC24_Uart_GetRtsAlternateFunction(controllerIndex);
 
     if (enable) {
         // Connect pin to UART
@@ -174,11 +193,13 @@ void LPC24_Uart_PinConfiguration(int controller, bool enable) {
         // Connect pin to UART
         LPC24_Gpio_ConfigurePin(rxPin, LPC24_Gpio_Direction::Input, rxPinMode, LPC24_Gpio_PinMode::Inactive);
 
-        LPC24_Uart_TxBufferEmptyInterruptEnable(controller, true);
+        LPC24_Uart_TxBufferEmptyInterruptEnable(controllerIndex, true);
 
-        LPC24_Uart_RxBufferFullInterruptEnable(controller, true);
+        LPC24_Uart_RxBufferFullInterruptEnable(controllerIndex, true);
 
-        if (g_UartController[controller].handshakeEnable) {
+        if (driver->handshakeEnable) {
+            if (!LPC24_Gpio_OpenPin(ctsPin) || !LPC24_Gpio_OpenPin(rtsPin))
+                return;
             LPC24_Gpio_ConfigurePin(ctsPin, LPC24_Gpio_Direction::Input, ctsPinMode, LPC24_Gpio_PinMode::Inactive);
             LPC24_Gpio_ConfigurePin(rtsPin, LPC24_Gpio_Direction::Input, rtsPinMode, LPC24_Gpio_PinMode::Inactive);
         }
@@ -186,32 +207,36 @@ void LPC24_Uart_PinConfiguration(int controller, bool enable) {
     }
     else {
 
-        LPC24_Uart_TxBufferEmptyInterruptEnable(controller, false);
+        LPC24_Uart_TxBufferEmptyInterruptEnable(controllerIndex, false);
         // TODO Add config for uart pin protected state
-        LPC24_Gpio_ConfigurePin(txPin, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::Inactive);
+        LPC24_Gpio_ClosePin(txPin);
 
-        LPC24_Uart_RxBufferFullInterruptEnable(controller, false);
+        LPC24_Uart_RxBufferFullInterruptEnable(controllerIndex, false);
         // TODO Add config for uart pin protected state
-        LPC24_Gpio_ConfigurePin(rxPin, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::Inactive);
+        LPC24_Gpio_ClosePin(rxPin);
 
-        if (g_UartController[controller].handshakeEnable) {
-            LPC24_Gpio_ConfigurePin(ctsPin, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::Inactive);
-            LPC24_Gpio_ConfigurePin(rtsPin, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::Inactive);
+        if (driver->handshakeEnable) {
+            LPC24_Gpio_ClosePin(ctsPin);
+            LPC24_Gpio_ClosePin(rtsPin);
         }
     }
 }
 
-void LPC24_Uart_SetErrorEvent(int32_t controller, TinyCLR_Uart_Error error) {
-    if (g_UartController[controller].errorEventHandler != nullptr)
-        g_UartController[controller].errorEventHandler(g_UartController[controller].provider, controller, error);
+void LPC24_Uart_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error) {
+    auto driver = &uartDrivers[controllerIndex];
+
+    if (driver->errorEventHandler != nullptr)
+        driver->errorEventHandler(driver->controller, error);
 }
 
-void LPC24_Uart_ReceiveData(int controller, uint32_t LSR_Value, uint32_t IIR_Value) {
+void LPC24_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t IIR_Value) {
     INTERRUPT_STARTED_SCOPED(isr);
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    LPC24XX_USART& USARTC = LPC24XX::UART(controller);
+    LPC24XX_USART& USARTC = LPC24XX::UART(controllerIndex);
+
+    auto driver = &uartDrivers[controllerIndex];
 
     // Read data from Rx FIFO
     if (USARTC.SEL2.IER.UART_IER & (LPC24XX_USART::UART_IER_RDAIE)) {
@@ -220,62 +245,64 @@ void LPC24_Uart_ReceiveData(int controller, uint32_t LSR_Value, uint32_t IIR_Val
                 uint8_t rxdata = (uint8_t)USARTC.SEL1.RBR.UART_RBR;
 
                 if (0 == (LSR_Value & (LPC24XX_USART::UART_LSR_PEI | LPC24XX_USART::UART_LSR_OEI | LPC24XX_USART::UART_LSR_FEI))) {
-                    if (g_UartController[controller].rxBufferCount == g_UartController[controller].rxBufferSize) {
-                        LPC24_Uart_SetErrorEvent(controller, TinyCLR_Uart_Error::ReceiveFull);
+                    if (driver->rxBufferCount == driver->rxBufferSize) {
+                        LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveFull);
 
                         continue;
                     }
 
-                    g_UartController[controller].RxBuffer[g_UartController[controller].rxBufferIn++] = rxdata;
+                    driver->RxBuffer[driver->rxBufferIn++] = rxdata;
 
-                    g_UartController[controller].rxBufferCount++;
+                    driver->rxBufferCount++;
 
-                    if (g_UartController[controller].rxBufferIn == g_UartController[controller].rxBufferSize)
-                        g_UartController[controller].rxBufferIn = 0;
+                    if (driver->rxBufferIn == driver->rxBufferSize)
+                        driver->rxBufferIn = 0;
 
-                    if (g_UartController[controller].dataReceivedEventHandler != nullptr)
-                        g_UartController[controller].dataReceivedEventHandler(g_UartController[controller].provider, controller, 1);
+                    if (driver->dataReceivedEventHandler != nullptr)
+                        driver->dataReceivedEventHandler(driver->controller, 1);
                 }
 
                 LSR_Value = USARTC.UART_LSR;
 
                 if (LSR_Value & 0x04) {
-                    LPC24_Uart_SetErrorEvent(controller, TinyCLR_Uart_Error::ReceiveParity);
+                    LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveParity);
                 }
                 else if ((LSR_Value & 0x08) || (LSR_Value & 0x80)) {
-                    LPC24_Uart_SetErrorEvent(controller, TinyCLR_Uart_Error::Frame);
+                    LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
                 }
                 else if (LSR_Value & 0x02) {
-                    LPC24_Uart_SetErrorEvent(controller, TinyCLR_Uart_Error::BufferOverrun);
+                    LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferOverrun);
                 }
             } while (LSR_Value & LPC24XX_USART::UART_LSR_RFDR);
         }
     }
 }
-void LPC24_Uart_TransmitData(int controller, uint32_t LSR_Value, uint32_t IIR_Value) {
+void LPC24_Uart_TransmitData(int controllerIndex, uint32_t LSR_Value, uint32_t IIR_Value) {
     INTERRUPT_STARTED_SCOPED(isr);
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    LPC24XX_USART& USARTC = LPC24XX::UART(controller);
+    LPC24XX_USART& USARTC = LPC24XX::UART(controllerIndex);
+
+    auto driver = &uartDrivers[controllerIndex];
 
     // Send data
     if ((LSR_Value & LPC24XX_USART::UART_LSR_TE) || (IIR_Value == LPC24XX_USART::UART_IIR_IID_Irpt_THRE)) {
         // Check if CTS is high
-        if (LPC24_Uart_TxHandshakeEnabledState(controller)) {
-            if (g_UartController[controller].txBufferCount > 0) {
-                uint8_t txdata = g_UartController[controller].TxBuffer[g_UartController[controller].txBufferOut++];
+        if (LPC24_Uart_TxHandshakeEnabledState(controllerIndex)) {
+            if (driver->txBufferCount > 0) {
+                uint8_t txdata = driver->TxBuffer[driver->txBufferOut++];
 
-                g_UartController[controller].txBufferCount--;
+                driver->txBufferCount--;
 
-                if (g_UartController[controller].txBufferOut == g_UartController[controller].txBufferSize)
-                    g_UartController[controller].txBufferOut = 0;
+                if (driver->txBufferOut == driver->txBufferSize)
+                    driver->txBufferOut = 0;
 
                 USARTC.SEL1.THR.UART_THR = txdata; // write TX data
 
             }
             else {
-                LPC24_Uart_TxBufferEmptyInterruptEnable(controller, false); // Disable interrupt when no more data to send.
+                LPC24_Uart_TxBufferEmptyInterruptEnable(controllerIndex, false); // Disable interrupt when no more data to send.
             }
         }
     }
@@ -286,57 +313,60 @@ void LPC24_Uart_InterruptHandler(void *param) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    uint32_t controller = *reinterpret_cast<uint32_t*>(param);
+    uint32_t controllerIndex = *reinterpret_cast<uint32_t*>(param);
 
-    LPC24XX_USART& USARTC = LPC24XX::UART(controller);
+    LPC24XX_USART& USARTC = LPC24XX::UART(controllerIndex);
     volatile uint32_t LSR_Value = USARTC.UART_LSR;                     // Store LSR value since it's Read-to-Clear
     volatile uint32_t IIR_Value = USARTC.SEL3.IIR.UART_IIR & LPC24XX_USART::UART_IIR_IID_mask;
 
-    if (g_UartController[controller].handshakeEnable) {
+    auto driver = &uartDrivers[controllerIndex];
+    if (driver->handshakeEnable) {
         volatile bool dump = USARTC.UART_MSR; // Clr status register
     }
 
     if (LSR_Value & 0x04) {
-        LPC24_Uart_SetErrorEvent(controller, TinyCLR_Uart_Error::ReceiveParity);
+        LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveParity);
     }
     else if ((LSR_Value & 0x08) || (LSR_Value & 0x80)) {
-        LPC24_Uart_SetErrorEvent(controller, TinyCLR_Uart_Error::Frame);
+        LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
     }
     else if (LSR_Value & 0x02) {
-        LPC24_Uart_SetErrorEvent(controller, TinyCLR_Uart_Error::BufferOverrun);
+        LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferOverrun);
     }
 
-    LPC24_Uart_ReceiveData(controller, LSR_Value, IIR_Value);
+    LPC24_Uart_ReceiveData(controllerIndex, LSR_Value, IIR_Value);
 
-    LPC24_Uart_TransmitData(controller, LSR_Value, IIR_Value);
+    LPC24_Uart_TransmitData(controllerIndex, LSR_Value, IIR_Value);
 }
 
 
 TinyCLR_Result LPC24_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
 
+    auto controllerIndex = driver->controllerIndex;
 
-    if (controller >= TOTAL_UART_CONTROLLERS)
+    if (controllerIndex >= TOTAL_UART_CONTROLLERS)
         return TinyCLR_Result::ArgumentInvalid;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    int32_t txPin = LPC24_Uart_GetTxPin(controller);
-    int32_t rxPin = LPC24_Uart_GetRxPin(controller);
+    int32_t txPin = LPC24_Uart_GetTxPin(controllerIndex);
+    int32_t rxPin = LPC24_Uart_GetRxPin(controllerIndex);
 
-    if (g_UartController[controller].isOpened || !LPC24_Gpio_OpenPin(txPin) || !LPC24_Gpio_OpenPin(rxPin))
+    if (driver->isOpened || !LPC24_Gpio_OpenPin(txPin) || !LPC24_Gpio_OpenPin(rxPin))
         return TinyCLR_Result::SharingViolation;
 
-    g_UartController[controller].txBufferCount = 0;
-    g_UartController[controller].txBufferIn = 0;
-    g_UartController[controller].txBufferOut = 0;
+    driver->txBufferCount = 0;
+    driver->txBufferIn = 0;
+    driver->txBufferOut = 0;
 
-    g_UartController[controller].rxBufferCount = 0;
-    g_UartController[controller].rxBufferIn = 0;
-    g_UartController[controller].rxBufferOut = 0;
+    driver->rxBufferCount = 0;
+    driver->rxBufferIn = 0;
+    driver->rxBufferOut = 0;
 
-    g_UartController[controller].provider = self;
+    driver->controller = self;
 
-    switch (controller) {
+    switch (controllerIndex) {
     case 0:
         LPC24XX::SYSCON().PCONP |= PCONP_PCUART0;
         break;
@@ -357,10 +387,10 @@ TinyCLR_Result LPC24_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-void LPC24_Uart_SetClock(int32_t controller, int32_t pclkSel) {
+void LPC24_Uart_SetClock(int32_t controllerIndex, int32_t pclkSel) {
     pclkSel &= 0x03;
 
-    switch (controller) {
+    switch (controllerIndex) {
     case 0:
 
         LPC24XX::SYSCON().PCLKSEL0 &= ~(0x03 << 6);
@@ -391,9 +421,11 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self,
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
 
+    auto controllerIndex = driver->controllerIndex;
 
-    LPC24XX_USART& USARTC = LPC24XX::UART(controller);
+    LPC24XX_USART& USARTC = LPC24XX::UART(controllerIndex);
 
     uint32_t divisor;
     bool   fRet = true;
@@ -401,11 +433,11 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self,
 
     if (baudRate >= 460800) {
         uart_clock = LPC24XX_USART::c_ClockRate;
-        LPC24_Uart_SetClock(controller, 1);
+        LPC24_Uart_SetClock(controllerIndex, 1);
     }
     else {
         uart_clock = LPC24XX_USART::c_ClockRate / 4;
-        LPC24_Uart_SetClock(controller, 0);
+        LPC24_Uart_SetClock(controllerIndex, 0);
     }
 
     divisor = ((uart_clock / (baudRate * 16)));
@@ -492,14 +524,14 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self,
         return TinyCLR_Result::NotSupported;
     }
 
-    if (handshaking != TinyCLR_Uart_Handshake::None && controller != 1) // Only port 2 support handshaking
+    if (handshaking != TinyCLR_Uart_Handshake::None && controllerIndex != 1) // Only port 2 support handshaking
         return TinyCLR_Result::NotSupported;
 
 
     switch (handshaking) {
     case TinyCLR_Uart_Handshake::RequestToSend:
         USARTC.UART_MCR |= (1 << 6) | (1 << 7);
-        g_UartController[controller].handshakeEnable = true;
+        driver->handshakeEnable = true;
         break;
 
     case TinyCLR_Uart_Handshake::XOnXOff:
@@ -515,38 +547,37 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self,
 
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    if (g_UartController[controller].txBufferSize == 0) {
-        g_UartController[controller].txBufferSize = g_LPC24_Uart_TxDefaultBuffersSize[controller];
+    if (driver->txBufferSize == 0) {
+        driver->txBufferSize = uartTxDefaultBuffersSize[controllerIndex];
 
-        g_UartController[controller].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_UartController[controller].txBufferSize);
+        driver->TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, driver->txBufferSize);
 
-        if (g_UartController[controller].TxBuffer == nullptr) {
-            g_UartController[controller].txBufferSize = 0;
-
-            return TinyCLR_Result::OutOfMemory;
-        }
-    }
-
-    if (g_UartController[controller].rxBufferSize == 0) {
-        g_UartController[controller].rxBufferSize = g_LPC24_Uart_RxDefaultBuffersSize[controller];
-
-        g_UartController[controller].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_UartController[controller].rxBufferSize);
-
-        if (g_UartController[controller].RxBuffer == nullptr) {
-            g_UartController[controller].rxBufferSize = 0;
+        if (driver->TxBuffer == nullptr) {
+            driver->txBufferSize = 0;
 
             return TinyCLR_Result::OutOfMemory;
         }
     }
 
-    g_UartController[controller].controller = controller;
+    if (driver->rxBufferSize == 0) {
+        driver->rxBufferSize = uartRxDefaultBuffersSize[controllerIndex];
 
-    LPC24_Interrupt_Activate(LPC24XX_USART::getIntNo(controller), (uint32_t*)&LPC24_Uart_InterruptHandler, (void*)&g_UartController[controller].controller);
-    LPC24_Interrupt_Enable(LPC24XX_USART::getIntNo(controller));
+        driver->RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, driver->rxBufferSize);
 
-    LPC24_Uart_PinConfiguration(controller, true);
+        if (driver->RxBuffer == nullptr) {
+            driver->rxBufferSize = 0;
 
-    g_UartController[controller].isOpened = true;
+            return TinyCLR_Result::OutOfMemory;
+        }
+    }
+
+
+    LPC24_Interrupt_Activate(LPC24XX_USART::getIntNo(controllerIndex), (uint32_t*)&LPC24_Uart_InterruptHandler, (void*)&driver->controllerIndex);
+    LPC24_Interrupt_Enable(LPC24XX_USART::getIntNo(controllerIndex));
+
+    LPC24_Uart_PinConfiguration(controllerIndex, true);
+
+    driver->isOpened = true;
 
     return TinyCLR_Result::Success;
 }
@@ -554,14 +585,16 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self,
 TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Controller* self) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
 
+    auto controllerIndex = driver->controllerIndex;
 
-    LPC24XX_USART& USARTC = LPC24XX::UART(controller);
+    LPC24XX_USART& USARTC = LPC24XX::UART(controllerIndex);
 
-    LPC24_Interrupt_Disable(LPC24XX_USART::getIntNo(controller));
+    LPC24_Interrupt_Disable(LPC24XX_USART::getIntNo(controllerIndex));
 
-    if (g_UartController[controller].isOpened) {
-        if (g_UartController[controller].handshakeEnable) {
+    if (driver->isOpened) {
+        if (driver->handshakeEnable) {
             USARTC.UART_MCR &= ~((1 << 6) | (1 << 7));
         }
 
@@ -569,21 +602,21 @@ TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Controller* self) {
         USARTC.UART_LCR = 0; // prepare to Init UART
         USARTC.SEL2.IER.UART_IER &= ~(LPC24XX_USART::UART_IER_INTR_ALL_SET);         // Disable all UART interrupt
 
-        LPC24_Uart_PinConfiguration(controller, false);
+        LPC24_Uart_PinConfiguration(controllerIndex, false);
     }
 
-    g_UartController[controller].txBufferCount = 0;
-    g_UartController[controller].txBufferIn = 0;
-    g_UartController[controller].txBufferOut = 0;
+    driver->txBufferCount = 0;
+    driver->txBufferIn = 0;
+    driver->txBufferOut = 0;
 
-    g_UartController[controller].rxBufferCount = 0;
-    g_UartController[controller].rxBufferIn = 0;
-    g_UartController[controller].rxBufferOut = 0;
+    driver->rxBufferCount = 0;
+    driver->rxBufferIn = 0;
+    driver->rxBufferOut = 0;
 
-    g_UartController[controller].isOpened = false;
-    g_UartController[controller].handshakeEnable = false;
+    driver->isOpened = false;
+    driver->handshakeEnable = false;
 
-    switch (controller) {
+    switch (controllerIndex) {
     case 0:
         LPC24XX::SYSCON().PCONP &= ~PCONP_PCUART0;
         break;
@@ -603,29 +636,29 @@ TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Controller* self) {
     if (apiManager != nullptr) {
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-        if (g_UartController[controller].txBufferSize != 0) {
-            memoryProvider->Free(memoryProvider, g_UartController[controller].TxBuffer);
+        if (driver->txBufferSize != 0) {
+            memoryProvider->Free(memoryProvider, driver->TxBuffer);
 
-            g_UartController[controller].txBufferSize = 0;
+            driver->txBufferSize = 0;
         }
 
-        if (g_UartController[controller].rxBufferSize != 0) {
-            memoryProvider->Free(memoryProvider, g_UartController[controller].RxBuffer);
+        if (driver->rxBufferSize != 0) {
+            memoryProvider->Free(memoryProvider, driver->RxBuffer);
 
-            g_UartController[controller].rxBufferSize = 0;
+            driver->rxBufferSize = 0;
         }
     }
 
     return TinyCLR_Result::Success;
 }
 
-void LPC24_Uart_TxBufferEmptyInterruptEnable(int controller, bool enable) {
+void LPC24_Uart_TxBufferEmptyInterruptEnable(int controllerIndex, bool enable) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    LPC24XX_USART& USARTC = LPC24XX::UART(controller);
+    LPC24XX_USART& USARTC = LPC24XX::UART(controllerIndex);
 
     if (enable) {
-        LPC24XX::VIC().ForceInterrupt(LPC24XX_USART::getIntNo(controller));// force interrupt as this chip has a bug????
+        LPC24XX::VIC().ForceInterrupt(LPC24XX_USART::getIntNo(controllerIndex));// force interrupt as this chip has a bug????
         USARTC.SEL2.IER.UART_IER |= (LPC24XX_USART::UART_IER_THREIE);
     }
     else {
@@ -633,10 +666,10 @@ void LPC24_Uart_TxBufferEmptyInterruptEnable(int controller, bool enable) {
     }
 }
 
-void LPC24_Uart_RxBufferFullInterruptEnable(int controller, bool enable) {
+void LPC24_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    LPC24XX_USART& USARTC = LPC24XX::UART(controller);
+    LPC24XX_USART& USARTC = LPC24XX::UART(controllerIndex);
 
     if (enable) {
         USARTC.SEL2.IER.UART_IER |= (LPC24XX_USART::UART_IER_RDAIE);
@@ -646,20 +679,22 @@ void LPC24_Uart_RxBufferFullInterruptEnable(int controller, bool enable) {
     }
 }
 
-bool LPC24_Uart_TxHandshakeEnabledState(int controller) {
+bool LPC24_Uart_TxHandshakeEnabledState(int controllerIndex) {
     return true; // If this handshake input is not being used, it is assumed to be good
 }
 
 TinyCLR_Result LPC24_Uart_Flush(const TinyCLR_Uart_Controller* self) {
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
 
+    auto controllerIndex = driver->controllerIndex;
 
-    if (g_UartController[controller].isOpened == false)
+    if (driver->isOpened == false)
         return TinyCLR_Result::NotAvailable;
 
     // Make sute interrupt is enable
-    LPC24_Uart_TxBufferEmptyInterruptEnable(controller, true);
+    LPC24_Uart_TxBufferEmptyInterruptEnable(controllerIndex, true);
 
-    while (g_UartController[controller].txBufferCount > 0) {
+    while (driver->txBufferCount > 0) {
         LPC24_Time_Delay(nullptr, 1);
     }
 
@@ -667,28 +702,31 @@ TinyCLR_Result LPC24_Uart_Flush(const TinyCLR_Uart_Controller* self) {
 }
 
 TinyCLR_Result LPC24_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* buffer, size_t& length) {
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
 
-    size_t i = 0;;
+    auto controllerIndex = driver->controllerIndex;
+
+    size_t i = 0;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (g_UartController[controller].isOpened == false || g_UartController[controller].rxBufferSize == 0) {
+    if (driver->isOpened == false || driver->rxBufferSize == 0) {
         length = 0;
 
         return TinyCLR_Result::NotAvailable;
     }
 
-    length = std::min(g_UartController[controller].rxBufferCount, length);
+    length = std::min(driver->rxBufferCount, length);
 
     while (i < length) {
-        buffer[i] = g_UartController[controller].RxBuffer[g_UartController[controller].rxBufferOut];
+        buffer[i] = driver->RxBuffer[driver->rxBufferOut];
 
-        g_UartController[controller].rxBufferOut++;
+        driver->rxBufferOut++;
         i++;
-        g_UartController[controller].rxBufferCount--;
+        driver->rxBufferCount--;
 
-        if (g_UartController[controller].rxBufferOut == g_UartController[controller].rxBufferSize)
-            g_UartController[controller].rxBufferOut = 0;
+        if (driver->rxBufferOut == driver->rxBufferSize)
+            driver->rxBufferOut = 0;
     }
 
     return TinyCLR_Result::Success;
@@ -700,37 +738,41 @@ TinyCLR_Result LPC24_Uart_Write(const TinyCLR_Uart_Controller* self, const uint8
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (g_UartController[controller].isOpened == false || g_UartController[controller].txBufferSize == 0) {
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+
+    auto controllerIndex = driver->controllerIndex;
+
+    if (driver->isOpened == false || driver->txBufferSize == 0) {
         length = 0;
 
         return TinyCLR_Result::NotAvailable;
     }
 
-    if (g_UartController[controller].txBufferCount == g_UartController[controller].txBufferSize) {
-        LPC24_Uart_SetErrorEvent(controller, TinyCLR_Uart_Error::TransmitFull);
+    if (driver->txBufferCount == driver->txBufferSize) {
+        LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::TransmitFull);
 
         return TinyCLR_Result::Busy;
     }
 
-    length = std::min(g_UartController[controller].txBufferSize - g_UartController[controller].txBufferCount, length);
+    length = std::min(driver->txBufferSize - driver->txBufferCount, length);
 
 
     while (i < length) {
 
-        g_UartController[controller].TxBuffer[g_UartController[controller].txBufferIn] = buffer[i];
+        driver->TxBuffer[driver->txBufferIn] = buffer[i];
 
-        g_UartController[controller].txBufferCount++;
+        driver->txBufferCount++;
 
         i++;
 
-        g_UartController[controller].txBufferIn++;
+        driver->txBufferIn++;
 
-        if (g_UartController[controller].txBufferIn == g_UartController[controller].txBufferSize)
-            g_UartController[controller].txBufferIn = 0;
+        if (driver->txBufferIn == driver->txBufferSize)
+            driver->txBufferIn = 0;
     }
 
     if (length > 0) {
-        LPC24_Uart_TxBufferEmptyInterruptEnable(controller, true); // Enable Tx to start transfer
+        LPC24_Uart_TxBufferEmptyInterruptEnable(controllerIndex, true); // Enable Tx to start transfer
     }
 
     return TinyCLR_Result::Success;
@@ -741,17 +783,17 @@ TinyCLR_Result LPC24_Uart_SetPinChangedHandler(const TinyCLR_Uart_Controller* se
     return TinyCLR_Result::Success;
 }
 TinyCLR_Result LPC24_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ErrorReceivedHandler handler) {
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
 
-
-    g_UartController[controller].errorEventHandler = handler;
+    driver->errorEventHandler = handler;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_DataReceivedHandler handler) {
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
 
-
-    g_UartController[controller].dataReceivedEventHandler = handler;
+    driver->dataReceivedEventHandler = handler;
 
     return TinyCLR_Result::Success;
 }
@@ -793,37 +835,45 @@ TinyCLR_Result LPC24_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Controlle
 }
 
 TinyCLR_Result LPC24_Uart_GetUnreadCount(const TinyCLR_Uart_Controller* self, size_t& count) {
-    count = g_UartController[controller].rxBufferCount;
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+
+    count = driver->rxBufferCount;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Uart_GetUnwrittenCount(const TinyCLR_Uart_Controller* self, size_t& count) {
-    count = g_UartController[controller].txBufferCount;
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+
+    count = driver->txBufferCount;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Uart_ClearReadBuffer(const TinyCLR_Uart_Controller* self) {
-    g_UartController[controller].rxBufferCount = g_UartController[controller].rxBufferIn = g_UartController[controller].rxBufferOut = 0;
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+
+    driver->rxBufferCount = driver->rxBufferIn = driver->rxBufferOut = 0;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self) {
-    g_UartController[controller].txBufferCount = g_UartController[controller].txBufferIn = g_UartController[controller].txBufferOut = 0;
+    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+
+    driver->txBufferCount = driver->txBufferIn = driver->txBufferOut = 0;
 
     return TinyCLR_Result::Success;
 }
 
 void LPC24_Uart_Reset() {
     for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
-        g_UartController[i].txBufferSize = 0;
-        g_UartController[i].rxBufferSize = 0;
+        uartDrivers[i].txBufferSize = 0;
+        uartDrivers[i].rxBufferSize = 0;
 
-        LPC24_Uart_Release(&uartProviders, i);
+        LPC24_Uart_Release(&uartControllers[i]);
 
-        g_UartController[i].isOpened = false;
+        uartDrivers[i].isOpened = false;
     }
 }
 
