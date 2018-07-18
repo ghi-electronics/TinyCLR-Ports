@@ -2846,7 +2846,7 @@ void LPC17_Can_Reset() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
         canDrivers[i].canRxMessagesFifo = nullptr;
 
-        LPC17_Can_Release(&canControllers[0]);
+        LPC17_Can_Release(&canControllers[i]);
 
         canDrivers[i].isOpened = false;
     }
