@@ -216,7 +216,7 @@ struct AT91_UDPHS_EPTFIFO {
     volatile uint32_t	 UDPHS_READEPTF[16384]; 	// FIFO Endpoint data Register 15
 };
 
-struct AT91_UsbClientController {
+struct AT91_UsbDeviceDriver {
     USB_CONTROLLER_STATE *usbState;
 
     uint8_t			previousDeviceState;
@@ -226,7 +226,7 @@ struct AT91_UsbClientController {
     bool			txNeedZLPS[AT91_USB_ENDPOINT_COUNT];
 };
 
-AT91_UsbClientController at91_UsbClientController[AT91_TOTAL_USB_CONTROLLERS];
+static AT91_UsbDeviceDriver usbDeviceDrivers[AT91_TOTAL_USB_CONTROLLERS];
 
 struct AT91_UDP_ENDPOINT_ATTRIBUTE {
     uint16_t		Dir_Type;
@@ -325,8 +325,8 @@ void AT91_UsbClient_ResetEvent(USB_CONTROLLER_STATE *usbState) {
     TinyCLR_UsbClient_ClearEvent(usbState, 0xFFFFFFFF); // clear all events on all endpoints
 
     for (int32_t ep = 0; ep < AT91_USB_ENDPOINT_COUNT; ep++) {
-        at91_UsbClientController[usbState->controllerNum].txRunning[ep] = false;
-        at91_UsbClientController[usbState->controllerNum].txNeedZLPS[ep] = false;
+        usbDeviceDrivers[usbState->controllerIndex].txRunning[ep] = false;
+        usbDeviceDrivers[usbState->controllerIndex].txNeedZLPS[ep] = false;
     }
 
     usbState->deviceState = USB_DEVICE_STATE_DEFAULT;
@@ -345,7 +345,7 @@ void AT91_UsbClient_ResumeEvent(USB_CONTROLLER_STATE *usbState) {
     // TODO: will be replaced by PMC API
     AT91_UsbClient_PmcEnableUsbClock();
 
-    usbState->deviceState = at91_UsbClientController[usbState->controllerNum].previousDeviceState;
+    usbState->deviceState = usbDeviceDrivers[usbState->controllerIndex].previousDeviceState;
 
     TinyCLR_UsbClient_StateCallback(usbState);
 
@@ -568,18 +568,18 @@ void AT91_UsbClient_TxPacket(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
         int32_t i;
 
         AT91_UsbClient_WriteEndPoint(endpoint, Packet64->Buffer, Packet64->Size);
-        at91_UsbClientController[usbState->controllerNum].txNeedZLPS[endpoint] = (Packet64->Size == USB_BULK_WMAXPACKETSIZE_EP_WRITE);
+        usbDeviceDrivers[usbState->controllerIndex].txNeedZLPS[endpoint] = (Packet64->Size == USB_BULK_WMAXPACKETSIZE_EP_WRITE);
     }
     else {
         // send the zero leght packet since we landed on the FIFO boundary before
         // (and we queued a zero length packet to transmit)
-        if (at91_UsbClientController[usbState->controllerNum].txNeedZLPS[endpoint]) {
+        if (usbDeviceDrivers[usbState->controllerIndex].txNeedZLPS[endpoint]) {
             pUdp->UDPHS_EPT[endpoint].UDPHS_EPTSETSTA = AT91C_UDPHS_TX_PK_RDY;
-            at91_UsbClientController[usbState->controllerNum].txNeedZLPS[endpoint] = false;
+            usbDeviceDrivers[usbState->controllerIndex].txNeedZLPS[endpoint] = false;
         }
 
         // no more data
-        at91_UsbClientController[usbState->controllerNum].txRunning[endpoint] = false;
+        usbDeviceDrivers[usbState->controllerIndex].txRunning[endpoint] = false;
         pUdp->UDPHS_EPT[endpoint].UDPHS_EPTCTLDIS = AT91C_UDPHS_TX_PK_RDY;
     }
 }
@@ -599,7 +599,7 @@ void AT91_UsbClient_ControlNext(USB_CONTROLLER_STATE *usbState) {
             AT91_UsbClient_WriteEndPoint(0, usbState->ptrData, usbState->dataSize);
 
             // special handling the USB driver set address test, cannot use the first descriptor as the ADDRESS state is handle in the hardware
-            if (at91_UsbClientController[usbState->controllerNum].firstDescriptorPacket) {
+            if (usbDeviceDrivers[usbState->controllerIndex].firstDescriptorPacket) {
                 usbState->dataCallback = NULL;
             }
         }
@@ -676,9 +676,9 @@ void AT91_UsbClient_EndpointIsr(USB_CONTROLLER_STATE *usbState, uint32_t endpoin
 
 
             if ((Setup->Request == USB_GET_DESCRIPTOR) && (((Setup->Value & 0xFF00) >> 8) == USB_DEVICE_DESCRIPTOR_TYPE) && (Setup->Length != 0x12))
-                at91_UsbClientController[usbState->controllerNum].firstDescriptorPacket = true;
+                usbDeviceDrivers[usbState->controllerIndex].firstDescriptorPacket = true;
             else
-                at91_UsbClientController[usbState->controllerNum].firstDescriptorPacket = false;
+                usbDeviceDrivers[usbState->controllerIndex].firstDescriptorPacket = false;
 
 
             while (pUdp->UDPHS_EPT[0].UDPHS_EPTSTA & AT91C_UDPHS_RX_SETUP)
@@ -810,7 +810,7 @@ void AT91_UsbClient_InitializeConfiguration(USB_CONTROLLER_STATE *usbState) {
     int32_t controller = 0;
 
     if (usbState != nullptr) {
-        usbState->controllerNum = controller;
+        usbState->controllerIndex = controller;
 
         usbState->maxFifoPacketCount = AT91_USB_PACKET_FIFO_COUNT;
         usbState->totalEndpointsCount = AT91_USB_ENDPOINT_COUNT;
@@ -819,7 +819,7 @@ void AT91_UsbClient_InitializeConfiguration(USB_CONTROLLER_STATE *usbState) {
         // Update endpoint size DeviceDescriptor Configuration if device value is different to default value
         usbState->deviceDescriptor.MaxPacketSizeEp0 = TinyCLR_UsbClient_GetEndpointSize(0);
 
-        at91_UsbClientController[controller].usbState = usbState;
+        usbDeviceDrivers[controller].usbState = usbState;
     }
 }
 
@@ -827,9 +827,9 @@ bool AT91_UsbClient_Initialize(USB_CONTROLLER_STATE *usbState) {
     if (usbState == nullptr)
         return false;
 
-    int32_t controller = usbState->controllerNum;
+    int32_t controller = usbState->controllerIndex;
 
-    at91_UsbClientController[controller].usbState = usbState;
+    usbDeviceDrivers[controller].usbState = usbState;
 
     struct AT91_UDPHS *pUdp = (struct AT91_UDPHS *) (AT91C_BASE_UDP);
     struct AT91_UDPHS_EPT *pEp = (struct AT91_UDPHS_EPT *) (AT91C_BASE_UDP + 0x100);
@@ -907,9 +907,9 @@ bool AT91_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t endpoint
     }
 
     //If txRunning, interrupts will drain the queue
-    if (!(bool)((uint8_t)at91_UsbClientController[usbState->controllerNum].txRunning[endpoint])) {
+    if (!(bool)((uint8_t)usbDeviceDrivers[usbState->controllerIndex].txRunning[endpoint])) {
 
-        at91_UsbClientController[usbState->controllerNum].txRunning[endpoint] = true;
+        usbDeviceDrivers[usbState->controllerIndex].txRunning[endpoint] = true;
 
         AT91_UsbClient_TxPacket(usbState, endpoint);
     }
