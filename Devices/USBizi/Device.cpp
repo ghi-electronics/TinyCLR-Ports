@@ -47,7 +47,7 @@ const TinyCLR_Startup_UartDebuggerConfiguration AT91_Startup_UartDebuggerConfigu
    
 };
 
-void LPC24_Startup_GetDebuggerTransportManager(const TinyCLR_Api_Info*& api, const void*& configuration) {
+void LPC24_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value, valueUsbActive;
     auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetApi()->Implementation);    

@@ -48,8 +48,8 @@ static uint8_t data256[INTERNAL_FLASH_PROGRAM_SIZE_256];
 const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
     for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
-        deploymentControllers[i].Acquire = &LPC24_Deployment_Acquire;
-        deploymentControllers[i].Release = &LPC24_Deployment_Release;
+        deploymentControllers[i].Initialize = &LPC24_Deployment_Initialize;
+        deploymentControllers[i].Uninitialize = &LPC24_Deployment_Uninitialize;
         deploymentControllers[i].Read = &LPC24_Deployment_Read;
         deploymentControllers[i].Write = &LPC24_Deployment_Write;
         deploymentControllers[i].EraseSector = &LPC24_Deployment_EraseBlock;
@@ -64,7 +64,7 @@ const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
         deploymentApi[i].State = nullptr;
     }
 
-    return &deploymentApi;
+    return (const TinyCLR_Api_Info*)&deploymentApi;
 }
 
 int32_t __section("SectionForFlashOperations") LPC24_Deployment_PrepaireSector(int32_t startsec, int32_t endsec) {
@@ -244,13 +244,13 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_EraseBloc
     TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Deployment_Acquire(const TinyCLR_Deployment_Controller* self, bool& supportXIP) {
+TinyCLR_Result LPC24_Deployment_Initialize(const TinyCLR_Deployment_Controller* self, bool& supportXIP) {
     supportXIP = true;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Deployment_Release(const TinyCLR_Deployment_Controller* self) {
+TinyCLR_Result LPC24_Deployment_Uninitialize(const TinyCLR_Deployment_Controller* self) {
     // UnInitialize Flash can be here
     return TinyCLR_Result::Success;
 }

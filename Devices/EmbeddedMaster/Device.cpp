@@ -47,10 +47,10 @@ const TinyCLR_Startup_UsbDebuggerConfiguration LPC24_Startup_UsbDebuggerConfigur
 const TinyCLR_Startup_UartDebuggerConfiguration LPC24_Startup_UartDebuggerConfiguration = {    
 };
 
-void LPC24_Startup_GetDebuggerTransportManager(const TinyCLR_Api_Info*& api, const void*& configuration) {
+void LPC24_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value, valueUsbActive;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetApi()->Implementation);    
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetApi()->Implementation);
 
     provider->AcquirePin(provider, DEBUGGER_SELECTOR_PIN);
     provider->SetDriveMode(provider, DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
@@ -78,7 +78,7 @@ void LPC24_Startup_GetDebuggerTransportManager(const TinyCLR_Api_Info*& api, con
 void LPC24_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetApi()->Implementation);    
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetApi()->Implementation);
 
     provider->AcquirePin(provider, RUN_APP_PIN);
     provider->SetDriveMode(provider, RUN_APP_PIN, RUN_APP_PULL);
@@ -189,8 +189,8 @@ LPC24_Gpio_PinFunction LPC24_Adc_GetPinFunction(int32_t channel) {
 }
 
 //PWM
-const LPC24_Gpio_Pin g_lpc2478_pwm_pins[TOTAL_PWM_CONTROLLER][MAX_PWM_PER_CONTROLLER] = LPC2478_PWM_PINS;
-const LPC24_Gpio_Pin g_lpc2468_pwm_pins[TOTAL_PWM_CONTROLLER][MAX_PWM_PER_CONTROLLER] = LPC2468_PWM_PINS;
+const LPC24_Gpio_Pin g_lpc2478_pwm_pins[TOTAL_PWM_CONTROLLERS][MAX_PWM_PER_CONTROLLER] = LPC2478_PWM_PINS;
+const LPC24_Gpio_Pin g_lpc2468_pwm_pins[TOTAL_PWM_CONTROLLERS][MAX_PWM_PER_CONTROLLER] = LPC2468_PWM_PINS;
 
 LPC24_Gpio_Pin LPC24_Pwm_GetPins(int32_t controller, int32_t channel) {
     if (LPC24_Startup_GetDeviceId() == LPC2468_PARTID)
