@@ -1212,6 +1212,7 @@ const TinyCLR_Api_Info* AT91_Can_GetApi() {
         canApi[i].Type = TinyCLR_Api_Type::CanController;
         canApi[i].Version = 0;
         canApi[i].Implementation = &canControllers[i];
+        canApi[i].State = &canDrivers[i];
 
         canDrivers[i].controllerIndex = i;
     }
