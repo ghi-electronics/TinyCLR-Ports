@@ -759,7 +759,7 @@ const TinyCLR_Api_Info* TinyCLR_UsbClient_GetApi() {
 TinyCLR_Result TinyCLR_UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Controller* self, const TinyCLR_UsbClient_DeviceDescriptor* descriptor) {
     auto usbState = reinterpret_cast<UsClientDriver*>(self->ApiInfo->State);
 
-    memset(usbState, 0, sizeof(UsClientDriver));
+    memset(usbState, 0, sizeof(UsClientDriver) * TOTAL_USBCLIENT_CONTROLLERS);
 
     memcpy(reinterpret_cast<uint8_t*>(&usbState->deviceDescriptor), reinterpret_cast<uint8_t*>(const_cast<TinyCLR_UsbClient_DeviceDescriptor*>(descriptor)), sizeof(TinyCLR_UsbClient_DeviceDescriptor));
 
