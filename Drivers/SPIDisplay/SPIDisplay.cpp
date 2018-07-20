@@ -1,11 +1,11 @@
 #include "SPIDisplay.h"
 
-#define TOTAL_SPI_DISPLAY_CONTROLLER 1
+#define TOTAL_SPI_DISPLAY_CONTROLLERS 1
 
 extern const TinyCLR_Api_Manager* apiManager;
 
-static TinyCLR_Display_Controller spiDisplayControllers[TOTAL_SPI_DISPLAY_CONTROLLER];
-static TinyCLR_Api_Info spiDisplayApi[TOTAL_SPI_DISPLAY_CONTROLLER];
+static TinyCLR_Display_Controller spiDisplayControllers[TOTAL_SPI_DISPLAY_CONTROLLERS];
+static TinyCLR_Api_Info spiDisplayApi[TOTAL_SPI_DISPLAY_CONTROLLERS];
 static TinyCLR_Display_DataFormat spiDisplayDataFormats[] = { TinyCLR_Display_DataFormat::Rgb565 };
 static int32_t spiDisplayWidth = 0;
 static int32_t spiDisplayHeight = 0;
@@ -13,7 +13,7 @@ static TinyCLR_Display_SpiConfiguration spiDisplayConfig;
 static const TinyCLR_Spi_Controller* spiDisplayBus;
 
 const TinyCLR_Api_Info* SPIDisplay_GetApi() {
-    for (auto i = 0; i < TOTAL_SPI_DISPLAY_CONTROLLER; i++) {
+    for (auto i = 0; i < TOTAL_SPI_DISPLAY_CONTROLLERS; i++) {
         spiDisplayControllers[i].ApiInfo = &spiDisplayApi[i];
         spiDisplayControllers[i].Acquire = &SPIDisplay_Acquire;
         spiDisplayControllers[i].Release = &SPIDisplay_Release;
