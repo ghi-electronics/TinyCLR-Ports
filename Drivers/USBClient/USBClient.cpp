@@ -774,6 +774,7 @@ TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Controller* sel
     TinyCLR_UsbClient_InitializeConfiguration(usbState);
 
     usbState->currentState = USB_DEVICE_STATE_UNINITIALIZED;
+    usbState->deviceState = USB_DEVICE_STATE_UNINITIALIZED;
     usbState->deviceStatus = USB_STATUS_DEVICE_SELF_POWERED;
 
     if (apiManager != nullptr) {
@@ -953,10 +954,11 @@ TinyCLR_Result TinyCLR_UsbClient_Close(const TinyCLR_UsbClient_Controller* self,
 TinyCLR_Result TinyCLR_UsbClient_Write(const TinyCLR_UsbClient_Controller* self, int32_t pipe, const uint8_t* data, size_t& length) {
     UsClientDriver * usbState = reinterpret_cast<UsClientDriver*>(self->ApiInfo->State);
 
-    if (data == nullptr
+    if (!usbState->initialized
         || usbState->deviceState != USB_DEVICE_STATE_CONFIGURED
+        || data == nullptr
         || length == 0) {
-        return TinyCLR_Result::ArgumentInvalid;
+        return TinyCLR_Result::NotAvailable;
     }
 
     int32_t endpoint = usbState->pipes[pipe].TxEP;
@@ -1072,8 +1074,8 @@ TinyCLR_Result TinyCLR_UsbClient_Read(const TinyCLR_UsbClient_Controller* self, 
     int32_t endpoint;
     UsClientDriver * usbState = reinterpret_cast<UsClientDriver*>(self->ApiInfo->State);
 
-    if (usbState->deviceState != USB_DEVICE_STATE_CONFIGURED) {
-        return TinyCLR_Result::ArgumentInvalid;
+    if (!usbState->initialized || usbState->deviceState != USB_DEVICE_STATE_CONFIGURED) {
+        return TinyCLR_Result::NotAvailable;
     }
 
     endpoint = usbState->pipes[pipe].RxEP;
