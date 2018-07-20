@@ -176,9 +176,9 @@ TinyCLR_Result LPC17_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Controller* 
 
     LPC17_Gpio_EnableInputPin(pin, pinDriveMode[pin]);
 
-    auto driver = reinterpret_cast<GpioState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<GpioState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
     if (ISR) {
         interruptState->controller = &gpioControllers[controllerIndex];

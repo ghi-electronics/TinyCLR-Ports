@@ -147,9 +147,9 @@ TinyCLR_Result AT91_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Controller* s
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto driver = reinterpret_cast<GpioState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<GpioState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
     uint32_t port = GETPORT(pin);
     uint32_t bitmask = 1 << GETBIT(pin);

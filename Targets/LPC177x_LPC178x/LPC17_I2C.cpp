@@ -114,12 +114,12 @@ void LPC17_I2c_InterruptHandler(int32_t controllerIndex) {
 
     LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(controllerIndex == 0 ? LPC17xx_I2C::c_I2C0_Base : ((controllerIndex == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
 
-    auto driver = &i2cStates[controllerIndex];
+    auto state = &i2cStates[controllerIndex];
 
     // read status
     uint8_t status = I2C.I2STAT;
 
-    I2cTransaction *transaction = driver->currentI2cTransactionAction;
+    I2cTransaction *transaction = state->currentI2cTransactionAction;
 
     if (!transaction) {
         I2C.I2CONCLR = LPC17xx_I2C::SI;
@@ -130,7 +130,7 @@ void LPC17_I2c_InterruptHandler(int32_t controllerIndex) {
     case 0x08: // Start Condition transmitted
     case 0x10: // Repeated Start Condition transmitted
         // Write Slave address and Data direction
-        address = 0xFE & (driver->i2cConfiguration.address << 1);
+        address = 0xFE & (state->i2cConfiguration.address << 1);
         address |= transaction->isReadTransaction ? 1 : 0;
         I2C.I2DAT = address;
         // Clear STA bit
@@ -145,7 +145,7 @@ void LPC17_I2c_InterruptHandler(int32_t controllerIndex) {
                 LPC17_I2c_StopTransaction(controllerIndex);
             }
             else {
-                driver->currentI2cTransactionAction = &driver->readI2cTransactionAction;
+                state->currentI2cTransactionAction = &state->readI2cTransactionAction;
                 LPC17_I2c_StartTransaction(controllerIndex);
             }
         }
@@ -194,7 +194,7 @@ void LPC17_I2c_InterruptHandler(int32_t controllerIndex) {
             }
             else {
                 // start next
-                driver->currentI2cTransactionAction = &driver->readI2cTransactionAction;
+                state->currentI2cTransactionAction = &state->readI2cTransactionAction;
                 LPC17_I2c_StartTransaction(controllerIndex);
             }
         }
@@ -227,11 +227,11 @@ void LPC17_I2c_InterruptHandler2(void *param) {
 void LPC17_I2c_StartTransaction(int32_t controllerIndex) {
     LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(controllerIndex == 0 ? LPC17xx_I2C::c_I2C0_Base : ((controllerIndex == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
 
-    auto driver = &i2cStates[controllerIndex];
+    auto state = &i2cStates[controllerIndex];
 
-    if (!driver->writeI2cTransactionAction.repeatedStart || driver->writeI2cTransactionAction.bytesTransferred == 0) {
-        I2C.I2SCLH = driver->i2cConfiguration.clockRate | (driver->i2cConfiguration.clockRate2 << 8);
-        I2C.I2SCLL = driver->i2cConfiguration.clockRate | (driver->i2cConfiguration.clockRate2 << 8);
+    if (!state->writeI2cTransactionAction.repeatedStart || state->writeI2cTransactionAction.bytesTransferred == 0) {
+        I2C.I2SCLH = state->i2cConfiguration.clockRate | (state->i2cConfiguration.clockRate2 << 8);
+        I2C.I2SCLL = state->i2cConfiguration.clockRate | (state->i2cConfiguration.clockRate2 << 8);
 
         I2C.I2CONSET = LPC17xx_I2C::STA;
     }
@@ -247,40 +247,40 @@ void LPC17_I2c_StopTransaction(int32_t controllerIndex) {
     I2C.I2CONSET = LPC17xx_I2C::STO;
     I2C.I2CONCLR = LPC17xx_I2C::AA | LPC17xx_I2C::SI | LPC17xx_I2C::STA;
 
-    auto driver = &i2cStates[controllerIndex];
+    auto state = &i2cStates[controllerIndex];
 
-    driver->currentI2cTransactionAction->isDone = true;
+    state->currentI2cTransactionAction->isDone = true;
 }
 
 TinyCLR_Result LPC17_I2c_Read(const TinyCLR_I2c_Controller* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
-    auto driver = reinterpret_cast<I2cState*>(self->ApiInfo->State);
-    auto controllerIndex = driver->controllerIndex;
+    auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
 
-    driver->readI2cTransactionAction.isReadTransaction = true;
-    driver->readI2cTransactionAction.buffer = buffer;
-    driver->readI2cTransactionAction.bytesToTransfer = length;
-    driver->readI2cTransactionAction.isDone = false;
-    driver->readI2cTransactionAction.repeatedStart = false;
-    driver->readI2cTransactionAction.bytesTransferred = 0;
+    state->readI2cTransactionAction.isReadTransaction = true;
+    state->readI2cTransactionAction.buffer = buffer;
+    state->readI2cTransactionAction.bytesToTransfer = length;
+    state->readI2cTransactionAction.isDone = false;
+    state->readI2cTransactionAction.repeatedStart = false;
+    state->readI2cTransactionAction.bytesTransferred = 0;
 
-    driver->currentI2cTransactionAction = &driver->readI2cTransactionAction;
+    state->currentI2cTransactionAction = &state->readI2cTransactionAction;
 
     LPC17_I2c_StartTransaction(controllerIndex);
 
-    while (driver->currentI2cTransactionAction->isDone == false && timeout > 0) {
+    while (state->currentI2cTransactionAction->isDone == false && timeout > 0) {
         LPC17_Time_Delay(nullptr, 1000);
 
         timeout--;
     }
 
-    if (driver->currentI2cTransactionAction->bytesTransferred == length)
+    if (state->currentI2cTransactionAction->bytesTransferred == length)
         result = TinyCLR_I2c_TransferStatus::FullTransfer;
-    else if (driver->currentI2cTransactionAction->bytesTransferred < length && driver->currentI2cTransactionAction->bytesTransferred > 0)
+    else if (state->currentI2cTransactionAction->bytesTransferred < length && state->currentI2cTransactionAction->bytesTransferred > 0)
         result = TinyCLR_I2c_TransferStatus::PartialTransfer;
 
-    length = driver->currentI2cTransactionAction->bytesTransferred;
+    length = state->currentI2cTransactionAction->bytesTransferred;
 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
@@ -288,32 +288,32 @@ TinyCLR_Result LPC17_I2c_Read(const TinyCLR_I2c_Controller* self, uint8_t* buffe
 TinyCLR_Result LPC17_I2c_Write(const TinyCLR_I2c_Controller* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
-    auto driver = reinterpret_cast<I2cState*>(self->ApiInfo->State);
-    auto controllerIndex = driver->controllerIndex;
+    auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
 
-    driver->writeI2cTransactionAction.isReadTransaction = false;
-    driver->writeI2cTransactionAction.buffer = (uint8_t*)buffer;
-    driver->writeI2cTransactionAction.bytesToTransfer = length;
-    driver->writeI2cTransactionAction.isDone = false;
-    driver->writeI2cTransactionAction.repeatedStart = false;
-    driver->writeI2cTransactionAction.bytesTransferred = 0;
+    state->writeI2cTransactionAction.isReadTransaction = false;
+    state->writeI2cTransactionAction.buffer = (uint8_t*)buffer;
+    state->writeI2cTransactionAction.bytesToTransfer = length;
+    state->writeI2cTransactionAction.isDone = false;
+    state->writeI2cTransactionAction.repeatedStart = false;
+    state->writeI2cTransactionAction.bytesTransferred = 0;
 
-    driver->currentI2cTransactionAction = &driver->writeI2cTransactionAction;
+    state->currentI2cTransactionAction = &state->writeI2cTransactionAction;
 
     LPC17_I2c_StartTransaction(controllerIndex);
 
-    while (driver->currentI2cTransactionAction->isDone == false && timeout > 0) {
+    while (state->currentI2cTransactionAction->isDone == false && timeout > 0) {
         LPC17_Time_Delay(nullptr, 1000);
 
         timeout--;
     }
 
-    if (driver->currentI2cTransactionAction->bytesTransferred == length)
+    if (state->currentI2cTransactionAction->bytesTransferred == length)
         result = TinyCLR_I2c_TransferStatus::FullTransfer;
-    else if (driver->currentI2cTransactionAction->bytesTransferred < length && driver->currentI2cTransactionAction->bytesTransferred > 0)
+    else if (state->currentI2cTransactionAction->bytesTransferred < length && state->currentI2cTransactionAction->bytesTransferred > 0)
         result = TinyCLR_I2c_TransferStatus::PartialTransfer;
 
-    length = driver->currentI2cTransactionAction->bytesTransferred;
+    length = state->currentI2cTransactionAction->bytesTransferred;
 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
@@ -321,43 +321,43 @@ TinyCLR_Result LPC17_I2c_Write(const TinyCLR_I2c_Controller* self, const uint8_t
 TinyCLR_Result LPC17_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
-    auto driver = reinterpret_cast<I2cState*>(self->ApiInfo->State);
-    auto controllerIndex = driver->controllerIndex;
+    auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
 
-    driver->writeI2cTransactionAction.isReadTransaction = false;
-    driver->writeI2cTransactionAction.buffer = (uint8_t*)writeBuffer;
-    driver->writeI2cTransactionAction.bytesToTransfer = writeLength;
-    driver->writeI2cTransactionAction.isDone = false;
-    driver->writeI2cTransactionAction.repeatedStart = true;
-    driver->writeI2cTransactionAction.bytesTransferred = 0;
+    state->writeI2cTransactionAction.isReadTransaction = false;
+    state->writeI2cTransactionAction.buffer = (uint8_t*)writeBuffer;
+    state->writeI2cTransactionAction.bytesToTransfer = writeLength;
+    state->writeI2cTransactionAction.isDone = false;
+    state->writeI2cTransactionAction.repeatedStart = true;
+    state->writeI2cTransactionAction.bytesTransferred = 0;
 
-    driver->readI2cTransactionAction.isReadTransaction = true;
-    driver->readI2cTransactionAction.buffer = readBuffer;
-    driver->readI2cTransactionAction.bytesToTransfer = readLength;
-    driver->readI2cTransactionAction.isDone = false;
-    driver->readI2cTransactionAction.repeatedStart = false;
-    driver->readI2cTransactionAction.bytesTransferred = 0;
+    state->readI2cTransactionAction.isReadTransaction = true;
+    state->readI2cTransactionAction.buffer = readBuffer;
+    state->readI2cTransactionAction.bytesToTransfer = readLength;
+    state->readI2cTransactionAction.isDone = false;
+    state->readI2cTransactionAction.repeatedStart = false;
+    state->readI2cTransactionAction.bytesTransferred = 0;
 
-    driver->currentI2cTransactionAction = &driver->writeI2cTransactionAction;
+    state->currentI2cTransactionAction = &state->writeI2cTransactionAction;
 
     LPC17_I2c_StartTransaction(controllerIndex);
 
-    while (driver->currentI2cTransactionAction->isDone == false && timeout > 0) {
+    while (state->currentI2cTransactionAction->isDone == false && timeout > 0) {
         LPC17_Time_Delay(nullptr, 1000);
 
         timeout--;
     }
 
-    if (driver->writeI2cTransactionAction.bytesTransferred != writeLength) {
-        writeLength = driver->writeI2cTransactionAction.bytesTransferred;
+    if (state->writeI2cTransactionAction.bytesTransferred != writeLength) {
+        writeLength = state->writeI2cTransactionAction.bytesTransferred;
         result = TinyCLR_I2c_TransferStatus::PartialTransfer;
     }
     else {
-        readLength = driver->readI2cTransactionAction.bytesTransferred;
+        readLength = state->readI2cTransactionAction.bytesTransferred;
 
-        if (driver->currentI2cTransactionAction->bytesTransferred == readLength)
+        if (state->currentI2cTransactionAction->bytesTransferred == readLength)
             result = TinyCLR_I2c_TransferStatus::FullTransfer;
-        else if (driver->currentI2cTransactionAction->bytesTransferred < readLength && driver->currentI2cTransactionAction->bytesTransferred > 0)
+        else if (state->currentI2cTransactionAction->bytesTransferred < readLength && state->currentI2cTransactionAction->bytesTransferred > 0)
             result = TinyCLR_I2c_TransferStatus::PartialTransfer;
     }
 
@@ -379,11 +379,11 @@ TinyCLR_Result LPC17_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, i
 
     uint32_t divider = LPC17xx_I2C::c_I2C_Clk_KHz / (2 * rateKhz);
 
-    auto driver = reinterpret_cast<I2cState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
-    driver->i2cConfiguration.clockRate = (uint8_t)divider; // low byte
-    driver->i2cConfiguration.clockRate2 = (uint8_t)(divider >> 8); // high byte
-    driver->i2cConfiguration.address = slaveAddress;
+    state->i2cConfiguration.clockRate = (uint8_t)divider; // low byte
+    state->i2cConfiguration.clockRate2 = (uint8_t)(divider >> 8); // high byte
+    state->i2cConfiguration.address = slaveAddress;
 
     return TinyCLR_Result::Success;
 }
@@ -392,8 +392,8 @@ TinyCLR_Result LPC17_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto driver = reinterpret_cast<I2cState*>(self->ApiInfo->State);
-    auto controllerIndex = driver->controllerIndex;
+    auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
 
     LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(controllerIndex == 0 ? LPC17xx_I2C::c_I2C0_Base : ((controllerIndex == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
 
@@ -423,7 +423,7 @@ TinyCLR_Result LPC17_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
     // set the slave address
     I2C.I2ADR = 0x7E;
 
-    driver->i2cConfiguration.isOpened = true;
+    state->i2cConfiguration.isOpened = true;
 
     return TinyCLR_Result::Success;
 }
@@ -432,8 +432,8 @@ TinyCLR_Result LPC17_I2c_Release(const TinyCLR_I2c_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto driver = reinterpret_cast<I2cState*>(self->ApiInfo->State);
-    auto controllerIndex = driver->controllerIndex;
+    auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
 
     LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(controllerIndex == 0 ? LPC17xx_I2C::c_I2C0_Base : ((controllerIndex == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
 
@@ -441,12 +441,12 @@ TinyCLR_Result LPC17_I2c_Release(const TinyCLR_I2c_Controller* self) {
 
     I2C.I2CONCLR = (LPC17xx_I2C::AA | LPC17xx_I2C::SI | LPC17xx_I2C::STO | LPC17xx_I2C::STA | LPC17xx_I2C::I2EN);
 
-    if (driver->i2cConfiguration.isOpened) {
+    if (state->i2cConfiguration.isOpened) {
         LPC17_Gpio_ClosePin(i2cSdaPins[controllerIndex].number);
         LPC17_Gpio_ClosePin(i2cSclPins[controllerIndex].number);
     }
 
-    driver->i2cConfiguration.isOpened = false;
+    state->i2cConfiguration.isOpened = false;
 
     return TinyCLR_Result::Success;
 }
@@ -455,19 +455,19 @@ void LPC17_I2c_Reset() {
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
         LPC17_I2c_Release(&i2cControllers[i]);
 
-        auto driver = &i2cStates[i];
+        auto state = &i2cStates[i];
 
-        driver->i2cConfiguration.address = 0;
-        driver->i2cConfiguration.clockRate = 0;
-        driver->i2cConfiguration.clockRate2 = 0;
+        state->i2cConfiguration.address = 0;
+        state->i2cConfiguration.clockRate = 0;
+        state->i2cConfiguration.clockRate2 = 0;
 
-        driver->readI2cTransactionAction.bytesToTransfer = 0;
-        driver->readI2cTransactionAction.bytesTransferred = 0;
+        state->readI2cTransactionAction.bytesToTransfer = 0;
+        state->readI2cTransactionAction.bytesTransferred = 0;
 
-        driver->writeI2cTransactionAction.bytesToTransfer = 0;
-        driver->writeI2cTransactionAction.bytesTransferred = 0;
+        state->writeI2cTransactionAction.bytesToTransfer = 0;
+        state->writeI2cTransactionAction.bytesTransferred = 0;
 
-        driver->i2cConfiguration.isOpened = false;
+        state->i2cConfiguration.isOpened = false;
     }
 }
 

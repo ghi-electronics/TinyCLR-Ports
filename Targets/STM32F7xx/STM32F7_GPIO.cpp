@@ -185,9 +185,9 @@ TinyCLR_Result STM32F7_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Controller
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto driver = reinterpret_cast<GpioState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<GpioState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
     if (isr) {
         if ((SYSCFG->EXTICR[idx] & mask) != config) {

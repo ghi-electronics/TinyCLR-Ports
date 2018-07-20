@@ -102,22 +102,22 @@ TinyCLR_Result LPC24_Adc_AcquireChannel(const TinyCLR_Adc_Controller* self, int3
         (0 << 17) |//10 bits
         (1 << 21);//operational
 
-    auto driver = reinterpret_cast<AdcState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
-    driver->isOpen |= (1 << channel);
+    state->isOpen |= (1 << channel);
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Adc_ReleaseChannel(const TinyCLR_Adc_Controller* self, int32_t channel) {
-    auto driver = reinterpret_cast<AdcState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
-    if (driver->isOpen & (1 << channel)) {
+    if (state->isOpen & (1 << channel)) {
         LPC24_Gpio_ClosePin(LPC24_Adc_GetPin(channel));
 
     }
 
-    driver->isOpen &= ~(1 << channel);
+    state->isOpen &= ~(1 << channel);
 
     return TinyCLR_Result::Success;
 }

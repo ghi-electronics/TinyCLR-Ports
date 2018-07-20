@@ -350,11 +350,11 @@ struct AT91_PIO {
 
     volatile uint32_t PIO_ISR;       /**< \brief (Pio Offset: 0x004C) Interrupt Status Register */
 
-    volatile uint32_t PIO_MDER;      /**< \brief (Pio Offset: 0x0050) Multi-driver Enable Register */
+    volatile uint32_t PIO_MDER;      /**< \brief (Pio Offset: 0x0050) Multi-state Enable Register */
 
-    volatile uint32_t PIO_MDDR;      /**< \brief (Pio Offset: 0x0054) Multi-driver Disable Register */
+    volatile uint32_t PIO_MDDR;      /**< \brief (Pio Offset: 0x0054) Multi-state Disable Register */
 
-    volatile uint32_t PIO_MDSR;      /**< \brief (Pio Offset: 0x0058) Multi-driver Status Register */
+    volatile uint32_t PIO_MDSR;      /**< \brief (Pio Offset: 0x0058) Multi-state Status Register */
 
     volatile uint32_t Reserved4[1];
 

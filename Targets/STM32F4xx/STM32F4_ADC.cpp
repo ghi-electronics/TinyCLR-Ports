@@ -90,7 +90,7 @@ TinyCLR_Result STM32F4_Adc_Release(const TinyCLR_Adc_Controller* self) {
 }
 
 TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Controller* self, int32_t channel) {
-    auto driver = reinterpret_cast<AdcState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
     if (channel <= 15 && !STM32F4_GpioInternal_OpenPin(adcPins[channel]))
         return TinyCLR_Result::SharingViolation;
@@ -114,7 +114,7 @@ TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Controller* self, in
                 STM32F4_GpioInternal_ConfigurePin(adcPins[channel], STM32F4_Gpio_PortMode::Analog, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
             }
 
-            driver->isOpen[i] = true;
+            state->isOpen[i] = true;
 
             return TinyCLR_Result::Success;
 
@@ -126,15 +126,15 @@ TinyCLR_Result STM32F4_Adc_AcquireChannel(const TinyCLR_Adc_Controller* self, in
 }
 
 TinyCLR_Result STM32F4_Adc_ReleaseChannel(const TinyCLR_Adc_Controller* self, int32_t channel) {
-    auto driver = reinterpret_cast<AdcState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
     // free GPIO pin if this channel is listed in the STM32F4_AD_CHANNELS array
     // and if it's not one of the internally connected ones as these channels don't take any GPIO pins
     if (channel <= 15 && channel < STM32F4_AD_NUM)
-        if (driver->isOpen[channel])
+        if (state->isOpen[channel])
             STM32F4_GpioInternal_ClosePin(adcPins[channel]);
 
-    driver->isOpen[channel] = false;
+    state->isOpen[channel] = false;
 
     return TinyCLR_Result::Success;
 }

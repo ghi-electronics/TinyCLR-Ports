@@ -18,7 +18,7 @@
 #include "../../Drivers/USBClient/USBClient.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-/// LPC17 USB Hardware driver
+/// LPC17 USB Hardware state
 ///////////////////////////////////////////////////////////////////////////////////////////
 /* Device Interrupt Bit Definitions */
 #define FRAME_INT           0x00000001
@@ -611,7 +611,7 @@ void LPC17_UsbClient_ControlNext(UsClientState *usClientState) {
                 usClientState->dataCallback = nullptr; // Stop sending stuff if we're done
             }
 
-            // special handling the USB driver set address test, cannot use the first descriptor as the ADDRESS state is handle in the hardware
+            // special handling the USB state set address test, cannot use the first descriptor as the ADDRESS state is handle in the hardware
             if (usbDeviceDrivers[usClientState->controllerIndex].firstDescriptorPacket) {
                 usClientState->dataCallback = nullptr;
             }

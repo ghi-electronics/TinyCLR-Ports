@@ -80,13 +80,13 @@ TinyCLR_Result LPC24_Dac_AcquireChannel(const TinyCLR_Dac_Controller* self, int3
     if (!LPC24_Gpio_OpenPin(dacPins[channel].number))
         return TinyCLR_Result::SharingViolation;
 
-    auto driver = reinterpret_cast<DacState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<DacState*>(self->ApiInfo->State);
 
     LPC24_Gpio_ConfigurePin(dacPins[channel].number, LPC24_Gpio_Direction::Input, dacPins[channel].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
     DACR = (0 << 6); // This sets the initial starting voltage at 0
 
-    driver->isOpened[channel] = true;
+    state->isOpened[channel] = true;
 
     return TinyCLR_Result::Success;
 }
@@ -95,11 +95,11 @@ TinyCLR_Result LPC24_Dac_ReleaseChannel(const TinyCLR_Dac_Controller* self, int3
     if (channel >= LPC24_Dac_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    auto driver = reinterpret_cast<DacState*>(self->ApiInfo->State);
-    if (driver->isOpened[channel])
+    auto state = reinterpret_cast<DacState*>(self->ApiInfo->State);
+    if (state->isOpened[channel])
         LPC24_Gpio_ClosePin(dacPins[channel].number);
 
-    driver->isOpened[channel] = false;
+    state->isOpened[channel] = false;
 
     return TinyCLR_Result::Success;
 }

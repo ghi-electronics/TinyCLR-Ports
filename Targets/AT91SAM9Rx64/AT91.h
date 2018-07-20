@@ -356,11 +356,11 @@ struct AT91_PIO {
 
     /****/ volatile uint32_t PIO_ISR;   // Interrupt Status Register
 
-    /****/ volatile uint32_t PIO_MDER;  // Multi-driver Enable Register
+    /****/ volatile uint32_t PIO_MDER;  // Multi-state Enable Register
 
-    /****/ volatile uint32_t PIO_MDDR;  // Multi-driver Disable Register
+    /****/ volatile uint32_t PIO_MDDR;  // Multi-state Disable Register
 
-    /****/ volatile uint32_t PIO_MDSR;  // Multi-driver Status Register
+    /****/ volatile uint32_t PIO_MDSR;  // Multi-state Status Register
 
     /****/ volatile uint32_t Reserved3[1];  //
 

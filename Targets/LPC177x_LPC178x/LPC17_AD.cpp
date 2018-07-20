@@ -289,7 +289,7 @@ TinyCLR_Result LPC17_Adc_AcquireChannel(const TinyCLR_Adc_Controller* self, int3
     if (!LPC17_Gpio_OpenPin(adcPins[channel].number))
         return  TinyCLR_Result::SharingViolation;
 
-    auto driver = reinterpret_cast<AdcState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
     LPC_SC->PCONP |= PCONP_PCAD; // To enable power on ADC  Possibly add a check to see if power is enabled before setting and for the ability to check if any ADC are active in uninitialize
 
@@ -300,18 +300,18 @@ TinyCLR_Result LPC17_Adc_AcquireChannel(const TinyCLR_Adc_Controller* self, int3
         (1 << 16) | // Burst Mode set
         (1 << 21); // Set convertion operation to opperational
 
-    driver->isOpen[channel] = true;
+    state->isOpen[channel] = true;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC17_Adc_ReleaseChannel(const TinyCLR_Adc_Controller* self, int32_t channel) {
-    auto driver = reinterpret_cast<AdcState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
-    if (driver->isOpen[channel])
+    if (state->isOpen[channel])
         LPC17_Gpio_ClosePin(adcPins[channel].number);
 
-    driver->isOpen[channel] = false;
+    state->isOpen[channel] = false;
 
     return TinyCLR_Result::Success;
 }

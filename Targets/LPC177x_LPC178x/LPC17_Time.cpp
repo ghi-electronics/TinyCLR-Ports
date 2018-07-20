@@ -88,29 +88,29 @@ uint64_t LPC17_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Controller
 uint64_t LPC17_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto driver = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
     uint32_t tick_spent;
     uint32_t reg = SysTick->CTRL;
     uint32_t ticks = (SysTick->VAL & SysTick_LOAD_RELOAD_Msk);
 
     if ((reg & SysTick_CTRL_COUNTFLAG_Msk) == SysTick_CTRL_COUNTFLAG_Msk   // Interrupt was trigger on time as expected
-        || ticks >= driver->m_currentTick) {                // Interrupt was trigger slower than expected
+        || ticks >= state->m_currentTick) {                // Interrupt was trigger slower than expected
         if (ticks > 0) {
-            tick_spent = driver->m_currentTick + (SysTick->LOAD - ticks);
+            tick_spent = state->m_currentTick + (SysTick->LOAD - ticks);
         }
         else {
-            tick_spent = driver->m_currentTick;
+            tick_spent = state->m_currentTick;
         }
     }
     else {
-        tick_spent = driver->m_currentTick - ticks;
+        tick_spent = state->m_currentTick - ticks;
     }
 
-    driver->m_currentTick = ticks;
-    driver->m_lastRead += tick_spent;
+    state->m_currentTick = ticks;
+    state->m_lastRead += tick_spent;
 
-    return (uint64_t)(driver->m_lastRead);
+    return (uint64_t)(state->m_lastRead);
 }
 
 TinyCLR_Result LPC17_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Controller* self, uint64_t processorTicks) {
@@ -118,7 +118,7 @@ TinyCLR_Result LPC17_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Contr
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto driver = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
     ticks = LPC17_Time_GetCurrentProcessorTicks(self);
 
@@ -128,33 +128,33 @@ TinyCLR_Result LPC17_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Contr
         if (ticks >= TIMER_IDLE_VALUE) {
             timerNextEvent = timerNextEvent > ticks ? (timerNextEvent - ticks) : 0;
 
-            driver->m_lastRead = 0;
+            state->m_lastRead = 0;
 
-            driver->m_currentTick = timerNextEvent;
-            driver->m_periodTicks = timerNextEvent;
+            state->m_currentTick = timerNextEvent;
+            state->m_periodTicks = timerNextEvent;
 
-            SysTick_Config(driver->m_periodTicks);
+            SysTick_Config(state->m_periodTicks);
 
-            driver->Reload(driver->m_periodTicks);
+            state->Reload(state->m_periodTicks);
 
         }
         else {
-            driver->m_periodTicks = SysTick_LOAD_RELOAD_Msk;
-            driver->Reload(SysTick_LOAD_RELOAD_Msk);
+            state->m_periodTicks = SysTick_LOAD_RELOAD_Msk;
+            state->Reload(SysTick_LOAD_RELOAD_Msk);
         }
     }
     else {
         if (ticks >= timerNextEvent) { // missed event
-            driver->m_DequeuAndExecute();
+            state->m_DequeuAndExecute();
         }
         else {
-            driver->m_periodTicks = (timerNextEvent - ticks);
+            state->m_periodTicks = (timerNextEvent - ticks);
 
-            if (driver->m_periodTicks >= SysTick_LOAD_RELOAD_Msk) {
-                driver->Reload(SysTick_LOAD_RELOAD_Msk);
+            if (state->m_periodTicks >= SysTick_LOAD_RELOAD_Msk) {
+                state->Reload(SysTick_LOAD_RELOAD_Msk);
             }
             else {
-                driver->Reload(driver->m_periodTicks);
+                state->Reload(state->m_periodTicks);
             }
         }
     }
@@ -169,12 +169,12 @@ extern "C" {
 
         auto controllerIndex = 0; // default index if no specific
 
-        auto driver = &timeStates[controllerIndex];
+        auto state = &timeStates[controllerIndex];
 
         auto self = &timeControllers[controllerIndex];
 
         if (LPC17_Time_GetCurrentProcessorTicks(self) >= timerNextEvent) { // handle event
-            driver->m_DequeuAndExecute();
+            state->m_DequeuAndExecute();
         }
         else {
             LPC17_Time_SetNextTickCallbackTime(self, timerNextEvent);
@@ -186,16 +186,16 @@ extern "C" {
 TinyCLR_Result LPC17_Time_Initialize(const TinyCLR_NativeTime_Controller* self) {
     timerNextEvent = TIMER_IDLE_VALUE;
 
-    auto driver = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
-    driver->m_lastRead = 0;
+    state->m_lastRead = 0;
 
-    driver->m_currentTick = SysTick_LOAD_RELOAD_Msk;
-    driver->m_periodTicks = SysTick_LOAD_RELOAD_Msk;
+    state->m_currentTick = SysTick_LOAD_RELOAD_Msk;
+    state->m_periodTicks = SysTick_LOAD_RELOAD_Msk;
 
-    SysTick_Config(driver->m_periodTicks);
+    SysTick_Config(state->m_periodTicks);
 
-    driver->Reload(driver->m_periodTicks);
+    state->Reload(state->m_periodTicks);
     return TinyCLR_Result::Success;
 }
 
@@ -206,11 +206,11 @@ TinyCLR_Result LPC17_Time_Uninitialize(const TinyCLR_NativeTime_Controller* self
 }
 
 TinyCLR_Result LPC17_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* self, TinyCLR_NativeTime_Callback callback) {
-    auto driver = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
-    if (driver->m_DequeuAndExecute != nullptr) return TinyCLR_Result::InvalidOperation;
+    if (state->m_DequeuAndExecute != nullptr) return TinyCLR_Result::InvalidOperation;
 
-    driver->m_DequeuAndExecute = callback;
+    state->m_DequeuAndExecute = callback;
 
     return TinyCLR_Result::Success;
 }
@@ -241,11 +241,11 @@ void LPC17_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_t 
 //******************** Profiler ********************
 
 void TimeState::Reload(uint32_t value) {
-    auto driver = &timeStates[0];
+    auto state = &timeStates[0];
 
-    driver->m_currentTick = value;
+    state->m_currentTick = value;
 
-    SysTick->LOAD = (uint32_t)(driver->m_currentTick - 1UL);
+    SysTick->LOAD = (uint32_t)(state->m_currentTick - 1UL);
     SysTick->VAL = 0UL;
 }
 

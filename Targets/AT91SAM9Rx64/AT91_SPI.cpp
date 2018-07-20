@@ -75,30 +75,30 @@ const TinyCLR_Api_Info* AT91_Spi_GetApi() {
 }
 
 bool AT91_Spi_Transaction_Start(int32_t controllerIndex) {
-    auto driver = &spiStates[controllerIndex];
+    auto state = &spiStates[controllerIndex];
 
-    AT91_Gpio_Write(nullptr, driver->chipSelectLine, TinyCLR_Gpio_PinValue::Low);
+    AT91_Gpio_Write(nullptr, state->chipSelectLine, TinyCLR_Gpio_PinValue::Low);
 
     return true;
 }
 
 bool AT91_Spi_Transaction_Stop(int32_t controllerIndex) {
-    auto driver = &spiStates[controllerIndex];
+    auto state = &spiStates[controllerIndex];
 
-    AT91_Gpio_Write(nullptr, driver->chipSelectLine, TinyCLR_Gpio_PinValue::High);
+    AT91_Gpio_Write(nullptr, state->chipSelectLine, TinyCLR_Gpio_PinValue::High);
 
     return true;
 }
 
 bool AT91_Spi_Transaction_nWrite8_nRead8(int32_t controllerIndex) {
     uint8_t Data8;
-    auto driver = &spiStates[controllerIndex];
+    auto state = &spiStates[controllerIndex];
 
-    uint8_t* Write8 = driver->writeBuffer;
-    int32_t WriteCount = driver->writeLength;
-    uint8_t* Read8 = driver->readBuffer;
-    int32_t ReadCount = driver->readLength;
-    int32_t ReadStartOffset = driver->readOffset;
+    uint8_t* Write8 = state->writeBuffer;
+    int32_t WriteCount = state->writeLength;
+    uint8_t* Read8 = state->readBuffer;
+    int32_t ReadCount = state->readLength;
+    int32_t ReadStartOffset = state->readOffset;
     int32_t ReadTotal = 0;
 
     if (ReadCount) {
@@ -151,7 +151,7 @@ bool AT91_Spi_Transaction_nWrite16_nRead16(int32_t controllerIndex) {
 }
 
 TinyCLR_Result AT91_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
-    auto driver = reinterpret_cast<SpiState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     if (AT91_Spi_Write(self, writeBuffer, writeLength) != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
@@ -160,19 +160,19 @@ TinyCLR_Result AT91_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, c
 }
 
 TinyCLR_Result AT91_Spi_TransferFullDuplex(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
-    auto driver = reinterpret_cast<SpiState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
     if (!AT91_Spi_Transaction_Start(controllerIndex))
         return TinyCLR_Result::InvalidOperation;
 
-    driver->readBuffer = readBuffer;
-    driver->readLength = readLength;
-    driver->writeBuffer = (uint8_t*)writeBuffer;
-    driver->writeLength = writeLength;
+    state->readBuffer = readBuffer;
+    state->readLength = readLength;
+    state->writeBuffer = (uint8_t*)writeBuffer;
+    state->writeLength = writeLength;
 
-    if (driver->dataBitLength == DATA_BIT_LENGTH_16) {
+    if (state->dataBitLength == DATA_BIT_LENGTH_16) {
         if (!AT91_Spi_Transaction_nWrite16_nRead16(controllerIndex))
             return TinyCLR_Result::InvalidOperation;
     }
@@ -189,19 +189,19 @@ TinyCLR_Result AT91_Spi_TransferFullDuplex(const TinyCLR_Spi_Controller* self, c
 }
 
 TinyCLR_Result AT91_Spi_Read(const TinyCLR_Spi_Controller* self, uint8_t* buffer, size_t& length) {
-    auto driver = reinterpret_cast<SpiState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
     if (!AT91_Spi_Transaction_Start(controllerIndex))
         return TinyCLR_Result::InvalidOperation;
 
-    driver->readBuffer = buffer;
-    driver->readLength = length;
-    driver->writeBuffer = nullptr;
-    driver->writeLength = 0;
+    state->readBuffer = buffer;
+    state->readLength = length;
+    state->writeBuffer = nullptr;
+    state->writeLength = 0;
 
-    if (driver->dataBitLength == DATA_BIT_LENGTH_16) {
+    if (state->dataBitLength == DATA_BIT_LENGTH_16) {
         if (!AT91_Spi_Transaction_nWrite16_nRead16(controllerIndex))
             return TinyCLR_Result::InvalidOperation;
     }
@@ -217,19 +217,19 @@ TinyCLR_Result AT91_Spi_Read(const TinyCLR_Spi_Controller* self, uint8_t* buffer
 }
 
 TinyCLR_Result AT91_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8_t* buffer, size_t& length) {
-    auto driver = reinterpret_cast<SpiState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
     if (!AT91_Spi_Transaction_Start(controllerIndex))
         return TinyCLR_Result::InvalidOperation;
 
-    driver->readBuffer = nullptr;
-    driver->readLength = 0;
-    driver->writeBuffer = (uint8_t*)buffer;
-    driver->writeLength = length;
+    state->readBuffer = nullptr;
+    state->readLength = 0;
+    state->writeBuffer = (uint8_t*)buffer;
+    state->writeLength = length;
 
-    if (driver->dataBitLength == DATA_BIT_LENGTH_16) {
+    if (state->dataBitLength == DATA_BIT_LENGTH_16) {
         if (!AT91_Spi_Transaction_nWrite16_nRead16(controllerIndex))
             return TinyCLR_Result::InvalidOperation;
     }
@@ -245,21 +245,21 @@ TinyCLR_Result AT91_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8_t*
 }
 
 TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode) {
-    auto driver = reinterpret_cast<SpiState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
-    if (driver->chipSelectLine == chipSelectLine
-        && driver->dataBitLength == dataBitLength
-        && driver->spiMode == mode
-        && driver->clockFrequency == clockFrequency) {
+    if (state->chipSelectLine == chipSelectLine
+        && state->dataBitLength == dataBitLength
+        && state->spiMode == mode
+        && state->clockFrequency == clockFrequency) {
         return TinyCLR_Result::Success;
     }
 
-    driver->chipSelectLine = chipSelectLine;
-    driver->clockFrequency = clockFrequency;
-    driver->dataBitLength = dataBitLength;
-    driver->spiMode = mode;
+    state->chipSelectLine = chipSelectLine;
+    state->clockFrequency = clockFrequency;
+    state->dataBitLength = dataBitLength;
+    state->spiMode = mode;
 
     AT91_SPI &spi = AT91::SPI(controllerIndex);
 
@@ -280,7 +280,7 @@ TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, in
 
     uint32_t CSR = 0;
 
-    if (driver->dataBitLength == DATA_BIT_LENGTH_16) {
+    if (state->dataBitLength == DATA_BIT_LENGTH_16) {
         CSR |= AT91_SPI::SPI_CSR_16BITS;
     }
     else {
@@ -290,7 +290,7 @@ TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, in
     // first build the mode register
     spi.SPI_MR = AT91_SPI::SPI_MR_MSTR | AT91_SPI::SPI_MR_CS0 | AT91_SPI::SPI_MR_MODFDIS;
 
-    switch (driver->spiMode) {
+    switch (state->spiMode) {
 
     case TinyCLR_Spi_Mode::Mode0: // CPOL = 0, CPHA = 0.
         CSR |= AT91_SPI::SPI_CSR_NCPHA;
@@ -309,7 +309,7 @@ TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, in
         break;
     }
 
-    int32_t clockRateKhz = driver->clockFrequency / 1000;
+    int32_t clockRateKhz = state->clockFrequency / 1000;
 
     CSR |= AT91_SPI::ConvertClockRateToDivisor(clockRateKhz) << AT91_SPI::SPI_CSR_SCBR_SHIFT;
 
@@ -317,9 +317,9 @@ TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, in
 
     spi.SPI_CR |= AT91_SPI::SPI_CR_ENABLE_SPI;
 
-    if (driver->chipSelectLine != PIN_NONE) {
-        if (AT91_Gpio_OpenPin(driver->chipSelectLine)) {
-            AT91_Gpio_EnableOutputPin(driver->chipSelectLine, true);
+    if (state->chipSelectLine != PIN_NONE) {
+        if (AT91_Gpio_OpenPin(state->chipSelectLine)) {
+            AT91_Gpio_EnableOutputPin(state->chipSelectLine, true);
         }
         else {
             return TinyCLR_Result::SharingViolation;
@@ -336,9 +336,9 @@ TinyCLR_Result AT91_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
     uint32_t clkPin, misoPin, mosiPin;
     AT91_Gpio_PeripheralSelection clkMode, misoMode, mosiMode;
 
-    auto driver = reinterpret_cast<SpiState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
     clkPin = spiClkPins[controllerIndex].number;
     misoPin = spiMisoPins[controllerIndex].number;
@@ -368,7 +368,7 @@ TinyCLR_Result AT91_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
     AT91_Gpio_ConfigurePin(misoPin, AT91_Gpio_Direction::Input, misoMode, AT91_Gpio_ResistorMode::Inactive);
     AT91_Gpio_ConfigurePin(mosiPin, AT91_Gpio_Direction::Input, mosiMode, AT91_Gpio_ResistorMode::Inactive);
 
-    driver->isOpened = true;
+    state->isOpened = true;
 
     return TinyCLR_Result::Success;
 }
@@ -379,9 +379,9 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Controller* self) {
 
     AT91_PMC &pmc = AT91::PMC();
 
-    auto driver = reinterpret_cast<SpiState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
     AT91_SPI &spi = AT91::SPI(controllerIndex);
     // off SPI module
@@ -393,7 +393,7 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Controller* self) {
 
         break;
     }
-    if (driver->isOpened) {
+    if (state->isOpened) {
         uint32_t clkPin, misoPin, mosiPin;
 
         clkPin = spiClkPins[controllerIndex].number;
@@ -404,20 +404,20 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Controller* self) {
         AT91_Gpio_ClosePin(misoPin);
         AT91_Gpio_ClosePin(mosiPin);
 
-        if (driver->chipSelectLine != PIN_NONE) {
+        if (state->chipSelectLine != PIN_NONE) {
             // Release the pin, set pin un-reserved
-            AT91_Gpio_ClosePin(driver->chipSelectLine);
+            AT91_Gpio_ClosePin(state->chipSelectLine);
 
             // Keep chip select is inactive by internal pull up
-            AT91_Gpio_ConfigurePin(driver->chipSelectLine, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::PullUp);
+            AT91_Gpio_ConfigurePin(state->chipSelectLine, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::PullUp);
 
-            driver->chipSelectLine = PIN_NONE;
+            state->chipSelectLine = PIN_NONE;
         }
     }
-    driver->clockFrequency = 0;
-    driver->dataBitLength = 0;
+    state->clockFrequency = 0;
+    state->dataBitLength = 0;
 
-    driver->isOpened = false;
+    state->isOpened = false;
 
     return TinyCLR_Result::Success;
 }

@@ -2698,9 +2698,9 @@ const TinyCLR_Api_Info* STM32F7_SdCard_GetApi() {
 }
 
 TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
-    auto driver = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
     auto d0 = sdCardData0Pins[controllerIndex];
     auto d1 = sdCardData1Pins[controllerIndex];
@@ -2729,7 +2729,7 @@ TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
 
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    driver->sectorSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
+    state->sectorSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
 
     SD_DeInit();
 
@@ -2737,9 +2737,9 @@ TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
 }
 
 TinyCLR_Result STM32F7_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
-    auto driver = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
     auto d0 = sdCardData0Pins[controllerIndex];
     auto d1 = sdCardData1Pins[controllerIndex];
@@ -2754,7 +2754,7 @@ TinyCLR_Result STM32F7_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
 
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    memoryProvider->Free(memoryProvider, driver->sectorSizes);
+    memoryProvider->Free(memoryProvider, state->sectorSizes);
 
     STM32F7_GpioInternal_ClosePin(d0.number);
     STM32F7_GpioInternal_ClosePin(d1.number);
@@ -2844,11 +2844,11 @@ TinyCLR_Result STM32F7_SdCard_EraseSector(const TinyCLR_SdCard_Controller* self,
 }
 
 TinyCLR_Result STM32F7_SdCard_GetSectorMap(const TinyCLR_SdCard_Controller* self, const size_t*& sizes, size_t& count, bool& isUniform) {
-    auto driver = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
-    driver->sectorSizes[0] = STM32F7_SD_SECTOR_SIZE;
+    state->sectorSizes[0] = STM32F7_SD_SECTOR_SIZE;
 
-    sizes = driver->sectorSizes;
+    sizes = state->sectorSizes;
     count = SDCardInfo.CardCapacity / STM32F7_SD_SECTOR_SIZE;
 
     return TinyCLR_Result::Success;

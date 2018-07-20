@@ -87,13 +87,13 @@ TinyCLR_Result LPC17_Dac_AcquireChannel(const TinyCLR_Dac_Controller* self, int3
     if (!LPC17_Gpio_OpenPin(dacPins[channel].number))
         return  TinyCLR_Result::SharingViolation;
 
-    auto driver = reinterpret_cast<DacState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<DacState*>(self->ApiInfo->State);
 
     LPC17_Gpio_ConfigurePin(dacPins[channel].number, LPC17_Gpio_Direction::Output, dacPins[channel].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
     DACR = (0 << 6); // This sets the initial starting voltage at 0
 
-    driver->isOpened[channel] = true;
+    state->isOpened[channel] = true;
 
     return TinyCLR_Result::Success;
 }
@@ -102,15 +102,15 @@ TinyCLR_Result LPC17_Dac_ReleaseChannel(const TinyCLR_Dac_Controller* self, int3
     if (channel >= SIZEOF_ARRAY(dacPins))
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    auto driver = reinterpret_cast<DacState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<DacState*>(self->ApiInfo->State);
 
-    if (driver->isOpened[channel]) {
+    if (state->isOpened[channel]) {
         DACR = (0 << 6); // This sets the initial starting voltage at 0
 
         LPC17_Gpio_ClosePin(dacPins[channel].number);
     }
 
-    driver->isOpened[channel] = false;
+    state->isOpened[channel] = false;
 
     return TinyCLR_Result::Success;
 }

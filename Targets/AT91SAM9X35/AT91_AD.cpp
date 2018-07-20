@@ -120,20 +120,20 @@ TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Controller *self, int32
     ADC_CONTROLLER_MODE_REGISTER = (63 << 8);
     ADC_CONTROLLER_TRIGGER_REGISTER = 6;
 
-    auto driver = reinterpret_cast<AdcState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
-    driver->isOpened[channel] = true;
+    state->isOpened[channel] = true;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Adc_ReleaseChannel(const TinyCLR_Adc_Controller *self, int32_t channel) {
-    auto driver = reinterpret_cast<AdcState*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
-    if (driver->isOpened[channel])
+    if (state->isOpened[channel])
         AT91_Gpio_ClosePin(AT91_Adc_GetPin(channel));
 
-    driver->isOpened[channel] = false;
+    state->isOpened[channel] = false;
 
     return TinyCLR_Result::Success;
 }

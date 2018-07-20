@@ -697,7 +697,7 @@ struct LPC24XX_VIC {
     }
 
     bool GetInterruptState(uint32_t Irq_Index) {
-        // Make changes to include the FIQSTATUS if the driver is modifed to support FIQ
+        // Make changes to include the FIQSTATUS if the state is modifed to support FIQ
         return ((IRQSTATUS >> Irq_Index) & 0x1) > 0 ? true : false;;
     }
 

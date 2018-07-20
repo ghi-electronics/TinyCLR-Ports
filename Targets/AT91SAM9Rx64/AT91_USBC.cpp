@@ -598,7 +598,7 @@ void AT91_UsbClient_ControlNext(UsClientState *usClientState) {
         else {
             AT91_UsbClient_WriteEndPoint(0, usClientState->ptrData, usClientState->dataSize);
 
-            // special handling the USB driver set address test, cannot use the first descriptor as the ADDRESS state is handle in the hardware
+            // special handling the USB state set address test, cannot use the first descriptor as the ADDRESS state is handle in the hardware
             if (usbDeviceDrivers[usClientState->controllerIndex].firstDescriptorPacket) {
                 usClientState->dataCallback = NULL;
             }
