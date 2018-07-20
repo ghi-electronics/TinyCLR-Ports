@@ -23,12 +23,11 @@
 
 static TinyCLR_UsbClient_Controller usbClientControllers[TOTAL_USBCLIENT_CONTROLLER];
 static TinyCLR_Api_Info usbClientApi[TOTAL_USBCLIENT_CONTROLLER];
+static USB_CONTROLLER_STATE usbClient_State[TOTAL_USBCLIENT_CONTROLLER];
 
 TinyCLR_UsbClient_DataReceivedHandler TinyCLR_UsbClient_SetDataReceived;
 TinyCLR_UsbClient_RequestHandler TinyCLR_UsbClient_ProcessVendorClassRequest = nullptr;
 TinyCLR_UsbClient_RequestHandler TinyCLR_UsbClient_SetGetDescriptor = nullptr;
-
-USB_CONTROLLER_STATE* usbClient_State;
 
 void TinyCLR_UsbClient_SetEvent(USB_CONTROLLER_STATE *usbState, uint32_t event) {
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -731,12 +730,6 @@ bool TinyCLR_UsbClient_CanReceivePackage(USB_CONTROLLER_STATE* usbState, int32_t
 /// TinyCLR USBClient API
 ///////////////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* TinyCLR_UsbClient_GetApi() {
-    if (apiManager != nullptr) {
-        auto memoryManager = reinterpret_cast<const TinyCLR_Memory_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager));
-
-        usbClient_State = reinterpret_cast<USB_CONTROLLER_STATE*>(memoryManager->Allocate(memoryManager, sizeof(USB_CONTROLLER_STATE)));
-    }
-
     for (auto i = 0; i < TOTAL_USBCLIENT_CONTROLLER; i++) {
         usbClientControllers[i].ApiInfo = &usbClientApi[i];
         usbClientControllers[i].Acquire = &TinyCLR_UsbClient_Acquire;
