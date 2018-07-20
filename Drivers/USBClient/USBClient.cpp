@@ -19,11 +19,11 @@
 
 #define __min(a,b)  (((a) < (b)) ? (a) : (b))
 
-#define TOTAL_USBCLIENT_CONTROLLER 1
+#define TOTAL_USBCLIENT_CONTROLLERS 1
 
-static TinyCLR_UsbClient_Controller usbClientControllers[TOTAL_USBCLIENT_CONTROLLER];
-static TinyCLR_Api_Info usbClientApi[TOTAL_USBCLIENT_CONTROLLER];
-static UsClientDriver usbClientDrivers[TOTAL_USBCLIENT_CONTROLLER];
+static TinyCLR_UsbClient_Controller usbClientControllers[TOTAL_USBCLIENT_CONTROLLERS];
+static TinyCLR_Api_Info usbClientApi[TOTAL_USBCLIENT_CONTROLLERS];
+static UsClientDriver usbClientDrivers[TOTAL_USBCLIENT_CONTROLLERS];
 
 TinyCLR_UsbClient_DataReceivedHandler TinyCLR_UsbClient_SetDataReceived;
 TinyCLR_UsbClient_RequestHandler TinyCLR_UsbClient_ProcessVendorClassRequest = nullptr;
@@ -730,7 +730,7 @@ bool TinyCLR_UsbClient_CanReceivePackage(UsClientDriver* usbState, int32_t endpo
 /// TinyCLR USBClient API
 ///////////////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* TinyCLR_UsbClient_GetApi() {
-    for (auto i = 0; i < TOTAL_USBCLIENT_CONTROLLER; i++) {
+    for (auto i = 0; i < TOTAL_USBCLIENT_CONTROLLERS; i++) {
         usbClientControllers[i].ApiInfo = &usbClientApi[i];
         usbClientControllers[i].Acquire = &TinyCLR_UsbClient_Acquire;
         usbClientControllers[i].Release = &TinyCLR_UsbClient_Release;
