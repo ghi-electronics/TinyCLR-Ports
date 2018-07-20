@@ -18,15 +18,15 @@
 
 #define TIMER_IDLE_VALUE  0x0000FFFFFFFFFFFFFull
 
+#define TOTAL_TIME_CONTROLLERS 1
 #define SLOW_CLOCKS_PER_SECOND STM32F7_AHB_CLOCK_HZ
 #define SLOW_CLOCKS_TEN_MHZ_GCD           1000000   // GCD(SLOW_CLOCKS_PER_SECOND, 10M)
 #define SLOW_CLOCKS_MILLISECOND_GCD          1000   // GCD(SLOW_CLOCKS_PER_SECOND, 1k)
 #define CLOCK_COMMON_FACTOR               1000000   // GCD(STM32F7_SYSTEM_CLOCK_HZ, 1M)
 #define CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS 3
 
-#define TOTAL_TIME_CONTROLLERS 1
-
 struct TimerDriver {
+    int32_t controllerIndex;
     uint64_t m_lastRead;
     uint32_t m_currentTick;
     uint32_t m_periodTicks;
@@ -60,6 +60,8 @@ const TinyCLR_Api_Info* STM32F7_Time_GetApi() {
         timeApi[i].Version = 0;
         timeApi[i].Implementation = &timeControllers[i];
         timeApi[i].State = &timerDrivers[i];
+
+        timerDrivers[i].controllerIndex = i;
     }
 
     return (const TinyCLR_Api_Info*)&timeApi;
@@ -166,13 +168,16 @@ extern "C" {
     void SysTick_Handler(void *param) {
         INTERRUPT_STARTED_SCOPED(isr);
 
-        auto driver = &timerDrivers[0];
+        auto controllerIndex = 0; // default index if no specific
 
-        if (STM32F7_Time_GetCurrentProcessorTicks(nullptr) >= timerNextEvent) { // handle event
+        auto driver = &timerDrivers[controllerIndex];
+
+        auto self = &timeControllers[controllerIndex];
+        if (STM32F7_Time_GetCurrentProcessorTicks(self) >= timerNextEvent) { // handle event
             driver->m_DequeuAndExecute();
         }
         else {
-            STM32F7_Time_SetNextTickCallbackTime(nullptr, timerNextEvent);
+            STM32F7_Time_SetNextTickCallbackTime(self, timerNextEvent);
         }
     }
 
