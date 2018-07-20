@@ -29,11 +29,11 @@ static TinyCLR_Api_Info dacApi[TOTAL_DAC_CONTROLLERS];
 
 static const LPC24_Gpio_Pin dacPins[] = LPC24_DAC_PINS;
 
-struct DacDriver {
+struct DacState {
     bool isOpened[SIZEOF_ARRAY(dacPins)];
 };
 
-static DacDriver dacDrivers[TOTAL_DAC_CONTROLLERS];
+static DacState dacStates[TOTAL_DAC_CONTROLLERS];
 
 const TinyCLR_Api_Info* LPC24_Dac_GetApi() {
     for (int32_t i = 0; i < TOTAL_DAC_CONTROLLERS; i++) {
@@ -53,7 +53,7 @@ const TinyCLR_Api_Info* LPC24_Dac_GetApi() {
         dacApi[i].Type = TinyCLR_Api_Type::DacController;
         dacApi[i].Version = 0;
         dacApi[i].Implementation = &dacControllers[i];
-        dacApi[i].State = &dacDrivers[i];
+        dacApi[i].State = &dacStates[i];
     }
 
     return (const TinyCLR_Api_Info*)&dacApi;
@@ -80,7 +80,7 @@ TinyCLR_Result LPC24_Dac_AcquireChannel(const TinyCLR_Dac_Controller* self, int3
     if (!LPC24_Gpio_OpenPin(dacPins[channel].number))
         return TinyCLR_Result::SharingViolation;
 
-    auto driver = reinterpret_cast<DacDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<DacState*>(self->ApiInfo->State);
 
     LPC24_Gpio_ConfigurePin(dacPins[channel].number, LPC24_Gpio_Direction::Input, dacPins[channel].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
@@ -95,7 +95,7 @@ TinyCLR_Result LPC24_Dac_ReleaseChannel(const TinyCLR_Dac_Controller* self, int3
     if (channel >= LPC24_Dac_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    auto driver = reinterpret_cast<DacDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<DacState*>(self->ApiInfo->State);
     if (driver->isOpened[channel])
         LPC24_Gpio_ClosePin(dacPins[channel].number);
 
@@ -142,7 +142,7 @@ void LPC24_Dac_Reset() {
         for (auto ch = 0; ch < LPC24_Dac_GetChannelCount(&dacControllers[c]); ch++) {
             LPC24_Dac_ReleaseChannel(&dacControllers[c], ch);
 
-            dacDrivers[c].isOpened[ch] = false;
+            dacStates[c].isOpened[ch] = false;
         }
     }
 }

@@ -2138,7 +2138,7 @@ int32_t MCI_Cmd_SendIfCond(void) {
 static TinyCLR_SdCard_Controller sdCardControllers[TOTAL_SDCARD_CONTROLLERS];
 static TinyCLR_Api_Info sdCardApi[TOTAL_SDCARD_CONTROLLERS];
 
-struct SdCardDriver {
+struct SdCardState {
     int32_t controllerIndex;
     size_t  sectorCount;
 
@@ -2152,7 +2152,7 @@ static const LPC24_Gpio_Pin sdCardData3Pins[] = LPC24_SD_DATA3_PINS;
 static const LPC24_Gpio_Pin sdCardClkPins[] = LPC24_SD_CLK_PINS;
 static const LPC24_Gpio_Pin sdCardCmdPins[] = LPC24_SD_CMD_PINS;
 
-static SdCardDriver sdCardDrivers[TOTAL_SDCARD_CONTROLLERS];
+static SdCardState sdCardStates[TOTAL_SDCARD_CONTROLLERS];
 
 const TinyCLR_Api_Info* LPC24_SdCard_GetApi() {
     for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
@@ -2172,16 +2172,16 @@ const TinyCLR_Api_Info* LPC24_SdCard_GetApi() {
         sdCardApi[i].Type = TinyCLR_Api_Type::SdCardController;
         sdCardApi[i].Version = 0;
         sdCardApi[i].Implementation = &sdCardControllers[i];
-        sdCardApi[i].State = &sdCardDrivers[i];
+        sdCardApi[i].State = &sdCardStates[i];
 
-        sdCardDrivers[i].controllerIndex = i;
+        sdCardStates[i].controllerIndex = i;
     }
 
     return (const TinyCLR_Api_Info*)&sdCardApi;
 }
 
 TinyCLR_Result LPC24_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
-    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -2219,7 +2219,7 @@ TinyCLR_Result LPC24_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
 }
 
 TinyCLR_Result LPC24_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
-    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -2326,7 +2326,7 @@ TinyCLR_Result LPC24_SdCard_EraseSector(const TinyCLR_SdCard_Controller* self, u
 }
 
 TinyCLR_Result LPC24_SdCard_GetSectorMap(const TinyCLR_SdCard_Controller* self, const size_t*& sizes, size_t& count, bool& isUniform) {
-    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
     driver->sectorSizes[0] = LPC24_SD_SECTOR_SIZE;
 

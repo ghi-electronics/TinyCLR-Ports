@@ -43,11 +43,11 @@ struct GpioInterruptState {
     TinyCLR_Gpio_PinValue currentValue;
 };
 
-struct GpioDriver {
+struct GpioState {
     int32_t controllerIndex;
 };
 
-static GpioDriver gpioDrivers[TOTAL_GPIO_CONTROLLERS];
+static GpioState gpioStates[TOTAL_GPIO_CONTROLLERS];
 
 static bool pinReserved[TOTAL_GPIO_PINS];
 static int64_t gpioDebounceInTicks[TOTAL_GPIO_PINS];
@@ -79,9 +79,9 @@ const TinyCLR_Api_Info* AT91_Gpio_GetApi() {
         gpioApi[i].Type = TinyCLR_Api_Type::GpioController;
         gpioApi[i].Version = 0;
         gpioApi[i].Implementation = &gpioControllers[i];
-        gpioApi[i].State = &gpioDrivers[i];
+        gpioApi[i].State = &gpioStates[i];
 
-        gpioDrivers[i].controllerIndex = i;
+        gpioStates[i].controllerIndex = i;
     }
 
     return (const TinyCLR_Api_Info*)&gpioApi;
@@ -147,7 +147,7 @@ TinyCLR_Result AT91_Gpio_SetValueChangedHandler(const TinyCLR_Gpio_Controller* s
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto driver = reinterpret_cast<GpioDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<GpioState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 

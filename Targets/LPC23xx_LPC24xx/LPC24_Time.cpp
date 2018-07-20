@@ -31,7 +31,7 @@
 // LPC24 TIMER driver
 //
 
-struct TimerDriver {
+struct TimeState {
     int32_t controllerIndex;
 
     bool m_configured;
@@ -90,12 +90,12 @@ struct TimerDriver {
 // LPC24 TIMER driver
 //////////////////////////////////////////////////////////////////////////////
 
-static TimerDriver timerDrivers[TOTAL_TIME_CONTROLLERS];
+static TimeState timeStates[TOTAL_TIME_CONTROLLERS];
 
-bool TimerDriver::Initialize(uint32_t timer, uint32_t* ISR, void* ISR_Param) {
+bool TimeState::Initialize(uint32_t timer, uint32_t* ISR, void* ISR_Param) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto driver = &timerDrivers[LPC24_TIME_DEFAULT_CONTROLLER_ID];
+    auto driver = &timeStates[LPC24_TIME_DEFAULT_CONTROLLER_ID];
 
     if (driver->m_configured == true) return false;
 
@@ -116,10 +116,10 @@ bool TimerDriver::Initialize(uint32_t timer, uint32_t* ISR, void* ISR_Param) {
     return true;
 }
 
-bool TimerDriver::Uninitialize(uint32_t timer) {
+bool TimeState::Uninitialize(uint32_t timer) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto driver = &timerDrivers[LPC24_TIME_DEFAULT_CONTROLLER_ID];
+    auto driver = &timeStates[LPC24_TIME_DEFAULT_CONTROLLER_ID];
 
     if (driver->m_configured == false) return false;
 
@@ -143,7 +143,7 @@ bool TimerDriver::Uninitialize(uint32_t timer) {
 
 #pragma arm section code = "SectionForFlashOperations"
 
-uint32_t __section("SectionForFlashOperations") TimerDriver::ReadCounter(uint32_t timer) {
+uint32_t __section("SectionForFlashOperations") TimeState::ReadCounter(uint32_t timer) {
 
     LPC24XX_TIMER& TIMER = LPC24XX::TIMER(timer);
 
@@ -156,12 +156,12 @@ uint32_t __section("SectionForFlashOperations") TimerDriver::ReadCounter(uint32_
 void LPC24_Time_InterruptHandler(void* Param) {
     TinyCLR_NativeTime_Controller *provider = (TinyCLR_NativeTime_Controller*)Param;
 
-    auto driver = reinterpret_cast<TimerDriver*>(provider->ApiInfo->State);
+    auto driver = reinterpret_cast<TimeState*>(provider->ApiInfo->State);
 
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
 
-    if (TimerDriver::DidCompareHit(timer)) {
-        TimerDriver::ResetCompareHit(timer);
+    if (TimeState::DidCompareHit(timer)) {
+        TimeState::ResetCompareHit(timer);
     }
 
     driver->m_lastRead = LPC24_Time_GetCurrentProcessorTicks(provider);
@@ -200,9 +200,9 @@ const TinyCLR_Api_Info* LPC24_Time_GetApi() {
         timeApi[i].Type = TinyCLR_Api_Type::NativeTimeController;
         timeApi[i].Version = 0;
         timeApi[i].Implementation = &timerControllers[i];
-        timeApi[i].State = &timerDrivers[i];
+        timeApi[i].State = &timeStates[i];
 
-        timerDrivers[i].controllerIndex = i;
+        timeStates[i].controllerIndex = i;
     }
 
     return (const TinyCLR_Api_Info*)&timeApi;
@@ -249,11 +249,11 @@ uint64_t LPC24_Time_MicrosecondsToTicks(const TinyCLR_NativeTime_Controller* sel
 uint64_t LPC24_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self) {
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
 
-    auto driver = reinterpret_cast<TimerDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
     uint64_t lastValue = driver->m_lastRead;
 
-    uint32_t value = TimerDriver::ReadCounter(timer);
+    uint32_t value = TimeState::ReadCounter(timer);
 
     uint32_t resHigh = (uint32_t)(lastValue >> 32);
     uint32_t resLow = (uint32_t)lastValue;
@@ -270,7 +270,7 @@ uint64_t LPC24_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller
 TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Controller* self, uint64_t processorTicks) {
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
 
-    auto driver = reinterpret_cast<TimerDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -290,7 +290,7 @@ TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Contr
 
     bool fForceInterrupt = false;
 
-    uint32_t lowReadNew = TimerDriver::ReadCounter(timer);
+    uint32_t lowReadNew = TimeState::ReadCounter(timer);
 
     if ((lowRead & LPC24_TIME_OVERFLOW_FLAG) != (lowReadNew & LPC24_TIME_OVERFLOW_FLAG)) {
         fForceInterrupt = true;
@@ -320,9 +320,9 @@ TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Contr
                 nextComp = lowComp;
             }
 
-            TimerDriver::SetCompare(timer, nextComp);
+            TimeState::SetCompare(timer, nextComp);
 
-            lowReadNew = TimerDriver::ReadCounter(timer);
+            lowReadNew = TimeState::ReadCounter(timer);
 
             int32_t diff = nextComp - lowReadNew;
 
@@ -334,7 +334,7 @@ TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Contr
 
     if (fForceInterrupt) {
         // Force interrupt to process this.
-        TimerDriver::ForceInterrupt(timer);
+        TimeState::ForceInterrupt(timer);
     }
 
     return TinyCLR_Result::Success;
@@ -343,17 +343,17 @@ TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Contr
 TinyCLR_Result LPC24_Time_Initialize(const TinyCLR_NativeTime_Controller* self) {
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
 
-    auto driver = reinterpret_cast<TimerDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
     driver->m_lastRead = 0;
     driver->m_nextCompare = TIMER_IDLE_VALUE;
 
-    if (!TimerDriver::Initialize(timer, (uint32_t*)&LPC24_Time_InterruptHandler, (void*)self))
+    if (!TimeState::Initialize(timer, (uint32_t*)&LPC24_Time_InterruptHandler, (void*)self))
         return TinyCLR_Result::InvalidOperation;
 
-    TimerDriver::SetCompare(timer, LPC24_TIME_OVERFLOW_FLAG);
+    TimeState::SetCompare(timer, LPC24_TIME_OVERFLOW_FLAG);
 
-    TimerDriver::EnableCompareInterrupt(timer);
+    TimeState::EnableCompareInterrupt(timer);
 
     return TinyCLR_Result::Success;
 }
@@ -361,14 +361,14 @@ TinyCLR_Result LPC24_Time_Initialize(const TinyCLR_NativeTime_Controller* self) 
 TinyCLR_Result LPC24_Time_Uninitialize(const TinyCLR_NativeTime_Controller* self) {
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
 
-    if (TimerDriver::Uninitialize(timer) == false)
+    if (TimeState::Uninitialize(timer) == false)
         return TinyCLR_Result::InvalidOperation;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* self, TinyCLR_NativeTime_Callback callback) {
-    auto driver = reinterpret_cast<TimerDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
     if (driver->m_DequeuAndExecute != nullptr)
         return TinyCLR_Result::InvalidOperation;

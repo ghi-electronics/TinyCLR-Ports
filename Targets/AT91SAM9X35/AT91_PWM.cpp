@@ -36,7 +36,7 @@
 #define PWM_MICROSECONDS  1000000
 #define PWM_NANOSECONDS   1000000000
 
-static PwmDriver pwmDrivers[TOTAL_PWM_CONTROLLERS];
+static PwmState pwmStates[TOTAL_PWM_CONTROLLERS];
 
 static TinyCLR_Pwm_Controller pwmControllers[TOTAL_PWM_CONTROLLERS];
 static TinyCLR_Api_Info pwmApi[TOTAL_PWM_CONTROLLERS];
@@ -61,9 +61,9 @@ const TinyCLR_Api_Info* AT91_Pwm_GetApi() {
         pwmApi[i].Type = TinyCLR_Api_Type::PwmController;
         pwmApi[i].Version = 0;
         pwmApi[i].Implementation = &pwmControllers[i];
-        pwmApi[i].State = &pwmDrivers[i];
+        pwmApi[i].State = &pwmStates[i];
 
-        pwmDrivers[i].controllerIndex = i;
+        pwmStates[i].controllerIndex = i;
     }
 
     return (const TinyCLR_Api_Info*)&pwmApi;
@@ -89,7 +89,7 @@ TinyCLR_Result AT91_Pwm_AcquirePin(const TinyCLR_Pwm_Controller* self, int32_t p
     if (!AT91_Gpio_OpenPin(actualPin))
         return TinyCLR_Result::SharingViolation;
 
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -106,7 +106,7 @@ TinyCLR_Result AT91_Pwm_AcquirePin(const TinyCLR_Pwm_Controller* self, int32_t p
 TinyCLR_Result AT91_Pwm_ReleasePin(const TinyCLR_Pwm_Controller* self, int32_t pin) {
     int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, pin);
 
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -219,7 +219,7 @@ void AT91_Pwm_GetDivider(uint32_t period, uint32_t& divider, uint32_t& registerD
 }
 uint32_t AT91_Pwm_GetPeriod(const TinyCLR_Pwm_Controller* self, uint32_t period, uint32_t divider) {
     // make sure out frequency <= in frequency
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
     double d = divider * 7.6;
     double p = (double)period;
@@ -252,7 +252,7 @@ double AT91_Pwm_GetActualFrequency(const TinyCLR_Pwm_Controller* self) {
 
     uint32_t convertedPeriod = 0;
 
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
     double frequency = driver->frequency;
 
@@ -313,7 +313,7 @@ double AT91_Pwm_GetActualFrequency(const TinyCLR_Pwm_Controller* self) {
 TinyCLR_Result AT91_Pwm_EnablePin(const TinyCLR_Pwm_Controller* self, int32_t pin) {
     int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, pin);
 
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
     AT91_Gpio_ConfigurePin(actualPin, AT91_Gpio_Direction::Input, driver->gpioPin[pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
 
@@ -333,7 +333,7 @@ int32_t AT91_Pwm_GetPinCount(const TinyCLR_Pwm_Controller* self) {
 }
 
 int32_t AT91_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Controller* self, int32_t pin) {
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
     return driver->gpioPin[pin].number;
 }
@@ -357,7 +357,7 @@ TinyCLR_Result AT91_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self, i
     uint32_t divider = 4; // Sets the default period/duration clock divider to 4 --> (MCK / divider) // MCK = 100 MHz
     uint32_t registerDividerFlag = 0x2; // Sets the default channel clock divider to 4 --> (MCK / divider) // MCK = 100 MHz
 
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
     double frequency = driver->frequency;
 
@@ -402,7 +402,7 @@ TinyCLR_Result AT91_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self, i
 }
 
 TinyCLR_Result AT91_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Controller* self, double& frequency) {
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
     driver->frequency = frequency;
 
@@ -421,7 +421,7 @@ TinyCLR_Result AT91_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Controller* self, 
 TinyCLR_Result AT91_Pwm_Acquire(const TinyCLR_Pwm_Controller* self) {
     if (self == nullptr) return TinyCLR_Result::ArgumentNull;
 
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -439,7 +439,7 @@ TinyCLR_Result AT91_Pwm_Acquire(const TinyCLR_Pwm_Controller* self) {
 TinyCLR_Result AT91_Pwm_Release(const TinyCLR_Pwm_Controller* self) {
     if (self == nullptr) return TinyCLR_Result::ArgumentNull;
 
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -455,7 +455,7 @@ void AT91_Pwm_Reset() {
 }
 
 void AT91_Pwm_ResetController(int32_t controllerIndex) {
-    auto driver = &pwmDrivers[controllerIndex];
+    auto driver = &pwmStates[controllerIndex];
 
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
         driver->gpioPin[p] = AT91_Pwm_GetPins(controllerIndex, p);

@@ -272,16 +272,16 @@ const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi();
 void STM32F4_UsbClient_Reset();
 
 struct USB_PACKET64;
-struct UsClientDriver;
-typedef void(*USB_NEXT_CALLBACK)(UsClientDriver*);
+struct UsClientState;
+typedef void(*USB_NEXT_CALLBACK)(UsClientState*);
 
-void TinyCLR_UsbClient_ClearEvent(UsClientDriver *usbState, uint32_t event);
-void TinyCLR_UsbClient_ClearEndpoints(UsClientDriver *usbState, int32_t endpoint);
-USB_PACKET64* TinyCLR_UsbClient_RxEnqueue(UsClientDriver* usbState, int32_t endpoint, bool& disableRx);
-USB_PACKET64* TinyCLR_UsbClient_TxDequeue(UsClientDriver* usbState, int32_t endpoint);
-void TinyCLR_UsbClient_StateCallback(UsClientDriver* usbState);
-uint8_t TinyCLR_UsbClient_ControlCallback(UsClientDriver* usbState);
-bool TinyCLR_UsbClient_CanReceivePackage(UsClientDriver* usbState, int32_t endpoint);
+void TinyCLR_UsbClient_ClearEvent(UsClientState *usClientState, uint32_t event);
+void TinyCLR_UsbClient_ClearEndpoints(UsClientState *usClientState, int32_t endpoint);
+USB_PACKET64* TinyCLR_UsbClient_RxEnqueue(UsClientState* usClientState, int32_t endpoint, bool& disableRx);
+USB_PACKET64* TinyCLR_UsbClient_TxDequeue(UsClientState* usClientState, int32_t endpoint);
+void TinyCLR_UsbClient_StateCallback(UsClientState* usClientState);
+uint8_t TinyCLR_UsbClient_ControlCallback(UsClientState* usClientState);
+bool TinyCLR_UsbClient_CanReceivePackage(UsClientState* usClientState, int32_t endpoint);
 
 ////////////////////////////////////////////////////////////////////////////////
 //Interrupt Internal

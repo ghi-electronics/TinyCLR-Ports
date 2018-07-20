@@ -187,7 +187,7 @@ struct LPC17xx_USART {
 static const uint32_t uartTxDefaultBuffersSize[] = LPC17_UART_DEFAULT_TX_BUFFER_SIZE;
 static const uint32_t uartRxDefaultBuffersSize[] = LPC17_UART_DEFAULT_RX_BUFFER_SIZE;
 
-struct UartDriver {
+struct UartState {
     int32_t controllerIndex;
 
     uint8_t                             *TxBuffer;
@@ -227,7 +227,7 @@ uint32_t setFieldValue(volatile uint32_t oldVal, uint32_t shift, uint32_t mask, 
     return temp;
 }
 
-static UartDriver uartDrivers[TOTAL_UART_CONTROLLERS];
+static UartState uartStates[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 
@@ -266,16 +266,16 @@ const TinyCLR_Api_Info* LPC17_Uart_GetApi() {
         uartApi[i].Type = TinyCLR_Api_Type::UartController;
         uartApi[i].Version = 0;
         uartApi[i].Implementation = &uartControllers[i];
-        uartApi[i].State = &uartDrivers[i];
+        uartApi[i].State = &uartStates[i];
 
-        uartDrivers[i].controllerIndex = i;
+        uartStates[i].controllerIndex = i;
     }
 
     return (const TinyCLR_Api_Info*)&uartApi;
 }
 
 TinyCLR_Result LPC17_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t& size) {
-    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -287,7 +287,7 @@ TinyCLR_Result LPC17_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self,
 TinyCLR_Result LPC17_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
@@ -310,7 +310,7 @@ TinyCLR_Result LPC17_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self,
 }
 
 TinyCLR_Result LPC17_Uart_GetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t& size) {
-    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -322,7 +322,7 @@ TinyCLR_Result LPC17_Uart_GetWriteBufferSize(const TinyCLR_Uart_Controller* self
 TinyCLR_Result LPC17_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
@@ -348,7 +348,7 @@ TinyCLR_Result LPC17_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* self
 void LPC17_Uart_PinConfiguration(int controllerIndex, bool enable) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto driver = &uartDrivers[controllerIndex];
+    auto driver = &uartStates[controllerIndex];
 
     int32_t txPin = LPC17_Uart_GetTxPin(controllerIndex);
     int32_t rxPin = LPC17_Uart_GetRxPin(controllerIndex);
@@ -398,7 +398,7 @@ void LPC17_Uart_PinConfiguration(int controllerIndex, bool enable) {
 }
 
 void UART_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error) {
-    auto driver = &uartDrivers[controllerIndex];
+    auto driver = &uartStates[controllerIndex];
 
     if (driver->errorEventHandler != nullptr)
         driver->errorEventHandler(driver->controller, error);
@@ -411,7 +411,7 @@ void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
 
     LPC17xx_USART& USARTC = LPC17xx_USART::UART(controllerIndex);
 
-    auto driver = &uartDrivers[controllerIndex];
+    auto driver = &uartStates[controllerIndex];
 
     // Read data from Rx FIFO
     if (USARTC.SEL2.IER.UART_IER & (LPC17xx_USART::UART_IER_RDAIE)) {
@@ -459,7 +459,7 @@ void LPC17_Uart_TransmitData(int controllerIndex, uint32_t LSR_Value, uint32_t I
 
     LPC17xx_USART& USARTC = LPC17xx_USART::UART(controllerIndex);
 
-    auto driver = &uartDrivers[controllerIndex];
+    auto driver = &uartStates[controllerIndex];
 
     // Send data
     if ((LSR_Value & LPC17xx_USART::UART_LSR_TE) || (IIR_Value == LPC17xx_USART::UART_IIR_IID_Irpt_THRE)) {
@@ -493,7 +493,7 @@ void UART_IntHandler(int controllerIndex) {
     volatile uint32_t LSR_Value = USARTC.UART_LSR;           // Store LSR value since it's Read-to-Clear
     volatile uint32_t IIR_Value = USARTC.SEL3.IIR.UART_IIR & LPC17xx_USART::UART_IIR_IID_mask;
 
-    auto driver = &uartDrivers[controllerIndex];
+    auto driver = &uartStates[controllerIndex];
 
     if (driver->handshakeEnable) {
         volatile bool dump = USARTC.UART_MSR; // Clr status register
@@ -534,7 +534,7 @@ void UART4_IntHandler(void *param) {
 }
 
 TinyCLR_Result LPC17_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
-    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -581,7 +581,7 @@ TinyCLR_Result LPC17_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self,
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -761,7 +761,7 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -862,7 +862,7 @@ bool LPC17_Uart_TxHandshakeEnabledState(int controllerIndex) {
 
 TinyCLR_Result LPC17_Uart_Flush(const TinyCLR_Uart_Controller* self) {
 
-    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -885,7 +885,7 @@ TinyCLR_Result LPC17_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* buf
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     if (driver->isOpened == false || driver->rxBufferSize == 0) {
         length = 0;
@@ -915,7 +915,7 @@ TinyCLR_Result LPC17_Uart_Write(const TinyCLR_Uart_Controller* self, const uint8
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -960,7 +960,7 @@ TinyCLR_Result LPC17_Uart_SetPinChangedHandler(const TinyCLR_Uart_Controller* se
     return TinyCLR_Result::Success;
 }
 TinyCLR_Result LPC17_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ErrorReceivedHandler handler) {
-    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     driver->errorEventHandler = handler;
 
@@ -968,7 +968,7 @@ TinyCLR_Result LPC17_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Controller*
 }
 
 TinyCLR_Result LPC17_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_DataReceivedHandler handler) {
-    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     driver->dataReceivedEventHandler = handler;
 
@@ -1012,7 +1012,7 @@ TinyCLR_Result LPC17_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Controlle
 }
 
 TinyCLR_Result LPC17_Uart_GetUnreadCount(const TinyCLR_Uart_Controller* self, size_t& count) {
-    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     count = driver->rxBufferCount;
 
@@ -1020,7 +1020,7 @@ TinyCLR_Result LPC17_Uart_GetUnreadCount(const TinyCLR_Uart_Controller* self, si
 }
 
 TinyCLR_Result LPC17_Uart_GetUnwrittenCount(const TinyCLR_Uart_Controller* self, size_t& count) {
-    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     count = driver->txBufferCount;
 
@@ -1028,7 +1028,7 @@ TinyCLR_Result LPC17_Uart_GetUnwrittenCount(const TinyCLR_Uart_Controller* self,
 }
 
 TinyCLR_Result LPC17_Uart_ClearReadBuffer(const TinyCLR_Uart_Controller* self) {
-    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     driver->rxBufferCount = driver->rxBufferIn = driver->rxBufferOut = 0;
 
@@ -1036,7 +1036,7 @@ TinyCLR_Result LPC17_Uart_ClearReadBuffer(const TinyCLR_Uart_Controller* self) {
 }
 
 TinyCLR_Result LPC17_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self) {
-    auto driver = reinterpret_cast<UartDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     driver->txBufferCount = driver->txBufferIn = driver->txBufferOut = 0;
 
@@ -1045,12 +1045,12 @@ TinyCLR_Result LPC17_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self) 
 
 void LPC17_Uart_Reset() {
     for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
-        uartDrivers[i].txBufferSize = 0;
-        uartDrivers[i].rxBufferSize = 0;
+        uartStates[i].txBufferSize = 0;
+        uartStates[i].rxBufferSize = 0;
 
         LPC17_Uart_Release(&uartControllers[i]);
 
-        uartDrivers[i].isOpened = false;
+        uartStates[i].isOpened = false;
     }
 }
 

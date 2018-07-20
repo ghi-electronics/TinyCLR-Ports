@@ -25,7 +25,7 @@
 #define CLOCK_COMMON_FACTOR               1000000   // GCD(STM32F7_SYSTEM_CLOCK_HZ, 1M)
 #define CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS 3
 
-struct TimerDriver {
+struct TimeState {
     int32_t controllerIndex;
     uint64_t m_lastRead;
     uint32_t m_currentTick;
@@ -37,7 +37,7 @@ struct TimerDriver {
 
 };
 
-static TimerDriver timerDrivers[TOTAL_TIME_CONTROLLERS];
+static TimeState timeStates[TOTAL_TIME_CONTROLLERS];
 
 static TinyCLR_NativeTime_Controller timeControllers[TOTAL_TIME_CONTROLLERS];
 static TinyCLR_Api_Info timeApi[TOTAL_TIME_CONTROLLERS];
@@ -59,9 +59,9 @@ const TinyCLR_Api_Info* STM32F7_Time_GetApi() {
         timeApi[i].Type = TinyCLR_Api_Type::NativeTimeController;
         timeApi[i].Version = 0;
         timeApi[i].Implementation = &timeControllers[i];
-        timeApi[i].State = &timerDrivers[i];
+        timeApi[i].State = &timeStates[i];
 
-        timerDrivers[i].controllerIndex = i;
+        timeStates[i].controllerIndex = i;
     }
 
     return (const TinyCLR_Api_Info*)&timeApi;
@@ -89,7 +89,7 @@ uint64_t STM32F7_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Controll
 uint64_t STM32F7_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto driver = reinterpret_cast<TimerDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
     uint32_t tick_spent;
     uint32_t reg = SysTick->CTRL;
@@ -119,7 +119,7 @@ TinyCLR_Result STM32F7_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Con
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto driver = reinterpret_cast<TimerDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
     ticks = STM32F7_Time_GetCurrentProcessorTicks(self);
 
@@ -170,7 +170,7 @@ extern "C" {
 
         auto controllerIndex = 0; // default index if no specific
 
-        auto driver = &timerDrivers[controllerIndex];
+        auto driver = &timeStates[controllerIndex];
 
         auto self = &timeControllers[controllerIndex];
         if (STM32F7_Time_GetCurrentProcessorTicks(self) >= timerNextEvent) { // handle event
@@ -186,7 +186,7 @@ extern "C" {
 TinyCLR_Result STM32F7_Time_Initialize(const TinyCLR_NativeTime_Controller* self) {
     timerNextEvent = TIMER_IDLE_VALUE;
 
-    auto driver = reinterpret_cast<TimerDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
     driver->m_lastRead = 0;
 
@@ -207,7 +207,7 @@ TinyCLR_Result STM32F7_Time_Uninitialize(const TinyCLR_NativeTime_Controller* se
 }
 
 TinyCLR_Result STM32F7_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* self, TinyCLR_NativeTime_Callback callback) {
-    auto driver = reinterpret_cast<TimerDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
     if (driver->m_DequeuAndExecute != nullptr) return TinyCLR_Result::InvalidOperation;
 
@@ -241,8 +241,8 @@ void STM32F7_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_
 
 //******************** Profiler ********************
 
-void TimerDriver::Reload(uint32_t value) {
-    auto driver = &timerDrivers[0];
+void TimeState::Reload(uint32_t value) {
+    auto driver = &timeStates[0];
 
     driver->m_currentTick = value;
 

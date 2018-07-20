@@ -2346,7 +2346,7 @@ static TinyCLR_Api_Info sdCardApi[TOTAL_SDCARD_CONTROLLERS];
 #define AT91_SD_SECTOR_SIZE 512
 #define AT91_SD_TIMEOUT 5000000
 
-struct SdCardDriver {
+struct SdCardState {
     int32_t controllerIndex;
     size_t  sectorCount;
 
@@ -2362,7 +2362,7 @@ static const AT91_Gpio_Pin sdCardData3Pins[] = AT91_SD_DATA3_PINS;
 static const AT91_Gpio_Pin sdCardClkPins[] = AT91_SD_CLK_PINS;
 static const AT91_Gpio_Pin sdCardCmdPins[] = AT91_SD_CMD_PINS;
 
-static SdCardDriver sdCardDrivers[TOTAL_SDCARD_CONTROLLERS];
+static SdCardState sdCardStates[TOTAL_SDCARD_CONTROLLERS];
 
 /// MCI driver instance.
 static Mci mciDrv;
@@ -2388,14 +2388,14 @@ const TinyCLR_Api_Info* AT91_SdCard_GetApi() {
         sdCardApi[i].Type = TinyCLR_Api_Type::SdCardController;
         sdCardApi[i].Version = 0;
         sdCardApi[i].Implementation = &sdCardControllers[i];
-        sdCardApi[i].State = &sdCardDrivers[i];
+        sdCardApi[i].State = &sdCardStates[i];
     }
 
     return (const TinyCLR_Api_Info*)&sdCardApi;
 }
 
 TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
-    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -2456,7 +2456,7 @@ TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
 }
 
 TinyCLR_Result AT91_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
-    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -2510,7 +2510,7 @@ TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Controller* self, ui
 
     volatile uint32_t status;
 
-    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -2572,7 +2572,7 @@ TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Controller* self, uin
 
     uint8_t* pData = (uint8_t*)data;
 
-    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -2632,7 +2632,7 @@ TinyCLR_Result AT91_SdCard_EraseSector(const TinyCLR_SdCard_Controller* self, ui
 }
 
 TinyCLR_Result AT91_SdCard_GetSectorMap(const TinyCLR_SdCard_Controller* self, const size_t*& sizes, size_t& count, bool& isUniform) {
-    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
     driver->sectorSizes[0] = AT91_SD_SECTOR_SIZE;
 

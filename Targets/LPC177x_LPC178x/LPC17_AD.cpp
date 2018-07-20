@@ -235,11 +235,11 @@ static const LPC17_Gpio_Pin adcPins[] = LPC17_ADC_PINS;
 static TinyCLR_Adc_Controller adcControllers[TOTAL_ADC_CONTROLLERS];
 static TinyCLR_Api_Info adcApi[TOTAL_ADC_CONTROLLERS];
 
-struct AdcDriver {
+struct AdcState {
     bool isOpen[SIZEOF_ARRAY(adcPins)];
 };
 
-static AdcDriver adcDrivers[TOTAL_ADC_CONTROLLERS];
+static AdcState adcStates[TOTAL_ADC_CONTROLLERS];
 
 const TinyCLR_Api_Info* LPC17_Adc_GetApi() {
     for (int32_t i = 0; i < TOTAL_ADC_CONTROLLERS; i++) {
@@ -262,7 +262,7 @@ const TinyCLR_Api_Info* LPC17_Adc_GetApi() {
         adcApi[i].Type = TinyCLR_Api_Type::AdcController;
         adcApi[i].Version = 0;
         adcApi[i].Implementation = &adcControllers[i];
-        adcApi[i].State = &adcDrivers[i];
+        adcApi[i].State = &adcStates[i];
     }
 
     return (const TinyCLR_Api_Info*)&adcApi;
@@ -289,7 +289,7 @@ TinyCLR_Result LPC17_Adc_AcquireChannel(const TinyCLR_Adc_Controller* self, int3
     if (!LPC17_Gpio_OpenPin(adcPins[channel].number))
         return  TinyCLR_Result::SharingViolation;
 
-    auto driver = reinterpret_cast<AdcDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
     LPC_SC->PCONP |= PCONP_PCAD; // To enable power on ADC  Possibly add a check to see if power is enabled before setting and for the ability to check if any ADC are active in uninitialize
 
@@ -306,7 +306,7 @@ TinyCLR_Result LPC17_Adc_AcquireChannel(const TinyCLR_Adc_Controller* self, int3
 }
 
 TinyCLR_Result LPC17_Adc_ReleaseChannel(const TinyCLR_Adc_Controller* self, int32_t channel) {
-    auto driver = reinterpret_cast<AdcDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
     if (driver->isOpen[channel])
         LPC17_Gpio_ClosePin(adcPins[channel].number);
@@ -374,7 +374,7 @@ void LPC17_Adc_Reset() {
         for (auto ch = 0; ch < SIZEOF_ARRAY(adcPins); ch++) {
             LPC17_Adc_ReleaseChannel(&adcControllers[c], ch);
 
-            adcDrivers[c].isOpen[ch] = false;
+            adcStates[c].isOpen[ch] = false;
         }
     }
 }

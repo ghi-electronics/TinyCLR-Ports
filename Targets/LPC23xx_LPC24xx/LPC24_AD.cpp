@@ -28,11 +28,11 @@
 static TinyCLR_Adc_Controller adcControllers[TOTAL_ADC_CONTROLLERS];
 static TinyCLR_Api_Info adcApi[TOTAL_ADC_CONTROLLERS];
 
-struct AdcDriver {
+struct AdcState {
     static uint8_t isOpen;
 };
 
-uint8_t AdcDriver::isOpen;
+uint8_t AdcState::isOpen;
 
 const TinyCLR_Api_Info* LPC24_Adc_GetApi() {
     for (int32_t i = 0; i < TOTAL_ADC_CONTROLLERS; i++) {
@@ -102,7 +102,7 @@ TinyCLR_Result LPC24_Adc_AcquireChannel(const TinyCLR_Adc_Controller* self, int3
         (0 << 17) |//10 bits
         (1 << 21);//operational
 
-    auto driver = reinterpret_cast<AdcDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
     driver->isOpen |= (1 << channel);
 
@@ -110,7 +110,7 @@ TinyCLR_Result LPC24_Adc_AcquireChannel(const TinyCLR_Adc_Controller* self, int3
 }
 
 TinyCLR_Result LPC24_Adc_ReleaseChannel(const TinyCLR_Adc_Controller* self, int32_t channel) {
-    auto driver = reinterpret_cast<AdcDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
     if (driver->isOpen & (1 << channel)) {
         LPC24_Gpio_ClosePin(LPC24_Adc_GetPin(channel));
@@ -179,7 +179,7 @@ void LPC24_Adc_Reset() {
             LPC24_Adc_ReleaseChannel(&adcControllers[c], ch);
         }
 
-        AdcDriver::isOpen = 0;
+        AdcState::isOpen = 0;
     }
 
     LPC24XX::SYSCON().PCONP &= ~(PCONP_PCAD);

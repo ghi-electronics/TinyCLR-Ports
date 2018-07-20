@@ -71,7 +71,7 @@
 #define PWM_MICROSECONDS  1000000
 #define PWM_NANOSECONDS   1000000000
 
-static PwmDriver pwmDrivers[TOTAL_PWM_CONTROLLERS];
+static PwmState pwmStates[TOTAL_PWM_CONTROLLERS];
 
 static TinyCLR_Pwm_Controller pwmControllers[TOTAL_PWM_CONTROLLERS];
 static TinyCLR_Api_Info pwmApi[TOTAL_PWM_CONTROLLERS];
@@ -96,9 +96,9 @@ const TinyCLR_Api_Info* LPC24_Pwm_GetApi() {
         pwmApi[i].Type = TinyCLR_Api_Type::PwmController;
         pwmApi[i].Version = 0;
         pwmApi[i].Implementation = &pwmControllers[i];
-        pwmApi[i].State = &pwmDrivers[i];
+        pwmApi[i].State = &pwmStates[i];
 
-        pwmDrivers[i].controllerIndex = i;
+        pwmStates[i].controllerIndex = i;
     }
 
     return (const TinyCLR_Api_Info*)&pwmApi;
@@ -110,7 +110,7 @@ TinyCLR_Result LPC24_Pwm_AcquirePin(const TinyCLR_Pwm_Controller* self, int32_t 
     if (!LPC24_Gpio_OpenPin(actualPin))
         return TinyCLR_Result::SharingViolation;
 
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
     // enable PWM output
     if (driver->channel[pin] == 0) {
@@ -148,7 +148,7 @@ TinyCLR_Result LPC24_Pwm_ReleasePin(const TinyCLR_Pwm_Controller* self, int32_t 
 
     LPC24_Gpio_ClosePin(actualPin);
 
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
     driver->isOpened[pin] = false;
 
@@ -176,7 +176,7 @@ double LPC24_Pwm_GetActualFrequency(const TinyCLR_Pwm_Controller* self) {
 
     uint64_t periodInNanoSeconds = 0;
 
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
     double frequency = driver->frequency;
 
@@ -237,7 +237,7 @@ double LPC24_Pwm_GetActualFrequency(const TinyCLR_Pwm_Controller* self) {
 TinyCLR_Result LPC24_Pwm_EnablePin(const TinyCLR_Pwm_Controller* self, int32_t pin) {
     int32_t actualPin = LPC24_Pwm_GetGpioPinForChannel(self, pin);
 
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<PwmState*>(self->ApiInfo->State);
     LPC24_Gpio_ConfigurePin(actualPin, LPC24_Gpio_Direction::Input, driver->gpioPin[pin].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
     return TinyCLR_Result::Success;
@@ -256,7 +256,7 @@ int32_t LPC24_Pwm_GetPinCount(const TinyCLR_Pwm_Controller* self) {
 }
 
 int32_t LPC24_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Controller* self, int32_t pin) {
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
     return driver->gpioPin[pin].number;
 }
@@ -278,7 +278,7 @@ TinyCLR_Result LPC24_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self, 
     uint32_t periodInNanoSeconds = 0;
     uint32_t durationInNanoSeconds = 0;
 
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
     double frequency = driver->frequency;
 
@@ -394,7 +394,7 @@ TinyCLR_Result LPC24_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self, 
 }
 
 TinyCLR_Result LPC24_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Controller* self, double& frequency) {
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<PwmState*>(self->ApiInfo->State);
     driver->frequency = frequency;
 
     // Calculate actual frequency
@@ -413,7 +413,7 @@ TinyCLR_Result LPC24_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Controller* self,
 TinyCLR_Result LPC24_Pwm_Acquire(const TinyCLR_Pwm_Controller* self) {
     if (self == nullptr) return TinyCLR_Result::ArgumentNull;
 
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<PwmState*>(self->ApiInfo->State);
     auto controllerIndex = driver->controllerIndex;
 
     LPC24_Pwm_ResetController(controllerIndex);
@@ -424,7 +424,7 @@ TinyCLR_Result LPC24_Pwm_Acquire(const TinyCLR_Pwm_Controller* self) {
 TinyCLR_Result LPC24_Pwm_Release(const TinyCLR_Pwm_Controller* self) {
     if (self == nullptr) return TinyCLR_Result::ArgumentNull;
 
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<PwmState*>(self->ApiInfo->State);
     auto controllerIndex = driver->controllerIndex;
 
     LPC24_Pwm_ResetController(controllerIndex);
@@ -440,7 +440,7 @@ void LPC24_Pwm_Reset() {
 }
 
 void LPC24_Pwm_ResetController(int32_t controllerIndex) {
-    auto driver = &pwmDrivers[controllerIndex];
+    auto driver = &pwmStates[controllerIndex];
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
         driver->gpioPin[p] = LPC24_Pwm_GetPins(controllerIndex, p);
 

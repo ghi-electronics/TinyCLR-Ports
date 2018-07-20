@@ -176,7 +176,7 @@ bool LPC17_Gpio_ConfigurePin(int32_t pin, LPC17_Gpio_Direction pinDir, LPC17_Gpi
 void LPC17_Gpio_EnableOutputPin(int32_t pin, bool initialState);
 void LPC17_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
 
-struct PwmDriver {
+struct PwmState {
     int32_t controllerIndex;
 
     int32_t                         channel[MAX_PWM_PER_CONTROLLER];
@@ -393,15 +393,15 @@ const TinyCLR_Api_Info* LPC17_UsbClient_GetApi();
 void LPC17_UsbClient_Reset();
 
 struct USB_PACKET64;
-struct UsClientDriver;
-typedef void(*USB_NEXT_CALLBACK)(UsClientDriver*);
+struct UsClientState;
+typedef void(*USB_NEXT_CALLBACK)(UsClientState*);
 
-void TinyCLR_UsbClient_ClearEvent(UsClientDriver *usbState, uint32_t event);
-void TinyCLR_UsbClient_ClearEndpoints(UsClientDriver *usbState, int32_t endpoint);
-USB_PACKET64* TinyCLR_UsbClient_RxEnqueue(UsClientDriver* usbState, int32_t endpoint, bool& disableRx);
-USB_PACKET64* TinyCLR_UsbClient_TxDequeue(UsClientDriver* usbState, int32_t endpoint);
-void TinyCLR_UsbClient_StateCallback(UsClientDriver* usbState);
-uint8_t TinyCLR_UsbClient_ControlCallback(UsClientDriver* usbState);
+void TinyCLR_UsbClient_ClearEvent(UsClientState *usClientState, uint32_t event);
+void TinyCLR_UsbClient_ClearEndpoints(UsClientState *usClientState, int32_t endpoint);
+USB_PACKET64* TinyCLR_UsbClient_RxEnqueue(UsClientState* usClientState, int32_t endpoint, bool& disableRx);
+USB_PACKET64* TinyCLR_UsbClient_TxDequeue(UsClientState* usClientState, int32_t endpoint);
+void TinyCLR_UsbClient_StateCallback(UsClientState* usClientState);
+uint8_t TinyCLR_UsbClient_ControlCallback(UsClientState* usClientState);
 
 // LCD
 void LPC17_Display_Reset();

@@ -264,7 +264,7 @@ static const LPC24_Gpio_Pin spiMisoPins[] = LPC24_SPI_MISO_PINS;
 static const LPC24_Gpio_Pin spiMosiPins[] = LPC24_SPI_MOSI_PINS;
 static const LPC24_Gpio_Pin spiClkPins[] = LPC24_SPI_SCLK_PINS;
 
-struct SpiDriver {
+struct SpiState {
     int32_t controllerIndex;
 
     uint8_t *readBuffer;
@@ -283,7 +283,7 @@ struct SpiDriver {
     TinyCLR_Spi_Mode spiMode;
 };
 
-static SpiDriver spiDrivers[TOTAL_SPI_CONTROLLERS];
+static SpiState spiStates[TOTAL_SPI_CONTROLLERS];
 
 static TinyCLR_Spi_Controller spiControllers[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Api_Info spiApi[TOTAL_SPI_CONTROLLERS];
@@ -308,16 +308,16 @@ const TinyCLR_Api_Info* LPC24_Spi_GetApi() {
         spiApi[i].Type = TinyCLR_Api_Type::SpiController;
         spiApi[i].Version = 0;
         spiApi[i].Implementation = &spiControllers[i];
-        spiApi[i].State = &spiDrivers[i];
+        spiApi[i].State = &spiStates[i];
 
-        spiDrivers[i].controllerIndex = i;
+        spiStates[i].controllerIndex = i;
     }
 
     return (const TinyCLR_Api_Info*)&spiApi;
 }
 
 bool LPC24_Spi_Transaction_Start(int32_t controllerIndex) {
-    auto driver = &spiDrivers[controllerIndex];
+    auto driver = &spiStates[controllerIndex];
 
     LPC24_Gpio_Write(nullptr, driver->chipSelectLine, TinyCLR_Gpio_PinValue::Low);
 
@@ -325,7 +325,7 @@ bool LPC24_Spi_Transaction_Start(int32_t controllerIndex) {
 }
 
 bool LPC24_Spi_Transaction_Stop(int32_t controllerIndex) {
-    auto driver = &spiDrivers[controllerIndex];
+    auto driver = &spiStates[controllerIndex];
 
     LPC24_Gpio_Write(nullptr, driver->chipSelectLine, TinyCLR_Gpio_PinValue::High);
 
@@ -334,7 +334,7 @@ bool LPC24_Spi_Transaction_Stop(int32_t controllerIndex) {
 
 
 bool LPC24_Spi_Transaction_nWrite8_nRead8(int32_t controllerIndex) {
-    auto driver = &spiDrivers[controllerIndex];
+    auto driver = &spiStates[controllerIndex];
     LPC24XX_SPI & SPI = LPC24XX::SPI(controllerIndex);
 
     uint8_t Data8;
@@ -436,7 +436,7 @@ TinyCLR_Result LPC24_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, 
 }
 
 TinyCLR_Result LPC24_Spi_TransferFullDuplex(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
-    auto driver = reinterpret_cast<SpiDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -468,7 +468,7 @@ TinyCLR_Result LPC24_Spi_TransferFullDuplex(const TinyCLR_Spi_Controller* self, 
 }
 
 TinyCLR_Result LPC24_Spi_Read(const TinyCLR_Spi_Controller* self, uint8_t* buffer, size_t& length) {
-    auto driver = reinterpret_cast<SpiDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -499,7 +499,7 @@ TinyCLR_Result LPC24_Spi_Read(const TinyCLR_Spi_Controller* self, uint8_t* buffe
 }
 
 TinyCLR_Result LPC24_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8_t* buffer, size_t& length) {
-    auto driver = reinterpret_cast<SpiDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -530,7 +530,7 @@ TinyCLR_Result LPC24_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8_t
 }
 
 TinyCLR_Result LPC24_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode) {
-    auto driver = reinterpret_cast<SpiDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -652,7 +652,7 @@ TinyCLR_Result LPC24_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, i
 }
 
 TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
-    auto driver = reinterpret_cast<SpiDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -702,7 +702,7 @@ TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto driver = reinterpret_cast<SpiDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -780,7 +780,7 @@ void LPC24_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         LPC24_Spi_Release(&spiControllers[i]);
 
-        spiDrivers[i].isOpened = false;
+        spiStates[i].isOpened = false;
     }
 }
 

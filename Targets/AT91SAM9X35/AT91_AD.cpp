@@ -32,11 +32,11 @@ static TinyCLR_Api_Info adcApi[TOTAL_ADC_CONTROLLERS];
 
 static const AT91_Gpio_Pin adcPins[] = AT91_ADC_PINS;
 
-struct AdcDriver {
+struct AdcState {
     bool isOpened[SIZEOF_ARRAY(adcPins)];
 };
 
-static AdcDriver adcDrivers[TOTAL_ADC_CONTROLLERS];
+static AdcState adcStates[TOTAL_ADC_CONTROLLERS];
 
 const TinyCLR_Api_Info *AT91_Adc_GetApi() {
     for (auto i = 0; i < TOTAL_ADC_CONTROLLERS; i++) {
@@ -59,7 +59,7 @@ const TinyCLR_Api_Info *AT91_Adc_GetApi() {
         adcApi[i].Type = TinyCLR_Api_Type::AdcController;
         adcApi[i].Version = 0;
         adcApi[i].Implementation = &adcControllers[i];
-        adcApi[i].State = &adcDrivers[i];
+        adcApi[i].State = &adcStates[i];
     }
 
     return (const TinyCLR_Api_Info*)&adcApi;
@@ -120,7 +120,7 @@ TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Controller *self, int32
     ADC_CONTROLLER_MODE_REGISTER = (63 << 8);
     ADC_CONTROLLER_TRIGGER_REGISTER = 6;
 
-    auto driver = reinterpret_cast<AdcDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
     driver->isOpened[channel] = true;
 
@@ -128,7 +128,7 @@ TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Controller *self, int32
 }
 
 TinyCLR_Result AT91_Adc_ReleaseChannel(const TinyCLR_Adc_Controller *self, int32_t channel) {
-    auto driver = reinterpret_cast<AdcDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
     if (driver->isOpened[channel])
         AT91_Gpio_ClosePin(AT91_Adc_GetPin(channel));
@@ -232,7 +232,7 @@ void AT91_Adc_Reset() {
         for (auto ch = 0; ch < AT91_Adc_GetChannelCount(); ch++) {
             AT91_Adc_ReleaseChannel(&adcControllers[c], ch);
 
-            adcDrivers[c].isOpened[ch] = false;
+            adcStates[c].isOpened[ch] = false;
         }
     }
 }

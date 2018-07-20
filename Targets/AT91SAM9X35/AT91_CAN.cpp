@@ -1020,7 +1020,7 @@ typedef struct {
 
 } AT91_Can_Message;
 
-struct CanDriver {
+struct CanState {
     int32_t controllerIndex;
 
     const TinyCLR_Can_Controller* controller;
@@ -1053,7 +1053,7 @@ static const AT91_Gpio_Pin canRxPins[] = AT91_CAN_RX_PINS;
 
 #define TOTAL_CAN_CONTROLLERS SIZEOF_ARRAY(canTxPins)
 
-static CanDriver canDrivers[TOTAL_CAN_CONTROLLERS];
+static CanState canStates[TOTAL_CAN_CONTROLLERS];
 
 static TinyCLR_Can_Controller canControllers[TOTAL_CAN_CONTROLLERS];
 static TinyCLR_Api_Info canApi[TOTAL_CAN_CONTROLLERS];
@@ -1063,7 +1063,7 @@ void CAN_DisableExplicitFilters(int32_t controllerIndex) {
 
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    auto driver = &canDrivers[controllerIndex];
+    auto driver = &canStates[controllerIndex];
 
     if (driver->canDataFilter.matchFiltersSize && driver->canDataFilter.matchFilters != nullptr) {
         memoryProvider->Free(memoryProvider, driver->canDataFilter.matchFilters);
@@ -1077,7 +1077,7 @@ void CAN_DisableGroupFilters(int32_t controllerIndex) {
 
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    auto driver = &canDrivers[controllerIndex];
+    auto driver = &canStates[controllerIndex];
 
     if (driver->canDataFilter.groupFiltersSize) {
         if (driver->canDataFilter.lowerBoundFilters != nullptr)
@@ -1212,9 +1212,9 @@ const TinyCLR_Api_Info* AT91_Can_GetApi() {
         canApi[i].Type = TinyCLR_Api_Type::CanController;
         canApi[i].Version = 0;
         canApi[i].Implementation = &canControllers[i];
-        canApi[i].State = &canDrivers[i];
+        canApi[i].State = &canStates[i];
 
-        canDrivers[i].controllerIndex = i;
+        canStates[i].controllerIndex = i;
     }
 
     return (const TinyCLR_Api_Info*)&canApi;
@@ -1225,7 +1225,7 @@ uint32_t AT91_Can_GetLocalTime() {
 }
 
 bool CAN_RxInitialize(int8_t controllerIndex) {
-    auto driver = &canDrivers[controllerIndex];
+    auto driver = &canStates[controllerIndex];
 
     sCand *pCand = &driver->cand;
 
@@ -1246,7 +1246,7 @@ bool CAN_RxInitialize(int8_t controllerIndex) {
 }
 
 void CopyMessageFromMailBoxToBuffer(uint8_t controllerIndex, uint32_t dwMsr) {
-    auto driver = &canDrivers[controllerIndex];
+    auto driver = &canStates[controllerIndex];
 
     sCand *pCand = &driver->cand;
 
@@ -1321,7 +1321,7 @@ void CopyMessageFromMailBoxToBuffer(uint8_t controllerIndex, uint32_t dwMsr) {
 }
 
 void CAN_ProccessMailbox(uint8_t controllerIndex) {
-    auto driver = &canDrivers[controllerIndex];
+    auto driver = &canStates[controllerIndex];
 
     sCand *pCand = &driver->cand;
     Can *pCan = pCand->pHw;
@@ -1371,7 +1371,7 @@ void CAN_ProccessMailbox(uint8_t controllerIndex) {
 }
 
 void CAN_ErrorHandler(sCand *pCand, uint32_t dwErrS, int32_t controllerIndex) {
-    auto driver = &canDrivers[controllerIndex];
+    auto driver = &canStates[controllerIndex];
 
     if (dwErrS & CAN_SR_BOFF) // BusOff is higher priority
     {
@@ -1398,7 +1398,7 @@ void AT91_Can_RxInterruptHandler(void *param) {
 
     uint32_t controllerIndex = *reinterpret_cast<uint32_t*>(param);
 
-    auto driver = &canDrivers[controllerIndex];
+    auto driver = &canStates[controllerIndex];
 
     sCand *pCand = &driver->cand;
     Can *pHw = pCand->pHw;
@@ -1442,7 +1442,7 @@ TinyCLR_Result AT91_Can_Acquire(const TinyCLR_Can_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -1484,7 +1484,7 @@ TinyCLR_Result AT91_Can_Release(const TinyCLR_Can_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -1517,7 +1517,7 @@ TinyCLR_Result AT91_Can_Release(const TinyCLR_Can_Controller* self) {
 TinyCLR_Result AT91_Can_SoftReset(const TinyCLR_Can_Controller* self) {
     volatile int32_t i;
 
-    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     driver->can_rx_count = 0;
     driver->can_rx_in = 0;
@@ -1567,7 +1567,7 @@ TinyCLR_Result AT91_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32_
 
     sCandMbCfg candCfg;
 
-    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -1632,7 +1632,7 @@ TinyCLR_Result AT91_Can_ReadMessage(const TinyCLR_Can_Controller* self, uint32_t
 
     uint32_t *data32 = (uint32_t*)data;
 
-    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     if (driver->can_rx_count) {
         DISABLE_INTERRUPTS_SCOPED(irq);
@@ -1665,7 +1665,7 @@ TinyCLR_Result AT91_Can_SetBitTiming(const TinyCLR_Can_Controller* self, int32_t
 
     uint32_t sourceClk;
 
-    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -1711,7 +1711,7 @@ TinyCLR_Result AT91_Can_SetBitTiming(const TinyCLR_Can_Controller* self, int32_t
 }
 
 TinyCLR_Result AT91_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self, size_t& count) {
-    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     count = driver->can_rx_count;
 
@@ -1719,14 +1719,14 @@ TinyCLR_Result AT91_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self
 }
 
 TinyCLR_Result AT91_Can_SetMessageReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_MessageReceivedHandler handler) {
-    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<CanState*>(self->ApiInfo->State);
     driver->messageReceivedEventHandler = handler;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Can_SetErrorReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_ErrorReceivedHandler handler) {
-    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<CanState*>(self->ApiInfo->State);
     driver->errorEventHandler = handler;
 
     return TinyCLR_Result::Success;
@@ -1736,7 +1736,7 @@ TinyCLR_Result AT91_Can_SetExplicitFilters(const TinyCLR_Can_Controller* self, u
     uint32_t *_matchFilters;
     uint32_t *filters32 = (uint32_t*)filters;
 
-    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -1768,7 +1768,7 @@ TinyCLR_Result AT91_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, uint
     uint32_t *lowerBounds32 = (uint32_t *)lowerBounds;
     uint32_t *upperBounds32 = (uint32_t *)upperBounds;
 
-    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -1811,7 +1811,7 @@ TinyCLR_Result AT91_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, uint
 
 TinyCLR_Result AT91_Can_ClearReadBuffer(const TinyCLR_Can_Controller* self) {
 
-    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     driver->can_rx_count = 0;
     driver->can_rx_in = 0;
@@ -1821,7 +1821,7 @@ TinyCLR_Result AT91_Can_ClearReadBuffer(const TinyCLR_Can_Controller* self) {
 }
 
 TinyCLR_Result AT91_Can_IsWritingAllowed(const TinyCLR_Can_Controller* self, bool& allowed) {
-    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     sCand *pCand = &driver->cand;
 
@@ -1838,7 +1838,7 @@ TinyCLR_Result AT91_Can_IsWritingAllowed(const TinyCLR_Can_Controller* self, boo
 }
 
 TinyCLR_Result AT91_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self, size_t& count) {
-    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     count = CAN_GetRxErrorCount(driver->cand.pHw);
 
@@ -1846,7 +1846,7 @@ TinyCLR_Result AT91_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self, si
 }
 
 TinyCLR_Result AT91_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self, size_t& count) {
-    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     count = CAN_GetTxErrorCount(driver->cand.pHw);
 
@@ -1860,7 +1860,7 @@ TinyCLR_Result AT91_Can_GetSourceClock(const TinyCLR_Can_Controller* self, uint3
 }
 
 TinyCLR_Result AT91_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self, size_t& size) {
-    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -1870,7 +1870,7 @@ TinyCLR_Result AT91_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self, si
 }
 
 TinyCLR_Result AT91_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
-    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -1891,7 +1891,7 @@ TinyCLR_Result AT91_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self, s
 }
 
 TinyCLR_Result AT91_Can_SetWriteBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
-    auto driver = reinterpret_cast<CanDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     driver->can_txBufferSize = 1;
 
@@ -1900,11 +1900,11 @@ TinyCLR_Result AT91_Can_SetWriteBufferSize(const TinyCLR_Can_Controller* self, s
 
 void AT91_Can_Reset() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
-        canDrivers[i].canRxMessagesFifo = nullptr;
+        canStates[i].canRxMessagesFifo = nullptr;
 
         AT91_Can_Release(&canControllers[i]);
 
-        canDrivers[i].isOpened = false;
+        canStates[i].isOpened = false;
     }
 
 }

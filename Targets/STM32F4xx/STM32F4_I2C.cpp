@@ -49,7 +49,7 @@ struct I2cTransaction {
     TinyCLR_I2c_TransferStatus  result;
 };
 
-struct I2cDriver {
+struct I2cState {
     int32_t controllerIndex;
 
     I2cConfiguration i2cConfiguration;
@@ -58,7 +58,7 @@ struct I2cDriver {
     I2cTransaction   writeI2cTransactionAction;
 };
 
-static I2cDriver i2cDrivers[TOTAL_I2C_CONTROLLERS];
+static I2cState i2cStates[TOTAL_I2C_CONTROLLERS];
 
 static TinyCLR_I2c_Controller i2cControllers[TOTAL_I2C_CONTROLLERS];
 static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];
@@ -78,9 +78,9 @@ const TinyCLR_Api_Info* STM32F4_I2c_GetApi() {
         i2cApi[i].Type = TinyCLR_Api_Type::I2cController;
         i2cApi[i].Version = 0;
         i2cApi[i].Implementation = &i2cControllers[i];
-        i2cApi[i].State = &i2cDrivers[i];
+        i2cApi[i].State = &i2cStates[i];
 
-        i2cDrivers[i].controllerIndex = i;
+        i2cStates[i].controllerIndex = i;
     }
 
     if (TOTAL_I2C_CONTROLLERS > 0)
@@ -98,7 +98,7 @@ const TinyCLR_Api_Info* STM32F4_I2c_GetApi() {
 void STM32F4_I2C_ER_Interrupt(int32_t controllerIndex) {// Error Interrupt Handler
     INTERRUPT_STARTED_SCOPED(isr);
 
-    auto driver = &i2cDrivers[controllerIndex];
+    auto driver = &i2cStates[controllerIndex];
 
     i2cPorts[controllerIndex]->SR1 = 0; // reset errors
 
@@ -113,7 +113,7 @@ void STM32F4_I2C_EV_Interrupt(int32_t controllerIndex) {// Event Interrupt Handl
 
     auto& I2Cx = i2cPorts[controllerIndex];
 
-    auto driver = &i2cDrivers[controllerIndex];
+    auto driver = &i2cStates[controllerIndex];
 
     I2cTransaction *transaction = driver->currentI2cTransactionAction;
 
@@ -219,7 +219,7 @@ void STM32F4_I2C3_EV_Interrupt(void *param) {
 void STM32F4_I2c_StartTransaction(int32_t controllerIndex) {
     auto& I2Cx = i2cPorts[controllerIndex];
 
-    auto driver = &i2cDrivers[controllerIndex];
+    auto driver = &i2cStates[controllerIndex];
 
     uint32_t ccr = driver->i2cConfiguration.clockRate + (driver->i2cConfiguration.clockRate2 << 8);
     if (I2Cx->CCR != ccr) { // set clock rate and rise time
@@ -244,7 +244,7 @@ void STM32F4_I2c_StartTransaction(int32_t controllerIndex) {
 void STM32F4_I2c_StopTransaction(int32_t controllerIndex) {
     auto& I2Cx = i2cPorts[controllerIndex];
 
-    auto driver = &i2cDrivers[controllerIndex];
+    auto driver = &i2cStates[controllerIndex];
 
     if (I2Cx->SR2 & I2C_SR2_BUSY && !(I2Cx->CR1 & I2C_CR1_STOP)) {
         I2Cx->CR1 |= I2C_CR1_STOP; // send stop
@@ -258,7 +258,7 @@ void STM32F4_I2c_StopTransaction(int32_t controllerIndex) {
 TinyCLR_Result STM32F4_I2c_Read(const TinyCLR_I2c_Controller* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
-    auto driver = reinterpret_cast<I2cDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -292,7 +292,7 @@ TinyCLR_Result STM32F4_I2c_Read(const TinyCLR_I2c_Controller* self, uint8_t* buf
 TinyCLR_Result STM32F4_I2c_Write(const TinyCLR_I2c_Controller* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
-    auto driver = reinterpret_cast<I2cDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -326,7 +326,7 @@ TinyCLR_Result STM32F4_I2c_Write(const TinyCLR_I2c_Controller* self, const uint8
 TinyCLR_Result STM32F4_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
-    auto driver = reinterpret_cast<I2cDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -374,7 +374,7 @@ TinyCLR_Result STM32F4_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self,
     uint32_t rateKhz;
     uint32_t ccr;
 
-    auto driver = reinterpret_cast<I2cDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
     if (busSpeed == TinyCLR_I2c_BusSpeed::FastMode)
         rateKhz = 400; // FastMode
@@ -403,7 +403,7 @@ TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto driver = reinterpret_cast<I2cDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -458,7 +458,7 @@ TinyCLR_Result STM32F4_I2c_Release(const TinyCLR_I2c_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto driver = reinterpret_cast<I2cDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
     auto controllerIndex = driver->controllerIndex;
 
@@ -488,7 +488,7 @@ void STM32F4_I2c_Reset() {
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
         STM32F4_I2c_Release(&i2cControllers[i]);
 
-        auto driver = &i2cDrivers[i];
+        auto driver = &i2cStates[i];
 
         driver->i2cConfiguration.address = 0;
         driver->i2cConfiguration.clockRate = 0;

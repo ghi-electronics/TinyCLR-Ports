@@ -31,11 +31,11 @@ static const uint32_t adcPins[] = STM32F7_ADC_PINS;
 static TinyCLR_Adc_Controller adcControllers[TOTAL_ADC_CONTROLLERS];
 static TinyCLR_Api_Info adcApi[TOTAL_ADC_CONTROLLERS];
 
-struct AdcDriver {
+struct AdcState {
     bool isOpen[STM32F7_AD_NUM];
 };
 
-static AdcDriver adcDrivers[TOTAL_ADC_CONTROLLERS];
+static AdcState adcStates[TOTAL_ADC_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F7_Adc_GetApi() {
     for (int32_t i = 0; i < TOTAL_ADC_CONTROLLERS; i++) {
@@ -58,7 +58,7 @@ const TinyCLR_Api_Info* STM32F7_Adc_GetApi() {
         adcApi[i].Type = TinyCLR_Api_Type::AdcController;
         adcApi[i].Version = 0;
         adcApi[i].Implementation = &adcControllers[i];
-        adcApi[i].State = &adcDrivers[i];
+        adcApi[i].State = &adcStates[i];
     }
 
     return (const TinyCLR_Api_Info*)&adcApi;
@@ -73,7 +73,7 @@ TinyCLR_Result STM32F7_Adc_Release(const TinyCLR_Adc_Controller* self) {
 }
 
 TinyCLR_Result STM32F7_Adc_AcquireChannel(const TinyCLR_Adc_Controller* self, int32_t channel) {
-    auto driver = reinterpret_cast<AdcDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
     if (channel <= 15 && !STM32F7_GpioInternal_OpenPin(adcPins[channel]))
         return TinyCLR_Result::SharingViolation;
@@ -109,7 +109,7 @@ TinyCLR_Result STM32F7_Adc_AcquireChannel(const TinyCLR_Adc_Controller* self, in
 }
 
 TinyCLR_Result STM32F7_Adc_ReleaseChannel(const TinyCLR_Adc_Controller* self, int32_t channel) {
-    auto driver = reinterpret_cast<AdcDriver*>(self->ApiInfo->State);
+    auto driver = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
     // free GPIO pin if this channel is listed in the STM32F7_AD_CHANNELS array
     // and if it's not one of the internally connected ones as these channels don't take any GPIO pins
@@ -188,7 +188,7 @@ void STM32F7_Adc_Reset() {
         for (auto i = 0; i < STM32F7_AD_NUM; i++) {
             STM32F7_Adc_ReleaseChannel(&adcControllers[c], i);
 
-            adcDrivers[c].isOpen[i] = false;
+            adcStates[c].isOpen[i] = false;
         }
     }
 }
