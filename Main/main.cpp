@@ -74,7 +74,7 @@ void OnSoftReset(const TinyCLR_Api_Manager* apiManager) {
 #endif
 
 #ifdef INCLUDE_USBCLIENT
-    apiManager->Add(apiManager, TARGET(_UsbClient_GetApi)());
+    apiManager->Add(apiManager, TARGET(_UsbDevice_GetApi)());
 #endif
 
     auto interopManager = reinterpret_cast<const TinyCLR_Interop_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::InteropManager));

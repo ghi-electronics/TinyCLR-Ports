@@ -107,7 +107,7 @@ void LPC17_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const v
     valueUsbActive = LPC17_Startup_GetDebuggerSelectorUsbState();
 
     if (value == valueUsbActive) {
-        api = LPC17_UsbClient_GetApi();
+        api = LPC17_UsbDevice_GetApi();
         configuration = (const void*)&LPC17_Startup_UsbDebuggerConfiguration;
     }
     else {

@@ -1408,9 +1408,9 @@ TinyCLR_Result AT91_Power_Initialize(const TinyCLR_Power_Controller* self);
 TinyCLR_Result AT91_Power_Uninitialize(const TinyCLR_Power_Controller* self);
 
 //UsbClient
-const TinyCLR_Api_Info* AT91_UsbClient_GetApi();
-void AT91_UsbClient_Reset();
-void AT91_UsbClient_PinConfiguration();
+const TinyCLR_Api_Info* AT91_UsbDevice_GetApi();
+void AT91_UsbDevice_Reset();
+void AT91_UsbDevice_PinConfiguration();
 
 struct USB_PACKET64;
 struct UsClientState;

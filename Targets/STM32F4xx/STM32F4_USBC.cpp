@@ -242,20 +242,20 @@ static const STM32F4_Gpio_Pin usbClientDpPins[] = STM32F4_USB_DP_PINS;
 static const STM32F4_Gpio_Pin usbClientVbPins[] = STM32F4_USB_VB_PINS;
 static const STM32F4_Gpio_Pin usbClientIdPins[] = STM32F4_USB_ID_PINS;
 
-void STM32F4_UsbClient_ProtectPins(int32_t controller, bool On);
-void STM32F4_UsbClient_Interrupt(void* param);
+void STM32F4_UsbDevice_ProtectPins(int32_t controller, bool On);
+void STM32F4_UsbDevice_Interrupt(void* param);
 
 /* usClientState variables for the controllers */
 static UsbDeviceController usbDeviceControllers[STM32F4_TOTAL_USB_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi() {
+const TinyCLR_Api_Info* STM32F4_UsbDevice_GetApi() {
     return TinyCLR_UsbClient_GetApi();
 }
-void STM32F4_UsbClient_Reset() {
+void STM32F4_UsbDevice_Reset() {
     return TinyCLR_UsbClient_Reset(STM32F4_USB_FS_ID);
 }
 
-void STM32F4_UsbClient_InitializeConfiguration(UsClientState *usClientState) {
+void STM32F4_UsbDevice_InitializeConfiguration(UsClientState *usClientState) {
     int32_t controller = STM32F4_USB_FS_ID;
 
     if (usClientState != nullptr) {
@@ -278,7 +278,7 @@ void STM32F4_UsbClient_InitializeConfiguration(UsClientState *usClientState) {
     }
 }
 
-bool STM32F4_UsbClient_Initialize(UsClientState* usClientState) {
+bool STM32F4_UsbDevice_Initialize(UsClientState* usClientState) {
 
     if (usClientState == nullptr)
         return false;
@@ -323,10 +323,10 @@ bool STM32F4_UsbClient_Initialize(UsClientState* usClientState) {
     STM32F4_Time_Delay(nullptr, 1000); // asure host recognizes reattach
 
     // setup hardware
-    STM32F4_UsbClient_ProtectPins(controller, true);
+    STM32F4_UsbDevice_ProtectPins(controller, true);
 
-    STM32F4_InterruptInternal_Activate(OTG_FS_IRQn, (uint32_t*)&STM32F4_UsbClient_Interrupt, 0);
-    STM32F4_InterruptInternal_Activate(OTG_FS_WKUP_IRQn, (uint32_t*)&STM32F4_UsbClient_Interrupt, 0);
+    STM32F4_InterruptInternal_Activate(OTG_FS_IRQn, (uint32_t*)&STM32F4_UsbDevice_Interrupt, 0);
+    STM32F4_InterruptInternal_Activate(OTG_FS_WKUP_IRQn, (uint32_t*)&STM32F4_UsbDevice_Interrupt, 0);
 
     // allow interrupts
     OTG->GINTSTS = 0xFFFFFFFF;           // clear all interrupts
@@ -341,21 +341,21 @@ bool STM32F4_UsbClient_Initialize(UsClientState* usClientState) {
     return true;
 }
 
-bool STM32F4_UsbClient_Uninitialize(UsClientState* usClientState) {
+bool STM32F4_UsbDevice_Uninitialize(UsClientState* usClientState) {
     STM32F4_InterruptInternal_Deactivate(OTG_FS_WKUP_IRQn);
     STM32F4_InterruptInternal_Deactivate(OTG_FS_IRQn);
 
     RCC->AHB2ENR &= ~RCC_AHB2ENR_OTGFSEN;
 
     if (usClientState != nullptr) {
-        STM32F4_UsbClient_ProtectPins(usClientState->controllerIndex, false);
+        STM32F4_UsbDevice_ProtectPins(usClientState->controllerIndex, false);
         usClientState->currentState = USB_DEVICE_STATE_UNINITIALIZED;
     }
 
     return true;
 }
 
-void STM32F4_UsbClient_ResetEvent(OTG_TypeDef* OTG, UsClientState* usClientState) {
+void STM32F4_UsbDevice_ResetEvent(OTG_TypeDef* OTG, UsClientState* usClientState) {
     // reset interrupts and FIFOs
     OTG->GINTSTS = 0xFFFFFFFF; // clear global interrupts
     OTG->GRXFSIZ = USB_RXFIFO_SIZE; // Rx Fifo
@@ -428,7 +428,7 @@ void STM32F4_UsbClient_ResetEvent(OTG_TypeDef* OTG, UsClientState* usClientState
     TinyCLR_UsbClient_StateCallback(usClientState);
 }
 
-void STM32F4_UsbClient_EndpointRxInterrupt(OTG_TypeDef* OTG, UsClientState* usClientState, uint32_t ep, uint32_t count) {
+void STM32F4_UsbDevice_EndpointRxInterrupt(OTG_TypeDef* OTG, UsClientState* usClientState, uint32_t ep, uint32_t count) {
     uint32_t* pd;
 
     bool disableRx = false;
@@ -454,7 +454,7 @@ void STM32F4_UsbClient_EndpointRxInterrupt(OTG_TypeDef* OTG, UsClientState* usCl
     }
 }
 
-void STM32F4_UsbClient_EndpointInInterrupt(OTG_TypeDef* OTG, UsClientState* usClientState, uint32_t ep) {
+void STM32F4_UsbDevice_EndpointInInterrupt(OTG_TypeDef* OTG, UsClientState* usClientState, uint32_t ep) {
     uint32_t bits = OTG->DIEP[ep].INT;
     if (bits & OTG_DIEPINT_XFRC) { // transfer completed
         OTG->DIEP[ep].INT = OTG_DIEPINT_XFRC; // clear interrupt
@@ -499,7 +499,7 @@ void STM32F4_UsbClient_EndpointInInterrupt(OTG_TypeDef* OTG, UsClientState* usCl
     }
 }
 
-void STM32F4_UsbClient_HandleSetup(OTG_TypeDef* OTG, UsClientState* usClientState) {
+void STM32F4_UsbDevice_HandleSetup(OTG_TypeDef* OTG, UsClientState* usClientState) {
     /* send last setup packet to the upper layer */
     uint8_t result = TinyCLR_UsbClient_ControlCallback(usClientState);
 
@@ -525,19 +525,19 @@ void STM32F4_UsbClient_HandleSetup(OTG_TypeDef* OTG, UsClientState* usClientStat
     }
 
     // check ep0 for replies
-    STM32F4_UsbClient_EndpointInInterrupt(OTG, usClientState, 0);
+    STM32F4_UsbDevice_EndpointInInterrupt(OTG, usClientState, 0);
 
     // check all Tx endpoints after configuration setup
     if (result == USB_STATE_CONFIGURATION) {
         for (int32_t ep = 1; ep < usClientState->totalEndpointsCount; ep++) {
             if (usClientState->queues[ep] && usClientState->isTxQueue[ep]) {
-                STM32F4_UsbClient_EndpointInInterrupt(OTG, usClientState, ep);
+                STM32F4_UsbDevice_EndpointInInterrupt(OTG, usClientState, ep);
             }
         }
     }
 }
 
-void STM32F4_UsbClient_EndpointOutInterrupt(OTG_TypeDef* OTG, UsClientState* usClientState, uint32_t ep) {
+void STM32F4_UsbDevice_EndpointOutInterrupt(OTG_TypeDef* OTG, UsClientState* usClientState, uint32_t ep) {
     uint32_t bits = OTG->DOEP[ep].INT;
     if (bits & OTG_DOEPINT_XFRC) { // transfer completed
         OTG->DOEP[ep].INT = OTG_DOEPINT_XFRC; // clear interrupt
@@ -552,7 +552,7 @@ void STM32F4_UsbClient_EndpointOutInterrupt(OTG_TypeDef* OTG, UsClientState* usC
         OTG->DOEP[0].TSIZ = OTG_DOEPTSIZ_STUPCNT | OTG_DOEPTSIZ_PKTCNT_1 | usClientState->maxEndpointsPacketSize[0];
         OTG->DOEP[0].CTL |= OTG_DOEPCTL_EPENA | OTG_DOEPCTL_CNAK;
         // Handle Setup data in upper layer
-        STM32F4_UsbClient_HandleSetup(OTG, usClientState);
+        STM32F4_UsbDevice_HandleSetup(OTG, usClientState);
     }
     else if (TinyCLR_UsbClient_CanReceivePackage(usClientState, ep)) {
         // enable endpoint
@@ -565,7 +565,7 @@ void STM32F4_UsbClient_EndpointOutInterrupt(OTG_TypeDef* OTG, UsClientState* usC
     }
 }
 
-void STM32F4_UsbClient_Interrupt(void* param) {
+void STM32F4_UsbDevice_Interrupt(void* param) {
     INTERRUPT_STARTED_SCOPED(isr);
 
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -586,7 +586,7 @@ void STM32F4_UsbClient_Interrupt(void* param) {
         if (status == OTG_GRXSTSP_PKTSTS_PR // data received
             || status == OTG_GRXSTSP_PKTSTS_SR // setup received
             ) {
-            STM32F4_UsbClient_EndpointRxInterrupt(OTG, usClientState, ep, count);
+            STM32F4_UsbDevice_EndpointRxInterrupt(OTG, usClientState, ep, count);
         }
         else {
             // others: nothing to do
@@ -599,7 +599,7 @@ void STM32F4_UsbClient_Interrupt(void* param) {
         int32_t ep = 0;
         while (bits) {
             if (bits & 1)
-                STM32F4_UsbClient_EndpointInInterrupt(OTG, usClientState, ep);
+                STM32F4_UsbDevice_EndpointInInterrupt(OTG, usClientState, ep);
             ep++;
             bits >>= 1;
         }
@@ -610,7 +610,7 @@ void STM32F4_UsbClient_Interrupt(void* param) {
         int32_t ep = 0;
         while (bits) {
             if (bits & 1)
-                STM32F4_UsbClient_EndpointOutInterrupt(OTG, usClientState, ep);
+                STM32F4_UsbDevice_EndpointOutInterrupt(OTG, usClientState, ep);
 
             ep++;
             bits >>= 1;
@@ -618,7 +618,7 @@ void STM32F4_UsbClient_Interrupt(void* param) {
     }
 
     if (intPend & OTG_GINTSTS_USBRST) { // reset
-        STM32F4_UsbClient_ResetEvent(OTG, usClientState);
+        STM32F4_UsbDevice_ResetEvent(OTG, usClientState);
         OTG->GINTSTS = OTG_GINTSTS_USBRST; // clear interrupt
     }
     else {
@@ -644,7 +644,7 @@ void STM32F4_UsbClient_Interrupt(void* param) {
     }
 }
 
-bool STM32F4_UsbClient_StartOutput(UsClientState* usClientState, int32_t ep) {
+bool STM32F4_UsbDevice_StartOutput(UsClientState* usClientState, int32_t ep) {
     if (usClientState == 0 || ep >= usClientState->totalEndpointsCount)
         return false;
 
@@ -664,15 +664,15 @@ bool STM32F4_UsbClient_StartOutput(UsClientState* usClientState, int32_t ep) {
     }
 
     if (irq.IsDisabled()) { // check all endpoints for pending actions
-        STM32F4_UsbClient_Interrupt((void *)OTG);
+        STM32F4_UsbDevice_Interrupt((void *)OTG);
     }
     // write first packet if not done yet
-    STM32F4_UsbClient_EndpointInInterrupt(OTG, usClientState, ep);
+    STM32F4_UsbDevice_EndpointInInterrupt(OTG, usClientState, ep);
 
     return true;
 }
 
-bool STM32F4_UsbClient_RxEnable(UsClientState* usClientState, int32_t ep) {
+bool STM32F4_UsbDevice_RxEnable(UsClientState* usClientState, int32_t ep) {
     // If this is not a legal Rx queue
     if (usClientState == 0 || usClientState->queues[ep] == 0 || usClientState->isTxQueue[ep])
         return false;
@@ -690,7 +690,7 @@ bool STM32F4_UsbClient_RxEnable(UsClientState* usClientState, int32_t ep) {
     return true;
 }
 
-void STM32F4_UsbClient_ProtectPins(int32_t controller, bool on) {
+void STM32F4_UsbDevice_ProtectPins(int32_t controller, bool on) {
     UsClientState *usClientState = usbDeviceControllers[controller].usClientState;
 
     OTG_TypeDef* OTG = OTG_FS;
@@ -737,19 +737,19 @@ void STM32F4_UsbClient_ProtectPins(int32_t controller, bool on) {
 }
 
 bool TinyCLR_UsbClient_Initialize(UsClientState* usClientState) {
-    return STM32F4_UsbClient_Initialize(usClientState);
+    return STM32F4_UsbDevice_Initialize(usClientState);
 }
 
 bool TinyCLR_UsbClient_Uninitialize(UsClientState* usClientState) {
-    return STM32F4_UsbClient_Uninitialize(usClientState);
+    return STM32F4_UsbDevice_Uninitialize(usClientState);
 }
 
 bool TinyCLR_UsbClient_StartOutput(UsClientState* usClientState, int32_t endpoint) {
-    return STM32F4_UsbClient_StartOutput(usClientState, endpoint);
+    return STM32F4_UsbDevice_StartOutput(usClientState, endpoint);
 }
 
 bool TinyCLR_UsbClient_RxEnable(UsClientState* usClientState, int32_t endpoint) {
-    return STM32F4_UsbClient_RxEnable(usClientState, endpoint);
+    return STM32F4_UsbDevice_RxEnable(usClientState, endpoint);
 }
 
 void TinyCLR_UsbClient_Delay(uint64_t microseconds) {
@@ -757,7 +757,7 @@ void TinyCLR_UsbClient_Delay(uint64_t microseconds) {
 }
 
 void TinyCLR_UsbClient_InitializeConfiguration(UsClientState *usClientState) {
-    STM32F4_UsbClient_InitializeConfiguration(usClientState);
+    STM32F4_UsbDevice_InitializeConfiguration(usClientState);
 }
 
 uint32_t TinyCLR_UsbClient_GetEndpointSize(int32_t endpoint) {

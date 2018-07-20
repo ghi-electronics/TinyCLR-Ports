@@ -52,7 +52,7 @@ void AT91_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const TinyC
     AT91_Uart_Reset();
 #endif
 #ifdef INCLUDE_USBCLIENT
-    AT91_UsbClient_Reset();
+    AT91_UsbDevice_Reset();
 #endif
 }
 
@@ -232,7 +232,7 @@ void AT91_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const vo
     provider->ReleasePin(provider, DEBUGGER_SELECTOR_PIN);
 
     if (value == DEBUGGER_SELECTOR_USB_STATE) {
-        api = AT91_UsbClient_GetApi();
+        api = AT91_UsbDevice_GetApi();
         configuration = (const void*)&AT91_Startup_UsbDebuggerConfiguration;
     }
     else {

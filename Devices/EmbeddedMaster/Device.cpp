@@ -60,7 +60,7 @@ void LPC24_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const v
     valueUsbActive = DEBUGGER_SELECTOR_USB_STATE;
 
     if (value == valueUsbActive) {
-        api = LPC24_UsbClient_GetApi();
+        api = LPC24_UsbDevice_GetApi();
         configuration = (const void*)&LPC24_Startup_UsbDebuggerConfiguration;
     }
     else {
@@ -94,7 +94,7 @@ void LPC24_Startup_GetRunApp(bool& runApp) {
 }
 
 // UsbClient
-void LPC24_UsbClient_PinConfiguration() {
+void LPC24_UsbDevice_PinConfiguration() {
     OTGClkCtrl = 0x1F;
     while ((OTGClkSt & 0x1F) != 0x1F);
 

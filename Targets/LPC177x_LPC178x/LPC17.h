@@ -389,8 +389,8 @@ TinyCLR_Result LPC17_Power_Initialize(const TinyCLR_Power_Controller* self);
 TinyCLR_Result LPC17_Power_Uninitialize(const TinyCLR_Power_Controller* self);
 
 //UsbClient
-const TinyCLR_Api_Info* LPC17_UsbClient_GetApi();
-void LPC17_UsbClient_Reset();
+const TinyCLR_Api_Info* LPC17_UsbDevice_GetApi();
+void LPC17_UsbDevice_Reset();
 
 struct USB_PACKET64;
 struct UsClientState;

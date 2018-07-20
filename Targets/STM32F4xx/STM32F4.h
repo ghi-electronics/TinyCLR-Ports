@@ -268,8 +268,8 @@ void STM32F4_Uart_Reset();
 ////////////////////////////////////////////////////////////////////////////////
 //USB Client
 ////////////////////////////////////////////////////////////////////////////////
-const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi();
-void STM32F4_UsbClient_Reset();
+const TinyCLR_Api_Info* STM32F4_UsbDevice_GetApi();
+void STM32F4_UsbDevice_Reset();
 
 struct USB_PACKET64;
 struct UsClientState;

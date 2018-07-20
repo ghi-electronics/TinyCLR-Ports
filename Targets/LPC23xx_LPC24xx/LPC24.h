@@ -481,9 +481,9 @@ TinyCLR_Result LPC24_Power_Uninitialize(const TinyCLR_Power_Controller* self);
 #define OTGClkCtrl (*(volatile unsigned *)0xFFE0CFF4)
 #define OTGClkSt (*(volatile unsigned *)0xFFE0CFF8)
 
-const TinyCLR_Api_Info* LPC24_UsbClient_GetApi();
-void LPC24_UsbClient_Reset();
-void LPC24_UsbClient_PinConfiguration();
+const TinyCLR_Api_Info* LPC24_UsbDevice_GetApi();
+void LPC24_UsbDevice_Reset();
+void LPC24_UsbDevice_PinConfiguration();
 
 struct USB_PACKET64;
 struct UsClientState;
