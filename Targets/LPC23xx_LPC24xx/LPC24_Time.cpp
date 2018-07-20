@@ -32,6 +32,8 @@
 //
 
 struct TimerDriver {
+    int32_t controllerIndex;
+
     bool m_configured;
 
     uint64_t m_lastRead;
@@ -199,6 +201,8 @@ const TinyCLR_Api_Info* LPC24_Time_GetApi() {
         timeApi[i].Version = 0;
         timeApi[i].Implementation = &timerControllers[i];
         timeApi[i].State = &timerDrivers[i];
+
+        timerDrivers[i].controllerIndex = i;
     }
 
     return (const TinyCLR_Api_Info*)&timeApi;

@@ -198,6 +198,7 @@ void At91TimerDriver::ISR_TIMER(void* param) {
 // TimerDriver
 //
 struct TimerDriver {
+    int32_t controllerIndex;
     uint64_t m_lastRead;
     uint64_t m_nextCompare;
 
@@ -233,6 +234,8 @@ const TinyCLR_Api_Info* AT91_Time_GetApi() {
         timeApi[i].Version = 0;
         timeApi[i].Implementation = &timerControllers[i];
         timeApi[i].State = &timerDrivers[i];
+
+        timerDrivers[i].controllerIndex = i;
     }
 
     return (const TinyCLR_Api_Info*)&timeApi;
