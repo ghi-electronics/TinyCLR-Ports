@@ -1,0 +1,73 @@
+#include "GHIElectronics_TinyCLR_Devices.h"
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::get_ChannelCount___U4(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::get_ResolutionInBits___U4(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::get_MinValue___I4(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::get_MaxValue___I4(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::IsChannelModeSupported___BOOLEAN__GHIElectronicsTinyCLRDevicesAdcAdcChannelMode(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::GetChannelMode___GHIElectronicsTinyCLRDevicesAdcAdcChannelMode(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::SetChannelMode___VOID__GHIElectronicsTinyCLRDevicesAdcAdcChannelMode(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::OpenChannel___VOID__U4(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::CloseChannel___VOID__U4(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::Read___I4__U4(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::Acquire___VOID(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::Release___VOID(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}

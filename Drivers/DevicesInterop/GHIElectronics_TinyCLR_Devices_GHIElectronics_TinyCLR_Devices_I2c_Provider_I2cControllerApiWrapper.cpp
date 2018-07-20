@@ -1,0 +1,25 @@
+#include "GHIElectronics_TinyCLR_Devices.h"
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_I2cControllerApiWrapper::WriteRead___GHIElectronicsTinyCLRDevicesI2cI2cTransferStatus__SZARRAY_U1__U4__U4__SZARRAY_U1__U4__U4__BOOLEAN__BYREF_U4__BYREF_U4(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_I2cControllerApiWrapper::Acquire___VOID(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_I2cControllerApiWrapper::Release___VOID(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_I2cControllerApiWrapper::SetActiveSettings___VOID__U4__GHIElectronicsTinyCLRDevicesI2cI2cAddressFormat__GHIElectronicsTinyCLRDevicesI2cI2cBusSpeed(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}

@@ -1,0 +1,25 @@
+#include "GHIElectronics_TinyCLR_Devices.h"
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerApiWrapper::GetTime___GHIElectronicsTinyCLRDevicesRtcRtcDateTime(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerApiWrapper::SetTime___VOID__GHIElectronicsTinyCLRDevicesRtcRtcDateTime(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerApiWrapper::Acquire___VOID(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerApiWrapper::Release___VOID(const TinyCLR_Interop_MethodData md) {
+
+
+    return TinyCLR_Result::NotImplemented;
+}
