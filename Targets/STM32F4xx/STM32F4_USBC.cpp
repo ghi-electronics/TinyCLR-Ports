@@ -230,7 +230,7 @@ typedef struct {
 OTG_TypeDef;
 
 typedef struct {
-    USB_CONTROLLER_STATE* usbState;
+    UsClientDriver* usbState;
 
     uint8_t     previousDeviceState;
     uint16_t    endpointType;
@@ -255,7 +255,7 @@ void STM32F4_UsbClient_Reset() {
     return TinyCLR_UsbClient_Reset(STM32F4_USB_FS_ID);
 }
 
-void STM32F4_UsbClient_InitializeConfiguration(USB_CONTROLLER_STATE *usbState) {
+void STM32F4_UsbClient_InitializeConfiguration(UsClientDriver *usbState) {
     int32_t controller = STM32F4_USB_FS_ID;
 
     if (usbState != nullptr) {
@@ -278,7 +278,7 @@ void STM32F4_UsbClient_InitializeConfiguration(USB_CONTROLLER_STATE *usbState) {
     }
 }
 
-bool STM32F4_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState) {
+bool STM32F4_UsbClient_Initialize(UsClientDriver* usbState) {
 
     if (usbState == nullptr)
         return false;
@@ -341,7 +341,7 @@ bool STM32F4_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState) {
     return true;
 }
 
-bool STM32F4_UsbClient_Uninitialize(USB_CONTROLLER_STATE* usbState) {
+bool STM32F4_UsbClient_Uninitialize(UsClientDriver* usbState) {
     STM32F4_InterruptInternal_Deactivate(OTG_FS_WKUP_IRQn);
     STM32F4_InterruptInternal_Deactivate(OTG_FS_IRQn);
 
@@ -355,7 +355,7 @@ bool STM32F4_UsbClient_Uninitialize(USB_CONTROLLER_STATE* usbState) {
     return true;
 }
 
-void STM32F4_UsbClient_ResetEvent(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* usbState) {
+void STM32F4_UsbClient_ResetEvent(OTG_TypeDef* OTG, UsClientDriver* usbState) {
     // reset interrupts and FIFOs
     OTG->GINTSTS = 0xFFFFFFFF; // clear global interrupts
     OTG->GRXFSIZ = USB_RXFIFO_SIZE; // Rx Fifo
@@ -428,7 +428,7 @@ void STM32F4_UsbClient_ResetEvent(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* usbSta
     TinyCLR_UsbClient_StateCallback(usbState);
 }
 
-void STM32F4_UsbClient_EndpointRxInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* usbState, uint32_t ep, uint32_t count) {
+void STM32F4_UsbClient_EndpointRxInterrupt(OTG_TypeDef* OTG, UsClientDriver* usbState, uint32_t ep, uint32_t count) {
     uint32_t* pd;
 
     bool disableRx = false;
@@ -454,7 +454,7 @@ void STM32F4_UsbClient_EndpointRxInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STAT
     }
 }
 
-void STM32F4_UsbClient_EndpointInInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* usbState, uint32_t ep) {
+void STM32F4_UsbClient_EndpointInInterrupt(OTG_TypeDef* OTG, UsClientDriver* usbState, uint32_t ep) {
     uint32_t bits = OTG->DIEP[ep].INT;
     if (bits & OTG_DIEPINT_XFRC) { // transfer completed
         OTG->DIEP[ep].INT = OTG_DIEPINT_XFRC; // clear interrupt
@@ -499,7 +499,7 @@ void STM32F4_UsbClient_EndpointInInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STAT
     }
 }
 
-void STM32F4_UsbClient_HandleSetup(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* usbState) {
+void STM32F4_UsbClient_HandleSetup(OTG_TypeDef* OTG, UsClientDriver* usbState) {
     /* send last setup packet to the upper layer */
     uint8_t result = TinyCLR_UsbClient_ControlCallback(usbState);
 
@@ -537,7 +537,7 @@ void STM32F4_UsbClient_HandleSetup(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* usbSt
     }
 }
 
-void STM32F4_UsbClient_EndpointOutInterrupt(OTG_TypeDef* OTG, USB_CONTROLLER_STATE* usbState, uint32_t ep) {
+void STM32F4_UsbClient_EndpointOutInterrupt(OTG_TypeDef* OTG, UsClientDriver* usbState, uint32_t ep) {
     uint32_t bits = OTG->DOEP[ep].INT;
     if (bits & OTG_DOEPINT_XFRC) { // transfer completed
         OTG->DOEP[ep].INT = OTG_DOEPINT_XFRC; // clear interrupt
@@ -574,7 +574,7 @@ void STM32F4_UsbClient_Interrupt(void* param) {
 
     int32_t controller = STM32F4_USB_FS_ID;
 
-    USB_CONTROLLER_STATE* usbState = usbDeviceControllers[controller].usbState;
+    UsClientDriver* usbState = usbDeviceControllers[controller].usbState;
 
     uint32_t intPend = OTG->GINTSTS; // get pending bits
 
@@ -644,7 +644,7 @@ void STM32F4_UsbClient_Interrupt(void* param) {
     }
 }
 
-bool STM32F4_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t ep) {
+bool STM32F4_UsbClient_StartOutput(UsClientDriver* usbState, int32_t ep) {
     if (usbState == 0 || ep >= usbState->totalEndpointsCount)
         return false;
 
@@ -672,7 +672,7 @@ bool STM32F4_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t ep) {
     return true;
 }
 
-bool STM32F4_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t ep) {
+bool STM32F4_UsbClient_RxEnable(UsClientDriver* usbState, int32_t ep) {
     // If this is not a legal Rx queue
     if (usbState == 0 || usbState->queues[ep] == 0 || usbState->isTxQueue[ep])
         return false;
@@ -691,7 +691,7 @@ bool STM32F4_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t ep) {
 }
 
 void STM32F4_UsbClient_ProtectPins(int32_t controller, bool on) {
-    USB_CONTROLLER_STATE *usbState = usbDeviceControllers[controller].usbState;
+    UsClientDriver *usbState = usbDeviceControllers[controller].usbState;
 
     OTG_TypeDef* OTG = OTG_FS;
 
@@ -736,19 +736,19 @@ void STM32F4_UsbClient_ProtectPins(int32_t controller, bool on) {
     TinyCLR_UsbClient_StateCallback(usbState);
 }
 
-bool TinyCLR_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState) {
+bool TinyCLR_UsbClient_Initialize(UsClientDriver* usbState) {
     return STM32F4_UsbClient_Initialize(usbState);
 }
 
-bool TinyCLR_UsbClient_Uninitialize(USB_CONTROLLER_STATE* usbState) {
+bool TinyCLR_UsbClient_Uninitialize(UsClientDriver* usbState) {
     return STM32F4_UsbClient_Uninitialize(usbState);
 }
 
-bool TinyCLR_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
+bool TinyCLR_UsbClient_StartOutput(UsClientDriver* usbState, int32_t endpoint) {
     return STM32F4_UsbClient_StartOutput(usbState, endpoint);
 }
 
-bool TinyCLR_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
+bool TinyCLR_UsbClient_RxEnable(UsClientDriver* usbState, int32_t endpoint) {
     return STM32F4_UsbClient_RxEnable(usbState, endpoint);
 }
 
@@ -756,7 +756,7 @@ void TinyCLR_UsbClient_Delay(uint64_t microseconds) {
     STM32F4_Time_Delay(nullptr, microseconds);
 }
 
-void TinyCLR_UsbClient_InitializeConfiguration(USB_CONTROLLER_STATE *usbState) {
+void TinyCLR_UsbClient_InitializeConfiguration(UsClientDriver *usbState) {
     STM32F4_UsbClient_InitializeConfiguration(usbState);
 }
 

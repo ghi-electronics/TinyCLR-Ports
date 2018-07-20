@@ -23,13 +23,13 @@
 
 static TinyCLR_UsbClient_Controller usbClientControllers[TOTAL_USBCLIENT_CONTROLLER];
 static TinyCLR_Api_Info usbClientApi[TOTAL_USBCLIENT_CONTROLLER];
-static USB_CONTROLLER_STATE usbClient_State[TOTAL_USBCLIENT_CONTROLLER];
+static UsClientDriver usbClientDrivers[TOTAL_USBCLIENT_CONTROLLER];
 
 TinyCLR_UsbClient_DataReceivedHandler TinyCLR_UsbClient_SetDataReceived;
 TinyCLR_UsbClient_RequestHandler TinyCLR_UsbClient_ProcessVendorClassRequest = nullptr;
 TinyCLR_UsbClient_RequestHandler TinyCLR_UsbClient_SetGetDescriptor = nullptr;
 
-void TinyCLR_UsbClient_SetEvent(USB_CONTROLLER_STATE *usbState, uint32_t event) {
+void TinyCLR_UsbClient_SetEvent(UsClientDriver *usbState, uint32_t event) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t old_event = usbState->event;
@@ -41,13 +41,13 @@ void TinyCLR_UsbClient_SetEvent(USB_CONTROLLER_STATE *usbState, uint32_t event) 
     }
 }
 
-void TinyCLR_UsbClient_ClearEvent(USB_CONTROLLER_STATE *usbState, uint32_t event) {
+void TinyCLR_UsbClient_ClearEvent(UsClientDriver *usbState, uint32_t event) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     usbState->event &= ~event;
 }
 
-void TinyCLR_UsbClient_ClearQueues(USB_CONTROLLER_STATE *usbState, bool ClrRxQueue, bool ClrTxQueue) {
+void TinyCLR_UsbClient_ClearQueues(UsClientDriver *usbState, bool ClrRxQueue, bool ClrTxQueue) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     for (auto ifc = 0; ifc < usbState->deviceDescriptor.Configurations->InterfaceCount; ifc++) {
@@ -75,7 +75,7 @@ void TinyCLR_UsbClient_ClearQueues(USB_CONTROLLER_STATE *usbState, bool ClrRxQue
     }
 }
 
-void TinyCLR_UsbClient_StateCallback(USB_CONTROLLER_STATE* usbState) {
+void TinyCLR_UsbClient_StateCallback(UsClientDriver* usbState) {
     if (usbState->currentState != usbState->deviceState) {
         /* whenever we leave the configured state, re-initialize all of the queues */
         //Not necessary, as TxBuffer may hold any data and then send them out when it is configured again.
@@ -101,7 +101,7 @@ void TinyCLR_UsbClient_StateCallback(USB_CONTROLLER_STATE* usbState) {
     }
 }
 
-void TinyCLR_UsbClient_DataCallback(USB_CONTROLLER_STATE* usbState) {
+void TinyCLR_UsbClient_DataCallback(UsClientDriver* usbState) {
     uint32_t length = __min(usbState->maxEndpointsPacketSize[0], usbState->residualCount);
 
     memcpy(usbState->ptrData, usbState->residualData, length);
@@ -125,7 +125,7 @@ void TinyCLR_UsbClient_DataCallback(USB_CONTROLLER_STATE* usbState) {
     }
 }
 
-uint8_t TinyCLR_UsbClient_HandleGetStatus(USB_CONTROLLER_STATE* usbState, TinyCLR_UsbClient_SetupPacket* Setup) {
+uint8_t TinyCLR_UsbClient_HandleGetStatus(UsClientDriver* usbState, TinyCLR_UsbClient_SetupPacket* Setup) {
     uint16_t* status;
     uint16_t  zero = 0;
 
@@ -180,7 +180,7 @@ uint8_t TinyCLR_UsbClient_HandleGetStatus(USB_CONTROLLER_STATE* usbState, TinyCL
     return USB_STATE_DATA;
 }
 
-uint8_t TinyCLR_UsbClient_HandleClearFeature(USB_CONTROLLER_STATE* usbState, TinyCLR_UsbClient_SetupPacket* Setup) {
+uint8_t TinyCLR_UsbClient_HandleClearFeature(UsClientDriver* usbState, TinyCLR_UsbClient_SetupPacket* Setup) {
     TinyCLR_UsbClient_ConfigurationDescriptor * Config;
     uint8_t       retState;
 
@@ -247,7 +247,7 @@ uint8_t TinyCLR_UsbClient_HandleClearFeature(USB_CONTROLLER_STATE* usbState, Tin
     return retState;
 }
 
-uint8_t TinyCLR_UsbClient_HandleSetFeature(USB_CONTROLLER_STATE* usbState, TinyCLR_UsbClient_SetupPacket* Setup) {
+uint8_t TinyCLR_UsbClient_HandleSetFeature(UsClientDriver* usbState, TinyCLR_UsbClient_SetupPacket* Setup) {
     TinyCLR_UsbClient_ConfigurationDescriptor * Config;
     uint8_t       retState;
 
@@ -317,7 +317,7 @@ uint8_t TinyCLR_UsbClient_HandleSetFeature(USB_CONTROLLER_STATE* usbState, TinyC
     return retState;
 }
 
-uint8_t TinyCLR_UsbClient_HandleSetAddress(USB_CONTROLLER_STATE* usbState, TinyCLR_UsbClient_SetupPacket* Setup) {
+uint8_t TinyCLR_UsbClient_HandleSetAddress(UsClientDriver* usbState, TinyCLR_UsbClient_SetupPacket* Setup) {
     /* validate setup packet */
     if (Setup->Value > 127 || Setup->Index != 0 || Setup->Length != 0) {
         return USB_STATE_STALL;
@@ -349,7 +349,7 @@ uint8_t TinyCLR_UsbClient_HandleSetAddress(USB_CONTROLLER_STATE* usbState, TinyC
     return USB_STATE_ADDRESS;
 }
 
-uint8_t TinyCLR_UsbClient_HandleConfigurationRequests(USB_CONTROLLER_STATE* usbState, TinyCLR_UsbClient_SetupPacket* Setup) {
+uint8_t TinyCLR_UsbClient_HandleConfigurationRequests(UsClientDriver* usbState, TinyCLR_UsbClient_SetupPacket* Setup) {
     const uint8_t* header;
     uint8_t       type;
     uint8_t       DescriptorIndex;
@@ -553,7 +553,7 @@ uint8_t TinyCLR_UsbClient_HandleConfigurationRequests(USB_CONTROLLER_STATE* usbS
     return USB_STATE_DATA;
 }
 
-uint8_t TinyCLR_UsbClient_HandleGetConfiguration(USB_CONTROLLER_STATE* usbState, TinyCLR_UsbClient_SetupPacket* Setup) {
+uint8_t TinyCLR_UsbClient_HandleGetConfiguration(UsClientDriver* usbState, TinyCLR_UsbClient_SetupPacket* Setup) {
     /* validate setup packet */
     if (Setup->Value != 0 || Setup->Index != 0 || Setup->Length != 1) {
         return USB_STATE_STALL;
@@ -572,7 +572,7 @@ uint8_t TinyCLR_UsbClient_HandleGetConfiguration(USB_CONTROLLER_STATE* usbState,
     return USB_STATE_DATA;
 }
 
-uint8_t TinyCLR_UsbClient_HandleSetConfiguration(USB_CONTROLLER_STATE* usbState, TinyCLR_UsbClient_SetupPacket* Setup, bool DataPhase) {
+uint8_t TinyCLR_UsbClient_HandleSetConfiguration(UsClientDriver* usbState, TinyCLR_UsbClient_SetupPacket* Setup, bool DataPhase) {
     /* validate setup packet */
     if (Setup->Index != 0 || Setup->Length != 0) {
         return USB_STATE_STALL;
@@ -611,7 +611,7 @@ uint8_t TinyCLR_UsbClient_HandleSetConfiguration(USB_CONTROLLER_STATE* usbState,
 
 // Searches through the USB deviceDescriptor records for the requested type
 // Returns a pointer to the header information if found and nullptr if not
-const uint8_t* TinyCLR_UsbClient_FindRecord(USB_CONTROLLER_STATE* usbState, uint8_t marker, TinyCLR_UsbClient_SetupPacket * setup) {
+const uint8_t* TinyCLR_UsbClient_FindRecord(UsClientDriver* usbState, uint8_t marker, TinyCLR_UsbClient_SetupPacket * setup) {
     bool found = false;
 
     uint8_t* ptr = nullptr;
@@ -647,7 +647,7 @@ const uint8_t* TinyCLR_UsbClient_FindRecord(USB_CONTROLLER_STATE* usbState, uint
     return found ? ptr : nullptr;
 }
 
-uint8_t TinyCLR_UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState) {
+uint8_t TinyCLR_UsbClient_ControlCallback(UsClientDriver* usbState) {
     TinyCLR_UsbClient_SetupPacket* Setup;
 
     if (usbState->dataSize == 0) {
@@ -676,7 +676,7 @@ uint8_t TinyCLR_UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState) {
     return USB_STATE_STALL;
 }
 
-USB_PACKET64* TinyCLR_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* usbState, int32_t endpoint, bool& disableRx) {
+USB_PACKET64* TinyCLR_UsbClient_RxEnqueue(UsClientDriver* usbState, int32_t endpoint, bool& disableRx) {
     USB_PACKET64* packet;
 
     if (usbState->fifoPacketCount[endpoint] == usbState->maxFifoPacketCount) {
@@ -700,7 +700,7 @@ USB_PACKET64* TinyCLR_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* usbState, int32_
     return packet;
 }
 
-USB_PACKET64* TinyCLR_UsbClient_TxDequeue(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
+USB_PACKET64* TinyCLR_UsbClient_TxDequeue(UsClientDriver* usbState, int32_t endpoint) {
     USB_PACKET64* packet;
 
     if (usbState->fifoPacketCount[endpoint] == 0) {
@@ -718,11 +718,11 @@ USB_PACKET64* TinyCLR_UsbClient_TxDequeue(USB_CONTROLLER_STATE* usbState, int32_
     return packet;
 }
 
-void TinyCLR_UsbClient_ClearEndpoints(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
+void TinyCLR_UsbClient_ClearEndpoints(UsClientDriver* usbState, int32_t endpoint) {
     usbState->fifoPacketIn[endpoint] = usbState->fifoPacketOut[endpoint] = usbState->fifoPacketCount[endpoint] = 0;
 }
 
-bool TinyCLR_UsbClient_CanReceivePackage(USB_CONTROLLER_STATE* usbState, int32_t endpoint) {
+bool TinyCLR_UsbClient_CanReceivePackage(UsClientDriver* usbState, int32_t endpoint) {
     return usbState->fifoPacketCount[endpoint] < usbState->maxFifoPacketCount;
 }
 
@@ -748,18 +748,18 @@ const TinyCLR_Api_Info* TinyCLR_UsbClient_GetApi() {
         usbClientApi[i].Type = TinyCLR_Api_Type::UsbClientController;
         usbClientApi[i].Version = 0;
         usbClientApi[i].Implementation = &usbClientControllers[i];
-        usbClientApi[i].State = &usbClient_State[i];
+        usbClientApi[i].State = &usbClientDrivers[i];
 
-        usbClient_State[i].controllerIndex = i;
+        usbClientDrivers[i].controllerIndex = i;
     }
 
     return (const TinyCLR_Api_Info*)&usbClientApi;
 }
 
 TinyCLR_Result TinyCLR_UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Controller* self, const TinyCLR_UsbClient_DeviceDescriptor* descriptor) {
-    USB_CONTROLLER_STATE *usbState = reinterpret_cast<USB_CONTROLLER_STATE*>(self->ApiInfo->State);
+    UsClientDriver *usbState = reinterpret_cast<UsClientDriver*>(self->ApiInfo->State);
 
-    memset(usbState, 0, sizeof(USB_CONTROLLER_STATE));
+    memset(usbState, 0, sizeof(UsClientDriver));
 
     memcpy(reinterpret_cast<uint8_t*>(&usbState->deviceDescriptor), reinterpret_cast<uint8_t*>(const_cast<TinyCLR_UsbClient_DeviceDescriptor*>(descriptor)), sizeof(TinyCLR_UsbClient_DeviceDescriptor));
 
@@ -767,7 +767,7 @@ TinyCLR_Result TinyCLR_UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Con
 }
 
 TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Controller* self) {
-    USB_CONTROLLER_STATE *usbState = reinterpret_cast<USB_CONTROLLER_STATE*>(self->ApiInfo->State);
+    UsClientDriver *usbState = reinterpret_cast<UsClientDriver*>(self->ApiInfo->State);
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -834,7 +834,7 @@ acquire_error:
 }
 
 TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Controller* self) {
-    USB_CONTROLLER_STATE *usbState = reinterpret_cast<USB_CONTROLLER_STATE*>(self->ApiInfo->State);
+    UsClientDriver *usbState = reinterpret_cast<UsClientDriver*>(self->ApiInfo->State);
 
     if (usbState->initialized) {
         DISABLE_INTERRUPTS_SCOPED(irq);
@@ -869,7 +869,7 @@ TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Controller* sel
 }
 
 TinyCLR_Result TinyCLR_UsbClient_Open(const TinyCLR_UsbClient_Controller* self, int32_t& pipe, uint8_t writeEp, uint8_t readEp) {
-    USB_CONTROLLER_STATE * usbState = reinterpret_cast<USB_CONTROLLER_STATE*>(self->ApiInfo->State);
+    UsClientDriver * usbState = reinterpret_cast<UsClientDriver*>(self->ApiInfo->State);
 
     if (!usbState->initialized)
         goto pipe_error;
@@ -919,7 +919,7 @@ pipe_error:
 }
 
 TinyCLR_Result TinyCLR_UsbClient_Close(const TinyCLR_UsbClient_Controller* self, int32_t pipe) {
-    USB_CONTROLLER_STATE * usbState = reinterpret_cast<USB_CONTROLLER_STATE*>(self->ApiInfo->State);
+    UsClientDriver * usbState = reinterpret_cast<UsClientDriver*>(self->ApiInfo->State);
 
     if (!usbState->initialized)
         return TinyCLR_Result::NotAvailable;
@@ -951,7 +951,7 @@ TinyCLR_Result TinyCLR_UsbClient_Close(const TinyCLR_UsbClient_Controller* self,
 }
 
 TinyCLR_Result TinyCLR_UsbClient_Write(const TinyCLR_UsbClient_Controller* self, int32_t pipe, const uint8_t* data, size_t& length) {
-    USB_CONTROLLER_STATE * usbState = reinterpret_cast<USB_CONTROLLER_STATE*>(self->ApiInfo->State);
+    UsClientDriver * usbState = reinterpret_cast<UsClientDriver*>(self->ApiInfo->State);
 
     if (data == nullptr
         || usbState->deviceState != USB_DEVICE_STATE_CONFIGURED
@@ -1070,7 +1070,7 @@ done_write:
 
 TinyCLR_Result TinyCLR_UsbClient_Read(const TinyCLR_UsbClient_Controller* self, int32_t pipe, uint8_t* data, size_t& length) {
     int32_t endpoint;
-    USB_CONTROLLER_STATE * usbState = reinterpret_cast<USB_CONTROLLER_STATE*>(self->ApiInfo->State);
+    UsClientDriver * usbState = reinterpret_cast<UsClientDriver*>(self->ApiInfo->State);
 
     if (usbState->deviceState != USB_DEVICE_STATE_CONFIGURED) {
         return TinyCLR_Result::ArgumentInvalid;
@@ -1137,7 +1137,7 @@ TinyCLR_Result TinyCLR_UsbClient_Flush(const TinyCLR_UsbClient_Controller* self,
     int32_t endpoint;
     int32_t retries = USB_FLUSH_RETRY_COUNT;
     int32_t queueCnt;
-    USB_CONTROLLER_STATE * usbState = reinterpret_cast<USB_CONTROLLER_STATE*>(self->ApiInfo->State);
+    UsClientDriver * usbState = reinterpret_cast<UsClientDriver*>(self->ApiInfo->State);
 
     /* not configured, no data can go in or out */
     if (usbState->deviceState != USB_DEVICE_STATE_CONFIGURED) {
@@ -1183,7 +1183,7 @@ TinyCLR_Result TinyCLR_UsbClient_SetVendorClassRequestHandler(const TinyCLR_UsbC
 
 
 void TinyCLR_UsbClient_Reset(int32_t controllerIndex) {
-    USB_CONTROLLER_STATE * usbState = &usbClient_State[controllerIndex];
+    UsClientDriver * usbState = &usbClientDrivers[controllerIndex];
 
     for (auto pipe = 0; pipe < usbState->totalPipesCount; pipe++) {
         TinyCLR_UsbClient_Close(&usbClientControllers[controllerIndex], pipe);
