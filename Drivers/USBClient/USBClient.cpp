@@ -757,7 +757,7 @@ const TinyCLR_Api_Info* TinyCLR_UsbClient_GetApi() {
 }
 
 TinyCLR_Result TinyCLR_UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Controller* self, const TinyCLR_UsbClient_DeviceDescriptor* descriptor) {
-    UsClientDriver *usbState = reinterpret_cast<UsClientDriver*>(self->ApiInfo->State);
+    auto usbState = reinterpret_cast<UsClientDriver*>(self->ApiInfo->State);
 
     memset(usbState, 0, sizeof(UsClientDriver));
 
@@ -767,7 +767,7 @@ TinyCLR_Result TinyCLR_UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Con
 }
 
 TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Controller* self) {
-    UsClientDriver *usbState = reinterpret_cast<UsClientDriver*>(self->ApiInfo->State);
+    auto usbState = reinterpret_cast<UsClientDriver*>(self->ApiInfo->State);
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -834,7 +834,7 @@ acquire_error:
 }
 
 TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Controller* self) {
-    UsClientDriver *usbState = reinterpret_cast<UsClientDriver*>(self->ApiInfo->State);
+    auto usbState = reinterpret_cast<UsClientDriver*>(self->ApiInfo->State);
 
     if (usbState->initialized) {
         DISABLE_INTERRUPTS_SCOPED(irq);
