@@ -45,10 +45,10 @@
 
 typedef  TIM_TypeDef* ptr_TIM_TypeDef;
 
-struct PwmDriver {
+struct PwmState {
     int32_t controllerIndex;
 
-    ptr_TIM_TypeDef     timerdef;
+    ptr_TIM_TypeDef     timReg;
     STM32F4_Gpio_Pin    gpioPin[PWM_PER_CONTROLLER];
 
     bool                invert[PWM_PER_CONTROLLER];
@@ -71,7 +71,7 @@ static STM32F4_Gpio_Pin pwmPins[][PWM_PER_CONTROLLER] = STM32F4_PWM_PINS;
 
 #define TOTAL_PWM_CONTROLLERS SIZEOF_ARRAY(pwmPins)
 
-static PwmDriver pwmDrivers[TOTAL_PWM_CONTROLLERS];
+static PwmState pwmStates[TOTAL_PWM_CONTROLLERS];
 
 static TinyCLR_Pwm_Controller pwmControllers[TOTAL_PWM_CONTROLLERS];
 static TinyCLR_Api_Info pwmApi[TOTAL_PWM_CONTROLLERS];
@@ -96,9 +96,9 @@ const TinyCLR_Api_Info* STM32F4_Pwm_GetApi() {
         pwmApi[i].Type = TinyCLR_Api_Type::PwmController;
         pwmApi[i].Version = 0;
         pwmApi[i].Implementation = &pwmControllers[i];
-        pwmApi[i].State = &pwmDrivers[i];
+        pwmApi[i].State = &pwmStates[i];
 
-        pwmDrivers[i].controllerIndex = i;
+        pwmStates[i].controllerIndex = i;
     }
 
     return (const TinyCLR_Api_Info*)&pwmApi;
@@ -107,9 +107,9 @@ const TinyCLR_Api_Info* STM32F4_Pwm_GetApi() {
 //--//
 
 TinyCLR_Result STM32F4_Pwm_AcquirePin(const TinyCLR_Pwm_Controller* self, int32_t pin) {
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
-    ptr_TIM_TypeDef treg = driver->timerdef;
+    ptr_TIM_TypeDef treg = state->timReg;
 
     auto actualPin = STM32F4_Pwm_GetGpioPinForChannel(self, pin);
 
@@ -125,7 +125,7 @@ TinyCLR_Result STM32F4_Pwm_AcquirePin(const TinyCLR_Pwm_Controller* self, int32_
         *enReg |= enBit; // enable timer clock
         treg->CR1 = TIM_CR1_URS | TIM_CR1_ARPE; // double buffered update
         treg->EGR = TIM_EGR_UG; // enforce first update
-        if (driver->timer == 1 || driver->timer == 8) {
+        if (state->timer == 1 || state->timer == 8) {
             treg->BDTR |= TIM_BDTR_MOE; // main output enable (timer 1 & 8 only)
         }
     }
@@ -139,15 +139,15 @@ TinyCLR_Result STM32F4_Pwm_AcquirePin(const TinyCLR_Pwm_Controller* self, int32_
     if (pin & 2) reg = &treg->CCMR2; // 2 or 3
     *reg |= mode;
 
-    driver->isOpened[pin] = true;
+    state->isOpened[pin] = true;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Pwm_ReleasePin(const TinyCLR_Pwm_Controller* self, int32_t pin) {
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
-    ptr_TIM_TypeDef treg = driver->timerdef;
+    ptr_TIM_TypeDef treg = state->timReg;
 
     auto actualPin = STM32F4_Pwm_GetGpioPinForChannel(self, pin);
 
@@ -166,7 +166,7 @@ TinyCLR_Result STM32F4_Pwm_ReleasePin(const TinyCLR_Pwm_Controller* self, int32_
 
     STM32F4_GpioInternal_ClosePin(actualPin->number);
 
-    driver->isOpened[pin] = false;
+    state->isOpened[pin] = false;
 
     return TinyCLR_Result::Success;
 }
@@ -190,11 +190,11 @@ double STM32F4_Pwm_GetActualFrequency(const TinyCLR_Pwm_Controller* self) {
     uint32_t period = 0;
     uint32_t scale = 0;
 
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
-    double freq = driver->theoryFreq;
+    double freq = state->theoryFreq;
 
-    ptr_TIM_TypeDef treg = driver->timerdef;
+    ptr_TIM_TypeDef treg = state->timReg;
 
     STM32F4_Pwm_GetScaleFactor(freq, period, scale);
 
@@ -231,7 +231,7 @@ double STM32F4_Pwm_GetActualFrequency(const TinyCLR_Pwm_Controller* self) {
         }
     }
 
-    if (driver->timer != 2 && driver->timer != 5) { // 16 bit timer
+    if (state->timer != 2 && state->timer != 5) { // 16 bit timer
         while (p >= 0x10000) { // period too large
             if (pre > 0x8000) return 0;
             pre <<= 1;
@@ -261,17 +261,17 @@ double STM32F4_Pwm_GetActualFrequency(const TinyCLR_Pwm_Controller* self) {
         actualFreq = (double)(scale / period2);
     }
 
-    driver->actualFreq = actualFreq;
-    driver->period = p;
-    driver->presc = pre;
+    state->actualFreq = actualFreq;
+    state->period = p;
+    state->presc = pre;
 
     return actualFreq;
 }
 
 TinyCLR_Result STM32F4_Pwm_EnablePin(const TinyCLR_Pwm_Controller* self, int32_t pin) {
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
-    ptr_TIM_TypeDef treg = driver->timerdef;
+    ptr_TIM_TypeDef treg = state->timReg;
 
     auto actualPin = STM32F4_Pwm_GetGpioPinForChannel(self, pin);
 
@@ -292,9 +292,9 @@ TinyCLR_Result STM32F4_Pwm_EnablePin(const TinyCLR_Pwm_Controller* self, int32_t
 }
 
 TinyCLR_Result STM32F4_Pwm_DisablePin(const TinyCLR_Pwm_Controller* self, int32_t pin) {
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
-    ptr_TIM_TypeDef treg = driver->timerdef;
+    ptr_TIM_TypeDef treg = state->timReg;
 
     auto actualPin = STM32F4_Pwm_GetGpioPinForChannel(self, pin);
 
@@ -317,15 +317,15 @@ int32_t STM32F4_Pwm_GetPinCount(const TinyCLR_Pwm_Controller* self) {
 }
 
 STM32F4_Gpio_Pin* STM32F4_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Controller* self, int32_t pin) {
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
-    return &(driver->gpioPin[pin]);
+    return &(state->gpioPin[pin]);
 }
 
 double STM32F4_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Controller* self) {
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
-    ptr_TIM_TypeDef treg = driver->timerdef;
+    ptr_TIM_TypeDef treg = state->timReg;
 
     if ((uint32_t)treg & 0x10000)
         return STM32F4_APB2_CLOCK_HZ; // max can be Systemclock / 2 MHz on some PWM
@@ -338,19 +338,19 @@ double STM32F4_Pwm_GetMinFrequency(const TinyCLR_Pwm_Controller* self) {
 }
 
 TinyCLR_Result STM32F4_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self, int32_t pin, double dutyCycle, bool invertPolarity) {
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
-    ptr_TIM_TypeDef treg = driver->timerdef;
+    ptr_TIM_TypeDef treg = state->timReg;
 
-    uint32_t duration = (uint32_t)(dutyCycle * driver->period);
+    uint32_t duration = (uint32_t)(dutyCycle * state->period);
 
-    if (duration > driver->period)
-        duration = driver->period;
+    if (duration > state->period)
+        duration = state->period;
 
-    treg->PSC = driver->presc - 1;
-    treg->ARR = driver->period - 1;
+    treg->PSC = state->presc - 1;
+    treg->ARR = state->period - 1;
 
-    if (driver->timer == 2 || driver->timer == 5) {
+    if (state->timer == 2 || state->timer == 5) {
         if (pin == 0)
             treg->CCR1 = duration;
         else if (pin == 1)
@@ -373,34 +373,34 @@ TinyCLR_Result STM32F4_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self
         treg->CCER &= ~invBit;
     }
 
-    if (duration != (uint32_t)(driver->dutyCycle[pin] * driver->period))
+    if (duration != (uint32_t)(state->dutyCycle[pin] * state->period))
         treg->EGR = TIM_EGR_UG; // enforce register update - update immidiately any changes
 
-    driver->invert[pin] = invertPolarity;
-    driver->dutyCycle[pin] = dutyCycle;
+    state->invert[pin] = invertPolarity;
+    state->dutyCycle[pin] = dutyCycle;
 
     return TinyCLR_Result::Success;
 
 }
 
 TinyCLR_Result STM32F4_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Controller* self, double& frequency) {
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
     // If current frequency is same with desired frequency, no need to re-calculate
-    if (driver->theoryFreq == frequency) {
+    if (state->theoryFreq == frequency) {
         return TinyCLR_Result::Success;
     }
 
     // If detected a different, save desired frequency
-    driver->theoryFreq = frequency;
+    state->theoryFreq = frequency;
 
     // Calculate actual frequency base on desired frequency
     frequency = STM32F4_Pwm_GetActualFrequency(self);
 
     // Update channel if frequency had different
     for (int p = 0; p < PWM_PER_CONTROLLER; p++)
-        if (driver->gpioPin[p].number != PIN_NONE)
-            if (STM32F4_Pwm_SetPulseParameters(self, p, driver->dutyCycle[p], driver->invert[p]) != TinyCLR_Result::Success)
+        if (state->gpioPin[p].number != PIN_NONE)
+            if (STM32F4_Pwm_SetPulseParameters(self, p, state->dutyCycle[p], state->invert[p]) != TinyCLR_Result::Success)
                 return TinyCLR_Result::InvalidOperation;
 
     return TinyCLR_Result::Success;
@@ -410,9 +410,9 @@ TinyCLR_Result STM32F4_Pwm_Acquire(const TinyCLR_Pwm_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
     STM32F4_Pwm_ResetController(controllerIndex);
 
@@ -423,9 +423,9 @@ TinyCLR_Result STM32F4_Pwm_Release(const TinyCLR_Pwm_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto driver = reinterpret_cast<PwmDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
     STM32F4_Pwm_ResetController(controllerIndex);
 
@@ -433,21 +433,21 @@ TinyCLR_Result STM32F4_Pwm_Release(const TinyCLR_Pwm_Controller* self) {
 }
 
 void STM32F4_Pwm_Reset() {
-    if (TOTAL_PWM_CONTROLLERS > 0) pwmDrivers[0].timerdef = TIM1;
-    if (TOTAL_PWM_CONTROLLERS > 1) pwmDrivers[1].timerdef = TIM2;
-    if (TOTAL_PWM_CONTROLLERS > 2) pwmDrivers[2].timerdef = TIM3;
-    if (TOTAL_PWM_CONTROLLERS > 3) pwmDrivers[3].timerdef = TIM4;
+    if (TOTAL_PWM_CONTROLLERS > 0) pwmStates[0].timReg = TIM1;
+    if (TOTAL_PWM_CONTROLLERS > 1) pwmStates[1].timReg = TIM2;
+    if (TOTAL_PWM_CONTROLLERS > 2) pwmStates[2].timReg = TIM3;
+    if (TOTAL_PWM_CONTROLLERS > 3) pwmStates[3].timReg = TIM4;
 #if !defined(STM32F401xE) && !defined(STM32F411xE)
-    if (TOTAL_PWM_CONTROLLERS > 4) pwmDrivers[4].timerdef = TIM5;
-    if (TOTAL_PWM_CONTROLLERS > 5) pwmDrivers[5].timerdef = TIM6;
-    if (TOTAL_PWM_CONTROLLERS > 6) pwmDrivers[6].timerdef = TIM7;
-    if (TOTAL_PWM_CONTROLLERS > 7) pwmDrivers[7].timerdef = TIM8;
-    if (TOTAL_PWM_CONTROLLERS > 8) pwmDrivers[8].timerdef = TIM9;
-    if (TOTAL_PWM_CONTROLLERS > 9) pwmDrivers[9].timerdef = TIM10;
-    if (TOTAL_PWM_CONTROLLERS > 10) pwmDrivers[10].timerdef = TIM11;
-    if (TOTAL_PWM_CONTROLLERS > 11) pwmDrivers[11].timerdef = TIM12;
-    if (TOTAL_PWM_CONTROLLERS > 12) pwmDrivers[12].timerdef = TIM13;
-    if (TOTAL_PWM_CONTROLLERS > 13) pwmDrivers[13].timerdef = TIM14;
+    if (TOTAL_PWM_CONTROLLERS > 4) pwmStates[4].timReg = TIM5;
+    if (TOTAL_PWM_CONTROLLERS > 5) pwmStates[5].timReg = TIM6;
+    if (TOTAL_PWM_CONTROLLERS > 6) pwmStates[6].timReg = TIM7;
+    if (TOTAL_PWM_CONTROLLERS > 7) pwmStates[7].timReg = TIM8;
+    if (TOTAL_PWM_CONTROLLERS > 8) pwmStates[8].timReg = TIM9;
+    if (TOTAL_PWM_CONTROLLERS > 9) pwmStates[9].timReg = TIM10;
+    if (TOTAL_PWM_CONTROLLERS > 10) pwmStates[10].timReg = TIM11;
+    if (TOTAL_PWM_CONTROLLERS > 11) pwmStates[11].timReg = TIM12;
+    if (TOTAL_PWM_CONTROLLERS > 12) pwmStates[12].timReg = TIM13;
+    if (TOTAL_PWM_CONTROLLERS > 13) pwmStates[13].timReg = TIM14;
 #endif
 
     for (auto controllerIndex = 0u; controllerIndex < TOTAL_PWM_CONTROLLERS; controllerIndex++) {
@@ -456,29 +456,29 @@ void STM32F4_Pwm_Reset() {
 }
 
 void STM32F4_Pwm_ResetController(int32_t controllerIndex) {
-    auto driver = &pwmDrivers[controllerIndex];
+    auto state = &pwmStates[controllerIndex];
 
     for (int p = 0; p < PWM_PER_CONTROLLER; p++) {
-        driver->gpioPin[p].number = pwmPins[controllerIndex][p].number;
-        driver->gpioPin[p].alternateFunction = pwmPins[controllerIndex][p].alternateFunction;
+        state->gpioPin[p].number = pwmPins[controllerIndex][p].number;
+        state->gpioPin[p].alternateFunction = pwmPins[controllerIndex][p].alternateFunction;
 
-        if (driver->gpioPin[p].number != PIN_NONE) {
-            driver->dutyCycle[p] = 0;
-            driver->invert[p] = false;
+        if (state->gpioPin[p].number != PIN_NONE) {
+            state->dutyCycle[p] = 0;
+            state->invert[p] = false;
         }
 
-        if (driver->isOpened[p] == true) {
+        if (state->isOpened[p] == true) {
             STM32F4_Pwm_DisablePin(&pwmControllers[controllerIndex], p);
             STM32F4_Pwm_ReleasePin(&pwmControllers[controllerIndex], p);
         }
 
-        driver->isOpened[p] = false;
+        state->isOpened[p] = false;
     }
 
-    driver->theoryFreq = 0.0;
-    driver->actualFreq = 0.0;
-    driver->period = 0;
-    driver->presc = 0;
-    driver->timer = controllerIndex + 1;
+    state->theoryFreq = 0.0;
+    state->actualFreq = 0.0;
+    state->period = 0;
+    state->presc = 0;
+    state->timer = controllerIndex + 1;
 }
 

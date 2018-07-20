@@ -424,8 +424,10 @@ uint32_t LPC24_Display_GetPixelClockDivider();
 int32_t LPC24_Display_GetOrientation();
 uint32_t* LPC24_Display_GetFrameBuffer();
 
-static TinyCLR_Display_Controller displayProvider;
-static TinyCLR_Api_Info displayApi;
+#define TOTAL_DISPLAY_CONTROLLERS 1
+
+static TinyCLR_Display_Controller displayControllers[TOTAL_DISPLAY_CONTROLLERS];
+static TinyCLR_Api_Info displayApi[TOTAL_DISPLAY_CONTROLLERS];
 
 #define AHBCFG1     (*(volatile unsigned *)0XE01FC188)
 
@@ -897,7 +899,7 @@ TinyCLR_Result LPC24_Display_Release(const TinyCLR_Display_Controller* self) {
     m_LPC24_DisplayEnable = false;
 
     if (m_LPC24_Display_VituralRam != nullptr) {
-        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
         memoryProvider->Free(memoryProvider, m_LPC24_Display_VituralRam);
 
@@ -962,7 +964,7 @@ TinyCLR_Result LPC24_Display_SetConfiguration(const TinyCLR_Display_Controller* 
             break;
         }
 
-        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
         if (m_LPC24_Display_VituralRam != nullptr) {
             memoryProvider->Free(memoryProvider, m_LPC24_Display_VituralRam);
@@ -1005,6 +1007,8 @@ TinyCLR_Result LPC24_Display_GetConfiguration(const TinyCLR_Display_Controller* 
         cfg.VerticalSyncPulseWidth = m_LPC24_DisplayVerticalSyncPulseWidth;
         cfg.VerticalFrontPorch = m_LPC24_DisplayVerticalFrontPorch;
         cfg.VerticalBackPorch = m_LPC24_DisplayVerticalBackPorch;
+
+        return TinyCLR_Result::Success;
     }
 
     return TinyCLR_Result::InvalidOperation;
@@ -1033,40 +1037,37 @@ TinyCLR_Result LPC24_Display_GetCapabilities(const TinyCLR_Display_Controller* s
 }
 
 const TinyCLR_Api_Info* LPC24_Display_GetApi() {
-    displayProvider.ApiInfo = &displayApi;
-    displayProvider.Acquire = &LPC24_Display_Acquire;
-    displayProvider.Release = &LPC24_Display_Release;
-    displayProvider.Enable = &LPC24_Display_Enable;
-    displayProvider.Disable = &LPC24_Display_Disable;
-    displayProvider.SetConfiguration = &LPC24_Display_SetConfiguration;
-    displayProvider.GetConfiguration = &LPC24_Display_GetConfiguration;
-    displayProvider.GetCapabilities = &LPC24_Display_GetCapabilities;
-    displayProvider.DrawBuffer = &LPC24_Display_DrawBuffer;
-    displayProvider.WriteString = &LPC24_Display_WriteString;
-    displayProvider.GetControllerCount = &LPC24_Display_GetControllerCount;
+    for (auto i = 0; i < TOTAL_DISPLAY_CONTROLLERS; i++) {
+        displayControllers[i].ApiInfo = &displayApi[i];
+        displayControllers[i].Acquire = &LPC24_Display_Acquire;
+        displayControllers[i].Release = &LPC24_Display_Release;
+        displayControllers[i].Enable = &LPC24_Display_Enable;
+        displayControllers[i].Disable = &LPC24_Display_Disable;
+        displayControllers[i].SetConfiguration = &LPC24_Display_SetConfiguration;
+        displayControllers[i].GetConfiguration = &LPC24_Display_GetConfiguration;
+        displayControllers[i].GetCapabilities = &LPC24_Display_GetCapabilities;
+        displayControllers[i].DrawBuffer = &LPC24_Display_DrawBuffer;
+        displayControllers[i].WriteString = &LPC24_Display_WriteString;
 
-    displayApi.Author = "GHI Electronics, LLC";
-    displayApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.DisplayProvider";
-    displayApi.Type = TinyCLR_Api_Type::DisplayProvider;
-    displayApi.Version = 0;
-    displayApi.Implementation = &displayProvider;
+        displayApi[i].Author = "GHI Electronics, LLC";
+        displayApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.DisplayController";
+        displayApi[i].Type = TinyCLR_Api_Type::DisplayController;
+        displayApi[i].Version = 0;
+        displayApi[i].Implementation = &displayControllers[i];
+        displayApi[i].State = nullptr;
+    }
+
     m_LPC24_Display_VituralRam = nullptr;
 
-    return &displayApi;
+    return (const TinyCLR_Api_Info*)&displayApi;
 }
 
 void LPC24_Display_Reset() {
     LPC24_Display_Clear();
 
     if (m_LPC24_DisplayEnable)
-        LPC24_Display_Release(&displayProvider, 0);
+        LPC24_Display_Release(&displayControllers[0]);
 
     m_LPC24_DisplayEnable = false;
 }
-
-TinyCLR_Result LPC24_Display_GetControllerCount(const TinyCLR_Display_Controller* self, int32_t& count) {
-    count = 1;
-
-    return TinyCLR_Result::Success;
-}
-#endif // INCLUDE_DISPLAY
+#endif

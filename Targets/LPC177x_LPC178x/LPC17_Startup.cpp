@@ -17,7 +17,7 @@
 
 #include "LPC17.h"
 
-void LPC17_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider, const TinyCLR_Interop_Provider* interopProvider) {
+void LPC17_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider) {
 #ifdef INCLUDE_ADC
     LPC17_Adc_Reset();
 #endif
@@ -49,7 +49,7 @@ void LPC17_Startup_OnSoftReset(const TinyCLR_Api_Provider* apiProvider, const Ti
     LPC17_Uart_Reset();
 #endif
 #ifdef INCLUDE_USBCLIENT
-    LPC17_UsbClient_Reset();
+    LPC17_UsbDevice_Reset();
 #endif
 }
 

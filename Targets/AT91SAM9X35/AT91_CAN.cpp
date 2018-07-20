@@ -22,7 +22,7 @@
 
 #ifdef INCLUDE_CAN
 
-static const uint32_t g_AT91_Can_defaultBuffersSize[] = AT91_CAN_BUFFER_DEFAULT_SIZE;
+static const uint32_t canDefaultBuffersSize[] = AT91_CAN_BUFFER_DEFAULT_SIZE;
 
 #define CAN_TRANSFER_TIMEOUT 0xFFFFFF
 
@@ -182,8 +182,8 @@ typedef struct _CandMbCfg {
 #define CAN_SR_WARN (0x1u << 17) /**< \brief (CAN_SR) Warning Limit */
 #define CAN_SR_ERRP (0x1u << 18) /**< \brief (CAN_SR) Error Passive Mode */
 #define CAN_SR_BOFF (0x1u << 19) /**< \brief (CAN_SR) Bus Off Mode */
-#define CAN_SR_SLEEP (0x1u << 20) /**< \brief (CAN_SR) CAN controller in Low power Mode */
-#define CAN_SR_WAKEUP (0x1u << 21) /**< \brief (CAN_SR) CAN controller is not in Low power Mode */
+#define CAN_SR_SLEEP (0x1u << 20) /**< \brief (CAN_SR) CAN controllerIndex in Low power Mode */
+#define CAN_SR_WAKEUP (0x1u << 21) /**< \brief (CAN_SR) CAN controllerIndex is not in Low power Mode */
 #define CAN_SR_TOVF (0x1u << 22) /**< \brief (CAN_SR) Timer Overflow */
 #define CAN_SR_TSTP (0x1u << 23) /**< \brief (CAN_SR)  */
 #define CAN_SR_CERR (0x1u << 24) /**< \brief (CAN_SR) Mailbox CRC Error */
@@ -326,7 +326,7 @@ typedef struct _CandMbCfg {
 #define CAN_MCR_MTCR (0x1u << 23) /**< \brief (CAN_MCR) Mailbox Transfer Command */
 
 
-#define CAND_STATE_DISABLED     0 /**< Power-up reset, controller is disabled */
+#define CAND_STATE_DISABLED     0 /**< Power-up reset, controllerIndex is disabled */
 #define CAND_STATE_INIT         1 /**< Initializing */
 #define CAND_STATE_SLEEP        2 /**< Low-power mode */
 #define CAND_STATE_SYNC         3 /**< Synchronizating */
@@ -367,7 +367,7 @@ typedef struct _CandMbCfg {
 
 /** Operation success */
 #define CAND_OK             0
-/** The driver/mailbox is busy */
+/** The state/mailbox is busy */
 #define CAND_BUSY           1
 /** General error */
 #define CAND_ERROR          0x10
@@ -994,8 +994,6 @@ uint8_t CAND_IsTransferDone(sCandTransfer *pXfr) {
     return CAND_IsMbReady(pXfr);
 }
 
-
-
 struct AT91_Can_Filter {
     uint32_t *matchFilters;
     uint32_t matchFiltersSize;
@@ -1005,7 +1003,6 @@ struct AT91_Can_Filter {
     uint32_t groupFiltersSize;
 
 };
-
 
 typedef struct {
     uint32_t timeStampL;
@@ -1023,9 +1020,10 @@ typedef struct {
 
 } AT91_Can_Message;
 
-struct AT91_Can_Controller {
-    const TinyCLR_Can_Controller* provider;
-    int32_t controller;
+struct CanState {
+    int32_t controllerIndex;
+
+    const TinyCLR_Can_Controller* controller;
     AT91_Can_Message *canRxMessagesFifo;
 
     TinyCLR_Can_ErrorReceivedHandler   errorEventHandler;
@@ -1050,41 +1048,45 @@ struct AT91_Can_Controller {
     bool isOpened;
 };
 
-static const AT91_Gpio_Pin g_AT91_Can_Tx_Pins[] = AT91_CAN_TX_PINS;
-static const AT91_Gpio_Pin g_AT91_Can_Rx_Pins[] = AT91_CAN_RX_PINS;
+static const AT91_Gpio_Pin canTxPins[] = AT91_CAN_TX_PINS;
+static const AT91_Gpio_Pin canRxPins[] = AT91_CAN_RX_PINS;
 
-static const int TOTAL_CAN_CONTROLLERS = SIZEOF_ARRAY(g_AT91_Can_Tx_Pins);
+#define TOTAL_CAN_CONTROLLERS SIZEOF_ARRAY(canTxPins)
 
-static AT91_Can_Controller canController[TOTAL_CAN_CONTROLLERS];
+static CanState canStates[TOTAL_CAN_CONTROLLERS];
 
-static TinyCLR_Can_Controller canProvider;
-static TinyCLR_Api_Info canApi;
+static TinyCLR_Can_Controller canControllers[TOTAL_CAN_CONTROLLERS];
+static TinyCLR_Api_Info canApi[TOTAL_CAN_CONTROLLERS];
 
-void CAN_DisableExplicitFilters(int32_t controller) {
+void CAN_DisableExplicitFilters(int32_t controllerIndex) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    if (canController[controller].canDataFilter.matchFiltersSize && canController[controller].canDataFilter.matchFilters != nullptr) {
-        memoryProvider->Free(memoryProvider, canController[controller].canDataFilter.matchFilters);
+    auto state = &canStates[controllerIndex];
 
-        canController[controller].canDataFilter.matchFiltersSize = 0;
+    if (state->canDataFilter.matchFiltersSize && state->canDataFilter.matchFilters != nullptr) {
+        memoryProvider->Free(memoryProvider, state->canDataFilter.matchFilters);
+
+        state->canDataFilter.matchFiltersSize = 0;
     }
 }
 
-void CAN_DisableGroupFilters(int32_t controller) {
+void CAN_DisableGroupFilters(int32_t controllerIndex) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    if (canController[controller].canDataFilter.groupFiltersSize) {
-        if (canController[controller].canDataFilter.lowerBoundFilters != nullptr)
-            memoryProvider->Free(memoryProvider, canController[controller].canDataFilter.lowerBoundFilters);
+    auto state = &canStates[controllerIndex];
 
-        if (canController[controller].canDataFilter.upperBoundFilters != nullptr)
-            memoryProvider->Free(memoryProvider, canController[controller].canDataFilter.upperBoundFilters);
+    if (state->canDataFilter.groupFiltersSize) {
+        if (state->canDataFilter.lowerBoundFilters != nullptr)
+            memoryProvider->Free(memoryProvider, state->canDataFilter.lowerBoundFilters);
 
-        canController[controller].canDataFilter.groupFiltersSize = 0;
+        if (state->canDataFilter.upperBoundFilters != nullptr)
+            memoryProvider->Free(memoryProvider, state->canDataFilter.upperBoundFilters);
+
+        state->canDataFilter.groupFiltersSize = 0;
     }
 }
 
@@ -1182,54 +1184,60 @@ int32_t BinarySearch2(uint32_t *lowerBounds, uint32_t *upperBounds, int32_t firs
 }
 
 const TinyCLR_Api_Info* AT91_Can_GetApi() {
-    canProvider.ApiInfo = &canApi;
-    canProvider.Acquire = &AT91_Can_Acquire;
-    canProvider.Release = &AT91_Can_Release;
-    canProvider.Reset = &AT91_Can_SoftReset;
-    canProvider.WriteMessage = &AT91_Can_WriteMessage;
-    canProvider.ReadMessage = &AT91_Can_ReadMessage;
-    canProvider.SetBitTiming = &AT91_Can_SetBitTiming;
-    canProvider.GetUnreadMessageCount = &AT91_Can_GetUnreadMessageCount;
-    canProvider.SetMessageReceivedHandler = &AT91_Can_SetMessageReceivedHandler;
-    canProvider.SetErrorReceivedHandler = &AT91_Can_SetErrorReceivedHandler;
-    canProvider.SetExplicitFilters = &AT91_Can_SetExplicitFilters;
-    canProvider.SetGroupFilters = &AT91_Can_SetGroupFilters;
-    canProvider.ClearReadBuffer = &AT91_Can_ClearReadBuffer;
-    canProvider.IsWritingAllowed = &AT91_Can_IsWritingAllowed;
-    canProvider.GetWriteErrorCount = &AT91_Can_GetWriteErrorCount;
-    canProvider.GetReadErrorCount = &AT91_Can_GetReadErrorCount;
-    canProvider.GetSourceClock = &AT91_Can_GetSourceClock;
-    canProvider.GetReadBufferSize = AT91_Can_GetReadBufferSize;
-    canProvider.SetReadBufferSize = AT91_Can_SetReadBufferSize;
-    canProvider.GetWriteBufferSize = AT91_Can_GetWriteBufferSize;
-    canProvider.SetWriteBufferSize = AT91_Can_SetWriteBufferSize;
-    canProvider.GetControllerCount = AT91_Can_GetControllerCount;
+    for (int32_t i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
+        canControllers[i].ApiInfo = &canApi[i];
+        canControllers[i].Acquire = &AT91_Can_Acquire;
+        canControllers[i].Release = &AT91_Can_Release;
+        canControllers[i].Reset = &AT91_Can_SoftReset;
+        canControllers[i].WriteMessage = &AT91_Can_WriteMessage;
+        canControllers[i].ReadMessage = &AT91_Can_ReadMessage;
+        canControllers[i].SetBitTiming = &AT91_Can_SetBitTiming;
+        canControllers[i].GetUnreadMessageCount = &AT91_Can_GetUnreadMessageCount;
+        canControllers[i].SetMessageReceivedHandler = &AT91_Can_SetMessageReceivedHandler;
+        canControllers[i].SetErrorReceivedHandler = &AT91_Can_SetErrorReceivedHandler;
+        canControllers[i].SetExplicitFilters = &AT91_Can_SetExplicitFilters;
+        canControllers[i].SetGroupFilters = &AT91_Can_SetGroupFilters;
+        canControllers[i].ClearReadBuffer = &AT91_Can_ClearReadBuffer;
+        canControllers[i].IsWritingAllowed = &AT91_Can_IsWritingAllowed;
+        canControllers[i].GetWriteErrorCount = &AT91_Can_GetWriteErrorCount;
+        canControllers[i].GetReadErrorCount = &AT91_Can_GetReadErrorCount;
+        canControllers[i].GetSourceClock = &AT91_Can_GetSourceClock;
+        canControllers[i].GetReadBufferSize = AT91_Can_GetReadBufferSize;
+        canControllers[i].SetReadBufferSize = AT91_Can_SetReadBufferSize;
+        canControllers[i].GetWriteBufferSize = AT91_Can_GetWriteBufferSize;
+        canControllers[i].SetWriteBufferSize = AT91_Can_SetWriteBufferSize;
 
-    canApi.Author = "GHI Electronics, LLC";
-    canApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.CanProvider";
-    canApi.Type = TinyCLR_Api_Type::CanProvider;
-    canApi.Version = 0;
-    canApi.Implementation = &canProvider;
+        canApi[i].Author = "GHI Electronics, LLC";
+        canApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.CanController";
+        canApi[i].Type = TinyCLR_Api_Type::CanController;
+        canApi[i].Version = 0;
+        canApi[i].Implementation = &canControllers[i];
+        canApi[i].State = &canStates[i];
 
-    return &canApi;
+        canStates[i].controllerIndex = i;
+    }
+
+    return (const TinyCLR_Api_Info*)&canApi;
 }
 
 uint32_t AT91_Can_GetLocalTime() {
     return AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr));
 }
 
-bool CAN_RxInitialize(int8_t controller) {
-    sCand *pCand = &canController[controller].cand;
+bool CAN_RxInitialize(int8_t controllerIndex) {
+    auto state = &canStates[controllerIndex];
+
+    sCand *pCand = &state->cand;
 
     sCandMbCfg candCfg;
 
     candCfg.bMsgType = CAN_MMR_MOT_MB_RX >> CAN_MMR_MOT_Pos;
     candCfg.bTxPriority = 0;
 
-    canController[controller].can_rx.bMailbox = MAILBOX_TO_RECEIVE_INDEX;
-    canController[controller].can_rx.dwMsgID = 1 << 29;
+    state->can_rx.bMailbox = MAILBOX_TO_RECEIVE_INDEX;
+    state->can_rx.dwMsgID = 1 << 29;
 
-    CAND_ConfigureTransfer(pCand, &candCfg, &canController[controller].can_rx);
+    CAND_ConfigureTransfer(pCand, &candCfg, &state->can_rx);
 
     pCand->pHw->CAN_MB[MAILBOX_TO_RECEIVE_INDEX].CAN_MID = 1 << 29;
     pCand->pHw->CAN_MB[MAILBOX_TO_RECEIVE_INDEX].CAN_MAM = 0;
@@ -1237,8 +1245,10 @@ bool CAN_RxInitialize(int8_t controller) {
     CAND_StartTransfers(pCand, CAN_SR_MB1);
 }
 
-void CopyMessageFromMailBoxToBuffer(uint8_t controller, uint32_t dwMsr) {
-    sCand *pCand = &canController[controller].cand;
+void CopyMessageFromMailBoxToBuffer(uint8_t controllerIndex, uint32_t dwMsr) {
+    auto state = &canStates[controllerIndex];
+
+    sCand *pCand = &state->cand;
 
     uint32_t msgid = 0;
     bool extendMode = 0;
@@ -1256,16 +1266,16 @@ void CopyMessageFromMailBoxToBuffer(uint8_t controller, uint32_t dwMsr) {
     }
 
     // filter
-    if (canController[controller].canDataFilter.groupFiltersSize || canController[controller].canDataFilter.matchFiltersSize) {
+    if (state->canDataFilter.groupFiltersSize || state->canDataFilter.matchFiltersSize) {
         //Added filter for AT91_CAN0
-        if (canController[controller].canDataFilter.groupFiltersSize || canController[controller].canDataFilter.matchFiltersSize) {
-            if (canController[controller].canDataFilter.groupFiltersSize) {
-                if (BinarySearch2(canController[controller].canDataFilter.lowerBoundFilters, canController[controller].canDataFilter.upperBoundFilters, 0, canController[controller].canDataFilter.groupFiltersSize - 1, msgid) >= 0)
+        if (state->canDataFilter.groupFiltersSize || state->canDataFilter.matchFiltersSize) {
+            if (state->canDataFilter.groupFiltersSize) {
+                if (BinarySearch2(state->canDataFilter.lowerBoundFilters, state->canDataFilter.upperBoundFilters, 0, state->canDataFilter.groupFiltersSize - 1, msgid) >= 0)
                     passed = 1;
             }
 
-            if (!passed && canController[controller].canDataFilter.matchFiltersSize) {
-                if (BinarySearch(canController[controller].canDataFilter.matchFilters, 0, canController[controller].canDataFilter.matchFiltersSize - 1, msgid) >= 0)
+            if (!passed && state->canDataFilter.matchFiltersSize) {
+                if (BinarySearch(state->canDataFilter.matchFilters, 0, state->canDataFilter.matchFiltersSize - 1, msgid) >= 0)
                     passed = 1;
             }
 
@@ -1275,12 +1285,12 @@ void CopyMessageFromMailBoxToBuffer(uint8_t controller, uint32_t dwMsr) {
         }
     }
 
-    if (canController[controller].can_rx_count > (canController[controller].can_rxBufferSize - 3)) {
-        canController[controller].errorEventHandler(canController[controller].provider, controller, TinyCLR_Can_Error::ReadBufferFull);
+    if (state->can_rx_count > (state->can_rxBufferSize - 3)) {
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::ReadBufferFull);
     }
 
     // initialize destination pointer
-    AT91_Can_Message *can_msg = &canController[controller].canRxMessagesFifo[canController[controller].can_rx_in];
+    AT91_Can_Message *can_msg = &state->canRxMessagesFifo[state->can_rx_in];
 
     // timestamp
     uint64_t t = AT91_Can_GetLocalTime();
@@ -1288,7 +1298,7 @@ void CopyMessageFromMailBoxToBuffer(uint8_t controller, uint32_t dwMsr) {
     can_msg->timeStampL = t & 0xFFFFFFFF;
     can_msg->timeStampH = t >> 32;
 
-    can_msg->length = (canController[controller].can_rx.bMsgLen) & 0x0F;
+    can_msg->length = (state->can_rx.bMsgLen) & 0x0F;
 
     can_msg->extendedId = extendMode;
 
@@ -1296,22 +1306,24 @@ void CopyMessageFromMailBoxToBuffer(uint8_t controller, uint32_t dwMsr) {
 
     can_msg->msgId = msgid; // ID
 
-    can_msg->dataA = canController[controller].can_rx.msgData[0]; // Data A
+    can_msg->dataA = state->can_rx.msgData[0]; // Data A
 
-    can_msg->dataB = canController[controller].can_rx.msgData[1]; // Data B
+    can_msg->dataB = state->can_rx.msgData[1]; // Data B
 
-    canController[controller].can_rx_count++;
-    canController[controller].can_rx_in++;
+    state->can_rx_count++;
+    state->can_rx_in++;
 
-    if (canController[controller].can_rx_in == canController[controller].can_rxBufferSize) {
-        canController[controller].can_rx_in = 0;
+    if (state->can_rx_in == state->can_rxBufferSize) {
+        state->can_rx_in = 0;
     }
 
-    canController[controller].messageReceivedEventHandler(canController[controller].provider, controller, canController[controller].can_rx_count);
+    state->messageReceivedEventHandler(state->controller, state->can_rx_count);
 }
 
-void CAN_ProccessMailbox(uint8_t controller) {
-    sCand *pCand = &canController[controller].cand;
+void CAN_ProccessMailbox(uint8_t controllerIndex) {
+    auto state = &canStates[controllerIndex];
+
+    sCand *pCand = &state->cand;
     Can *pCan = pCand->pHw;
     sCandTransfer *pXfr;
     uint8_t bMb;
@@ -1334,7 +1346,7 @@ void CAN_ProccessMailbox(uint8_t controller) {
 
             pXfr->bMsgLen = (dwMsr & CAN_MSR_MDLC_Msk) >> CAN_MSR_MDLC_Pos;
             CAN_GetMessage(pCan, bMb, pXfr->msgData);
-            CopyMessageFromMailBoxToBuffer(controller, dwMsr);
+            CopyMessageFromMailBoxToBuffer(controllerIndex, dwMsr);
             CAND_EndXfr(pCand, pXfr, CAND_OK);
 
             break;
@@ -1358,14 +1370,16 @@ void CAN_ProccessMailbox(uint8_t controller) {
         pCand->bState = CAND_STATE_ACTIVATED;
 }
 
-void CAN_ErrorHandler(sCand *pCand, uint32_t dwErrS) {
+void CAN_ErrorHandler(sCand *pCand, uint32_t dwErrS, int32_t controllerIndex) {
+    auto state = &canStates[controllerIndex];
+
     if (dwErrS & CAN_SR_BOFF) // BusOff is higher priority
     {
-        canController[controller].errorEventHandler(canController[controller].provider, controller, TinyCLR_Can_Error::BusOff);
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BusOff);
 
     }
     else if (dwErrS & CAN_SR_ERRP) {
-        canController[controller].errorEventHandler(canController[controller].provider, controller, TinyCLR_Can_Error::Passive);
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive);
     }
 }
 
@@ -1382,16 +1396,18 @@ void CAN_ErrorHandler(sCand *pCand, uint32_t dwErrS) {
 void AT91_Can_RxInterruptHandler(void *param) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    uint32_t controller = *reinterpret_cast<uint32_t*>(param);
+    uint32_t controllerIndex = *reinterpret_cast<uint32_t*>(param);
 
-    sCand *pCand = &canController[controller].cand;
+    auto state = &canStates[controllerIndex];
+
+    sCand *pCand = &state->cand;
     Can *pHw = pCand->pHw;
     uint32_t dwSr = (CAN_GetStatus(pHw) & CAN_GetItMask(pHw));
     if (dwSr & CAN_ERRS) {
         CAN_DisableIt(pHw, (dwSr & CAN_ERRS));
         if (pCand->bState != CAND_STATE_DISABLED) {
             pCand->bState = CAND_STATE_ERROR;
-            CAN_ErrorHandler(pCand, (dwSr & CAN_ERRS), controller);
+            CAN_ErrorHandler(pCand, (dwSr & CAN_ERRS), controllerIndex);
         }
     }
     else {
@@ -1399,14 +1415,14 @@ void AT91_Can_RxInterruptHandler(void *param) {
         if (pCand->bState > CAND_STATE_ACTIVATED) {
             /* Mailbox events */
             if (dwSr & CAN_MB_EVENTS) {
-                CAN_ProccessMailbox(controller);
+                CAN_ProccessMailbox(controllerIndex);
             }
         }
         else if (dwSr & CAN_SR_WAKEUP) {
             CAN_DisableIt(pHw, CAN_IDR_WAKEUP);
             pCand->bState = CAND_STATE_ACTIVATED;
         }
-        CAN_RxInitialize(controller);
+        CAN_RxInitialize(controllerIndex);
     }
     /* Low-power Mode enabled */
     if (dwSr & CAN_SR_SLEEP) {
@@ -1418,7 +1434,7 @@ void AT91_Can_RxInterruptHandler(void *param) {
     }
     /* Timer overflow */
     if (dwSr & CAN_SR_TOVF) {
-        canController[controller].errorEventHandler(canController[controller].provider, controller, TinyCLR_Can_Error::ReadBufferOverrun);
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::ReadBufferOverrun);
     }
 }
 
@@ -1426,36 +1442,40 @@ TinyCLR_Result AT91_Can_Acquire(const TinyCLR_Can_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    if (!AT91_Gpio_OpenPin(g_AT91_Can_Tx_Pins[controller].number))
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+
+    auto controllerIndex = state->controllerIndex;
+
+    if (!AT91_Gpio_OpenPin(canTxPins[controllerIndex].number))
         return TinyCLR_Result::SharingViolation;
 
-    if (!AT91_Gpio_OpenPin(g_AT91_Can_Rx_Pins[controller].number))
+    if (!AT91_Gpio_OpenPin(canRxPins[controllerIndex].number))
         return TinyCLR_Result::SharingViolation;
 
 
-    AT91_Gpio_ConfigurePin(g_AT91_Can_Tx_Pins[controller].number, AT91_Gpio_Direction::Input, g_AT91_Can_Tx_Pins[controller].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-    AT91_Gpio_ConfigurePin(g_AT91_Can_Rx_Pins[controller].number, AT91_Gpio_Direction::Input, g_AT91_Can_Rx_Pins[controller].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+    AT91_Gpio_ConfigurePin(canTxPins[controllerIndex].number, AT91_Gpio_Direction::Input, canTxPins[controllerIndex].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+    AT91_Gpio_ConfigurePin(canRxPins[controllerIndex].number, AT91_Gpio_Direction::Input, canRxPins[controllerIndex].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
 
-    canController[controller].can_rx_count = 0;
-    canController[controller].can_rx_in = 0;
-    canController[controller].can_rx_out = 0;
-    canController[controller].baudrate = 0;
-    canController[controller].can_rxBufferSize = g_AT91_Can_defaultBuffersSize[controller];
-    canController[controller].provider = self;
+    state->can_rx_count = 0;
+    state->can_rx_in = 0;
+    state->can_rx_out = 0;
+    state->baudrate = 0;
+    state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
+    state->controller = self;
 
-    canController[controller].canDataFilter.matchFiltersSize = 0;
-    canController[controller].canDataFilter.groupFiltersSize = 0;
+    state->canDataFilter.matchFiltersSize = 0;
+    state->canDataFilter.groupFiltersSize = 0;
 
-    canController[controller].cand.pHw = (controller == 0 ? AT91_CAN0 : AT91_CAN1);
-    canController[controller].cand.bID = (controller == 0 ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
+    state->cand.pHw = (controllerIndex == 0 ? AT91_CAN0 : AT91_CAN1);
+    state->cand.bID = (controllerIndex == 0 ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
 
     AT91_PMC &pmc = AT91::PMC();
-    pmc.EnablePeriphClock((controller == 0) ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
+    pmc.EnablePeriphClock((controllerIndex == 0) ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
 
-    CAN_DisableIt(canController[controller].cand.pHw, 0xFFFFFFFF);
+    CAN_DisableIt(state->cand.pHw, 0xFFFFFFFF);
 
-    canController[controller].isOpened = true;
-    canController[controller].controller = controller;
+    state->isOpened = true;
+    state->controllerIndex = controllerIndex;
 
     return TinyCLR_Result::Success;
 }
@@ -1464,28 +1484,32 @@ TinyCLR_Result AT91_Can_Release(const TinyCLR_Can_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    CAN_DisableIt(canController[controller].cand.pHw, 0xFFFFFFFF);
+    auto controllerIndex = state->controllerIndex;
+
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+    CAN_DisableIt(state->cand.pHw, 0xFFFFFFFF);
 
     AT91_PMC &pmc = AT91::PMC();
-    pmc.DisablePeriphClock((controller == 0) ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
+    pmc.DisablePeriphClock((controllerIndex == 0) ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
 
-    if (canController[controller].isOpened) {
-        AT91_Gpio_ClosePin(g_AT91_Can_Tx_Pins[controller].number);
-        AT91_Gpio_ClosePin(g_AT91_Can_Rx_Pins[controller].number);
+    if (state->isOpened) {
+        AT91_Gpio_ClosePin(canTxPins[controllerIndex].number);
+        AT91_Gpio_ClosePin(canRxPins[controllerIndex].number);
     }
 
-    if (canController[controller].canRxMessagesFifo != nullptr) {
-        memoryProvider->Free(memoryProvider, canController[controller].canRxMessagesFifo);
+    if (state->canRxMessagesFifo != nullptr) {
+        memoryProvider->Free(memoryProvider, state->canRxMessagesFifo);
 
-        canController[controller].canRxMessagesFifo = nullptr;
+        state->canRxMessagesFifo = nullptr;
     }
 
-    CAN_DisableExplicitFilters(controller);
-    CAN_DisableGroupFilters(controller);
+    CAN_DisableExplicitFilters(controllerIndex);
+    CAN_DisableGroupFilters(controllerIndex);
 
-    canController[controller].isOpened = false;
+    state->isOpened = false;
 
     return TinyCLR_Result::Success;
 }
@@ -1493,36 +1517,38 @@ TinyCLR_Result AT91_Can_Release(const TinyCLR_Can_Controller* self) {
 TinyCLR_Result AT91_Can_SoftReset(const TinyCLR_Can_Controller* self) {
     volatile int32_t i;
 
-    canController[controller].can_rx_count = 0;
-    canController[controller].can_rx_in = 0;
-    canController[controller].can_rx_out = 0;
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    sCand *pCand = &canController[controller].cand;
+    state->can_rx_count = 0;
+    state->can_rx_in = 0;
+    state->can_rx_out = 0;
+
+    sCand *pCand = &state->cand;
 
     // Disable
-    CAN_Enable(canController[controller].cand.pHw, 0);
+    CAN_Enable(state->cand.pHw, 0);
     pCand->bState = CAND_STATE_DISABLED;
 
     for (i = 0xFF; i > 0; i--);
 
-    canController[controller].cand.wBaudrate = canController[controller].baudrate;
+    state->cand.wBaudrate = state->baudrate;
 
-    CAN_ConfigureBaudrate(canController[controller].cand.pHw, canController[controller].baudrate);
+    CAN_ConfigureBaudrate(state->cand.pHw, state->baudrate);
 
-    CAN_ConfigureMode(canController[controller].cand.pHw, 0);
+    CAN_ConfigureMode(state->cand.pHw, 0);
 
     /* Reset all mailboxes */
-    CAND_ResetMailboxes(&canController[controller].cand);
+    CAND_ResetMailboxes(&state->cand);
 
     /* Enable the interrupts for error cases */
-    CAN_EnableIt(canController[controller].cand.pHw, CAN_ERRS);
+    CAN_EnableIt(state->cand.pHw, CAN_ERRS);
 
-    CAND_Activate(&canController[controller].cand);
+    CAND_Activate(&state->cand);
 
     int32_t timeout = CAN_TRANSFER_TIMEOUT;
 
     while (timeout > 0) {
-        if (CAND_IsReady(&canController[controller].cand)) {
+        if (CAND_IsReady(&state->cand)) {
             return TinyCLR_Result::Success;
         }
         timeout--;
@@ -1540,14 +1566,19 @@ TinyCLR_Result AT91_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32_
     bool readyToSend = false;
 
     sCandMbCfg candCfg;
-    sCand *pCand = &canController[controller].cand;
+
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+
+    auto controllerIndex = state->controllerIndex;
+
+    sCand *pCand = &state->cand;
 
     candCfg.bTxPriority = 1;
 
     uint32_t timeout = CAN_TRANSFER_TIMEOUT;
 
     while (readyToSend == false && timeout-- > 0) {
-        AT91_Can_IsWritingAllowed(self, controller, readyToSend);
+        AT91_Can_IsWritingAllowed(self, readyToSend);
         AT91_Time_Delay(nullptr, 1);
     }
 
@@ -1555,38 +1586,38 @@ TinyCLR_Result AT91_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32_
         return TinyCLR_Result::Busy;
 
     candCfg.bMsgType = CAN_MMR_MOT_MB_TX >> CAN_MMR_MOT_Pos;
-    canController[controller].can_tx.bMailbox = MAILBOX_TO_SEND_INDEX;
+    state->can_tx.bMailbox = MAILBOX_TO_SEND_INDEX;
 
-    CAND_ResetMailbox(pCand, canController[controller].can_tx.bMailbox, &candCfg);
+    CAND_ResetMailbox(pCand, state->can_tx.bMailbox, &candCfg);
 
     candCfg.bTxPriority = 0;
 
     if (isExtendedId) {
-        canController[controller].can_tx.dwMsgID = (arbitrationId & 0x1FFFFFFF);
-        canController[controller].can_tx.dwMsgID |= 1 << 29;
+        state->can_tx.dwMsgID = (arbitrationId & 0x1FFFFFFF);
+        state->can_tx.dwMsgID |= 1 << 29;
     }
     else {
-        canController[controller].can_tx.dwMsgID = CAN_MID_MIDvA(arbitrationId);
+        state->can_tx.dwMsgID = CAN_MID_MIDvA(arbitrationId);
     }
 
     if (isRemoteTransmissionRequest) {
-        canController[controller].can_tx.bMsgLen = 0;
-        canController[controller].can_tx.msgData[0] = 0;
-        canController[controller].can_tx.msgData[1] = 0;
+        state->can_tx.bMsgLen = 0;
+        state->can_tx.msgData[0] = 0;
+        state->can_tx.msgData[1] = 0;
 
-        CAND_Transfer_RTRMode(pCand, &canController[controller].can_tx);
+        CAND_Transfer_RTRMode(pCand, &state->can_tx);
     }
     else {
-        canController[controller].can_tx.bMsgLen = length;
-        canController[controller].can_tx.msgData[0] = data32[0];
-        canController[controller].can_tx.msgData[1] = data32[1];
-        CAND_Transfer(pCand, &canController[controller].can_tx);
+        state->can_tx.bMsgLen = length;
+        state->can_tx.msgData[0] = data32[0];
+        state->can_tx.msgData[1] = data32[1];
+        CAND_Transfer(pCand, &state->can_tx);
     }
 
     timeout = CAN_TRANSFER_TIMEOUT;
 
     while (timeout > 0) {
-        if (CAND_IsTransferDone(&canController[controller].can_tx))
+        if (CAND_IsTransferDone(&state->can_tx))
             return TinyCLR_Result::Success;
 
         AT91_Time_Delay(nullptr, 1);
@@ -1601,16 +1632,18 @@ TinyCLR_Result AT91_Can_ReadMessage(const TinyCLR_Can_Controller* self, uint32_t
 
     uint32_t *data32 = (uint32_t*)data;
 
-    if (canController[controller].can_rx_count) {
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+
+    if (state->can_rx_count) {
         DISABLE_INTERRUPTS_SCOPED(irq);
 
-        can_msg = &canController[controller].canRxMessagesFifo[canController[controller].can_rx_out];
-        canController[controller].can_rx_out++;
+        can_msg = &state->canRxMessagesFifo[state->can_rx_out];
+        state->can_rx_out++;
 
-        if (canController[controller].can_rx_out == canController[controller].can_rxBufferSize)
-            canController[controller].can_rx_out = 0;
+        if (state->can_rx_out == state->can_rxBufferSize)
+            state->can_rx_out = 0;
 
-        canController[controller].can_rx_count--;
+        state->can_rx_count--;
 
         arbitrationId = can_msg->msgId;
         isExtendedId = can_msg->extendedId;
@@ -1632,39 +1665,43 @@ TinyCLR_Result AT91_Can_SetBitTiming(const TinyCLR_Can_Controller* self, int32_t
 
     uint32_t sourceClk;
 
-    canController[controller].cand.dwMck = AT91_SYSTEM_PERIPHERAL_CLOCK_HZ;
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto controllerIndex = state->controllerIndex;
 
-    if (canController[controller].canRxMessagesFifo == nullptr)
-        canController[controller].canRxMessagesFifo = (AT91_Can_Message*)memoryProvider->Allocate(memoryProvider, canController[controller].can_rxBufferSize * sizeof(AT91_Can_Message));
+    state->cand.dwMck = AT91_SYSTEM_PERIPHERAL_CLOCK_HZ;
 
-    if (canController[controller].canRxMessagesFifo == nullptr) {
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+    if (state->canRxMessagesFifo == nullptr)
+        state->canRxMessagesFifo = (AT91_Can_Message*)memoryProvider->Allocate(memoryProvider, state->can_rxBufferSize * sizeof(AT91_Can_Message));
+
+    if (state->canRxMessagesFifo == nullptr) {
         return TinyCLR_Result::OutOfMemory;
     }
 
-    canController[controller].baudrate = CAN_BR_PHASE2(phase2) | CAN_BR_PHASE1(phase1) | CAN_BR_PROPAG(propagation) | CAN_BR_SJW(synchronizationJumpWidth) | CAN_BR_BRP(baudratePrescaler) | (useMultiBitSampling ? CAN_BR_SMP_THREE : CAN_BR_SMP_ONCE);
+    state->baudrate = CAN_BR_PHASE2(phase2) | CAN_BR_PHASE1(phase1) | CAN_BR_PROPAG(propagation) | CAN_BR_SJW(synchronizationJumpWidth) | CAN_BR_BRP(baudratePrescaler) | (useMultiBitSampling ? CAN_BR_SMP_THREE : CAN_BR_SMP_ONCE);
 
-    canController[controller].cand.wBaudrate = canController[controller].baudrate;
+    state->cand.wBaudrate = state->baudrate;
 
-    CAN_ConfigureBaudrate(canController[controller].cand.pHw, canController[controller].baudrate);
+    CAN_ConfigureBaudrate(state->cand.pHw, state->baudrate);
 
-    CAN_ConfigureMode(canController[controller].cand.pHw, 0);
+    CAN_ConfigureMode(state->cand.pHw, 0);
 
     /* Reset all mailboxes */
-    CAND_ResetMailboxes(&canController[controller].cand);
+    CAND_ResetMailboxes(&state->cand);
 
     /* Enable the interrupts for error cases */
-    CAN_EnableIt(canController[controller].cand.pHw, CAN_ERRS);
+    CAN_EnableIt(state->cand.pHw, CAN_ERRS);
 
-    AT91_Interrupt_Activate(controller == 0 ? AT91C_ID_CAN0 : AT91C_ID_CAN1, (uint32_t*)&AT91_Can_RxInterruptHandler, (void*)&canController[controller].controller);
+    AT91_Interrupt_Activate(controllerIndex == 0 ? AT91C_ID_CAN0 : AT91C_ID_CAN1, (uint32_t*)&AT91_Can_RxInterruptHandler, (void*)&state->controllerIndex);
 
-    CAND_Activate(&canController[controller].cand);
+    CAND_Activate(&state->cand);
 
     int32_t timeout = CAN_TRANSFER_TIMEOUT;
 
     while (timeout > 0) {
-        if (CAND_IsReady(&canController[controller].cand)) {
+        if (CAND_IsReady(&state->cand)) {
             return TinyCLR_Result::Success;
         }
         timeout--;
@@ -1674,22 +1711,23 @@ TinyCLR_Result AT91_Can_SetBitTiming(const TinyCLR_Can_Controller* self, int32_t
 }
 
 TinyCLR_Result AT91_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self, size_t& count) {
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    count = canController[controller].can_rx_count;
+    count = state->can_rx_count;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Can_SetMessageReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_MessageReceivedHandler handler) {
-
-    canController[controller].messageReceivedEventHandler = handler;
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    state->messageReceivedEventHandler = handler;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Can_SetErrorReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_ErrorReceivedHandler handler) {
-
-    canController[controller].errorEventHandler = handler;
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    state->errorEventHandler = handler;
 
     return TinyCLR_Result::Success;
 }
@@ -1698,7 +1736,11 @@ TinyCLR_Result AT91_Can_SetExplicitFilters(const TinyCLR_Can_Controller* self, u
     uint32_t *_matchFilters;
     uint32_t *filters32 = (uint32_t*)filters;
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+
+    auto controllerIndex = state->controllerIndex;
+
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     _matchFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
 
@@ -1712,10 +1754,10 @@ TinyCLR_Result AT91_Can_SetExplicitFilters(const TinyCLR_Can_Controller* self, u
     {
         DISABLE_INTERRUPTS_SCOPED(irq);
 
-        CAN_DisableExplicitFilters(controller);
+        CAN_DisableExplicitFilters(controllerIndex);
 
-        canController[controller].canDataFilter.matchFiltersSize = length;
-        canController[controller].canDataFilter.matchFilters = _matchFilters;
+        state->canDataFilter.matchFiltersSize = length;
+        state->canDataFilter.matchFilters = _matchFilters;
     }
 
     return TinyCLR_Result::Success;
@@ -1726,7 +1768,11 @@ TinyCLR_Result AT91_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, uint
     uint32_t *lowerBounds32 = (uint32_t *)lowerBounds;
     uint32_t *upperBounds32 = (uint32_t *)upperBounds;
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+
+    auto controllerIndex = state->controllerIndex;
+
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     _lowerBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
     _upperBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
@@ -1753,11 +1799,11 @@ TinyCLR_Result AT91_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, uint
     {
         DISABLE_INTERRUPTS_SCOPED(irq);
 
-        CAN_DisableGroupFilters(controller);
+        CAN_DisableGroupFilters(controllerIndex);
 
-        canController[controller].canDataFilter.groupFiltersSize = length;
-        canController[controller].canDataFilter.lowerBoundFilters = _lowerBoundFilters;
-        canController[controller].canDataFilter.upperBoundFilters = _upperBoundFilters;
+        state->canDataFilter.groupFiltersSize = length;
+        state->canDataFilter.lowerBoundFilters = _lowerBoundFilters;
+        state->canDataFilter.upperBoundFilters = _upperBoundFilters;
     }
 
     return TinyCLR_Result::Success;
@@ -1765,16 +1811,19 @@ TinyCLR_Result AT91_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, uint
 
 TinyCLR_Result AT91_Can_ClearReadBuffer(const TinyCLR_Can_Controller* self) {
 
-    canController[controller].can_rx_count = 0;
-    canController[controller].can_rx_in = 0;
-    canController[controller].can_rx_out = 0;
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+
+    state->can_rx_count = 0;
+    state->can_rx_in = 0;
+    state->can_rx_out = 0;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Can_IsWritingAllowed(const TinyCLR_Can_Controller* self, bool& allowed) {
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    sCand *pCand = &canController[controller].cand;
+    sCand *pCand = &state->cand;
 
     uint32_t status = CAN_GetStatus(pCand->pHw);
 
@@ -1789,15 +1838,17 @@ TinyCLR_Result AT91_Can_IsWritingAllowed(const TinyCLR_Can_Controller* self, boo
 }
 
 TinyCLR_Result AT91_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self, size_t& count) {
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    count = CAN_GetRxErrorCount(canController[controller].cand.pHw);
+    count = CAN_GetRxErrorCount(state->cand.pHw);
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self, size_t& count) {
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    count = CAN_GetTxErrorCount(canController[controller].cand.pHw);
+    count = CAN_GetTxErrorCount(state->cand.pHw);
 
     return TinyCLR_Result::Success;
 }
@@ -1809,20 +1860,26 @@ TinyCLR_Result AT91_Can_GetSourceClock(const TinyCLR_Can_Controller* self, uint3
 }
 
 TinyCLR_Result AT91_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self, size_t& size) {
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    size = canController[controller].can_rxBufferSize == 0 ? g_AT91_Can_defaultBuffersSize[controller] : canController[controller].can_rxBufferSize;
+    auto controllerIndex = state->controllerIndex;
+
+    size = state->can_rxBufferSize == 0 ? canDefaultBuffersSize[controllerIndex] : state->can_rxBufferSize;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+
+    auto controllerIndex = state->controllerIndex;
 
     if (size > 3) {
-        canController[controller].can_rxBufferSize = size;
+        state->can_rxBufferSize = size;
         return TinyCLR_Result::Success;
     }
     else {
-        canController[controller].can_rxBufferSize = g_AT91_Can_defaultBuffersSize[controller];
+        state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
         return TinyCLR_Result::ArgumentInvalid;;
     }
 }
@@ -1834,26 +1891,21 @@ TinyCLR_Result AT91_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self, s
 }
 
 TinyCLR_Result AT91_Can_SetWriteBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    canController[controller].can_txBufferSize = 1;
+    state->can_txBufferSize = 1;
 
     return size == 1 ? TinyCLR_Result::Success : TinyCLR_Result::NotSupported;
 }
 
 void AT91_Can_Reset() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
-        canController[i].canRxMessagesFifo = nullptr;
+        canStates[i].canRxMessagesFifo = nullptr;
 
-        AT91_Can_Release(&canProvider, i);
+        AT91_Can_Release(&canControllers[i]);
 
-        canController[i].isOpened = false;
+        canStates[i].isOpened = false;
     }
 
-}
-
-TinyCLR_Result AT91_Can_GetControllerCount(const TinyCLR_Can_Controller* self, int32_t& count) {
-    count = TOTAL_CAN_CONTROLLERS;
-
-    return TinyCLR_Result::Success;
 }
 #endif // INCLUDE_CAN

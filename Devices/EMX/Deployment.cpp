@@ -16,24 +16,24 @@
 #include <LPC24.h>
 #include "../../Drivers/AT49BV322DT_Flash/AT49BV322DT_Flash.h"
 
-static TinyCLR_Deployment_Controller deploymentProvider;
+static TinyCLR_Deployment_Controller deploymentManager;
 static TinyCLR_Api_Info deploymentApi;
 
 const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
-    deploymentProvider.ApiInfo = &deploymentApi;
-    deploymentProvider.Initialize = &LPC24_Deployment_Initialize;
-    deploymentProvider.Uninitialize = &LPC24_Deployment_Uninitialize;
-    deploymentProvider.Read = &LPC24_Deployment_Read;
-    deploymentProvider.Write = &LPC24_Deployment_Write;
-    deploymentProvider.EraseSector = &LPC24_Deployment_EraseBlock;
-    deploymentProvider.IsSectorErased = &LPC24_Deployment_IsBlockErased;
-    deploymentProvider.GetSectorMap = &LPC24_Deployment_GetSectorMap;
+    deploymentManager.ApiInfo = &deploymentApi;
+    deploymentManager.Initialize = &LPC24_Deployment_Initialize;
+    deploymentManager.Uninitialize = &LPC24_Deployment_Uninitialize;
+    deploymentManager.Read = &LPC24_Deployment_Read;
+    deploymentManager.Write = &LPC24_Deployment_Write;
+    deploymentManager.EraseSector = &LPC24_Deployment_EraseBlock;
+    deploymentManager.IsSectorErased = &LPC24_Deployment_IsBlockErased;
+    deploymentManager.GetSectorMap = &LPC24_Deployment_GetSectorMap;
 
     deploymentApi.Author = "GHI Electronics, LLC";
     deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT49BV322DT.DeploymentController";
     deploymentApi.Type = TinyCLR_Api_Type::DeploymentController;
     deploymentApi.Version = 0;
-    deploymentApi.Implementation = &deploymentProvider;
+    deploymentApi.Implementation = &deploymentManager;
 
     return &deploymentApi;
 }

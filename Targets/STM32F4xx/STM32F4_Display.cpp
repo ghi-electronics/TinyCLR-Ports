@@ -342,7 +342,6 @@ bool m_STM32F4_DisplayEnable = false;
 uint16_t* m_STM32F4_Display_VituralRam = nullptr;
 size_t m_STM32F4_DisplayBufferSize = 0;
 
-uint16_t* m_STM32F4_Display_VituralRam;
 uint8_t m_STM32F4_Display_TextBuffer[LCD_MAX_COLUMN][LCD_MAX_ROW];
 
 STM32F4xx_LCD_Rotation m_STM32F4_Display_CurrentRotation = STM32F4xx_LCD_Rotation::rotateNormal_0;
@@ -369,8 +368,10 @@ uint32_t STM32F4_Display_GetPixelClockDivider();
 int32_t STM32F4_Display_GetOrientation();
 uint32_t* STM32F4_Display_GetFrameBuffer();
 
-static TinyCLR_Display_Controller displayProvider;
-static TinyCLR_Api_Info displayApi;
+#define TOTAL_DISPLAY_CONTROLLERS 1
+
+static TinyCLR_Display_Controller displayControllers[TOTAL_DISPLAY_CONTROLLERS];
+static TinyCLR_Api_Info displayApi[TOTAL_DISPLAY_CONTROLLERS];
 
 bool STM32F4_Ltdc_Initialize(LTDC_HandleTypeDef *hltdc) {
     uint32_t tmp = 0, tmp1 = 0;
@@ -516,6 +517,7 @@ bool STM32F4_Display_Initialize() {
 
     uint32_t div;
     uint32_t clockMHz;
+
     RCC->CR &= ~(RCC_CR_PLLSAION);
 
     pll_saiQ = (RCC->PLLSAICFGR >> 24) & 0x0F;
@@ -1044,7 +1046,7 @@ TinyCLR_Result STM32F4_Display_Release(const TinyCLR_Display_Controller* self) {
     m_STM32F4_DisplayEnable = false;
 
     if (m_STM32F4_Display_VituralRam != nullptr) {
-        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
         memoryProvider->Free(memoryProvider, m_STM32F4_Display_VituralRam);
 
@@ -1109,7 +1111,7 @@ TinyCLR_Result STM32F4_Display_SetConfiguration(const TinyCLR_Display_Controller
             break;
         }
 
-        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
         if (m_STM32F4_Display_VituralRam != nullptr) {
             memoryProvider->Free(memoryProvider, m_STM32F4_Display_VituralRam);
@@ -1124,7 +1126,7 @@ TinyCLR_Result STM32F4_Display_SetConfiguration(const TinyCLR_Display_Controller
         }
     }
 
-    return  TinyCLR_Result::Success;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Display_GetConfiguration(const TinyCLR_Display_Controller* self, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration) {
@@ -1152,9 +1154,11 @@ TinyCLR_Result STM32F4_Display_GetConfiguration(const TinyCLR_Display_Controller
         cfg.VerticalSyncPulseWidth = m_STM32F4_DisplayVerticalSyncPulseWidth;
         cfg.VerticalFrontPorch = m_STM32F4_DisplayVerticalFrontPorch;
         cfg.VerticalBackPorch = m_STM32F4_DisplayVerticalBackPorch;
+
+        return TinyCLR_Result::Success;
     }
 
-    return TinyCLR_Result::Success;
+    return TinyCLR_Result::InvalidOperation;
 }
 
 TinyCLR_Result STM32F4_Display_DrawBuffer(const TinyCLR_Display_Controller* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data) {
@@ -1180,42 +1184,37 @@ TinyCLR_Result STM32F4_Display_GetCapabilities(const TinyCLR_Display_Controller*
 }
 
 const TinyCLR_Api_Info* STM32F4_Display_GetApi() {
-    displayProvider.ApiInfo = &displayApi;
-    displayProvider.Acquire = &STM32F4_Display_Acquire;
-    displayProvider.Release = &STM32F4_Display_Release;
-    displayProvider.Enable = &STM32F4_Display_Enable;
-    displayProvider.Disable = &STM32F4_Display_Disable;
-    displayProvider.SetConfiguration = &STM32F4_Display_SetConfiguration;
-    displayProvider.GetConfiguration = &STM32F4_Display_GetConfiguration;
-    displayProvider.GetCapabilities = &STM32F4_Display_GetCapabilities;
-    displayProvider.DrawBuffer = &STM32F4_Display_DrawBuffer;
-    displayProvider.WriteString = &STM32F4_Display_WriteString;
-    displayProvider.GetControllerCount = &STM32F4_Display_GetControllerCount;
+    for (auto i = 0; i < TOTAL_DISPLAY_CONTROLLERS; i++) {
+        displayControllers[i].ApiInfo = &displayApi[i];
+        displayControllers[i].Acquire = &STM32F4_Display_Acquire;
+        displayControllers[i].Release = &STM32F4_Display_Release;
+        displayControllers[i].Enable = &STM32F4_Display_Enable;
+        displayControllers[i].Disable = &STM32F4_Display_Disable;
+        displayControllers[i].SetConfiguration = &STM32F4_Display_SetConfiguration;
+        displayControllers[i].GetConfiguration = &STM32F4_Display_GetConfiguration;
+        displayControllers[i].GetCapabilities = &STM32F4_Display_GetCapabilities;
+        displayControllers[i].DrawBuffer = &STM32F4_Display_DrawBuffer;
+        displayControllers[i].WriteString = &STM32F4_Display_WriteString;
 
-    displayApi.Author = "GHI Electronics, LLC";
-    displayApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.DisplayProvider";
-    displayApi.Type = TinyCLR_Api_Type::DisplayProvider;
-    displayApi.Version = 0;
-    displayApi.Implementation = &displayProvider;
+        displayApi[i].Author = "GHI Electronics, LLC";
+        displayApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.DisplayController";
+        displayApi[i].Type = TinyCLR_Api_Type::DisplayController;
+        displayApi[i].Version = 0;
+        displayApi[i].Implementation = &displayControllers[i];
+        displayApi[i].State = nullptr;
+    }
 
     m_STM32F4_Display_VituralRam = nullptr;
 
-    return &displayApi;
+    return (const TinyCLR_Api_Info*)&displayApi;
 }
 
 void STM32F4_Display_Reset() {
     STM32F4_Display_Clear();
 
     if (m_STM32F4_DisplayEnable)
-        STM32F4_Display_Release(&displayProvider);
+        STM32F4_Display_Release(&displayControllers[0]);
 
     m_STM32F4_DisplayEnable = false;
 }
-
-TinyCLR_Result STM32F4_Display_GetControllerCount(const TinyCLR_Display_Controller* self, int32_t& count) {
-    count = 1;
-
-    return TinyCLR_Result::Success;
-}
-
-#endif //INCLUDE_DISPLAY
+#endif

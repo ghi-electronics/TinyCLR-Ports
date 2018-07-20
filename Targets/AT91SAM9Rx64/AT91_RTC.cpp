@@ -40,23 +40,28 @@
 #define PMC_MCKR        (*(reinterpret_cast<volatile uint32_t*>(AT91C_BASE_PMC + 0x0030)))
 #define PMC_SR          (*(reinterpret_cast<volatile uint32_t*>(AT91C_BASE_PMC + 0x0068)))
 
-static TinyCLR_Rtc_Controller rtcProvider;
-static TinyCLR_Api_Info timeApi;
+#define TOTAL_RTC_CONTROLLERS 1
+
+static TinyCLR_Rtc_Controller rtcControllers[TOTAL_RTC_CONTROLLERS];
+static TinyCLR_Api_Info timeApi[TOTAL_RTC_CONTROLLERS];
 
 const TinyCLR_Api_Info* AT91_Rtc_GetApi() {
-    rtcProvider.ApiInfo = &timeApi;
-    rtcProvider.Acquire = &AT91_Rtc_Acquire;
-    rtcProvider.Release = &AT91_Rtc_Release;
-    rtcProvider.GetNow = &AT91_Rtc_GetNow;
-    rtcProvider.SetNow = &AT91_Rtc_SetNow;
+    for (auto i = 0; i < TOTAL_RTC_CONTROLLERS; i++) {
+        rtcControllers[i].ApiInfo = &timeApi[i];
+        rtcControllers[i].Acquire = &AT91_Rtc_Acquire;
+        rtcControllers[i].Release = &AT91_Rtc_Release;
+        rtcControllers[i].GetNow = &AT91_Rtc_GetNow;
+        rtcControllers[i].SetNow = &AT91_Rtc_SetNow;
 
-    timeApi.Author = "GHI Electronics, LLC";
-    timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.RtcProvider";
-    timeApi.Type = TinyCLR_Api_Type::RtcProvider;
-    timeApi.Version = 0;
-    timeApi.Implementation = &rtcProvider;
+        timeApi[i].Author = "GHI Electronics, LLC";
+        timeApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.RtcController";
+        timeApi[i].Type = TinyCLR_Api_Type::RtcController;
+        timeApi[i].Version = 0;
+        timeApi[i].Implementation = &rtcControllers[i];
+        timeApi[i].State = nullptr;
+    }
 
-    return &timeApi;
+    return (const TinyCLR_Api_Info*)&timeApi;
 }
 
 void AT91_Rtc_BinaryCodedDecimalExtract(uint32_t valueToConvert, uint32_t &tens, uint32_t &ones) {

@@ -268,20 +268,20 @@ void STM32F4_Uart_Reset();
 ////////////////////////////////////////////////////////////////////////////////
 //USB Client
 ////////////////////////////////////////////////////////////////////////////////
-const TinyCLR_Api_Info* STM32F4_UsbClient_GetApi();
-void STM32F4_UsbClient_Reset();
+const TinyCLR_Api_Info* STM32F4_UsbDevice_GetApi();
+void STM32F4_UsbDevice_Reset();
 
 struct USB_PACKET64;
-struct USB_CONTROLLER_STATE;
-typedef void(*USB_NEXT_CALLBACK)(USB_CONTROLLER_STATE*);
+struct UsClientState;
+typedef void(*USB_NEXT_CALLBACK)(UsClientState*);
 
-void TinyCLR_UsbClient_ClearEvent(USB_CONTROLLER_STATE *usbState, uint32_t event);
-void TinyCLR_UsbClient_ClearEndpoints(USB_CONTROLLER_STATE *usbState, int32_t endpoint);
-USB_PACKET64* TinyCLR_UsbClient_RxEnqueue(USB_CONTROLLER_STATE* usbState, int32_t endpoint, bool& disableRx);
-USB_PACKET64* TinyCLR_UsbClient_TxDequeue(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
-void TinyCLR_UsbClient_StateCallback(USB_CONTROLLER_STATE* usbState);
-uint8_t TinyCLR_UsbClient_ControlCallback(USB_CONTROLLER_STATE* usbState);
-bool TinyCLR_UsbClient_CanReceivePackage(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
+void TinyCLR_UsbClient_ClearEvent(UsClientState *usClientState, uint32_t event);
+void TinyCLR_UsbClient_ClearEndpoints(UsClientState *usClientState, int32_t endpoint);
+USB_PACKET64* TinyCLR_UsbClient_RxEnqueue(UsClientState* usClientState, int32_t endpoint, bool& disableRx);
+USB_PACKET64* TinyCLR_UsbClient_TxDequeue(UsClientState* usClientState, int32_t endpoint);
+void TinyCLR_UsbClient_StateCallback(UsClientState* usClientState);
+uint8_t TinyCLR_UsbClient_ControlCallback(UsClientState* usClientState);
+bool TinyCLR_UsbClient_CanReceivePackage(UsClientState* usClientState, int32_t endpoint);
 
 ////////////////////////////////////////////////////////////////////////////////
 //Interrupt Internal

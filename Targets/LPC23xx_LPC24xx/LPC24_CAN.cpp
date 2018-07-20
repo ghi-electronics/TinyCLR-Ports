@@ -22,7 +22,7 @@
 
 #ifdef INCLUDE_CAN
 
-static const uint32_t g_LPC24_Can_defaultBuffersSize[] = LPC24_CAN_BUFFER_DEFAULT_SIZE;
+static const uint32_t canDefaultBuffersSize[] = LPC24_CAN_BUFFER_DEFAULT_SIZE;
 
 #define CAN_TRANSFER_TIMEOUT 0xFFFF
 
@@ -2003,7 +2003,9 @@ typedef struct {
 
 } LPC24_Can_Message;
 
-struct LPC24_Can_Controller {
+struct CanState {
+    int32_t controllerIndex;
+
     const TinyCLR_Can_Controller* provider;
 
     LPC24_Can_Message *canRxMessagesFifo;
@@ -2025,41 +2027,45 @@ struct LPC24_Can_Controller {
     bool isOpened;
 };
 
-static const LPC24_Gpio_Pin g_LPC24_Can_Tx_Pins[] = LPC24_CAN_TX_PINS;
-static const LPC24_Gpio_Pin g_LPC24_Can_Rx_Pins[] = LPC24_CAN_RX_PINS;
+static const LPC24_Gpio_Pin canTxPins[] = LPC24_CAN_TX_PINS;
+static const LPC24_Gpio_Pin canRxPins[] = LPC24_CAN_RX_PINS;
 
-static const int TOTAL_CAN_CONTROLLERS = SIZEOF_ARRAY(g_LPC24_Can_Tx_Pins);
+#define TOTAL_CAN_CONTROLLERS  SIZEOF_ARRAY(canTxPins)
 
-static LPC24_Can_Controller canController[TOTAL_CAN_CONTROLLERS];
+static CanState canStates[TOTAL_CAN_CONTROLLERS];
 
-static TinyCLR_Can_Controller canProvider;
-static TinyCLR_Api_Info canApi;
+static TinyCLR_Can_Controller canControllers[TOTAL_CAN_CONTROLLERS];
+static TinyCLR_Api_Info canApi[TOTAL_CAN_CONTROLLERS];
 
-void CAN_DisableExplicitFilters(int32_t controller) {
+void CAN_DisableExplicitFilters(int32_t controllerIndex) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto state = &canStates[controllerIndex];
 
-    if (canController[controller].canDataFilter.matchFiltersSize && canController[controller].canDataFilter.matchFilters != nullptr) {
-        memoryProvider->Free(memoryProvider, canController[controller].canDataFilter.matchFilters);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-        canController[controller].canDataFilter.matchFiltersSize = 0;
+    if (state->canDataFilter.matchFiltersSize && state->canDataFilter.matchFilters != nullptr) {
+        memoryProvider->Free(memoryProvider, state->canDataFilter.matchFilters);
+
+        state->canDataFilter.matchFiltersSize = 0;
     }
 }
 
-void CAN_DisableGroupFilters(int32_t controller) {
+void CAN_DisableGroupFilters(int32_t controllerIndex) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto state = &canStates[controllerIndex];
 
-    if (canController[controller].canDataFilter.groupFiltersSize) {
-        if (canController[controller].canDataFilter.lowerBoundFilters != nullptr)
-            memoryProvider->Free(memoryProvider, canController[controller].canDataFilter.lowerBoundFilters);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-        if (canController[controller].canDataFilter.upperBoundFilters != nullptr)
-            memoryProvider->Free(memoryProvider, canController[controller].canDataFilter.upperBoundFilters);
+    if (state->canDataFilter.groupFiltersSize) {
+        if (state->canDataFilter.lowerBoundFilters != nullptr)
+            memoryProvider->Free(memoryProvider, state->canDataFilter.lowerBoundFilters);
 
-        canController[controller].canDataFilter.groupFiltersSize = 0;
+        if (state->canDataFilter.upperBoundFilters != nullptr)
+            memoryProvider->Free(memoryProvider, state->canDataFilter.upperBoundFilters);
+
+        state->canDataFilter.groupFiltersSize = 0;
     }
 }
 
@@ -2217,36 +2223,40 @@ int32_t BinarySearch2(uint32_t *lowerBounds, uint32_t *upperBounds, int32_t firs
 }
 
 const TinyCLR_Api_Info* LPC24_Can_GetApi() {
-    canProvider.ApiInfo = &canApi;
-    canProvider.Acquire = &LPC24_Can_Acquire;
-    canProvider.Release = &LPC24_Can_Release;
-    canProvider.Reset = &LPC24_Can_SoftReset;
-    canProvider.WriteMessage = &LPC24_Can_WriteMessage;
-    canProvider.ReadMessage = &LPC24_Can_ReadMessage;
-    canProvider.SetBitTiming = &LPC24_Can_SetBitTiming;
-    canProvider.GetUnreadMessageCount = &LPC24_Can_GetUnreadMessageCount;
-    canProvider.SetMessageReceivedHandler = &LPC24_Can_SetMessageReceivedHandler;
-    canProvider.SetErrorReceivedHandler = &LPC24_Can_SetErrorReceivedHandler;
-    canProvider.SetExplicitFilters = &LPC24_Can_SetExplicitFilters;
-    canProvider.SetGroupFilters = &LPC24_Can_SetGroupFilters;
-    canProvider.ClearReadBuffer = &LPC24_Can_ClearReadBuffer;
-    canProvider.IsWritingAllowed = &LPC24_Can_IsWritingAllowed;
-    canProvider.GetWriteErrorCount = &LPC24_Can_GetWriteErrorCount;
-    canProvider.GetReadErrorCount = &LPC24_Can_GetReadErrorCount;
-    canProvider.GetSourceClock = &LPC24_Can_GetSourceClock;
-    canProvider.GetReadBufferSize = LPC24_Can_GetReadBufferSize;
-    canProvider.SetReadBufferSize = LPC24_Can_SetReadBufferSize;
-    canProvider.GetWriteBufferSize = LPC24_Can_GetWriteBufferSize;
-    canProvider.SetWriteBufferSize = LPC24_Can_SetWriteBufferSize;
-    canProvider.GetControllerCount = LPC24_Can_GetControllerCount;
+    for (int32_t i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
+        canControllers[i].ApiInfo = &canApi[i];
+        canControllers[i].Acquire = &LPC24_Can_Acquire;
+        canControllers[i].Release = &LPC24_Can_Release;
+        canControllers[i].Reset = &LPC24_Can_SoftReset;
+        canControllers[i].WriteMessage = &LPC24_Can_WriteMessage;
+        canControllers[i].ReadMessage = &LPC24_Can_ReadMessage;
+        canControllers[i].SetBitTiming = &LPC24_Can_SetBitTiming;
+        canControllers[i].GetUnreadMessageCount = &LPC24_Can_GetUnreadMessageCount;
+        canControllers[i].SetMessageReceivedHandler = &LPC24_Can_SetMessageReceivedHandler;
+        canControllers[i].SetErrorReceivedHandler = &LPC24_Can_SetErrorReceivedHandler;
+        canControllers[i].SetExplicitFilters = &LPC24_Can_SetExplicitFilters;
+        canControllers[i].SetGroupFilters = &LPC24_Can_SetGroupFilters;
+        canControllers[i].ClearReadBuffer = &LPC24_Can_ClearReadBuffer;
+        canControllers[i].IsWritingAllowed = &LPC24_Can_IsWritingAllowed;
+        canControllers[i].GetWriteErrorCount = &LPC24_Can_GetWriteErrorCount;
+        canControllers[i].GetReadErrorCount = &LPC24_Can_GetReadErrorCount;
+        canControllers[i].GetSourceClock = &LPC24_Can_GetSourceClock;
+        canControllers[i].GetReadBufferSize = &LPC24_Can_GetReadBufferSize;
+        canControllers[i].SetReadBufferSize = &LPC24_Can_SetReadBufferSize;
+        canControllers[i].GetWriteBufferSize = &LPC24_Can_GetWriteBufferSize;
+        canControllers[i].SetWriteBufferSize = &LPC24_Can_SetWriteBufferSize;
 
-    canApi.Author = "GHI Electronics, LLC";
-    canApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.CanProvider";
-    canApi.Type = TinyCLR_Api_Type::CanProvider;
-    canApi.Version = 0;
-    canApi.Implementation = &canProvider;
+        canApi[i].Author = "GHI Electronics, LLC";
+        canApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.CanController";
+        canApi[i].Type = TinyCLR_Api_Type::CanController;
+        canApi[i].Version = 0;
+        canApi[i].Implementation = &canControllers[i];
+        canApi[i].State = &canStates[i];
 
-    return &canApi;
+        canStates[i].controllerIndex = i;
+    }
+
+    return (const TinyCLR_Api_Info*)&canApi;
 }
 
 uint32_t LPC24_Can_GetLocalTime() {
@@ -2262,25 +2272,27 @@ uint32_t LPC24_Can_GetLocalTime() {
 ** Returned value:        None
 **
 ******************************************************************************/
-void CAN_ISR_Rx(int32_t controller) {
+void CAN_ISR_Rx(int32_t controllerIndex) {
+    auto state = &canStates[controllerIndex];
+
     // filter
-    if (canController[controller].canDataFilter.groupFiltersSize || canController[controller].canDataFilter.matchFiltersSize) {
-        uint32_t ID = controller == 0 ? C1RID : C2RID;
+    if (state->canDataFilter.groupFiltersSize || state->canDataFilter.matchFiltersSize) {
+        uint32_t ID = controllerIndex == 0 ? C1RID : C2RID;
 
         char passed = 0;
 
-        if (canController[controller].canDataFilter.groupFiltersSize) {
-            if (BinarySearch2(canController[controller].canDataFilter.lowerBoundFilters, canController[controller].canDataFilter.upperBoundFilters, 0, canController[controller].canDataFilter.groupFiltersSize - 1, ID) >= 0)
+        if (state->canDataFilter.groupFiltersSize) {
+            if (BinarySearch2(state->canDataFilter.lowerBoundFilters, state->canDataFilter.upperBoundFilters, 0, state->canDataFilter.groupFiltersSize - 1, ID) >= 0)
                 passed = 1;
         }
 
-        if (!passed && canController[controller].canDataFilter.matchFiltersSize) {
-            if (BinarySearch(canController[controller].canDataFilter.matchFilters, 0, canController[controller].canDataFilter.matchFiltersSize - 1, ID) >= 0)
+        if (!passed && state->canDataFilter.matchFiltersSize) {
+            if (BinarySearch(state->canDataFilter.matchFilters, 0, state->canDataFilter.matchFiltersSize - 1, ID) >= 0)
                 passed = 1;
         }
 
         if (!passed) {
-            if (controller == 0)
+            if (controllerIndex == 0)
                 C1CMR = 0x04; // release receive buffer
             else
                 C2CMR = 0x04; // release receive buffer
@@ -2288,19 +2300,19 @@ void CAN_ISR_Rx(int32_t controller) {
         }
     }
 
-    if (canController[controller].can_rx_count > (canController[controller].can_rxBufferSize - 3)) {
-        if (controller == 0)
+    if (state->can_rx_count > (state->can_rxBufferSize - 3)) {
+        if (controllerIndex == 0)
             C1CMR = 0x04; // release receive buffer
         else
             C2CMR = 0x04; // release receive buffer
 
-        canController[controller].errorEventHandler(canController[controller].provider, controller, TinyCLR_Can_Error::ReadBufferFull);
+        state->errorEventHandler(state->provider, TinyCLR_Can_Error::ReadBufferFull);
 
         return;
     }
 
     // initialize destination pointer
-    LPC24_Can_Message *can_msg = &canController[controller].canRxMessagesFifo[canController[controller].can_rx_in];
+    LPC24_Can_Message *can_msg = &state->canRxMessagesFifo[state->can_rx_in];
 
     // timestamp
     uint64_t t = LPC24_Can_GetLocalTime();
@@ -2313,7 +2325,7 @@ void CAN_ISR_Rx(int32_t controller) {
     uint32_t dataB;
     uint32_t msgId;
 
-    if (controller == 0) {
+    if (controllerIndex == 0) {
         flag = C1RFS;  // Frame
         msgId = C1RID;
         dataA = C1RDA;
@@ -2340,56 +2352,61 @@ void CAN_ISR_Rx(int32_t controller) {
 
     can_msg->dataB = dataB; // Data B
 
-    canController[controller].can_rx_count++;
-    canController[controller].can_rx_in++;
+    state->can_rx_count++;
+    state->can_rx_in++;
 
-    if (canController[controller].can_rx_in == canController[controller].can_rxBufferSize) {
-        canController[controller].can_rx_in = 0;
+    if (state->can_rx_in == state->can_rxBufferSize) {
+        state->can_rx_in = 0;
     }
 
-    canController[controller].messageReceivedEventHandler(canController[controller].provider, controller, canController[controller].can_rx_count);
+    state->messageReceivedEventHandler(state->provider, state->can_rx_count);
 }
 void LPC24_Can_RxInterruptHandler(void *param) {
     uint32_t status = CANRxSR;
 
-    int32_t controller;
+    int32_t controllerIndex;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     if (status & (1 << 8)) {
-        controller = 0;
+        controllerIndex = 0;
+
+        auto state = &canStates[controllerIndex];
 
         uint32_t c1 = CAN1ICR;
 
-        CAN_ISR_Rx(controller);
+        CAN_ISR_Rx(controllerIndex);
 
         if (c1 & (1 << 3)) {
-            canController[controller].errorEventHandler(canController[controller].provider, controller, TinyCLR_Can_Error::ReadBufferOverrun);
+            state->errorEventHandler(state->provider, TinyCLR_Can_Error::ReadBufferOverrun);
         }
         if (c1 & (1 << 5)) {
-            canController[controller].errorEventHandler(canController[controller].provider, controller, TinyCLR_Can_Error::Passive);
+            state->errorEventHandler(state->provider, TinyCLR_Can_Error::Passive);
         }
         if (c1 & (1 << 7)) {
             C1MOD = 1;    // Reset CAN
-            canController[controller].errorEventHandler(canController[controller].provider, controller, TinyCLR_Can_Error::BusOff);
+            state->errorEventHandler(state->provider, TinyCLR_Can_Error::BusOff);
         }
+
     }
     if (status & (1 << 9)) {
-        controller = 1;
+        controllerIndex = 1;
+
+        auto state = &canStates[controllerIndex];
 
         uint32_t c2 = CAN2ICR;
 
-        CAN_ISR_Rx(controller);
+        CAN_ISR_Rx(controllerIndex);
 
         if (c2 & (1 << 3)) {
-            canController[controller].errorEventHandler(canController[controller].provider, controller, TinyCLR_Can_Error::ReadBufferOverrun);
+            state->errorEventHandler(state->provider, TinyCLR_Can_Error::ReadBufferOverrun);
         }
         if (c2 & (1 << 5)) {
-            canController[controller].errorEventHandler(canController[controller].provider, controller, TinyCLR_Can_Error::Passive);
+            state->errorEventHandler(state->provider, TinyCLR_Can_Error::Passive);
         }
         if (c2 & (1 << 7)) {
             C2MOD = 1;    // Reset CAN
-            canController[controller].errorEventHandler(canController[controller].provider, controller, TinyCLR_Can_Error::BusOff);
+            state->errorEventHandler(state->provider, TinyCLR_Can_Error::BusOff);
         }
     }
 }
@@ -2398,35 +2415,40 @@ TinyCLR_Result LPC24_Can_Acquire(const TinyCLR_Can_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    if (!LPC24_Gpio_OpenPin(g_LPC24_Can_Tx_Pins[controller].number))
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
+
+    if (!LPC24_Gpio_OpenPin(canTxPins[controllerIndex].number))
         return TinyCLR_Result::SharingViolation;
 
-    if (!LPC24_Gpio_OpenPin(g_LPC24_Can_Rx_Pins[controller].number))
+    if (!LPC24_Gpio_OpenPin(canRxPins[controllerIndex].number))
         return TinyCLR_Result::SharingViolation;
 
     // set pin as analog
-    LPC24_Gpio_ConfigurePin(g_LPC24_Can_Tx_Pins[controller].number, LPC24_Gpio_Direction::Input, g_LPC24_Can_Tx_Pins[controller].pinFunction, LPC24_Gpio_PinMode::Inactive);
-    LPC24_Gpio_ConfigurePin(g_LPC24_Can_Rx_Pins[controller].number, LPC24_Gpio_Direction::Input, g_LPC24_Can_Rx_Pins[controller].pinFunction, LPC24_Gpio_PinMode::Inactive);
+    LPC24_Gpio_ConfigurePin(canTxPins[controllerIndex].number, LPC24_Gpio_Direction::Input, canTxPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
+    LPC24_Gpio_ConfigurePin(canRxPins[controllerIndex].number, LPC24_Gpio_Direction::Input, canRxPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
-    canController[controller].can_rx_count = 0;
-    canController[controller].can_rx_in = 0;
-    canController[controller].can_rx_out = 0;
-    canController[controller].baudrate = 0;
-    canController[controller].can_rxBufferSize = g_LPC24_Can_defaultBuffersSize[controller];
-    canController[controller].provider = self;
+    state->can_rx_count = 0;
+    state->can_rx_in = 0;
+    state->can_rx_out = 0;
+    state->baudrate = 0;
+    state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
+    state->provider = self;
 
-    canController[controller].canDataFilter.matchFiltersSize = 0;
-    canController[controller].canDataFilter.groupFiltersSize = 0;
+    state->canDataFilter.matchFiltersSize = 0;
+    state->canDataFilter.groupFiltersSize = 0;
 
-    if (controller == 0)
+    state->canRxMessagesFifo = nullptr;
+
+    if (controllerIndex == 0)
         LPC24XX::SYSCON().PCONP |= (1 << 13);    // Enable clock to the peripheral
 
-    if (controller == 1)
+    if (controllerIndex == 1)
         LPC24XX::SYSCON().PCONP |= (1 << 14);    // Enable clock to the peripheral
 
     CAN_SetACCF(ACCF_BYPASS);
 
-    canController[controller].isOpened = true;
+    state->isOpened = true;
 
     return TinyCLR_Result::Success;
 }
@@ -2435,38 +2457,44 @@ TinyCLR_Result LPC24_Can_Release(const TinyCLR_Can_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    if (canController[controller].canRxMessagesFifo != nullptr) {
-        memoryProvider->Free(memoryProvider, canController[controller].canRxMessagesFifo);
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
 
-        canController[controller].canRxMessagesFifo = nullptr;
+    if (state->canRxMessagesFifo != nullptr) {
+        memoryProvider->Free(memoryProvider, state->canRxMessagesFifo);
+
+        state->canRxMessagesFifo = nullptr;
     }
 
-    CAN_DisableExplicitFilters(controller);
-    CAN_DisableGroupFilters(controller);
+    CAN_DisableExplicitFilters(controllerIndex);
+    CAN_DisableGroupFilters(controllerIndex);
 
-    if (canController[controller].isOpened) {
-        LPC24_Gpio_ClosePin(g_LPC24_Can_Tx_Pins[controller].number);
-        LPC24_Gpio_ClosePin(g_LPC24_Can_Rx_Pins[controller].number);
+    if (state->isOpened) {
+        LPC24_Gpio_ClosePin(canTxPins[controllerIndex].number);
+        LPC24_Gpio_ClosePin(canRxPins[controllerIndex].number);
     }
 
-    canController[controller].isOpened = false;
+    state->isOpened = false;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Can_SoftReset(const TinyCLR_Can_Controller* self) {
-    canController[controller].can_rx_count = 0;
-    canController[controller].can_rx_in = 0;
-    canController[controller].can_rx_out = 0;
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
+
+    state->can_rx_count = 0;
+    state->can_rx_in = 0;
+    state->can_rx_out = 0;
 
     // Reset CAN
-    if (controller == 0) {
+    if (controllerIndex == 0) {
         C1MOD = 1;    // Reset CAN
         C1IER = 0;    // Disable Receive Interrupt
         C1GSR = 0;    // Reset error counter when CANxMOD is in reset
-        C1BTR = canController[controller].baudrate;
+        C1BTR = state->baudrate;
         C1MOD = 0x4;    // CAN in normal operation mode
         C1IER = 0x01 | (1 << 7) | (1 << 3) | (1 << 5);    // Enable receive interrupts
 
@@ -2475,7 +2503,7 @@ TinyCLR_Result LPC24_Can_SoftReset(const TinyCLR_Can_Controller* self) {
         C2MOD = 1;    // Reset CAN
         C2IER = 0;    // Disable Receive Interrupt
         C2GSR = 0;    // Reset error counter when CANxMOD is in reset
-        C2BTR = canController[controller].baudrate;
+        C2BTR = state->baudrate;
         C2MOD = 0x4;    // CAN in normal operation mode
         C2IER = 0x01 | (1 << 7) | (1 << 3) | (1 << 5);    // Enable receive interrupts
     }
@@ -2490,6 +2518,9 @@ TinyCLR_Result LPC24_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32
     uint32_t flags = 0;
     uint32_t status;
 
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
+
     if (isExtendedId)
         flags |= 0x80000000;
 
@@ -2503,14 +2534,14 @@ TinyCLR_Result LPC24_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32
     uint32_t timeout = CAN_TRANSFER_TIMEOUT;
 
     while (readyToSend == false && timeout-- > 0) {
-        LPC24_Can_IsWritingAllowed(self, controller, readyToSend);
+        LPC24_Can_IsWritingAllowed(self, readyToSend);
         LPC24_Time_Delay(nullptr, 1);
     }
 
     if (timeout == 0)
         return TinyCLR_Result::Busy;
 
-    if (controller == 0) {
+    if (controllerIndex == 0) {
         status = C1SR;
 
         if (status & 0x00000004) {
@@ -2547,16 +2578,18 @@ TinyCLR_Result LPC24_Can_ReadMessage(const TinyCLR_Can_Controller* self, uint32_
 
     uint32_t *data32 = (uint32_t*)data;
 
-    if (canController[controller].can_rx_count) {
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+
+    if (state->can_rx_count) {
         DISABLE_INTERRUPTS_SCOPED(irq);
 
-        can_msg = &canController[controller].canRxMessagesFifo[canController[controller].can_rx_out];
-        canController[controller].can_rx_out++;
+        can_msg = &state->canRxMessagesFifo[state->can_rx_out];
+        state->can_rx_out++;
 
-        if (canController[controller].can_rx_out == canController[controller].can_rxBufferSize)
-            canController[controller].can_rx_out = 0;
+        if (state->can_rx_out == state->can_rxBufferSize)
+            state->can_rx_out = 0;
 
-        canController[controller].can_rx_count--;
+        state->can_rx_count--;
 
         arbitrationId = can_msg->msgId;
         isExtendedId = can_msg->extendedId;
@@ -2578,25 +2611,28 @@ TinyCLR_Result LPC24_Can_SetBitTiming(const TinyCLR_Can_Controller* self, int32_
 
     LPC24XX_SYSCON &SYSCON = *(LPC24XX_SYSCON *)(size_t)(LPC24XX_SYSCON::c_SYSCON_Base);
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    if (canController[controller].canRxMessagesFifo == nullptr)
-        canController[controller].canRxMessagesFifo = (LPC24_Can_Message*)memoryProvider->Allocate(memoryProvider, canController[controller].can_rxBufferSize * sizeof(LPC24_Can_Message));
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
 
-    if (canController[controller].canRxMessagesFifo == nullptr) {
+    if (state->canRxMessagesFifo == nullptr)
+        state->canRxMessagesFifo = (LPC24_Can_Message*)memoryProvider->Allocate(memoryProvider, state->can_rxBufferSize * sizeof(LPC24_Can_Message));
+
+    if (state->canRxMessagesFifo == nullptr) {
         return TinyCLR_Result::OutOfMemory;
     }
 
-    canController[controller].baudrate = ((phase2 - 1) << 20) | ((phase1 - 1) << 16) | ((baudratePrescaler - 1) << 0);
+    state->baudrate = ((phase2 - 1) << 20) | ((phase1 - 1) << 16) | ((baudratePrescaler - 1) << 0);
 
-    if (controller == 0) {
+    if (controllerIndex == 0) {
         SYSCON.PCLKSEL0 |= (1 << 26) | (1 << 30);//CAN1 CAN2 filter
 
         C1MOD = 1;    // Reset CAN
         C1IER = 0;    // Disable Receive Interrupt
         C1GSR = 0;    // Reset error counter when CANxMOD is in reset
 
-        C1BTR = canController[controller].baudrate;
+        C1BTR = state->baudrate;
 
         C1MOD = 0x4;    // CAN in normal operation mode
 
@@ -2609,7 +2645,7 @@ TinyCLR_Result LPC24_Can_SetBitTiming(const TinyCLR_Can_Controller* self, int32_
         C2IER = 0;    // Disable Receive Interrupt
         C2GSR = 0;    // Reset error counter when CANxMOD is in reset
 
-        C2BTR = canController[controller].baudrate;
+        C2BTR = state->baudrate;
 
         C2MOD = 0x0;    // CAN in normal operation mode
         C2IER = 0x01 | (1 << 3) | (1 << 5) | (1 << 7);        // Enable receive interrupts
@@ -2623,21 +2659,25 @@ TinyCLR_Result LPC24_Can_SetBitTiming(const TinyCLR_Can_Controller* self, int32_
 
 TinyCLR_Result LPC24_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self, size_t& count) {
 
-    count = canController[controller].can_rx_count;
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+
+    count = state->can_rx_count;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Can_SetMessageReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_MessageReceivedHandler handler) {
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    canController[controller].messageReceivedEventHandler = handler;
+    state->messageReceivedEventHandler = handler;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Can_SetErrorReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_ErrorReceivedHandler handler) {
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    canController[controller].errorEventHandler = handler;
+    state->errorEventHandler = handler;
 
     return TinyCLR_Result::Success;
 }
@@ -2646,7 +2686,7 @@ TinyCLR_Result LPC24_Can_SetExplicitFilters(const TinyCLR_Can_Controller* self, 
     uint32_t *_matchFilters;
     uint32_t *filters32 = (uint32_t*)filters;
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     _matchFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
 
@@ -2660,10 +2700,13 @@ TinyCLR_Result LPC24_Can_SetExplicitFilters(const TinyCLR_Can_Controller* self, 
     {
         DISABLE_INTERRUPTS_SCOPED(irq);
 
-        CAN_DisableExplicitFilters(controller);
+        auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+        auto controllerIndex = state->controllerIndex;
 
-        canController[controller].canDataFilter.matchFiltersSize = length;
-        canController[controller].canDataFilter.matchFilters = _matchFilters;
+        CAN_DisableExplicitFilters(controllerIndex);
+
+        state->canDataFilter.matchFiltersSize = length;
+        state->canDataFilter.matchFilters = _matchFilters;
     }
 
     return TinyCLR_Result::Success;
@@ -2674,7 +2717,7 @@ TinyCLR_Result LPC24_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, uin
     uint32_t *lowerBounds32 = (uint32_t *)lowerBounds;
     uint32_t *upperBounds32 = (uint32_t *)upperBounds;
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryManager);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     _lowerBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
     _upperBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
@@ -2701,21 +2744,25 @@ TinyCLR_Result LPC24_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, uin
     {
         DISABLE_INTERRUPTS_SCOPED(irq);
 
-        CAN_DisableGroupFilters(controller);
+        auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+        auto controllerIndex = state->controllerIndex;
 
-        canController[controller].canDataFilter.groupFiltersSize = length;
-        canController[controller].canDataFilter.lowerBoundFilters = _lowerBoundFilters;
-        canController[controller].canDataFilter.upperBoundFilters = _upperBoundFilters;
+        CAN_DisableGroupFilters(controllerIndex);
+
+        state->canDataFilter.groupFiltersSize = length;
+        state->canDataFilter.lowerBoundFilters = _lowerBoundFilters;
+        state->canDataFilter.upperBoundFilters = _upperBoundFilters;
     }
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Can_ClearReadBuffer(const TinyCLR_Can_Controller* self) {
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    canController[controller].can_rx_count = 0;
-    canController[controller].can_rx_in = 0;
-    canController[controller].can_rx_out = 0;
+    state->can_rx_count = 0;
+    state->can_rx_in = 0;
+    state->can_rx_out = 0;
 
     return TinyCLR_Result::Success;
 }
@@ -2726,7 +2773,10 @@ TinyCLR_Result LPC24_Can_IsWritingAllowed(const TinyCLR_Can_Controller* self, bo
 
     allowed = false;
 
-    status = controller == 0 ? C1SR : C2SR;
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
+
+    status = controllerIndex == 0 ? C1SR : C2SR;
 
     if ((status & 0x00000004) &&
         (status & 0x00000400) &&
@@ -2738,15 +2788,19 @@ TinyCLR_Result LPC24_Can_IsWritingAllowed(const TinyCLR_Can_Controller* self, bo
 }
 
 TinyCLR_Result LPC24_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self, size_t& count) {
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
 
-    count = controller == 0 ? ((C1GSR >> 16) & 0xFF) : ((C2GSR >> 16) & 0xFF);
+    count = controllerIndex == 0 ? ((C1GSR >> 16) & 0xFF) : ((C2GSR >> 16) & 0xFF);
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self, size_t& count) {
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
 
-    count = controller == 0 ? (C1GSR >> 24) : (C2GSR >> 24);
+    count = controllerIndex == 0 ? (C1GSR >> 24) : (C2GSR >> 24);
 
     return TinyCLR_Result::Success;
 }
@@ -2758,20 +2812,24 @@ TinyCLR_Result LPC24_Can_GetSourceClock(const TinyCLR_Can_Controller* self, uint
 }
 
 TinyCLR_Result LPC24_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self, size_t& size) {
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
 
-    size = canController[controller].can_rxBufferSize == 0 ? g_LPC24_Can_defaultBuffersSize[controller] : canController[controller].can_rxBufferSize;
+    size = state->can_rxBufferSize == 0 ? canDefaultBuffersSize[controllerIndex] : state->can_rxBufferSize;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
 
     if (size > 3) {
-        canController[controller].can_rxBufferSize = size;
+        state->can_rxBufferSize = size;
         return TinyCLR_Result::Success;
     }
     else {
-        canController[controller].can_rxBufferSize = g_LPC24_Can_defaultBuffersSize[controller];
+        state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
         return TinyCLR_Result::ArgumentInvalid;;
     }
 }
@@ -2783,19 +2841,20 @@ TinyCLR_Result LPC24_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self, 
 }
 
 TinyCLR_Result LPC24_Can_SetWriteBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    canController[controller].can_txBufferSize = 1;
+    state->can_txBufferSize = 1;
 
     return size == 1 ? TinyCLR_Result::Success : TinyCLR_Result::NotSupported;
 }
 
 void LPC24_Can_Reset() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
-        canController[i].canRxMessagesFifo = nullptr;
+        canStates[i].canRxMessagesFifo = nullptr;
 
-        LPC24_Can_Release(&canProvider, i);
+        LPC24_Can_Release(&canControllers[i]);
 
-        canController[i].isOpened = false;
+        canStates[i].isOpened = false;
     }
 }
 

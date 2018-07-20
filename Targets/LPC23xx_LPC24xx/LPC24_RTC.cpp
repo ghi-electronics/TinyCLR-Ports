@@ -30,24 +30,28 @@
 #define RTC_MONTH 0xE0024038
 #define RTC_YEAR 0xE002403C
 
+#define TOTAL_RTC_CONTROLLERS 1
 
-static TinyCLR_Rtc_Controller rtcProvider;
-static TinyCLR_Api_Info timeApi;
+static TinyCLR_Rtc_Controller rtcControllers[TOTAL_RTC_CONTROLLERS];
+static TinyCLR_Api_Info timeApi[TOTAL_RTC_CONTROLLERS];
 
 const TinyCLR_Api_Info* LPC24_Rtc_GetApi() {
-    rtcProvider.ApiInfo = &timeApi;
-    rtcProvider.Acquire = &LPC24_Rtc_Acquire;
-    rtcProvider.Release = &LPC24_Rtc_Release;
-    rtcProvider.GetNow = &LPC24_Rtc_GetNow;
-    rtcProvider.SetNow = &LPC24_Rtc_SetNow;
+    for (auto i = 0; i < TOTAL_RTC_CONTROLLERS; i++) {
+        rtcControllers[i].ApiInfo = &timeApi[i];
+        rtcControllers[i].Acquire = &LPC24_Rtc_Acquire;
+        rtcControllers[i].Release = &LPC24_Rtc_Release;
+        rtcControllers[i].GetNow = &LPC24_Rtc_GetNow;
+        rtcControllers[i].SetNow = &LPC24_Rtc_SetNow;
 
-    timeApi.Author = "GHI Electronics, LLC";
-    timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.RtcProvider";
-    timeApi.Type = TinyCLR_Api_Type::RtcProvider;
-    timeApi.Version = 0;
-    timeApi.Implementation = &rtcProvider;
+        timeApi[i].Author = "GHI Electronics, LLC";
+        timeApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.RtcController";
+        timeApi[i].Type = TinyCLR_Api_Type::RtcController;
+        timeApi[i].Version = 0;
+        timeApi[i].Implementation = &rtcControllers[i];
+        timeApi[i].State = nullptr;
+    }
 
-    return &timeApi;
+    return (const TinyCLR_Api_Info*)&timeApi;
 }
 
 TinyCLR_Result LPC24_Rtc_Acquire(const TinyCLR_Rtc_Controller* self) {

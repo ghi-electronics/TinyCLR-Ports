@@ -2597,62 +2597,62 @@ static SD_Error FindSCR(uint16_t rca, uint32_t *pscr) {
 #define STM32F4_SD_TIMEOUT 5000000
 #define TOTAL_SDCARD_CONTROLLERS 1
 
-static TinyCLR_SdCard_Controller sdCardProvider[TOTAL_SDCARD_CONTROLLERS];
-static TinyCLR_Api_Info sdApi[TOTAL_SDCARD_CONTROLLERS];
+static TinyCLR_SdCard_Controller sdCardControllers[TOTAL_SDCARD_CONTROLLERS];
+static TinyCLR_Api_Info sdCardApi[TOTAL_SDCARD_CONTROLLERS];
 
-struct SdCardDriver {
+struct SdCardState {
     int32_t controllerIndex;
     size_t  sectorCount;
 
     size_t  *sectorSizes;
 };
 
-static const STM32F4_Gpio_Pin g_STM32F4_SdCard_Data0_Pins[] = STM32F4_SD_DATA0_PINS;
-static const STM32F4_Gpio_Pin g_STM32F4_SdCard_Data1_Pins[] = STM32F4_SD_DATA1_PINS;
-static const STM32F4_Gpio_Pin g_STM32F4_SdCard_Data2_Pins[] = STM32F4_SD_DATA2_PINS;
-static const STM32F4_Gpio_Pin g_STM32F4_SdCard_Data3_Pins[] = STM32F4_SD_DATA3_PINS;
-static const STM32F4_Gpio_Pin g_STM32F4_SdCard_Clk_Pins[] = STM32F4_SD_CLK_PINS;
-static const STM32F4_Gpio_Pin g_STM32F4_SdCard_Cmd_Pins[] = STM32F4_SD_CMD_PINS;
+static const STM32F4_Gpio_Pin sdCardData0Pins[] = STM32F4_SD_DATA0_PINS;
+static const STM32F4_Gpio_Pin sdCardData1Pins[] = STM32F4_SD_DATA1_PINS;
+static const STM32F4_Gpio_Pin sdCardData2Pins[] = STM32F4_SD_DATA2_PINS;
+static const STM32F4_Gpio_Pin sdCardData3Pins[] = STM32F4_SD_DATA3_PINS;
+static const STM32F4_Gpio_Pin sdCardClkPins[] = STM32F4_SD_CLK_PINS;
+static const STM32F4_Gpio_Pin sdCardCmdPins[] = STM32F4_SD_CMD_PINS;
 
-static SdCardDriver sdCardDrivers[TOTAL_SDCARD_CONTROLLERS];
+static SdCardState sdCardStates[TOTAL_SDCARD_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F4_SdCard_GetApi() {
     for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
-        sdCardProvider[i].ApiInfo = &sdApi[i];
+        sdCardControllers[i].ApiInfo = &sdCardApi[i];
 
-        sdCardProvider[i].Acquire = &STM32F4_SdCard_Acquire;
-        sdCardProvider[i].Release = &STM32F4_SdCard_Release;
+        sdCardControllers[i].Acquire = &STM32F4_SdCard_Acquire;
+        sdCardControllers[i].Release = &STM32F4_SdCard_Release;
 
-        sdCardProvider[i].WriteSectors = &STM32F4_SdCard_WriteSector;
-        sdCardProvider[i].ReadSectors = &STM32F4_SdCard_ReadSector;
-        sdCardProvider[i].EraseSectors = &STM32F4_SdCard_EraseSector;
-        sdCardProvider[i].IsSectorErased = &STM32F4_SdCard_IsSectorErased;
-        sdCardProvider[i].GetSectorMap = &STM32F4_SdCard_GetSectorMap;
+        sdCardControllers[i].WriteSectors = &STM32F4_SdCard_WriteSector;
+        sdCardControllers[i].ReadSectors = &STM32F4_SdCard_ReadSector;
+        sdCardControllers[i].EraseSectors = &STM32F4_SdCard_EraseSector;
+        sdCardControllers[i].IsSectorErased = &STM32F4_SdCard_IsSectorErased;
+        sdCardControllers[i].GetSectorMap = &STM32F4_SdCard_GetSectorMap;
 
-        sdApi[i].Author = "GHI Electronics, LLC";
-        sdApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.SdCardController";
-        sdApi[i].Type = TinyCLR_Api_Type::SdCardController;
-        sdApi[i].Version = 0;
-        sdApi[i].Implementation = &sdCardProvider[i];
-        sdApi[i].State = &sdCardDrivers[i];
+        sdCardApi[i].Author = "GHI Electronics, LLC";
+        sdCardApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.SdCardController";
+        sdCardApi[i].Type = TinyCLR_Api_Type::SdCardController;
+        sdCardApi[i].Version = 0;
+        sdCardApi[i].Implementation = &sdCardControllers[i];
+        sdCardApi[i].State = &sdCardStates[i];
 
-        sdCardDrivers[i].controllerIndex = i;
+        sdCardStates[i].controllerIndex = i;
     }
 
-    return (const TinyCLR_Api_Info*)&sdApi;
+    return (const TinyCLR_Api_Info*)&sdCardApi;
 }
 
 TinyCLR_Result STM32F4_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
-    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
-    auto d0 = g_STM32F4_SdCard_Data0_Pins[controllerIndex];
-    auto d1 = g_STM32F4_SdCard_Data1_Pins[controllerIndex];
-    auto d2 = g_STM32F4_SdCard_Data2_Pins[controllerIndex];
-    auto d3 = g_STM32F4_SdCard_Data3_Pins[controllerIndex];
-    auto clk = g_STM32F4_SdCard_Clk_Pins[controllerIndex];
-    auto cmd = g_STM32F4_SdCard_Cmd_Pins[controllerIndex];
+    auto d0 = sdCardData0Pins[controllerIndex];
+    auto d1 = sdCardData1Pins[controllerIndex];
+    auto d2 = sdCardData2Pins[controllerIndex];
+    auto d3 = sdCardData3Pins[controllerIndex];
+    auto clk = sdCardClkPins[controllerIndex];
+    auto cmd = sdCardCmdPins[controllerIndex];
 
     if (!STM32F4_GpioInternal_OpenPin(d0.number)
         || !STM32F4_GpioInternal_OpenPin(d1.number)
@@ -2674,7 +2674,7 @@ TinyCLR_Result STM32F4_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
 
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    driver->sectorSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
+    state->sectorSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
 
     SD_DeInit();
 
@@ -2682,16 +2682,16 @@ TinyCLR_Result STM32F4_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
 }
 
 TinyCLR_Result STM32F4_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
-    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
-    auto d0 = g_STM32F4_SdCard_Data0_Pins[controllerIndex];
-    auto d1 = g_STM32F4_SdCard_Data1_Pins[controllerIndex];
-    auto d2 = g_STM32F4_SdCard_Data2_Pins[controllerIndex];
-    auto d3 = g_STM32F4_SdCard_Data3_Pins[controllerIndex];
-    auto clk = g_STM32F4_SdCard_Clk_Pins[controllerIndex];
-    auto cmd = g_STM32F4_SdCard_Cmd_Pins[controllerIndex];
+    auto d0 = sdCardData0Pins[controllerIndex];
+    auto d1 = sdCardData1Pins[controllerIndex];
+    auto d2 = sdCardData2Pins[controllerIndex];
+    auto d3 = sdCardData3Pins[controllerIndex];
+    auto clk = sdCardClkPins[controllerIndex];
+    auto cmd = sdCardCmdPins[controllerIndex];
 
     SD_DeInit();
 
@@ -2699,7 +2699,7 @@ TinyCLR_Result STM32F4_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
 
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    memoryProvider->Free(memoryProvider, driver->sectorSizes);
+    memoryProvider->Free(memoryProvider, state->sectorSizes);
 
     STM32F4_GpioInternal_ClosePin(d0.number);
     STM32F4_GpioInternal_ClosePin(d1.number);
@@ -2789,11 +2789,11 @@ TinyCLR_Result STM32F4_SdCard_EraseSector(const TinyCLR_SdCard_Controller* self,
 }
 
 TinyCLR_Result STM32F4_SdCard_GetSectorMap(const TinyCLR_SdCard_Controller* self, const size_t*& sizes, size_t& count, bool& isUniform) {
-    auto driver = reinterpret_cast<SdCardDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
-    driver->sectorSizes[0] = STM32F4_SD_SECTOR_SIZE;
+    state->sectorSizes[0] = STM32F4_SD_SECTOR_SIZE;
 
-    sizes = driver->sectorSizes;
+    sizes = state->sectorSizes;
     count = SDCardInfo.CardCapacity / STM32F4_SD_SECTOR_SIZE;
 
     return TinyCLR_Result::Success;

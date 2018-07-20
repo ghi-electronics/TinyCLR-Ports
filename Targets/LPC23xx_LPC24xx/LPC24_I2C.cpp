@@ -15,17 +15,19 @@
 
 #include "LPC24.h"
 
-struct LPC24_I2c_Configuration {
+#define I2C_TRANSACTION_TIMEOUT 2000 // 2 seconds
+#define TOTAL_I2C_CONTROLLERS SIZEOF_ARRAY(i2cSclPins)
+
+struct I2cConfiguration {
 
     int32_t                  address;
     uint8_t                  clockRate;     // primary clock factor to generate the i2c clock
     uint8_t                  clockRate2;   // additional clock factors, if more than one is needed for the clock (optional)
 
     bool                     isOpened;
-    int32_t                  controller;
 };
 
-struct LPC24_I2c_Transaction {
+struct I2cTransaction {
     bool                        isReadTransaction;
     bool                        repeatedStart;
     bool                        isDone;
@@ -38,49 +40,59 @@ struct LPC24_I2c_Transaction {
     TinyCLR_I2c_TransferStatus  result;
 };
 
-#define I2C_TRANSACTION_TIMEOUT 2000 // 2 seconds
+static const LPC24_Gpio_Pin i2cSclPins[] = LPC24_I2C_SCL_PINS;
+static const LPC24_Gpio_Pin i2cSdaPins[] = LPC24_I2C_SDA_PINS;
 
-static const LPC24_Gpio_Pin g_i2c_scl_pins[] = LPC24_I2C_SCL_PINS;
-static const LPC24_Gpio_Pin g_i2c_sda_pins[] = LPC24_I2C_SDA_PINS;
+struct I2cState {
+    int32_t controllerIndex;
 
-static LPC24_I2c_Configuration g_I2cConfiguration[SIZEOF_ARRAY(g_i2c_scl_pins)];
-static LPC24_I2c_Transaction   *g_currentI2cTransactionAction;
-static LPC24_I2c_Transaction   g_ReadI2cTransactionAction[SIZEOF_ARRAY(g_i2c_scl_pins)];
-static LPC24_I2c_Transaction   g_WriteI2cTransactionAction[SIZEOF_ARRAY(g_i2c_scl_pins)];
+    I2cConfiguration i2cConfiguration;
+    I2cTransaction   *currentI2cTransactionAction;
+    I2cTransaction   readI2cTransactionAction;
+    I2cTransaction   writeI2cTransactionAction;
+};
 
-static TinyCLR_I2c_Controller i2cProvider;
-static TinyCLR_Api_Info i2cApi;
+static I2cState i2cStates[TOTAL_I2C_CONTROLLERS];
+
+static TinyCLR_I2c_Controller i2cControllers[TOTAL_I2C_CONTROLLERS];
+static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];
 
 const TinyCLR_Api_Info* LPC24_I2c_GetApi() {
-    i2cProvider.ApiInfo = &i2cApi;
-    i2cProvider.Acquire = &LPC24_I2c_Acquire;
-    i2cProvider.Release = &LPC24_I2c_Release;
-    i2cProvider.SetActiveSettings = &LPC24_I2c_SetActiveSettings;
-    i2cProvider.Read = &LPC24_I2c_ReadTransaction;
-    i2cProvider.Write = &LPC24_I2c_WriteTransaction;
-    i2cProvider.WriteRead = &LPC24_I2c_WriteReadTransaction;
-    i2cProvider.GetControllerCount = &LPC24_I2c_GetControllerCount;
+    for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
+        i2cControllers[i].ApiInfo = &i2cApi[i];
+        i2cControllers[i].Acquire = &LPC24_I2c_Acquire;
+        i2cControllers[i].Release = &LPC24_I2c_Release;
+        i2cControllers[i].SetActiveSettings = &LPC24_I2c_SetActiveSettings;
+        i2cControllers[i].Read = &LPC24_I2c_Read;
+        i2cControllers[i].Write = &LPC24_I2c_Write;
+        i2cControllers[i].WriteRead = &LPC24_I2c_WriteRead;
 
-    i2cApi.Author = "GHI Electronics, LLC";
-    i2cApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.I2cProvider";
-    i2cApi.Type = TinyCLR_Api_Type::I2cProvider;
-    i2cApi.Version = 0;
-    i2cApi.Implementation = &i2cProvider;
+        i2cApi[i].Author = "GHI Electronics, LLC";
+        i2cApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.I2cController";
+        i2cApi[i].Type = TinyCLR_Api_Type::I2cController;
+        i2cApi[i].Version = 0;
+        i2cApi[i].Implementation = &i2cControllers[i];
+        i2cApi[i].State = &i2cStates[i];
 
-    return &i2cApi;
+        i2cStates[i].controllerIndex = i;
+    }
+
+    return (const TinyCLR_Api_Info*)&i2cApi;
 }
 
 void LPC24_I2c_InterruptHandler(void *param) {
     uint8_t address;
 
-    int32_t controller = *reinterpret_cast<int32_t*>(param);
+    int32_t controllerIndex = *reinterpret_cast<int32_t*>(param);
 
-    LPC24XX_I2C& I2C = LPC24XX::I2C(controller);
+    auto state = &i2cStates[controllerIndex];
+
+    LPC24XX_I2C& I2C = LPC24XX::I2C(controllerIndex);
 
     // read status
     uint8_t status = I2C.I2STAT;
 
-    LPC24_I2c_Transaction *transaction = g_currentI2cTransactionAction;
+    I2cTransaction *transaction = state->currentI2cTransactionAction;
 
     if (!transaction) {
         I2C.I2CONCLR = LPC24XX_I2C::SI;
@@ -91,7 +103,7 @@ void LPC24_I2c_InterruptHandler(void *param) {
     case 0x08: // Start Condition transmitted
     case 0x10: // Repeated Start Condition transmitted
         // Write Slave address and Data direction
-        address = 0xFE & (g_I2cConfiguration[controller].address << 1);
+        address = 0xFE & (state->i2cConfiguration.address << 1);
         address |= transaction->isReadTransaction ? 1 : 0;
         I2C.I2DAT = address;
         // Clear STA bit
@@ -103,11 +115,11 @@ void LPC24_I2c_InterruptHandler(void *param) {
         // transaction completed
         if (transaction->bytesToTransfer == 0) {
             if (transaction->repeatedStart == false) {
-                LPC24_I2c_StopTransaction(controller);
+                LPC24_I2c_StopTransaction(controllerIndex);
             }
             else {
-                g_currentI2cTransactionAction = &g_ReadI2cTransactionAction[controller];
-                LPC24_I2c_StartTransaction(controller);
+                state->currentI2cTransactionAction = &state->readI2cTransactionAction;
+                LPC24_I2c_StartTransaction(controllerIndex);
             }
         }
         else {
@@ -122,10 +134,10 @@ void LPC24_I2c_InterruptHandler(void *param) {
     case 0x20: // Write Address not acknowledged by slave
     case 0x30: // Data not acknowledged by slave
     case 0x48: // Read Address not acknowledged by slave
-        LPC24_I2c_StopTransaction(controller);
+        LPC24_I2c_StopTransaction(controllerIndex);
         break;
     case 0x38: // Arbitration lost
-        LPC24_I2c_StopTransaction(controller);
+        LPC24_I2c_StopTransaction(controllerIndex);
         break;
     case 0x40: // Slave Address + R transmitted, Ack received
         // if the transaction is one byte only to read, then we must send NAK immediately
@@ -151,34 +163,36 @@ void LPC24_I2c_InterruptHandler(void *param) {
         if (transaction->bytesToTransfer == 0) {
             if (transaction->repeatedStart == false) {
                 // send transaction stop
-                LPC24_I2c_StopTransaction(controller);
+                LPC24_I2c_StopTransaction(controllerIndex);
             }
             else {
                 // start next
-                g_currentI2cTransactionAction = &g_ReadI2cTransactionAction[controller];
-                LPC24_I2c_StartTransaction(controller);
+                state->currentI2cTransactionAction = &state->readI2cTransactionAction;
+                LPC24_I2c_StartTransaction(controllerIndex);
             }
         }
         break;
     case 0x00: // Bus Error
         // Clear Bus error
         I2C.I2CONSET = LPC24XX_I2C::STO;
-        LPC24_I2c_StopTransaction(controller);
+        LPC24_I2c_StopTransaction(controllerIndex);
         break;
     default:
-        LPC24_I2c_StopTransaction(controller);
+        LPC24_I2c_StopTransaction(controllerIndex);
         break;
     } // switch(status)
 
     // clear the interrupt flag to start the next I2C transfer
     I2C.I2CONCLR = LPC24XX_I2C::SI;
 }
-void LPC24_I2c_StartTransaction(int32_t controller) {
-    LPC24XX_I2C& I2C = LPC24XX::I2C(controller);
+void LPC24_I2c_StartTransaction(int32_t controllerIndex) {
+    LPC24XX_I2C& I2C = LPC24XX::I2C(controllerIndex);
 
-    if (!g_WriteI2cTransactionAction[controller].repeatedStart || g_WriteI2cTransactionAction[controller].bytesTransferred == 0) {
-        I2C.I2SCLH = g_I2cConfiguration[controller].clockRate | (g_I2cConfiguration[controller].clockRate2 << 8);
-        I2C.I2SCLL = g_I2cConfiguration[controller].clockRate | (g_I2cConfiguration[controller].clockRate2 << 8);
+    auto state = &i2cStates[controllerIndex];
+
+    if (!state->writeI2cTransactionAction.repeatedStart || state->writeI2cTransactionAction.bytesTransferred == 0) {
+        I2C.I2SCLH = state->i2cConfiguration.clockRate | (state->i2cConfiguration.clockRate2 << 8);
+        I2C.I2SCLL = state->i2cConfiguration.clockRate | (state->i2cConfiguration.clockRate2 << 8);
 
         I2C.I2CONSET = LPC24XX_I2C::STA;
     }
@@ -188,121 +202,125 @@ void LPC24_I2c_StartTransaction(int32_t controller) {
 
 }
 
-void LPC24_I2c_StopTransaction(int32_t controller) {
-    LPC24XX_I2C& I2C = LPC24XX::I2C(controller);
+void LPC24_I2c_StopTransaction(int32_t controllerIndex) {
+    LPC24XX_I2C& I2C = LPC24XX::I2C(controllerIndex);
 
     I2C.I2CONSET = LPC24XX_I2C::STO;
     I2C.I2CONCLR = LPC24XX_I2C::AA | LPC24XX_I2C::SI | LPC24XX_I2C::STA;
 
-    g_currentI2cTransactionAction->isDone = true;
+    auto state = &i2cStates[controllerIndex];
+    state->currentI2cTransactionAction->isDone = true;
 }
 
-TinyCLR_Result LPC24_I2c_ReadTransaction(const TinyCLR_I2c_Controller* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result LPC24_I2c_Read(const TinyCLR_I2c_Controller* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
-    g_ReadI2cTransactionAction[controller].isReadTransaction = true;
-    g_ReadI2cTransactionAction[controller].buffer = buffer;
-    g_ReadI2cTransactionAction[controller].bytesToTransfer = length;
-    g_ReadI2cTransactionAction[controller].isDone = false;
-    g_ReadI2cTransactionAction[controller].repeatedStart = false;
-    g_ReadI2cTransactionAction[controller].bytesTransferred = 0;
+    auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
 
-    g_currentI2cTransactionAction = &g_ReadI2cTransactionAction[controller];
+    state->readI2cTransactionAction.isReadTransaction = true;
+    state->readI2cTransactionAction.buffer = buffer;
+    state->readI2cTransactionAction.bytesToTransfer = length;
+    state->readI2cTransactionAction.isDone = false;
+    state->readI2cTransactionAction.repeatedStart = false;
+    state->readI2cTransactionAction.bytesTransferred = 0;
 
-    LPC24_I2c_StartTransaction(controller);
+    state->currentI2cTransactionAction = &state->readI2cTransactionAction;
 
-    while (g_currentI2cTransactionAction->isDone == false && timeout > 0) {
+    LPC24_I2c_StartTransaction(controllerIndex);
+
+    while (state->currentI2cTransactionAction->isDone == false && timeout > 0) {
         LPC24_Time_Delay(nullptr, 1000);
 
         timeout--;
     }
 
-    if (g_currentI2cTransactionAction->bytesTransferred == length)
+    if (state->currentI2cTransactionAction->bytesTransferred == length)
         result = TinyCLR_I2c_TransferStatus::FullTransfer;
-    else if (g_currentI2cTransactionAction->bytesTransferred < length && g_currentI2cTransactionAction->bytesTransferred > 0)
+    else if (state->currentI2cTransactionAction->bytesTransferred < length && state->currentI2cTransactionAction->bytesTransferred > 0)
         result = TinyCLR_I2c_TransferStatus::PartialTransfer;
 
-    length = g_currentI2cTransactionAction->bytesTransferred;
+    length = state->currentI2cTransactionAction->bytesTransferred;
 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result LPC24_I2c_WriteTransaction(const TinyCLR_I2c_Controller* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
-    if (self == nullptr)
-        return TinyCLR_Result::ArgumentNull;
-
+TinyCLR_Result LPC24_I2c_Write(const TinyCLR_I2c_Controller* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
-    g_WriteI2cTransactionAction[controller].isReadTransaction = false;
-    g_WriteI2cTransactionAction[controller].buffer = (uint8_t*)buffer;
-    g_WriteI2cTransactionAction[controller].bytesToTransfer = length;
-    g_WriteI2cTransactionAction[controller].isDone = false;
-    g_WriteI2cTransactionAction[controller].repeatedStart = false;
-    g_WriteI2cTransactionAction[controller].bytesTransferred = 0;
+    auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
 
-    g_currentI2cTransactionAction = &g_WriteI2cTransactionAction[controller];
+    state->writeI2cTransactionAction.isReadTransaction = false;
+    state->writeI2cTransactionAction.buffer = (uint8_t*)buffer;
+    state->writeI2cTransactionAction.bytesToTransfer = length;
+    state->writeI2cTransactionAction.isDone = false;
+    state->writeI2cTransactionAction.repeatedStart = false;
+    state->writeI2cTransactionAction.bytesTransferred = 0;
 
-    LPC24_I2c_StartTransaction(controller);
+    state->currentI2cTransactionAction = &state->writeI2cTransactionAction;
 
-    while (g_currentI2cTransactionAction->isDone == false && timeout > 0) {
+    LPC24_I2c_StartTransaction(controllerIndex);
+
+    while (state->currentI2cTransactionAction->isDone == false && timeout > 0) {
         LPC24_Time_Delay(nullptr, 1000);
 
         timeout--;
     }
 
-    if (g_currentI2cTransactionAction->bytesTransferred == length)
+    if (state->currentI2cTransactionAction->bytesTransferred == length)
         result = TinyCLR_I2c_TransferStatus::FullTransfer;
-    else if (g_currentI2cTransactionAction->bytesTransferred < length && g_currentI2cTransactionAction->bytesTransferred > 0)
+    else if (state->currentI2cTransactionAction->bytesTransferred < length && state->currentI2cTransactionAction->bytesTransferred > 0)
         result = TinyCLR_I2c_TransferStatus::PartialTransfer;
 
-    length = g_currentI2cTransactionAction->bytesTransferred;
+    length = state->currentI2cTransactionAction->bytesTransferred;
 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result LPC24_I2c_WriteReadTransaction(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
-    if (self == nullptr)
-        return TinyCLR_Result::ArgumentNull;
-
+TinyCLR_Result LPC24_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
-    g_WriteI2cTransactionAction[controller].isReadTransaction = false;
-    g_WriteI2cTransactionAction[controller].buffer = (uint8_t*)writeBuffer;
-    g_WriteI2cTransactionAction[controller].bytesToTransfer = writeLength;
-    g_WriteI2cTransactionAction[controller].isDone = false;
-    g_WriteI2cTransactionAction[controller].repeatedStart = true;
-    g_WriteI2cTransactionAction[controller].bytesTransferred = 0;
+    auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
 
-    g_ReadI2cTransactionAction[controller].isReadTransaction = true;
-    g_ReadI2cTransactionAction[controller].buffer = readBuffer;
-    g_ReadI2cTransactionAction[controller].bytesToTransfer = readLength;
-    g_ReadI2cTransactionAction[controller].isDone = false;
-    g_ReadI2cTransactionAction[controller].repeatedStart = false;
-    g_ReadI2cTransactionAction[controller].bytesTransferred = 0;
+    state->writeI2cTransactionAction.isReadTransaction = false;
+    state->writeI2cTransactionAction.buffer = (uint8_t*)writeBuffer;
+    state->writeI2cTransactionAction.bytesToTransfer = writeLength;
+    state->writeI2cTransactionAction.isDone = false;
+    state->writeI2cTransactionAction.repeatedStart = true;
+    state->writeI2cTransactionAction.bytesTransferred = 0;
 
-    g_currentI2cTransactionAction = &g_WriteI2cTransactionAction[controller];
+    state->readI2cTransactionAction.isReadTransaction = true;
+    state->readI2cTransactionAction.buffer = readBuffer;
+    state->readI2cTransactionAction.bytesToTransfer = readLength;
+    state->readI2cTransactionAction.isDone = false;
+    state->readI2cTransactionAction.repeatedStart = false;
+    state->readI2cTransactionAction.bytesTransferred = 0;
 
-    LPC24_I2c_StartTransaction(controller);
+    state->currentI2cTransactionAction = &state->writeI2cTransactionAction;
 
-    while (g_currentI2cTransactionAction->isDone == false && timeout > 0) {
+    LPC24_I2c_StartTransaction(controllerIndex);
+
+    while (state->currentI2cTransactionAction->isDone == false && timeout > 0) {
         LPC24_Time_Delay(nullptr, 1000);
 
         timeout--;
     }
 
-    if (g_WriteI2cTransactionAction[controller].bytesTransferred != writeLength) {
-        writeLength = g_WriteI2cTransactionAction[controller].bytesTransferred;
+    if (state->writeI2cTransactionAction.bytesTransferred != writeLength) {
+        writeLength = state->writeI2cTransactionAction.bytesTransferred;
         result = TinyCLR_I2c_TransferStatus::PartialTransfer;
     }
     else {
-        readLength = g_ReadI2cTransactionAction[controller].bytesTransferred;
+        readLength = state->readI2cTransactionAction.bytesTransferred;
 
-        if (g_currentI2cTransactionAction->bytesTransferred == readLength)
+        if (state->currentI2cTransactionAction->bytesTransferred == readLength)
             result = TinyCLR_I2c_TransferStatus::FullTransfer;
-        else if (g_currentI2cTransactionAction->bytesTransferred < readLength && g_currentI2cTransactionAction->bytesTransferred > 0)
+        else if (state->currentI2cTransactionAction->bytesTransferred < readLength && state->currentI2cTransactionAction->bytesTransferred > 0)
             result = TinyCLR_I2c_TransferStatus::PartialTransfer;
     }
 
@@ -323,10 +341,11 @@ TinyCLR_Result LPC24_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, i
         return TinyCLR_Result::NotSupported;
 
     uint32_t divider = LPC24XX_I2C::c_I2C_Clk_KHz / (2 * rateKhz);
+    auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
-    g_I2cConfiguration[controller].clockRate = (uint8_t)divider; // low byte
-    g_I2cConfiguration[controller].clockRate2 = (uint8_t)(divider >> 8); // high byte
-    g_I2cConfiguration[controller].address = slaveAddress;
+    state->i2cConfiguration.clockRate = (uint8_t)divider; // low byte
+    state->i2cConfiguration.clockRate2 = (uint8_t)(divider >> 8); // high byte
+    state->i2cConfiguration.address = slaveAddress;
 
     return TinyCLR_Result::Success;
 }
@@ -335,17 +354,18 @@ TinyCLR_Result LPC24_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    LPC24XX_I2C& I2C = LPC24XX::I2C(controller);
+    auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
 
-    if (!LPC24_Gpio_OpenPin(g_i2c_sda_pins[controller].number) || !LPC24_Gpio_OpenPin(g_i2c_scl_pins[controller].number))
+    LPC24XX_I2C& I2C = LPC24XX::I2C(controllerIndex);
+
+    if (!LPC24_Gpio_OpenPin(i2cSdaPins[controllerIndex].number) || !LPC24_Gpio_OpenPin(i2cSclPins[controllerIndex].number))
         return TinyCLR_Result::SharingViolation;
 
-    LPC24_Gpio_ConfigurePin(g_i2c_sda_pins[controller].number, LPC24_Gpio_Direction::Input, g_i2c_sda_pins[controller].pinFunction, LPC24_Gpio_PinMode::Inactive);
-    LPC24_Gpio_ConfigurePin(g_i2c_scl_pins[controller].number, LPC24_Gpio_Direction::Input, g_i2c_scl_pins[controller].pinFunction, LPC24_Gpio_PinMode::Inactive);
+    LPC24_Gpio_ConfigurePin(i2cSdaPins[controllerIndex].number, LPC24_Gpio_Direction::Input, i2cSdaPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
+    LPC24_Gpio_ConfigurePin(i2cSclPins[controllerIndex].number, LPC24_Gpio_Direction::Input, i2cSclPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
-    g_I2cConfiguration[controller].controller = controller;
-
-    LPC24_Interrupt_Activate(controller == 0 ? LPC24XX_VIC::c_IRQ_INDEX_I2C0 : (controller == 1 ? LPC24XX_VIC::c_IRQ_INDEX_I2C1 : LPC24XX_VIC::c_IRQ_INDEX_I2C2), (uint32_t*)&LPC24_I2c_InterruptHandler, (uint32_t*)&g_I2cConfiguration[controller].controller);
+    LPC24_Interrupt_Activate(controllerIndex == 0 ? LPC24XX_VIC::c_IRQ_INDEX_I2C0 : (controllerIndex == 1 ? LPC24XX_VIC::c_IRQ_INDEX_I2C1 : LPC24XX_VIC::c_IRQ_INDEX_I2C2), (uint32_t*)&LPC24_I2c_InterruptHandler, (uint32_t*)&state->controllerIndex);
 
     // enable the I2c module
     I2C.I2CONSET = LPC24XX_I2C::I2EN;
@@ -353,7 +373,7 @@ TinyCLR_Result LPC24_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
     // set the slave address
     I2C.I2ADR = 0x7E;
 
-    g_I2cConfiguration[controller].isOpened = true;
+    state->i2cConfiguration.isOpened = true;
 
     return TinyCLR_Result::Success;
 }
@@ -362,42 +382,42 @@ TinyCLR_Result LPC24_I2c_Release(const TinyCLR_I2c_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    LPC24XX_I2C& I2C = LPC24XX::I2C(controller);
+    auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
 
-    LPC24_Interrupt_Deactivate(controller == 0 ? LPC24XX_VIC::c_IRQ_INDEX_I2C0 : (controller == 1 ? LPC24XX_VIC::c_IRQ_INDEX_I2C1 : LPC24XX_VIC::c_IRQ_INDEX_I2C2));
+    LPC24XX_I2C& I2C = LPC24XX::I2C(controllerIndex);
+
+    LPC24_Interrupt_Deactivate(controllerIndex == 0 ? LPC24XX_VIC::c_IRQ_INDEX_I2C0 : (controllerIndex == 1 ? LPC24XX_VIC::c_IRQ_INDEX_I2C1 : LPC24XX_VIC::c_IRQ_INDEX_I2C2));
 
     I2C.I2CONCLR = (LPC24XX_I2C::AA | LPC24XX_I2C::SI | LPC24XX_I2C::STO | LPC24XX_I2C::STA | LPC24XX_I2C::I2EN);
 
-    if (g_I2cConfiguration[controller].isOpened) {
-        LPC24_Gpio_ClosePin(g_i2c_scl_pins[controller].number);
-        LPC24_Gpio_ClosePin(g_i2c_sda_pins[controller].number);
+    if (state->i2cConfiguration.isOpened) {
+        LPC24_Gpio_ClosePin(i2cSclPins[controllerIndex].number);
+        LPC24_Gpio_ClosePin(i2cSdaPins[controllerIndex].number);
     }
 
-    g_I2cConfiguration[controller].isOpened = false;
+    state->i2cConfiguration.isOpened = false;
 
     return TinyCLR_Result::Success;
 }
 
 void LPC24_I2c_Reset() {
-    for (auto i = 0; i < SIZEOF_ARRAY(g_i2c_scl_pins); i++) {
-        LPC24_I2c_Release(&i2cProvider, i);
+    for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
+        LPC24_I2c_Release(&i2cControllers[i]);
 
-        g_I2cConfiguration[i].address = 0;
-        g_I2cConfiguration[i].clockRate = 0;
-        g_I2cConfiguration[i].clockRate2 = 0;
+        auto state = &i2cStates[i];
 
-        g_ReadI2cTransactionAction[i].bytesToTransfer = 0;
-        g_ReadI2cTransactionAction[i].bytesTransferred = 0;
+        state->i2cConfiguration.address = 0;
+        state->i2cConfiguration.clockRate = 0;
+        state->i2cConfiguration.clockRate2 = 0;
 
-        g_WriteI2cTransactionAction[i].bytesToTransfer = 0;
-        g_WriteI2cTransactionAction[i].bytesTransferred = 0;
+        state->readI2cTransactionAction.bytesToTransfer = 0;
+        state->readI2cTransactionAction.bytesTransferred = 0;
 
-        g_I2cConfiguration[i].isOpened = false;
+        state->writeI2cTransactionAction.bytesToTransfer = 0;
+        state->writeI2cTransactionAction.bytesTransferred = 0;
+
+        state->i2cConfiguration.isOpened = false;
     }
 }
 
-TinyCLR_Result LPC24_I2c_GetControllerCount(const TinyCLR_I2c_Controller* self, int32_t& count) {
-    count = SIZEOF_ARRAY(g_i2c_scl_pins);
-
-    return TinyCLR_Result::Success;
-}

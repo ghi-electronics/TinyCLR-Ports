@@ -18,15 +18,15 @@
 
 #define TIMER_IDLE_VALUE  0x0000FFFFFFFFFFFFFull
 
+#define TOTAL_TIME_CONTROLLERS 1
 #define SLOW_CLOCKS_PER_SECOND STM32F4_AHB_CLOCK_HZ
 #define SLOW_CLOCKS_TEN_MHZ_GCD           1000000   // GCD(SLOW_CLOCKS_PER_SECOND, 10M)
 #define SLOW_CLOCKS_MILLISECOND_GCD          1000   // GCD(SLOW_CLOCKS_PER_SECOND, 1k)
 #define CLOCK_COMMON_FACTOR               1000000   // GCD(STM32F4_SYSTEM_CLOCK_HZ, 1M)
 #define CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS 3
 
-#define TOTAL_TIME_CONTROLLERS 1
-
-struct TimerDriver {
+struct TimeState {
+    int32_t controllerIndex;
     uint64_t m_lastRead;
     uint32_t m_currentTick;
     uint32_t m_periodTicks;
@@ -36,7 +36,7 @@ struct TimerDriver {
     static void Reload(uint32_t value);
 };
 
-TimerDriver timerDrivers[TOTAL_TIME_CONTROLLERS];
+static TimeState timeStates[TOTAL_TIME_CONTROLLERS];
 
 static TinyCLR_NativeTime_Controller timeControllers[TOTAL_TIME_CONTROLLERS];
 static TinyCLR_Api_Info timeApi[TOTAL_TIME_CONTROLLERS];
@@ -58,7 +58,9 @@ const TinyCLR_Api_Info* STM32F4_Time_GetApi() {
         timeApi[i].Type = TinyCLR_Api_Type::NativeTimeController;
         timeApi[i].Version = 0;
         timeApi[i].Implementation = &timeControllers[i];
-        timeApi[i].State = &timerDrivers[i];
+        timeApi[i].State = &timeStates[i];
+
+        timeStates[i].controllerIndex = i;
     }
 
     return (const TinyCLR_Api_Info*)&timeApi;
@@ -86,29 +88,29 @@ uint64_t STM32F4_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Controll
 uint64_t STM32F4_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto driver = reinterpret_cast<TimerDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
     uint32_t tick_spent;
     uint32_t reg = SysTick->CTRL;
     uint32_t ticks = (SysTick->VAL & SysTick_LOAD_RELOAD_Msk);
 
     if ((reg & SysTick_CTRL_COUNTFLAG_Msk) == SysTick_CTRL_COUNTFLAG_Msk   // Interrupt was trigger on time as expected
-        || ticks >= driver->m_currentTick) {                // Interrupt was trigger slower than expected
+        || ticks >= state->m_currentTick) {                // Interrupt was trigger slower than expected
         if (ticks > 0) {
-            tick_spent = driver->m_currentTick + (SysTick->LOAD - ticks);
+            tick_spent = state->m_currentTick + (SysTick->LOAD - ticks);
         }
         else {
-            tick_spent = driver->m_currentTick;
+            tick_spent = state->m_currentTick;
         }
     }
     else {
-        tick_spent = driver->m_currentTick - ticks;
+        tick_spent = state->m_currentTick - ticks;
     }
 
-    driver->m_currentTick = ticks;
-    driver->m_lastRead += tick_spent;
+    state->m_currentTick = ticks;
+    state->m_lastRead += tick_spent;
 
-    return (uint64_t)(driver->m_lastRead);
+    return (uint64_t)(state->m_lastRead);
 }
 
 TinyCLR_Result STM32F4_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Controller* self, uint64_t processorTicks) {
@@ -116,7 +118,7 @@ TinyCLR_Result STM32F4_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Con
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto driver = reinterpret_cast<TimerDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
     ticks = STM32F4_Time_GetCurrentProcessorTicks(self);
 
@@ -126,33 +128,33 @@ TinyCLR_Result STM32F4_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Con
         if (ticks >= TIMER_IDLE_VALUE) {
             timerNextEvent = timerNextEvent > ticks ? (timerNextEvent - ticks) : 0;
 
-            driver->m_lastRead = 0;
+            state->m_lastRead = 0;
 
-            driver->m_currentTick = timerNextEvent;
-            driver->m_periodTicks = timerNextEvent;
+            state->m_currentTick = timerNextEvent;
+            state->m_periodTicks = timerNextEvent;
 
-            SysTick_Config(driver->m_periodTicks);
+            SysTick_Config(state->m_periodTicks);
 
-            driver->Reload(driver->m_periodTicks);
+            state->Reload(state->m_periodTicks);
 
         }
         else {
-            driver->m_periodTicks = SysTick_LOAD_RELOAD_Msk;
-            driver->Reload(SysTick_LOAD_RELOAD_Msk);
+            state->m_periodTicks = SysTick_LOAD_RELOAD_Msk;
+            state->Reload(SysTick_LOAD_RELOAD_Msk);
         }
     }
     else {
         if (ticks >= timerNextEvent) { // missed event
-            driver->m_DequeuAndExecute();
+            state->m_DequeuAndExecute();
         }
         else {
-            driver->m_periodTicks = (timerNextEvent - ticks);
+            state->m_periodTicks = (timerNextEvent - ticks);
 
-            if (driver->m_periodTicks >= SysTick_LOAD_RELOAD_Msk) {
-                driver->Reload(SysTick_LOAD_RELOAD_Msk);
+            if (state->m_periodTicks >= SysTick_LOAD_RELOAD_Msk) {
+                state->Reload(SysTick_LOAD_RELOAD_Msk);
             }
             else {
-                driver->Reload(driver->m_periodTicks);
+                state->Reload(state->m_periodTicks);
             }
         }
     }
@@ -165,13 +167,17 @@ extern "C" {
     void SysTick_Handler(void *param) {
         INTERRUPT_STARTED_SCOPED(isr);
 
-        auto driver = &timerDrivers[0];
+        auto controllerIndex = 0; // default index if no specific
 
-        if (STM32F4_Time_GetCurrentProcessorTicks(nullptr) >= timerNextEvent) { // handle event
-            driver->m_DequeuAndExecute();
+        auto state = &timeStates[controllerIndex];
+
+        auto self = &timeControllers[controllerIndex];
+
+        if (STM32F4_Time_GetCurrentProcessorTicks(self) >= timerNextEvent) { // handle event
+            state->m_DequeuAndExecute();
         }
         else {
-            STM32F4_Time_SetNextTickCallbackTime(nullptr, timerNextEvent);
+            STM32F4_Time_SetNextTickCallbackTime(self, timerNextEvent);
         }
     }
 
@@ -180,16 +186,16 @@ extern "C" {
 TinyCLR_Result STM32F4_Time_Initialize(const TinyCLR_NativeTime_Controller* self) {
     timerNextEvent = TIMER_IDLE_VALUE;
 
-    auto driver = reinterpret_cast<TimerDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
-    driver->m_lastRead = 0;
+    state->m_lastRead = 0;
 
-    driver->m_currentTick = SysTick_LOAD_RELOAD_Msk;
-    driver->m_periodTicks = SysTick_LOAD_RELOAD_Msk;
+    state->m_currentTick = SysTick_LOAD_RELOAD_Msk;
+    state->m_periodTicks = SysTick_LOAD_RELOAD_Msk;
 
-    SysTick_Config(driver->m_periodTicks);
+    SysTick_Config(state->m_periodTicks);
 
-    driver->Reload(driver->m_periodTicks);
+    state->Reload(state->m_periodTicks);
 
     return TinyCLR_Result::Success;
 }
@@ -201,11 +207,11 @@ TinyCLR_Result STM32F4_Time_Uninitialize(const TinyCLR_NativeTime_Controller* se
 }
 
 TinyCLR_Result STM32F4_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* self, TinyCLR_NativeTime_Callback callback) {
-    auto driver = reinterpret_cast<TimerDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
-    if (driver->m_DequeuAndExecute != nullptr) return TinyCLR_Result::InvalidOperation;
+    if (state->m_DequeuAndExecute != nullptr) return TinyCLR_Result::InvalidOperation;
 
-    driver->m_DequeuAndExecute = callback;
+    state->m_DequeuAndExecute = callback;
 
     return TinyCLR_Result::Success;
 }
@@ -235,12 +241,12 @@ void STM32F4_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_
 
 //******************** Profiler ********************
 
-void TimerDriver::Reload(uint32_t value) {
-    auto driver = &timerDrivers[0];
+void TimeState::Reload(uint32_t value) {
+    auto state = &timeStates[0];
 
-    driver->m_currentTick = value;
+    state->m_currentTick = value;
 
-    SysTick->LOAD = (uint32_t)(driver->m_currentTick - 1UL);
+    SysTick->LOAD = (uint32_t)(state->m_currentTick - 1UL);
     SysTick->VAL = 0UL;
 }
 

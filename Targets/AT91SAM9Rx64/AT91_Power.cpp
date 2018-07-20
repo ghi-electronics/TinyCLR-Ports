@@ -15,46 +15,51 @@
 
 #include "AT91.h"
 
-static void(*g_AT91_stopHandler)();
-static void(*g_AT91_restartHandler)();
+#define TOTAL_POWER_CONTROLLERS 1
 
-static TinyCLR_Power_Controller powerProvider;
-static TinyCLR_Api_Info powerApi;
+static void(*PowerStopHandler)();
+static void(*PowerRestartHandler)();
+
+static TinyCLR_Power_Controller powerControllers[TOTAL_POWER_CONTROLLERS];
+static TinyCLR_Api_Info powerApi[TOTAL_POWER_CONTROLLERS];
 
 const TinyCLR_Api_Info* AT91_Power_GetApi() {
-    powerProvider.ApiInfo = &powerApi;
-    powerProvider.Initialize = &AT91_Power_Initialize;
-    powerProvider.Uninitialize = &AT91_Power_Uninitialize;
-    powerProvider.Reset = &AT91_Power_Reset;
-    powerProvider.Sleep = &AT91_Power_Sleep;
+    for (int32_t i = 0; i < TOTAL_POWER_CONTROLLERS; i++) {
+        powerControllers[i].ApiInfo = &powerApi[i];
+        powerControllers[i].Initialize = &AT91_Power_Initialize;
+        powerControllers[i].Uninitialize = &AT91_Power_Uninitialize;
+        powerControllers[i].Reset = &AT91_Power_Reset;
+        powerControllers[i].Sleep = &AT91_Power_Sleep;
 
-    powerApi.Author = "GHI Electronics, LLC";
-    powerApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.PowerController";
-    powerApi.Type = TinyCLR_Api_Type::PowerController;
-    powerApi.Version = 0;
-    powerApi.Implementation = &powerProvider;
+        powerApi[i].Author = "GHI Electronics, LLC";
+        powerApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.PowerController";
+        powerApi[i].Type = TinyCLR_Api_Type::PowerController;
+        powerApi[i].Version = 0;
+        powerApi[i].Implementation = &powerControllers[i];
+        powerApi[i].State = nullptr;
+    }
 
-    return &powerApi;
+    return (const TinyCLR_Api_Info*)&powerApi;
 }
 
 void AT91_Power_SetHandlers(void(*stop)(), void(*restart)()) {
-    g_AT91_stopHandler = stop;
-    g_AT91_restartHandler = restart;
+    PowerStopHandler = stop;
+    PowerRestartHandler = restart;
 }
 
 void AT91_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level) {
     switch (level) {
 
     case TinyCLR_Power_SleepLevel::Hibernate: // stop
-        if (g_AT91_stopHandler != 0)
-            g_AT91_stopHandler();
+        if (PowerStopHandler != 0)
+            PowerStopHandler();
 
         return;
 
     case TinyCLR_Power_SleepLevel::Off: // standby
         // stop peripherals if needed
-        if (g_AT91_stopHandler != 0)
-            g_AT91_stopHandler();
+        if (PowerStopHandler != 0)
+            PowerStopHandler();
 
         return;
 

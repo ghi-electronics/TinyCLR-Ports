@@ -19,16 +19,16 @@
 void STM32F4_I2c_StartTransaction(int32_t controllerIndex);
 void STM32F4_I2c_StopTransaction(int32_t controllerIndex);
 
-static const STM32F4_Gpio_Pin g_STM32F4_I2c_Scl_Pins[] = STM32F4_I2C_SCL_PINS;
-static const STM32F4_Gpio_Pin g_STM32F4_I2c_Sda_Pins[] = STM32F4_I2C_SDA_PINS;
+static const STM32F4_Gpio_Pin i2cSclPins[] = STM32F4_I2C_SCL_PINS;
+static const STM32F4_Gpio_Pin i2cSdaPins[] = STM32F4_I2C_SDA_PINS;
 
-static const int TOTAL_I2C_CONTROLLERS = SIZEOF_ARRAY(g_STM32F4_I2c_Scl_Pins);
+static const int TOTAL_I2C_CONTROLLERS = SIZEOF_ARRAY(i2cSclPins);
 
-static I2C_TypeDef* g_STM32_I2c_Port[TOTAL_I2C_CONTROLLERS];
+static I2C_TypeDef* i2cPorts[TOTAL_I2C_CONTROLLERS];
 
 #define I2C_TRANSACTION_TIMEOUT 2000 // 2 seconds
 
-struct STM32F4_I2c_Configuration {
+struct I2cConfiguration {
 
     int32_t     address;
     uint8_t     clockRate;
@@ -36,7 +36,7 @@ struct STM32F4_I2c_Configuration {
 
     bool        isOpened;
 };
-struct STM32F4_I2c_Transaction {
+struct I2cTransaction {
     bool                        isReadTransaction;
     bool                        repeatedStart;
     bool                        isDone;
@@ -49,19 +49,19 @@ struct STM32F4_I2c_Transaction {
     TinyCLR_I2c_TransferStatus  result;
 };
 
-struct I2cDriver {
+struct I2cState {
     int32_t controllerIndex;
 
-    STM32F4_I2c_Configuration i2cConfiguration;
-    STM32F4_I2c_Transaction   *currentI2cTransactionAction;
-    STM32F4_I2c_Transaction   readI2cTransactionAction;
-    STM32F4_I2c_Transaction   writeI2cTransactionAction;
+    I2cConfiguration i2cConfiguration;
+    I2cTransaction   *currentI2cTransactionAction;
+    I2cTransaction   readI2cTransactionAction;
+    I2cTransaction   writeI2cTransactionAction;
 };
 
-static I2cDriver i2cDriver[TOTAL_I2C_CONTROLLERS];
+static I2cState i2cStates[TOTAL_I2C_CONTROLLERS];
 
-static TinyCLR_I2c_Controller i2cControllers[TOTAL_I2C_CONTROLLERS];;
-static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];;
+static TinyCLR_I2c_Controller i2cControllers[TOTAL_I2C_CONTROLLERS];
+static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F4_I2c_GetApi() {
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
@@ -78,19 +78,19 @@ const TinyCLR_Api_Info* STM32F4_I2c_GetApi() {
         i2cApi[i].Type = TinyCLR_Api_Type::I2cController;
         i2cApi[i].Version = 0;
         i2cApi[i].Implementation = &i2cControllers[i];
-        i2cApi[i].State = &i2cDriver[i];
+        i2cApi[i].State = &i2cStates[i];
 
-        i2cDriver[i].controllerIndex = i;
+        i2cStates[i].controllerIndex = i;
     }
 
     if (TOTAL_I2C_CONTROLLERS > 0)
-        g_STM32_I2c_Port[0] = I2C1;
+        i2cPorts[0] = I2C1;
 
     if (TOTAL_I2C_CONTROLLERS > 1)
-        g_STM32_I2c_Port[1] = I2C2;
+        i2cPorts[1] = I2C2;
 
     if (TOTAL_I2C_CONTROLLERS > 2)
-        g_STM32_I2c_Port[2] = I2C3;
+        i2cPorts[2] = I2C3;
 
     return (const TinyCLR_Api_Info*)&i2cApi;
 }
@@ -98,12 +98,12 @@ const TinyCLR_Api_Info* STM32F4_I2c_GetApi() {
 void STM32F4_I2C_ER_Interrupt(int32_t controllerIndex) {// Error Interrupt Handler
     INTERRUPT_STARTED_SCOPED(isr);
 
-    auto driver = &i2cDriver[controllerIndex];
+    auto state = &i2cStates[controllerIndex];
 
-    g_STM32_I2c_Port[controllerIndex]->SR1 = 0; // reset errors
+    i2cPorts[controllerIndex]->SR1 = 0; // reset errors
 
-    if (driver->currentI2cTransactionAction != nullptr)
-        driver->currentI2cTransactionAction->result = TinyCLR_I2c_TransferStatus::SlaveAddressNotAcknowledged;
+    if (state->currentI2cTransactionAction != nullptr)
+        state->currentI2cTransactionAction->result = TinyCLR_I2c_TransferStatus::SlaveAddressNotAcknowledged;
 
     STM32F4_I2c_StopTransaction(controllerIndex);
 }
@@ -111,11 +111,11 @@ void STM32F4_I2C_ER_Interrupt(int32_t controllerIndex) {// Error Interrupt Handl
 void STM32F4_I2C_EV_Interrupt(int32_t controllerIndex) {// Event Interrupt Handler
     INTERRUPT_STARTED_SCOPED(isr);
 
-    auto& I2Cx = g_STM32_I2c_Port[controllerIndex];
+    auto& I2Cx = i2cPorts[controllerIndex];
 
-    auto driver = &i2cDriver[controllerIndex];
+    auto state = &i2cStates[controllerIndex];
 
-    STM32F4_I2c_Transaction *transaction = driver->currentI2cTransactionAction;
+    I2cTransaction *transaction = state->currentI2cTransactionAction;
 
     int todo = transaction->bytesToTransfer;
     int sr1 = I2Cx->SR1;  // read status register
@@ -130,7 +130,7 @@ void STM32F4_I2C_EV_Interrupt(int32_t controllerIndex) {// Event Interrupt Handl
             else if (todo == 2) {
                 I2Cx->CR1 = (cr1 |= I2C_CR1_POS); // prepare 2nd byte nack
             }
-            uint8_t addr = driver->i2cConfiguration.address << 1; // address bits
+            uint8_t addr = state->i2cConfiguration.address << 1; // address bits
             I2Cx->DR = addr + 1; // send header byte with read bit;
         }
         else {
@@ -165,7 +165,7 @@ void STM32F4_I2C_EV_Interrupt(int32_t controllerIndex) {// Event Interrupt Handl
     }
     else { // write transaction
         if (sr1 & I2C_SR1_SB) { // start bit
-            uint8_t addr = driver->i2cConfiguration.address << 1; // address bits
+            uint8_t addr = state->i2cConfiguration.address << 1; // address bits
             I2Cx->DR = addr; // send header byte with write bit;
         }
         else {
@@ -184,7 +184,7 @@ void STM32F4_I2C_EV_Interrupt(int32_t controllerIndex) {// Event Interrupt Handl
             I2Cx->CR2 &= ~I2C_CR2_ITBUFEN; // disable I2C_SR1_RXNE interrupt
             I2Cx->CR1 = I2C_CR1_PE | I2C_CR1_START | I2C_CR1_ACK; // send restart
 
-            driver->currentI2cTransactionAction = &driver->readI2cTransactionAction;
+            state->currentI2cTransactionAction = &state->readI2cTransactionAction;
         }
         else {
             STM32F4_I2c_StopTransaction(controllerIndex);
@@ -217,11 +217,11 @@ void STM32F4_I2C3_EV_Interrupt(void *param) {
 }
 
 void STM32F4_I2c_StartTransaction(int32_t controllerIndex) {
-    auto& I2Cx = g_STM32_I2c_Port[controllerIndex];
+    auto& I2Cx = i2cPorts[controllerIndex];
 
-    auto driver = &i2cDriver[controllerIndex];
+    auto state = &i2cStates[controllerIndex];
 
-    uint32_t ccr = driver->i2cConfiguration.clockRate + (driver->i2cConfiguration.clockRate2 << 8);
+    uint32_t ccr = state->i2cConfiguration.clockRate + (state->i2cConfiguration.clockRate2 << 8);
     if (I2Cx->CCR != ccr) { // set clock rate and rise time
         uint32_t trise;
         if (ccr & I2C_CCR_FS) { // fast => 0.3ns rise time
@@ -242,9 +242,9 @@ void STM32F4_I2c_StartTransaction(int32_t controllerIndex) {
 }
 
 void STM32F4_I2c_StopTransaction(int32_t controllerIndex) {
-    auto& I2Cx = g_STM32_I2c_Port[controllerIndex];
+    auto& I2Cx = i2cPorts[controllerIndex];
 
-    auto driver = &i2cDriver[controllerIndex];
+    auto state = &i2cStates[controllerIndex];
 
     if (I2Cx->SR2 & I2C_SR2_BUSY && !(I2Cx->CR1 & I2C_CR1_STOP)) {
         I2Cx->CR1 |= I2C_CR1_STOP; // send stop
@@ -252,39 +252,39 @@ void STM32F4_I2c_StopTransaction(int32_t controllerIndex) {
 
     I2Cx->CR2 &= ~(I2C_CR2_ITBUFEN | I2C_CR2_ITEVTEN | I2C_CR2_ITERREN); // disable interrupts
 
-    driver->currentI2cTransactionAction->isDone = true;
+    state->currentI2cTransactionAction->isDone = true;
 }
 
 TinyCLR_Result STM32F4_I2c_Read(const TinyCLR_I2c_Controller* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
-    auto driver = reinterpret_cast<I2cDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
-    driver->readI2cTransactionAction.isReadTransaction = true;
-    driver->readI2cTransactionAction.buffer = buffer;
-    driver->readI2cTransactionAction.bytesToTransfer = length;
-    driver->readI2cTransactionAction.isDone = false;
-    driver->readI2cTransactionAction.repeatedStart = false;
-    driver->readI2cTransactionAction.bytesTransferred = 0;
+    state->readI2cTransactionAction.isReadTransaction = true;
+    state->readI2cTransactionAction.buffer = buffer;
+    state->readI2cTransactionAction.bytesToTransfer = length;
+    state->readI2cTransactionAction.isDone = false;
+    state->readI2cTransactionAction.repeatedStart = false;
+    state->readI2cTransactionAction.bytesTransferred = 0;
 
-    driver->currentI2cTransactionAction = &driver->readI2cTransactionAction;
+    state->currentI2cTransactionAction = &state->readI2cTransactionAction;
 
     STM32F4_I2c_StartTransaction(controllerIndex);
 
-    while (driver->currentI2cTransactionAction->isDone == false && timeout > 0) {
+    while (state->currentI2cTransactionAction->isDone == false && timeout > 0) {
         STM32F4_Time_Delay(nullptr, 1000);
 
         timeout--;
     }
 
-    if (driver->currentI2cTransactionAction->bytesTransferred == length)
+    if (state->currentI2cTransactionAction->bytesTransferred == length)
         result = TinyCLR_I2c_TransferStatus::FullTransfer;
-    else if (driver->currentI2cTransactionAction->bytesTransferred < length && driver->currentI2cTransactionAction->bytesTransferred > 0)
+    else if (state->currentI2cTransactionAction->bytesTransferred < length && state->currentI2cTransactionAction->bytesTransferred > 0)
         result = TinyCLR_I2c_TransferStatus::PartialTransfer;
 
-    length = driver->currentI2cTransactionAction->bytesTransferred;
+    length = state->currentI2cTransactionAction->bytesTransferred;
 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
@@ -292,33 +292,33 @@ TinyCLR_Result STM32F4_I2c_Read(const TinyCLR_I2c_Controller* self, uint8_t* buf
 TinyCLR_Result STM32F4_I2c_Write(const TinyCLR_I2c_Controller* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
-    auto driver = reinterpret_cast<I2cDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
-    driver->writeI2cTransactionAction.isReadTransaction = false;
-    driver->writeI2cTransactionAction.buffer = (uint8_t*)buffer;
-    driver->writeI2cTransactionAction.bytesToTransfer = length;
-    driver->writeI2cTransactionAction.isDone = false;
-    driver->writeI2cTransactionAction.repeatedStart = false;
-    driver->writeI2cTransactionAction.bytesTransferred = 0;
+    state->writeI2cTransactionAction.isReadTransaction = false;
+    state->writeI2cTransactionAction.buffer = (uint8_t*)buffer;
+    state->writeI2cTransactionAction.bytesToTransfer = length;
+    state->writeI2cTransactionAction.isDone = false;
+    state->writeI2cTransactionAction.repeatedStart = false;
+    state->writeI2cTransactionAction.bytesTransferred = 0;
 
-    driver->currentI2cTransactionAction = &driver->writeI2cTransactionAction;
+    state->currentI2cTransactionAction = &state->writeI2cTransactionAction;
 
     STM32F4_I2c_StartTransaction(controllerIndex);
 
-    while (driver->currentI2cTransactionAction->isDone == false && timeout > 0) {
+    while (state->currentI2cTransactionAction->isDone == false && timeout > 0) {
         STM32F4_Time_Delay(nullptr, 1000);
 
         timeout--;
     }
 
-    if (driver->currentI2cTransactionAction->bytesTransferred == length)
+    if (state->currentI2cTransactionAction->bytesTransferred == length)
         result = TinyCLR_I2c_TransferStatus::FullTransfer;
-    else if (driver->currentI2cTransactionAction->bytesTransferred < length && driver->currentI2cTransactionAction->bytesTransferred > 0)
+    else if (state->currentI2cTransactionAction->bytesTransferred < length && state->currentI2cTransactionAction->bytesTransferred > 0)
         result = TinyCLR_I2c_TransferStatus::PartialTransfer;
 
-    length = driver->currentI2cTransactionAction->bytesTransferred;
+    length = state->currentI2cTransactionAction->bytesTransferred;
 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
@@ -326,44 +326,44 @@ TinyCLR_Result STM32F4_I2c_Write(const TinyCLR_I2c_Controller* self, const uint8
 TinyCLR_Result STM32F4_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
-    auto driver = reinterpret_cast<I2cDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
-    driver->writeI2cTransactionAction.isReadTransaction = false;
-    driver->writeI2cTransactionAction.buffer = (uint8_t*)writeBuffer;
-    driver->writeI2cTransactionAction.bytesToTransfer = writeLength;
-    driver->writeI2cTransactionAction.isDone = false;
-    driver->writeI2cTransactionAction.repeatedStart = true;
-    driver->writeI2cTransactionAction.bytesTransferred = 0;
+    state->writeI2cTransactionAction.isReadTransaction = false;
+    state->writeI2cTransactionAction.buffer = (uint8_t*)writeBuffer;
+    state->writeI2cTransactionAction.bytesToTransfer = writeLength;
+    state->writeI2cTransactionAction.isDone = false;
+    state->writeI2cTransactionAction.repeatedStart = true;
+    state->writeI2cTransactionAction.bytesTransferred = 0;
 
-    driver->readI2cTransactionAction.isReadTransaction = true;
-    driver->readI2cTransactionAction.buffer = readBuffer;
-    driver->readI2cTransactionAction.bytesToTransfer = readLength;
-    driver->readI2cTransactionAction.isDone = false;
-    driver->readI2cTransactionAction.repeatedStart = false;
-    driver->readI2cTransactionAction.bytesTransferred = 0;
+    state->readI2cTransactionAction.isReadTransaction = true;
+    state->readI2cTransactionAction.buffer = readBuffer;
+    state->readI2cTransactionAction.bytesToTransfer = readLength;
+    state->readI2cTransactionAction.isDone = false;
+    state->readI2cTransactionAction.repeatedStart = false;
+    state->readI2cTransactionAction.bytesTransferred = 0;
 
-    driver->currentI2cTransactionAction = &driver->writeI2cTransactionAction;
+    state->currentI2cTransactionAction = &state->writeI2cTransactionAction;
 
     STM32F4_I2c_StartTransaction(controllerIndex);
 
-    while (driver->currentI2cTransactionAction->isDone == false && timeout > 0) {
+    while (state->currentI2cTransactionAction->isDone == false && timeout > 0) {
         STM32F4_Time_Delay(nullptr, 1000);
 
         timeout--;
     }
 
-    if (driver->writeI2cTransactionAction.bytesTransferred != writeLength) {
-        writeLength = driver->writeI2cTransactionAction.bytesTransferred;
+    if (state->writeI2cTransactionAction.bytesTransferred != writeLength) {
+        writeLength = state->writeI2cTransactionAction.bytesTransferred;
         result = TinyCLR_I2c_TransferStatus::PartialTransfer;
     }
     else {
-        readLength = driver->readI2cTransactionAction.bytesTransferred;
+        readLength = state->readI2cTransactionAction.bytesTransferred;
 
-        if (driver->currentI2cTransactionAction->bytesTransferred == readLength)
+        if (state->currentI2cTransactionAction->bytesTransferred == readLength)
             result = TinyCLR_I2c_TransferStatus::FullTransfer;
-        else if (driver->currentI2cTransactionAction->bytesTransferred < readLength && driver->currentI2cTransactionAction->bytesTransferred > 0)
+        else if (state->currentI2cTransactionAction->bytesTransferred < readLength && state->currentI2cTransactionAction->bytesTransferred > 0)
             result = TinyCLR_I2c_TransferStatus::PartialTransfer;
     }
 
@@ -374,7 +374,7 @@ TinyCLR_Result STM32F4_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self,
     uint32_t rateKhz;
     uint32_t ccr;
 
-    auto driver = reinterpret_cast<I2cDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
     if (busSpeed == TinyCLR_I2c_BusSpeed::FastMode)
         rateKhz = 400; // FastMode
@@ -392,9 +392,9 @@ TinyCLR_Result STM32F4_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self,
         ccr |= 0x8000; // set fast mode (duty cycle 1:2)
     }
 
-    driver->i2cConfiguration.clockRate = (uint8_t)ccr; // low byte
-    driver->i2cConfiguration.clockRate2 = (uint8_t)(ccr >> 8); // high byte
-    driver->i2cConfiguration.address = slaveAddress;
+    state->i2cConfiguration.clockRate = (uint8_t)ccr; // low byte
+    state->i2cConfiguration.clockRate2 = (uint8_t)(ccr >> 8); // high byte
+    state->i2cConfiguration.address = slaveAddress;
 
     return TinyCLR_Result::Success;
 }
@@ -403,14 +403,14 @@ TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto driver = reinterpret_cast<I2cDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
-    auto& I2Cx = g_STM32_I2c_Port[controllerIndex];
+    auto& I2Cx = i2cPorts[controllerIndex];
 
-    auto& scl = g_STM32F4_I2c_Scl_Pins[controllerIndex];
-    auto& sda = g_STM32F4_I2c_Sda_Pins[controllerIndex];
+    auto& scl = i2cSclPins[controllerIndex];
+    auto& sda = i2cSdaPins[controllerIndex];
 
     if (!STM32F4_GpioInternal_OpenPin(sda.number) || !STM32F4_GpioInternal_OpenPin(scl.number))
         return TinyCLR_Result::SharingViolation;
@@ -449,7 +449,7 @@ TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
 
     I2Cx->CR1 = I2C_CR1_PE; // enable peripheral
 
-    driver->i2cConfiguration.isOpened = true;
+    state->i2cConfiguration.isOpened = true;
 
     return TinyCLR_Result::Success;
 }
@@ -458,11 +458,11 @@ TinyCLR_Result STM32F4_I2c_Release(const TinyCLR_I2c_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto driver = reinterpret_cast<I2cDriver*>(self->ApiInfo->State);
+    auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
-    auto controllerIndex = driver->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
-    auto& I2Cx = g_STM32_I2c_Port[controllerIndex];
+    auto& I2Cx = i2cPorts[controllerIndex];
 
     STM32F4_InterruptInternal_Deactivate(controllerIndex == 0 ? I2C1_EV_IRQn : controllerIndex == 1 ? I2C2_EV_IRQn : I2C3_EV_IRQn);
     STM32F4_InterruptInternal_Deactivate(controllerIndex == 0 ? I2C1_ER_IRQn : controllerIndex == 1 ? I2C2_ER_IRQn : I2C3_ER_IRQn);
@@ -471,15 +471,15 @@ TinyCLR_Result STM32F4_I2c_Release(const TinyCLR_I2c_Controller* self) {
 
     RCC->APB1ENR &= (controllerIndex == 0 ? ~RCC_APB1ENR_I2C1EN : controllerIndex == 1 ? ~RCC_APB1ENR_I2C2EN : ~RCC_APB1ENR_I2C3EN);
 
-    if (driver->i2cConfiguration.isOpened) {
-        auto& scl = g_STM32F4_I2c_Scl_Pins[controllerIndex];
-        auto& sda = g_STM32F4_I2c_Sda_Pins[controllerIndex];
+    if (state->i2cConfiguration.isOpened) {
+        auto& scl = i2cSclPins[controllerIndex];
+        auto& sda = i2cSdaPins[controllerIndex];
 
         STM32F4_GpioInternal_ClosePin(sda.number);
         STM32F4_GpioInternal_ClosePin(scl.number);
     }
 
-    driver->i2cConfiguration.isOpened = false;
+    state->i2cConfiguration.isOpened = false;
 
     return TinyCLR_Result::Success;
 }
@@ -488,18 +488,18 @@ void STM32F4_I2c_Reset() {
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
         STM32F4_I2c_Release(&i2cControllers[i]);
 
-        auto driver = &i2cDriver[i];
+        auto state = &i2cStates[i];
 
-        driver->i2cConfiguration.address = 0;
-        driver->i2cConfiguration.clockRate = 0;
-        driver->i2cConfiguration.clockRate2 = 0;
+        state->i2cConfiguration.address = 0;
+        state->i2cConfiguration.clockRate = 0;
+        state->i2cConfiguration.clockRate2 = 0;
 
-        driver->readI2cTransactionAction.bytesToTransfer = 0;
-        driver->readI2cTransactionAction.bytesTransferred = 0;
+        state->readI2cTransactionAction.bytesToTransfer = 0;
+        state->readI2cTransactionAction.bytesTransferred = 0;
 
-        driver->writeI2cTransactionAction.bytesToTransfer = 0;
-        driver->writeI2cTransactionAction.bytesTransferred = 0;
+        state->writeI2cTransactionAction.bytesToTransfer = 0;
+        state->writeI2cTransactionAction.bytesTransferred = 0;
 
-        driver->i2cConfiguration.isOpened = false;
+        state->i2cConfiguration.isOpened = false;
     }
 }

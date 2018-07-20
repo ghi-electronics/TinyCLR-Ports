@@ -25,48 +25,56 @@
 #define ADC_CONTROLLER_CHANNEL_ENABLE (*(volatile uint32_t *)(ADC_CONTROLLER_REGISTER_BASE + 0x10))   // ADC_CHER
 #define ADC_CONTROLLER_TRIGGER_REGISTER (*(volatile uint32_t *)(ADC_CONTROLLER_REGISTER_BASE + 0xC0)) // ADC_TRGR
 
-static TinyCLR_Adc_Controller adcProvider;
-static TinyCLR_Api_Info adcApi;
+#define TOTAL_ADC_CONTROLLERS 1
+
+static TinyCLR_Adc_Controller adcControllers[TOTAL_ADC_CONTROLLERS];
+static TinyCLR_Api_Info adcApi[TOTAL_ADC_CONTROLLERS];
+
+static const AT91_Gpio_Pin adcPins[] = AT91_ADC_PINS;
+
+struct AdcState {
+    bool isOpened[SIZEOF_ARRAY(adcPins)];
+};
+
+static AdcState adcStates[TOTAL_ADC_CONTROLLERS];
 
 const TinyCLR_Api_Info *AT91_Adc_GetApi() {
-    adcProvider.ApiInfo = &adcApi;
-    adcProvider.Acquire = &AT91_Adc_Acquire;
-    adcProvider.Release = &AT91_Adc_Release;
-    adcProvider.AcquireChannel = &AT91_Adc_AcquireChannel;
-    adcProvider.ReleaseChannel = &AT91_Adc_ReleaseChannel;
-    adcProvider.IsChannelModeSupported = &AT91_Adc_IsChannelModeSupported;
-    adcProvider.ReadValue = &AT91_Adc_ReadValue;
-    adcProvider.GetMinValue = &AT91_Adc_GetMinValue;
-    adcProvider.GetMaxValue = &AT91_Adc_GetMaxValue;
-    adcProvider.GetResolutionInBits = &AT91_Adc_GetResolutionInBits;
-    adcProvider.GetChannelCount = &AT91_Adc_GetChannelCount;
-    adcProvider.GetChannelMode = &AT91_Adc_GetChannelMode;
-    adcProvider.SetChannelMode = &AT91_Adc_SetChannelMode;
-    adcProvider.GetControllerCount = &AT91_Adc_GetControllerCount;
+    for (auto i = 0; i < TOTAL_ADC_CONTROLLERS; i++) {
+        adcControllers[i].ApiInfo = &adcApi[i];
+        adcControllers[i].Acquire = &AT91_Adc_Acquire;
+        adcControllers[i].Release = &AT91_Adc_Release;
+        adcControllers[i].AcquireChannel = &AT91_Adc_AcquireChannel;
+        adcControllers[i].ReleaseChannel = &AT91_Adc_ReleaseChannel;
+        adcControllers[i].IsChannelModeSupported = &AT91_Adc_IsChannelModeSupported;
+        adcControllers[i].ReadValue = &AT91_Adc_ReadValue;
+        adcControllers[i].GetMinValue = &AT91_Adc_GetMinValue;
+        adcControllers[i].GetMaxValue = &AT91_Adc_GetMaxValue;
+        adcControllers[i].GetResolutionInBits = &AT91_Adc_GetResolutionInBits;
+        adcControllers[i].GetChannelCount = &AT91_Adc_GetChannelCount;
+        adcControllers[i].GetChannelMode = &AT91_Adc_GetChannelMode;
+        adcControllers[i].SetChannelMode = &AT91_Adc_SetChannelMode;
 
-    adcApi.Author = "GHI Electronics, LLC";
-    adcApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.AdcProvider";
-    adcApi.Type = TinyCLR_Api_Type::AdcProvider;
-    adcApi.Version = 0;
-    adcApi.Implementation = &adcProvider;
+        adcApi[i].Author = "GHI Electronics, LLC";
+        adcApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.AdcController";
+        adcApi[i].Type = TinyCLR_Api_Type::AdcController;
+        adcApi[i].Version = 0;
+        adcApi[i].Implementation = &adcControllers[i];
+        adcApi[i].State = &adcStates[i];
+    }
 
-    return &adcApi;
+    return (const TinyCLR_Api_Info*)&adcApi;
 }
 
-static const AT91_Gpio_Pin g_at91_adc_pins[] = AT91_ADC_PINS;
-
-bool g_at91_adc_isOpened[SIZEOF_ARRAY(g_at91_adc_pins)];
-
 int32_t AT91_Adc_GetChannelCount() {
-    return SIZEOF_ARRAY(g_at91_adc_pins);
+    return SIZEOF_ARRAY(adcPins);
 }
 
 int32_t AT91_Adc_GetPin(int32_t channel) {
-    return  g_at91_adc_pins[channel].number;
+    return  adcPins[channel].number;
 }
 
 AT91_Gpio_PeripheralSelection AT91_Adc_GetPeripheralSelection(int32_t channel) {
-    return  g_at91_adc_pins[channel].peripheralSelection;
+    return  adcPins[channel].peripheralSelection;
 }
 
 TinyCLR_Result AT91_Adc_Acquire(const TinyCLR_Adc_Controller *self) {
@@ -112,16 +120,20 @@ TinyCLR_Result AT91_Adc_AcquireChannel(const TinyCLR_Adc_Controller *self, int32
     ADC_CONTROLLER_MODE_REGISTER = (63 << 8);
     ADC_CONTROLLER_TRIGGER_REGISTER = 6;
 
-    g_at91_adc_isOpened[channel] = true;
+    auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
+
+    state->isOpened[channel] = true;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Adc_ReleaseChannel(const TinyCLR_Adc_Controller *self, int32_t channel) {
-    if (g_at91_adc_isOpened[channel])
+    auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
+
+    if (state->isOpened[channel])
         AT91_Gpio_ClosePin(AT91_Adc_GetPin(channel));
 
-    g_at91_adc_isOpened[channel] = false;
+    state->isOpened[channel] = false;
 
     return TinyCLR_Result::Success;
 }
@@ -200,7 +212,7 @@ int32_t AT91_Adc_GetMinValue(const TinyCLR_Adc_Controller *self) {
 }
 
 int32_t AT91_Adc_GetMaxValue(const TinyCLR_Adc_Controller *self) {
-    return (1 << AT91_Adc_GetResolutionInBits(self, 0)) - 1;
+    return (1 << AT91_Adc_GetResolutionInBits(self)) - 1;
 }
 
 TinyCLR_Adc_ChannelMode AT91_Adc_GetChannelMode(const TinyCLR_Adc_Controller *self) {
@@ -216,15 +228,11 @@ bool AT91_Adc_IsChannelModeSupported(const TinyCLR_Adc_Controller *self, TinyCLR
 }
 
 void AT91_Adc_Reset() {
-    for (auto ch = 0; ch < AT91_Adc_GetChannelCount(); ch++) {
-        AT91_Adc_ReleaseChannel(&adcProvider, 0, ch);
+    for (auto c = 0; c < TOTAL_ADC_CONTROLLERS; c++) {
+        for (auto ch = 0; ch < AT91_Adc_GetChannelCount(); ch++) {
+            AT91_Adc_ReleaseChannel(&adcControllers[c], ch);
 
-        g_at91_adc_isOpened[ch] = false;
+            adcStates[c].isOpened[ch] = false;
+        }
     }
-}
-
-TinyCLR_Result AT91_Adc_GetControllerCount(const TinyCLR_Adc_Controller* self, int32_t& count) {
-    count = 1;
-
-    return TinyCLR_Result::Success;
 }

@@ -18,14 +18,15 @@
 
 #define TIMER_IDLE_VALUE  0x0000FFFFFFFFFFFFFull
 
+#define TOTAL_TIME_CONTROLLERS 1
 #define SLOW_CLOCKS_PER_SECOND STM32F7_AHB_CLOCK_HZ
 #define SLOW_CLOCKS_TEN_MHZ_GCD           1000000   // GCD(SLOW_CLOCKS_PER_SECOND, 10M)
 #define SLOW_CLOCKS_MILLISECOND_GCD          1000   // GCD(SLOW_CLOCKS_PER_SECOND, 1k)
 #define CLOCK_COMMON_FACTOR               1000000   // GCD(STM32F7_SYSTEM_CLOCK_HZ, 1M)
 #define CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS 3
 
-struct STM32F7_Timer_Driver {
-
+struct TimeState {
+    int32_t controllerIndex;
     uint64_t m_lastRead;
     uint32_t m_currentTick;
     uint32_t m_periodTicks;
@@ -36,32 +37,37 @@ struct STM32F7_Timer_Driver {
 
 };
 
-static TinyCLR_NativeTime_Controller timeProvider;
-static TinyCLR_Api_Info timeApi;
+static TimeState timeStates[TOTAL_TIME_CONTROLLERS];
+
+static TinyCLR_NativeTime_Controller timeControllers[TOTAL_TIME_CONTROLLERS];
+static TinyCLR_Api_Info timeApi[TOTAL_TIME_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F7_Time_GetApi() {
-    timeProvider.ApiInfo = &timeApi;
-    timeProvider.Initialize = &STM32F7_Time_Initialize;
-    timeProvider.Uninitialize = &STM32F7_Time_Uninitialize;
-    timeProvider.GetNativeTime = &STM32F7_Time_GetCurrentProcessorTicks;
-    timeProvider.ConvertNativeTimeToSystemTime = &STM32F7_Time_GetTimeForProcessorTicks;
-    timeProvider.ConvertSystemTimeToNativeTime = &STM32F7_Time_GetProcessorTicksForTime;
-    timeProvider.SetCallback = &STM32F7_Time_SetTickCallback;
-    timeProvider.ScheduleCallback = &STM32F7_Time_SetNextTickCallbackTime;
-    timeProvider.Wait = &STM32F7_Time_DelayNative;
+    for (int32_t i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
+        timeControllers[i].ApiInfo = &timeApi[i];
+        timeControllers[i].Initialize = &STM32F7_Time_Initialize;
+        timeControllers[i].Uninitialize = &STM32F7_Time_Uninitialize;
+        timeControllers[i].GetNativeTime = &STM32F7_Time_GetCurrentProcessorTicks;
+        timeControllers[i].ConvertNativeTimeToSystemTime = &STM32F7_Time_GetTimeForProcessorTicks;
+        timeControllers[i].ConvertSystemTimeToNativeTime = &STM32F7_Time_GetProcessorTicksForTime;
+        timeControllers[i].SetCallback = &STM32F7_Time_SetTickCallback;
+        timeControllers[i].ScheduleCallback = &STM32F7_Time_SetNextTickCallbackTime;
+        timeControllers[i].Wait = &STM32F7_Time_DelayNative;
 
-    timeApi.Author = "GHI Electronics, LLC";
-    timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.NativeTimeController";
-    timeApi.Type = TinyCLR_Api_Type::NativeTimeController;
-    timeApi.Version = 0;
-    timeApi.Implementation = &timeProvider;
+        timeApi[i].Author = "GHI Electronics, LLC";
+        timeApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.NativeTimeController";
+        timeApi[i].Type = TinyCLR_Api_Type::NativeTimeController;
+        timeApi[i].Version = 0;
+        timeApi[i].Implementation = &timeControllers[i];
+        timeApi[i].State = &timeStates[i];
 
-    return &timeApi;
+        timeStates[i].controllerIndex = i;
+    }
+
+    return (const TinyCLR_Api_Info*)&timeApi;
 }
 
-static uint64_t g_nextEvent;   // tick time of next event to be scheduled
-
-STM32F7_Timer_Driver g_STM32F7_Timer_Driver;
+static uint64_t timerNextEvent;   // tick time of next event to be scheduled
 
 uint64_t STM32F7_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Controller* self, uint64_t ticks) {
     ticks *= (10000000 / SLOW_CLOCKS_TEN_MHZ_GCD);
@@ -83,27 +89,29 @@ uint64_t STM32F7_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Controll
 uint64_t STM32F7_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+
     uint32_t tick_spent;
     uint32_t reg = SysTick->CTRL;
     uint32_t ticks = (SysTick->VAL & SysTick_LOAD_RELOAD_Msk);
 
     if ((reg & SysTick_CTRL_COUNTFLAG_Msk) == SysTick_CTRL_COUNTFLAG_Msk   // Interrupt was trigger on time as expected
-        || ticks >= g_STM32F7_Timer_Driver.m_currentTick) {                // Interrupt was trigger slower than expected
+        || ticks >= state->m_currentTick) {                // Interrupt was trigger slower than expected
         if (ticks > 0) {
-            tick_spent = g_STM32F7_Timer_Driver.m_currentTick + (SysTick->LOAD - ticks);
+            tick_spent = state->m_currentTick + (SysTick->LOAD - ticks);
         }
         else {
-            tick_spent = g_STM32F7_Timer_Driver.m_currentTick;
+            tick_spent = state->m_currentTick;
         }
     }
     else {
-        tick_spent = g_STM32F7_Timer_Driver.m_currentTick - ticks;
+        tick_spent = state->m_currentTick - ticks;
     }
 
-    g_STM32F7_Timer_Driver.m_currentTick = ticks;
-    g_STM32F7_Timer_Driver.m_lastRead += tick_spent;
+    state->m_currentTick = ticks;
+    state->m_lastRead += tick_spent;
 
-    return (uint64_t)(g_STM32F7_Timer_Driver.m_lastRead & TIMER_IDLE_VALUE);
+    return (uint64_t)(state->m_lastRead);
 }
 
 TinyCLR_Result STM32F7_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Controller* self, uint64_t processorTicks) {
@@ -111,41 +119,43 @@ TinyCLR_Result STM32F7_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Con
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+
     ticks = STM32F7_Time_GetCurrentProcessorTicks(self);
 
-    g_nextEvent = processorTicks;
+    timerNextEvent = processorTicks;
 
-    if (g_nextEvent >= TIMER_IDLE_VALUE) {
+    if (timerNextEvent >= TIMER_IDLE_VALUE) {
         if (ticks >= TIMER_IDLE_VALUE) {
-            g_nextEvent = g_nextEvent > ticks ? (g_nextEvent - ticks) : 0;
+            timerNextEvent = timerNextEvent > ticks ? (timerNextEvent - ticks) : 0;
 
-            g_STM32F7_Timer_Driver.m_lastRead = 0;
+            state->m_lastRead = 0;
 
-            g_STM32F7_Timer_Driver.m_currentTick = g_nextEvent;
-            g_STM32F7_Timer_Driver.m_periodTicks = g_nextEvent;
+            state->m_currentTick = timerNextEvent;
+            state->m_periodTicks = timerNextEvent;
 
-            SysTick_Config(g_STM32F7_Timer_Driver.m_periodTicks);
+            SysTick_Config(state->m_periodTicks);
 
-            g_STM32F7_Timer_Driver.Reload(g_STM32F7_Timer_Driver.m_periodTicks);
+            state->Reload(state->m_periodTicks);
 
         }
         else {
-            g_STM32F7_Timer_Driver.m_periodTicks = SysTick_LOAD_RELOAD_Msk;
-            g_STM32F7_Timer_Driver.Reload(SysTick_LOAD_RELOAD_Msk);
+            state->m_periodTicks = SysTick_LOAD_RELOAD_Msk;
+            state->Reload(SysTick_LOAD_RELOAD_Msk);
         }
     }
     else {
-        if (ticks >= g_nextEvent) { // missed event
-            g_STM32F7_Timer_Driver.m_DequeuAndExecute();
+        if (ticks >= timerNextEvent) { // missed event
+            state->m_DequeuAndExecute();
         }
         else {
-            g_STM32F7_Timer_Driver.m_periodTicks = (g_nextEvent - ticks);
+            state->m_periodTicks = (timerNextEvent - ticks);
 
-            if (g_STM32F7_Timer_Driver.m_periodTicks >= SysTick_LOAD_RELOAD_Msk) {
-                g_STM32F7_Timer_Driver.Reload(SysTick_LOAD_RELOAD_Msk);
+            if (state->m_periodTicks >= SysTick_LOAD_RELOAD_Msk) {
+                state->Reload(SysTick_LOAD_RELOAD_Msk);
             }
             else {
-                g_STM32F7_Timer_Driver.Reload(g_STM32F7_Timer_Driver.m_periodTicks);
+                state->Reload(state->m_periodTicks);
             }
         }
     }
@@ -158,27 +168,35 @@ extern "C" {
     void SysTick_Handler(void *param) {
         INTERRUPT_STARTED_SCOPED(isr);
 
-        if (STM32F7_Time_GetCurrentProcessorTicks(nullptr) >= g_nextEvent) { // handle event
-            g_STM32F7_Timer_Driver.m_DequeuAndExecute();
+        auto controllerIndex = 0; // default index if no specific
+
+        auto state = &timeStates[controllerIndex];
+
+        auto self = &timeControllers[controllerIndex];
+        if (STM32F7_Time_GetCurrentProcessorTicks(self) >= timerNextEvent) { // handle event
+            state->m_DequeuAndExecute();
         }
         else {
-            STM32F7_Time_SetNextTickCallbackTime(nullptr, g_nextEvent);
+            STM32F7_Time_SetNextTickCallbackTime(self, timerNextEvent);
         }
     }
 
 }
 
 TinyCLR_Result STM32F7_Time_Initialize(const TinyCLR_NativeTime_Controller* self) {
-    g_nextEvent = TIMER_IDLE_VALUE;
+    timerNextEvent = TIMER_IDLE_VALUE;
 
-    g_STM32F7_Timer_Driver.m_lastRead = 0;
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
-    g_STM32F7_Timer_Driver.m_currentTick = SysTick_LOAD_RELOAD_Msk;
-    g_STM32F7_Timer_Driver.m_periodTicks = SysTick_LOAD_RELOAD_Msk;
+    state->m_lastRead = 0;
 
-    SysTick_Config(g_STM32F7_Timer_Driver.m_periodTicks);
+    state->m_currentTick = SysTick_LOAD_RELOAD_Msk;
+    state->m_periodTicks = SysTick_LOAD_RELOAD_Msk;
 
-    g_STM32F7_Timer_Driver.Reload(g_STM32F7_Timer_Driver.m_periodTicks);
+    SysTick_Config(state->m_periodTicks);
+
+    state->Reload(state->m_periodTicks);
+
     return TinyCLR_Result::Success;
 }
 
@@ -189,9 +207,11 @@ TinyCLR_Result STM32F7_Time_Uninitialize(const TinyCLR_NativeTime_Controller* se
 }
 
 TinyCLR_Result STM32F7_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* self, TinyCLR_NativeTime_Callback callback) {
-    if (g_STM32F7_Timer_Driver.m_DequeuAndExecute != nullptr) return TinyCLR_Result::InvalidOperation;
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
-    g_STM32F7_Timer_Driver.m_DequeuAndExecute = callback;
+    if (state->m_DequeuAndExecute != nullptr) return TinyCLR_Result::InvalidOperation;
+
+    state->m_DequeuAndExecute = callback;
 
     return TinyCLR_Result::Success;
 }
@@ -221,10 +241,12 @@ void STM32F7_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_
 
 //******************** Profiler ********************
 
-void STM32F7_Timer_Driver::Reload(uint32_t value) {
-    g_STM32F7_Timer_Driver.m_currentTick = value;
+void TimeState::Reload(uint32_t value) {
+    auto state = &timeStates[0];
 
-    SysTick->LOAD = (uint32_t)(g_STM32F7_Timer_Driver.m_currentTick - 1UL);
+    state->m_currentTick = value;
+
+    SysTick->LOAD = (uint32_t)(state->m_currentTick - 1UL);
     SysTick->VAL = 0UL;
 }
 

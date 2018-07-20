@@ -25,9 +25,9 @@
 #define SLOW_CLOCKS_MILLISECOND_GCD         10
 
 //////////////////////////////////////////////////////////////////////////////
-// TIMER driver
+// TIMER state
 //
-struct AT91_TIMER_Driver {
+struct At91TimerDriver {
     static const uint32_t c_SystemTimer = 0;
     static const uint32_t c_MaxTimerValue = 0xFFFFFFFF;  // Change to 32 bit TC
 
@@ -40,7 +40,7 @@ struct AT91_TIMER_Driver {
 
     static void EnableCompareInterrupt(uint32_t Timer) {
 
-        if (!(Timer < AT91_TIMER_Driver::c_MaxTimer))
+        if (!(Timer < At91TimerDriver::c_MaxTimer))
             return;
 
         AT91_TC &TC = AT91::TIMER(Timer);
@@ -51,7 +51,7 @@ struct AT91_TIMER_Driver {
     }
 
     static void DisableCompareInterrupt(uint32_t Timer) {
-        if (!(Timer < AT91_TIMER_Driver::c_MaxTimer))
+        if (!(Timer < At91TimerDriver::c_MaxTimer))
             return;
 
 
@@ -61,7 +61,7 @@ struct AT91_TIMER_Driver {
     }
 
     static void ForceInterrupt(uint32_t Timer) {
-        if (!(Timer < AT91_TIMER_Driver::c_MaxTimer))
+        if (!(Timer < At91TimerDriver::c_MaxTimer))
             return;
 
         AT91_Interrupt_ForceInterrupt(AT91C_ID_TC0_TC1);
@@ -69,7 +69,7 @@ struct AT91_TIMER_Driver {
 
     static void SetCompare(uint32_t Timer, uint32_t Compare)  // Change to 32 bit TC
     {
-        if (!(Timer < AT91_TIMER_Driver::c_MaxTimer))
+        if (!(Timer < At91TimerDriver::c_MaxTimer))
             return;
 
         AT91_TC &TC = AT91::TIMER(Timer);
@@ -78,7 +78,7 @@ struct AT91_TIMER_Driver {
     }
 
     static uint32_t ReadCounter(uint32_t Timer) {
-        if (!(Timer < AT91_TIMER_Driver::c_MaxTimer))
+        if (!(Timer < At91TimerDriver::c_MaxTimer))
             return 0;
 
         AT91_TC &TC = AT91::TIMER(Timer);
@@ -86,7 +86,7 @@ struct AT91_TIMER_Driver {
     }
 
     static bool DidTimerOverFlow(uint32_t Timer) {
-        if (!(Timer < AT91_TIMER_Driver::c_MaxTimer))
+        if (!(Timer < At91TimerDriver::c_MaxTimer))
             return false;
 
         AT91_TC &TC = AT91::TIMER(Timer);
@@ -105,17 +105,17 @@ private:
     Descriptors m_descriptors[c_MaxTimer];
 };
 
-AT91_TIMER_Driver g_AT91_TIMER_Driver;
+At91TimerDriver at91TimerDriver;
 
-bool AT91_TIMER_Driver::Initialize(uint32_t timer, bool freeRunning, uint32_t clkSource, uint32_t* ISR, void* ISR_Param) {
+bool At91TimerDriver::Initialize(uint32_t timer, bool freeRunning, uint32_t clkSource, uint32_t* ISR, void* ISR_Param) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (!(timer < AT91_TIMER_Driver::c_MaxTimer))
+    if (!(timer < At91TimerDriver::c_MaxTimer))
         return false;
 
-    if (g_AT91_TIMER_Driver.m_descriptors[timer].configured == true) return false;
+    if (at91TimerDriver.m_descriptors[timer].configured == true) return false;
 
-    g_AT91_TIMER_Driver.m_descriptors[timer].isr.Initialize(ISR, (void*)(size_t)ISR_Param);
+    at91TimerDriver.m_descriptors[timer].isr.Initialize(ISR, (void*)(size_t)ISR_Param);
 
     //--//
 
@@ -154,12 +154,12 @@ bool AT91_TIMER_Driver::Initialize(uint32_t timer, bool freeRunning, uint32_t cl
         tc.TC_CCR = (AT91_TC::TC_CLKEN | AT91_TC::TC_SWTRG);
     }
 
-    g_AT91_TIMER_Driver.m_descriptors[timer].configured = true;
+    at91TimerDriver.m_descriptors[timer].configured = true;
 
     return true;
 }
 
-bool AT91_TIMER_Driver::Uninitialize(uint32_t timer) {
+bool At91TimerDriver::Uninitialize(uint32_t timer) {
     // Get Timer pointer
     AT91_TC &tc = AT91::TIMER(timer);
 
@@ -176,72 +176,81 @@ bool AT91_TIMER_Driver::Uninitialize(uint32_t timer) {
     // Todo clock API - PMC
     *((volatile int*)(AT91C_BASE_PMC + 0x014)) = (1 << AT91C_ID_TC0_TC1);
 
-    g_AT91_TIMER_Driver.m_descriptors[timer].configured = false;
+    at91TimerDriver.m_descriptors[timer].configured = false;
 
     return true;
 }
 
-void AT91_TIMER_Driver::ISR_TIMER(void* param) {
+void At91TimerDriver::ISR_TIMER(void* param) {
     uint32_t timer = (uint32_t)param;
-    if (!(timer < AT91_TIMER_Driver::c_MaxTimer))
+    if (!(timer < At91TimerDriver::c_MaxTimer))
         return;
 
     // Execute the ISR for the Timer
-    g_AT91_TIMER_Driver.m_descriptors[timer].isr.Execute();
+    at91TimerDriver.m_descriptors[timer].isr.Execute();
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// AT91_TIME_Driver
+// TimeState
 //
-struct AT91_TIME_Driver {
+struct TimeState {
+    int32_t controllerIndex;
     uint64_t m_lastRead;
     uint64_t m_nextCompare;
 
     TinyCLR_NativeTime_Callback m_DequeuAndExecute;
 };
 
-AT91_TIME_Driver g_AT91_TIME_Driver;
+#define TOTAL_TIME_CONTROLLERS 1
+
+static TimeState timeStates[TOTAL_TIME_CONTROLLERS];
 //
-// AT91_TIME_Driver
+// TimeState
 //////////////////////////////////////////////////////////////////////////////
 
-
-static TinyCLR_NativeTime_Controller timeProvider;
-static TinyCLR_Api_Info timeApi;
+static TinyCLR_NativeTime_Controller timerControllers[TOTAL_TIME_CONTROLLERS];
+static TinyCLR_Api_Info timeApi[TOTAL_TIME_CONTROLLERS];
 
 const TinyCLR_Api_Info* AT91_Time_GetApi() {
-    timeProvider.ApiInfo = &timeApi;
-    timeProvider.ConvertNativeTimeToSystemTime = &AT91_Time_GetTimeForProcessorTicks;
-    timeProvider.ConvertSystemTimeToNativeTime = &AT91_Time_TimeToTicks;
-    timeProvider.GetNativeTime = &AT91_Time_GetCurrentProcessorTicks;
-    timeProvider.SetCallback = &AT91_Time_SetTickCallback;
-    timeProvider.ScheduleCallback = &AT91_Time_SetNextTickCallbackTime;
-    timeProvider.Initialize = &AT91_Time_Initialize;
-    timeProvider.Uninitialize = &AT91_Time_Uninitialize;
-    timeProvider.Wait = &AT91_Time_DelayNative;
+    for (auto i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
+        timerControllers[i].ApiInfo = &timeApi[i];
+        timerControllers[i].ConvertNativeTimeToSystemTime = &AT91_Time_GetTimeForProcessorTicks;
+        timerControllers[i].ConvertSystemTimeToNativeTime = &AT91_Time_TimeToTicks;
+        timerControllers[i].GetNativeTime = &AT91_Time_GetCurrentProcessorTicks;
+        timerControllers[i].SetCallback = &AT91_Time_SetTickCallback;
+        timerControllers[i].ScheduleCallback = &AT91_Time_SetNextTickCallbackTime;
+        timerControllers[i].Initialize = &AT91_Time_Initialize;
+        timerControllers[i].Uninitialize = &AT91_Time_Uninitialize;
+        timerControllers[i].Wait = &AT91_Time_DelayNative;
 
-    timeApi.Author = "GHI Electronics, LLC";
-    timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.NativeTimeController";
-    timeApi.Type = TinyCLR_Api_Type::NativeTimeController;
-    timeApi.Version = 0;
-    timeApi.Implementation = &timeProvider;
+        timeApi[i].Author = "GHI Electronics, LLC";
+        timeApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.NativeTimeController";
+        timeApi[i].Type = TinyCLR_Api_Type::NativeTimeController;
+        timeApi[i].Version = 0;
+        timeApi[i].Implementation = &timerControllers[i];
+        timeApi[i].State = &timeStates[i];
 
-    return &timeApi;
+        timeStates[i].controllerIndex = i;
+    }
+
+    return (const TinyCLR_Api_Info*)&timeApi;
 }
 
 void AT91_Time_InterruptHandler(void* Param) {
-    TinyCLR_NativeTime_Controller *provider = (TinyCLR_NativeTime_Controller*)Param;
+    TinyCLR_NativeTime_Controller *self = (TinyCLR_NativeTime_Controller*)Param;
 
-    if (AT91_Time_GetCurrentProcessorTicks(provider) >= g_AT91_TIME_Driver.m_nextCompare) {
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+
+    if (AT91_Time_GetCurrentProcessorTicks(self) >= state->m_nextCompare) {
         // this also schedules the next one, if there is one
-        g_AT91_TIME_Driver.m_DequeuAndExecute();
+        state->m_DequeuAndExecute();
     }
     else {
         //
         // Because we are limited in the resolution of timer,
         // resetting the compare will properly configure the next interrupt.
         //
-        AT91_Time_SetNextTickCallbackTime(provider, g_AT91_TIME_Driver.m_nextCompare);
+        AT91_Time_SetNextTickCallbackTime(self, state->m_nextCompare);
     }
 }
 
@@ -281,17 +290,19 @@ uint64_t AT91_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller*
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    uint32_t value = AT91_TIMER_Driver::ReadCounter(AT91_TIMER_Driver::c_SystemTimer);
+    uint32_t value = At91TimerDriver::ReadCounter(At91TimerDriver::c_SystemTimer);
 
-    g_AT91_TIME_Driver.m_lastRead &= (0xFFFFFFFF00000000ull);
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
-    if (AT91_TIMER_Driver::DidTimerOverFlow(AT91_TIMER_Driver::c_SystemTimer)) {
-        g_AT91_TIME_Driver.m_lastRead += (0x1ull << 32);
+    state->m_lastRead &= (0xFFFFFFFF00000000ull);
+
+    if (At91TimerDriver::DidTimerOverFlow(At91TimerDriver::c_SystemTimer)) {
+        state->m_lastRead += (0x1ull << 32);
     }
 
-    g_AT91_TIME_Driver.m_lastRead |= value;
+    state->m_lastRead |= value;
 
-    return (uint64_t)g_AT91_TIME_Driver.m_lastRead;
+    return (uint64_t)state->m_lastRead;
 }
 
 TinyCLR_Result AT91_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Controller* self, uint64_t processorTicks) {
@@ -299,48 +310,50 @@ TinyCLR_Result AT91_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Contro
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    g_AT91_TIME_Driver.m_nextCompare = processorTicks;
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+
+    state->m_nextCompare = processorTicks;
 
     bool fForceInterrupt = false;
 
     uint64_t ticks = AT91_Time_GetCurrentProcessorTicks(self);
 
-    if (g_AT91_TIME_Driver.m_nextCompare >= TIMER_IDLE_VALUE && ticks >= TIMER_IDLE_VALUE) {
+    if (state->m_nextCompare >= TIMER_IDLE_VALUE && ticks >= TIMER_IDLE_VALUE) {
         // Calculate next compare after overflow
-        if (g_AT91_TIME_Driver.m_nextCompare > processorTicks)
-            g_AT91_TIME_Driver.m_nextCompare = g_AT91_TIME_Driver.m_nextCompare - processorTicks;
+        if (state->m_nextCompare > processorTicks)
+            state->m_nextCompare = state->m_nextCompare - processorTicks;
         else
-            g_AT91_TIME_Driver.m_nextCompare = 0;
+            state->m_nextCompare = 0;
 
         // Reset current tick
-        g_AT91_TIME_Driver.m_lastRead = 0;
+        state->m_lastRead = 0;
         ticks = AT91_Time_GetCurrentProcessorTicks(self);
     }
 
-    if (ticks >= g_AT91_TIME_Driver.m_nextCompare) {
+    if (ticks >= state->m_nextCompare) {
         fForceInterrupt = true;
     }
     else {
         uint32_t diff;
 
-        if ((g_AT91_TIME_Driver.m_nextCompare - ticks) > AT91_TIMER_Driver::c_MaxTimerValue) {
-            diff = AT91_TIMER_Driver::c_MaxTimerValue;
+        if ((state->m_nextCompare - ticks) > At91TimerDriver::c_MaxTimerValue) {
+            diff = At91TimerDriver::c_MaxTimerValue;
         }
         else {
-            diff = (uint32_t)(g_AT91_TIME_Driver.m_nextCompare - ticks);
+            diff = (uint32_t)(state->m_nextCompare - ticks);
         }
 
-        AT91_TIMER_Driver::SetCompare(AT91_TIMER_Driver::c_SystemTimer,
-            (uint32_t)(AT91_TIMER_Driver::ReadCounter(AT91_TIMER_Driver::c_SystemTimer) + diff));
+        At91TimerDriver::SetCompare(At91TimerDriver::c_SystemTimer,
+            (uint32_t)(At91TimerDriver::ReadCounter(At91TimerDriver::c_SystemTimer) + diff));
 
-        if (AT91_Time_GetCurrentProcessorTicks(self) > g_AT91_TIME_Driver.m_nextCompare) {
+        if (AT91_Time_GetCurrentProcessorTicks(self) > state->m_nextCompare) {
             fForceInterrupt = true;
         }
     }
 
     if (fForceInterrupt) {
         // Force interrupt to process this.
-        AT91_TIMER_Driver::ForceInterrupt(AT91_TIMER_Driver::c_SystemTimer);
+        At91TimerDriver::ForceInterrupt(At91TimerDriver::c_SystemTimer);
     }
 
 
@@ -350,13 +363,15 @@ TinyCLR_Result AT91_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Contro
 TinyCLR_Result AT91_Time_Initialize(const TinyCLR_NativeTime_Controller* self) {
     int32_t timer = AT91_TIME_DEFAULT_CONTROLLER_ID;
 
-    g_AT91_TIME_Driver.m_lastRead = 0;
-    g_AT91_TIME_Driver.m_nextCompare = (uint64_t)AT91_TIMER_Driver::c_MaxTimerValue;
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
-    if (!AT91_TIMER_Driver::Initialize(AT91_TIMER_Driver::c_SystemTimer, true, AT91_TC::TC_CLKS_TIMER_DIV3_CLOCK, (uint32_t*)&AT91_Time_InterruptHandler, (void*)self))
+    state->m_lastRead = 0;
+    state->m_nextCompare = (uint64_t)At91TimerDriver::c_MaxTimerValue;
+
+    if (!At91TimerDriver::Initialize(At91TimerDriver::c_SystemTimer, true, AT91_TC::TC_CLKS_TIMER_DIV3_CLOCK, (uint32_t*)&AT91_Time_InterruptHandler, (void*)self))
         return TinyCLR_Result::InvalidOperation;;
 
-    AT91_TIMER_Driver::SetCompare(AT91_TIMER_Driver::c_SystemTimer, AT91_TIMER_Driver::c_MaxTimerValue);
+    At91TimerDriver::SetCompare(At91TimerDriver::c_SystemTimer, At91TimerDriver::c_MaxTimerValue);
 
     return TinyCLR_Result::Success;
 }
@@ -364,17 +379,19 @@ TinyCLR_Result AT91_Time_Initialize(const TinyCLR_NativeTime_Controller* self) {
 TinyCLR_Result AT91_Time_Uninitialize(const TinyCLR_NativeTime_Controller* self) {
     int32_t timer = AT91_TIME_DEFAULT_CONTROLLER_ID;
 
-    if (!AT91_TIMER_Driver::Uninitialize(AT91_TIMER_Driver::c_SystemTimer))
+    if (!At91TimerDriver::Uninitialize(At91TimerDriver::c_SystemTimer))
         return TinyCLR_Result::InvalidOperation;;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* self, TinyCLR_NativeTime_Callback callback) {
-    if (g_AT91_TIME_Driver.m_DequeuAndExecute != nullptr)
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+
+    if (state->m_DequeuAndExecute != nullptr)
         return TinyCLR_Result::InvalidOperation;
 
-    g_AT91_TIME_Driver.m_DequeuAndExecute = callback;
+    state->m_DequeuAndExecute = callback;
 
     return TinyCLR_Result::Success;
 }

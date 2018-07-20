@@ -77,28 +77,32 @@ AT91_Interrupt_Vectors s_IsrTable[] =
 TinyCLR_Interrupt_StartStopHandler AT91_Interrupt_Started;
 TinyCLR_Interrupt_StartStopHandler AT91_Interrupt_Ended;
 
-static TinyCLR_Interrupt_Controller interruptProvider;
-static TinyCLR_Api_Info interruptApi;
+#define TOTAL_INTERRUPT_CONTROLLERS 1
+
+static TinyCLR_Interrupt_Controller interruptControllers[TOTAL_INTERRUPT_CONTROLLERS];
+static TinyCLR_Api_Info interruptApi[TOTAL_INTERRUPT_CONTROLLERS];
 
 const TinyCLR_Api_Info* AT91_Interrupt_GetApi() {
-    interruptProvider.ApiInfo = &interruptApi;
-    interruptProvider.ApiInfo = &interruptApi;
-    interruptProvider.Initialize = &AT91_Interrupt_Initialize;
-    interruptProvider.Uninitialize = &AT91_Interrupt_Uninitialize;
+    for (auto i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
+        interruptControllers[i].ApiInfo = &interruptApi[i];
+        interruptControllers[i].Initialize = &AT91_Interrupt_Initialize;
+        interruptControllers[i].Uninitialize = &AT91_Interrupt_Uninitialize;
 
-    interruptProvider.IsDisabled = &AT91_Interrupt_GlobalIsDisabled;
-    interruptProvider.Enable = &AT91_Interrupt_GlobalEnable;
-    interruptProvider.Disable = &AT91_Interrupt_GlobalDisable;
-    interruptProvider.Restore = &AT91_Interrupt_GlobalRestore;
-    interruptProvider.WaitForInterrupt = &AT91_Interrupt_GlobalWaitForInterrupt;
+        interruptControllers[i].IsDisabled = &AT91_Interrupt_GlobalIsDisabled;
+        interruptControllers[i].Enable = &AT91_Interrupt_GlobalEnabled;
+        interruptControllers[i].Disable = &AT91_Interrupt_GlobalDisabled;
+        interruptControllers[i].Restore = &AT91_Interrupt_GlobalRestore;
+        interruptControllers[i].WaitForInterrupt = &AT91_Interrupt_GlobalWaitForInterrupt;
 
-    interruptApi.Author = "GHI Electronics, LLC";
-    interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.InterruptController";
-    interruptApi.Type = TinyCLR_Api_Type::InterruptController;
-    interruptApi.Version = 0;
-    interruptApi.Implementation = &interruptProvider;
+        interruptApi[i].Author = "GHI Electronics, LLC";
+        interruptApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.InterruptController";
+        interruptApi[i].Type = TinyCLR_Api_Type::InterruptController;
+        interruptApi[i].Version = 0;
+        interruptApi[i].Implementation = &interruptControllers[i];
+        interruptApi[i].State = nullptr;
+    }
 
-    return &interruptApi;
+    return (const TinyCLR_Api_Info*)&interruptApi;
 }
 
 AT91_Interrupt_Vectors* AT91_Interrupt_IrqToVector(uint32_t Irq) {
@@ -331,7 +335,7 @@ bool AT91_Interrupt_GlobalIsDisabled() {
     return (IRQ_LOCK_GetState_asm() & DISABLED_MASK);
 }
 
-bool AT91_Interrupt_GlobalEnable(bool force) {
+bool AT91_Interrupt_GlobalEnabled(bool force) {
     if (!force) {
         return (IRQ_LOCK_Release_asm() & DISABLED_MASK == 0);
     }
@@ -343,7 +347,7 @@ void AT91_Interrupt_GlobalRestore() {
     IRQ_LOCK_Restore_asm();
 }
 
-bool AT91_Interrupt_GlobalDisable(bool force) {
+bool AT91_Interrupt_GlobalDisabled(bool force) {
     if (!force) {
         return ((IRQ_LOCK_Disable_asm() & DISABLED_MASK) == DISABLED_MASK);
     }
