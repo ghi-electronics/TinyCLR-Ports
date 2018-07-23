@@ -1195,7 +1195,7 @@ const TinyCLR_Api_Info* AT91_Can_GetApi() {
         canControllers[i].WriteMessage = &AT91_Can_WriteMessage;
         canControllers[i].ReadMessage = &AT91_Can_ReadMessage;
         canControllers[i].SetBitTiming = &AT91_Can_SetBitTiming;
-        canControllers[i].GetUnreadMessageCount = &AT91_Can_GetUnreadMessageCount;
+        canControllers[i].GetMessagesToRead = &AT91_Can_GetMessagesToRead;
         canControllers[i].SetMessageReceivedHandler = &AT91_Can_SetMessageReceivedHandler;
         canControllers[i].SetErrorReceivedHandler = &AT91_Can_SetErrorReceivedHandler;
         canControllers[i].SetExplicitFilters = &AT91_Can_SetExplicitFilters;
@@ -1712,7 +1712,7 @@ TinyCLR_Result AT91_Can_SetBitTiming(const TinyCLR_Can_Controller* self, uint32_
     return TinyCLR_Result::InvalidOperation;
 }
 
-size_t AT91_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self) {
+size_t AT91_Can_GetMessagesToRead(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     return state->can_rx_count;

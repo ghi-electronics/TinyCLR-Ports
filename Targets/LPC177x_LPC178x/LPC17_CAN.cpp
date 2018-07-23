@@ -2235,7 +2235,7 @@ const TinyCLR_Api_Info* LPC17_Can_GetApi() {
         canControllers[i].WriteMessage = &LPC17_Can_WriteMessage;
         canControllers[i].ReadMessage = &LPC17_Can_ReadMessage;
         canControllers[i].SetBitTiming = &LPC17_Can_SetBitTiming;
-        canControllers[i].GetUnreadMessageCount = &LPC17_Can_GetUnreadMessageCount;
+        canControllers[i].GetMessagesToRead = &LPC17_Can_GetMessagesToRead;
         canControllers[i].SetMessageReceivedHandler = &LPC17_Can_SetMessageReceivedHandler;
         canControllers[i].SetErrorReceivedHandler = &LPC17_Can_SetErrorReceivedHandler;
         canControllers[i].SetExplicitFilters = &LPC17_Can_SetExplicitFilters;
@@ -2650,7 +2650,7 @@ TinyCLR_Result LPC17_Can_SetBitTiming(const TinyCLR_Can_Controller* self, uint32
     return TinyCLR_Result::Success;
 }
 
-size_t LPC17_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self) {
+size_t LPC17_Can_GetMessagesToRead(const TinyCLR_Can_Controller* self) {
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 

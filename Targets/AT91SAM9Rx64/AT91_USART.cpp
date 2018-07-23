@@ -69,8 +69,8 @@ const TinyCLR_Api_Info* AT91_Uart_GetApi() {
         uartControllers[i].SetReadBufferSize = &AT91_Uart_SetReadBufferSize;
         uartControllers[i].GetWriteBufferSize = &AT91_Uart_GetWriteBufferSize;
         uartControllers[i].SetWriteBufferSize = &AT91_Uart_SetWriteBufferSize;
-        uartControllers[i].GetUnreadCount = &AT91_Uart_GetUnreadCount;
-        uartControllers[i].GetUnwrittenCount = &AT91_Uart_GetUnwrittenCount;
+        uartControllers[i].GetBytesToRead = &AT91_Uart_GetBytesToRead;
+        uartControllers[i].GetBytesToWrite = &AT91_Uart_GetBytesToWrite;
         uartControllers[i].ClearReadBuffer = &AT91_Uart_ClearReadBuffer;
         uartControllers[i].ClearWriteBuffer = &AT91_Uart_ClearWriteBuffer;
 
@@ -709,13 +709,13 @@ TinyCLR_Result AT91_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Controller
     return TinyCLR_Result::NotImplemented;
 }
 
-size_t AT91_Uart_GetUnreadCount(const TinyCLR_Uart_Controller* self) {
+size_t AT91_Uart_GetBytesToRead(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     return state->rxBufferCount;
 }
 
-size_t AT91_Uart_GetUnwrittenCount(const TinyCLR_Uart_Controller* self) {
+size_t AT91_Uart_GetBytesToWrite(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     return state->txBufferCount;
