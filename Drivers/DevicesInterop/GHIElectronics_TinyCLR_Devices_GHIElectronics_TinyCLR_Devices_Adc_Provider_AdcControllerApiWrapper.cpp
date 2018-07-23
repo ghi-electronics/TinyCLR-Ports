@@ -1,12 +1,12 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::get_ChannelCount___U4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::get_ChannelCount___I4(const TinyCLR_Interop_MethodData md) {
 
 
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::get_ResolutionInBits___U4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::get_ResolutionInBits___I4(const TinyCLR_Interop_MethodData md) {
 
 
     return TinyCLR_Result::NotImplemented;
@@ -42,19 +42,19 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::OpenChannel___VOID__U4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::OpenChannel___VOID__I4(const TinyCLR_Interop_MethodData md) {
 
 
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::CloseChannel___VOID__U4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::CloseChannel___VOID__I4(const TinyCLR_Interop_MethodData md) {
 
 
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::Read___I4__U4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::Read___I4__I4(const TinyCLR_Interop_MethodData md) {
 
 
     return TinyCLR_Result::NotImplemented;
