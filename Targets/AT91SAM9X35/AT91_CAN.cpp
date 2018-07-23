@@ -1200,8 +1200,7 @@ const TinyCLR_Api_Info* AT91_Can_GetApi() {
         canControllers[i].SetErrorReceivedHandler = &AT91_Can_SetErrorReceivedHandler;
         canControllers[i].SetExplicitFilters = &AT91_Can_SetExplicitFilters;
         canControllers[i].SetGroupFilters = &AT91_Can_SetGroupFilters;
-        canControllers[i].ClearReadBuffer = &AT91_Can_ClearReadBuffer;
-        canControllers[i].IsWritingAllowed = &AT91_Can_IsWritingAllowed;
+        canControllers[i].ClearReadBuffer = &AT91_Can_ClearReadBuffer;        
         canControllers[i].GetWriteErrorCount = &AT91_Can_GetWriteErrorCount;
         canControllers[i].GetReadErrorCount = &AT91_Can_GetReadErrorCount;
         canControllers[i].GetSourceClock = &AT91_Can_GetSourceClock;
@@ -1713,12 +1712,10 @@ TinyCLR_Result AT91_Can_SetBitTiming(const TinyCLR_Can_Controller* self, uint32_
     return TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result AT91_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self) {
+size_t AT91_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    count = state->can_rx_count;
-
-    return TinyCLR_Result::Success;
+    return state->can_rx_count;
 }
 
 TinyCLR_Result AT91_Can_SetMessageReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_MessageReceivedHandler handler) {
@@ -1735,9 +1732,8 @@ TinyCLR_Result AT91_Can_SetErrorReceivedHandler(const TinyCLR_Can_Controller* se
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Can_SetExplicitFilters(const TinyCLR_Can_Controller* self, uint8_t* filters, size_t length) {
+TinyCLR_Result AT91_Can_SetExplicitFilters(const TinyCLR_Can_Controller* self, const uint32_t* filters, size_t count) {
     uint32_t *_matchFilters;
-    uint32_t *filters32 = (uint32_t*)filters;
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
@@ -1750,7 +1746,7 @@ TinyCLR_Result AT91_Can_SetExplicitFilters(const TinyCLR_Can_Controller* self, u
     if (!_matchFilters)
         return TinyCLR_Result::OutOfMemory;
 
-    memcpy(_matchFilters, filters32, length * sizeof(uint32_t));
+    memcpy(_matchFilters, filters, length * sizeof(uint32_t));
 
     std::sort(_matchFilters, _matchFilters + length);
 
@@ -1766,10 +1762,8 @@ TinyCLR_Result AT91_Can_SetExplicitFilters(const TinyCLR_Can_Controller* self, u
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, uint8_t* lowerBounds, uint8_t* upperBounds, size_t length) {
+TinyCLR_Result AT91_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, const uint32_t* lowerBounds, const uint32_t* upperBounds, size_t count) {
     uint32_t *_lowerBoundFilters, *_upperBoundFilters;
-    uint32_t *lowerBounds32 = (uint32_t *)lowerBounds;
-    uint32_t *upperBounds32 = (uint32_t *)upperBounds;
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
@@ -1787,8 +1781,8 @@ TinyCLR_Result AT91_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, uint
         return  TinyCLR_Result::OutOfMemory;
     }
 
-    memcpy(_lowerBoundFilters, lowerBounds32, length * sizeof(uint32_t));
-    memcpy(_upperBoundFilters, upperBounds32, length * sizeof(uint32_t));
+    memcpy(_lowerBoundFilters, lowerBounds, length * sizeof(uint32_t));
+    memcpy(_upperBoundFilters, upperBounds, length * sizeof(uint32_t));
 
     bool success = InsertionSort2CheckOverlap(_lowerBoundFilters, _upperBoundFilters, length);
 
@@ -1840,15 +1834,13 @@ TinyCLR_Result AT91_Can_IsWritingAllowed(const TinyCLR_Can_Controller* self, boo
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self, size_t& count) {
+size_t AT91_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    count = CAN_GetRxErrorCount(state->cand.pHw);
-
-    return TinyCLR_Result::Success;
+    return CAN_GetRxErrorCount(state->cand.pHw);
 }
 
-TinyCLR_Result AT91_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self, size_t& count) {
+TinyCLR_Result AT91_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     count = CAN_GetTxErrorCount(state->cand.pHw);
@@ -1856,13 +1848,11 @@ TinyCLR_Result AT91_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self, s
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Can_GetSourceClock(const TinyCLR_Can_Controller* self, uint32_t& sourceClock) {
-    sourceClock = AT91_SYSTEM_PERIPHERAL_CLOCK_HZ;
-
-    return TinyCLR_Result::Success;
+uint32_t AT91_Can_GetSourceClock(const TinyCLR_Can_Controller* self) {
+    return AT91_SYSTEM_PERIPHERAL_CLOCK_HZ;
 }
 
-TinyCLR_Result AT91_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self, size_t& size) {
+TinyCLR_Result AT91_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
@@ -1887,7 +1877,7 @@ TinyCLR_Result AT91_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, si
     }
 }
 
-TinyCLR_Result AT91_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self, size_t& size) {
+TinyCLR_Result AT91_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self) {
     size = 1;
 
     return TinyCLR_Result::Success;

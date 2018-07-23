@@ -2239,8 +2239,7 @@ const TinyCLR_Api_Info* LPC24_Can_GetApi() {
         canControllers[i].SetErrorReceivedHandler = &LPC24_Can_SetErrorReceivedHandler;
         canControllers[i].SetExplicitFilters = &LPC24_Can_SetExplicitFilters;
         canControllers[i].SetGroupFilters = &LPC24_Can_SetGroupFilters;
-        canControllers[i].ClearReadBuffer = &LPC24_Can_ClearReadBuffer;
-        canControllers[i].IsWritingAllowed = &LPC24_Can_IsWritingAllowed;
+        canControllers[i].ClearReadBuffer = &LPC24_Can_ClearReadBuffer;        
         canControllers[i].GetWriteErrorCount = &LPC24_Can_GetWriteErrorCount;
         canControllers[i].GetReadErrorCount = &LPC24_Can_GetReadErrorCount;
         canControllers[i].GetSourceClock = &LPC24_Can_GetSourceClock;
@@ -2685,20 +2684,19 @@ TinyCLR_Result LPC24_Can_SetErrorReceivedHandler(const TinyCLR_Can_Controller* s
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Can_SetExplicitFilters(const TinyCLR_Can_Controller* self, uint8_t* filters, size_t length) {
+TinyCLR_Result LPC24_Can_SetExplicitFilters(const TinyCLR_Can_Controller* self, const uint32_t* filters, size_t count) {
     uint32_t *_matchFilters;
-    uint32_t *filters32 = (uint32_t*)filters;
 
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    _matchFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
+    _matchFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, count * sizeof(uint32_t));
 
     if (!_matchFilters)
         return TinyCLR_Result::OutOfMemory;
 
-    memcpy(_matchFilters, filters32, length * sizeof(uint32_t));
+    memcpy(_matchFilters, filters, count * sizeof(uint32_t));
 
-    std::sort(_matchFilters, _matchFilters + length);
+    std::sort(_matchFilters, _matchFilters + count);
 
     {
         DISABLE_INTERRUPTS_SCOPED(irq);
@@ -2708,22 +2706,20 @@ TinyCLR_Result LPC24_Can_SetExplicitFilters(const TinyCLR_Can_Controller* self, 
 
         CAN_DisableExplicitFilters(controllerIndex);
 
-        state->canDataFilter.matchFiltersSize = length;
+        state->canDataFilter.matchFiltersSize = count;
         state->canDataFilter.matchFilters = _matchFilters;
     }
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, uint8_t* lowerBounds, uint8_t* upperBounds, size_t length) {
+TinyCLR_Result LPC24_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, const uint32_t* lowerBounds, const uint32_t* upperBounds, size_t count) {
     uint32_t *_lowerBoundFilters, *_upperBoundFilters;
-    uint32_t *lowerBounds32 = (uint32_t *)lowerBounds;
-    uint32_t *upperBounds32 = (uint32_t *)upperBounds;
 
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    _lowerBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
-    _upperBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
+    _lowerBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, count * sizeof(uint32_t));
+    _upperBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, count * sizeof(uint32_t));
 
     if (!_lowerBoundFilters || !_upperBoundFilters) {
         memoryProvider->Free(memoryProvider, _lowerBoundFilters);
@@ -2732,10 +2728,10 @@ TinyCLR_Result LPC24_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, uin
         return  TinyCLR_Result::OutOfMemory;
     }
 
-    memcpy(_lowerBoundFilters, lowerBounds32, length * sizeof(uint32_t));
-    memcpy(_upperBoundFilters, upperBounds32, length * sizeof(uint32_t));
+    memcpy(_lowerBoundFilters, lowerBounds, count * sizeof(uint32_t));
+    memcpy(_upperBoundFilters, upperBounds, count * sizeof(uint32_t));
 
-    bool success = InsertionSort2CheckOverlap(_lowerBoundFilters, _upperBoundFilters, length);
+    bool success = InsertionSort2CheckOverlap(_lowerBoundFilters, _upperBoundFilters, count);
 
     if (!success) {
         memoryProvider->Free(memoryProvider, _lowerBoundFilters);
@@ -2752,7 +2748,7 @@ TinyCLR_Result LPC24_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, uin
 
         CAN_DisableGroupFilters(controllerIndex);
 
-        state->canDataFilter.groupFiltersSize = length;
+        state->canDataFilter.groupFiltersSize = count;
         state->canDataFilter.lowerBoundFilters = _lowerBoundFilters;
         state->canDataFilter.upperBoundFilters = _upperBoundFilters;
     }
@@ -2790,7 +2786,7 @@ TinyCLR_Result LPC24_Can_IsWritingAllowed(const TinyCLR_Can_Controller* self, bo
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self, size_t& count) {
+TinyCLR_Result LPC24_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
     auto controllerIndex = state->controllerIndex;
 
@@ -2799,7 +2795,7 @@ TinyCLR_Result LPC24_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self, s
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self, size_t& count) {
+TinyCLR_Result LPC24_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
     auto controllerIndex = state->controllerIndex;
 
@@ -2808,13 +2804,11 @@ TinyCLR_Result LPC24_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self, 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Can_GetSourceClock(const TinyCLR_Can_Controller* self, uint32_t& sourceClock) {
-    sourceClock = LPC24_AHB_CLOCK_HZ;
-
-    return TinyCLR_Result::Success;
+uint32_t LPC24_Can_GetSourceClock(const TinyCLR_Can_Controller* self) {
+    return LPC24_AHB_CLOCK_HZ;
 }
 
-TinyCLR_Result LPC24_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self, size_t& size) {
+TinyCLR_Result LPC24_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
     auto controllerIndex = state->controllerIndex;
 
@@ -2837,7 +2831,7 @@ TinyCLR_Result LPC24_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, s
     }
 }
 
-TinyCLR_Result LPC24_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self, size_t& size) {
+TinyCLR_Result LPC24_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self) {
     size = 1;
 
     return TinyCLR_Result::Success;
