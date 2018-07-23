@@ -24,13 +24,13 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::get_UnwrittenCount___I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::get_BytesToWrite___I4(const TinyCLR_Interop_MethodData md) {
 
 
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::get_UnreadCount___I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::get_BytesToRead___I4(const TinyCLR_Interop_MethodData md) {
 
 
     return TinyCLR_Result::NotImplemented;

@@ -73,8 +73,8 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can
     static TinyCLR_Result set_WriteBufferSize___VOID__I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_ReadBufferSize___I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result set_ReadBufferSize___VOID__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result get_UnwrittenMessageCount___I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result get_UnreadMessageCount___I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result get_MessagesToWrite___I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result get_MessagesToRead___I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_CanWriteMessage___BOOLEAN(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_CanReadMessage___BOOLEAN(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_WriteErrorCount___I4(const TinyCLR_Interop_MethodData md);
@@ -423,8 +423,8 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Uar
     static TinyCLR_Result set_WriteBufferSize___VOID__I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_ReadBufferSize___I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result set_ReadBufferSize___VOID__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result get_UnwrittenCount___I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result get_UnreadCount___I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result get_BytesToWrite___I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result get_BytesToRead___I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_IsRequestToSendEnabled___BOOLEAN(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result set_IsRequestToSendEnabled___VOID__BOOLEAN(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_ClearToSendState___BOOLEAN(const TinyCLR_Interop_MethodData md);

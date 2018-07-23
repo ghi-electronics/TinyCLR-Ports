@@ -24,13 +24,13 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_UnwrittenMessageCount___I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_MessagesToWrite___I4(const TinyCLR_Interop_MethodData md) {
 
 
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_UnreadMessageCount___I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_MessagesToRead___I4(const TinyCLR_Interop_MethodData md) {
 
 
     return TinyCLR_Result::NotImplemented;
