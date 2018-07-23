@@ -293,6 +293,7 @@ const TinyCLR_Api_Info* LPC24_Spi_GetApi() {
         spiControllers[i].ApiInfo = &spiApi[i];
         spiControllers[i].Acquire = &LPC24_Spi_Acquire;
         spiControllers[i].Release = &LPC24_Spi_Release;
+		spiControllers[i].WriteRead = &LPC24_Spi_WriteRead;
         spiControllers[i].SetActiveSettings = &LPC24_Spi_SetActiveSettings;
         spiControllers[i].GetChipSelectLineCount = &LPC24_Spi_GetChipSelectLineCount;
         spiControllers[i].GetMinClockFrequency = &LPC24_Spi_GetMinClockFrequency;

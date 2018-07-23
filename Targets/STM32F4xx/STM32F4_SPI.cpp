@@ -63,6 +63,7 @@ const TinyCLR_Api_Info* STM32F4_Spi_GetApi() {
         spiControllers[i].ApiInfo = &spiApi[i];
         spiControllers[i].Acquire = &STM32F4_Spi_Acquire;
         spiControllers[i].Release = &STM32F4_Spi_Release;
+		spiControllers[i].WriteRead = &STM32F4_Spi_WriteRead;
         spiControllers[i].SetActiveSettings = &STM32F4_Spi_SetActiveSettings;
         spiControllers[i].GetChipSelectLineCount = &STM32F4_Spi_GetChipSelectLineCount;
         spiControllers[i].GetMinClockFrequency = &STM32F4_Spi_GetMinClockFrequency;

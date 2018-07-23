@@ -51,6 +51,7 @@ const TinyCLR_Api_Info* AT91_Spi_GetApi() {
         spiControllers[i].ApiInfo = &spiApi[i];
         spiControllers[i].Acquire = &AT91_Spi_Acquire;
         spiControllers[i].Release = &AT91_Spi_Release;
+		spiControllers[i].WriteRead = &AT91_Spi_WriteRead;
         spiControllers[i].SetActiveSettings = &AT91_Spi_SetActiveSettings;
         spiControllers[i].GetChipSelectLineCount = &AT91_Spi_GetChipSelectLineCount;
         spiControllers[i].GetMinClockFrequency = &AT91_Spi_GetMinClockFrequency;

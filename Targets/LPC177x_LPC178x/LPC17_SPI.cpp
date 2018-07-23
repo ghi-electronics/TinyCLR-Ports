@@ -443,6 +443,7 @@ const TinyCLR_Api_Info* LPC17_Spi_GetApi() {
         spiControllers[i].ApiInfo = &spiApi[i];
         spiControllers[i].Acquire = &LPC17_Spi_Acquire;
         spiControllers[i].Release = &LPC17_Spi_Release;
+        spiControllers[i].WriteRead = &LPC17_Spi_WriteRead;
         spiControllers[i].SetActiveSettings = &LPC17_Spi_SetActiveSettings;		
         spiControllers[i].GetChipSelectLineCount = &LPC17_Spi_GetChipSelectLineCount;
         spiControllers[i].GetMinClockFrequency = &LPC17_Spi_GetMinClockFrequency;
