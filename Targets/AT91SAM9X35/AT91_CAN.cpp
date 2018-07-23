@@ -1741,21 +1741,21 @@ TinyCLR_Result AT91_Can_SetExplicitFilters(const TinyCLR_Can_Controller* self, c
 
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    _matchFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
+    _matchFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, count * sizeof(uint32_t));
 
     if (!_matchFilters)
         return TinyCLR_Result::OutOfMemory;
 
-    memcpy(_matchFilters, filters, length * sizeof(uint32_t));
+    memcpy(_matchFilters, filters, count * sizeof(uint32_t));
 
-    std::sort(_matchFilters, _matchFilters + length);
+    std::sort(_matchFilters, _matchFilters + count);
 
     {
         DISABLE_INTERRUPTS_SCOPED(irq);
 
         CAN_DisableExplicitFilters(controllerIndex);
 
-        state->canDataFilter.matchFiltersSize = length;
+        state->canDataFilter.matchFiltersSize = count;
         state->canDataFilter.matchFilters = _matchFilters;
     }
 
@@ -1771,8 +1771,8 @@ TinyCLR_Result AT91_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, cons
 
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    _lowerBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
-    _upperBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, length * sizeof(uint32_t));
+    _lowerBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, count * sizeof(uint32_t));
+    _upperBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, count * sizeof(uint32_t));
 
     if (!_lowerBoundFilters || !_upperBoundFilters) {
         memoryProvider->Free(memoryProvider, _lowerBoundFilters);
@@ -1781,10 +1781,10 @@ TinyCLR_Result AT91_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, cons
         return  TinyCLR_Result::OutOfMemory;
     }
 
-    memcpy(_lowerBoundFilters, lowerBounds, length * sizeof(uint32_t));
-    memcpy(_upperBoundFilters, upperBounds, length * sizeof(uint32_t));
+    memcpy(_lowerBoundFilters, lowerBounds, count * sizeof(uint32_t));
+    memcpy(_upperBoundFilters, upperBounds, count * sizeof(uint32_t));
 
-    bool success = InsertionSort2CheckOverlap(_lowerBoundFilters, _upperBoundFilters, length);
+    bool success = InsertionSort2CheckOverlap(_lowerBoundFilters, _upperBoundFilters, count);
 
     if (!success) {
         memoryProvider->Free(memoryProvider, _lowerBoundFilters);
@@ -1798,7 +1798,7 @@ TinyCLR_Result AT91_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, cons
 
         CAN_DisableGroupFilters(controllerIndex);
 
-        state->canDataFilter.groupFiltersSize = length;
+        state->canDataFilter.groupFiltersSize = count;
         state->canDataFilter.lowerBoundFilters = _lowerBoundFilters;
         state->canDataFilter.upperBoundFilters = _upperBoundFilters;
     }
@@ -1843,9 +1843,7 @@ size_t AT91_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self) {
 size_t AT91_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    count = CAN_GetTxErrorCount(state->cand.pHw);
-
-    return TinyCLR_Result::Success;
+    return CAN_GetTxErrorCount(state->cand.pHw);
 }
 
 uint32_t AT91_Can_GetSourceClock(const TinyCLR_Can_Controller* self) {

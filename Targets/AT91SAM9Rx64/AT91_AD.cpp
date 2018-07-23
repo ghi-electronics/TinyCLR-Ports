@@ -97,7 +97,7 @@ int32_t AT91_Adc_GetPinForChannel(int32_t channel) {
     return AT91_Adc_GetPin(channel);
 }
 
-TinyCLR_Result AT91_Adc_OpenChannel(const TinyCLR_Adc_Controller *self, int32_t channel) {
+TinyCLR_Result AT91_Adc_OpenChannel(const TinyCLR_Adc_Controller *self, uint32_t channel) {
     if (channel >= AT91_Adc_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 
@@ -120,7 +120,7 @@ TinyCLR_Result AT91_Adc_OpenChannel(const TinyCLR_Adc_Controller *self, int32_t 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Adc_CloseChannel(const TinyCLR_Adc_Controller *self, int32_t channel) {
+TinyCLR_Result AT91_Adc_CloseChannel(const TinyCLR_Adc_Controller *self, uint32_t channel) {
     auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
     if (state->isOpened[channel])
@@ -168,7 +168,7 @@ void AT91_Adc_SortArray(uint32_t *arrayToSort) {
     }
 }
 
-TinyCLR_Result AT91_Adc_ReadChannel(const TinyCLR_Adc_Controller *self, int32_t channel, int32_t &value) {
+TinyCLR_Result AT91_Adc_ReadChannel(const TinyCLR_Adc_Controller *self, uint32_t channel, int32_t &value) {
     uint32_t arrayValuesToSort[MAX_AVERAGE_AMOUNT];
     uint32_t valueToStoreInArray;
 

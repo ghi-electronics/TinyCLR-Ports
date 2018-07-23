@@ -228,17 +228,17 @@ TinyCLR_Result AT91_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint
     auto controllerIndex = state->controllerIndex;
 
     if (writeLength > 3) {
-        AT91_I2c_Write(self, writeBuffer, writeLength, result);
+        AT91_I2c_Write(self, writeBuffer, writeLength, error);
 
-        if (result == TinyCLR_I2c_TransferStatus::FullTransfer)
-            AT91_I2c_Read(self, readBuffer, readLength, result);
+        if (error == TinyCLR_I2c_TransferStatus::FullTransfer)
+            AT91_I2c_Read(self, readBuffer, readLength, error);
 
-        return result == TinyCLR_I2c_TransferStatus::FullTransfer ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
+        return error == TinyCLR_I2c_TransferStatus::FullTransfer ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
     }
     else if (writeLength == 0) {
-        AT91_I2c_Read(self, readBuffer, readLength, result);
+        AT91_I2c_Read(self, readBuffer, readLength, error);
 
-        return result == TinyCLR_I2c_TransferStatus::FullTransfer ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
+        return error == TinyCLR_I2c_TransferStatus::FullTransfer ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
     }
 
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
