@@ -34,7 +34,6 @@ struct DacState {
 static DacState dacStates[TOTAL_DAC_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F4_Dac_GetApi() {
-#ifdef DO_IMPLEMENT
     for (int32_t i = 0; i < TOTAL_DAC_CONTROLLERS; i++) {
         dacControllers[i].ApiInfo = &dacApi[i];
         dacControllers[i].Acquire = &STM32F4_Dac_Acquire;
@@ -54,7 +53,7 @@ const TinyCLR_Api_Info* STM32F4_Dac_GetApi() {
         dacApi[i].Implementation = &dacControllers[i];
         dacApi[i].State = &dacStates[i];
     }
-#endif
+
     return (const TinyCLR_Api_Info*)&dacApi;
 }
 

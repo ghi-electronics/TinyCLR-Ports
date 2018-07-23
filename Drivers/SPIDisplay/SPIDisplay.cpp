@@ -13,7 +13,6 @@ static TinyCLR_Display_SpiConfiguration spiDisplayConfig;
 static const TinyCLR_Spi_Controller* spiDisplayBus;
 
 const TinyCLR_Api_Info* SPIDisplay_GetApi() {
-#ifdef DO_IMPLEMENT
     for (auto i = 0; i < TOTAL_SPI_DISPLAY_CONTROLLERS; i++) {
         spiDisplayControllers[i].ApiInfo = &spiDisplayApi[i];
         spiDisplayControllers[i].Acquire = &SPIDisplay_Acquire;
@@ -24,7 +23,7 @@ const TinyCLR_Api_Info* SPIDisplay_GetApi() {
         spiDisplayControllers[i].GetConfiguration = &SPIDisplay_GetConfiguration;
         spiDisplayControllers[i].GetCapabilities = &SPIDisplay_GetCapabilities;
         spiDisplayControllers[i].DrawBuffer = &SPIDisplay_DrawBuffer;
-        spiDisplayControllers[i].WriteString = &SPIDisplay_DrawString;
+        spiDisplayControllers[i].DrawString = &SPIDisplay_DrawString;
 
         spiDisplayApi[i].Author = "GHI Electronics, LLC";
         spiDisplayApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.Drivers.SPIDisplay";
@@ -33,7 +32,7 @@ const TinyCLR_Api_Info* SPIDisplay_GetApi() {
         spiDisplayApi[i].Implementation = &spiDisplayControllers[i];
         spiDisplayApi[i].State = nullptr;
     }
-#endif
+
     return (const TinyCLR_Api_Info*)&spiDisplayApi;
 }
 
@@ -104,26 +103,27 @@ static void Swap(uint8_t* a, uint8_t* b) {
 }
 
 TinyCLR_Result SPIDisplay_DrawBuffer(const TinyCLR_Display_Controller* self, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const uint8_t* data) {
-#ifdef DO_IMPLEMENT
     auto d = const_cast<uint8_t*>(data);
 
     for (auto i = 0; i < spiDisplayWidth * spiDisplayHeight * 2; i += 2)
         Swap(d + i, d + i + 1);
 
     if (x == 0 && spiDisplayWidth == width) {
-        auto len = static_cast<size_t>(width * height * 2);
+        size_t lenWrite = static_cast<size_t>(width * height * 2);
+        size_t lenRead = 0;
 
-        spiDisplayBus->Write(spiDisplayBus, data + (y * spiDisplayWidth * 2), len);
+        spiDisplayBus->WriteRead(spiDisplayBus, data + (y * spiDisplayWidth * 2), lenWrite, nullptr, lenRead, false);
     }
     else {
-        auto len = static_cast<size_t>(width * 2);
+        size_t lenWrite = static_cast<size_t>(width * 2);
+        size_t lenRead = 0;
 
         for (auto yy = y; yy < y + height; yy++)
-            spiDisplayBus->Write(spiDisplayBus, data + (yy * spiDisplayWidth * 2) + (x * 2), len);
+            spiDisplayBus->WriteRead(spiDisplayBus, data + (yy * spiDisplayWidth * 2) + (x * 2), lenWrite, nullptr, lenRead, false);
     }
 
     for (auto i = 0; i < (spiDisplayWidth * spiDisplayHeight * 2); i += 2)
         Swap(d + i, d + i + 1);
-#endif
+
     return TinyCLR_Result::Success;
 }

@@ -1032,7 +1032,6 @@ bool CAN_ErrorHandler(uint8_t controllerIndex) {
 
 
 const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
-#ifdef DO_IMPLEMENT
     for (int32_t i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
         canControllers[i].ApiInfo = &canApi[i];
         canControllers[i].Acquire = &STM32F4_Can_Acquire;
@@ -1049,7 +1048,7 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
         canControllers[i].SetErrorReceivedHandler = &STM32F4_Can_SetErrorReceivedHandler;
         canControllers[i].SetExplicitFilters = &STM32F4_Can_SetExplicitFilters;
         canControllers[i].SetGroupFilters = &STM32F4_Can_SetGroupFilters;
-        canControllers[i].ClearReadBuffer = &STM32F4_Can_ClearReadBuffer;        
+        canControllers[i].ClearReadBuffer = &STM32F4_Can_ClearReadBuffer;
         canControllers[i].GetWriteErrorCount = &STM32F4_Can_GetWriteErrorCount;
         canControllers[i].GetReadErrorCount = &STM32F4_Can_GetReadErrorCount;
         canControllers[i].GetSourceClock = &STM32F4_Can_GetSourceClock;
@@ -1067,7 +1066,7 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
 
         canStates[i].controllerIndex = i;
     }
-#endif
+
     return (const TinyCLR_Api_Info*)&canApi;
 }
 
@@ -1076,7 +1075,7 @@ size_t STM32F4_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self) {
 
     int32_t controllerIndex = state->controllerIndex;
 
-	return state->can_rxBufferSize == 0 ? canDefaultBuffersSize[controllerIndex] : state->can_rxBufferSize;
+    return state->can_rxBufferSize == 0 ? canDefaultBuffersSize[controllerIndex] : state->can_rxBufferSize;
 }
 
 TinyCLR_Result STM32F4_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
@@ -1095,7 +1094,7 @@ TinyCLR_Result STM32F4_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self,
 }
 
 size_t STM32F4_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self) {
-	return 1;
+    return 1;
 }
 
 TinyCLR_Result STM32F4_Can_SetWriteBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
@@ -1459,15 +1458,10 @@ TinyCLR_Result STM32F4_Can_SetBitTiming(const TinyCLR_Can_Controller* self, uint
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self) {
+size_t STM32F4_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
-#ifdef DO_IMPLEMENT
-    count = state->can_rx_count;
 
-    if (!count)
-        return TinyCLR_Result::NoDataAvailable;
-#endif
-    return TinyCLR_Result::Success;
+    return state->can_rx_count;
 }
 
 TinyCLR_Result STM32F4_Can_SetMessageReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_MessageReceivedHandler handler) {
@@ -1588,7 +1582,7 @@ size_t STM32F4_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self) {
 
     CAN_TypeDef* CANx = ((controllerIndex == 0) ? CAN1 : CAN2);
 
-    return = (size_t)((CANx->ESR & CAN_ESR_REC) >> 24);;
+    return (size_t)((CANx->ESR & CAN_ESR_REC) >> 24);
 }
 
 size_t STM32F4_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self) {

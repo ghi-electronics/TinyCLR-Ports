@@ -64,12 +64,11 @@ static TinyCLR_I2c_Controller i2cControllers[TOTAL_I2C_CONTROLLERS];
 static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F4_I2c_GetApi() {
-#ifdef DO_IMPLEMENT
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
         i2cControllers[i].ApiInfo = &i2cApi[i];
         i2cControllers[i].Acquire = &STM32F4_I2c_Acquire;
         i2cControllers[i].Release = &STM32F4_I2c_Release;
-        i2cControllers[i].SetActiveSettings = &STM32F4_I2c_SetActiveSettings;       
+        i2cControllers[i].SetActiveSettings = &STM32F4_I2c_SetActiveSettings;
         i2cControllers[i].WriteRead = &STM32F4_I2c_WriteRead;
 
         i2cApi[i].Author = "GHI Electronics, LLC";
@@ -90,7 +89,7 @@ const TinyCLR_Api_Info* STM32F4_I2c_GetApi() {
 
     if (TOTAL_I2C_CONTROLLERS > 2)
         i2cPorts[2] = I2C3;
-#endif
+
     return (const TinyCLR_Api_Info*)&i2cApi;
 }
 

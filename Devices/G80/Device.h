@@ -51,7 +51,7 @@
 
 #define INCLUDE_ADC
 
-// #define INCLUDE_CAN
+#define INCLUDE_CAN
 #define STM32F4_CAN_BUFFER_DEFAULT_SIZE { 128 , 128 }
 #define STM32F4_CAN_TX_PINS { { PIN(D, 1), AF(9) }, { PIN(B, 13), AF(9) } }
 #define STM32F4_CAN_RX_PINS { { PIN(D, 0), AF(9) }, { PIN(B, 12), AF(9) } }
@@ -67,7 +67,7 @@
                            /*PEx*/ NO_INIT(), NO_INIT(), NO_INIT(), NO_INIT(), NO_INIT(), NO_INIT(), NO_INIT(), NO_INIT(), NO_INIT(), NO_INIT(), NO_INIT(), NO_INIT(), NO_INIT(), NO_INIT(), NO_INIT(), NO_INIT(),\
                           }
 
-// #define INCLUDE_I2C
+#define INCLUDE_I2C
 #define STM32F4_I2C_SCL_PINS { { PIN(B, 6), AF(4) } }
 #define STM32F4_I2C_SDA_PINS { { PIN(B, 7), AF(4) } }
 
@@ -99,12 +99,12 @@
 #define STM32F4_SD_CLK_PINS { { PIN(C, 12), AF(12) } }
 #define STM32F4_SD_CMD_PINS { { PIN(D, 2), AF(12) } }
 
-// #define INCLUDE_SPI
+#define INCLUDE_SPI
 #define STM32F4_SPI_SCLK_PINS { { PIN(B, 3), AF(5) }, { PIN(B, 10), AF(5) } }
 #define STM32F4_SPI_MISO_PINS { { PIN(B, 4), AF(5) }, { PIN(C,  2), AF(5) } }
 #define STM32F4_SPI_MOSI_PINS { { PIN(B, 5), AF(5) }, { PIN(C,  3), AF(5) } }
 
-// #define INCLUDE_UART
+#define INCLUDE_UART
 #define STM32F4_UART_DEFAULT_TX_BUFFER_SIZE  { 256, 256, 256, 256 }
 #define STM32F4_UART_DEFAULT_RX_BUFFER_SIZE  { 512, 512, 512, 512 }
 #define STM32F4_UART_TX_PINS  { { PIN(A,  9), AF(7)   }, { PIN(D, 5), AF(7) }, { PIN(D,  8), AF(7) }, { PIN(A, 0), AF(8)   } }
