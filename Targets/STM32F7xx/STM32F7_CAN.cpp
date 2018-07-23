@@ -1581,7 +1581,7 @@ size_t STM32F7_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self) {
     int32_t controllerIndex = state->controllerIndex;
     CAN_TypeDef* CANx = ((controllerIndex == 0) ? CAN1 : CAN2);
 
-    return = (size_t)((CANx->ESR & CAN_ESR_REC) >> 24);;
+    return (size_t)((CANx->ESR & CAN_ESR_REC) >> 24);
 }
 
 size_t STM32F7_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self) {
@@ -1591,7 +1591,7 @@ size_t STM32F7_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self) {
 
     CAN_TypeDef* CANx = ((controllerIndex == 0) ? CAN1 : CAN2);
 
-    return (size_t)((CANx->ESR & CAN_ESR_REC) >> 16);;
+    return (size_t)((CANx->ESR & CAN_ESR_REC) >> 16);
 }
 
 uint32_t STM32F7_Can_GetSourceClock(const TinyCLR_Can_Controller* self) {
