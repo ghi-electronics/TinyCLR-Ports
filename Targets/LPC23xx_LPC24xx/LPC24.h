@@ -182,8 +182,8 @@ bool LPC24_Gpio_ConfigurePin(int32_t pin, LPC24_Gpio_Direction pinDir, LPC24_Gpi
 // ADC
 const TinyCLR_Api_Info* LPC24_Adc_GetApi();
 void LPC24_Adc_Reset();
-int32_t LPC24_Adc_GetPin(int32_t channel);
-LPC24_Gpio_PinFunction LPC24_Adc_GetPinFunction(int32_t channel);
+uint32_t LPC24_Adc_GetPin(uint32_t channel);
+LPC24_Gpio_PinFunction LPC24_Adc_GetPinFunction(uint32_t channel);
 TinyCLR_Result LPC24_Adc_Acquire(const TinyCLR_Adc_Controller* self);
 TinyCLR_Result LPC24_Adc_Release(const TinyCLR_Adc_Controller* self);
 TinyCLR_Result LPC24_Adc_OpenChannel(const TinyCLR_Adc_Controller* self, uint32_t channel);

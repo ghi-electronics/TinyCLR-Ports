@@ -25,8 +25,8 @@ typedef void(*IAP)(uint32_t[], uint32_t[]);
 
 #define AT49BV322DT_FLASH_SECTOR_NUM   (13)
 
-uint32_t g_AT49BV322DT_Flash_SectorAddress[AT49BV322DT_FLASH_SECTOR_NUM];
-uint32_t g_AT49BV322DT_Flash_SectorSize[AT49BV322DT_FLASH_SECTOR_NUM];
+uint64_t g_AT49BV322DT_Flash_SectorAddress[AT49BV322DT_FLASH_SECTOR_NUM];
+size_t g_AT49BV322DT_Flash_SectorSize[AT49BV322DT_FLASH_SECTOR_NUM];
 
 TinyCLR_Result AT49BV322DT_Flash_Read(uint32_t address, size_t length, uint8_t* buffer) {
     DISABLE_INTERRUPTS_SCOPED(irq);

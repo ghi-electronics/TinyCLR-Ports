@@ -75,7 +75,7 @@ TinyCLR_Result LPC24_Adc_Release(const TinyCLR_Adc_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC24_Adc_GetPinForChannel(int32_t channel) {
+uint32_t LPC24_Adc_GetPinForChannel(uint32_t channel) {
     if ((uint32_t)channel >= LPC24_Adc_GetChannelCount(&adcControllers[0]))
         return PIN_NONE;
 
@@ -143,10 +143,6 @@ TinyCLR_Result LPC24_Adc_ReadChannel(const TinyCLR_Adc_Controller* self, uint32_
 
     // channel not available
     return TinyCLR_Result::Success;
-}
-
-uint32_t LPC24_Adc_GetChannelCount(const TinyCLR_Adc_Controller* self) {
-    return SIZEOF_ARRAY(adcPins);
 }
 
 uint32_t LPC24_Adc_GetResolutionInBits(const TinyCLR_Adc_Controller* self) {

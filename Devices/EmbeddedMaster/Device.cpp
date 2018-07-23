@@ -175,17 +175,18 @@ LPC24_Gpio_PinFunction LPC24_Uart_GetCtsAlternateFunction(int32_t portNum) {
 }
 
 // ADC
-static const LPC24_Gpio_Pin g_lpc24_adc_pins[] = LPC24_ADC_PINS;
-int32_t LPC24_Adc_GetChannelCount() {
-    return SIZEOF_ARRAY(g_lpc24_adc_pins);
+static const LPC24_Gpio_Pin adcPins[] = LPC24_ADC_PINS;
+
+uint32_t LPC24_Adc_GetChannelCount(const TinyCLR_Adc_Controller* self) {
+    return SIZEOF_ARRAY(adcPins);
 }
 
-int32_t LPC24_Adc_GetPin(int32_t channel) {
-    return  g_lpc24_adc_pins[channel].number;
+uint32_t LPC24_Adc_GetPin(uint32_t channel) {
+    return  adcPins[channel].number;
 }
 
-LPC24_Gpio_PinFunction LPC24_Adc_GetPinFunction(int32_t channel) {
-    return  g_lpc24_adc_pins[channel].pinFunction;
+LPC24_Gpio_PinFunction LPC24_Adc_GetPinFunction(uint32_t channel) {
+    return  adcPins[channel].pinFunction;
 }
 
 //PWM

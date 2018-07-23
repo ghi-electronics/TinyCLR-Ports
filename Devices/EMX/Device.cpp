@@ -18,7 +18,6 @@
 #include "../../Drivers/AT49BV322DT_Flash/AT49BV322DT_Flash.h"
 #include "../../Drivers/SPIDisplay/SPIDisplay.h"
 #include "../../Drivers/DevicesInterop/GHIElectronics_TinyCLR_Devices.h"
-#include "../../Drivers/DevicesInterop/GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
 void LPC24_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopManager) {
     apiManager->Add(apiManager, SPIDisplay_GetApi());
@@ -143,18 +142,18 @@ LPC24_Gpio_PinFunction LPC24_Uart_GetCtsAlternateFunction(int32_t portNum) {
 }
 
 // ADC
-static const LPC24_Gpio_Pin g_LPC24_Adc_Pins[] = LPC24_ADC_PINS;
+static const LPC24_Gpio_Pin adcPins[] = LPC24_ADC_PINS;
 
-int32_t LPC24_Adc_GetChannelCount() {
-    return SIZEOF_ARRAY(g_LPC24_Adc_Pins);
+uint32_t LPC24_Adc_GetChannelCount(const TinyCLR_Adc_Controller* self) {
+    return SIZEOF_ARRAY(adcPins);
 }
 
-int32_t LPC24_Adc_GetPin(int32_t channel) {
-    return  g_LPC24_Adc_Pins[channel].number;
+uint32_t LPC24_Adc_GetPin(uint32_t channel) {
+    return  adcPins[channel].number;
 }
 
-LPC24_Gpio_PinFunction LPC24_Adc_GetPinFunction(int32_t channel) {
-    return  g_LPC24_Adc_Pins[channel].pinFunction;
+LPC24_Gpio_PinFunction LPC24_Adc_GetPinFunction(uint32_t channel) {
+    return  adcPins[channel].pinFunction;
 }
 
 //PWM

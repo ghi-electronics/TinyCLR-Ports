@@ -2656,13 +2656,11 @@ TinyCLR_Result LPC24_Can_SetBitTiming(const TinyCLR_Can_Controller* self, uint32
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self) {
+size_t LPC24_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self) {
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    count = state->can_rx_count;
-
-    return TinyCLR_Result::Success;
+    return state->can_rx_count;
 }
 
 TinyCLR_Result LPC24_Can_SetMessageReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_MessageReceivedHandler handler) {
