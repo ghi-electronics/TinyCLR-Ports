@@ -64,7 +64,7 @@ struct I2cTransaction {
     size_t                      bytesToTransfer;
     size_t                      bytesTransferred;
 
-    TinyCLR_I2c_TransferStatus  result;
+    TinyCLR_I2c_TransferStatus error;
 };
 
 #define I2C_TRANSACTION_TIMEOUT 2000 // 2 seconds

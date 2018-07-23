@@ -24,7 +24,7 @@ const TinyCLR_Api_Info* SPIDisplay_GetApi() {
         spiDisplayControllers[i].GetConfiguration = &SPIDisplay_GetConfiguration;
         spiDisplayControllers[i].GetCapabilities = &SPIDisplay_GetCapabilities;
         spiDisplayControllers[i].DrawBuffer = &SPIDisplay_DrawBuffer;
-        spiDisplayControllers[i].WriteString = &SPIDisplay_WriteString;
+        spiDisplayControllers[i].WriteString = &SPIDisplay_DrawString;
 
         spiDisplayApi[i].Author = "GHI Electronics, LLC";
         spiDisplayApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.Drivers.SPIDisplay";
@@ -62,7 +62,7 @@ TinyCLR_Result SPIDisplay_Disable(const TinyCLR_Display_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result SPIDisplay_WriteString(const TinyCLR_Display_Controller* self, const char* buffer, size_t length) {
+TinyCLR_Result SPIDisplay_DrawString(const TinyCLR_Display_Controller* self, const char* data, size_t length) {
     return TinyCLR_Result::NotSupported;
 }
 
@@ -103,7 +103,7 @@ static void Swap(uint8_t* a, uint8_t* b) {
     *b = temp;
 }
 
-TinyCLR_Result SPIDisplay_DrawBuffer(const TinyCLR_Display_Controller* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data) {
+TinyCLR_Result SPIDisplay_DrawBuffer(const TinyCLR_Display_Controller* self, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const uint8_t* data) {
 #ifdef DO_IMPLEMENT
     auto d = const_cast<uint8_t*>(data);
 

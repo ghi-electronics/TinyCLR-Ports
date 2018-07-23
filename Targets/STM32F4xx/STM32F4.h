@@ -231,10 +231,10 @@ TinyCLR_Result STM32F4_Spi_Read(const TinyCLR_Spi_Controller* self, uint8_t* buf
 TinyCLR_Result STM32F4_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8_t* buffer, size_t& length);
 TinyCLR_Result STM32F4_Spi_TransferFullDuplex(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength);
 TinyCLR_Result STM32F4_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength);
-int32_t STM32F4_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self);
-int32_t STM32F4_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self);
-int32_t STM32F4_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self);
-TinyCLR_Result STM32F4_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller* self, int32_t* dataBitLengths, size_t& dataBitLengthsCount);
+uint32_t STM32F4_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self);
+uint32_t STM32F4_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self);
+uint32_t STM32F4_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self);
+TinyCLR_Result STM32F4_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller* self, uint32_t* dataBitLengths, size_t& dataBitLengthsCount);
 void STM32F4_Spi_Reset();
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -255,12 +255,12 @@ TinyCLR_Result STM32F4_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* s
 TinyCLR_Result STM32F4_Uart_SetClearToSendChangedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ClearToSendChangedHandler handler);
 TinyCLR_Result STM32F4_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool& state);
 TinyCLR_Result STM32F4_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool state);
-TinyCLR_Result STM32F4_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t& size);
+size_t STM32F4_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self);
 TinyCLR_Result STM32F4_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t size);
-TinyCLR_Result STM32F4_Uart_GetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t& size);
+size_t STM32F4_Uart_GetWriteBufferSize(const TinyCLR_Uart_Controller* self);
 TinyCLR_Result STM32F4_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t size);
-TinyCLR_Result STM32F4_Uart_GetUnreadCount(const TinyCLR_Uart_Controller* self, size_t& count);
-TinyCLR_Result STM32F4_Uart_GetUnwrittenCount(const TinyCLR_Uart_Controller* self, size_t& count);
+size_t STM32F4_Uart_GetUnreadCount(const TinyCLR_Uart_Controller* self);
+size_t STM32F4_Uart_GetUnwrittenCount(const TinyCLR_Uart_Controller* self);
 TinyCLR_Result STM32F4_Uart_ClearReadBuffer(const TinyCLR_Uart_Controller* self);
 TinyCLR_Result STM32F4_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self);
 void STM32F4_Uart_Reset();

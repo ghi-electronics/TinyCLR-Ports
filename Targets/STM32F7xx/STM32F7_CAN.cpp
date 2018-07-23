@@ -1032,6 +1032,7 @@ bool CAN_ErrorHandler(uint8_t controllerIndex) {
 }
 
 const TinyCLR_Api_Info* STM32F7_Can_GetApi() {
+#ifdef DO_IMPLEMENT
     for (int32_t i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
         canControllers[i].ApiInfo = &canApi[i];
         canControllers[i].Acquire = &STM32F7_Can_Acquire;
@@ -1067,7 +1068,7 @@ const TinyCLR_Api_Info* STM32F7_Can_GetApi() {
 
         canStates[i].controllerIndex = i;
     }
-
+#endif
     return (const TinyCLR_Api_Info*)&canApi;
 }
 
@@ -1464,13 +1465,14 @@ TinyCLR_Result STM32F7_Can_SetBitTiming(const TinyCLR_Can_Controller* self, uint
 }
 
 TinyCLR_Result STM32F7_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self) {
+#ifdef DO_IMPLEMENT
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     count = state->can_rx_count;
 
     if (!count)
         return TinyCLR_Result::NoDataAvailable;
-
+#endif
     return TinyCLR_Result::Success;
 }
 
@@ -1636,11 +1638,11 @@ TinyCLR_Result STM32F7_Can_Disable(const TinyCLR_Can_Controller* self) {
 }
 
 bool STM32F7_Can_CanWriteMessage(const TinyCLR_Can_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    return false;
 }
 
 bool STM32F7_Can_CanReadMessage(const TinyCLR_Can_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    return false;
 }
 
 #endif // INCLUDE_CAN

@@ -432,22 +432,22 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-int32_t AT91_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self) {
+uint32_t AT91_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self) {
     return AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 255;
 }
 
-int32_t AT91_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self) {
+uint32_t AT91_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self) {
     return AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 1;
 }
 
-int32_t AT91_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self) {
+uint32_t AT91_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self) {
     return AT91_Gpio_GetPinCount(nullptr);
 }
 
 static const int32_t dataBitsCount = 2;
 static int32_t dataBits[dataBitsCount] = { 8, 16 };
 
-TinyCLR_Result AT91_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller* self, int32_t* dataBitLengths, size_t& dataBitLengthsCount) {
+TinyCLR_Result AT91_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller* self, uint32_t* dataBitLengths, size_t& dataBitLengthsCount) {
     if (dataBitLengths != nullptr)
         memcpy(dataBitLengths, dataBits, (dataBitsCount < dataBitLengthsCount ? dataBitsCount : dataBitLengthsCount) * sizeof(int32_t));
 

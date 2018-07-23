@@ -72,7 +72,7 @@ TinyCLR_Result STM32F4_Dac_Release(const TinyCLR_Dac_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Dac_OpenChannel(const TinyCLR_Dac_Controller* self, int32_t channel) {
+TinyCLR_Result STM32F4_Dac_OpenChannel(const TinyCLR_Dac_Controller* self, uint32_t channel) {
     if (!STM32F4_GpioInternal_OpenPin(STM32F4_DAC_FIRST_PIN + channel))
         return TinyCLR_Result::SharingViolation;
 
@@ -96,7 +96,7 @@ TinyCLR_Result STM32F4_Dac_OpenChannel(const TinyCLR_Dac_Controller* self, int32
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Dac_CloseChannel(const TinyCLR_Dac_Controller* self, int32_t channel) {
+TinyCLR_Result STM32F4_Dac_CloseChannel(const TinyCLR_Dac_Controller* self, uint32_t channel) {
     auto state = reinterpret_cast<DacState*>(self->ApiInfo->State);
 
     if (channel) {
@@ -119,7 +119,7 @@ TinyCLR_Result STM32F4_Dac_CloseChannel(const TinyCLR_Dac_Controller* self, int3
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Dac_WriteValue(const TinyCLR_Dac_Controller* self, int32_t channel, int32_t value) {
+TinyCLR_Result STM32F4_Dac_WriteValue(const TinyCLR_Dac_Controller* self, uint32_t channel, int32_t value) {
     value &= 0x00000FFF;
 
     if (channel)
@@ -148,7 +148,7 @@ int32_t STM32F4_Dac_GetMaxValue(const TinyCLR_Dac_Controller* self) {
 
 void STM32F4_Dac_Reset() {
     for (auto c = 0; c < TOTAL_DAC_CONTROLLERS; c++) {
-        for (auto i = 0; i < STM32F4_Dac_GetChannelCount(&dacControllers[c]); i++) {
+        for (uint32_t i = 0; i < STM32F4_Dac_GetChannelCount(&dacControllers[c]); i++) {
             STM32F4_Dac_CloseChannel(&dacControllers[c], i);
 
             dacStates[c].isOpened[i] = false;

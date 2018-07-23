@@ -37,7 +37,7 @@ struct I2cTransaction {
     size_t                      bytesToTransfer;
     size_t                      bytesTransferred;
 
-    TinyCLR_I2c_TransferStatus  result;
+    TinyCLR_I2c_TransferStatus error;
 };
 
 static const LPC24_Gpio_Pin i2cSclPins[] = LPC24_I2C_SCL_PINS;

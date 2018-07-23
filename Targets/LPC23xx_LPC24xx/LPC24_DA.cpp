@@ -73,7 +73,7 @@ TinyCLR_Result LPC24_Dac_Release(const TinyCLR_Dac_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Dac_OpenChannel(const TinyCLR_Dac_Controller* self, int32_t channel) {
+TinyCLR_Result LPC24_Dac_OpenChannel(const TinyCLR_Dac_Controller* self, uint32_t channel) {
     if (channel >= LPC24_Dac_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 
@@ -91,7 +91,7 @@ TinyCLR_Result LPC24_Dac_OpenChannel(const TinyCLR_Dac_Controller* self, int32_t
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Dac_CloseChannel(const TinyCLR_Dac_Controller* self, int32_t channel) {
+TinyCLR_Result LPC24_Dac_CloseChannel(const TinyCLR_Dac_Controller* self, uint32_t channel) {
     if (channel >= LPC24_Dac_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 
@@ -104,7 +104,7 @@ TinyCLR_Result LPC24_Dac_CloseChannel(const TinyCLR_Dac_Controller* self, int32_
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Dac_WriteValue(const TinyCLR_Dac_Controller* self, int32_t channel, int32_t value) {
+TinyCLR_Result LPC24_Dac_WriteValue(const TinyCLR_Dac_Controller* self, uint32_t channel, int32_t value) {
     if (channel >= LPC24_Dac_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 

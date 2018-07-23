@@ -88,9 +88,7 @@ const TinyCLR_Api_Info* STM32F7_Uart_GetApi() {
         uartControllers[i].SetErrorReceivedHandler = &STM32F7_Uart_SetErrorReceivedHandler;
         uartControllers[i].SetDataReceivedHandler = &STM32F7_Uart_SetDataReceivedHandler;
         uartControllers[i].GetClearToSendState = &STM32F7_Uart_GetClearToSendState;
-        uartControllers[i].GetDataReadyState = &STM32F7_Uart_GetDataReadyState;
-        uartControllers[i].GetIsDataTerminalReadyEnabled = &STM32F7_Uart_GetIsDataTerminalReadyEnabled;
-        uartControllers[i].SetIsDataTerminalReadyEnabled = &STM32F7_Uart_SetIsDataTerminalReadyEnabled;
+        uartControllers[i].SetClearToSendChangedHandler = &STM32F7_Uart_SetClearToSendChangedHandler;
         uartControllers[i].GetIsRequestToSendEnabled = &STM32F7_Uart_GetIsRequestToSendEnabled;
         uartControllers[i].SetIsRequestToSendEnabled = &STM32F7_Uart_SetIsRequestToSendEnabled;
         uartControllers[i].GetReadBufferSize = &STM32F7_Uart_GetReadBufferSize;
@@ -132,14 +130,12 @@ const TinyCLR_Api_Info* STM32F7_Uart_GetApi() {
     return (const TinyCLR_Api_Info*)&uartApi;
 }
 
-TinyCLR_Result STM32F7_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t& size) {
+size_t STM32F7_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     int32_t controllerIndex = state->controllerIndex;
 
-    size = state->rxBufferSize == 0 ? uartRxDefaultBuffersSize[controllerIndex] : state->rxBufferSize;
-
-    return TinyCLR_Result::Success;
+    return state->rxBufferSize == 0 ? uartRxDefaultBuffersSize[controllerIndex] : state->rxBufferSize;
 }
 
 TinyCLR_Result STM32F7_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
@@ -167,14 +163,12 @@ TinyCLR_Result STM32F7_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* sel
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Uart_GetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t& size) {
+size_t STM32F7_Uart_GetWriteBufferSize(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     int32_t controllerIndex = state->controllerIndex;
 
-    size = state->txBufferSize == 0 ? uartTxDefaultBuffersSize[controllerIndex] : state->txBufferSize;
-
-    return TinyCLR_Result::Success;
+    return state->txBufferSize == 0 ? uartTxDefaultBuffersSize[controllerIndex] : state->txBufferSize;
 }
 
 TinyCLR_Result STM32F7_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
@@ -807,7 +801,7 @@ TinyCLR_Result STM32F7_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* s
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result STM32F7_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* self, bool& state) {
+TinyCLR_Result STM32F7_Uart_SetClearToSendChangedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ClearToSendChangedHandler handler) {
     return TinyCLR_Result::NotImplemented;
 }
 
@@ -819,20 +813,16 @@ TinyCLR_Result STM32F7_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Control
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result STM32F7_Uart_GetUnreadCount(const TinyCLR_Uart_Controller* self, size_t& count) {
+size_t STM32F7_Uart_GetUnreadCount(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    count = state->rxBufferCount;
-
-    return TinyCLR_Result::Success;
+    return state->rxBufferCount;
 }
 
-TinyCLR_Result STM32F7_Uart_GetUnwrittenCount(const TinyCLR_Uart_Controller* self, size_t& count) {
+size_t STM32F7_Uart_GetUnwrittenCount(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    count = state->txBufferCount;
-
-    return TinyCLR_Result::Success;
+    return state->txBufferCount;
 }
 
 TinyCLR_Result STM32F7_Uart_ClearReadBuffer(const TinyCLR_Uart_Controller* self) {

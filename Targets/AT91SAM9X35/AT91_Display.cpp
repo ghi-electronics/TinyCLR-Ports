@@ -1388,14 +1388,14 @@ TinyCLR_Result AT91_Display_GetConfiguration(const TinyCLR_Display_Controller* s
     return TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result AT91_Display_DrawBuffer(const TinyCLR_Display_Controller* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data) {
+TinyCLR_Result AT91_Display_DrawBuffer(const TinyCLR_Display_Controller* self, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const uint8_t* data) {
     AT91_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Display_WriteString(const TinyCLR_Display_Controller* self, const char* buffer, size_t length) {
+TinyCLR_Result AT91_Display_DrawString(const TinyCLR_Display_Controller* self, const char* data, size_t length) {
     for (size_t i = 0; i < length; i++)
-        AT91_Display_WriteFormattedChar(buffer[i]);
+        AT91_Display_WriteFormattedChar(data[i]);
 
     return TinyCLR_Result::Success;
 }
@@ -1421,7 +1421,7 @@ const TinyCLR_Api_Info* AT91_Display_GetApi() {
         displayControllers[i].GetConfiguration = &AT91_Display_GetConfiguration;
         displayControllers[i].GetCapabilities = &AT91_Display_GetCapabilities;
         displayControllers[i].DrawBuffer = &AT91_Display_DrawBuffer;
-        displayControllers[i].WriteString = &AT91_Display_WriteString;
+        displayControllers[i].DrawString = &AT91_Display_DrawString;
 
         displayApi[i].Author = "GHI Electronics, LLC";
         displayApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.DisplayController";

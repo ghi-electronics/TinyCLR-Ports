@@ -63,7 +63,7 @@ struct I2cTransaction {
     size_t                      bytesToTransfer;
     size_t                      bytesTransferred;
 
-    TinyCLR_I2c_TransferStatus  result;
+    TinyCLR_I2c_TransferStatus error;
 };
 
 struct I2cState {
@@ -86,8 +86,6 @@ const TinyCLR_Api_Info* STM32F7_I2c_GetApi() {
         i2cControllers[i].Acquire = &STM32F7_I2c_Acquire;
         i2cControllers[i].Release = &STM32F7_I2c_Release;
         i2cControllers[i].SetActiveSettings = &STM32F7_I2c_SetActiveSettings;
-        i2cControllers[i].Read = &STM32F7_I2c_Read;
-        i2cControllers[i].Write = &STM32F7_I2c_Write;
         i2cControllers[i].WriteRead = &STM32F7_I2c_WriteRead;
 
         i2cApi[i].Author = "GHI Electronics, LLC";

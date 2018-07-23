@@ -903,20 +903,20 @@ TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC17_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self) {
+uint32_t LPC17_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self) {
     // CPSDVSR min 2, max 254
     // SCR min 0, max 127
     return (LPC17_AHB_CLOCK_HZ / 2) / (254 * (127 + 1));
 
 }
 
-int32_t LPC17_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self) {
+uint32_t LPC17_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self) {
     // CPSDVSR min 2, max 254
     // SCR min 0, max 127
     return (LPC17_AHB_CLOCK_HZ / 2) / (2 * (0 + 1));
 }
 
-int32_t LPC17_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self) {
+uint32_t LPC17_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self) {
     // This could maintain a map of the actual pins
     // that are available for a particular port.
     // (Not all pins can be mapped to all ports.)
@@ -934,7 +934,7 @@ int32_t LPC17_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self) {
 static const int32_t dataBitsCount = 2;
 static int32_t dataBits[dataBitsCount] = { 8, 16 };
 
-TinyCLR_Result LPC17_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller* self, int32_t* dataBitLengths, size_t& dataBitLengthsCount) {
+TinyCLR_Result LPC17_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller* self, uint32_t* dataBitLengths, size_t& dataBitLengthsCount) {
     if (dataBitLengths != nullptr)
         memcpy(dataBitLengths, dataBits, (dataBitsCount < dataBitLengthsCount ? dataBitsCount : dataBitLengthsCount) * sizeof(int32_t));
 

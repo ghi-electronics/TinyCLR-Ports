@@ -1161,14 +1161,14 @@ TinyCLR_Result STM32F7_Display_GetConfiguration(const TinyCLR_Display_Controller
     return TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result STM32F7_Display_DrawBuffer(const TinyCLR_Display_Controller* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data) {
+TinyCLR_Result STM32F7_Display_DrawBuffer(const TinyCLR_Display_Controller* self, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const uint8_t* data) {
     STM32F7_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Display_WriteString(const TinyCLR_Display_Controller* self, const char* buffer, size_t length) {
+TinyCLR_Result STM32F7_Display_DrawString(const TinyCLR_Display_Controller* self, const char* data, size_t length) {
     for (size_t i = 0; i < length; i++)
-        STM32F7_Display_WriteFormattedChar(buffer[i]);
+        STM32F7_Display_WriteFormattedChar(data[i]);
 
     return TinyCLR_Result::Success;
 }
@@ -1194,7 +1194,7 @@ const TinyCLR_Api_Info* STM32F7_Display_GetApi() {
         displayControllers[i].GetConfiguration = &STM32F7_Display_GetConfiguration;
         displayControllers[i].GetCapabilities = &STM32F7_Display_GetCapabilities;
         displayControllers[i].DrawBuffer = &STM32F7_Display_DrawBuffer;
-        displayControllers[i].WriteString = &STM32F7_Display_WriteString;
+        displayControllers[i].DrawString = &STM32F7_Display_DrawString;
 
         displayApi[i].Author = "GHI Electronics, LLC";
         displayApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.DisplayController";
