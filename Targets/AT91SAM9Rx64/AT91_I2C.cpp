@@ -47,9 +47,7 @@ const TinyCLR_Api_Info* AT91_I2c_GetApi() {
         i2cControllers[i].ApiInfo = &i2cApi[i];
         i2cControllers[i].Acquire = &AT91_I2c_Acquire;
         i2cControllers[i].Release = &AT91_I2c_Release;
-        i2cControllers[i].SetActiveSettings = &AT91_I2c_SetActiveSettings;
-        i2cControllers[i].Read = &AT91_I2c_Read;
-        i2cControllers[i].Write = &AT91_I2c_Write;
+        i2cControllers[i].SetActiveSettings = &AT91_I2c_SetActiveSettings;        
         i2cControllers[i].WriteRead = &AT91_I2c_WriteRead;
 
         i2cApi[i].Author = "GHI Electronics, LLC";

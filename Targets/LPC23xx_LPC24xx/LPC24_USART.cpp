@@ -788,7 +788,7 @@ TinyCLR_Result LPC24_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* sel
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result LPC24_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* self, bool& state) {
+TinyCLR_Result LPC24_Uart_SetClearToSendChangedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ClearToSendChangedHandler handler) {
     return TinyCLR_Result::NotImplemented;
 }
 

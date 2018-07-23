@@ -144,7 +144,7 @@ TinyCLR_Result AT49BV322DT_Flash_GetBytesPerSector(uint32_t address, int32_t& si
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT49BV322DT_Flash_GetSectorMap(const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
+TinyCLR_Result AT49BV322DT_Flash_GetSectorMap(const uint64_t*& addresses, const size_t*& sizes, size_t& count) {
     for (auto i = 0; i < AT49BV322DT_FLASH_SECTOR_NUM; i++) {
         g_AT49BV322DT_Flash_SectorAddress[i] = (i * AT49BV322DT_FLASH_SECTOR_SIZE) | AT49BV322DT_FLASH_BASE_ADDRESS;
         g_AT49BV322DT_Flash_SectorSize[i] = AT49BV322DT_FLASH_SECTOR_SIZE;

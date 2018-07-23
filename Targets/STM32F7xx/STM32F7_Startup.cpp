@@ -458,7 +458,7 @@ const TinyCLR_Startup_UsbDebuggerConfiguration STM32F7_Startup_UsbDebuggerConfig
     0
 };
 
-const TinyCLR_Startup_UartDebuggerConfiguration LPC17_Startup_UartDebuggerConfiguration = {
+const TinyCLR_Startup_UartDebuggerConfiguration STM32F7_Startup_UartDebuggerConfiguration = {
 
 };
 
@@ -478,7 +478,7 @@ void STM32F7_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const
     }
     else {
         api = STM32F7_Uart_GetApi();
-        configuration = (const void*)&LPC17_Startup_UartDebuggerConfiguration;
+        configuration = (const void*)&STM32F7_Startup_UartDebuggerConfiguration;
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;

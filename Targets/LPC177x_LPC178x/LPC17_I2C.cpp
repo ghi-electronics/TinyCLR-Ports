@@ -91,9 +91,7 @@ const TinyCLR_Api_Info* LPC17_I2c_GetApi() {
         i2cControllers[i].ApiInfo = &i2cApi[i];
         i2cControllers[i].Acquire = &LPC17_I2c_Acquire;
         i2cControllers[i].Release = &LPC17_I2c_Release;
-        i2cControllers[i].SetActiveSettings = &LPC17_I2c_SetActiveSettings;
-        i2cControllers[i].Read = &LPC17_I2c_Read;
-        i2cControllers[i].Write = &LPC17_I2c_Write;
+        i2cControllers[i].SetActiveSettings = &LPC17_I2c_SetActiveSettings;       
         i2cControllers[i].WriteRead = &LPC17_I2c_WriteRead;
 
         i2cApi[i].Author = "GHI Electronics, LLC";

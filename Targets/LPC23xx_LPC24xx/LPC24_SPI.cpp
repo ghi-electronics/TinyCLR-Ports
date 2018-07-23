@@ -294,10 +294,6 @@ const TinyCLR_Api_Info* LPC24_Spi_GetApi() {
         spiControllers[i].Acquire = &LPC24_Spi_Acquire;
         spiControllers[i].Release = &LPC24_Spi_Release;
         spiControllers[i].SetActiveSettings = &LPC24_Spi_SetActiveSettings;
-        spiControllers[i].Read = &LPC24_Spi_Read;
-        spiControllers[i].Write = &LPC24_Spi_Write;
-        spiControllers[i].TransferFullDuplex = &LPC24_Spi_TransferFullDuplex;
-        spiControllers[i].TransferSequential = &LPC24_Spi_TransferSequential;
         spiControllers[i].GetChipSelectLineCount = &LPC24_Spi_GetChipSelectLineCount;
         spiControllers[i].GetMinClockFrequency = &LPC24_Spi_GetMinClockFrequency;
         spiControllers[i].GetMaxClockFrequency = &LPC24_Spi_GetMaxClockFrequency;
@@ -428,14 +424,14 @@ bool LPC24_Spi_Transaction_nWrite16_nRead16(int32_t controllerIndex) {
     return true;
 }
 
-TinyCLR_Result LPC24_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
+TinyCLR_Result LPC24_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter) {
     if (LPC24_Spi_Write(self, writeBuffer, writeLength) != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
 
     return LPC24_Spi_Read(self, readBuffer, readLength);
 }
 
-TinyCLR_Result LPC24_Spi_TransferFullDuplex(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
+TinyCLR_Result LPC24_Spi_WriteRead(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter) {
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;

@@ -63,10 +63,6 @@ const TinyCLR_Api_Info* STM32F7_Spi_GetApi() {
         spiControllers[i].Acquire = &STM32F7_Spi_Acquire;
         spiControllers[i].Release = &STM32F7_Spi_Release;
         spiControllers[i].SetActiveSettings = &STM32F7_Spi_SetActiveSettings;
-        // spiControllers[i].Read = &STM32F7_Spi_Read;
-        // spiControllers[i].Write = &STM32F7_Spi_Write;
-        // spiControllers[i].TransferFullDuplex = &STM32F7_Spi_TransferFullDuplex;
-        // spiControllers[i].TransferSequential = &STM32F7_Spi_TransferSequential;
         spiControllers[i].GetChipSelectLineCount = &STM32F7_Spi_GetChipSelectLineCount;
         spiControllers[i].GetMinClockFrequency = &STM32F7_Spi_GetMinClockFrequency;
         spiControllers[i].GetMaxClockFrequency = &STM32F7_Spi_GetMaxClockFrequency;
@@ -183,14 +179,14 @@ bool STM32F7_Spi_Transaction_nWrite8_nRead8(int32_t controllerIndex) {
     return true;
 }
 
-TinyCLR_Result STM32F7_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
+TinyCLR_Result STM32F7_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter) {
     if (STM32F7_Spi_Write(self, writeBuffer, writeLength) != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
 
     return STM32F7_Spi_Read(self, readBuffer, readLength);
 }
 
-TinyCLR_Result STM32F7_Spi_TransferFullDuplex(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
+TinyCLR_Result STM32F7_Spi_WriteRead(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter) {
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;

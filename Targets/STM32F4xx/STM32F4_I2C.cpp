@@ -69,9 +69,7 @@ const TinyCLR_Api_Info* STM32F4_I2c_GetApi() {
         i2cControllers[i].ApiInfo = &i2cApi[i];
         i2cControllers[i].Acquire = &STM32F4_I2c_Acquire;
         i2cControllers[i].Release = &STM32F4_I2c_Release;
-        i2cControllers[i].SetActiveSettings = &STM32F4_I2c_SetActiveSettings;
-        i2cControllers[i].Read = &STM32F4_I2c_Read;
-        i2cControllers[i].Write = &STM32F4_I2c_Write;
+        i2cControllers[i].SetActiveSettings = &STM32F4_I2c_SetActiveSettings;       
         i2cControllers[i].WriteRead = &STM32F4_I2c_WriteRead;
 
         i2cApi[i].Author = "GHI Electronics, LLC";

@@ -78,9 +78,9 @@ const TinyCLR_Api_Info* LPC17_Dac_GetApi();
 void LPC17_Dac_Reset();
 TinyCLR_Result LPC17_Dac_Acquire(const TinyCLR_Dac_Controller* self);
 TinyCLR_Result LPC17_Dac_Release(const TinyCLR_Dac_Controller* self);
-TinyCLR_Result LPC17_Dac_OpenChannel(const TinyCLR_Dac_Controller* self, int32_t channel);
-TinyCLR_Result LPC17_Dac_CloseChannel(const TinyCLR_Dac_Controller* self, int32_t channel);
-TinyCLR_Result LPC17_Dac_WriteValue(const TinyCLR_Dac_Controller* self, int32_t channel, int32_t value);
+TinyCLR_Result LPC17_Dac_OpenChannel(const TinyCLR_Dac_Controller* self, uint32_t channel);
+TinyCLR_Result LPC17_Dac_CloseChannel(const TinyCLR_Dac_Controller* self, uint32_t channel);
+TinyCLR_Result LPC17_Dac_WriteValue(const TinyCLR_Dac_Controller* self, uint32_t channel, int32_t value);
 uint32_t LPC17_Dac_GetChannelCount(const TinyCLR_Dac_Controller* self);
 uint32_t LPC17_Dac_GetResolutionInBits(const TinyCLR_Dac_Controller* self);
 int32_t LPC17_Dac_GetMinValue(const TinyCLR_Dac_Controller* self);
@@ -192,7 +192,7 @@ struct PwmState {
     uint32_t                        outputEnabled[MAX_PWM_PER_CONTROLLER];
     uint32_t                        *matchAddress[MAX_PWM_PER_CONTROLLER];
 
-    bool                            invert[MAX_PWM_PER_CONTROLLER];
+    TinyCLR_Pwm_PulsePolarity invert[MAX_PWM_PER_CONTROLLER];
     bool                            isOpened[MAX_PWM_PER_CONTROLLER];
 
     double                          frequency;
@@ -204,7 +204,7 @@ void LPC17_Pwm_Reset();
 void LPC17_Pwm_ResetController(int32_t controllerIndex);
 TinyCLR_Result LPC17_Pwm_Acquire(const TinyCLR_Pwm_Controller* self);
 TinyCLR_Result LPC17_Pwm_Release(const TinyCLR_Pwm_Controller* self);
-int32_t LPC17_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel);
+uint32_t LPC17_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel);
 TinyCLR_Result LPC17_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Controller* self, double& frequency);
 TinyCLR_Result LPC17_Pwm_OpenChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel);
 TinyCLR_Result LPC17_Pwm_CloseChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel);
@@ -214,7 +214,7 @@ TinyCLR_Result LPC17_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self, 
 double LPC17_Pwm_GetMinFrequency(const TinyCLR_Pwm_Controller* self);
 double LPC17_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Controller* self);
 double LPC17_Pwm_GetActualFrequency(const TinyCLR_Pwm_Controller* self);
-int32_t LPC17_Pwm_GetChannelCount(const TinyCLR_Pwm_Controller* self);
+uint32_t LPC17_Pwm_GetChannelCount(const TinyCLR_Pwm_Controller* self);
 LPC17_Gpio_Pin LPC17_Pwm_GetPins(int32_t controllerIndex, int32_t channel);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -255,8 +255,8 @@ TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Controller* self);
 TinyCLR_Result LPC17_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, uint32_t chipSelectLine, bool useControllerChipSelect, uint32_t clockFrequency, uint32_t dataBitLength, TinyCLR_Spi_Mode mode);
 TinyCLR_Result LPC17_Spi_Read(const TinyCLR_Spi_Controller* self, uint8_t* buffer, size_t& length);
 TinyCLR_Result LPC17_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8_t* buffer, size_t& length);
-TinyCLR_Result LPC17_Spi_TransferFullDuplex(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength);
-TinyCLR_Result LPC17_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength);
+TinyCLR_Result LPC17_Spi_WriteRead(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter);
+TinyCLR_Result LPC17_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter);
 uint32_t LPC17_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self);
 uint32_t LPC17_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self);
 uint32_t LPC17_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self);
@@ -364,8 +364,6 @@ void LPC17_I2c_Reset();
 TinyCLR_Result LPC17_I2c_Acquire(const TinyCLR_I2c_Controller* self);
 TinyCLR_Result LPC17_I2c_Release(const TinyCLR_I2c_Controller* self);
 TinyCLR_Result LPC17_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, uint32_t slaveAddress, TinyCLR_I2c_AddressFormat addressFormat, TinyCLR_I2c_BusSpeed busSpeed);
-TinyCLR_Result LPC17_I2c_Read(const TinyCLR_I2c_Controller* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& error);
-TinyCLR_Result LPC17_I2c_Write(const TinyCLR_I2c_Controller* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& error);
 TinyCLR_Result LPC17_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool sendStopAfter, TinyCLR_I2c_TransferStatus& error);
 void LPC17_I2c_StartTransaction(int32_t channel);
 void LPC17_I2c_StopTransaction(int32_t channel);

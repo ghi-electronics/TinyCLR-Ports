@@ -53,29 +53,29 @@ static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 const TinyCLR_Api_Info* AT91_Uart_GetApi() {
     for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
         uartControllers[i].ApiInfo = &uartApi[i];
-        uartControllers[i].Acquire = &SAT91_Uart_Acquire;
-        uartControllers[i].Release = &SAT91_Uart_Release;
-        uartControllers[i].SetActiveSettings = &SAT91_Uart_SetActiveSettings;
-        uartControllers[i].Flush = &SAT91_Uart_Flush;
-        uartControllers[i].Read = &SAT91_Uart_Read;
-        uartControllers[i].Write = &SAT91_Uart_Write;
-        uartControllers[i].SetErrorReceivedHandler = &SAT91_Uart_SetErrorReceivedHandler;
-        uartControllers[i].SetDataReceivedHandler = &SAT91_Uart_SetDataReceivedHandler;
-        uartControllers[i].GetClearToSendState = &SAT91_Uart_GetClearToSendState;
-        uartControllers[i].SetClearToSendChangedHandler = &SAT91_Uart_SetClearToSendChangedHandler;
-        uartControllers[i].GetIsRequestToSendEnabled = &SAT91_Uart_GetIsRequestToSendEnabled;
-        uartControllers[i].SetIsRequestToSendEnabled = &SAT91_Uart_SetIsRequestToSendEnabled;
-        uartControllers[i].GetReadBufferSize = &SAT91_Uart_GetReadBufferSize;
-        uartControllers[i].SetReadBufferSize = &SAT91_Uart_SetReadBufferSize;
-        uartControllers[i].GetWriteBufferSize = &SAT91_Uart_GetWriteBufferSize;
-        uartControllers[i].SetWriteBufferSize = &SAT91_Uart_SetWriteBufferSize;
-        uartControllers[i].GetUnreadCount = &SAT91_Uart_GetUnreadCount;
-        uartControllers[i].GetUnwrittenCount = &SAT91_Uart_GetUnwrittenCount;
-        uartControllers[i].ClearReadBuffer = &SAT91_Uart_ClearReadBuffer;
-        uartControllers[i].ClearWriteBuffer = &SAT91_Uart_ClearWriteBuffer;
+        uartControllers[i].Acquire = &AT91_Uart_Acquire;
+        uartControllers[i].Release = &AT91_Uart_Release;
+        uartControllers[i].SetActiveSettings = &AT91_Uart_SetActiveSettings;
+        uartControllers[i].Flush = &AT91_Uart_Flush;
+        uartControllers[i].Read = &AT91_Uart_Read;
+        uartControllers[i].Write = &AT91_Uart_Write;
+        uartControllers[i].SetErrorReceivedHandler = &AT91_Uart_SetErrorReceivedHandler;
+        uartControllers[i].SetDataReceivedHandler = &AT91_Uart_SetDataReceivedHandler;
+        uartControllers[i].GetClearToSendState = &AT91_Uart_GetClearToSendState;
+        uartControllers[i].SetClearToSendChangedHandler = &AT91_Uart_SetClearToSendChangedHandler;
+        uartControllers[i].GetIsRequestToSendEnabled = &AT91_Uart_GetIsRequestToSendEnabled;
+        uartControllers[i].SetIsRequestToSendEnabled = &AT91_Uart_SetIsRequestToSendEnabled;
+        uartControllers[i].GetReadBufferSize = &AT91_Uart_GetReadBufferSize;
+        uartControllers[i].SetReadBufferSize = &AT91_Uart_SetReadBufferSize;
+        uartControllers[i].GetWriteBufferSize = &AT91_Uart_GetWriteBufferSize;
+        uartControllers[i].SetWriteBufferSize = &AT91_Uart_SetWriteBufferSize;
+        uartControllers[i].GetUnreadCount = &AT91_Uart_GetUnreadCount;
+        uartControllers[i].GetUnwrittenCount = &AT91_Uart_GetUnwrittenCount;
+        uartControllers[i].ClearReadBuffer = &AT91_Uart_ClearReadBuffer;
+        uartControllers[i].ClearWriteBuffer = &AT91_Uart_ClearWriteBuffer;
 
         uartApi[i].Author = "GHI Electronics, LLC";
-        uartApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.SAT91.UartController";
+        uartApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.UartController";
         uartApi[i].Type = TinyCLR_Api_Type::UartController;
         uartApi[i].Version = 0;
         uartApi[i].Implementation = &uartControllers[i];
@@ -697,7 +697,7 @@ TinyCLR_Result AT91_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* self
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result AT91_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* self, bool& state) {
+TinyCLR_Result AT91_Uart_SetClearToSendChangedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ClearToSendChangedHandler handler) {
     return TinyCLR_Result::NotImplemented;
 }
 

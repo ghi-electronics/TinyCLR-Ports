@@ -443,11 +443,7 @@ const TinyCLR_Api_Info* LPC17_Spi_GetApi() {
         spiControllers[i].ApiInfo = &spiApi[i];
         spiControllers[i].Acquire = &LPC17_Spi_Acquire;
         spiControllers[i].Release = &LPC17_Spi_Release;
-        spiControllers[i].SetActiveSettings = &LPC17_Spi_SetActiveSettings;
-        spiControllers[i].Read = &LPC17_Spi_Read;
-        spiControllers[i].Write = &LPC17_Spi_Write;
-        spiControllers[i].TransferFullDuplex = &LPC17_Spi_TransferFullDuplex;
-        spiControllers[i].TransferSequential = &LPC17_Spi_TransferSequential;
+        spiControllers[i].SetActiveSettings = &LPC17_Spi_SetActiveSettings;		
         spiControllers[i].GetChipSelectLineCount = &LPC17_Spi_GetChipSelectLineCount;
         spiControllers[i].GetMinClockFrequency = &LPC17_Spi_GetMinClockFrequency;
         spiControllers[i].GetMaxClockFrequency = &LPC17_Spi_GetMaxClockFrequency;
@@ -584,14 +580,14 @@ bool LPC17_Spi_Transaction_nWrite16_nRead16(int32_t controllerIndex) {
     return false;
 }
 
-TinyCLR_Result LPC17_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
+TinyCLR_Result LPC17_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter) {
     if (LPC17_Spi_Write(self, writeBuffer, writeLength) != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
 
     return LPC17_Spi_Read(self, readBuffer, readLength);
 }
 
-TinyCLR_Result LPC17_Spi_TransferFullDuplex(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
+TinyCLR_Result LPC17_Spi_WriteRead(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter) {
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;

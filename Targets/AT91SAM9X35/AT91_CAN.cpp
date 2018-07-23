@@ -1840,7 +1840,7 @@ size_t AT91_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self) {
     return CAN_GetRxErrorCount(state->cand.pHw);
 }
 
-TinyCLR_Result AT91_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self) {
+size_t AT91_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     count = CAN_GetTxErrorCount(state->cand.pHw);
@@ -1852,14 +1852,12 @@ uint32_t AT91_Can_GetSourceClock(const TinyCLR_Can_Controller* self) {
     return AT91_SYSTEM_PERIPHERAL_CLOCK_HZ;
 }
 
-TinyCLR_Result AT91_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self) {
+size_t AT91_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
 
-    size = state->can_rxBufferSize == 0 ? canDefaultBuffersSize[controllerIndex] : state->can_rxBufferSize;
-
-    return TinyCLR_Result::Success;
+	return state->can_rxBufferSize == 0 ? canDefaultBuffersSize[controllerIndex] : state->can_rxBufferSize;
 }
 
 TinyCLR_Result AT91_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
@@ -1877,10 +1875,8 @@ TinyCLR_Result AT91_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, si
     }
 }
 
-TinyCLR_Result AT91_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self) {
-    size = 1;
-
-    return TinyCLR_Result::Success;
+size_t AT91_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self) {
+	return 1;
 }
 
 TinyCLR_Result AT91_Can_SetWriteBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
@@ -1911,11 +1907,11 @@ TinyCLR_Result AT91_Can_Disable(const TinyCLR_Can_Controller* self) {
 }
 
 bool AT91_Can_CanWriteMessage(const TinyCLR_Can_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    return true;
 }
 
 bool AT91_Can_CanReadMessage(const TinyCLR_Can_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    return true;
 }
 
 #endif // INCLUDE_CAN

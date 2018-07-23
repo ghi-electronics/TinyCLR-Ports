@@ -234,29 +234,29 @@ static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 const TinyCLR_Api_Info* LPC17_Uart_GetApi() {
     for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
         uartControllers[i].ApiInfo = &uartApi[i];
-        uartControllers[i].Acquire = &SLPC17_Uart_Acquire;
-        uartControllers[i].Release = &SLPC17_Uart_Release;
-        uartControllers[i].SetActiveSettings = &SLPC17_Uart_SetActiveSettings;
-        uartControllers[i].Flush = &SLPC17_Uart_Flush;
-        uartControllers[i].Read = &SLPC17_Uart_Read;
-        uartControllers[i].Write = &SLPC17_Uart_Write;
-        uartControllers[i].SetErrorReceivedHandler = &SLPC17_Uart_SetErrorReceivedHandler;
-        uartControllers[i].SetDataReceivedHandler = &SLPC17_Uart_SetDataReceivedHandler;
-        uartControllers[i].GetClearToSendState = &SLPC17_Uart_GetClearToSendState;
-        uartControllers[i].SetClearToSendChangedHandler = &SLPC17_Uart_SetClearToSendChangedHandler;
-        uartControllers[i].GetIsRequestToSendEnabled = &SLPC17_Uart_GetIsRequestToSendEnabled;
-        uartControllers[i].SetIsRequestToSendEnabled = &SLPC17_Uart_SetIsRequestToSendEnabled;
-        uartControllers[i].GetReadBufferSize = &SLPC17_Uart_GetReadBufferSize;
-        uartControllers[i].SetReadBufferSize = &SLPC17_Uart_SetReadBufferSize;
-        uartControllers[i].GetWriteBufferSize = &SLPC17_Uart_GetWriteBufferSize;
-        uartControllers[i].SetWriteBufferSize = &SLPC17_Uart_SetWriteBufferSize;
-        uartControllers[i].GetUnreadCount = &SLPC17_Uart_GetUnreadCount;
-        uartControllers[i].GetUnwrittenCount = &SLPC17_Uart_GetUnwrittenCount;
-        uartControllers[i].ClearReadBuffer = &SLPC17_Uart_ClearReadBuffer;
-        uartControllers[i].ClearWriteBuffer = &SLPC17_Uart_ClearWriteBuffer;
+        uartControllers[i].Acquire = &LPC17_Uart_Acquire;
+        uartControllers[i].Release = &LPC17_Uart_Release;
+        uartControllers[i].SetActiveSettings = &LPC17_Uart_SetActiveSettings;
+        uartControllers[i].Flush = &LPC17_Uart_Flush;
+        uartControllers[i].Read = &LPC17_Uart_Read;
+        uartControllers[i].Write = &LPC17_Uart_Write;
+        uartControllers[i].SetErrorReceivedHandler = &LPC17_Uart_SetErrorReceivedHandler;
+        uartControllers[i].SetDataReceivedHandler = &LPC17_Uart_SetDataReceivedHandler;
+        uartControllers[i].GetClearToSendState = &LPC17_Uart_GetClearToSendState;
+        uartControllers[i].SetClearToSendChangedHandler = &LPC17_Uart_SetClearToSendChangedHandler;
+        uartControllers[i].GetIsRequestToSendEnabled = &LPC17_Uart_GetIsRequestToSendEnabled;
+        uartControllers[i].SetIsRequestToSendEnabled = &LPC17_Uart_SetIsRequestToSendEnabled;
+        uartControllers[i].GetReadBufferSize = &LPC17_Uart_GetReadBufferSize;
+        uartControllers[i].SetReadBufferSize = &LPC17_Uart_SetReadBufferSize;
+        uartControllers[i].GetWriteBufferSize = &LPC17_Uart_GetWriteBufferSize;
+        uartControllers[i].SetWriteBufferSize = &LPC17_Uart_SetWriteBufferSize;
+        uartControllers[i].GetUnreadCount = &LPC17_Uart_GetUnreadCount;
+        uartControllers[i].GetUnwrittenCount = &LPC17_Uart_GetUnwrittenCount;
+        uartControllers[i].ClearReadBuffer = &LPC17_Uart_ClearReadBuffer;
+        uartControllers[i].ClearWriteBuffer = &LPC17_Uart_ClearWriteBuffer;
 
         uartApi[i].Author = "GHI Electronics, LLC";
-        uartApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.SLPC17.UartController";
+        uartApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.UartController";
         uartApi[i].Type = TinyCLR_Api_Type::UartController;
         uartApi[i].Version = 0;
         uartApi[i].Implementation = &uartControllers[i];
@@ -965,7 +965,7 @@ TinyCLR_Result LPC17_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* sel
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result LPC17_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* self, bool& state) {
+TinyCLR_Result LPC17_Uart_SetClearToSendChangedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ClearToSendChangedHandler handler) {
     return TinyCLR_Result::NotImplemented;
 }
 

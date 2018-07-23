@@ -2531,12 +2531,9 @@ TinyCLR_Result LPC24_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32
 
     flags |= (length & 0x0F) << 16;
 
-    bool readyToSend = false;
-
     uint32_t timeout = CAN_TRANSFER_TIMEOUT;
 
-    while (readyToSend == false && timeout-- > 0) {
-        LPC24_Can_IsWritingAllowed(self, readyToSend);
+    while (LPC24_Can_CanWriteMessage(self) == false && timeout-- > 0) {        
         LPC24_Time_Delay(nullptr, 1);
     }
 
@@ -2786,35 +2783,29 @@ TinyCLR_Result LPC24_Can_IsWritingAllowed(const TinyCLR_Can_Controller* self, bo
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self) {
+size_t LPC24_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
     auto controllerIndex = state->controllerIndex;
 
-    count = controllerIndex == 0 ? ((C1GSR >> 16) & 0xFF) : ((C2GSR >> 16) & 0xFF);
-
-    return TinyCLR_Result::Success;
+    return controllerIndex == 0 ? ((C1GSR >> 16) & 0xFF) : ((C2GSR >> 16) & 0xFF);
 }
 
-TinyCLR_Result LPC24_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self) {
+size_t LPC24_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
     auto controllerIndex = state->controllerIndex;
 
-    count = controllerIndex == 0 ? (C1GSR >> 24) : (C2GSR >> 24);
-
-    return TinyCLR_Result::Success;
+    return controllerIndex == 0 ? (C1GSR >> 24) : (C2GSR >> 24);
 }
 
 uint32_t LPC24_Can_GetSourceClock(const TinyCLR_Can_Controller* self) {
     return LPC24_AHB_CLOCK_HZ;
 }
 
-TinyCLR_Result LPC24_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self) {
+size_t LPC24_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
     auto controllerIndex = state->controllerIndex;
 
-    size = state->can_rxBufferSize == 0 ? canDefaultBuffersSize[controllerIndex] : state->can_rxBufferSize;
-
-    return TinyCLR_Result::Success;
+	return state->can_rxBufferSize == 0 ? canDefaultBuffersSize[controllerIndex] : state->can_rxBufferSize;
 }
 
 TinyCLR_Result LPC24_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
@@ -2831,10 +2822,8 @@ TinyCLR_Result LPC24_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, s
     }
 }
 
-TinyCLR_Result LPC24_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self) {
-    size = 1;
-
-    return TinyCLR_Result::Success;
+size_t LPC24_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self) {
+	return 1;
 }
 
 TinyCLR_Result LPC24_Can_SetWriteBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
@@ -2870,10 +2859,25 @@ TinyCLR_Result LPC24_Can_Disable(const TinyCLR_Can_Controller* self) {
 }
 
 bool LPC24_Can_CanWriteMessage(const TinyCLR_Can_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    uint32_t status = 0;
+
+    auto allowed = false;
+
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
+
+    status = controllerIndex == 0 ? C1SR : C2SR;
+
+    if ((status & 0x00000004) &&
+        (status & 0x00000400) &&
+        (status & 0x00040000)) {
+        allowed = true;
+    }
+	
+	return false;
 }
 
 bool LPC24_Can_CanReadMessage(const TinyCLR_Can_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    return true;
 }
 #endif // INCLUDE_CAN
