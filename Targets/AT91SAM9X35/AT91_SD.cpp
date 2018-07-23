@@ -2377,9 +2377,9 @@ const TinyCLR_Api_Info* AT91_SdCard_GetApi() {
         sdCardControllers[i].Acquire = &AT91_SdCard_Acquire;
         sdCardControllers[i].Release = &AT91_SdCard_Release;
 
-        sdCardControllers[i].WriteSectors = &AT91_SdCard_WriteSector;
-        sdCardControllers[i].ReadSectors = &AT91_SdCard_ReadSector;
-        sdCardControllers[i].EraseSectors = &AT91_SdCard_EraseSector;
+        sdCardControllers[i].WriteSectors = &AT91_SdCard_WriteSectors;
+        sdCardControllers[i].ReadSectors = &AT91_SdCard_ReadSectors;
+        sdCardControllers[i].EraseSectors = &AT91_SdCard_EraseSectors;
         sdCardControllers[i].IsSectorErased = &AT91_SdCard_IsSectorErased;
         sdCardControllers[i].GetSectorMap = &AT91_SdCard_GetSectorMap;
 
@@ -2491,7 +2491,7 @@ TinyCLR_Result AT91_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, const uint8_t* data, int32_t timeout) {
+TinyCLR_Result AT91_SdCard_WriteSectors(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, const uint8_t* data, uint32_t timeout) {
     int32_t to;
 
     int32_t sectorCount = count;
@@ -2553,7 +2553,7 @@ TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Controller* self, ui
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, uint8_t* data, int32_t timeout) {
+TinyCLR_Result AT91_SdCard_ReadSectors(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, uint8_t* data, uint32_t timeout) {
     int32_t to;
 
     int32_t sectorCount = count;
@@ -2623,7 +2623,7 @@ TinyCLR_Result AT91_SdCard_IsSectorErased(const TinyCLR_SdCard_Controller* self,
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_SdCard_EraseSector(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, int32_t timeout) {
+TinyCLR_Result AT91_SdCard_EraseSectors(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, uint32_t timeout) {
     uint32_t addressStart = sector * AT91_SD_SECTOR_SIZE;
 
     uint32_t addressEnd = addressStart + (count * AT91_SD_SECTOR_SIZE);

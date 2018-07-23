@@ -990,13 +990,13 @@ bool CAN_ErrorHandler(uint8_t controllerIndex) {
 
     if (CAN_GetITStatus(CANx, CAN_IT_FF0)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_FF0);
-        state->errorEventHandler(state->provider, TinyCLR_Can_Error::ReadBufferFull);
+        state->errorEventHandler(state->provider, TinyCLR_Can_Error::BufferFull);
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_FOV0)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_FOV0);
-        state->errorEventHandler(state->provider, TinyCLR_Can_Error::ReadBufferOverrun);
+        state->errorEventHandler(state->provider, TinyCLR_Can_Error::Overrun);
 
         return true;
     }
@@ -1032,11 +1032,15 @@ bool CAN_ErrorHandler(uint8_t controllerIndex) {
 
 
 const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
+#ifdef DO_IMPLEMENT
     for (int32_t i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
         canControllers[i].ApiInfo = &canApi[i];
         canControllers[i].Acquire = &STM32F4_Can_Acquire;
         canControllers[i].Release = &STM32F4_Can_Release;
-        canControllers[i].Reset = &STM32F4_Can_SoftReset;
+        canControllers[i].Enable = &STM32F4_Can_Enable;
+        canControllers[i].Disable = &STM32F4_Can_Disable;
+        canControllers[i].CanWriteMessage = &STM32F4_Can_CanWriteMessage;
+        canControllers[i].CanReadMessage = &STM32F4_Can_CanReadMessage;
         canControllers[i].WriteMessage = &STM32F4_Can_WriteMessage;
         canControllers[i].ReadMessage = &STM32F4_Can_ReadMessage;
         canControllers[i].SetBitTiming = &STM32F4_Can_SetBitTiming;
@@ -1064,7 +1068,7 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
 
         canStates[i].controllerIndex = i;
     }
-
+#endif
     return (const TinyCLR_Api_Info*)&canApi;
 }
 
@@ -1308,7 +1312,7 @@ TinyCLR_Result STM32F4_Can_SoftReset(const TinyCLR_Can_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length) {
+TinyCLR_Result STM32F4_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, const uint8_t* data, size_t length) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     int32_t controllerIndex = state->controllerIndex;
@@ -1360,7 +1364,7 @@ TinyCLR_Result STM32F4_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_ReadMessage(const TinyCLR_Can_Controller* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length) {
+TinyCLR_Result STM32F4_Can_ReadMessage(const TinyCLR_Can_Controller* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint8_t* data, size_t& length, uint64_t& timestamp) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     STM32F4_Can_Message *can_msg;
@@ -1392,7 +1396,7 @@ TinyCLR_Result STM32F4_Can_ReadMessage(const TinyCLR_Can_Controller* self, uint3
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_SetBitTiming(const TinyCLR_Can_Controller* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
+TinyCLR_Result STM32F4_Can_SetBitTiming(const TinyCLR_Can_Controller* self, uint32_t propagation, uint32_t phase1, uint32_t phase2, uint32_t baudratePrescaler, uint32_t synchronizationJumpWidth, bool useMultiBitSampling) {
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
@@ -1460,14 +1464,14 @@ TinyCLR_Result STM32F4_Can_SetBitTiming(const TinyCLR_Can_Controller* self, int3
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self, size_t& count) {
+TinyCLR_Result STM32F4_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
-
+#ifdef DO_IMPLEMENT
     count = state->can_rx_count;
 
     if (!count)
         return TinyCLR_Result::NoDataAvailable;
-
+#endif
     return TinyCLR_Result::Success;
 }
 
@@ -1625,4 +1629,19 @@ void STM32F4_Can_Reset() {
     }
 }
 
+TinyCLR_Result STM32F4_Can_Enable(const TinyCLR_Can_Controller* self) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result STM32F4_Can_Disable(const TinyCLR_Can_Controller* self) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+bool STM32F4_Can_CanWriteMessage(const TinyCLR_Can_Controller* self) {
+    return false;
+}
+
+bool STM32F4_Can_CanReadMessage(const TinyCLR_Can_Controller* self) {
+    return false;
+}
 #endif // INCLUDE_CAN

@@ -13,6 +13,7 @@ static TinyCLR_Display_SpiConfiguration spiDisplayConfig;
 static const TinyCLR_Spi_Controller* spiDisplayBus;
 
 const TinyCLR_Api_Info* SPIDisplay_GetApi() {
+#ifdef DO_IMPLEMENT
     for (auto i = 0; i < TOTAL_SPI_DISPLAY_CONTROLLERS; i++) {
         spiDisplayControllers[i].ApiInfo = &spiDisplayApi[i];
         spiDisplayControllers[i].Acquire = &SPIDisplay_Acquire;
@@ -32,7 +33,7 @@ const TinyCLR_Api_Info* SPIDisplay_GetApi() {
         spiDisplayApi[i].Implementation = &spiDisplayControllers[i];
         spiDisplayApi[i].State = nullptr;
     }
-
+#endif
     return (const TinyCLR_Api_Info*)&spiDisplayApi;
 }
 
@@ -45,7 +46,7 @@ TinyCLR_Result SPIDisplay_Release(const TinyCLR_Display_Controller* self) {
 }
 
 TinyCLR_Result SPIDisplay_Enable(const TinyCLR_Display_Controller* self) {
-    auto res = apiManager->Find(apiManager, spiDisplayConfig.SpiSelector, TinyCLR_Api_Type::SpiController);
+    auto res = apiManager->Find(apiManager, spiDisplayConfig.ApiName, TinyCLR_Api_Type::SpiController);
 
     if (res == nullptr)
         return TinyCLR_Result::InvalidOperation;
@@ -79,7 +80,7 @@ TinyCLR_Result SPIDisplay_GetConfiguration(const TinyCLR_Display_Controller* sel
     height = spiDisplayHeight;
 
     if (configuration != nullptr)
-        reinterpret_cast<TinyCLR_Display_SpiConfiguration*>(configuration)->SpiSelector = spiDisplayConfig.SpiSelector;
+        reinterpret_cast<TinyCLR_Display_SpiConfiguration*>(configuration)->ApiName = spiDisplayConfig.ApiName;
 
     return TinyCLR_Result::Success;
 }
@@ -91,7 +92,7 @@ TinyCLR_Result SPIDisplay_SetConfiguration(const TinyCLR_Display_Controller* sel
     spiDisplayHeight = height;
 
     if (configuration != nullptr)
-        spiDisplayConfig.SpiSelector = reinterpret_cast<const TinyCLR_Display_SpiConfiguration*>(configuration)->SpiSelector;
+        spiDisplayConfig.ApiName = reinterpret_cast<const TinyCLR_Display_SpiConfiguration*>(configuration)->ApiName;
 
     return TinyCLR_Result::Success;
 }
@@ -103,6 +104,7 @@ static void Swap(uint8_t* a, uint8_t* b) {
 }
 
 TinyCLR_Result SPIDisplay_DrawBuffer(const TinyCLR_Display_Controller* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data) {
+#ifdef DO_IMPLEMENT
     auto d = const_cast<uint8_t*>(data);
 
     for (auto i = 0; i < spiDisplayWidth * spiDisplayHeight * 2; i += 2)
@@ -122,6 +124,6 @@ TinyCLR_Result SPIDisplay_DrawBuffer(const TinyCLR_Display_Controller* self, int
 
     for (auto i = 0; i < (spiDisplayWidth * spiDisplayHeight * 2); i += 2)
         Swap(d + i, d + i + 1);
-
+#endif
     return TinyCLR_Result::Success;
 }

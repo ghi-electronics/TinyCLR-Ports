@@ -58,6 +58,7 @@ static TinyCLR_Spi_Controller spiControllers[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Api_Info spiApi[TOTAL_SPI_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F4_Spi_GetApi() {
+#ifdef DO_IMPLEMENT
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         spiControllers[i].ApiInfo = &spiApi[i];
         spiControllers[i].Acquire = &STM32F4_Spi_Acquire;
@@ -100,6 +101,7 @@ const TinyCLR_Api_Info* STM32F4_Spi_GetApi() {
 #endif
 #endif
 #endif
+#endif //DO_IMPLEMENT
     return (const TinyCLR_Api_Info*)&spiApi;
 }
 
@@ -255,7 +257,8 @@ TinyCLR_Result STM32F4_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode) {
+TinyCLR_Result STM32F4_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, uint32_t chipSelectLine, bool useControllerChipSelect, uint32_t clockFrequency, uint32_t dataBitLength, TinyCLR_Spi_Mode mode) {
+#ifdef DO_IMPLEMENT
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
@@ -331,7 +334,7 @@ TinyCLR_Result STM32F4_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self,
 
         STM32F4_GpioInternal_WritePin(state->chipSelectLine, true);
     }
-
+#endif
     return TinyCLR_Result::Success;
 }
 

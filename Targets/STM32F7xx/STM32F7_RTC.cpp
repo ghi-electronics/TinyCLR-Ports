@@ -85,8 +85,8 @@ const TinyCLR_Api_Info* STM32F7_Rtc_GetApi() {
         rtcControllers[i].ApiInfo = &timeApi[i];
         rtcControllers[i].Acquire = &STM32F7_Rtc_Acquire;
         rtcControllers[i].Release = &STM32F7_Rtc_Release;
-        rtcControllers[i].GetNow = &STM32F7_Rtc_GetNow;
-        rtcControllers[i].SetNow = &STM32F7_Rtc_SetNow;
+        rtcControllers[i].GetTime = &STM32F7_Rtc_GetTime;
+        rtcControllers[i].SetTime = &STM32F7_Rtc_SetTime;
 
         timeApi[i].Author = "GHI Electronics, LLC";
         timeApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.RtcController";
@@ -235,7 +235,7 @@ TinyCLR_Result STM32F7_Rtc_Release(const TinyCLR_Rtc_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Rtc_GetNow(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value) {
+TinyCLR_Result STM32F7_Rtc_GetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value) {
     uint32_t  time;
     uint32_t  date;
 
@@ -267,7 +267,7 @@ TinyCLR_Result STM32F7_Rtc_GetNow(const TinyCLR_Rtc_Controller* self, TinyCLR_Rt
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Rtc_SetNow(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value) {
+TinyCLR_Result STM32F7_Rtc_SetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value) {
     uint32_t  time;
     uint32_t  date;
 

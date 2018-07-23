@@ -44,27 +44,27 @@ const TinyCLR_Startup_UsbDebuggerConfiguration LPC24_Startup_UsbDebuggerConfigur
 };
 
 const TinyCLR_Startup_UartDebuggerConfiguration AT91_Startup_UartDebuggerConfiguration = {
-   
+
 };
 
 void LPC24_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value, valueUsbActive;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetApi()->Implementation);    
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetApi()->Implementation);
 
-    provider->AcquirePin(provider, DEBUGGER_SELECTOR_PIN);
+    provider->OpenPin(provider, DEBUGGER_SELECTOR_PIN);
     provider->SetDriveMode(provider, DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
     provider->Read(provider, DEBUGGER_SELECTOR_PIN, value);
-    provider->ReleasePin(provider, DEBUGGER_SELECTOR_PIN);
+    provider->ClosePin(provider, DEBUGGER_SELECTOR_PIN);
 
     valueUsbActive = DEBUGGER_SELECTOR_USB_STATE;
 
     if (value == valueUsbActive) {
-        api = LPC24_UsbDevice_GetApi();        
+        api = LPC24_UsbDevice_GetApi();
         configuration = (const void*)&LPC24_Startup_UsbDebuggerConfiguration;
     }
     else {
-        api = LPC24_Uart_GetApi();        
+        api = LPC24_Uart_GetApi();
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;
@@ -77,12 +77,12 @@ void LPC24_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const v
 void LPC24_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetApi()->Implementation);    
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetApi()->Implementation);
 
-    provider->AcquirePin(provider, RUN_APP_PIN);
+    provider->OpenPin(provider, RUN_APP_PIN);
     provider->SetDriveMode(provider, RUN_APP_PIN, RUN_APP_PULL);
     provider->Read(provider, RUN_APP_PIN, value);
-    provider->ReleasePin(provider, RUN_APP_PIN);
+    provider->ClosePin(provider, RUN_APP_PIN);
 
     runApp = value == RUN_APP_STATE;
 #elif defined(RUN_APP_FORCE_STATE)

@@ -77,6 +77,7 @@ static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F4_Uart_GetApi() {
+#ifdef DO_IMPLEMENT
     for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
         uartControllers[i].ApiInfo = &uartApi[i];
         uartControllers[i].Acquire = &STM32F4_Uart_Acquire;
@@ -85,16 +86,10 @@ const TinyCLR_Api_Info* STM32F4_Uart_GetApi() {
         uartControllers[i].Flush = &STM32F4_Uart_Flush;
         uartControllers[i].Read = &STM32F4_Uart_Read;
         uartControllers[i].Write = &STM32F4_Uart_Write;
-        uartControllers[i].SetPinChangedHandler = &STM32F4_Uart_SetPinChangedHandler;
         uartControllers[i].SetErrorReceivedHandler = &STM32F4_Uart_SetErrorReceivedHandler;
         uartControllers[i].SetDataReceivedHandler = &STM32F4_Uart_SetDataReceivedHandler;
-        uartControllers[i].GetBreakSignalState = &STM32F4_Uart_GetBreakSignalState;
-        uartControllers[i].SetBreakSignalState = &STM32F4_Uart_SetBreakSignalState;
-        uartControllers[i].GetCarrierDetectState = &STM32F4_Uart_GetCarrierDetectState;
         uartControllers[i].GetClearToSendState = &STM32F4_Uart_GetClearToSendState;
-        uartControllers[i].GetDataReadyState = &STM32F4_Uart_GetDataReadyState;
-        uartControllers[i].GetIsDataTerminalReadyEnabled = &STM32F4_Uart_GetIsDataTerminalReadyEnabled;
-        uartControllers[i].SetIsDataTerminalReadyEnabled = &STM32F4_Uart_SetIsDataTerminalReadyEnabled;
+        uartControllers[i].SetClearToSendChangedHandler = &STM32F4_Uart_SetClearToSendChangedHandler;
         uartControllers[i].GetIsRequestToSendEnabled = &STM32F4_Uart_GetIsRequestToSendEnabled;
         uartControllers[i].SetIsRequestToSendEnabled = &STM32F4_Uart_SetIsRequestToSendEnabled;
         uartControllers[i].GetReadBufferSize = &STM32F4_Uart_GetReadBufferSize;
@@ -133,6 +128,7 @@ const TinyCLR_Api_Info* STM32F4_Uart_GetApi() {
 #endif
 #endif
 #endif
+#endif // DO_IMPLEMENT
     return (const TinyCLR_Api_Info*)&uartApi;
 }
 
@@ -215,7 +211,7 @@ void STM32F4_Uart_IrqRx(int controllerIndex, uint16_t sr) {
 
     if (state->rxBufferCount == state->rxBufferSize) {
         if (state->errorEventHandler != nullptr)
-            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::ReceiveFull);
+            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferFull);
 
         return;
     }
@@ -232,7 +228,7 @@ void STM32F4_Uart_IrqRx(int controllerIndex, uint16_t sr) {
 
     if (state->errorEventHandler != nullptr) {
         if (sr & USART_SR_ORE)
-            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferOverrun);
+            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Overrun);
 
         if (sr & USART_SR_FE)
             state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Frame);
@@ -767,7 +763,7 @@ TinyCLR_Result STM32F4_Uart_Write(const TinyCLR_Uart_Controller* self, const uin
 
     if (state->txBufferCount == state->txBufferSize) {
         if (state->errorEventHandler != nullptr)
-            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::TransmitFull);
+            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferFull);
 
         return TinyCLR_Result::Success;
     }
@@ -791,10 +787,6 @@ TinyCLR_Result STM32F4_Uart_Write(const TinyCLR_Uart_Controller* self, const uin
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Uart_SetPinChangedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_PinChangedHandler handler) {
-    //TODO
-    return TinyCLR_Result::Success;
-}
 TinyCLR_Result STM32F4_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ErrorReceivedHandler handler) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
@@ -811,31 +803,11 @@ TinyCLR_Result STM32F4_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Controller
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Uart_GetBreakSignalState(const TinyCLR_Uart_Controller* self, bool& state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result STM32F4_Uart_SetBreakSignalState(const TinyCLR_Uart_Controller* self, bool state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result STM32F4_Uart_GetCarrierDetectState(const TinyCLR_Uart_Controller* self, bool& state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
 TinyCLR_Result STM32F4_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* self, bool& state) {
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result STM32F4_Uart_GetDataReadyState(const TinyCLR_Uart_Controller* self, bool& state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result STM32F4_Uart_GetIsDataTerminalReadyEnabled(const TinyCLR_Uart_Controller* self, bool& state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result STM32F4_Uart_SetIsDataTerminalReadyEnabled(const TinyCLR_Uart_Controller* self, bool state) {
+TinyCLR_Result STM32F4_Uart_SetClearToSendChangedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ClearToSendChangedHandler handler) {
     return TinyCLR_Result::NotImplemented;
 }
 
@@ -877,4 +849,12 @@ TinyCLR_Result STM32F4_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self
     state->txBufferCount = state->txBufferIn = state->txBufferOut = 0;
 
     return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Uart_Enable(const TinyCLR_Uart_Controller* self) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result STM32F4_Uart_Disable(const TinyCLR_Uart_Controller* self) {
+    return TinyCLR_Result::NotImplemented;
 }

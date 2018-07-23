@@ -2678,9 +2678,9 @@ const TinyCLR_Api_Info* STM32F7_SdCard_GetApi() {
         sdCardControllers[i].Acquire = &STM32F7_SdCard_Acquire;
         sdCardControllers[i].Release = &STM32F7_SdCard_Release;
 
-        sdCardControllers[i].WriteSectors = &STM32F7_SdCard_WriteSector;
-        sdCardControllers[i].ReadSectors = &STM32F7_SdCard_ReadSector;
-        sdCardControllers[i].EraseSectors = &STM32F7_SdCard_EraseSector;
+        sdCardControllers[i].WriteSectors = &STM32F7_SdCard_WriteSectors;
+        sdCardControllers[i].ReadSectors = &STM32F7_SdCard_ReadSectors;
+        sdCardControllers[i].EraseSectors = &STM32F7_SdCard_EraseSectors;
         sdCardControllers[i].IsSectorErased = &STM32F7_SdCard_IsSectorErased;
         sdCardControllers[i].GetSectorMap = &STM32F7_SdCard_GetSectorMap;
 
@@ -2766,7 +2766,7 @@ TinyCLR_Result STM32F7_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_SdCard_WriteSector(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, const uint8_t* data, int32_t timeout) {
+TinyCLR_Result STM32F7_SdCard_WriteSectors(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, const uint8_t* data, uint32_t timeout) {
     int32_t index = 0;
 
     int32_t to;
@@ -2802,7 +2802,7 @@ TinyCLR_Result STM32F7_SdCard_WriteSector(const TinyCLR_SdCard_Controller* self,
 
 }
 
-TinyCLR_Result STM32F7_SdCard_ReadSector(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, uint8_t* data, int32_t timeout) {
+TinyCLR_Result STM32F7_SdCard_ReadSectors(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, uint8_t* data, uint32_t timeout) {
     int32_t index = 0;
 
     int32_t to;
@@ -2839,7 +2839,7 @@ TinyCLR_Result STM32F7_SdCard_IsSectorErased(const TinyCLR_SdCard_Controller* se
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result STM32F7_SdCard_EraseSector(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, int32_t timeout) {
+TinyCLR_Result STM32F7_SdCard_EraseSectors(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, uint32_t timeout) {
     return TinyCLR_Result::NotImplemented;
 }
 

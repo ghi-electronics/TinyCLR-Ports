@@ -99,10 +99,10 @@ void LPC17_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const v
     TinyCLR_Gpio_PinValue value, valueUsbActive;
     auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC17_Gpio_GetApi()->Implementation);
 
-    provider->AcquirePin(provider, LPC17_Startup_GetDebuggerSelectorPin());
+    provider->OpenPin(provider, LPC17_Startup_GetDebuggerSelectorPin());
     provider->SetDriveMode(provider, LPC17_Startup_GetDebuggerSelectorPin(), LPC17_Startup_GetDebuggerSelectorPull());
     provider->Read(provider, LPC17_Startup_GetDebuggerSelectorPin(), value);
-    provider->ReleasePin(provider, LPC17_Startup_GetDebuggerSelectorPin());
+    provider->ClosePin(provider, LPC17_Startup_GetDebuggerSelectorPin());
 
     valueUsbActive = LPC17_Startup_GetDebuggerSelectorUsbState();
 
@@ -127,10 +127,10 @@ void LPC17_Startup_GetRunApp(bool& runApp) {
     TinyCLR_Gpio_PinValue value;
     auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC17_Gpio_GetApi()->Implementation);
 
-    provider->AcquirePin(provider, RUN_APP_PIN);
+    provider->OpenPin(provider, RUN_APP_PIN);
     provider->SetDriveMode(provider, RUN_APP_PIN, RUN_APP_PULL);
     provider->Read(provider, RUN_APP_PIN, value);
-    provider->ReleasePin(provider, RUN_APP_PIN);
+    provider->ClosePin(provider, RUN_APP_PIN);
 
     runApp = value == RUN_APP_STATE;
 #elif defined(RUN_APP_FORCE_STATE)

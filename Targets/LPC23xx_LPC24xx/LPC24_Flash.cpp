@@ -85,7 +85,7 @@ int32_t __section("SectionForFlashOperations") LPC24_Deployment_PrepaireSector(i
     return iap_result[0];
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_Read(const TinyCLR_Deployment_Controller* self, uint32_t address, size_t length, uint8_t* buffer) {
+TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_Read(const TinyCLR_Deployment_Controller* self, uint64_t address, size_t length, uint8_t* buffer) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint16_t* ChipAddress = (uint16_t *)address;
@@ -99,7 +99,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_Read(cons
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_Write(const TinyCLR_Deployment_Controller* self, uint32_t address, size_t length, const uint8_t* buffer) {
+TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_Write(const TinyCLR_Deployment_Controller* self, uint64_t address, size_t length, const uint8_t* buffer) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t command[5];
@@ -184,7 +184,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_Write(con
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_IsBlockErased(const TinyCLR_Deployment_Controller* self, uint32_t sector, bool &erased) {
+TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_IsBlockErased(const TinyCLR_Deployment_Controller* self, uint64_t sector, bool &erased) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t address = deploymentAddress[sector];
@@ -209,7 +209,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_IsBlockEr
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_EraseBlock(const TinyCLR_Deployment_Controller* self, uint32_t sector) {
+TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_EraseBlock(const TinyCLR_Deployment_Controller* self, uint64_t sector) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t command[5];
@@ -271,7 +271,7 @@ TinyCLR_Result LPC24_Deployment_GetBytesPerSector(const TinyCLR_Deployment_Contr
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Deployment_GetSectorMap(const TinyCLR_Deployment_Controller* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
+TinyCLR_Result LPC24_Deployment_GetSectorMap(const TinyCLR_Deployment_Controller* self, const uint64_t*& addresses, const size_t*& sizes, size_t& count) {
     for (auto i = 0; i < DEPLOYMENT_SECTOR_NUM; i++) {
         deploymentAddress[i] = flashAddresses[DEPLOYMENT_SECTOR_START + i];
         deploymentSize[i] = flashSize[DEPLOYMENT_SECTOR_START + i];

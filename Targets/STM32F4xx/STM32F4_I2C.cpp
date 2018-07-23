@@ -46,7 +46,7 @@ struct I2cTransaction {
     size_t                      bytesToTransfer;
     size_t                      bytesTransferred;
 
-    TinyCLR_I2c_TransferStatus  result;
+    TinyCLR_I2c_TransferStatus  error;
 };
 
 struct I2cState {
@@ -64,6 +64,7 @@ static TinyCLR_I2c_Controller i2cControllers[TOTAL_I2C_CONTROLLERS];
 static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F4_I2c_GetApi() {
+#ifdef DO_IMPLEMENT
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
         i2cControllers[i].ApiInfo = &i2cApi[i];
         i2cControllers[i].Acquire = &STM32F4_I2c_Acquire;
@@ -91,7 +92,7 @@ const TinyCLR_Api_Info* STM32F4_I2c_GetApi() {
 
     if (TOTAL_I2C_CONTROLLERS > 2)
         i2cPorts[2] = I2C3;
-
+#endif
     return (const TinyCLR_Api_Info*)&i2cApi;
 }
 
@@ -103,7 +104,7 @@ void STM32F4_I2C_ER_Interrupt(int32_t controllerIndex) {// Error Interrupt Handl
     i2cPorts[controllerIndex]->SR1 = 0; // reset errors
 
     if (state->currentI2cTransactionAction != nullptr)
-        state->currentI2cTransactionAction->result = TinyCLR_I2c_TransferStatus::SlaveAddressNotAcknowledged;
+        state->currentI2cTransactionAction->error = TinyCLR_I2c_TransferStatus::SlaveAddressNotAcknowledged;
 
     STM32F4_I2c_StopTransaction(controllerIndex);
 }
@@ -255,7 +256,7 @@ void STM32F4_I2c_StopTransaction(int32_t controllerIndex) {
     state->currentI2cTransactionAction->isDone = true;
 }
 
-TinyCLR_Result STM32F4_I2c_Read(const TinyCLR_I2c_Controller* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result STM32F4_I2c_Read(const TinyCLR_I2c_Controller* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& error) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
@@ -280,16 +281,16 @@ TinyCLR_Result STM32F4_I2c_Read(const TinyCLR_I2c_Controller* self, uint8_t* buf
     }
 
     if (state->currentI2cTransactionAction->bytesTransferred == length)
-        result = TinyCLR_I2c_TransferStatus::FullTransfer;
+        error = TinyCLR_I2c_TransferStatus::FullTransfer;
     else if (state->currentI2cTransactionAction->bytesTransferred < length && state->currentI2cTransactionAction->bytesTransferred > 0)
-        result = TinyCLR_I2c_TransferStatus::PartialTransfer;
+        error = TinyCLR_I2c_TransferStatus::PartialTransfer;
 
     length = state->currentI2cTransactionAction->bytesTransferred;
 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result STM32F4_I2c_Write(const TinyCLR_I2c_Controller* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result STM32F4_I2c_Write(const TinyCLR_I2c_Controller* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& error) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
@@ -314,16 +315,16 @@ TinyCLR_Result STM32F4_I2c_Write(const TinyCLR_I2c_Controller* self, const uint8
     }
 
     if (state->currentI2cTransactionAction->bytesTransferred == length)
-        result = TinyCLR_I2c_TransferStatus::FullTransfer;
+        error = TinyCLR_I2c_TransferStatus::FullTransfer;
     else if (state->currentI2cTransactionAction->bytesTransferred < length && state->currentI2cTransactionAction->bytesTransferred > 0)
-        result = TinyCLR_I2c_TransferStatus::PartialTransfer;
+        error = TinyCLR_I2c_TransferStatus::PartialTransfer;
 
     length = state->currentI2cTransactionAction->bytesTransferred;
 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result STM32F4_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result STM32F4_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool sendStopAfter, TinyCLR_I2c_TransferStatus& error) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
@@ -356,21 +357,21 @@ TinyCLR_Result STM32F4_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const u
 
     if (state->writeI2cTransactionAction.bytesTransferred != writeLength) {
         writeLength = state->writeI2cTransactionAction.bytesTransferred;
-        result = TinyCLR_I2c_TransferStatus::PartialTransfer;
+        error = TinyCLR_I2c_TransferStatus::PartialTransfer;
     }
     else {
         readLength = state->readI2cTransactionAction.bytesTransferred;
 
         if (state->currentI2cTransactionAction->bytesTransferred == readLength)
-            result = TinyCLR_I2c_TransferStatus::FullTransfer;
+            error = TinyCLR_I2c_TransferStatus::FullTransfer;
         else if (state->currentI2cTransactionAction->bytesTransferred < readLength && state->currentI2cTransactionAction->bytesTransferred > 0)
-            result = TinyCLR_I2c_TransferStatus::PartialTransfer;
+            error = TinyCLR_I2c_TransferStatus::PartialTransfer;
     }
 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result STM32F4_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed) {
+TinyCLR_Result STM32F4_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, uint32_t slaveAddress, TinyCLR_I2c_AddressFormat addressFormat, TinyCLR_I2c_BusSpeed busSpeed) {
     uint32_t rateKhz;
     uint32_t ccr;
 

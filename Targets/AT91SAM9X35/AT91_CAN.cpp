@@ -1188,7 +1188,10 @@ const TinyCLR_Api_Info* AT91_Can_GetApi() {
         canControllers[i].ApiInfo = &canApi[i];
         canControllers[i].Acquire = &AT91_Can_Acquire;
         canControllers[i].Release = &AT91_Can_Release;
-        canControllers[i].Reset = &AT91_Can_SoftReset;
+        canControllers[i].Enable = &AT91_Can_Enable;
+        canControllers[i].Disable = &AT91_Can_Disable;
+        canControllers[i].CanWriteMessage = &AT91_Can_CanWriteMessage;
+        canControllers[i].CanReadMessage = &AT91_Can_CanReadMessage;
         canControllers[i].WriteMessage = &AT91_Can_WriteMessage;
         canControllers[i].ReadMessage = &AT91_Can_ReadMessage;
         canControllers[i].SetBitTiming = &AT91_Can_SetBitTiming;
@@ -1286,7 +1289,7 @@ void CopyMessageFromMailBoxToBuffer(uint8_t controllerIndex, uint32_t dwMsr) {
     }
 
     if (state->can_rx_count > (state->can_rxBufferSize - 3)) {
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::ReadBufferFull);
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull);
     }
 
     // initialize destination pointer
@@ -1434,7 +1437,7 @@ void AT91_Can_RxInterruptHandler(void *param) {
     }
     /* Timer overflow */
     if (dwSr & CAN_SR_TOVF) {
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::ReadBufferOverrun);
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Overrun);
     }
 }
 
@@ -1559,7 +1562,7 @@ TinyCLR_Result AT91_Can_SoftReset(const TinyCLR_Can_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length) {
+TinyCLR_Result AT91_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, const uint8_t* data, size_t length) {
 
     uint32_t *data32 = (uint32_t*)data;
 
@@ -1627,7 +1630,7 @@ TinyCLR_Result AT91_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32_
     return TinyCLR_Result::Busy;
 }
 
-TinyCLR_Result AT91_Can_ReadMessage(const TinyCLR_Can_Controller* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length) {
+TinyCLR_Result AT91_Can_ReadMessage(const TinyCLR_Can_Controller* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint8_t* data, size_t& length, uint64_t& timestamp) {
     AT91_Can_Message *can_msg;
 
     uint32_t *data32 = (uint32_t*)data;
@@ -1661,7 +1664,7 @@ TinyCLR_Result AT91_Can_ReadMessage(const TinyCLR_Can_Controller* self, uint32_t
 
 }
 
-TinyCLR_Result AT91_Can_SetBitTiming(const TinyCLR_Can_Controller* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
+TinyCLR_Result AT91_Can_SetBitTiming(const TinyCLR_Can_Controller* self, uint32_t propagation, uint32_t phase1, uint32_t phase2, uint32_t baudratePrescaler, uint32_t synchronizationJumpWidth, bool useMultiBitSampling) {
 
     uint32_t sourceClk;
 
@@ -1710,7 +1713,7 @@ TinyCLR_Result AT91_Can_SetBitTiming(const TinyCLR_Can_Controller* self, int32_t
     return TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result AT91_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self, size_t& count) {
+TinyCLR_Result AT91_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     count = state->can_rx_count;
@@ -1908,4 +1911,21 @@ void AT91_Can_Reset() {
     }
 
 }
+
+TinyCLR_Result AT91_Can_Enable(const TinyCLR_Can_Controller* self) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result AT91_Can_Disable(const TinyCLR_Can_Controller* self) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+bool AT91_Can_CanWriteMessage(const TinyCLR_Can_Controller* self) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+bool AT91_Can_CanReadMessage(const TinyCLR_Can_Controller* self) {
+    return TinyCLR_Result::NotImplemented;
+}
+
 #endif // INCLUDE_CAN

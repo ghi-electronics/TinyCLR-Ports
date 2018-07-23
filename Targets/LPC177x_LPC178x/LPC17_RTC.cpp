@@ -24,8 +24,8 @@ const TinyCLR_Api_Info* LPC17_Rtc_GetApi() {
         rtcControllers[i].ApiInfo = &timeApi[i];
         rtcControllers[i].Acquire = &LPC17_Rtc_Acquire;
         rtcControllers[i].Release = &LPC17_Rtc_Release;
-        rtcControllers[i].GetNow = &LPC17_Rtc_GetNow;
-        rtcControllers[i].SetNow = &LPC17_Rtc_SetNow;
+        rtcControllers[i].GetTime = &LPC17_Rtc_GetTime;
+        rtcControllers[i].SetTime = &LPC17_Rtc_SetTime;
 
         timeApi[i].Author = "GHI Electronics, LLC";
         timeApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.RtcController";
@@ -53,7 +53,7 @@ TinyCLR_Result LPC17_Rtc_Release(const TinyCLR_Rtc_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Rtc_GetNow(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value) {
+TinyCLR_Result LPC17_Rtc_GetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value) {
     if (LPC_RTC->CCR != 1) {
         TinyCLR_Result::InvalidOperation;
     }
@@ -72,7 +72,7 @@ TinyCLR_Result LPC17_Rtc_GetNow(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Rtc_SetNow(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value) {
+TinyCLR_Result LPC17_Rtc_SetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value) {
     if (LPC_RTC->CCR != 1) {
         TinyCLR_Result::InvalidOperation;
     }

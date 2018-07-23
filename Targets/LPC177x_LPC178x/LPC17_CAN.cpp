@@ -2228,7 +2228,10 @@ const TinyCLR_Api_Info* LPC17_Can_GetApi() {
         canControllers[i].ApiInfo = &canApi[i];
         canControllers[i].Acquire = &LPC17_Can_Acquire;
         canControllers[i].Release = &LPC17_Can_Release;
-        canControllers[i].Reset = &LPC17_Can_SoftReset;
+        canControllers[i].Enable = &LPC17_Can_Enable;
+        canControllers[i].Disable = &LPC17_Can_Disable;
+        canControllers[i].CanWriteMessage = &LPC17_Can_CanWriteMessage;
+        canControllers[i].CanReadMessage = &LPC17_Can_CanReadMessage;
         canControllers[i].WriteMessage = &LPC17_Can_WriteMessage;
         canControllers[i].ReadMessage = &LPC17_Can_ReadMessage;
         canControllers[i].SetBitTiming = &LPC17_Can_SetBitTiming;
@@ -2307,7 +2310,7 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
         else
             C2CMR = 0x04; // release receive buffer
 
-        state->errorEventHandler(state->provider, TinyCLR_Can_Error::ReadBufferFull);
+        state->errorEventHandler(state->provider, TinyCLR_Can_Error::BufferFull);
 
         return;
     }
@@ -2379,7 +2382,7 @@ void LPC17_Can_RxInterruptHandler(void *param) {
         CAN_ISR_Rx(controllerIndex);
 
         if (c1 & (1 << 3)) {
-            state->errorEventHandler(state->provider, TinyCLR_Can_Error::ReadBufferOverrun);
+            state->errorEventHandler(state->provider, TinyCLR_Can_Error::Overrun);
         }
         if (c1 & (1 << 5)) {
             state->errorEventHandler(state->provider, TinyCLR_Can_Error::Passive);
@@ -2400,7 +2403,7 @@ void LPC17_Can_RxInterruptHandler(void *param) {
         CAN_ISR_Rx(controllerIndex);
 
         if (c2 & (1 << 3)) {
-            state->errorEventHandler(state->provider, TinyCLR_Can_Error::ReadBufferOverrun);
+            state->errorEventHandler(state->provider, TinyCLR_Can_Error::Overrun);
         }
         if (c2 & (1 << 5)) {
             state->errorEventHandler(state->provider, TinyCLR_Can_Error::Passive);
@@ -2511,7 +2514,7 @@ TinyCLR_Result LPC17_Can_SoftReset(const TinyCLR_Can_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, uint8_t* data, size_t length) {
+TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, const uint8_t* data, size_t length) {
 
     uint32_t *data32 = (uint32_t*)data;
 
@@ -2573,7 +2576,7 @@ TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32
     return TinyCLR_Result::Busy;
 }
 
-TinyCLR_Result LPC17_Can_ReadMessage(const TinyCLR_Can_Controller* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint64_t& timestamp, uint8_t* data, size_t& length) {
+TinyCLR_Result LPC17_Can_ReadMessage(const TinyCLR_Can_Controller* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint8_t* data, size_t& length, uint64_t& timestamp) {
     LPC17_Can_Message *can_msg;
 
     uint32_t *data32 = (uint32_t*)data;
@@ -2607,7 +2610,7 @@ TinyCLR_Result LPC17_Can_ReadMessage(const TinyCLR_Can_Controller* self, uint32_
 
 }
 
-TinyCLR_Result LPC17_Can_SetBitTiming(const TinyCLR_Can_Controller* self, int32_t propagation, int32_t phase1, int32_t phase2, int32_t baudratePrescaler, int32_t synchronizationJumpWidth, int8_t useMultiBitSampling) {
+TinyCLR_Result LPC17_Can_SetBitTiming(const TinyCLR_Can_Controller* self, uint32_t propagation, uint32_t phase1, uint32_t phase2, uint32_t baudratePrescaler, uint32_t synchronizationJumpWidth, bool useMultiBitSampling) {
 
     LPC17xx_SYSCON &SYSCON = *(LPC17xx_SYSCON *)(size_t)(LPC17xx_SYSCON::c_SYSCON_Base);
 
@@ -2651,7 +2654,7 @@ TinyCLR_Result LPC17_Can_SetBitTiming(const TinyCLR_Can_Controller* self, int32_
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self, size_t& count) {
+TinyCLR_Result LPC17_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self) {
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
@@ -2856,5 +2859,21 @@ TinyCLR_Result LPC17_Can_GetControllerCount(const TinyCLR_Can_Controller* self, 
     count = TOTAL_CAN_CONTROLLERS;
 
     return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result LPC17_Can_Enable(const TinyCLR_Can_Controller* self) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result LPC17_Can_Disable(const TinyCLR_Can_Controller* self) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+bool LPC17_Can_CanWriteMessage(const TinyCLR_Can_Controller* self) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+bool LPC17_Can_CanReadMessage(const TinyCLR_Can_Controller* self) {
+    return TinyCLR_Result::NotImplemented;
 }
 #endif // INCLUDE_CAN

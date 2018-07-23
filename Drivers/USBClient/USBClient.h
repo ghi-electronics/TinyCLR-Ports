@@ -183,11 +183,11 @@ void TinyCLR_UsbClient_Reset(int32_t controller);
 
 TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Controller* self);
 TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Controller* self);
-TinyCLR_Result TinyCLR_UsbClient_Open(const TinyCLR_UsbClient_Controller* self, int32_t& pipe, uint8_t writeEndpoint, uint8_t readEndpoint);
-TinyCLR_Result TinyCLR_UsbClient_Close(const TinyCLR_UsbClient_Controller* self, int32_t pipe);
-TinyCLR_Result TinyCLR_UsbClient_Write(const TinyCLR_UsbClient_Controller* self, int32_t pipe, const uint8_t* data, size_t& length);
-TinyCLR_Result TinyCLR_UsbClient_Read(const TinyCLR_UsbClient_Controller* self, int32_t pipe, uint8_t* data, size_t& length);
-TinyCLR_Result TinyCLR_UsbClient_Flush(const TinyCLR_UsbClient_Controller* self, int32_t pipe);
+TinyCLR_Result TinyCLR_UsbClient_OpenPipe(const TinyCLR_UsbClient_Controller* self, uint8_t writeEndpoint, uint8_t readEndpoint, uint32_t& pipe);
+TinyCLR_Result TinyCLR_UsbClient_ClosePipe(const TinyCLR_UsbClient_Controller* self, uint32_t pipe);
+TinyCLR_Result TinyCLR_UsbClient_WritePipe(const TinyCLR_UsbClient_Controller* self, uint32_t pipe, const uint8_t* data, size_t& length);
+TinyCLR_Result TinyCLR_UsbClient_ReadPipe(const TinyCLR_UsbClient_Controller* self, uint32_t pipe, uint8_t* data, size_t& length);
+TinyCLR_Result TinyCLR_UsbClient_FlushPipe(const TinyCLR_UsbClient_Controller* self, uint32_t pipe);
 TinyCLR_Result TinyCLR_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Controller* self, TinyCLR_UsbClient_DataReceivedHandler handler);
 TinyCLR_Result TinyCLR_UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Controller* self, const TinyCLR_UsbClient_DeviceDescriptor* descriptor);
 TinyCLR_Result TinyCLR_UsbClient_SetVendorClassRequestHandler(const TinyCLR_UsbClient_Controller* self, TinyCLR_UsbClient_RequestHandler handler);
