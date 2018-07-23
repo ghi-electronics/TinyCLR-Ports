@@ -872,8 +872,8 @@ size_t AT91_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self);
 TinyCLR_Result AT91_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t size);
 size_t AT91_Uart_GetWriteBufferSize(const TinyCLR_Uart_Controller* self);
 TinyCLR_Result AT91_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t size);
-size_t AT91_Uart_GetUnreadCount(const TinyCLR_Uart_Controller* self);
-size_t AT91_Uart_GetUnwrittenCount(const TinyCLR_Uart_Controller* self);
+size_t AT91_Uart_GetBytesToRead(const TinyCLR_Uart_Controller* self);
+size_t AT91_Uart_GetBytesToWrite(const TinyCLR_Uart_Controller* self);
 TinyCLR_Result AT91_Uart_ClearReadBuffer(const TinyCLR_Uart_Controller* self);
 TinyCLR_Result AT91_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self);
 

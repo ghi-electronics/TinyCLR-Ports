@@ -1043,7 +1043,7 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
         canControllers[i].WriteMessage = &STM32F4_Can_WriteMessage;
         canControllers[i].ReadMessage = &STM32F4_Can_ReadMessage;
         canControllers[i].SetBitTiming = &STM32F4_Can_SetBitTiming;
-        canControllers[i].GetUnreadMessageCount = &STM32F4_Can_GetUnreadMessageCount;
+        canControllers[i].GetMessagesToRead = &STM32F4_Can_GetMessagesToRead;
         canControllers[i].SetMessageReceivedHandler = &STM32F4_Can_SetMessageReceivedHandler;
         canControllers[i].SetErrorReceivedHandler = &STM32F4_Can_SetErrorReceivedHandler;
         canControllers[i].SetExplicitFilters = &STM32F4_Can_SetExplicitFilters;
@@ -1458,7 +1458,7 @@ TinyCLR_Result STM32F4_Can_SetBitTiming(const TinyCLR_Can_Controller* self, uint
     return TinyCLR_Result::Success;
 }
 
-size_t STM32F4_Can_GetUnreadMessageCount(const TinyCLR_Can_Controller* self) {
+size_t STM32F4_Can_GetMessagesToRead(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     return state->can_rx_count;

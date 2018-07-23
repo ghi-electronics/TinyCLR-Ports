@@ -250,8 +250,8 @@ const TinyCLR_Api_Info* LPC17_Uart_GetApi() {
         uartControllers[i].SetReadBufferSize = &LPC17_Uart_SetReadBufferSize;
         uartControllers[i].GetWriteBufferSize = &LPC17_Uart_GetWriteBufferSize;
         uartControllers[i].SetWriteBufferSize = &LPC17_Uart_SetWriteBufferSize;
-        uartControllers[i].GetUnreadCount = &LPC17_Uart_GetUnreadCount;
-        uartControllers[i].GetUnwrittenCount = &LPC17_Uart_GetUnwrittenCount;
+        uartControllers[i].GetBytesToRead = &LPC17_Uart_GetBytesToRead;
+        uartControllers[i].GetBytesToWrite = &LPC17_Uart_GetBytesToWrite;
         uartControllers[i].ClearReadBuffer = &LPC17_Uart_ClearReadBuffer;
         uartControllers[i].ClearWriteBuffer = &LPC17_Uart_ClearWriteBuffer;
 
@@ -977,13 +977,13 @@ TinyCLR_Result LPC17_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Controlle
     return TinyCLR_Result::NotImplemented;
 }
 
-size_t LPC17_Uart_GetUnreadCount(const TinyCLR_Uart_Controller* self) {
+size_t LPC17_Uart_GetBytesToRead(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     return state->rxBufferCount;
 }
 
-size_t LPC17_Uart_GetUnwrittenCount(const TinyCLR_Uart_Controller* self) {
+size_t LPC17_Uart_GetBytesToWrite(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     return state->txBufferCount;
