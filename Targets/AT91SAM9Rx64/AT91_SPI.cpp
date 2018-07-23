@@ -51,11 +51,8 @@ const TinyCLR_Api_Info* AT91_Spi_GetApi() {
         spiControllers[i].ApiInfo = &spiApi[i];
         spiControllers[i].Acquire = &AT91_Spi_Acquire;
         spiControllers[i].Release = &AT91_Spi_Release;
-        spiControllers[i].SetActiveSettings = &AT91_Spi_SetActiveSettings;
-        spiControllers[i].Read = &AT91_Spi_Read;
-        spiControllers[i].Write = &AT91_Spi_Write;
-        spiControllers[i].TransferFullDuplex = &AT91_Spi_TransferFullDuplex;
-        spiControllers[i].TransferSequential = &AT91_Spi_TransferSequential;
+		spiControllers[i].WriteRead = &AT91_Spi_WriteRead;
+        spiControllers[i].SetActiveSettings = &AT91_Spi_SetActiveSettings;		
         spiControllers[i].GetChipSelectLineCount = &AT91_Spi_GetChipSelectLineCount;
         spiControllers[i].GetMinClockFrequency = &AT91_Spi_GetMinClockFrequency;
         spiControllers[i].GetMaxClockFrequency = &AT91_Spi_GetMaxClockFrequency;
@@ -150,7 +147,7 @@ bool AT91_Spi_Transaction_nWrite16_nRead16(int32_t controllerIndex) {
     return false;
 }
 
-TinyCLR_Result AT91_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
+TinyCLR_Result AT91_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter) {
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     if (AT91_Spi_Write(self, writeBuffer, writeLength) != TinyCLR_Result::Success)
@@ -159,7 +156,7 @@ TinyCLR_Result AT91_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, c
     return AT91_Spi_Read(self, readBuffer, readLength);
 }
 
-TinyCLR_Result AT91_Spi_TransferFullDuplex(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
+TinyCLR_Result AT91_Spi_WriteRead(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter) {
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
@@ -244,7 +241,7 @@ TinyCLR_Result AT91_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8_t*
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode) {
+TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, uint32_t chipSelectLine, bool useControllerChipSelect, uint32_t clockFrequency, uint32_t dataBitLength, TinyCLR_Spi_Mode mode) {
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
@@ -422,22 +419,22 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-int32_t AT91_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self) {
+uint32_t AT91_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self) {
     return AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 255;
 }
 
-int32_t AT91_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self) {
+uint32_t AT91_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self) {
     return AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 1;
 }
 
-int32_t AT91_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self) {
+uint32_t AT91_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self) {
     return AT91_Gpio_GetPinCount(nullptr);
 }
 
 static const int32_t dataBitsCount = 2;
 static int32_t dataBits[dataBitsCount] = { 8, 16 };
 
-TinyCLR_Result AT91_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller* self, int32_t* dataBitLengths, size_t& dataBitLengthsCount) {
+TinyCLR_Result AT91_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller* self, uint32_t* dataBitLengths, size_t& dataBitLengthsCount) {
     if (dataBitLengths != nullptr)
         memcpy(dataBitLengths, dataBits, (dataBitsCount < dataBitLengthsCount ? dataBitsCount : dataBitLengthsCount) * sizeof(int32_t));
 

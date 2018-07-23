@@ -11,5 +11,5 @@ TinyCLR_Result AT49BV322DT_Flash_Write(uint32_t address, size_t length, const ui
 TinyCLR_Result AT49BV322DT_Flash_EraseBlock(uint32_t sector);
 TinyCLR_Result AT49BV322DT_Flash_IsBlockErased(uint32_t sector, bool &erased);
 TinyCLR_Result AT49BV322DT_Flash_GetBytesPerSector(uint32_t address, int32_t& size);
-TinyCLR_Result AT49BV322DT_Flash_GetSectorMap(const uint32_t*& addresses, const uint32_t*& sizes, size_t& count);
+TinyCLR_Result AT49BV322DT_Flash_GetSectorMap(const uint64_t*& addresses, const size_t*& sizes, size_t& count);
 bool AT49BV322DT_Flash_PageProgram(uint32_t byteAddress, uint32_t NumberOfBytesToWrite, const uint8_t * pointerToWriteBuffer);

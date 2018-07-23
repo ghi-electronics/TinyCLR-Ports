@@ -33,11 +33,11 @@ TinyCLR_Result AT91_SdCard_GetControllerCount(const TinyCLR_SdCard_Controller* s
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result AT91_SdCard_WriteSector(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, const uint8_t* data, int32_t timeout) {
+TinyCLR_Result AT91_SdCard_WriteSectors(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, const uint8_t* data, uint32_t timeout) {
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result AT91_SdCard_ReadSector(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, uint8_t* data, int32_t timeout) {
+TinyCLR_Result AT91_SdCard_ReadSectors(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, uint8_t* data, uint32_t timeout) {
     return TinyCLR_Result::NotImplemented;
 }
 
@@ -45,7 +45,7 @@ TinyCLR_Result AT91_SdCard_IsSectorErased(const TinyCLR_SdCard_Controller* self,
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result AT91_SdCard_EraseSector(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, int32_t timeout) {
+TinyCLR_Result AT91_SdCard_EraseSectors(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, uint32_t timeout) {
     return TinyCLR_Result::NotImplemented;
 }
 

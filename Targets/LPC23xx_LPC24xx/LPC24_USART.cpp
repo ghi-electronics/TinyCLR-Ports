@@ -67,16 +67,10 @@ const TinyCLR_Api_Info* LPC24_Uart_GetApi() {
         uartControllers[i].Flush = &LPC24_Uart_Flush;
         uartControllers[i].Read = &LPC24_Uart_Read;
         uartControllers[i].Write = &LPC24_Uart_Write;
-        uartControllers[i].SetPinChangedHandler = &LPC24_Uart_SetPinChangedHandler;
         uartControllers[i].SetErrorReceivedHandler = &LPC24_Uart_SetErrorReceivedHandler;
         uartControllers[i].SetDataReceivedHandler = &LPC24_Uart_SetDataReceivedHandler;
-        uartControllers[i].GetBreakSignalState = &LPC24_Uart_GetBreakSignalState;
-        uartControllers[i].SetBreakSignalState = &LPC24_Uart_SetBreakSignalState;
-        uartControllers[i].GetCarrierDetectState = &LPC24_Uart_GetCarrierDetectState;
         uartControllers[i].GetClearToSendState = &LPC24_Uart_GetClearToSendState;
-        uartControllers[i].GetDataReadyState = &LPC24_Uart_GetDataReadyState;
-        uartControllers[i].GetIsDataTerminalReadyEnabled = &LPC24_Uart_GetIsDataTerminalReadyEnabled;
-        uartControllers[i].SetIsDataTerminalReadyEnabled = &LPC24_Uart_SetIsDataTerminalReadyEnabled;
+        uartControllers[i].SetClearToSendChangedHandler = &LPC24_Uart_SetClearToSendChangedHandler;
         uartControllers[i].GetIsRequestToSendEnabled = &LPC24_Uart_GetIsRequestToSendEnabled;
         uartControllers[i].SetIsRequestToSendEnabled = &LPC24_Uart_SetIsRequestToSendEnabled;
         uartControllers[i].GetReadBufferSize = &LPC24_Uart_GetReadBufferSize;
@@ -101,14 +95,12 @@ const TinyCLR_Api_Info* LPC24_Uart_GetApi() {
     return (const TinyCLR_Api_Info*)&uartApi;
 }
 
-TinyCLR_Result LPC24_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t& size) {
+size_t LPC24_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
 
-    size = state->rxBufferSize == 0 ? uartRxDefaultBuffersSize[controllerIndex] : state->rxBufferSize;
-
-    return TinyCLR_Result::Success;
+    return state->rxBufferSize == 0 ? uartRxDefaultBuffersSize[controllerIndex] : state->rxBufferSize;
 }
 
 TinyCLR_Result LPC24_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
@@ -136,14 +128,12 @@ TinyCLR_Result LPC24_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self,
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Uart_GetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t& size) {
+size_t LPC24_Uart_GetWriteBufferSize(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
 
-    size = state->txBufferSize == 0 ? uartTxDefaultBuffersSize[controllerIndex] : state->txBufferSize;
-
-    return TinyCLR_Result::Success;
+    return state->txBufferSize == 0 ? uartTxDefaultBuffersSize[controllerIndex] : state->txBufferSize;
 }
 
 TinyCLR_Result LPC24_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
@@ -246,7 +236,7 @@ void LPC24_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
 
                 if (0 == (LSR_Value & (LPC24XX_USART::UART_LSR_PEI | LPC24XX_USART::UART_LSR_OEI | LPC24XX_USART::UART_LSR_FEI))) {
                     if (state->rxBufferCount == state->rxBufferSize) {
-                        LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveFull);
+                        LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferFull);
 
                         continue;
                     }
@@ -271,7 +261,7 @@ void LPC24_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
                     LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
                 }
                 else if (LSR_Value & 0x02) {
-                    LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferOverrun);
+                    LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
                 }
             } while (LSR_Value & LPC24XX_USART::UART_LSR_RFDR);
         }
@@ -331,7 +321,7 @@ void LPC24_Uart_InterruptHandler(void *param) {
         LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
     }
     else if (LSR_Value & 0x02) {
-        LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferOverrun);
+        LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
     }
 
     LPC24_Uart_ReceiveData(controllerIndex, LSR_Value, IIR_Value);
@@ -749,7 +739,7 @@ TinyCLR_Result LPC24_Uart_Write(const TinyCLR_Uart_Controller* self, const uint8
     }
 
     if (state->txBufferCount == state->txBufferSize) {
-        LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::TransmitFull);
+        LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferFull);
 
         return TinyCLR_Result::Busy;
     }
@@ -778,10 +768,6 @@ TinyCLR_Result LPC24_Uart_Write(const TinyCLR_Uart_Controller* self, const uint8
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Uart_SetPinChangedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_PinChangedHandler handler) {
-    //TODO
-    return TinyCLR_Result::Success;
-}
 TinyCLR_Result LPC24_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ErrorReceivedHandler handler) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
@@ -798,31 +784,11 @@ TinyCLR_Result LPC24_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Controller* 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Uart_GetBreakSignalState(const TinyCLR_Uart_Controller* self, bool& state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result LPC24_Uart_SetBreakSignalState(const TinyCLR_Uart_Controller* self, bool state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result LPC24_Uart_GetCarrierDetectState(const TinyCLR_Uart_Controller* self, bool& state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
 TinyCLR_Result LPC24_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* self, bool& state) {
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result LPC24_Uart_GetDataReadyState(const TinyCLR_Uart_Controller* self, bool& state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result LPC24_Uart_GetIsDataTerminalReadyEnabled(const TinyCLR_Uart_Controller* self, bool& state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result LPC24_Uart_SetIsDataTerminalReadyEnabled(const TinyCLR_Uart_Controller* self, bool state) {
+TinyCLR_Result LPC24_Uart_SetClearToSendChangedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ClearToSendChangedHandler handler) {
     return TinyCLR_Result::NotImplemented;
 }
 
@@ -834,20 +800,16 @@ TinyCLR_Result LPC24_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Controlle
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result LPC24_Uart_GetUnreadCount(const TinyCLR_Uart_Controller* self, size_t& count) {
+size_t LPC24_Uart_GetUnreadCount(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    count = state->rxBufferCount;
-
-    return TinyCLR_Result::Success;
+    return  state->rxBufferCount;
 }
 
-TinyCLR_Result LPC24_Uart_GetUnwrittenCount(const TinyCLR_Uart_Controller* self, size_t& count) {
+size_t LPC24_Uart_GetUnwrittenCount(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    count = state->txBufferCount;
-
-    return TinyCLR_Result::Success;
+    return state->txBufferCount;
 }
 
 TinyCLR_Result LPC24_Uart_ClearReadBuffer(const TinyCLR_Uart_Controller* self) {
@@ -881,4 +843,12 @@ TinyCLR_Result LPC24_Uart_GetControllerCount(const TinyCLR_Uart_Controller* self
     count = TOTAL_UART_CONTROLLERS;
 
     return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result LPC24_Uart_Enable(const TinyCLR_Uart_Controller* self) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result LPC24_Uart_Disable(const TinyCLR_Uart_Controller* self) {
+    return TinyCLR_Result::NotImplemented;
 }

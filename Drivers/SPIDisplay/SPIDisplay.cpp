@@ -23,7 +23,7 @@ const TinyCLR_Api_Info* SPIDisplay_GetApi() {
         spiDisplayControllers[i].GetConfiguration = &SPIDisplay_GetConfiguration;
         spiDisplayControllers[i].GetCapabilities = &SPIDisplay_GetCapabilities;
         spiDisplayControllers[i].DrawBuffer = &SPIDisplay_DrawBuffer;
-        spiDisplayControllers[i].WriteString = &SPIDisplay_WriteString;
+        spiDisplayControllers[i].DrawString = &SPIDisplay_DrawString;
 
         spiDisplayApi[i].Author = "GHI Electronics, LLC";
         spiDisplayApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.Drivers.SPIDisplay";
@@ -45,7 +45,7 @@ TinyCLR_Result SPIDisplay_Release(const TinyCLR_Display_Controller* self) {
 }
 
 TinyCLR_Result SPIDisplay_Enable(const TinyCLR_Display_Controller* self) {
-    auto res = apiManager->Find(apiManager, spiDisplayConfig.SpiSelector, TinyCLR_Api_Type::SpiController);
+    auto res = apiManager->Find(apiManager, spiDisplayConfig.ApiName, TinyCLR_Api_Type::SpiController);
 
     if (res == nullptr)
         return TinyCLR_Result::InvalidOperation;
@@ -61,7 +61,7 @@ TinyCLR_Result SPIDisplay_Disable(const TinyCLR_Display_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result SPIDisplay_WriteString(const TinyCLR_Display_Controller* self, const char* buffer, size_t length) {
+TinyCLR_Result SPIDisplay_DrawString(const TinyCLR_Display_Controller* self, const char* data, size_t length) {
     return TinyCLR_Result::NotSupported;
 }
 
@@ -79,7 +79,7 @@ TinyCLR_Result SPIDisplay_GetConfiguration(const TinyCLR_Display_Controller* sel
     height = spiDisplayHeight;
 
     if (configuration != nullptr)
-        reinterpret_cast<TinyCLR_Display_SpiConfiguration*>(configuration)->SpiSelector = spiDisplayConfig.SpiSelector;
+        reinterpret_cast<TinyCLR_Display_SpiConfiguration*>(configuration)->ApiName = spiDisplayConfig.ApiName;
 
     return TinyCLR_Result::Success;
 }
@@ -91,7 +91,7 @@ TinyCLR_Result SPIDisplay_SetConfiguration(const TinyCLR_Display_Controller* sel
     spiDisplayHeight = height;
 
     if (configuration != nullptr)
-        spiDisplayConfig.SpiSelector = reinterpret_cast<const TinyCLR_Display_SpiConfiguration*>(configuration)->SpiSelector;
+        spiDisplayConfig.ApiName = reinterpret_cast<const TinyCLR_Display_SpiConfiguration*>(configuration)->ApiName;
 
     return TinyCLR_Result::Success;
 }
@@ -102,22 +102,24 @@ static void Swap(uint8_t* a, uint8_t* b) {
     *b = temp;
 }
 
-TinyCLR_Result SPIDisplay_DrawBuffer(const TinyCLR_Display_Controller* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data) {
+TinyCLR_Result SPIDisplay_DrawBuffer(const TinyCLR_Display_Controller* self, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const uint8_t* data) {
     auto d = const_cast<uint8_t*>(data);
 
     for (auto i = 0; i < spiDisplayWidth * spiDisplayHeight * 2; i += 2)
         Swap(d + i, d + i + 1);
 
     if (x == 0 && spiDisplayWidth == width) {
-        auto len = static_cast<size_t>(width * height * 2);
+        size_t lenWrite = static_cast<size_t>(width * height * 2);
+        size_t lenRead = 0;
 
-        spiDisplayBus->Write(spiDisplayBus, data + (y * spiDisplayWidth * 2), len);
+        spiDisplayBus->WriteRead(spiDisplayBus, data + (y * spiDisplayWidth * 2), lenWrite, nullptr, lenRead, false);
     }
     else {
-        auto len = static_cast<size_t>(width * 2);
+        size_t lenWrite = static_cast<size_t>(width * 2);
+        size_t lenRead = 0;
 
         for (auto yy = y; yy < y + height; yy++)
-            spiDisplayBus->Write(spiDisplayBus, data + (yy * spiDisplayWidth * 2) + (x * 2), len);
+            spiDisplayBus->WriteRead(spiDisplayBus, data + (yy * spiDisplayWidth * 2) + (x * 2), lenWrite, nullptr, lenRead, false);
     }
 
     for (auto i = 0; i < (spiDisplayWidth * spiDisplayHeight * 2); i += 2)

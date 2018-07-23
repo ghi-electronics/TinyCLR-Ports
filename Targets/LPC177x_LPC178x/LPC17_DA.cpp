@@ -47,8 +47,8 @@ const TinyCLR_Api_Info* LPC17_Dac_GetApi() {
         dacControllers[i].ApiInfo = &dacApi[i];
         dacControllers[i].Acquire = &LPC17_Dac_Acquire;
         dacControllers[i].Release = &LPC17_Dac_Release;
-        dacControllers[i].AcquireChannel = &LPC17_Dac_AcquireChannel;
-        dacControllers[i].ReleaseChannel = &LPC17_Dac_ReleaseChannel;
+        dacControllers[i].OpenChannel = &LPC17_Dac_OpenChannel;
+        dacControllers[i].CloseChannel = &LPC17_Dac_CloseChannel;
         dacControllers[i].WriteValue = &LPC17_Dac_WriteValue;
         dacControllers[i].GetMinValue = &LPC17_Dac_GetMinValue;
         dacControllers[i].GetMaxValue = &LPC17_Dac_GetMaxValue;
@@ -80,7 +80,7 @@ TinyCLR_Result LPC17_Dac_Release(const TinyCLR_Dac_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Dac_AcquireChannel(const TinyCLR_Dac_Controller* self, int32_t channel) {
+TinyCLR_Result LPC17_Dac_OpenChannel(const TinyCLR_Dac_Controller* self, uint32_t channel) {
     if (channel >= SIZEOF_ARRAY(dacPins))
         return TinyCLR_Result::ArgumentOutOfRange;
 
@@ -98,7 +98,7 @@ TinyCLR_Result LPC17_Dac_AcquireChannel(const TinyCLR_Dac_Controller* self, int3
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Dac_ReleaseChannel(const TinyCLR_Dac_Controller* self, int32_t channel) {
+TinyCLR_Result LPC17_Dac_CloseChannel(const TinyCLR_Dac_Controller* self, uint32_t channel) {
     if (channel >= SIZEOF_ARRAY(dacPins))
         return TinyCLR_Result::ArgumentOutOfRange;
 
@@ -115,7 +115,7 @@ TinyCLR_Result LPC17_Dac_ReleaseChannel(const TinyCLR_Dac_Controller* self, int3
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Dac_WriteValue(const TinyCLR_Dac_Controller* self, int32_t channel, int32_t value) {
+TinyCLR_Result LPC17_Dac_WriteValue(const TinyCLR_Dac_Controller* self, uint32_t channel, int32_t value) {
     if (channel >= SIZEOF_ARRAY(dacPins))
         return TinyCLR_Result::ArgumentOutOfRange;
 
@@ -132,11 +132,11 @@ TinyCLR_Result LPC17_Dac_WriteValue(const TinyCLR_Dac_Controller* self, int32_t 
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC17_Dac_GetChannelCount(const TinyCLR_Dac_Controller* self) {
+uint32_t LPC17_Dac_GetChannelCount(const TinyCLR_Dac_Controller* self) {
     return SIZEOF_ARRAY(dacPins);
 }
 
-int32_t LPC17_Dac_GetResolutionInBits(const TinyCLR_Dac_Controller* self) {
+uint32_t LPC17_Dac_GetResolutionInBits(const TinyCLR_Dac_Controller* self) {
     return LPC17_DAC_PRECISION_BITS;
 }
 
@@ -151,7 +151,7 @@ int32_t LPC17_Dac_GetMaxValue(const TinyCLR_Dac_Controller* self) {
 void LPC17_Dac_Reset() {
     for (auto c = 0; c < TOTAL_DAC_CONTROLLERS; c++) {
         for (auto ch = 0; ch < LPC17_Dac_GetChannelCount(&dacControllers[c]); ch++) {
-            LPC17_Dac_ReleaseChannel(&dacControllers[c], ch);
+            LPC17_Dac_CloseChannel(&dacControllers[c], ch);
 
             dacStates[c].isOpened[ch] = false;
         }

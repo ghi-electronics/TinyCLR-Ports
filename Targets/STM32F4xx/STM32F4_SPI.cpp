@@ -62,11 +62,8 @@ const TinyCLR_Api_Info* STM32F4_Spi_GetApi() {
         spiControllers[i].ApiInfo = &spiApi[i];
         spiControllers[i].Acquire = &STM32F4_Spi_Acquire;
         spiControllers[i].Release = &STM32F4_Spi_Release;
+        spiControllers[i].WriteRead = &STM32F4_Spi_WriteRead;
         spiControllers[i].SetActiveSettings = &STM32F4_Spi_SetActiveSettings;
-        spiControllers[i].Read = &STM32F4_Spi_Read;
-        spiControllers[i].Write = &STM32F4_Spi_Write;
-        spiControllers[i].TransferFullDuplex = &STM32F4_Spi_TransferFullDuplex;
-        spiControllers[i].TransferSequential = &STM32F4_Spi_TransferSequential;
         spiControllers[i].GetChipSelectLineCount = &STM32F4_Spi_GetChipSelectLineCount;
         spiControllers[i].GetMinClockFrequency = &STM32F4_Spi_GetMinClockFrequency;
         spiControllers[i].GetMaxClockFrequency = &STM32F4_Spi_GetMaxClockFrequency;
@@ -100,6 +97,7 @@ const TinyCLR_Api_Info* STM32F4_Spi_GetApi() {
 #endif
 #endif
 #endif
+
     return (const TinyCLR_Api_Info*)&spiApi;
 }
 
@@ -182,14 +180,14 @@ bool STM32F4_Spi_Transaction_nWrite8_nRead8(int32_t controllerIndex) {
     return true;
 }
 
-TinyCLR_Result STM32F4_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
+TinyCLR_Result STM32F4_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter) {
     if (STM32F4_Spi_Write(self, writeBuffer, writeLength) != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
 
     return STM32F4_Spi_Read(self, readBuffer, readLength);
 }
 
-TinyCLR_Result STM32F4_Spi_TransferFullDuplex(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
+TinyCLR_Result STM32F4_Spi_WriteRead(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter) {
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
@@ -255,7 +253,7 @@ TinyCLR_Result STM32F4_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode) {
+TinyCLR_Result STM32F4_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, uint32_t chipSelectLine, bool useControllerChipSelect, uint32_t clockFrequency, uint32_t dataBitLength, TinyCLR_Spi_Mode mode) {
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
@@ -477,7 +475,7 @@ TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-int32_t STM32F4_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self) {
+uint32_t STM32F4_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self) {
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
@@ -485,7 +483,7 @@ int32_t STM32F4_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self) {
     return ((controllerIndex > 0 && controllerIndex < 3) ? (STM32F4_APB1_CLOCK_HZ / 256) : (STM32F4_APB2_CLOCK_HZ / 256));
 }
 
-int32_t STM32F4_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self) {
+uint32_t STM32F4_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self) {
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
@@ -493,13 +491,13 @@ int32_t STM32F4_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self) {
     return ((controllerIndex > 0 && controllerIndex < 3) ? (STM32F4_APB1_CLOCK_HZ >> 1) : (STM32F4_APB2_CLOCK_HZ >> 1));
 }
 
-int32_t STM32F4_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self) {
+uint32_t STM32F4_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self) {
     return STM32F4_Gpio_GetPinCount(nullptr);
 }
 
 static const int32_t STM32F4_SPI_DATA_BITS_COUNT = 1;
 
-TinyCLR_Result STM32F4_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller* self, int32_t* dataBitLengths, size_t& dataBitLengthsCount) {
+TinyCLR_Result STM32F4_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller* self, uint32_t* dataBitLengths, size_t& dataBitLengthsCount) {
     if (dataBitLengths != nullptr)
         dataBitLengths[0] = 8;
 

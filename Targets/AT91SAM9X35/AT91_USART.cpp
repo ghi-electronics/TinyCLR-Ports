@@ -59,16 +59,10 @@ const TinyCLR_Api_Info* AT91_Uart_GetApi() {
         uartControllers[i].Flush = &AT91_Uart_Flush;
         uartControllers[i].Read = &AT91_Uart_Read;
         uartControllers[i].Write = &AT91_Uart_Write;
-        uartControllers[i].SetPinChangedHandler = &AT91_Uart_SetPinChangedHandler;
         uartControllers[i].SetErrorReceivedHandler = &AT91_Uart_SetErrorReceivedHandler;
         uartControllers[i].SetDataReceivedHandler = &AT91_Uart_SetDataReceivedHandler;
-        uartControllers[i].GetBreakSignalState = &AT91_Uart_GetBreakSignalState;
-        uartControllers[i].SetBreakSignalState = &AT91_Uart_SetBreakSignalState;
-        uartControllers[i].GetCarrierDetectState = &AT91_Uart_GetCarrierDetectState;
         uartControllers[i].GetClearToSendState = &AT91_Uart_GetClearToSendState;
-        uartControllers[i].GetDataReadyState = &AT91_Uart_GetDataReadyState;
-        uartControllers[i].GetIsDataTerminalReadyEnabled = &AT91_Uart_GetIsDataTerminalReadyEnabled;
-        uartControllers[i].SetIsDataTerminalReadyEnabled = &AT91_Uart_SetIsDataTerminalReadyEnabled;
+        uartControllers[i].SetClearToSendChangedHandler = &AT91_Uart_SetClearToSendChangedHandler;
         uartControllers[i].GetIsRequestToSendEnabled = &AT91_Uart_GetIsRequestToSendEnabled;
         uartControllers[i].SetIsRequestToSendEnabled = &AT91_Uart_SetIsRequestToSendEnabled;
         uartControllers[i].GetReadBufferSize = &AT91_Uart_GetReadBufferSize;
@@ -130,14 +124,12 @@ AT91_Gpio_PeripheralSelection AT91_Uart_GetCtsAlternateFunction(int32_t controll
     return uartCtsPins[controllerIndex].peripheralSelection;
 }
 
-TinyCLR_Result AT91_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t& size) {
+size_t AT91_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
 
-    size = state->rxBufferSize == 0 ? uartRxDefaultBuffersSize[controllerIndex] : state->rxBufferSize;
-
-    return TinyCLR_Result::Success;
+    return state->rxBufferSize == 0 ? uartRxDefaultBuffersSize[controllerIndex] : state->rxBufferSize;
 }
 
 TinyCLR_Result AT91_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
@@ -165,14 +157,12 @@ TinyCLR_Result AT91_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self, 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Uart_GetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t& size) {
+size_t AT91_Uart_GetWriteBufferSize(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
 
-    size = state->txBufferSize == 0 ? uartTxDefaultBuffersSize[controllerIndex] : state->txBufferSize;
-
-    return TinyCLR_Result::Success;
+    return state->txBufferSize == 0 ? uartTxDefaultBuffersSize[controllerIndex] : state->txBufferSize;
 }
 
 TinyCLR_Result AT91_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
@@ -264,7 +254,7 @@ void AT91_Uart_ReceiveData(int32_t controllerIndex, uint32_t sr) {
     auto state = &uartStates[controllerIndex];
 
     if (state->rxBufferCount == state->rxBufferSize) {
-        AT91_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveFull);
+        AT91_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferFull);
 
         return;
     }
@@ -280,7 +270,7 @@ void AT91_Uart_ReceiveData(int32_t controllerIndex, uint32_t sr) {
         state->dataReceivedEventHandler(state->controller, 1);
 
     if (sr & AT91_USART::US_OVRE)
-        AT91_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferOverrun);
+        AT91_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
 
     if (sr & AT91_USART::US_FRAME)
         AT91_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
@@ -658,7 +648,7 @@ TinyCLR_Result AT91_Uart_Write(const TinyCLR_Uart_Controller* self, const uint8_
     }
 
     if (state->txBufferCount == state->txBufferSize) {
-        AT91_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::TransmitFull);
+        AT91_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferFull);
 
         return TinyCLR_Result::Busy;
     }
@@ -687,10 +677,6 @@ TinyCLR_Result AT91_Uart_Write(const TinyCLR_Uart_Controller* self, const uint8_
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Uart_SetPinChangedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_PinChangedHandler handler) {
-    //TODO
-    return TinyCLR_Result::Success;
-}
 TinyCLR_Result AT91_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ErrorReceivedHandler handler) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
@@ -707,31 +693,11 @@ TinyCLR_Result AT91_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Controller* s
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Uart_GetBreakSignalState(const TinyCLR_Uart_Controller* self, bool& state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result AT91_Uart_SetBreakSignalState(const TinyCLR_Uart_Controller* self, bool state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result AT91_Uart_GetCarrierDetectState(const TinyCLR_Uart_Controller* self, bool& state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
 TinyCLR_Result AT91_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* self, bool& state) {
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result AT91_Uart_GetDataReadyState(const TinyCLR_Uart_Controller* self, bool& state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result AT91_Uart_GetIsDataTerminalReadyEnabled(const TinyCLR_Uart_Controller* self, bool& state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result AT91_Uart_SetIsDataTerminalReadyEnabled(const TinyCLR_Uart_Controller* self, bool state) {
+TinyCLR_Result AT91_Uart_SetClearToSendChangedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ClearToSendChangedHandler handler) {
     return TinyCLR_Result::NotImplemented;
 }
 
@@ -743,20 +709,16 @@ TinyCLR_Result AT91_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Controller
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result AT91_Uart_GetUnreadCount(const TinyCLR_Uart_Controller* self, size_t& count) {
+size_t AT91_Uart_GetUnreadCount(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    count = state->rxBufferCount;
-
-    return TinyCLR_Result::Success;
+    return state->rxBufferCount;
 }
 
-TinyCLR_Result AT91_Uart_GetUnwrittenCount(const TinyCLR_Uart_Controller* self, size_t& count) {
+size_t AT91_Uart_GetUnwrittenCount(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    count = state->txBufferCount;
-
-    return TinyCLR_Result::Success;
+    return state->txBufferCount;
 }
 
 TinyCLR_Result AT91_Uart_ClearReadBuffer(const TinyCLR_Uart_Controller* self) {
@@ -786,4 +748,10 @@ void AT91_Uart_Reset() {
     }
 }
 
+TinyCLR_Result AT91_Uart_Enable(const TinyCLR_Uart_Controller* self) {
+    return TinyCLR_Result::NotImplemented;
+}
 
+TinyCLR_Result AT91_Uart_Disable(const TinyCLR_Uart_Controller* self) {
+    return TinyCLR_Result::NotImplemented;
+}

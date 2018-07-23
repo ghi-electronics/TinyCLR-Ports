@@ -734,11 +734,11 @@ const TinyCLR_Api_Info* TinyCLR_UsbClient_GetApi() {
         usbClientControllers[i].ApiInfo = &usbClientApi[i];
         usbClientControllers[i].Acquire = &TinyCLR_UsbClient_Acquire;
         usbClientControllers[i].Release = &TinyCLR_UsbClient_Release;
-        usbClientControllers[i].Open = &TinyCLR_UsbClient_Open;
-        usbClientControllers[i].Close = &TinyCLR_UsbClient_Close;
-        usbClientControllers[i].Write = &TinyCLR_UsbClient_Write;
-        usbClientControllers[i].Read = &TinyCLR_UsbClient_Read;
-        usbClientControllers[i].Flush = &TinyCLR_UsbClient_Flush;
+        usbClientControllers[i].OpenPipe = &TinyCLR_UsbClient_OpenPipe;
+        usbClientControllers[i].ClosePipe = &TinyCLR_UsbClient_ClosePipe;
+        usbClientControllers[i].WritePipe = &TinyCLR_UsbClient_WritePipe;
+        usbClientControllers[i].ReadPipe = &TinyCLR_UsbClient_ReadPipe;
+        usbClientControllers[i].FlushPipe = &TinyCLR_UsbClient_FlushPipe;
         usbClientControllers[i].SetDataReceivedHandler = &TinyCLR_UsbClient_SetDataReceivedHandler;
         usbClientControllers[i].SetVendorClassRequestHandler = &TinyCLR_UsbClient_SetVendorClassRequestHandler;
         usbClientControllers[i].SetDeviceDescriptor = &TinyCLR_UsbClient_SetDeviceDescriptor;
@@ -869,22 +869,22 @@ TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Controller* sel
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result TinyCLR_UsbClient_Open(const TinyCLR_UsbClient_Controller* self, int32_t& pipe, uint8_t writeEp, uint8_t readEp) {
+TinyCLR_Result TinyCLR_UsbClient_OpenPipe(const TinyCLR_UsbClient_Controller* self, uint8_t writeEndpoint, uint8_t readEndpoint, uint32_t& pipe) {
     UsClientState * usClientState = reinterpret_cast<UsClientState*>(self->ApiInfo->State);
 
     if (!usClientState->initialized)
         goto pipe_error;
 
-    if (writeEp < usClientState->totalEndpointsCount)
-        usClientState->isTxQueue[writeEp] = true;
+    if (writeEndpoint < usClientState->totalEndpointsCount)
+        usClientState->isTxQueue[writeEndpoint] = true;
 
-    if (readEp < usClientState->totalEndpointsCount)
-        usClientState->isTxQueue[readEp] = false;
+    if (readEndpoint < usClientState->totalEndpointsCount)
+        usClientState->isTxQueue[readEndpoint] = false;
 
     if (apiManager != nullptr) {
         for (auto i = 0; i < 2; i++) {
             auto memoryManager = reinterpret_cast<const TinyCLR_Memory_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager));
-            auto endpoint = (i == 0) ? writeEp : readEp;
+            auto endpoint = (i == 0) ? writeEndpoint : readEndpoint;
 
             if (memoryManager != nullptr && endpoint < usClientState->totalEndpointsCount) {
                 usClientState->queues[endpoint] = (USB_PACKET64*)memoryManager->Allocate(memoryManager, usClientState->maxFifoPacketCount * sizeof(USB_PACKET64));
@@ -905,8 +905,8 @@ TinyCLR_Result TinyCLR_UsbClient_Open(const TinyCLR_UsbClient_Controller* self, 
             goto pipe_error;
 
         // All tests pass, assign the endpoints to the pipe
-        usClientState->pipes[pipe].RxEP = readEp;
-        usClientState->pipes[pipe].TxEP = writeEp;
+        usClientState->pipes[pipe].RxEP = readEndpoint;
+        usClientState->pipes[pipe].TxEP = writeEndpoint;
 
         if (usClientState->currentState == USB_DEVICE_STATE_UNINITIALIZED) {
             TinyCLR_UsbClient_Initialize(usClientState);
@@ -919,7 +919,7 @@ pipe_error:
     return TinyCLR_Result::NotAvailable;
 }
 
-TinyCLR_Result TinyCLR_UsbClient_Close(const TinyCLR_UsbClient_Controller* self, int32_t pipe) {
+TinyCLR_Result TinyCLR_UsbClient_ClosePipe(const TinyCLR_UsbClient_Controller* self, uint32_t pipe) {
     UsClientState * usClientState = reinterpret_cast<UsClientState*>(self->ApiInfo->State);
 
     if (!usClientState->initialized)
@@ -951,7 +951,7 @@ TinyCLR_Result TinyCLR_UsbClient_Close(const TinyCLR_UsbClient_Controller* self,
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result TinyCLR_UsbClient_Write(const TinyCLR_UsbClient_Controller* self, int32_t pipe, const uint8_t* data, size_t& length) {
+TinyCLR_Result TinyCLR_UsbClient_WritePipe(const TinyCLR_UsbClient_Controller* self, uint32_t pipe, const uint8_t* data, size_t& length) {
     UsClientState * usClientState = reinterpret_cast<UsClientState*>(self->ApiInfo->State);
 
     if (!usClientState->initialized
@@ -1070,7 +1070,7 @@ done_write:
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result TinyCLR_UsbClient_Read(const TinyCLR_UsbClient_Controller* self, int32_t pipe, uint8_t* data, size_t& length) {
+TinyCLR_Result TinyCLR_UsbClient_ReadPipe(const TinyCLR_UsbClient_Controller* self, uint32_t pipe, uint8_t* data, size_t& length) {
     int32_t endpoint;
     UsClientState * usClientState = reinterpret_cast<UsClientState*>(self->ApiInfo->State);
 
@@ -1135,7 +1135,7 @@ TinyCLR_Result TinyCLR_UsbClient_Read(const TinyCLR_UsbClient_Controller* self, 
 }
 
 #define USB_FLUSH_RETRY_COUNT 30
-TinyCLR_Result TinyCLR_UsbClient_Flush(const TinyCLR_UsbClient_Controller* self, int32_t pipe) {
+TinyCLR_Result TinyCLR_UsbClient_FlushPipe(const TinyCLR_UsbClient_Controller* self, uint32_t pipe) {
     int32_t endpoint;
     int32_t retries = USB_FLUSH_RETRY_COUNT;
     int32_t queueCnt;
@@ -1188,7 +1188,7 @@ void TinyCLR_UsbClient_Reset(int32_t controllerIndex) {
     UsClientState * usClientState = &usbClientDrivers[controllerIndex];
 
     for (auto pipe = 0; pipe < usClientState->totalPipesCount; pipe++) {
-        TinyCLR_UsbClient_Close(&usbClientControllers[controllerIndex], pipe);
+        TinyCLR_UsbClient_ClosePipe(&usbClientControllers[controllerIndex], pipe);
     }
 
     TinyCLR_UsbClient_Release(&usbClientControllers[controllerIndex]);

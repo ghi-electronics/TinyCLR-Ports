@@ -52,8 +52,8 @@ const TinyCLR_Api_Info* AT91_Rtc_GetApi() {
         rtcControllers[i].ApiInfo = &timeApi[i];
         rtcControllers[i].Acquire = &AT91_Rtc_Acquire;
         rtcControllers[i].Release = &AT91_Rtc_Release;
-        rtcControllers[i].GetNow = &AT91_Rtc_GetNow;
-        rtcControllers[i].SetNow = &AT91_Rtc_SetNow;
+        rtcControllers[i].GetTime = &AT91_Rtc_GetTime;
+        rtcControllers[i].SetTime = &AT91_Rtc_SetTime;
 
         timeApi[i].Author = "GHI Electronics, LLC";
         timeApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.RtcController";
@@ -110,7 +110,7 @@ TinyCLR_Result AT91_Rtc_Release(const TinyCLR_Rtc_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Rtc_GetNow(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value) {
+TinyCLR_Result AT91_Rtc_GetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value) {
     uint32_t calenderRegister = RTC_CALR;
     uint32_t timeRegister = RTC_TIMR;
     uint32_t fullYear = 0;
@@ -150,7 +150,7 @@ TinyCLR_Result AT91_Rtc_GetNow(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_D
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Rtc_SetNow(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value) {
+TinyCLR_Result AT91_Rtc_SetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value) {
     uint32_t calenderRegister = 0;
     uint32_t timeRegister = 0;
     uint32_t lowerHundredYears = 0;

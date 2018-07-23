@@ -37,7 +37,7 @@ struct I2cTransaction {
     size_t                      bytesToTransfer;
     size_t                      bytesTransferred;
 
-    TinyCLR_I2c_TransferStatus  result;
+    TinyCLR_I2c_TransferStatus error;
 };
 
 static const LPC24_Gpio_Pin i2cSclPins[] = LPC24_I2C_SCL_PINS;
@@ -62,9 +62,7 @@ const TinyCLR_Api_Info* LPC24_I2c_GetApi() {
         i2cControllers[i].ApiInfo = &i2cApi[i];
         i2cControllers[i].Acquire = &LPC24_I2c_Acquire;
         i2cControllers[i].Release = &LPC24_I2c_Release;
-        i2cControllers[i].SetActiveSettings = &LPC24_I2c_SetActiveSettings;
-        i2cControllers[i].Read = &LPC24_I2c_Read;
-        i2cControllers[i].Write = &LPC24_I2c_Write;
+        i2cControllers[i].SetActiveSettings = &LPC24_I2c_SetActiveSettings;        
         i2cControllers[i].WriteRead = &LPC24_I2c_WriteRead;
 
         i2cApi[i].Author = "GHI Electronics, LLC";
@@ -212,7 +210,7 @@ void LPC24_I2c_StopTransaction(int32_t controllerIndex) {
     state->currentI2cTransactionAction->isDone = true;
 }
 
-TinyCLR_Result LPC24_I2c_Read(const TinyCLR_I2c_Controller* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result LPC24_I2c_Read(const TinyCLR_I2c_Controller* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& error) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
@@ -239,16 +237,16 @@ TinyCLR_Result LPC24_I2c_Read(const TinyCLR_I2c_Controller* self, uint8_t* buffe
     }
 
     if (state->currentI2cTransactionAction->bytesTransferred == length)
-        result = TinyCLR_I2c_TransferStatus::FullTransfer;
+        error = TinyCLR_I2c_TransferStatus::FullTransfer;
     else if (state->currentI2cTransactionAction->bytesTransferred < length && state->currentI2cTransactionAction->bytesTransferred > 0)
-        result = TinyCLR_I2c_TransferStatus::PartialTransfer;
+        error = TinyCLR_I2c_TransferStatus::PartialTransfer;
 
     length = state->currentI2cTransactionAction->bytesTransferred;
 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result LPC24_I2c_Write(const TinyCLR_I2c_Controller* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result LPC24_I2c_Write(const TinyCLR_I2c_Controller* self, const uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& error) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
@@ -272,16 +270,16 @@ TinyCLR_Result LPC24_I2c_Write(const TinyCLR_I2c_Controller* self, const uint8_t
     }
 
     if (state->currentI2cTransactionAction->bytesTransferred == length)
-        result = TinyCLR_I2c_TransferStatus::FullTransfer;
+        error = TinyCLR_I2c_TransferStatus::FullTransfer;
     else if (state->currentI2cTransactionAction->bytesTransferred < length && state->currentI2cTransactionAction->bytesTransferred > 0)
-        result = TinyCLR_I2c_TransferStatus::PartialTransfer;
+        error = TinyCLR_I2c_TransferStatus::PartialTransfer;
 
     length = state->currentI2cTransactionAction->bytesTransferred;
 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result LPC24_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, TinyCLR_I2c_TransferStatus& result) {
+TinyCLR_Result LPC24_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool sendStopAfter, TinyCLR_I2c_TransferStatus& error) {
     int32_t timeout = I2C_TRANSACTION_TIMEOUT;
 
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
@@ -313,21 +311,21 @@ TinyCLR_Result LPC24_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uin
 
     if (state->writeI2cTransactionAction.bytesTransferred != writeLength) {
         writeLength = state->writeI2cTransactionAction.bytesTransferred;
-        result = TinyCLR_I2c_TransferStatus::PartialTransfer;
+        error = TinyCLR_I2c_TransferStatus::PartialTransfer;
     }
     else {
         readLength = state->readI2cTransactionAction.bytesTransferred;
 
         if (state->currentI2cTransactionAction->bytesTransferred == readLength)
-            result = TinyCLR_I2c_TransferStatus::FullTransfer;
+            error = TinyCLR_I2c_TransferStatus::FullTransfer;
         else if (state->currentI2cTransactionAction->bytesTransferred < readLength && state->currentI2cTransactionAction->bytesTransferred > 0)
-            result = TinyCLR_I2c_TransferStatus::PartialTransfer;
+            error = TinyCLR_I2c_TransferStatus::PartialTransfer;
     }
 
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result LPC24_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, int32_t slaveAddress, TinyCLR_I2c_BusSpeed busSpeed) {
+TinyCLR_Result LPC24_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, uint32_t slaveAddress, TinyCLR_I2c_AddressFormat addressFormat, TinyCLR_I2c_BusSpeed busSpeed) {
     uint32_t rateKhz;
 
     if (self == nullptr)

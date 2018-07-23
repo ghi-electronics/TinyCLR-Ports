@@ -44,27 +44,27 @@ const TinyCLR_Startup_UsbDebuggerConfiguration LPC24_Startup_UsbDebuggerConfigur
 };
 
 const TinyCLR_Startup_UartDebuggerConfiguration AT91_Startup_UartDebuggerConfiguration = {
-   
+
 };
 
 void LPC24_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value, valueUsbActive;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetApi()->Implementation);    
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetApi()->Implementation);
 
-    provider->AcquirePin(provider, DEBUGGER_SELECTOR_PIN);
+    provider->OpenPin(provider, DEBUGGER_SELECTOR_PIN);
     provider->SetDriveMode(provider, DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
     provider->Read(provider, DEBUGGER_SELECTOR_PIN, value);
-    provider->ReleasePin(provider, DEBUGGER_SELECTOR_PIN);
+    provider->ClosePin(provider, DEBUGGER_SELECTOR_PIN);
 
     valueUsbActive = DEBUGGER_SELECTOR_USB_STATE;
 
     if (value == valueUsbActive) {
-        api = LPC24_UsbDevice_GetApi();        
+        api = LPC24_UsbDevice_GetApi();
         configuration = (const void*)&LPC24_Startup_UsbDebuggerConfiguration;
     }
     else {
-        api = LPC24_Uart_GetApi();        
+        api = LPC24_Uart_GetApi();
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;
@@ -77,12 +77,12 @@ void LPC24_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const v
 void LPC24_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetApi()->Implementation);    
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetApi()->Implementation);
 
-    provider->AcquirePin(provider, RUN_APP_PIN);
+    provider->OpenPin(provider, RUN_APP_PIN);
     provider->SetDriveMode(provider, RUN_APP_PIN, RUN_APP_PULL);
     provider->Read(provider, RUN_APP_PIN, value);
-    provider->ReleasePin(provider, RUN_APP_PIN);
+    provider->ClosePin(provider, RUN_APP_PIN);
 
     runApp = value == RUN_APP_STATE;
 #elif defined(RUN_APP_FORCE_STATE)
@@ -186,28 +186,28 @@ LPC24_Gpio_PinFunction LPC24_Uart_GetCtsAlternateFunction(int32_t portNum) {
 }
 
 // ADC
-static const LPC24_Gpio_Pin g_lpc2388_adc_pins[] = LPC2388_ADC_PINS;
-static const LPC24_Gpio_Pin g_lpc2387_adc_pins[] = LPC2387_ADC_PINS;
+static const LPC24_Gpio_Pin g_lpc2388_adcPins[] = LPC2388_ADC_PINS;
+static const LPC24_Gpio_Pin g_lpc2387_adcPins[] = LPC2387_ADC_PINS;
 
-int32_t LPC24_Adc_GetChannelCount() {
+uint32_t LPC24_Adc_GetChannelCount() {
     if (LPC24_Startup_GetDeviceId() != LPC2387_PARTID_1 && LPC24_Startup_GetDeviceId() != LPC2387_PARTID_2)
-        return  SIZEOF_ARRAY(g_lpc2388_adc_pins);
+        return  SIZEOF_ARRAY(g_lpc2388_adcPins);
     else
-        return  SIZEOF_ARRAY(g_lpc2387_adc_pins);
+        return  SIZEOF_ARRAY(g_lpc2387_adcPins);
 }
 
-int32_t LPC24_Adc_GetPin(int32_t channel) {
+uint32_t LPC24_Adc_GetPin(uint32_t channel) {
     if (LPC24_Startup_GetDeviceId() != LPC2387_PARTID_1 && LPC24_Startup_GetDeviceId() != LPC2387_PARTID_2)
-        return  g_lpc2388_adc_pins[channel].number;
+        return  g_lpc2388_adcPins[channel].number;
     else
-        return  g_lpc2387_adc_pins[channel].number;
+        return  g_lpc2387_adcPins[channel].number;
 }
 
-LPC24_Gpio_PinFunction LPC24_Adc_GetPinFunction(int32_t channel) {
+LPC24_Gpio_PinFunction LPC24_Adc_GetPinFunction(uint32_t channel) {
     if (LPC24_Startup_GetDeviceId() != LPC2387_PARTID_1 && LPC24_Startup_GetDeviceId() != LPC2387_PARTID_2)
-        return  g_lpc2388_adc_pins[channel].pinFunction;
+        return  g_lpc2388_adcPins[channel].pinFunction;
     else
-        return  g_lpc2387_adc_pins[channel].pinFunction;
+        return  g_lpc2387_adcPins[channel].pinFunction;
 }
 
 //PWM

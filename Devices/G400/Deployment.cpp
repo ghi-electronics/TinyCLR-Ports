@@ -58,21 +58,21 @@ TinyCLR_Result AT91_Deployment_Uninitialize(const TinyCLR_Deployment_Controller*
     return AT45DB321D_Flash_Release();
 }
 
-TinyCLR_Result AT91_Deployment_Read(const TinyCLR_Deployment_Controller* self, uint32_t address, size_t length, uint8_t* buffer) {
+TinyCLR_Result AT91_Deployment_Read(const TinyCLR_Deployment_Controller* self, uint64_t address, size_t length, uint8_t* buffer) {
     return AT45DB321D_Flash_Read(address, length, buffer);
 }
 
-TinyCLR_Result AT91_Deployment_Write(const TinyCLR_Deployment_Controller* self, uint32_t address, size_t length, const uint8_t* buffer) {
+TinyCLR_Result AT91_Deployment_Write(const TinyCLR_Deployment_Controller* self, uint64_t address, size_t length, const uint8_t* buffer) {
     return AT45DB321D_Flash_Write(address, length, buffer);;
 }
 
-TinyCLR_Result AT91_Deployment_EraseSector(const TinyCLR_Deployment_Controller* self, uint32_t sector) {
+TinyCLR_Result AT91_Deployment_EraseSector(const TinyCLR_Deployment_Controller* self, uint64_t sector) {
     sector += AT91_DEPLOYMENT_SECTOR_START;
 
     return AT45DB321D_Flash_EraseBlock(sector);
 }
 
-TinyCLR_Result AT91_Deployment_IsSectorErased(const TinyCLR_Deployment_Controller* self, uint32_t sector, bool& erased) {
+TinyCLR_Result AT91_Deployment_IsSectorErased(const TinyCLR_Deployment_Controller* self, uint64_t sector, bool& erased) {
     sector += AT91_DEPLOYMENT_SECTOR_START;
 
     return AT45DB321D_Flash_IsBlockErased(sector, erased);
@@ -82,7 +82,7 @@ TinyCLR_Result AT91_Deployment_GetBytesPerSector(const TinyCLR_Deployment_Contro
     return AT45DB321D_Flash_GetBytesPerSector(address, size);
 }
 
-TinyCLR_Result AT91_Deployment_GetSectorMap(const TinyCLR_Deployment_Controller* self, const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
+TinyCLR_Result AT91_Deployment_GetSectorMap(const TinyCLR_Deployment_Controller* self, const uint64_t*& addresses, const size_t*& sizes, size_t& count) {
     AT45DB321D_Flash_GetSectorMap(addresses, sizes, count);
 
     addresses += AT91_DEPLOYMENT_SECTOR_START;

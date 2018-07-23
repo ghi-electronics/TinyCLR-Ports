@@ -56,8 +56,8 @@ const TinyCLR_NativeTime_Controller* g_AT45DB321D_Flash_TimeProvider;
 
 uint32_t g_AT45DB321D_Flash_SpiChipSelectLine;
 
-uint32_t g_AT45DB321D_Flash_SectorAddress[AT45DB321D_FLASH_SECTOR_NUM];
-uint32_t g_AT45DB321D_Flash_SectorSize[AT45DB321D_FLASH_SECTOR_NUM];
+uint64_t g_AT45DB321D_Flash_SectorAddress[AT45DB321D_FLASH_SECTOR_NUM];
+size_t g_AT45DB321D_Flash_SectorSize[AT45DB321D_FLASH_SECTOR_NUM];
 
 uint8_t g_AT45DB321D_Flash_BufferRW[(AT45DB321D_FLASH_PAGE_SIZE * 1) + AT45DB321D_FLASH_COMMAND_SIZE];
 
@@ -74,7 +74,7 @@ uint8_t AT45DB321D_Flash_GetStatus() {
     writeLength = 2;
     readLength = 2;
 
-    g_AT45DB321D_Flash_SpiProvider->TransferFullDuplex(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_DataWriteBuffer, writeLength, g_AT45DB321D_Flash_DataReadBuffer, readLength);
+    g_AT45DB321D_Flash_SpiProvider->WriteRead(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_DataWriteBuffer, writeLength, g_AT45DB321D_Flash_DataReadBuffer, readLength, false);
 
     return g_AT45DB321D_Flash_DataReadBuffer[1];
 }
@@ -90,7 +90,7 @@ TinyCLR_Result AT45DB321D_Flash_Read(uint32_t address, size_t length, uint8_t* b
 
     g_AT45DB321D_Flash_SpiProvider->Acquire(g_AT45DB321D_Flash_SpiProvider);
 
-    g_AT45DB321D_Flash_SpiProvider->SetActiveSettings(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_SpiChipSelectLine, AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    g_AT45DB321D_Flash_SpiProvider->SetActiveSettings(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_SpiChipSelectLine, false,  AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     while (block > 0) {
         uint32_t pageNumber = (address % AT45DB321D_FLASH_PAGE_SIZE) | ((address / AT45DB321D_FLASH_PAGE_SIZE) << 10);
@@ -107,7 +107,7 @@ TinyCLR_Result AT45DB321D_Flash_Read(uint32_t address, size_t length, uint8_t* b
         writeLength = AT45DB321D_FLASH_PAGE_SIZE + 8;
         readLength = AT45DB321D_FLASH_PAGE_SIZE + 8;
 
-        g_AT45DB321D_Flash_SpiProvider->TransferFullDuplex(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_DataWriteBuffer, writeLength, g_AT45DB321D_Flash_DataReadBuffer, readLength);
+        g_AT45DB321D_Flash_SpiProvider->WriteRead(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_DataWriteBuffer, writeLength, g_AT45DB321D_Flash_DataReadBuffer, readLength, false);
 
         int32_t timeout;
 
@@ -140,7 +140,7 @@ TinyCLR_Result AT45DB321D_Flash_Read(uint32_t address, size_t length, uint8_t* b
         writeLength = rest + 8;
         readLength = rest + 8;
 
-        g_AT45DB321D_Flash_SpiProvider->TransferFullDuplex(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_DataWriteBuffer, writeLength, g_AT45DB321D_Flash_DataReadBuffer, readLength);
+        g_AT45DB321D_Flash_SpiProvider->WriteRead(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_DataWriteBuffer, writeLength, g_AT45DB321D_Flash_DataReadBuffer, readLength, false);
 
         int32_t timeout;
 
@@ -177,7 +177,7 @@ bool AT45DB321D_Flash_WriteSector(uint32_t pageNumber, uint8_t* dataBuffer) {
     writeLength = AT45DB321D_FLASH_COMMAND_SIZE + AT45DB321D_FLASH_PAGE_SIZE;
     readLength = AT45DB321D_FLASH_COMMAND_SIZE + AT45DB321D_FLASH_PAGE_SIZE;
 
-    g_AT45DB321D_Flash_SpiProvider->TransferFullDuplex(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_DataWriteBuffer, writeLength, g_AT45DB321D_Flash_DataReadBuffer, readLength);
+    g_AT45DB321D_Flash_SpiProvider->WriteRead(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_DataWriteBuffer, writeLength, g_AT45DB321D_Flash_DataReadBuffer, readLength, false);
 
     g_AT45DB321D_Flash_DataWriteBuffer[0] = 0x88;
     g_AT45DB321D_Flash_DataWriteBuffer[1] = (pageNumber << 2) >> 8;
@@ -187,7 +187,7 @@ bool AT45DB321D_Flash_WriteSector(uint32_t pageNumber, uint8_t* dataBuffer) {
     writeLength = AT45DB321D_FLASH_COMMAND_SIZE;
     readLength = AT45DB321D_FLASH_COMMAND_SIZE;
 
-    g_AT45DB321D_Flash_SpiProvider->TransferFullDuplex(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_DataWriteBuffer, writeLength, g_AT45DB321D_Flash_DataReadBuffer, readLength);
+    g_AT45DB321D_Flash_SpiProvider->WriteRead(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_DataWriteBuffer, writeLength, g_AT45DB321D_Flash_DataReadBuffer, readLength, false);
 
     int32_t timeout;
 
@@ -213,7 +213,7 @@ TinyCLR_Result AT45DB321D_Flash_Write(uint32_t address, size_t length, const uin
 
     g_AT45DB321D_Flash_SpiProvider->Acquire(g_AT45DB321D_Flash_SpiProvider);
 
-    g_AT45DB321D_Flash_SpiProvider->SetActiveSettings(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_SpiChipSelectLine, AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    g_AT45DB321D_Flash_SpiProvider->SetActiveSettings(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_SpiChipSelectLine, false,  AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     if (pageOffset) {
         memset(g_AT45DB321D_Flash_BufferRW, 0xFF, AT45DB321D_FLASH_PAGE_SIZE);
@@ -315,7 +315,7 @@ TinyCLR_Result AT45DB321D_Flash_EraseBlock(uint32_t sector) {
 
     g_AT45DB321D_Flash_SpiProvider->Acquire(g_AT45DB321D_Flash_SpiProvider);
 
-    g_AT45DB321D_Flash_SpiProvider->SetActiveSettings(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_SpiChipSelectLine, AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    g_AT45DB321D_Flash_SpiProvider->SetActiveSettings(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_SpiChipSelectLine, false,  AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     g_AT45DB321D_Flash_DataWriteBuffer[0] = AT45DB321D_FLASH_COMMAND_BLOCK_ERASE;
     g_AT45DB321D_Flash_DataWriteBuffer[1] = (blockNumber << 3u) >> 6u;
@@ -326,7 +326,7 @@ TinyCLR_Result AT45DB321D_Flash_EraseBlock(uint32_t sector) {
     readLength = AT45DB321D_FLASH_COMMAND_SIZE;
 
 
-    g_AT45DB321D_Flash_SpiProvider->TransferFullDuplex(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_DataWriteBuffer, writeLength, g_AT45DB321D_Flash_DataReadBuffer, readLength);
+    g_AT45DB321D_Flash_SpiProvider->WriteRead(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_DataWriteBuffer, writeLength, g_AT45DB321D_Flash_DataReadBuffer, readLength, false);
 
     int32_t timeout;
 
@@ -358,7 +358,7 @@ TinyCLR_Result AT45DB321D_Flash_Acquire(const TinyCLR_Spi_Controller* spiProvide
 
     g_AT45DB321D_Flash_SpiProvider->Acquire(g_AT45DB321D_Flash_SpiProvider);
 
-    g_AT45DB321D_Flash_SpiProvider->SetActiveSettings(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_SpiChipSelectLine, AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    g_AT45DB321D_Flash_SpiProvider->SetActiveSettings(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_SpiChipSelectLine, false,  AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     g_AT45DB321D_Flash_DataWriteBuffer[0] = AT45DB321D_FLASH_COMMAND_READID;
     g_AT45DB321D_Flash_DataWriteBuffer[1] = 0x00;
@@ -369,7 +369,7 @@ TinyCLR_Result AT45DB321D_Flash_Acquire(const TinyCLR_Spi_Controller* spiProvide
     writeLength = 5;
     readLength = 5;
 
-    g_AT45DB321D_Flash_SpiProvider->TransferFullDuplex(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_DataWriteBuffer, writeLength, g_AT45DB321D_Flash_DataReadBuffer, readLength);
+    g_AT45DB321D_Flash_SpiProvider->WriteRead(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_DataWriteBuffer, writeLength, g_AT45DB321D_Flash_DataReadBuffer, readLength, false);
 
     if (AT45DB321D_FLASH_MANUFACTURER_CODE != g_AT45DB321D_Flash_DataReadBuffer[1])
         return TinyCLR_Result::InvalidOperation;
@@ -410,7 +410,7 @@ TinyCLR_Result AT45DB321D_Flash_GetBytesPerSector(uint32_t address, int32_t& siz
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT45DB321D_Flash_GetSectorMap(const uint32_t*& addresses, const uint32_t*& sizes, size_t& count) {
+TinyCLR_Result AT45DB321D_Flash_GetSectorMap(const uint64_t*& addresses, const size_t*& sizes, size_t& count) {
     for (auto i = 0; i < AT45DB321D_FLASH_SECTOR_NUM; i++) {
         g_AT45DB321D_Flash_SectorAddress[i] = (AT45DB321D_FLASH_SECTOR_START + i) * AT45DB321D_FLASH_BLOCK_SIZE;
         g_AT45DB321D_Flash_SectorSize[i] = AT45DB321D_FLASH_BLOCK_SIZE;

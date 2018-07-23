@@ -18,7 +18,7 @@
 
 #include "../../Drivers/SPIDisplay/SPIDisplay.h"
 #include "../../Drivers/DevicesInterop/GHIElectronics_TinyCLR_Devices.h"
-#include "../../Drivers/DevicesInterop/GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
+// #include "../../Drivers/DevicesInterop/GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
 // G120, G120E
 #define LPC17_G120                         1
@@ -33,8 +33,8 @@
 #define G120E_DETECT3_STATE TinyCLR_Gpio_PinValue::Low
 
 void LPC17_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopManager) {
-    apiManager->Add(apiManager, SPIDisplay_GetApi());
-    interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices);
+    // apiManager->Add(apiManager, SPIDisplay_GetApi());
+    // interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices);
 }
 
 static int32_t lpc178_deviceId = -1;
@@ -99,10 +99,10 @@ void LPC17_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const v
     TinyCLR_Gpio_PinValue value, valueUsbActive;
     auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC17_Gpio_GetApi()->Implementation);
 
-    provider->AcquirePin(provider, LPC17_Startup_GetDebuggerSelectorPin());
+    provider->OpenPin(provider, LPC17_Startup_GetDebuggerSelectorPin());
     provider->SetDriveMode(provider, LPC17_Startup_GetDebuggerSelectorPin(), LPC17_Startup_GetDebuggerSelectorPull());
     provider->Read(provider, LPC17_Startup_GetDebuggerSelectorPin(), value);
-    provider->ReleasePin(provider, LPC17_Startup_GetDebuggerSelectorPin());
+    provider->ClosePin(provider, LPC17_Startup_GetDebuggerSelectorPin());
 
     valueUsbActive = LPC17_Startup_GetDebuggerSelectorUsbState();
 
@@ -127,10 +127,10 @@ void LPC17_Startup_GetRunApp(bool& runApp) {
     TinyCLR_Gpio_PinValue value;
     auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC17_Gpio_GetApi()->Implementation);
 
-    provider->AcquirePin(provider, RUN_APP_PIN);
+    provider->OpenPin(provider, RUN_APP_PIN);
     provider->SetDriveMode(provider, RUN_APP_PIN, RUN_APP_PULL);
     provider->Read(provider, RUN_APP_PIN, value);
-    provider->ReleasePin(provider, RUN_APP_PIN);
+    provider->ClosePin(provider, RUN_APP_PIN);
 
     runApp = value == RUN_APP_STATE;
 #elif defined(RUN_APP_FORCE_STATE)

@@ -293,11 +293,8 @@ const TinyCLR_Api_Info* LPC24_Spi_GetApi() {
         spiControllers[i].ApiInfo = &spiApi[i];
         spiControllers[i].Acquire = &LPC24_Spi_Acquire;
         spiControllers[i].Release = &LPC24_Spi_Release;
+		spiControllers[i].WriteRead = &LPC24_Spi_WriteRead;
         spiControllers[i].SetActiveSettings = &LPC24_Spi_SetActiveSettings;
-        spiControllers[i].Read = &LPC24_Spi_Read;
-        spiControllers[i].Write = &LPC24_Spi_Write;
-        spiControllers[i].TransferFullDuplex = &LPC24_Spi_TransferFullDuplex;
-        spiControllers[i].TransferSequential = &LPC24_Spi_TransferSequential;
         spiControllers[i].GetChipSelectLineCount = &LPC24_Spi_GetChipSelectLineCount;
         spiControllers[i].GetMinClockFrequency = &LPC24_Spi_GetMinClockFrequency;
         spiControllers[i].GetMaxClockFrequency = &LPC24_Spi_GetMaxClockFrequency;
@@ -428,14 +425,14 @@ bool LPC24_Spi_Transaction_nWrite16_nRead16(int32_t controllerIndex) {
     return true;
 }
 
-TinyCLR_Result LPC24_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
+TinyCLR_Result LPC24_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter) {
     if (LPC24_Spi_Write(self, writeBuffer, writeLength) != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
 
     return LPC24_Spi_Read(self, readBuffer, readLength);
 }
 
-TinyCLR_Result LPC24_Spi_TransferFullDuplex(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
+TinyCLR_Result LPC24_Spi_WriteRead(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter) {
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
@@ -529,7 +526,7 @@ TinyCLR_Result LPC24_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8_t
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode) {
+TinyCLR_Result LPC24_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, uint32_t chipSelectLine, bool useControllerChipSelect, uint32_t clockFrequency, uint32_t dataBitLength, TinyCLR_Spi_Mode mode) {
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
@@ -741,15 +738,15 @@ TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC24_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self) {
+uint32_t LPC24_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self) {
     return (LPC24_AHB_CLOCK_HZ / 2) / (254 * (127 + 1));
 }
 
-int32_t LPC24_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self) {
+uint32_t LPC24_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self) {
     return (LPC24_AHB_CLOCK_HZ / 2) / (2 * (0 + 1));
 }
 
-int32_t LPC24_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self) {
+uint32_t LPC24_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self) {
     // This could maintain a map of the actual pins
     // that are available for a particular port.
     // (Not all pins can be mapped to all ports.)
@@ -767,7 +764,7 @@ int32_t LPC24_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self) {
 static const int32_t dataBitsCount = 2;
 static int32_t dataBits[dataBitsCount] = { 8, 16 };
 
-TinyCLR_Result LPC24_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller* self, int32_t* dataBitLengths, size_t& dataBitLengthsCount) {
+TinyCLR_Result LPC24_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller* self, uint32_t* dataBitLengths, size_t& dataBitLengthsCount) {
     if (dataBitLengths != nullptr)
         memcpy(dataBitLengths, dataBits, (dataBitsCount < dataBitLengthsCount ? dataBitsCount : dataBitLengthsCount) * sizeof(int32_t));
 

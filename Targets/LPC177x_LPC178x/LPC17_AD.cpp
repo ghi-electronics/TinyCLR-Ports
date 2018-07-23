@@ -246,9 +246,9 @@ const TinyCLR_Api_Info* LPC17_Adc_GetApi() {
         adcControllers[i].ApiInfo = &adcApi[i];
         adcControllers[i].Acquire = &LPC17_Adc_Acquire;
         adcControllers[i].Release = &LPC17_Adc_Release;
-        adcControllers[i].AcquireChannel = &LPC17_Adc_AcquireChannel;
-        adcControllers[i].ReleaseChannel = &LPC17_Adc_ReleaseChannel;
-        adcControllers[i].ReadValue = &LPC17_Adc_ReadValue;
+        adcControllers[i].OpenChannel = &LPC17_Adc_OpenChannel;
+        adcControllers[i].CloseChannel = &LPC17_Adc_CloseChannel;
+        adcControllers[i].ReadChannel = &LPC17_Adc_ReadChannel;
         adcControllers[i].SetChannelMode = &LPC17_Adc_SetChannelMode;
         adcControllers[i].GetChannelMode = &LPC17_Adc_GetChannelMode;
         adcControllers[i].IsChannelModeSupported = &LPC17_Adc_IsChannelModeSupported;
@@ -282,7 +282,7 @@ TinyCLR_Result LPC17_Adc_Release(const TinyCLR_Adc_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Adc_AcquireChannel(const TinyCLR_Adc_Controller* self, int32_t channel) {
+TinyCLR_Result LPC17_Adc_OpenChannel(const TinyCLR_Adc_Controller* self, uint32_t channel) {
     if (channel >= SIZEOF_ARRAY(adcPins))
         return TinyCLR_Result::ArgumentOutOfRange;
 
@@ -305,7 +305,7 @@ TinyCLR_Result LPC17_Adc_AcquireChannel(const TinyCLR_Adc_Controller* self, int3
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Adc_ReleaseChannel(const TinyCLR_Adc_Controller* self, int32_t channel) {
+TinyCLR_Result LPC17_Adc_CloseChannel(const TinyCLR_Adc_Controller* self, uint32_t channel) {
     auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
     if (state->isOpen[channel])
@@ -316,7 +316,7 @@ TinyCLR_Result LPC17_Adc_ReleaseChannel(const TinyCLR_Adc_Controller* self, int3
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Adc_ReadValue(const TinyCLR_Adc_Controller* self, int32_t channel, int32_t& value) {
+TinyCLR_Result LPC17_Adc_ReadChannel(const TinyCLR_Adc_Controller* self, uint32_t channel, int32_t& value) {
     uint32_t result = 0;
 
     if (channel >= SIZEOF_ARRAY(adcPins))
@@ -339,11 +339,11 @@ TinyCLR_Result LPC17_Adc_ReadValue(const TinyCLR_Adc_Controller* self, int32_t c
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC17_Adc_GetChannelCount(const TinyCLR_Adc_Controller* self) {
+uint32_t LPC17_Adc_GetChannelCount(const TinyCLR_Adc_Controller* self) {
     return SIZEOF_ARRAY(adcPins);
 }
 
-int32_t LPC17_Adc_GetResolutionInBits(const TinyCLR_Adc_Controller* self) {
+uint32_t LPC17_Adc_GetResolutionInBits(const TinyCLR_Adc_Controller* self) {
     return 12;
 }
 
@@ -372,7 +372,7 @@ void LPC17_Adc_Reset() {
 
     for (auto c = 0; c < TOTAL_ADC_CONTROLLERS; c++) {
         for (auto ch = 0; ch < SIZEOF_ARRAY(adcPins); ch++) {
-            LPC17_Adc_ReleaseChannel(&adcControllers[c], ch);
+            LPC17_Adc_CloseChannel(&adcControllers[c], ch);
 
             adcStates[c].isOpen[ch] = false;
         }
