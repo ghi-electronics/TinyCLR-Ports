@@ -28,7 +28,6 @@ TinyCLR_Interop_ClrValue TinyCLR_Interop_GetField(const TinyCLR_Interop_MethodDa
     return fld;
 }
 
-
 TinyCLR_Interop_ClrValue TinyCLR_Interop_GetReturn(const TinyCLR_Interop_MethodData md) {
     TinyCLR_Interop_ClrValue ret;
 
