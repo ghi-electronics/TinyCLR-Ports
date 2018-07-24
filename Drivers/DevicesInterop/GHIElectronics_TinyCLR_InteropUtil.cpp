@@ -1,7 +1,7 @@
 #include "GHIElectronics_TinyCLR_InteropUtil.h"
 
 const void* TinyCLR_Interop_GetArgument(const TinyCLR_Interop_MethodData md, size_t fieldId) {
-    auto interop = (const TinyCLR_Interop_Manager*)md.ApiManager->FindDefault(md.ApiManager, TinyCLR_Api_Type::InteropManager);
+    auto interop = md.InteropManager;
 
     const TinyCLR_Interop_ClrObject* self;
     TinyCLR_Interop_ClrValue fld;
@@ -17,7 +17,7 @@ const void* TinyCLR_Interop_GetArgument(const TinyCLR_Interop_MethodData md, siz
 }
 
 TinyCLR_Interop_ClrValue TinyCLR_Interop_GetFieldSelf(const TinyCLR_Interop_MethodData md, size_t fieldId) {
-    auto interop = (const TinyCLR_Interop_Manager*)md.ApiManager->FindDefault(md.ApiManager, TinyCLR_Api_Type::InteropManager);
+    auto interop = md.InteropManager;
 
     const TinyCLR_Interop_ClrObject* self;
     TinyCLR_Interop_ClrValue fld;
@@ -29,7 +29,7 @@ TinyCLR_Interop_ClrValue TinyCLR_Interop_GetFieldSelf(const TinyCLR_Interop_Meth
 }
 
 TinyCLR_Interop_ClrValue TinyCLR_Interop_GetField(const TinyCLR_Interop_MethodData md, const TinyCLR_Interop_ClrObject* self, size_t fieldId) {
-    auto interop = (const TinyCLR_Interop_Manager*)md.ApiManager->FindDefault(md.ApiManager, TinyCLR_Api_Type::InteropManager);
+    auto interop = md.InteropManager;
 
     TinyCLR_Interop_ClrValue fld;
 
@@ -40,7 +40,7 @@ TinyCLR_Interop_ClrValue TinyCLR_Interop_GetField(const TinyCLR_Interop_MethodDa
 
 
 TinyCLR_Interop_ClrValue TinyCLR_Interop_GetReturn(const TinyCLR_Interop_MethodData md) {
-    auto interop = (const TinyCLR_Interop_Manager*)md.ApiManager->FindDefault(md.ApiManager, TinyCLR_Api_Type::InteropManager);
+    auto interop = md.InteropManager;
 
     TinyCLR_Interop_ClrValue ret;
 
@@ -54,7 +54,7 @@ TinyCLR_Interop_ClrValue TinyCLR_Interop_GetReturn(const TinyCLR_Interop_MethodD
 }
 
 TinyCLR_Interop_ClrValue TinyCLR_Interop_GetArguments(const TinyCLR_Interop_MethodData md, uint32_t argIndex) {
-    auto interop = (const TinyCLR_Interop_Manager*)md.ApiManager->FindDefault(md.ApiManager, TinyCLR_Api_Type::InteropManager);
+    auto interop = md.InteropManager;
 
     TinyCLR_Interop_ClrValue arg;
 
