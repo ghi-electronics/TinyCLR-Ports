@@ -55,7 +55,6 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     TinyCLR_Interop_ClrValue arg, ret;
 
     md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg);
-
     md.InteropManager->GetReturn(md.InteropManager, md.Stack, ret);
 
     ret.Data.Numeric->Boolean = api->IsChannelModeSupported(api, static_cast<TinyCLR_Adc_ChannelMode>(arg.Data.Numeric->U4));
@@ -96,6 +95,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::CloseChannel___VOID__I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Adc_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
+	
     TinyCLR_Interop_ClrValue arg;
 
     md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg);
@@ -109,7 +109,6 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     TinyCLR_Interop_ClrValue arg, ret;
 
     md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg);
-
     md.InteropManager->GetReturn(md.InteropManager, md.Stack, ret);
 
     return api->ReadChannel(api, arg.Data.Numeric->U4, ret.Data.Numeric->I4);
