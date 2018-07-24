@@ -1,7 +1,7 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 #include "GHIElectronics_TinyCLR_InteropUtil.h"
 
-static void GpioIsrProcedure(const TinyCLR_Gpio_Controller* self, uint32_t pin, TinyCLR_Gpio_PinChangeEdge edge) {
+static void TinyCLR_Gpio_PinChangeIsr(const TinyCLR_Gpio_Controller* self, uint32_t pin, TinyCLR_Gpio_PinChangeEdge edge) {
     extern const TinyCLR_Api_Manager* apiManager;
     auto interopManager = reinterpret_cast<const TinyCLR_Interop_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::InteropManager));
 
@@ -205,7 +205,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     auto pin = arg0.Data.Numeric->I4;
     auto edge = static_cast<TinyCLR_Gpio_PinChangeEdge>(arg1.Data.Numeric->I4);
 
-    return api->SetPinChangedHandler(api, pin, edge, GpioIsrProcedure);
+    return api->SetPinChangedHandler(api, pin, edge, TinyCLR_Gpio_PinChangeIsr);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::ClearPinChangedEdge___VOID__I4(const TinyCLR_Interop_MethodData md) {
