@@ -39,7 +39,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::IsChannelModeSupported___BOOLEAN__GHIElectronicsTinyCLRDevicesAdcAdcChannelMode(const TinyCLR_Interop_MethodData md) {
     auto provider = reinterpret_cast<const TinyCLR_Adc_Controller*>(TinyCLR_Interop_GetArgument(md, FIELD___impl___I));
-    auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
+    auto arg1 = TinyCLR_Interop_GetArguments(md, 0);
     auto ret = TinyCLR_Interop_GetReturn(md);
 
     ret.Data.Numeric->Boolean = provider->IsChannelModeSupported(provider, (TinyCLR_Adc_ChannelMode)arg1.Data.Numeric->U4) ? true : false;
@@ -58,28 +58,28 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::SetChannelMode___VOID__GHIElectronicsTinyCLRDevicesAdcAdcChannelMode(const TinyCLR_Interop_MethodData md) {
     auto provider = reinterpret_cast<const TinyCLR_Adc_Controller*>(TinyCLR_Interop_GetArgument(md, FIELD___impl___I));
-    auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
+    auto arg1 = TinyCLR_Interop_GetArguments(md, 0);
 
     return provider->SetChannelMode(provider, static_cast<TinyCLR_Adc_ChannelMode>(arg1.Data.Numeric->U4));
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::OpenChannel___VOID__I4(const TinyCLR_Interop_MethodData md) {
     auto provider = reinterpret_cast<const TinyCLR_Adc_Controller*>(TinyCLR_Interop_GetArgument(md, FIELD___impl___I));
-    auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
+    auto arg1 = TinyCLR_Interop_GetArguments(md, 0);
 
     return provider->OpenChannel(provider, arg1.Data.Numeric->U4);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::CloseChannel___VOID__I4(const TinyCLR_Interop_MethodData md) {
     auto provider = reinterpret_cast<const TinyCLR_Adc_Controller*>(TinyCLR_Interop_GetArgument(md, FIELD___impl___I));
-    auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
+    auto arg1 = TinyCLR_Interop_GetArguments(md, 0);
 
     return provider->CloseChannel(provider, arg1.Data.Numeric->U4);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::Read___I4__I4(const TinyCLR_Interop_MethodData md) {
     auto provider = reinterpret_cast<const TinyCLR_Adc_Controller*>(TinyCLR_Interop_GetArgument(md, FIELD___impl___I));
-    auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
+    auto arg1 = TinyCLR_Interop_GetArguments(md, 0);
     auto ret = TinyCLR_Interop_GetReturn(md);
 
     return provider->ReadChannel(provider, arg1.Data.Numeric->U4, ret.Data.Numeric->I4);
