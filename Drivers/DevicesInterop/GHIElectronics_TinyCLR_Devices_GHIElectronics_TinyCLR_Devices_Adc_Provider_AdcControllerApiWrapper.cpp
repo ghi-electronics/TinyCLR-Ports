@@ -42,7 +42,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     auto arg1 = TinyCLR_Interop_GetArguments(md, 0);
     auto ret = TinyCLR_Interop_GetReturn(md);
 
-    ret.Data.Numeric->Boolean = provider->IsChannelModeSupported(provider, (TinyCLR_Adc_ChannelMode)arg1.Data.Numeric->U4) ? true : false;
+    ret.Data.Numeric->Boolean = provider->IsChannelModeSupported(provider, reintrepret_cast<TinyCLR_Adc_ChannelMode>(arg1.Data.Numeric->U4));
 
     return TinyCLR_Result::Success;
 }
