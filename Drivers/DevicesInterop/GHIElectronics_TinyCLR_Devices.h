@@ -13,7 +13,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper {
     static const size_t FIELD___impl___I = 1;
-    static const size_t FIELD___Api__BackingField___mscorlibSystemRuntimeInteropServicesApi = 2;
+    static const size_t FIELD___Api__BackingField___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeApi = 2;
 
     static TinyCLR_Result get_ChannelCount___I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_ResolutionInBits___I4(const TinyCLR_Interop_MethodData md);
@@ -63,9 +63,9 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper {
     static const size_t FIELD___impl___I = 1;
-    static const size_t FIELD___messageReceivedDispatcher___mscorlibSystemRuntimeInteropServicesNativeEventDispatcher = 2;
-    static const size_t FIELD___errorReceivedDispatcher___mscorlibSystemRuntimeInteropServicesNativeEventDispatcher = 3;
-    static const size_t FIELD___Api__BackingField___mscorlibSystemRuntimeInteropServicesApi = 4;
+    static const size_t FIELD___messageReceivedDispatcher___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeNativeEventDispatcher = 2;
+    static const size_t FIELD___errorReceivedDispatcher___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeNativeEventDispatcher = 3;
+    static const size_t FIELD___Api__BackingField___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeApi = 4;
     static const size_t FIELD___MessageReceived___GHIElectronicsTinyCLRDevicesCanMessageReceivedEventHandler = 5;
     static const size_t FIELD___ErrorReceived___GHIElectronicsTinyCLRDevicesCanErrorReceivedEventHandler = 6;
 
@@ -105,7 +105,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dac_Provider_DacControllerApiWrapper {
     static const size_t FIELD___impl___I = 1;
-    static const size_t FIELD___Api__BackingField___mscorlibSystemRuntimeInteropServicesApi = 2;
+    static const size_t FIELD___Api__BackingField___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeApi = 2;
 
     static TinyCLR_Result get_ChannelCount___I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_ResolutionInBits___I4(const TinyCLR_Interop_MethodData md);
@@ -146,7 +146,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dis
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper {
     static const size_t FIELD___impl___I = 1;
-    static const size_t FIELD___Api__BackingField___mscorlibSystemRuntimeInteropServicesApi = 2;
+    static const size_t FIELD___Api__BackingField___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeApi = 2;
 
     static TinyCLR_Result Enable___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Disable___VOID(const TinyCLR_Interop_MethodData md);
@@ -182,8 +182,8 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpi
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper {
     static const size_t FIELD___impl___I = 1;
     static const size_t FIELD___pinMap___mscorlibSystemCollectionsIDictionary = 2;
-    static const size_t FIELD___dispatcher___mscorlibSystemRuntimeInteropServicesNativeEventDispatcher = 3;
-    static const size_t FIELD___Api__BackingField___mscorlibSystemRuntimeInteropServicesApi = 4;
+    static const size_t FIELD___dispatcher___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeNativeEventDispatcher = 3;
+    static const size_t FIELD___Api__BackingField___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeApi = 4;
 
     static TinyCLR_Result get_PinCount___I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result OpenPin___VOID__I4(const TinyCLR_Interop_MethodData md);
@@ -225,7 +225,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_I2cControllerApiWrapper {
     static const size_t FIELD___impl___I = 1;
-    static const size_t FIELD___Api__BackingField___mscorlibSystemRuntimeInteropServicesApi = 2;
+    static const size_t FIELD___Api__BackingField___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeApi = 2;
 
     static TinyCLR_Result WriteRead___GHIElectronicsTinyCLRDevicesI2cI2cTransferStatus__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4__BOOLEAN__BYREF_I4__BYREF_I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Acquire___VOID(const TinyCLR_Interop_MethodData md);
@@ -244,7 +244,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper {
     static const size_t FIELD___impl___I = 1;
-    static const size_t FIELD___Api__BackingField___mscorlibSystemRuntimeInteropServicesApi = 2;
+    static const size_t FIELD___Api__BackingField___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeApi = 2;
 
     static TinyCLR_Result get_ChannelCount___I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_MinFrequency___R8(const TinyCLR_Interop_MethodData md);
@@ -274,7 +274,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerApiWrapper {
     static const size_t FIELD___impl___I = 1;
-    static const size_t FIELD___Api__BackingField___mscorlibSystemRuntimeInteropServicesApi = 2;
+    static const size_t FIELD___Api__BackingField___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeApi = 2;
 
     static TinyCLR_Result GetTime___GHIElectronicsTinyCLRDevicesRtcRtcDateTime(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result SetTime___VOID__GHIElectronicsTinyCLRDevicesRtcRtcDateTime(const TinyCLR_Interop_MethodData md);
@@ -303,7 +303,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SdCard_Provider_SdCardControllerApiWrapper {
     static const size_t FIELD___impl___I = 1;
-    static const size_t FIELD___Api__BackingField___mscorlibSystemRuntimeInteropServicesApi = 2;
+    static const size_t FIELD___Api__BackingField___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeApi = 2;
 
     static TinyCLR_Result ReadSectors___I4__I8__I4__SZARRAY_U1__I4__I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result WriteSectors___I4__I8__I4__SZARRAY_U1__I4__I4(const TinyCLR_Interop_MethodData md);
@@ -359,7 +359,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Sig
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_Provider_SpiControllerApiWrapper {
     static const size_t FIELD___impl___I = 1;
-    static const size_t FIELD___Api__BackingField___mscorlibSystemRuntimeInteropServicesApi = 2;
+    static const size_t FIELD___Api__BackingField___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeApi = 2;
 
     static TinyCLR_Result get_ChipSelectLineCount___I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_MinClockFrequency___I4(const TinyCLR_Interop_MethodData md);
@@ -411,10 +411,10 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Uar
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper {
     static const size_t FIELD___impl___I = 1;
-    static const size_t FIELD___clearToSendChangedDispatcher___mscorlibSystemRuntimeInteropServicesNativeEventDispatcher = 2;
-    static const size_t FIELD___dataReceivedDispatcher___mscorlibSystemRuntimeInteropServicesNativeEventDispatcher = 3;
-    static const size_t FIELD___errorReceivedDispatcher___mscorlibSystemRuntimeInteropServicesNativeEventDispatcher = 4;
-    static const size_t FIELD___Api__BackingField___mscorlibSystemRuntimeInteropServicesApi = 5;
+    static const size_t FIELD___clearToSendChangedDispatcher___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeNativeEventDispatcher = 2;
+    static const size_t FIELD___dataReceivedDispatcher___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeNativeEventDispatcher = 3;
+    static const size_t FIELD___errorReceivedDispatcher___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeNativeEventDispatcher = 4;
+    static const size_t FIELD___Api__BackingField___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeApi = 5;
     static const size_t FIELD___ClearToSendChanged___GHIElectronicsTinyCLRDevicesUartClearToSendChangedEventHandler = 6;
     static const size_t FIELD___DataReceived___GHIElectronicsTinyCLRDevicesUartDataReceivedEventHandler = 7;
     static const size_t FIELD___ErrorReceived___GHIElectronicsTinyCLRDevicesUartErrorReceivedEventHandler = 8;
