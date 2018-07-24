@@ -5,7 +5,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     auto provider = reinterpret_cast<const TinyCLR_Adc_Controller*>(TinyCLR_Interop_GetArgument(md, FIELD___impl___I));        
     auto ret = TinyCLR_Interop_GetReturn(md);
 
-    ret.Data.Numeric->I4 = (int32_t)provider->GetChannelCount(provider);
+    ret.Data.Numeric->I4 = provider->GetChannelCount(provider);
 
     return TinyCLR_Result::Success;
 }
@@ -51,7 +51,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     auto provider = reinterpret_cast<const TinyCLR_Adc_Controller*>(TinyCLR_Interop_GetArgument(md, FIELD___impl___I));
     auto ret = TinyCLR_Interop_GetReturn(md);
 
-    ret.Data.Numeric->I4 = (int32_t)provider->GetChannelMode(provider);
+    ret.Data.Numeric->I4 = static_cast<int32_t>(provider->GetChannelMode(provider));
 
     return TinyCLR_Result::Success;
 }
@@ -60,7 +60,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     auto provider = reinterpret_cast<const TinyCLR_Adc_Controller*>(TinyCLR_Interop_GetArgument(md, FIELD___impl___I));
     auto arg1 = TinyCLR_Interop_GetArguments(md, 1);
 
-    return provider->SetChannelMode(provider, (TinyCLR_Adc_ChannelMode)arg1.Data.Numeric->U4);
+    return provider->SetChannelMode(provider, static_cast<TinyCLR_Adc_ChannelMode>(arg1.Data.Numeric->U4));
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Adc_Provider_AdcControllerApiWrapper::OpenChannel___VOID__I4(const TinyCLR_Interop_MethodData md) {
