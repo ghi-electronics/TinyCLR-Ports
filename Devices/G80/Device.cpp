@@ -1,6 +1,5 @@
 #include "Device.h"
 #include "../../Drivers/SPIDisplay/SPIDisplay.h"
-#include "../../Drivers/UsbClient/UsbClient.h"
 #include "../../Drivers/DevicesInterop/GHIElectronics_TinyCLR_Devices.h"
 
 void STM32F4_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopManager) {
