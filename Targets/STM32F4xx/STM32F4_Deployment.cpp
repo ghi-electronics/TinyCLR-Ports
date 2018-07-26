@@ -55,8 +55,8 @@ const TinyCLR_Api_Info* STM32F4_Deployment_GetApi() {
         deploymentControllers[i].Release = &STM32F4_Flash_Release;
         deploymentControllers[i].Read = &STM32F4_Flash_Read;
         deploymentControllers[i].Write = &STM32F4_Flash_Write;
-        deploymentControllers[i].Erase = &STM32F4_Flash_EraseSector;
-        deploymentControllers[i].IsErased = &STM32F4_Flash_IsSectorErased;
+        deploymentControllers[i].Erase = &STM32F4_Flash_Erase;
+        deploymentControllers[i].IsErased = &STM32F4_Flash_IsErased;
         deploymentControllers[i].GetDescriptor = &STM32F4_Flash_GetDescriptor;
         deploymentControllers[i].IsPresent = &STM32F4_Flash_IsPresent;
         deploymentControllers[i].SetPresenceChangedHandler = &STM32F4_Flash_SetPresenceChangedHandler;

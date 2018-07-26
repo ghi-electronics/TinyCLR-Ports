@@ -2163,8 +2163,8 @@ const TinyCLR_Api_Info* LPC24_SdCard_GetApi() {
 
         sdCardControllers[i].WriteSectors = &LPC24_SdCard_WriteSectors;
         sdCardControllers[i].ReadSectors = &LPC24_SdCard_ReadSectors;
-        sdCardControllers[i].EraseSectors = &LPC24_SdCard_EraseSectors;
-        sdCardControllers[i].IsSectorErased = &LPC24_SdCard_IsSectorErased;
+        sdCardControllers[i].EraseSectors = &LPC24_SdCard_Erases;
+        sdCardControllers[i].IsSectorErased = &LPC24_SdCard_IsErased;
         sdCardControllers[i].GetSectorMap = &LPC24_SdCard_GetSectorMap;
 
         sdCardApi[i].Author = "GHI Electronics, LLC";
@@ -2312,12 +2312,12 @@ TinyCLR_Result LPC24_SdCard_ReadSectors(const TinyCLR_Storage_Controller* self, 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_SdCard_IsSectorErased(const TinyCLR_Storage_Controller* self, uint64_t sector, bool& erased) {
+TinyCLR_Result LPC24_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased) {
     erased = true;
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_SdCard_EraseSectors(const TinyCLR_Storage_Controller* self, uint64_t sector, size_t& count, uint32_t timeout) {
+TinyCLR_Result LPC24_SdCard_Erases(const TinyCLR_Storage_Controller* self, uint64_t sector, size_t& count, uint32_t timeout) {
     uint32_t addressStart = sector * LPC24_SD_SECTOR_SIZE;
 
     uint32_t addressEnd = addressStart + (count * LPC24_SD_SECTOR_SIZE);

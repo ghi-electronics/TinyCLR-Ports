@@ -2680,8 +2680,8 @@ const TinyCLR_Api_Info* STM32F7_SdCard_GetApi() {
 
         sdCardControllers[i].WriteSectors = &STM32F7_SdCard_WriteSectors;
         sdCardControllers[i].ReadSectors = &STM32F7_SdCard_ReadSectors;
-        sdCardControllers[i].EraseSectors = &STM32F7_SdCard_EraseSectors;
-        sdCardControllers[i].IsSectorErased = &STM32F7_SdCard_IsSectorErased;
+        sdCardControllers[i].EraseSectors = &STM32F7_SdCard_Erases;
+        sdCardControllers[i].IsSectorErased = &STM32F7_SdCard_IsErased;
         sdCardControllers[i].GetSectorMap = &STM32F7_SdCard_GetSectorMap;
 
         sdCardApi[i].Author = "GHI Electronics, LLC";
@@ -2835,11 +2835,11 @@ TinyCLR_Result STM32F7_SdCard_ReadSectors(const TinyCLR_Storage_Controller* self
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_SdCard_IsSectorErased(const TinyCLR_Storage_Controller* self, uint64_t sector, bool& erased) {
+TinyCLR_Result STM32F7_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased) {
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result STM32F7_SdCard_EraseSectors(const TinyCLR_Storage_Controller* self, uint64_t sector, size_t& count, uint32_t timeout) {
+TinyCLR_Result STM32F7_SdCard_Erases(const TinyCLR_Storage_Controller* self, uint64_t sector, size_t& count, uint32_t timeout) {
     return TinyCLR_Result::NotImplemented;
 }
 

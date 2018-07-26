@@ -41,11 +41,11 @@ TinyCLR_Result AT91_SdCard_ReadSectors(const TinyCLR_Storage_Controller* self, u
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result AT91_SdCard_IsSectorErased(const TinyCLR_Storage_Controller* self, uint64_t sector, bool& erased) {
+TinyCLR_Result AT91_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased) {
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result AT91_SdCard_EraseSectors(const TinyCLR_Storage_Controller* self, uint64_t sector, size_t& count, uint32_t timeout) {
+TinyCLR_Result AT91_SdCard_Erases(const TinyCLR_Storage_Controller* self, uint64_t sector, size_t& count, uint32_t timeout) {
     return TinyCLR_Result::NotImplemented;
 }
 

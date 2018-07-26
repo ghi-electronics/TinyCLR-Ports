@@ -28,8 +28,8 @@ const TinyCLR_Api_Info* LPC17_Deployment_GetApi() {
         deploymentControllers[i].Release = &LPC17_Deployment_Release;
         deploymentControllers[i].Read = &LPC17_Deployment_Read;
         deploymentControllers[i].Write = &LPC17_Deployment_Write;
-        deploymentControllers[i].Erase = &LPC17_Deployment_EraseSector;
-        deploymentControllers[i].IsErased = &LPC17_Deployment_IsSectorErased;
+        deploymentControllers[i].Erase = &LPC17_Deployment_Erase;
+        deploymentControllers[i].IsErased = &LPC17_Deployment_IsErased;
         deploymentControllers[i].GetDescriptor = &LPC17_Deployment_GetDescriptor;
         deploymentControllers[i].IsPresent = &LPC17_Deployment_IsPresent;
         deploymentControllers[i].SetPresenceChangedHandler = &LPC17_Deployment_SetPresenceChangedHandler;
@@ -71,7 +71,7 @@ TinyCLR_Result LPC17_Deployment_Erase(const TinyCLR_Storage_Controller* self, ui
     return S25FL032_Flash_EraseBlock(sector);
 }
 
-TinyCLR_Result LPC17_Deployment_IsSectorErased(const TinyCLR_Storage_Controller* self, uint64_t sector, bool& erased) {
+TinyCLR_Result LPC17_Deployment_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased) {
     sector += LPC17_DEPLOYMENT_SECTOR_START;
 
     return S25FL032_Flash_IsBlockErased(sector, erased);

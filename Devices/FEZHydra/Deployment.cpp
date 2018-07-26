@@ -28,8 +28,8 @@ const TinyCLR_Api_Info* AT91_Deployment_GetApi() {
         deploymentControllers[i].Release = &AT91_Deployment_Release;
         deploymentControllers[i].Read = &AT91_Deployment_Read;
         deploymentControllers[i].Write = &AT91_Deployment_Write;
-        deploymentControllers[i].Erase = &AT91_Deployment_EraseSector;
-        deploymentControllers[i].IsErased = &AT91_Deployment_IsSectorErased;
+        deploymentControllers[i].Erase = &AT91_Deployment_Erase;
+        deploymentControllers[i].IsErased = &AT91_Deployment_IsErased;
         deploymentControllers[i].GetDescriptor = &AT91_Deployment_GetDescriptor;
         deploymentControllers[i].IsPresent = &AT91_Deployment_IsPresent;
         deploymentControllers[i].SetPresenceChangedHandler = &AT91_Deployment_SetPresenceChangedHandler;
@@ -73,7 +73,7 @@ TinyCLR_Result AT91_Deployment_Erase(const TinyCLR_Storage_Controller* self, uin
     return AT45DB321D_Flash_EraseBlock(sector);
 }
 
-TinyCLR_Result AT91_Deployment_IsSectorErased(const TinyCLR_Storage_Controller* self, uint64_t sector, bool& erased) {
+TinyCLR_Result AT91_Deployment_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased) {
     sector += AT91_DEPLOYMENT_SECTOR_START;
 
     return AT45DB321D_Flash_IsBlockErased(sector, erased);
