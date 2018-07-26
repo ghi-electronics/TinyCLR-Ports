@@ -95,17 +95,18 @@ int main() {
     TinyCLR_Startup_AddHeapRegion(heapStart, heapLength);
 
 
-    const TinyCLR_Api_Info* debuggerApi;
+    const TinyCLR_Api_Info *debuggerApi, *deploymentApi;
     const void* debuggerConfiguration;
+    const TinyCLR_Startup_DeploymentConfiguration* deploymentConfiguration;
 
     TARGET(_Startup_GetDebuggerTransportApi)(debuggerApi, debuggerConfiguration);
     TinyCLR_Startup_SetDebuggerTransportApi(debuggerApi, debuggerConfiguration);
 
+    TARGET(_Startup_GetDeploymentApi)(deploymentApi, deploymentConfiguration);
+    TinyCLR_Startup_SetDeploymentApi(deploymentApi, deploymentConfiguration);
 
     TinyCLR_Startup_SetDeviceInformation(DEVICE_NAME, DEVICE_MANUFACTURER, DEVICE_VERSION);
-
     TinyCLR_Startup_SetRequiredApis(TARGET(_Interrupt_GetApi)(), TARGET(_Power_GetApi)(), TARGET(_Time_GetApi)());
-
 
     auto runApp = true;
 

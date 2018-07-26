@@ -40,6 +40,8 @@ TinyCLR_Result STM32F4_Flash_IsErased(const TinyCLR_Storage_Controller* self, ui
 TinyCLR_Result STM32F4_Flash_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor);
 TinyCLR_Result STM32F4_Flash_IsPresent(const TinyCLR_Storage_Controller* self, bool& present);
 TinyCLR_Result STM32F4_Flash_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler);
+TinyCLR_Result STM32F4_Flash_Open(const TinyCLR_Storage_Controller* self);
+TinyCLR_Result STM32F4_Flash_Close(const TinyCLR_Storage_Controller* self);
 void STM32F4_Deplpoyment_Reset();
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -83,6 +85,7 @@ void STM32F4_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_
 void STM32F4_Startup_Initialize();
 void STM32F4_Startup_GetHeap(uint8_t*& start, size_t& length);
 void STM32F4_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration);
+void STM32F4_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration);
 void STM32F4_Startup_GetRunApp(bool& runApp);
 
 ////////////////////////////////////////////////////////////////////////////////

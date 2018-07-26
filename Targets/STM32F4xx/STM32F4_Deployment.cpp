@@ -47,13 +47,16 @@ static const uint32_t STM32F4_FLASH_KEY2 = 0xcdef89ab;
 
 static TinyCLR_Storage_Controller deploymentControllers[TOTAL_DEPLOYMENT_CONTROLLERS];
 static TinyCLR_Api_Info deploymentApi[TOTAL_DEPLOYMENT_CONTROLLERS];
-static TinyCLR_Storage_Descriptor deploymentDescriptors[TOTAL_DEPLOYMENT_CONTROLLERS];
+static TinyCLR_Storage_Descriptor deploymentDescriptor;
+TinyCLR_Startup_DeploymentConfiguration deploymentConfiguration;
 
 const TinyCLR_Api_Info* STM32F4_Deployment_GetApi() {
     for (int32_t i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
         deploymentControllers[i].Acquire = &STM32F4_Flash_Acquire;
         deploymentControllers[i].Release = &STM32F4_Flash_Release;
+        deploymentControllers[i].Open = &STM32F4_Flash_Open;
+        deploymentControllers[i].Close = &STM32F4_Flash_Close;
         deploymentControllers[i].Read = &STM32F4_Flash_Read;
         deploymentControllers[i].Write = &STM32F4_Flash_Write;
         deploymentControllers[i].Erase = &STM32F4_Flash_Erase;
@@ -63,21 +66,11 @@ const TinyCLR_Api_Info* STM32F4_Deployment_GetApi() {
         deploymentControllers[i].SetPresenceChangedHandler = &STM32F4_Flash_SetPresenceChangedHandler;
 
         deploymentApi[i].Author = "GHI Electronics, LLC";
-        deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.DeploymentController";
-        deploymentApi[i].Type = TinyCLR_Api_Type::DeploymentController;
+        deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.StorageController";
+        deploymentApi[i].Type = TinyCLR_Api_Type::StorageController;
         deploymentApi[i].Version = 0;
         deploymentApi[i].Implementation = &deploymentControllers[i];
         deploymentApi[i].State = nullptr;
-
-        deploymentDescriptors[i].CanReadDirect = true;
-        deploymentDescriptors[i].CanWriteDirect = true;
-        deploymentDescriptors[i].CanExecuteDirect = true;
-        deploymentDescriptors[i].EraseBeforeWrite = true;
-        deploymentDescriptors[i].Removable = false;
-        deploymentDescriptors[i].RegionsRepeat = false;
-        deploymentDescriptors[i].RegionCount = SIZEOF_ARRAY(deploymentSectors);
-        deploymentDescriptors[i].RegionAddresses = reinterpret_cast<const uint64_t*>(deploymentSectorAddress);
-        deploymentDescriptors[i].RegionSizes = reinterpret_cast<const size_t*>(deploymentSectorSize);
     }
 
     STM32F4_Deplpoyment_Reset();
@@ -198,11 +191,32 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Erase(const 
 }
 
 TinyCLR_Result STM32F4_Flash_Acquire(const TinyCLR_Storage_Controller* self) {
+    deploymentDescriptor.CanReadDirect = true;
+    deploymentDescriptor.CanWriteDirect = true;
+    deploymentDescriptor.CanExecuteDirect = true;
+    deploymentDescriptor.EraseBeforeWrite = true;
+    deploymentDescriptor.Removable = false;
+    deploymentDescriptor.RegionsRepeat = false;
+    deploymentDescriptor.RegionCount = SIZEOF_ARRAY(deploymentSectors);
+    deploymentDescriptor.RegionAddresses = reinterpret_cast<const uint64_t*>(deploymentSectorAddress);
+    deploymentDescriptor.RegionSizes = reinterpret_cast<const size_t*>(deploymentSectorSize);
+
+    deploymentConfiguration.RegionCount = SIZEOF_ARRAY(deploymentSectors);
+    deploymentConfiguration.RegionAddresses = reinterpret_cast<const uint64_t*>(deploymentSectorAddress);
+    deploymentConfiguration.RegionSizes = reinterpret_cast<const size_t*>(deploymentSectorSize);
+
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Flash_Release(const TinyCLR_Storage_Controller* self) {
-    // UnInitialize Flash can be here
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Flash_Open(const TinyCLR_Storage_Controller* self) {
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Flash_Close(const TinyCLR_Storage_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
@@ -231,7 +245,7 @@ TinyCLR_Result STM32F4_Flash_IsPresent(const TinyCLR_Storage_Controller* self, b
 }
 
 TinyCLR_Result STM32F4_Flash_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor) {
-    descriptor = deploymentDescriptors;
+    descriptor = &deploymentDescriptor;
 
     return descriptor->RegionCount > 0 ? TinyCLR_Result::Success : TinyCLR_Result::NotImplemented;
 }
