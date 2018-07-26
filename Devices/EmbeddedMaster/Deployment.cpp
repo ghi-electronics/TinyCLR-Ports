@@ -16,26 +16,31 @@
 #include <LPC24.h>
 #include "../../Drivers/AT49BV322DT_Flash/AT49BV322DT_Flash.h"
 
-static TinyCLR_Storage_Controller deploymentController;
-static TinyCLR_Api_Info deploymentApi;
+#define TOTAL_DEPLOYMENT_CONTROLLERS 1
+
+static TinyCLR_Storage_Controller deploymentControllers[TOTAL_DEPLOYMENT_CONTROLLERS];
+static TinyCLR_Api_Info deploymentApi[TOTAL_DEPLOYMENT_CONTROLLERS];
 
 const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
-    deploymentController.ApiInfo = &deploymentApi;
-    deploymentController.Initialize = &LPC24_Deployment_Initialize;
-    deploymentController.Uninitialize = &LPC24_Deployment_Uninitialize;
-    deploymentController.Read = &LPC24_Deployment_Read;
-    deploymentController.Write = &LPC24_Deployment_Write;
-    deploymentController.EraseSector = &LPC24_Deployment_EraseBlock;
-    deploymentController.IsSectorErased = &LPC24_Deployment_IsBlockErased;
-    deploymentController.GetSectorMap = &LPC24_Deployment_GetSectorMap;
+    for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
+        deploymentControllers[i].ApiInfo = &deploymentApi[i];
+        deploymentControllers[i].Acquire = &LPC24_Deployment_Initialize;
+        deploymentControllers[i].Release = &LPC24_Deployment_Uninitialize;
+        deploymentControllers[i].Read = &LPC24_Deployment_Read;
+        deploymentControllers[i].Write = &LPC24_Deployment_Write;
+        deploymentControllers[i].EraseSector = &LPC24_Deployment_EraseBlock;
+        deploymentControllers[i].IsSectorErased = &LPC24_Deployment_IsBlockErased;
+        deploymentControllers[i].GetSectorMap = &LPC24_Deployment_GetSectorMap;
 
-    deploymentApi.Author = "GHI Electronics, LLC";
-    deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT49BV322DT.DeploymentController";
-    deploymentApi.Type = TinyCLR_Api_Type::DeploymentController;
-    deploymentApi.Version = 0;
-    deploymentApi.Implementation = &deploymentController;
+        deploymentApi[i].Author = "GHI Electronics, LLC";
+        deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.DeploymentController";
+        deploymentApi[i].Type = TinyCLR_Api_Type::DeploymentController;
+        deploymentApi[i].Version = 0;
+        deploymentApi[i].Implementation = &deploymentControllers[i];
+        deploymentApi[i].State = nullptr;
+    }
 
-    return &deploymentApi;
+    return (const TinyCLR_Api_Info*)&deploymentApi;
 }
 
 TinyCLR_Result LPC24_Deployment_Initialize(const TinyCLR_Storage_Controller* self, bool& supportXIP) {
