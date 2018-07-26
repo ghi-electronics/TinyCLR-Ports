@@ -27,7 +27,7 @@
 #define MX25L_FLASH_DEVICE_CODE_0                   0x20
 #define MX25L_FLASH_DEVICE_CODE_1                   0x16
 
-TinyCLR_Result S25FL032_Flash_Acquire(const TinyCLR_Spi_Controller* spiProvider, uint32_t chipSelectLine, bool& supportXIP);
+TinyCLR_Result S25FL032_Flash_Acquire(const TinyCLR_Spi_Controller* spiProvider, uint32_t chipSelectLine);
 TinyCLR_Result S25FL032_Flash_Release();
 TinyCLR_Result S25FL032_Flash_Read(uint32_t address, size_t length, uint8_t* buffer);
 TinyCLR_Result S25FL032_Flash_Write(uint32_t address, size_t length, const uint8_t* buffer);

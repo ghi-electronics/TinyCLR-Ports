@@ -355,7 +355,7 @@ TinyCLR_Result LPC24_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self);
 
 //Deployment
 const TinyCLR_Api_Info* LPC24_Deployment_GetApi();
-TinyCLR_Result LPC24_Deployment_Acquire(const TinyCLR_Storage_Controller* self, bool &supportXIP);
+TinyCLR_Result LPC24_Deployment_Acquire(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result LPC24_Deployment_Release(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result LPC24_Deployment_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t length, uint8_t* buffer);
 TinyCLR_Result LPC24_Deployment_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t length, const uint8_t* buffer);

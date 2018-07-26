@@ -245,8 +245,6 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_EraseBloc
 }
 
 TinyCLR_Result LPC24_Deployment_Acquire(const TinyCLR_Storage_Controller* self) {
-    supportXIP = true;
-
     return TinyCLR_Result::Success;
 }
 

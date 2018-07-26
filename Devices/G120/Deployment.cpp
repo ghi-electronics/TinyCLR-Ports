@@ -48,7 +48,7 @@ TinyCLR_Result LPC17_Deployment_Acquire(const TinyCLR_Storage_Controller* self) 
 
     TinyCLR_Spi_Controller* spiController = (TinyCLR_Spi_Controller*)spiApi->Implementation;
 
-    return S25FL032_Flash_Acquire(spiController, LPC17_DEPLOYMENT_SPI_ENABLE_PIN, supportXIP);
+    return S25FL032_Flash_Acquire(spiController, LPC17_DEPLOYMENT_SPI_ENABLE_PIN);
 }
 
 TinyCLR_Result LPC17_Deployment_Release(const TinyCLR_Storage_Controller* self) {

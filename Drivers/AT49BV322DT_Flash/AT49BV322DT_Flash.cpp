@@ -127,9 +127,7 @@ TinyCLR_Result AT49BV322DT_Flash_EraseBlock(uint32_t sector) {
     TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT49BV322DT_Flash_Acquire(bool& supportXIP) {
-    supportXIP = true;
-
+TinyCLR_Result AT49BV322DT_Flash_Acquire() {
     return TinyCLR_Result::Success;
 }
 

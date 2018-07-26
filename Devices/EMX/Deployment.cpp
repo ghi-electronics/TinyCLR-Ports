@@ -44,7 +44,7 @@ const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
 }
 
 TinyCLR_Result LPC24_Deployment_Acquire(const TinyCLR_Storage_Controller* self) {
-    return AT49BV322DT_Flash_Acquire(supportXIP);
+    return AT49BV322DT_Flash_Acquire();
 }
 
 TinyCLR_Result LPC24_Deployment_Release(const TinyCLR_Storage_Controller* self) {

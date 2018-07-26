@@ -50,7 +50,7 @@ TinyCLR_Result AT91_Deployment_Acquire(const TinyCLR_Storage_Controller* self) {
     const TinyCLR_Api_Info* timeApi = &CONCAT(DEVICE_TARGET, _Time_GetApi)()[0];
     TinyCLR_NativeTime_Controller* timerController = (TinyCLR_NativeTime_Controller*)timeApi->Implementation;
 
-    return AT45DB321D_Flash_Acquire(spiController, timerController, AT91_DEPLOYMENT_SPI_ENABLE_PIN, supportXIP);
+    return AT45DB321D_Flash_Acquire(spiController, timerController, AT91_DEPLOYMENT_SPI_ENABLE_PIN);
 }
 
 TinyCLR_Result AT91_Deployment_Release(const TinyCLR_Storage_Controller* self) {

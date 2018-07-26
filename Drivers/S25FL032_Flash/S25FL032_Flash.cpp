@@ -245,9 +245,7 @@ TinyCLR_Result S25FL032_Flash_EraseBlock(uint32_t sector) {
     TinyCLR_Result::Success;
 }
 
-TinyCLR_Result S25FL032_Flash_Acquire(const TinyCLR_Spi_Controller* spiProvider, uint32_t chipSelectLine, bool& supportXIP) {
-    supportXIP = false;
-
+TinyCLR_Result S25FL032_Flash_Acquire(const TinyCLR_Spi_Controller* spiProvider, uint32_t chipSelectLine) {
     auto controller = *reinterpret_cast<int32_t*>(spiProvider->ApiInfo->State);
 
     s25fl032FlashDataWriteBuffer[0] = S25FL032_FLASH_COMMAND_READID;

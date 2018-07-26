@@ -267,9 +267,7 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_EraseSector(
     TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Flash_Acquire(const TinyCLR_Storage_Controller* self, bool& supportsXip) {
-    supportsXip = true;
-
+TinyCLR_Result STM32F7_Flash_Acquire(const TinyCLR_Storage_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
