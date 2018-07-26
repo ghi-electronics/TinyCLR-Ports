@@ -458,10 +458,6 @@ const TinyCLR_Startup_UsbDebuggerConfiguration STM32F7_Startup_UsbDebuggerConfig
     0
 };
 
-const TinyCLR_Startup_UartDebuggerConfiguration STM32F7_Startup_UartDebuggerConfiguration = {
-
-};
-
 void STM32F7_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN) && defined(DEBUGGER_SELECTOR_PULL) && defined(DEBUGGER_SELECTOR_USB_STATE)
     TinyCLR_Gpio_PinValue value;
@@ -477,8 +473,7 @@ void STM32F7_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const
         configuration = (const void*)&STM32F7_Startup_UsbDebuggerConfiguration;
     }
     else {
-        api = STM32F7_Uart_GetApi();
-        configuration = (const void*)&STM32F7_Startup_UartDebuggerConfiguration;
+        api = STM32F7_Uart_GetApi();        
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;
