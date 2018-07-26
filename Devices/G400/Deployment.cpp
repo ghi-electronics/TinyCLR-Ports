@@ -18,14 +18,14 @@
 
 #define TOTAL_DEPLOYMENT_CONTROLLERS 1
 
-static TinyCLR_Deployment_Controller deploymentControllers[TOTAL_DEPLOYMENT_CONTROLLERS];
+static TinyCLR_Storage_Controller deploymentControllers[TOTAL_DEPLOYMENT_CONTROLLERS];
 static TinyCLR_Api_Info deploymentApi[TOTAL_DEPLOYMENT_CONTROLLERS];
 
 const TinyCLR_Api_Info* AT91_Deployment_GetApi() {
     for (int32_t i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
-        deploymentControllers[i].Initialize = &AT91_Deployment_Initialize;
-        deploymentControllers[i].Uninitialize = &AT91_Deployment_Uninitialize;
+        deploymentControllers[i].Acquire = &AT91_Deployment_Initialize;
+        deploymentControllers[i].Release = &AT91_Deployment_Uninitialize;
         deploymentControllers[i].Read = &AT91_Deployment_Read;
         deploymentControllers[i].Write = &AT91_Deployment_Write;
         deploymentControllers[i].EraseSector = &AT91_Deployment_EraseSector;
@@ -44,7 +44,7 @@ const TinyCLR_Api_Info* AT91_Deployment_GetApi() {
 }
 
 
-TinyCLR_Result AT91_Deployment_Initialize(const TinyCLR_Deployment_Controller* self, bool& supportXIP) {
+TinyCLR_Result AT91_Deployment_Initialize(const TinyCLR_Storage_Controller* self, bool& supportXIP) {
     const TinyCLR_Api_Info* spiApi = &CONCAT(DEVICE_TARGET, _Spi_GetApi)()[AT91_DEPLOYMENT_SPI_PORT];
     TinyCLR_Spi_Controller* spiController = (TinyCLR_Spi_Controller*)spiApi->Implementation;
 
@@ -54,35 +54,35 @@ TinyCLR_Result AT91_Deployment_Initialize(const TinyCLR_Deployment_Controller* s
     return AT45DB321D_Flash_Acquire(spiController, timerController, AT91_DEPLOYMENT_SPI_ENABLE_PIN, supportXIP);
 }
 
-TinyCLR_Result AT91_Deployment_Uninitialize(const TinyCLR_Deployment_Controller* self) {
+TinyCLR_Result AT91_Deployment_Uninitialize(const TinyCLR_Storage_Controller* self) {
     return AT45DB321D_Flash_Release();
 }
 
-TinyCLR_Result AT91_Deployment_Read(const TinyCLR_Deployment_Controller* self, uint64_t address, size_t length, uint8_t* buffer) {
+TinyCLR_Result AT91_Deployment_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t length, uint8_t* buffer) {
     return AT45DB321D_Flash_Read(address, length, buffer);
 }
 
-TinyCLR_Result AT91_Deployment_Write(const TinyCLR_Deployment_Controller* self, uint64_t address, size_t length, const uint8_t* buffer) {
+TinyCLR_Result AT91_Deployment_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t length, const uint8_t* buffer) {
     return AT45DB321D_Flash_Write(address, length, buffer);;
 }
 
-TinyCLR_Result AT91_Deployment_EraseSector(const TinyCLR_Deployment_Controller* self, uint64_t sector) {
+TinyCLR_Result AT91_Deployment_EraseSector(const TinyCLR_Storage_Controller* self, uint64_t sector) {
     sector += AT91_DEPLOYMENT_SECTOR_START;
 
     return AT45DB321D_Flash_EraseBlock(sector);
 }
 
-TinyCLR_Result AT91_Deployment_IsSectorErased(const TinyCLR_Deployment_Controller* self, uint64_t sector, bool& erased) {
+TinyCLR_Result AT91_Deployment_IsSectorErased(const TinyCLR_Storage_Controller* self, uint64_t sector, bool& erased) {
     sector += AT91_DEPLOYMENT_SECTOR_START;
 
     return AT45DB321D_Flash_IsBlockErased(sector, erased);
 }
 
-TinyCLR_Result AT91_Deployment_GetBytesPerSector(const TinyCLR_Deployment_Controller* self, uint32_t address, int32_t& size) {
+TinyCLR_Result AT91_Deployment_GetBytesPerSector(const TinyCLR_Storage_Controller* self, uint32_t address, int32_t& size) {
     return AT45DB321D_Flash_GetBytesPerSector(address, size);
 }
 
-TinyCLR_Result AT91_Deployment_GetSectorMap(const TinyCLR_Deployment_Controller* self, const uint64_t*& addresses, const size_t*& sizes, size_t& count) {
+TinyCLR_Result AT91_Deployment_GetSectorMap(const TinyCLR_Storage_Controller* self, const uint64_t*& addresses, const size_t*& sizes, size_t& count) {
     AT45DB321D_Flash_GetSectorMap(addresses, sizes, count);
 
     addresses += AT91_DEPLOYMENT_SECTOR_START;

@@ -2340,7 +2340,7 @@ uint8_t SD_Stop(SdCard *pSd, SdDriver *pSdDriver) {
 //AT91
 #define TOTAL_SDCARD_CONTROLLERS 1
 
-static TinyCLR_SdCard_Controller sdCardControllers[TOTAL_SDCARD_CONTROLLERS];
+static TinyCLR_Storage_Controller sdCardControllers[TOTAL_SDCARD_CONTROLLERS];
 static TinyCLR_Api_Info sdCardApi[TOTAL_SDCARD_CONTROLLERS];
 
 #define AT91_SD_SECTOR_SIZE 512
@@ -2394,7 +2394,7 @@ const TinyCLR_Api_Info* AT91_SdCard_GetApi() {
     return (const TinyCLR_Api_Info*)&sdCardApi;
 }
 
-TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
+TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
@@ -2455,7 +2455,7 @@ TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
+TinyCLR_Result AT91_SdCard_Release(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
@@ -2491,7 +2491,7 @@ TinyCLR_Result AT91_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_SdCard_WriteSectors(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, const uint8_t* data, uint32_t timeout) {
+TinyCLR_Result AT91_SdCard_WriteSectors(const TinyCLR_Storage_Controller* self, uint64_t sector, size_t& count, const uint8_t* data, uint32_t timeout) {
     int32_t to;
 
     int32_t sectorCount = count;
@@ -2553,7 +2553,7 @@ TinyCLR_Result AT91_SdCard_WriteSectors(const TinyCLR_SdCard_Controller* self, u
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_SdCard_ReadSectors(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, uint8_t* data, uint32_t timeout) {
+TinyCLR_Result AT91_SdCard_ReadSectors(const TinyCLR_Storage_Controller* self, uint64_t sector, size_t& count, uint8_t* data, uint32_t timeout) {
     int32_t to;
 
     int32_t sectorCount = count;
@@ -2618,12 +2618,12 @@ TinyCLR_Result AT91_SdCard_ReadSectors(const TinyCLR_SdCard_Controller* self, ui
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_SdCard_IsSectorErased(const TinyCLR_SdCard_Controller* self, uint64_t sector, bool& erased) {
+TinyCLR_Result AT91_SdCard_IsSectorErased(const TinyCLR_Storage_Controller* self, uint64_t sector, bool& erased) {
     erased = true;
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_SdCard_EraseSectors(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, uint32_t timeout) {
+TinyCLR_Result AT91_SdCard_EraseSectors(const TinyCLR_Storage_Controller* self, uint64_t sector, size_t& count, uint32_t timeout) {
     uint32_t addressStart = sector * AT91_SD_SECTOR_SIZE;
 
     uint32_t addressEnd = addressStart + (count * AT91_SD_SECTOR_SIZE);
@@ -2631,7 +2631,7 @@ TinyCLR_Result AT91_SdCard_EraseSectors(const TinyCLR_SdCard_Controller* self, u
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_SdCard_GetSectorMap(const TinyCLR_SdCard_Controller* self, const size_t*& sizes, size_t& count, bool& isUniform) {
+TinyCLR_Result AT91_SdCard_GetSectorMap(const TinyCLR_Storage_Controller* self, const size_t*& sizes, size_t& count, bool& isUniform) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
     state->sectorSizes[0] = AT91_SD_SECTOR_SIZE;

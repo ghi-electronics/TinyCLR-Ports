@@ -2,7 +2,7 @@
 #include "GHIElectronics_TinyCLR_InteropUtil.h"
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SdCard_Provider_SdCardControllerApiWrapper::ReadSectors___I4__I8__I4__SZARRAY_U1__I4__I4(const TinyCLR_Interop_MethodData md) {
-    auto api = reinterpret_cast<const TinyCLR_SdCard_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
+    auto api = reinterpret_cast<const TinyCLR_Storage_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg0, arg1, arg2, arg3, arg4;
 
@@ -32,7 +32,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SdCard_Provider_SdCardControllerApiWrapper::WriteSectors___I4__I8__I4__SZARRAY_U1__I4__I4(const TinyCLR_Interop_MethodData md) {
-    auto api = reinterpret_cast<const TinyCLR_SdCard_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
+    auto api = reinterpret_cast<const TinyCLR_Storage_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg0, arg1, arg2, arg3, arg4;
 
@@ -62,7 +62,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SdCard_Provider_SdCardControllerApiWrapper::EraseSectors___I4__I8__I4__I4(const TinyCLR_Interop_MethodData md) {
-    auto api = reinterpret_cast<const TinyCLR_SdCard_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
+    auto api = reinterpret_cast<const TinyCLR_Storage_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg0, arg1, arg2;
 
@@ -92,7 +92,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SdCard_Provider_SdCardControllerApiWrapper::GetSectorMap___VOID__BYREF_SZARRAY_I4__BYREF_I4__BYREF_BOOLEAN(const TinyCLR_Interop_MethodData md) {
-    auto api = reinterpret_cast<const TinyCLR_SdCard_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
+    auto api = reinterpret_cast<const TinyCLR_Storage_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg0, arg1, arg2;
 
@@ -114,13 +114,13 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SdCard_Provider_SdCardControllerApiWrapper::Acquire___VOID(const TinyCLR_Interop_MethodData md) {
-    auto api = reinterpret_cast<const TinyCLR_SdCard_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
+    auto api = reinterpret_cast<const TinyCLR_Storage_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     return api->Acquire(api);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SdCard_Provider_SdCardControllerApiWrapper::Release___VOID(const TinyCLR_Interop_MethodData md) {
-    auto api = reinterpret_cast<const TinyCLR_SdCard_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
+    auto api = reinterpret_cast<const TinyCLR_Storage_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     return api->Release(api);
 }

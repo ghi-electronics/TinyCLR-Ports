@@ -91,7 +91,7 @@
 
 #define INCLUDE_RTC
 
-#define INCLUDE_SD
+// #define INCLUDE_SD
 #define STM32F4_SD_DATA0_PINS { { PIN(C, 8), AF(12) } }
 #define STM32F4_SD_DATA1_PINS { { PIN(C, 9), AF(12) } }
 #define STM32F4_SD_DATA2_PINS { { PIN(C, 10), AF(12) } }

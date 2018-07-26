@@ -2652,7 +2652,7 @@ static SD_Error FindSCR(uint16_t rca, uint32_t *pscr) {
 #define STM32F7_SD_TIMEOUT 5000000
 #define TOTAL_SDCARD_CONTROLLERS 1
 
-static TinyCLR_SdCard_Controller sdCardControllers[TOTAL_SDCARD_CONTROLLERS];
+static TinyCLR_Storage_Controller sdCardControllers[TOTAL_SDCARD_CONTROLLERS];
 static TinyCLR_Api_Info sdCardApi[TOTAL_SDCARD_CONTROLLERS];
 
 struct SdCardState {
@@ -2697,7 +2697,7 @@ const TinyCLR_Api_Info* STM32F7_SdCard_GetApi() {
     return (const TinyCLR_Api_Info*)&sdCardApi;
 }
 
-TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
+TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
@@ -2736,7 +2736,7 @@ TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_SdCard_Controller* self) {
     return SD_Init() == SD_OK ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result STM32F7_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
+TinyCLR_Result STM32F7_SdCard_Release(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
@@ -2766,7 +2766,7 @@ TinyCLR_Result STM32F7_SdCard_Release(const TinyCLR_SdCard_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_SdCard_WriteSectors(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, const uint8_t* data, uint32_t timeout) {
+TinyCLR_Result STM32F7_SdCard_WriteSectors(const TinyCLR_Storage_Controller* self, uint64_t sector, size_t& count, const uint8_t* data, uint32_t timeout) {
     int32_t index = 0;
 
     int32_t to;
@@ -2802,7 +2802,7 @@ TinyCLR_Result STM32F7_SdCard_WriteSectors(const TinyCLR_SdCard_Controller* self
 
 }
 
-TinyCLR_Result STM32F7_SdCard_ReadSectors(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, uint8_t* data, uint32_t timeout) {
+TinyCLR_Result STM32F7_SdCard_ReadSectors(const TinyCLR_Storage_Controller* self, uint64_t sector, size_t& count, uint8_t* data, uint32_t timeout) {
     int32_t index = 0;
 
     int32_t to;
@@ -2835,15 +2835,15 @@ TinyCLR_Result STM32F7_SdCard_ReadSectors(const TinyCLR_SdCard_Controller* self,
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_SdCard_IsSectorErased(const TinyCLR_SdCard_Controller* self, uint64_t sector, bool& erased) {
+TinyCLR_Result STM32F7_SdCard_IsSectorErased(const TinyCLR_Storage_Controller* self, uint64_t sector, bool& erased) {
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result STM32F7_SdCard_EraseSectors(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, uint32_t timeout) {
+TinyCLR_Result STM32F7_SdCard_EraseSectors(const TinyCLR_Storage_Controller* self, uint64_t sector, size_t& count, uint32_t timeout) {
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result STM32F7_SdCard_GetSectorMap(const TinyCLR_SdCard_Controller* self, const size_t*& sizes, size_t& count, bool& isUniform) {
+TinyCLR_Result STM32F7_SdCard_GetSectorMap(const TinyCLR_Storage_Controller* self, const size_t*& sizes, size_t& count, bool& isUniform) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
     state->sectorSizes[0] = STM32F7_SD_SECTOR_SIZE;

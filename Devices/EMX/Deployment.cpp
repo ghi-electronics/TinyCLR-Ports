@@ -16,61 +16,61 @@
 #include <LPC24.h>
 #include "../../Drivers/AT49BV322DT_Flash/AT49BV322DT_Flash.h"
 
-static TinyCLR_Deployment_Controller deploymentManager;
+static TinyCLR_Storage_Controller deploymentController;
 static TinyCLR_Api_Info deploymentApi;
 
 const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
-    deploymentManager.ApiInfo = &deploymentApi;
-    deploymentManager.Initialize = &LPC24_Deployment_Initialize;
-    deploymentManager.Uninitialize = &LPC24_Deployment_Uninitialize;
-    deploymentManager.Read = &LPC24_Deployment_Read;
-    deploymentManager.Write = &LPC24_Deployment_Write;
-    deploymentManager.EraseSector = &LPC24_Deployment_EraseBlock;
-    deploymentManager.IsSectorErased = &LPC24_Deployment_IsBlockErased;
-    deploymentManager.GetSectorMap = &LPC24_Deployment_GetSectorMap;
+    deploymentController.ApiInfo = &deploymentApi;
+    deploymentController.Initialize = &LPC24_Deployment_Initialize;
+    deploymentController.Uninitialize = &LPC24_Deployment_Uninitialize;
+    deploymentController.Read = &LPC24_Deployment_Read;
+    deploymentController.Write = &LPC24_Deployment_Write;
+    deploymentController.EraseSector = &LPC24_Deployment_EraseBlock;
+    deploymentController.IsSectorErased = &LPC24_Deployment_IsBlockErased;
+    deploymentController.GetSectorMap = &LPC24_Deployment_GetSectorMap;
 
     deploymentApi.Author = "GHI Electronics, LLC";
     deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT49BV322DT.DeploymentController";
     deploymentApi.Type = TinyCLR_Api_Type::DeploymentController;
     deploymentApi.Version = 0;
-    deploymentApi.Implementation = &deploymentManager;
+    deploymentApi.Implementation = &deploymentController;
 
     return &deploymentApi;
 }
 
-TinyCLR_Result LPC24_Deployment_Initialize(const TinyCLR_Deployment_Controller* self, bool& supportXIP) {
+TinyCLR_Result LPC24_Deployment_Initialize(const TinyCLR_Storage_Controller* self, bool& supportXIP) {
     return AT49BV322DT_Flash_Acquire(supportXIP);
 }
 
-TinyCLR_Result LPC24_Deployment_Uninitialize(const TinyCLR_Deployment_Controller* self) {
+TinyCLR_Result LPC24_Deployment_Uninitialize(const TinyCLR_Storage_Controller* self) {
     return AT49BV322DT_Flash_Release();
 }
 
-TinyCLR_Result LPC24_Deployment_Read(const TinyCLR_Deployment_Controller* self, uint64_t address, size_t length, uint8_t* buffer) {
+TinyCLR_Result LPC24_Deployment_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t length, uint8_t* buffer) {
     return AT49BV322DT_Flash_Read(address, length, buffer);
 }
 
-TinyCLR_Result LPC24_Deployment_Write(const TinyCLR_Deployment_Controller* self, uint64_t address, size_t length, const uint8_t* buffer) {
+TinyCLR_Result LPC24_Deployment_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t length, const uint8_t* buffer) {
     return AT49BV322DT_Flash_Write(address, length, buffer);;
 }
 
-TinyCLR_Result LPC24_Deployment_EraseBlock(const TinyCLR_Deployment_Controller* self, uint64_t sector) {
+TinyCLR_Result LPC24_Deployment_EraseBlock(const TinyCLR_Storage_Controller* self, uint64_t sector) {
     sector += LPC24_DEPLOYMENT_SECTOR_START;
 
     return AT49BV322DT_Flash_EraseBlock(sector);
 }
 
-TinyCLR_Result LPC24_Deployment_IsBlockErased(const TinyCLR_Deployment_Controller* self, uint64_t sector, bool& erased) {
+TinyCLR_Result LPC24_Deployment_IsBlockErased(const TinyCLR_Storage_Controller* self, uint64_t sector, bool& erased) {
     sector += LPC24_DEPLOYMENT_SECTOR_START;
 
     return AT49BV322DT_Flash_IsBlockErased(sector, erased);
 }
 
-TinyCLR_Result LPC24_Deployment_GetBytesPerSector(const TinyCLR_Deployment_Controller* self, uint32_t address, int32_t& size) {
+TinyCLR_Result LPC24_Deployment_GetBytesPerSector(const TinyCLR_Storage_Controller* self, uint32_t address, int32_t& size) {
     return AT49BV322DT_Flash_GetBytesPerSector(address, size);
 }
 
-TinyCLR_Result LPC24_Deployment_GetSectorMap(const TinyCLR_Deployment_Controller* self, const uint64_t*& addresses, const size_t*& sizes, size_t& count) {
+TinyCLR_Result LPC24_Deployment_GetSectorMap(const TinyCLR_Storage_Controller* self, const uint64_t*& addresses, const size_t*& sizes, size_t& count) {
     AT49BV322DT_Flash_GetSectorMap(addresses, sizes, count);
 
     addresses += LPC24_DEPLOYMENT_SECTOR_START;
