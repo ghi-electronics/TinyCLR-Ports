@@ -197,13 +197,14 @@ TinyCLR_Result STM32F4_Flash_Acquire(const TinyCLR_Storage_Controller* self) {
     deploymentDescriptor.EraseBeforeWrite = true;
     deploymentDescriptor.Removable = false;
     deploymentDescriptor.RegionsRepeat = false;
+
     deploymentDescriptor.RegionCount = SIZEOF_ARRAY(deploymentSectors);
     deploymentDescriptor.RegionAddresses = reinterpret_cast<const uint64_t*>(deploymentSectorAddress);
     deploymentDescriptor.RegionSizes = reinterpret_cast<const size_t*>(deploymentSectorSize);
 
-    deploymentConfiguration.RegionCount = SIZEOF_ARRAY(deploymentSectors);
-    deploymentConfiguration.RegionAddresses = reinterpret_cast<const uint64_t*>(deploymentSectorAddress);
-    deploymentConfiguration.RegionSizes = reinterpret_cast<const size_t*>(deploymentSectorSize);
+    deploymentConfiguration.RegionCount = deploymentDescriptor.RegionCount;
+    deploymentConfiguration.RegionAddresses = deploymentDescriptor.RegionAddresses;
+    deploymentConfiguration.RegionSizes = deploymentDescriptor.RegionSizes;
 
     return TinyCLR_Result::Success;
 }
