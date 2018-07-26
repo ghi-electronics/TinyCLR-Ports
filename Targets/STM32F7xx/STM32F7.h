@@ -31,8 +31,8 @@
 //Deployment
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* STM32F7_Deployment_GetApi();
-TinyCLR_Result STM32F7_Flash_Initialize(const TinyCLR_Storage_Controller* self, bool& supportXIP);
-TinyCLR_Result STM32F7_Flash_Uninitialize(const TinyCLR_Storage_Controller* self);
+TinyCLR_Result STM32F7_Flash_Acquire(const TinyCLR_Storage_Controller* self, bool& supportXIP);
+TinyCLR_Result STM32F7_Flash_Release(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result STM32F7_Flash_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t length, uint8_t* buffer);
 TinyCLR_Result STM32F7_Flash_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t length, const uint8_t* buffer);
 TinyCLR_Result STM32F7_Flash_EraseSector(const TinyCLR_Storage_Controller* self, uint64_t sector);

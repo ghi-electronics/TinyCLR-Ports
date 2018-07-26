@@ -24,8 +24,8 @@ static TinyCLR_Api_Info deploymentApi[TOTAL_DEPLOYMENT_CONTROLLERS];
 const TinyCLR_Api_Info* LPC17_Deployment_GetApi() {
     for (int32_t i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
-        deploymentControllers[i].Acquire = &LPC17_Deployment_Initialize;
-        deploymentControllers[i].Release = &LPC17_Deployment_Uninitialize;
+        deploymentControllers[i].Acquire = &LPC17_Deployment_Acquire;
+        deploymentControllers[i].Release = &LPC17_Deployment_Release;
         deploymentControllers[i].Read = &LPC17_Deployment_Read;
         deploymentControllers[i].Write = &LPC17_Deployment_Write;
         deploymentControllers[i].EraseSector = &LPC17_Deployment_EraseSector;
@@ -43,7 +43,7 @@ const TinyCLR_Api_Info* LPC17_Deployment_GetApi() {
     return (const TinyCLR_Api_Info*)&deploymentApi;
 }
 
-TinyCLR_Result LPC17_Deployment_Initialize(const TinyCLR_Storage_Controller* self, bool& supportXIP) {
+TinyCLR_Result LPC17_Deployment_Acquire(const TinyCLR_Storage_Controller* self, bool& supportXIP) {
     const TinyCLR_Api_Info* spiApi = &CONCAT(DEVICE_TARGET, _Spi_GetApi)()[LPC17_DEPLOYMENT_SPI_PORT];
 
     TinyCLR_Spi_Controller* spiController = (TinyCLR_Spi_Controller*)spiApi->Implementation;
@@ -51,7 +51,7 @@ TinyCLR_Result LPC17_Deployment_Initialize(const TinyCLR_Storage_Controller* sel
     return S25FL032_Flash_Acquire(spiController, LPC17_DEPLOYMENT_SPI_ENABLE_PIN, supportXIP);
 }
 
-TinyCLR_Result LPC17_Deployment_Uninitialize(const TinyCLR_Storage_Controller* self) {
+TinyCLR_Result LPC17_Deployment_Release(const TinyCLR_Storage_Controller* self) {
     return S25FL032_Flash_Release();
 }
 
