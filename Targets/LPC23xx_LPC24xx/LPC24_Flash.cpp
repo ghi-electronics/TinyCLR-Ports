@@ -89,8 +89,8 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_Read(cons
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint16_t* ChipAddress = (uint16_t *)address;
-    uint16_t* EndAddress = (uint16_t *)(address + length);
-    uint16_t *pBuf = (uint16_t *)buffer;
+    uint16_t* EndAddress = (uint16_t *)(address + count);
+    uint16_t *pBuf = (uint16_t *)data;
 
     while (ChipAddress < EndAddress) {
         *pBuf++ = *ChipAddress++;
@@ -109,8 +109,8 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_Write(con
 
     IAP iap_entry = (IAP)IAP_LOCATION;
 
-    int32_t block = length / INTERNAL_FLASH_PROGRAM_SIZE_256;
-    int32_t remainder = length % INTERNAL_FLASH_PROGRAM_SIZE_256;
+    int32_t block = count / INTERNAL_FLASH_PROGRAM_SIZE_256;
+    int32_t remainder = count % INTERNAL_FLASH_PROGRAM_SIZE_256;
 
     while (block > 0) {
         int32_t startRegion, endRegion;
@@ -129,7 +129,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_Write(con
         if (LPC24_Deployment_PrepaireSector(startRegion, endRegion))
             return TinyCLR_Result::InvalidOperation;
 
-        memcpy(ptr, buffer, INTERNAL_FLASH_PROGRAM_SIZE_256);
+        memcpy(ptr, data, INTERNAL_FLASH_PROGRAM_SIZE_256);
 
         command[0] = 51;
         command[1] = (int)address;
@@ -144,7 +144,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_Write(con
 
         block--;
         address += INTERNAL_FLASH_PROGRAM_SIZE_256;
-        buffer += INTERNAL_FLASH_PROGRAM_SIZE_256;
+        data += INTERNAL_FLASH_PROGRAM_SIZE_256;
 
     }
 
@@ -166,7 +166,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_Write(con
             return TinyCLR_Result::InvalidOperation;
 
         memset(ptr, 0xFF, INTERNAL_FLASH_PROGRAM_SIZE_256);
-        memcpy(ptr, buffer, remainder);
+        memcpy(ptr, data, remainder);
 
         command[0] = 51;
         command[1] = (int)address;

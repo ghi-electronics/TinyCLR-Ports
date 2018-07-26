@@ -118,13 +118,13 @@ const TinyCLR_Api_Info* STM32F7_Deployment_GetApi() {
 TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
     int32_t bytePerSector = 0;
 
-    if (buffer == nullptr) return TinyCLR_Result::ArgumentNull;
+    if (data == nullptr) return TinyCLR_Result::ArgumentNull;
     if (STM32F7_Flash_GetSectorSizeForAddress(self, address, bytePerSector) != TinyCLR_Result::Success)
         return TinyCLR_Result::IndexOutOfRange;
 
     uint32_t* addressStart = reinterpret_cast<uint32_t*>(address);
-    uint32_t* addressEnd = reinterpret_cast<uint32_t*>(address + length);
-    uint32_t* pBuf = (uint32_t*)buffer;
+    uint32_t* addressEnd = reinterpret_cast<uint32_t*>(address + count);
+    uint32_t* pBuf = (uint32_t*)data;
 
     while (addressStart < addressEnd) {
         *pBuf++ = *addressStart++;
@@ -139,7 +139,7 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_Write(const 
 
     STM32F7_Startup_CacheDisable();
 
-    if (buffer == nullptr) return TinyCLR_Result::ArgumentNull;
+    if (data == nullptr) return TinyCLR_Result::ArgumentNull;
     if (STM32F7_Flash_GetSectorSizeForAddress(self, address, bytePerSector) != TinyCLR_Result::Success)
         return TinyCLR_Result::IndexOutOfRange;
 
@@ -153,8 +153,8 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_Write(const 
     STM32F7_FLASH->SR = (FLASH_SR_EOP | FLASH_SR_OPERR | FLASH_SR_WRPERR | FLASH_SR_PGAERR | FLASH_SR_PGPERR | FLASH_SR_ERSERR);
 
     uint32_t* addressStart = reinterpret_cast<uint32_t*>(address);
-    uint32_t* addressEnd = reinterpret_cast<uint32_t*>(address + length);
-    uint32_t* pBuf = (uint32_t*)buffer;
+    uint32_t* addressEnd = reinterpret_cast<uint32_t*>(address + count);
+    uint32_t* pBuf = (uint32_t*)data;
 
     // enable programming
     auto timeout = 10000000; // 10 seconds for a sector

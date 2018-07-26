@@ -60,11 +60,11 @@ TinyCLR_Result AT91_Deployment_Release(const TinyCLR_Storage_Controller* self) {
 }
 
 TinyCLR_Result AT91_Deployment_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
-    return AT45DB321D_Flash_Read(address, length, buffer);
+    return AT45DB321D_Flash_Read(address, count, data);
 }
 
 TinyCLR_Result AT91_Deployment_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
-    return AT45DB321D_Flash_Write(address, length, buffer);;
+    return AT45DB321D_Flash_Write(address, count, data);;
 }
 
 TinyCLR_Result AT91_Deployment_Erase(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout) {

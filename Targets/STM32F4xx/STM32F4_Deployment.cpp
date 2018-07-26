@@ -77,13 +77,13 @@ const TinyCLR_Api_Info* STM32F4_Deployment_GetApi() {
 TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
     int32_t bytePerSector = 0;
 
-    if (buffer == nullptr) return TinyCLR_Result::ArgumentNull;
+    if (data == nullptr) return TinyCLR_Result::ArgumentNull;
     if (STM32F4_Flash_GetSectorSizeForAddress(self, address, bytePerSector) != TinyCLR_Result::Success)
         return TinyCLR_Result::IndexOutOfRange;
 
     uint32_t* addressStart = reinterpret_cast<uint32_t*>(address);
-    uint32_t* addressEnd = reinterpret_cast<uint32_t*>(address + length);
-    uint32_t* pBuf = (uint32_t*)buffer;
+    uint32_t* addressEnd = reinterpret_cast<uint32_t*>(address + count);
+    uint32_t* pBuf = (uint32_t*)data;
 
     while (addressStart < addressEnd) {
         *pBuf++ = *addressStart++;
@@ -95,7 +95,7 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Read(const T
 TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
     int32_t bytePerSector = 0;
 
-    if (buffer == nullptr) return TinyCLR_Result::ArgumentNull;
+    if (data == nullptr) return TinyCLR_Result::ArgumentNull;
     if (STM32F4_Flash_GetSectorSizeForAddress(self, address, bytePerSector) != TinyCLR_Result::Success)
         return TinyCLR_Result::IndexOutOfRange;
 
@@ -105,8 +105,8 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Write(const 
     }
 
     uint32_t* addressStart = reinterpret_cast<uint32_t*>(address);
-    uint32_t* addressEnd = reinterpret_cast<uint32_t*>(address + length);
-    uint32_t* pBuf = (uint32_t*)buffer;
+    uint32_t* addressEnd = reinterpret_cast<uint32_t*>(address + count);
+    uint32_t* pBuf = (uint32_t*)data;
 
     // enable programming
     STM32F4_FLASH->CR = FLASH_CR_PG | FLASH_CR_PSIZE_1;

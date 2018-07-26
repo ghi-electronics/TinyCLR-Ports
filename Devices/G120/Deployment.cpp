@@ -58,11 +58,11 @@ TinyCLR_Result LPC17_Deployment_Release(const TinyCLR_Storage_Controller* self) 
 }
 
 TinyCLR_Result LPC17_Deployment_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
-    return S25FL032_Flash_Read(address, length, buffer);
+    return S25FL032_Flash_Read(address, count, data);
 }
 
 TinyCLR_Result LPC17_Deployment_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
-    return S25FL032_Flash_Write(address, length, buffer);;
+    return S25FL032_Flash_Write(address, count, data);;
 }
 
 TinyCLR_Result LPC17_Deployment_Erase(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout) {
