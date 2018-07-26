@@ -20,7 +20,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     buffer += offset;
 
-    auto result = api->ReadSectors(api, sector, count, buffer, timeout);
+    auto result = api->Read(api, sector, count, buffer, timeout);
 
     TinyCLR_Interop_ClrValue ret;
 
@@ -50,7 +50,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     buffer += offset;
 
-    auto result = api->WriteSectors(api, sector, count, buffer, timeout);
+    auto result = api->Write(api, sector, count, buffer, timeout);
 
     TinyCLR_Interop_ClrValue ret;
 
@@ -75,7 +75,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto timeout = arg2.Data.Numeric->I4;
 
-    auto result = api->EraseSectors(api, sector, count, timeout);
+    auto result = api->Erase(api, sector, count, timeout);
 
     TinyCLR_Interop_ClrValue ret;
 
@@ -104,11 +104,13 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     auto count = static_cast<size_t>(arg1.Data.Numeric->I4);
     auto uniform = arg2.Data.Numeric->Boolean;
 
-    auto result = api->GetSectorMap(api, sizes, count, uniform);
+    const TinyCLR_Storage_Descriptor* descriptor;
 
-    arg0.Data.SzArray.Data = reinterpret_cast<void*>(const_cast<size_t*>(sizes));
-    arg1.Data.Numeric->I4 = count;
-    arg2.Data.Numeric->Boolean = uniform;
+    auto result = api->GetDescriptor(api, descriptor);
+
+    arg0.Data.SzArray.Data = reinterpret_cast<void*>(const_cast<size_t*>(descriptor->RegionSizes));
+    arg1.Data.Numeric->I4 = descriptor->RegionCount;
+    arg2.Data.Numeric->Boolean = false; //TODO
 
     return result;
 }
