@@ -44,7 +44,7 @@ const TinyCLR_Api_Info* AT91_Deployment_GetApi() {
 }
 
 
-TinyCLR_Result AT91_Deployment_Acquire(const TinyCLR_Storage_Controller* self, bool& supportXIP) {
+TinyCLR_Result AT91_Deployment_Acquire(const TinyCLR_Storage_Controller* self) {
     const TinyCLR_Api_Info* spiApi = &CONCAT(DEVICE_TARGET, _Spi_GetApi)()[AT91_DEPLOYMENT_SPI_PORT];
     TinyCLR_Spi_Controller* spiController = (TinyCLR_Spi_Controller*)spiApi->Implementation;
 

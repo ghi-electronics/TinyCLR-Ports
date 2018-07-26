@@ -43,7 +43,7 @@ const TinyCLR_Api_Info* LPC17_Deployment_GetApi() {
     return (const TinyCLR_Api_Info*)&deploymentApi;
 }
 
-TinyCLR_Result LPC17_Deployment_Acquire(const TinyCLR_Storage_Controller* self, bool& supportXIP) {
+TinyCLR_Result LPC17_Deployment_Acquire(const TinyCLR_Storage_Controller* self) {
     const TinyCLR_Api_Info* spiApi = &CONCAT(DEVICE_TARGET, _Spi_GetApi)()[LPC17_DEPLOYMENT_SPI_PORT];
 
     TinyCLR_Spi_Controller* spiController = (TinyCLR_Spi_Controller*)spiApi->Implementation;
