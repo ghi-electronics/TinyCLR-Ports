@@ -33,11 +33,11 @@
 const TinyCLR_Api_Info* STM32F4_Deployment_GetApi();
 TinyCLR_Result STM32F4_Flash_Acquire(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result STM32F4_Flash_Release(const TinyCLR_Storage_Controller* self);
-TinyCLR_Result STM32F4_Flash_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t length, uint8_t* buffer);
-TinyCLR_Result STM32F4_Flash_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t length, const uint8_t* buffer);
-TinyCLR_Result STM32F4_Flash_EraseSector(const TinyCLR_Storage_Controller* self, uint64_t sector);
+TinyCLR_Result STM32F4_Flash_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout);
+TinyCLR_Result STM32F4_Flash_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout);
+TinyCLR_Result STM32F4_Flash_Erase(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout);
 TinyCLR_Result STM32F4_Flash_IsSectorErased(const TinyCLR_Storage_Controller* self, uint64_t sector, bool& erased);
-TinyCLR_Result STM32F4_Flash_GetSectorMap(const TinyCLR_Storage_Controller* self, const uint64_t*& addresses, const size_t*& sizes, size_t& count);
+TinyCLR_Result STM32F4_Flash_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor);
 void STM32F4_Deplpoyment_Reset();
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -215,7 +215,7 @@ TinyCLR_Result STM32F4_SdCard_ReadSectors(const TinyCLR_Storage_Controller* self
 TinyCLR_Result STM32F4_SdCard_WriteSectors(const TinyCLR_Storage_Controller* self, uint64_t sector, size_t& count, const uint8_t* data, uint32_t timeout);
 TinyCLR_Result STM32F4_SdCard_IsSectorErased(const TinyCLR_Storage_Controller* self, uint64_t sector, bool& erased);
 TinyCLR_Result STM32F4_SdCard_EraseSectors(const TinyCLR_Storage_Controller* self, uint64_t sector, size_t& count, uint32_t timeout);
-TinyCLR_Result STM32F4_SdCard_GetSectorMap(const TinyCLR_Storage_Controller* self, const size_t*& sizes, size_t& count, bool& isUniform);
+TinyCLR_Result STM32F4_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* self, const size_t*& sizes, size_t& count, bool& isUniform);
 
 TinyCLR_Result STM32F4_SdCard_Reset();
 

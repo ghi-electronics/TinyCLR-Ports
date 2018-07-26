@@ -96,9 +96,11 @@ const TinyCLR_Api_Info* STM32F7_Deployment_GetApi() {
         deploymentControllers[i].Release = &STM32F7_Flash_Release;
         deploymentControllers[i].Read = &STM32F7_Flash_Read;
         deploymentControllers[i].Write = &STM32F7_Flash_Write;
-        deploymentControllers[i].EraseSector = &STM32F7_Flash_EraseSector;
-        deploymentControllers[i].IsSectorErased = &STM32F7_Flash_IsSectorErased;
-        deploymentControllers[i].GetSectorMap = &STM32F7_Flash_GetSectorMap;
+        deploymentControllers[i].Erase = &STM32F7_Flash_EraseSector;
+        deploymentControllers[i].IsErased = &STM32F7_Flash_IsSectorErased;
+        deploymentControllers[i].GetDescriptor = &STM32F7_Flash_GetDescriptor;
+        deploymentControllers[i].IsPresent = &STM32F7_Flash_IsPresent;
+        deploymentControllers[i].SetPresenceChangedHandler = &STM32F7_Flash_SetPresenceChangedHandler;
 
         deploymentApi[i].Author = "GHI Electronics, LLC";
         deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.DeploymentController";
@@ -113,7 +115,7 @@ const TinyCLR_Api_Info* STM32F7_Deployment_GetApi() {
     return (const TinyCLR_Api_Info*)&deploymentApi;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t length, uint8_t* buffer) {
+TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
     int32_t bytePerSector = 0;
 
     if (buffer == nullptr) return TinyCLR_Result::ArgumentNull;
@@ -132,7 +134,7 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_Read(const T
 }
 
 
-TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t length, const uint8_t* buffer) {
+TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
     int32_t bytePerSector = 0;
 
     STM32F7_Startup_CacheDisable();
@@ -206,7 +208,7 @@ end_programing:
     return timeout != 0 ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_IsSectorErased(const TinyCLR_Storage_Controller* self, uint64_t sector, bool &erased) {
+TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased) {
     if (sector >= SIZEOF_ARRAY(deploymentSectors)) return TinyCLR_Result::IndexOutOfRange;
 
     uint32_t* addressStart = reinterpret_cast<uint32_t*>(deploymentSectors[sector].address);
@@ -229,7 +231,7 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_IsSectorEras
 
 
 
-TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_EraseSector(const TinyCLR_Storage_Controller* self, uint64_t sector) {
+TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_Erase(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout) {
     uint32_t cr, num;
 
     if (sector >= SIZEOF_ARRAY(deploymentSectors)) return TinyCLR_Result::IndexOutOfRange;
@@ -293,12 +295,20 @@ TinyCLR_Result STM32F7_Flash_GetSectorSizeForAddress(const TinyCLR_Storage_Contr
     return size > 0 ? TinyCLR_Result::Success : TinyCLR_Result::ArgumentInvalid;
 }
 
-TinyCLR_Result STM32F7_Flash_GetSectorMap(const TinyCLR_Storage_Controller* self, const uint64_t*& addresses, const size_t*& sizes, size_t& count) {
+TinyCLR_Result STM32F7_Flash_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor) {
     addresses = deploymentSectorAddress;
     sizes = deploymentSectorSize;
     count = SIZEOF_ARRAY(deploymentSectorAddress);
 
     return count > 0 ? TinyCLR_Result::Success : TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result STM32F7_Flash_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result STM32F7_Flash_IsPresent(const TinyCLR_Storage_Controller* self, bool& present) {
+    return TinyCLR_Result::NotImplemented;
 }
 
 void STM32F7_Deplpoyment_Reset() {

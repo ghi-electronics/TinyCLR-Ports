@@ -28,9 +28,11 @@ const TinyCLR_Api_Info* AT91_Deployment_GetApi() {
         deploymentControllers[i].Release = &AT91_Deployment_Release;
         deploymentControllers[i].Read = &AT91_Deployment_Read;
         deploymentControllers[i].Write = &AT91_Deployment_Write;
-        deploymentControllers[i].EraseSector = &AT91_Deployment_EraseSector;
-        deploymentControllers[i].IsSectorErased = &AT91_Deployment_IsSectorErased;
-        deploymentControllers[i].GetSectorMap = &AT91_Deployment_GetSectorMap;
+        deploymentControllers[i].Erase = &AT91_Deployment_EraseSector;
+        deploymentControllers[i].IsErased = &AT91_Deployment_IsSectorErased;
+        deploymentControllers[i].GetDescriptor = &AT91_Deployment_GetDescriptor;
+        deploymentControllers[i].IsPresent = &AT91_Deployment_IsPresent;
+        deploymentControllers[i].SetPresenceChangedHandler = &AT91_Deployment_SetPresenceChangedHandler;
 
         deploymentApi[i].Author = "GHI Electronics, LLC";
         deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.DeploymentController";
@@ -58,15 +60,15 @@ TinyCLR_Result AT91_Deployment_Release(const TinyCLR_Storage_Controller* self) {
     return AT45DB321D_Flash_Release();
 }
 
-TinyCLR_Result AT91_Deployment_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t length, uint8_t* buffer) {
+TinyCLR_Result AT91_Deployment_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
     return AT45DB321D_Flash_Read(address, length, buffer);
 }
 
-TinyCLR_Result AT91_Deployment_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t length, const uint8_t* buffer) {
+TinyCLR_Result AT91_Deployment_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
     return AT45DB321D_Flash_Write(address, length, buffer);;
 }
 
-TinyCLR_Result AT91_Deployment_EraseSector(const TinyCLR_Storage_Controller* self, uint64_t sector) {
+TinyCLR_Result AT91_Deployment_Erase(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout) {
     sector += AT91_DEPLOYMENT_SECTOR_START;
 
     return AT45DB321D_Flash_EraseBlock(sector);
@@ -82,8 +84,8 @@ TinyCLR_Result AT91_Deployment_GetBytesPerSector(const TinyCLR_Storage_Controlle
     return AT45DB321D_Flash_GetBytesPerSector(address, size);
 }
 
-TinyCLR_Result AT91_Deployment_GetSectorMap(const TinyCLR_Storage_Controller* self, const uint64_t*& addresses, const size_t*& sizes, size_t& count) {
-    AT45DB321D_Flash_GetSectorMap(addresses, sizes, count);
+TinyCLR_Result AT91_Deployment_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor) {
+    AT45DB321D_Flash_GetDescriptor(addresses, sizes, count);
 
     addresses += AT91_DEPLOYMENT_SECTOR_START;
     sizes += AT91_DEPLOYMENT_SECTOR_START;
@@ -91,4 +93,13 @@ TinyCLR_Result AT91_Deployment_GetSectorMap(const TinyCLR_Storage_Controller* se
 
     return TinyCLR_Result::Success;
 }
+
+TinyCLR_Result AT91_Flash_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result AT91_Flash_IsPresent(const TinyCLR_Storage_Controller* self, bool& present) {
+    return TinyCLR_Result::NotImplemented;
+}
+
 
