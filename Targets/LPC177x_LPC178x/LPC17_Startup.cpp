@@ -494,3 +494,8 @@ void LPC17_Startup_Initialize() {
     }
 
 }
+
+void LPC17_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
+    api = LPC17_Deployment_GetApi();
+    configuration = LPC17_Deployment_GetDeploymentConfiguration();
+}
