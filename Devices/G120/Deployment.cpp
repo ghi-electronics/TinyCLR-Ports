@@ -90,7 +90,7 @@ TinyCLR_Result LPC17_Deployment_Open(const TinyCLR_Storage_Controller* self) {
     state->storageDescriptor.Removable = false;
     state->storageDescriptor.RegionsRepeat = true;
 
-    auto regionCount;
+    size_t regionCount;
 
     S25FL032_Flash_GetSectorMap(state->regionAddresses, state->regionSizes, regionCount);
 
