@@ -2140,9 +2140,11 @@ static TinyCLR_Api_Info sdCardApi[TOTAL_SDCARD_CONTROLLERS];
 
 struct SdCardState {
     int32_t controllerIndex;
-    size_t  sectorCount;
 
+    uint64_t *regionAddresses;
     size_t  *regionSizes;
+
+    TinyCLR_Storage_Descriptor descriptor;
 };
 
 static const LPC24_Gpio_Pin sdCardData0Pins[] = LPC24_SD_DATA0_PINS;
@@ -2212,7 +2214,19 @@ TinyCLR_Result LPC24_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
 
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
+    state->regionAddresses = (uint64_t*)memoryProvider->Allocate(memoryProvider, sizeof(uint64_t));
     state->regionSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
+
+
+    state->descriptor.CanReadDirect = true;
+    state->descriptor.CanWriteDirect = true;
+    state->descriptor.CanExecuteDirect = false;
+    state->descriptor.EraseBeforeWrite = false;
+    state->descriptor.Removable = true;
+    state->descriptor.RegionsRepeat = true;
+
+    state->descriptor.RegionAddresses = reinterpret_cast<const uint64_t*>(state->regionAddresses);
+    state->descriptor.RegionSizes = reinterpret_cast<const size_t*>(state->regionSizes);
 
     if (!MCI_And_Card_initialize())
         return TinyCLR_Result::InvalidOperation;
@@ -2252,12 +2266,6 @@ TinyCLR_Result LPC24_SdCard_Release(const TinyCLR_Storage_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_SdCard_GetControllerCount(const TinyCLR_Storage_Controller* self, int32_t& count) {
-    count = SIZEOF_ARRAY(sdCardData0Pins);
-
-    return TinyCLR_Result::Success;
-}
-
 TinyCLR_Result LPC24_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
     int32_t index = 0;
 
@@ -2265,7 +2273,7 @@ TinyCLR_Result LPC24_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64
 
     auto sectorCount = count;
 
-    auto sectorNum = sector;
+    auto sectorNum = address;
 
     uint8_t* pData = (uint8_t*)data;
 
@@ -2294,7 +2302,7 @@ TinyCLR_Result LPC24_SdCard_Read(const TinyCLR_Storage_Controller* self, uint64_
 
     auto sectorCount = count;
 
-    auto sectorNum = sector;
+    auto sectorNum = address;
 
     while (sectorCount) {
         if (MCI_ReadSector(sectorNum, &data[index]) == true) {
@@ -2320,6 +2328,7 @@ TinyCLR_Result LPC24_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uin
 }
 
 TinyCLR_Result LPC24_SdCard_Erases(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout) {
+    auto  sector = address;
     uint32_t addressStart = sector * LPC24_SD_SECTOR_SIZE;
 
     uint32_t addressEnd = addressStart + (count * LPC24_SD_SECTOR_SIZE);
@@ -2331,9 +2340,9 @@ TinyCLR_Result LPC24_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* self
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
     state->regionSizes[0] = LPC24_SD_SECTOR_SIZE;
+    state->descriptor.RegionCount = sdMediaSize / LPC24_SD_SECTOR_SIZE;
 
-    sizes = state->regionSizes;
-    count = sdMediaSize / LPC24_SD_SECTOR_SIZE;
+    descriptor = reinterpret_cast<const TinyCLR_Storage_Descriptor*>(&state->descriptor);
 
     return TinyCLR_Result::Success;
 }
