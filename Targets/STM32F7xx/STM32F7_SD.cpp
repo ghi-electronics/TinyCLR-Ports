@@ -2657,9 +2657,11 @@ static TinyCLR_Api_Info sdCardApi[TOTAL_SDCARD_CONTROLLERS];
 
 struct SdCardState {
     int32_t controllerIndex;
-    size_t  sectorCount;
 
+    uint64_t *regionAddresses;
     size_t  *regionSizes;
+
+    TinyCLR_Storage_Descriptor descriptor;
 };
 
 static const STM32F7_Gpio_Pin sdCardData0Pins[] = STM32F7_SD_DATA0_PINS;
@@ -2731,7 +2733,18 @@ TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
 
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
+    state->regionAddresses = (uint64_t*)memoryProvider->Allocate(memoryProvider, sizeof(uint64_t));
     state->regionSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
+
+    state->descriptor.CanReadDirect = true;
+    state->descriptor.CanWriteDirect = true;
+    state->descriptor.CanExecuteDirect = false;
+    state->descriptor.EraseBeforeWrite = false;
+    state->descriptor.Removable = true;
+    state->descriptor.RegionsRepeat = true;
+
+    state->descriptor.RegionAddresses = reinterpret_cast<const uint64_t*>(state->regionAddresses);
+    state->descriptor.RegionSizes = reinterpret_cast<const size_t*>(state->regionSizes);
 
     SD_DeInit();
 
@@ -2757,6 +2770,10 @@ TinyCLR_Result STM32F7_SdCard_Release(const TinyCLR_Storage_Controller* self) {
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     memoryProvider->Free(memoryProvider, state->regionSizes);
+    memoryProvider->Free(memoryProvider, state->regionAddresses);
+
+    state->descriptor.RegionAddresses = nullptr;
+    state->descriptor.RegionSizes = nullptr;
 
     STM32F7_GpioInternal_ClosePin(d0.number);
     STM32F7_GpioInternal_ClosePin(d1.number);
@@ -2775,7 +2792,7 @@ TinyCLR_Result STM32F7_SdCard_Write(const TinyCLR_Storage_Controller* self, uint
 
     auto sectorCount = count;
 
-    auto sectorNum = sector;
+    auto sectorNum = address;
 
     uint8_t* pData = (uint8_t*)data;
 
@@ -2801,7 +2818,6 @@ TinyCLR_Result STM32F7_SdCard_Write(const TinyCLR_Storage_Controller* self, uint
     }
 
     return TinyCLR_Result::Success;
-
 }
 
 TinyCLR_Result STM32F7_SdCard_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
@@ -2811,7 +2827,7 @@ TinyCLR_Result STM32F7_SdCard_Read(const TinyCLR_Storage_Controller* self, uint6
 
     auto sectorCount = count;
 
-    auto sectorNum = sector;
+    auto sectorNum = address;
 
     while (sectorCount) {
         to = timeout;
@@ -2849,9 +2865,9 @@ TinyCLR_Result STM32F7_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* se
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
     state->regionSizes[0] = STM32F7_SD_SECTOR_SIZE;
+    state->descriptor.RegionCount = SDCardInfo.CardCapacity / STM32F7_SD_SECTOR_SIZE;
 
-    sizes = state->regionSizes;
-    count = SDCardInfo.CardCapacity / STM32F7_SD_SECTOR_SIZE;
+    descriptor = reinterpret_cast<const TinyCLR_Storage_Descriptor*>(&state->descriptor);
 
     return TinyCLR_Result::Success;
 }
