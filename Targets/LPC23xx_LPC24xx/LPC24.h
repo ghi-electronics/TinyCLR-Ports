@@ -150,9 +150,6 @@ struct LPC24_Gpio_PinConfiguration {
 #define DEFAULT() INIT(Input, Inactive, PinFunction0, false, true)
 #define NO_INIT() INIT(Input, Inactive, PinFunction0, false, false)
 
-void LPC24_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider);
-void LPC24_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider);
-
 extern const TinyCLR_Api_Manager* apiManager;
 
 void LPC24_Gpio_Reset();
@@ -293,10 +290,10 @@ TinyCLR_Result LPC24_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64
 TinyCLR_Result LPC24_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased);
 TinyCLR_Result LPC24_SdCard_Erases(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout);
 TinyCLR_Result LPC24_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor);
-TinyCLR_Result LPC24_Flash_IsPresent(const TinyCLR_Storage_Controller* self, bool& present);
-TinyCLR_Result LPC24_Flash_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler);
-TinyCLR_Result LPC24_Flash_Open(const TinyCLR_Storage_Controller* self);
-TinyCLR_Result LPC24_Flash_Close(const TinyCLR_Storage_Controller* self);
+TinyCLR_Result LPC24_SdCard_IsPresent(const TinyCLR_Storage_Controller* self, bool& present);
+TinyCLR_Result LPC24_SdCard_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler);
+TinyCLR_Result LPC24_SdCard_Open(const TinyCLR_Storage_Controller* self);
+TinyCLR_Result LPC24_SdCard_Close(const TinyCLR_Storage_Controller* self);
 
 TinyCLR_Result LPC24_SdCard_Reset();
 
@@ -362,12 +359,14 @@ TinyCLR_Result LPC24_Deployment_Acquire(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result LPC24_Deployment_Release(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result LPC24_Deployment_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout);
 TinyCLR_Result LPC24_Deployment_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout);
-TinyCLR_Result LPC24_Deployment_EraseBlock(const TinyCLR_Storage_Controller* self, uint64_t sector);
-TinyCLR_Result LPC24_Deployment_IsBlockErased(const TinyCLR_Storage_Controller* self, uint64_t sector, bool &erased);
+TinyCLR_Result LPC24_Deployment_Erase(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout);
+TinyCLR_Result LPC24_Deployment_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased);
 TinyCLR_Result LPC24_Deployment_GetBytesPerSector(const TinyCLR_Storage_Controller* self, uint32_t address, int32_t& size);
 TinyCLR_Result LPC24_Deployment_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor);
-TinyCLR_Result LPC24_Flash_IsPresent(const TinyCLR_Storage_Controller* self, bool& present);
-TinyCLR_Result LPC24_Flash_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler);
+TinyCLR_Result LPC24_Deployment_IsPresent(const TinyCLR_Storage_Controller* self, bool& present);
+TinyCLR_Result LPC24_Deployment_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler);
+TinyCLR_Result LPC24_Deployment_Open(const TinyCLR_Storage_Controller* self);
+TinyCLR_Result LPC24_Deployment_Close(const TinyCLR_Storage_Controller* self);
 bool LPC24_Deployment_PageProgram(uint32_t byteAddress, uint32_t NumberOfBytesToWrite, const uint8_t * pointerToWriteBuffer);
 bool LPC24_Deployment_IsSupportsXIP(const TinyCLR_Storage_Controller* self);
 uint32_t LPC24_Flash_GetPartId();
@@ -519,6 +518,10 @@ void LPC24_Startup_GetHeap(uint8_t*& start, size_t& length);
 int32_t LPC24_Startup_GetDeviceId();
 void LPC24_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration);
 void LPC24_Startup_GetRunApp(bool& runApp);
+void LPC24_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider);
+void LPC24_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider);
+const TinyCLR_Startup_DeploymentConfiguration* LPC24_Deployment_GetDeploymentConfiguration();
+void LPC24_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration);
 
 
 //////////////////////////////////////////////////////////////////////////////
