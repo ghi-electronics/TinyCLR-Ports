@@ -40,6 +40,7 @@ TinyCLR_Result STM32F7_Flash_IsErased(const TinyCLR_Storage_Controller* self, ui
 TinyCLR_Result STM32F7_Flash_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor);
 TinyCLR_Result STM32F7_Flash_IsPresent(const TinyCLR_Storage_Controller* self, bool& present);
 TinyCLR_Result STM32F7_Flash_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler);
+const TinyCLR_Startup_DeploymentConfiguration* STM32F7_Flash_GetDeploymentConfiguration();
 void STM32F7_Deplpoyment_Reset();
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -84,6 +85,7 @@ void STM32F7_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_
 void STM32F7_Startup_Initialize();
 void STM32F7_Startup_GetHeap(uint8_t*& start, size_t& length);
 void STM32F7_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration);
+void STM32F7_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration);
 void STM32F7_Startup_GetRunApp(bool& runApp);
 void STM32F7_Startup_CacheEnable(void);
 void STM32F7_Startup_CacheDisable(void);

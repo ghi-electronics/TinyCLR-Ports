@@ -473,7 +473,7 @@ void STM32F7_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const
         configuration = (const void*)&STM32F7_Startup_UsbDebuggerConfiguration;
     }
     else {
-        api = STM32F7_Uart_GetApi();        
+        api = STM32F7_Uart_GetApi();
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;
@@ -515,5 +515,10 @@ void STM32F7_Startup_CacheDisable(void) {
 
     /* Enable D-Cache */
     SCB_DisableDCache();
+}
+
+void STM32F7_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
+    api = STM32F7_Deployment_GetApi();
+    configuration = STM32F7_Flash_GetDeploymentConfiguration();
 }
 
