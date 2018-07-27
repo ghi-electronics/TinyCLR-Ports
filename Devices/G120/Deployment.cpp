@@ -90,9 +90,13 @@ TinyCLR_Result LPC17_Deployment_Open(const TinyCLR_Storage_Controller* self) {
     state->storageDescriptor.Removable = false;
     state->storageDescriptor.RegionsRepeat = true;
 
-    S25FL032_Flash_GetSectorMap(state->regionAddresses, state->regionSizes, state->regionCount);
+    auto regionCount;
 
-    state->regionCount = LPC17_DEPLOYMENT_SECTOR_NUM;
+    S25FL032_Flash_GetSectorMap(state->regionAddresses, state->regionSizes, regionCount);
+
+    if (regionCount < state->regionCount)
+        return TinyCLR_Result::ArgumentOutOfRange;
+
     state->regionAddresses += LPC17_DEPLOYMENT_SECTOR_START;
     state->regionSizes += LPC17_DEPLOYMENT_SECTOR_START;
 
