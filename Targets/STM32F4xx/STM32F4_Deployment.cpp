@@ -242,6 +242,7 @@ TinyCLR_Result STM32F4_Flash_SetPresenceChangedHandler(const TinyCLR_Storage_Con
 }
 
 TinyCLR_Result STM32F4_Flash_IsPresent(const TinyCLR_Storage_Controller* self, bool& present) {
+    present = true;
     return TinyCLR_Result::Success;
 }
 
