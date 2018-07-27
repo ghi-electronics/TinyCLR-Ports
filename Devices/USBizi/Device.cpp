@@ -184,7 +184,7 @@ LPC24_Gpio_PinFunction LPC24_Uart_GetCtsAlternateFunction(int32_t portNum) {
 static const LPC24_Gpio_Pin g_lpc2388_adcPins[] = LPC2388_ADC_PINS;
 static const LPC24_Gpio_Pin g_lpc2387_adcPins[] = LPC2387_ADC_PINS;
 
-uint32_t LPC24_Adc_GetChannelCount() {
+uint32_t LPC24_Adc_GetChannelCount(const TinyCLR_Adc_Controller* self) {
     if (LPC24_Startup_GetDeviceId() != LPC2387_PARTID_1 && LPC24_Startup_GetDeviceId() != LPC2387_PARTID_2)
         return  SIZEOF_ARRAY(g_lpc2388_adcPins);
     else
