@@ -2348,11 +2348,13 @@ static TinyCLR_Api_Info sdCardApi[TOTAL_SDCARD_CONTROLLERS];
 
 struct SdCardState {
     int32_t controllerIndex;
-    size_t  sectorCount;
 
+    uint64_t *regionAddresses;
     size_t  *regionSizes;
     uint8_t *pBuffer;
     uint8_t *pBufferAligned;
+
+    TinyCLR_Storage_Descriptor descriptor;
 };
 
 static const AT91_Gpio_Pin sdCardData0Pins[] = AT91_SD_DATA0_PINS;
@@ -2391,6 +2393,8 @@ const TinyCLR_Api_Info* AT91_SdCard_GetApi() {
         sdCardApi[i].Version = 0;
         sdCardApi[i].Implementation = &sdCardControllers[i];
         sdCardApi[i].State = &sdCardStates[i];
+
+        sdCardStates[i].controllerIndex = i;
     }
 
     return (const TinyCLR_Api_Info*)&sdCardApi;
@@ -2452,7 +2456,18 @@ TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
 
     state->pBufferAligned = (uint8_t*)alignAddress;
 
+    state->regionAddresses = (uint64_t*)memoryProvider->Allocate(memoryProvider, sizeof(uint64_t));
     state->regionSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
+
+    state->descriptor.CanReadDirect = true;
+    state->descriptor.CanWriteDirect = true;
+    state->descriptor.CanExecuteDirect = false;
+    state->descriptor.EraseBeforeWrite = false;
+    state->descriptor.Removable = true;
+    state->descriptor.RegionsRepeat = true;
+
+    state->descriptor.RegionAddresses = reinterpret_cast<const uint64_t*>(state->regionAddresses);
+    state->descriptor.RegionSizes = reinterpret_cast<const size_t*>(state->regionSizes);
 
     return TinyCLR_Result::Success;
 }
@@ -2480,6 +2495,7 @@ TinyCLR_Result AT91_SdCard_Release(const TinyCLR_Storage_Controller* self) {
 
     memoryProvider->Free(memoryProvider, state->pBuffer);
     memoryProvider->Free(memoryProvider, state->regionSizes);
+    memoryProvider->Free(memoryProvider, state->regionAddresses);
 
     AT91_Gpio_ClosePin(d0.number);
     AT91_Gpio_ClosePin(d1.number);
@@ -2490,7 +2506,6 @@ TinyCLR_Result AT91_SdCard_Release(const TinyCLR_Storage_Controller* self) {
 
     return TinyCLR_Result::Success;
 
-    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
@@ -2498,7 +2513,7 @@ TinyCLR_Result AT91_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64_
 
     int32_t sectorCount = count;
 
-    int32_t sectorNum = sector;
+    auto sectorNum = address;
 
     SdCard *pSd = &sdDrv;
 
@@ -2560,7 +2575,7 @@ TinyCLR_Result AT91_SdCard_Read(const TinyCLR_Storage_Controller* self, uint64_t
 
     int32_t sectorCount = count;
 
-    int32_t sectorNum = sector;
+    auto sectorNum = address;
 
     SdCard *pSd = &sdDrv;
 
@@ -2626,9 +2641,7 @@ TinyCLR_Result AT91_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uint
 }
 
 TinyCLR_Result AT91_SdCard_Erases(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout) {
-    uint32_t addressStart = sector * AT91_SD_SECTOR_SIZE;
 
-    uint32_t addressEnd = addressStart + (count * AT91_SD_SECTOR_SIZE);
 
     return TinyCLR_Result::Success;
 }
@@ -2636,7 +2649,6 @@ TinyCLR_Result AT91_SdCard_Erases(const TinyCLR_Storage_Controller* self, uint64
 TinyCLR_Result AT91_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
-    state->regionSizes[0] = AT91_SD_SECTOR_SIZE;
 
     uint8_t C_SIZE_MULT = 0;
 
@@ -2677,8 +2689,10 @@ TinyCLR_Result AT91_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* self,
         MemCapacity = (uint64_t)(C_SIZE + 1) * 512 * 1024;
     }
 
-    sizes = state->regionSizes;
-    count = MemCapacity / AT91_SD_SECTOR_SIZE;
+    state->regionSizes[0] = AT91_SD_SECTOR_SIZE;
+    state->descriptor.RegionCount = MemCapacity / AT91_SD_SECTOR_SIZE;
+
+    descriptor = reinterpret_cast<const TinyCLR_Storage_Descriptor*>(&state->descriptor);
 
     return TinyCLR_Result::Success;
 }
