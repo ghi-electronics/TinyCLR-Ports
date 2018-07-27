@@ -2386,7 +2386,7 @@ const TinyCLR_Api_Info* AT91_SdCard_GetApi() {
         sdCardControllers[i].SetPresenceChangedHandler = &AT91_SdCard_SetPresenceChangedHandler;
 
         sdCardApi[i].Author = "GHI Electronics, LLC";
-        sdCardApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.StorageController";
+        sdCardApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.SdCardStorageController";
         sdCardApi[i].Type = TinyCLR_Api_Type::StorageController;
         sdCardApi[i].Version = 0;
         sdCardApi[i].Implementation = &sdCardControllers[i];
