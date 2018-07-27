@@ -81,7 +81,7 @@ TinyCLR_Result LPC24_Deployment_Open(const TinyCLR_Storage_Controller* self) {
 
     state->storageDescriptor.CanReadDirect = true;
     state->storageDescriptor.CanWriteDirect = true;
-    state->storageDescriptor.CanExecuteDirect = false;
+    state->storageDescriptor.CanExecuteDirect = true;
     state->storageDescriptor.EraseBeforeWrite = true;
     state->storageDescriptor.Removable = false;
     state->storageDescriptor.RegionsRepeat = true;
