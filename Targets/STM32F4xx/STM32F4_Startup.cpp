@@ -496,10 +496,8 @@ void STM32F4_Startup_GetRunApp(bool& runApp) {
 #endif
 }
 
-extern TinyCLR_Startup_DeploymentConfiguration deploymentConfiguration;
-
 void STM32F4_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
     api = STM32F4_Deployment_GetApi();
-    configuration = &deploymentConfiguration;
+    configuration = STM32F4_Flash_GetDeploymentConfiguration();
 }
 

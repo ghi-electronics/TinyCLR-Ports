@@ -42,6 +42,7 @@ TinyCLR_Result STM32F4_Flash_IsPresent(const TinyCLR_Storage_Controller* self, b
 TinyCLR_Result STM32F4_Flash_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler);
 TinyCLR_Result STM32F4_Flash_Open(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result STM32F4_Flash_Close(const TinyCLR_Storage_Controller* self);
+const TinyCLR_Startup_DeploymentConfiguration* STM32F4_Flash_GetDeploymentConfiguration();
 void STM32F4_Deplpoyment_Reset();
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -312,4 +312,7 @@ void AT91_SAM_ClockInit(void) {
     while (!(pmc.PMC_SR & AT91_PMC::PMC_MCKRDY));
 }
 
-
+void AT91_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
+    api = AT91_Deployment_GetApi();
+    configuration = AT91_Deployment_GetDeploymentConfiguration();
+}

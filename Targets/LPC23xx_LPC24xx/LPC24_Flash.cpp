@@ -37,31 +37,50 @@ typedef void(*IAP)(uint32_t[], uint32_t[]);
 const uint32_t flashAddresses[] = { INTERNAL_FLASH_SECTOR_ADDRESS };
 const uint32_t flashSize[] = { INTERNAL_FLASH_SECTOR_SIZE };
 
-static uint32_t deploymentAddress[DEPLOYMENT_SECTOR_NUM];
-static uint32_t deploymentSize[DEPLOYMENT_SECTOR_NUM];
-
 static TinyCLR_Storage_Controller deploymentControllers[TOTAL_DEPLOYMENT_CONTROLLERS];
 static TinyCLR_Api_Info deploymentApi[TOTAL_DEPLOYMENT_CONTROLLERS];
 
 static uint8_t data256[INTERNAL_FLASH_PROGRAM_SIZE_256];
+
+struct DeploymentState {
+    uint32_t controllerIndex;
+
+    size_t regionCount;
+    uint64_t regionAddresses[DEPLOYMENT_SECTOR_NUM];
+    size_t regionSizes[DEPLOYMENT_SECTOR_NUM];
+
+    TinyCLR_Storage_Descriptor storageDescriptor;
+    TinyCLR_Startup_DeploymentConfiguration deploymentConfiguration;
+
+    bool isOpened = false;
+};
+
+static DeploymentState deploymentState[TOTAL_DEPLOYMENT_CONTROLLERS];
 
 const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
     for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
         deploymentControllers[i].Acquire = &LPC24_Deployment_Acquire;
         deploymentControllers[i].Release = &LPC24_Deployment_Release;
+        deploymentControllers[i].Open = &LPC24_Deployment_Open;
+        deploymentControllers[i].Close = &LPC24_Deployment_Close;
         deploymentControllers[i].Read = &LPC24_Deployment_Read;
         deploymentControllers[i].Write = &LPC24_Deployment_Write;
-        deploymentControllers[i].Erase = &LPC24_Deployment_EraseBlock;
-        deploymentControllers[i].IsErased = &LPC24_Deployment_IsBlockErased;
+        deploymentControllers[i].Erase = &LPC24_Deployment_Erase;
+        deploymentControllers[i].IsErased = &LPC24_Deployment_IsErased;
         deploymentControllers[i].GetDescriptor = &LPC24_Deployment_GetDescriptor;
+        deploymentControllers[i].IsPresent = &LPC24_Deployment_IsPresent;
+        deploymentControllers[i].SetPresenceChangedHandler = &LPC24_Deployment_SetPresenceChangedHandler;
 
         deploymentApi[i].Author = "GHI Electronics, LLC";
-        deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.DeploymentController";
-        deploymentApi[i].Type = TinyCLR_Api_Type::DeploymentController;
+        deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.StorageController";
+        deploymentApi[i].Type = TinyCLR_Api_Type::StorageController;
         deploymentApi[i].Version = 0;
         deploymentApi[i].Implementation = &deploymentControllers[i];
-        deploymentApi[i].State = nullptr;
+        deploymentApi[i].State = &deploymentState[i];
+
+        deploymentState[i].controllerIndex = i;
+        deploymentState[i].regionCount = DEPLOYMENT_SECTOR_NUM;
     }
 
     return (const TinyCLR_Api_Info*)&deploymentApi;
@@ -184,41 +203,48 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_Write(con
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_IsBlockErased(const TinyCLR_Storage_Controller* self, uint64_t sector, bool &erased) {
+TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    uint32_t address = deploymentAddress[sector];
-    int32_t size = deploymentSize[sector];
-    uint32_t endAddress = address + size;
+    auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);
+    auto sector = address;
+
+    uint32_t startAddress = state->regionAddresses[sector];
+    int32_t size = state->regionSizes[sector];
+    uint32_t endAddress = startAddress + size;
 
     erased = true;
 
-    while (address < endAddress) {
+    while (startAddress < endAddress) {
         uint16_t data;
+        size_t count = 2;
 
-        LPC24_Deployment_Read(self, address, 2, reinterpret_cast<uint8_t*>(&data));
+        LPC24_Deployment_Read(self, startAddress, count, reinterpret_cast<uint8_t*>(&data), -1);
 
         if (data != 0xFFFF) {
             erased = false;
             break;
         }
 
-        address += 2;
+        startAddress += 2;
     }
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_EraseBlock(const TinyCLR_Storage_Controller* self, uint64_t sector) {
+TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_Erase(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t command[5];
     uint32_t iap_result[4];
 
+    auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);
+    auto sector = address;
+
     // Convert deployment sector to flash sector
     int32_t startRegion;
     uint32_t regions = sizeof(flashAddresses) / sizeof(flashAddresses[0]);
-    uint32_t startAddress = deploymentAddress[sector];
+    uint32_t startAddress = state->regionAddresses[sector];
 
     for (startRegion = 0; startRegion < regions - 1; startRegion++)
         if (startAddress < flashAddresses[startRegion + 1])
@@ -270,20 +296,72 @@ TinyCLR_Result LPC24_Deployment_GetBytesPerSector(const TinyCLR_Storage_Controll
 }
 
 TinyCLR_Result LPC24_Deployment_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor) {
-    for (auto i = 0; i < DEPLOYMENT_SECTOR_NUM; i++) {
-        deploymentAddress[i] = flashAddresses[DEPLOYMENT_SECTOR_START + i];
-        deploymentSize[i] = flashSize[DEPLOYMENT_SECTOR_START + i];
-    }
+    auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);
 
-    addresses = deploymentAddress;
-    sizes = deploymentSize;
-    count = DEPLOYMENT_SECTOR_NUM;
+    descriptor = &state->storageDescriptor;
 
-    return TinyCLR_Result::Success;
+    return descriptor->RegionCount > 0 ? TinyCLR_Result::Success : TinyCLR_Result::NotImplemented;
 }
 
 TinyCLR_Result LPC24_Deployment_Reset(const TinyCLR_Storage_Controller* self) {
     return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result LPC24_Deployment_Open(const TinyCLR_Storage_Controller* self) {
+    auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);
+
+    if (state->isOpened)
+        return TinyCLR_Result::SharingViolation;
+
+    state->storageDescriptor.CanReadDirect = true;
+    state->storageDescriptor.CanWriteDirect = true;
+    state->storageDescriptor.CanExecuteDirect = true;
+    state->storageDescriptor.EraseBeforeWrite = true;
+    state->storageDescriptor.Removable = false;
+    state->storageDescriptor.RegionsRepeat = true;
+
+    for (auto i = 0; i < DEPLOYMENT_SECTOR_NUM; i++) {
+        state->regionAddresses[i] = flashAddresses[DEPLOYMENT_SECTOR_START + i];
+        state->regionSizes[i] = flashSize[DEPLOYMENT_SECTOR_START + i];
+    }
+
+    state->storageDescriptor.RegionCount = state->regionCount;
+    state->storageDescriptor.RegionAddresses = reinterpret_cast<const uint64_t*>(state->regionAddresses);
+    state->storageDescriptor.RegionSizes = reinterpret_cast<const size_t*>(state->regionSizes);
+
+    state->deploymentConfiguration.RegionCount = state->storageDescriptor.RegionCount;
+    state->deploymentConfiguration.RegionAddresses = state->storageDescriptor.RegionAddresses;
+    state->deploymentConfiguration.RegionSizes = state->storageDescriptor.RegionSizes;
+
+    state->isOpened = true;
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result LPC24_Deployment_Close(const TinyCLR_Storage_Controller* self) {
+    auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);
+
+    if (!state->isOpened)
+        return TinyCLR_Result::NotFound;
+
+    state->isOpened = false;
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result LPC24_Deployment_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler) {
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result LPC24_Deployment_IsPresent(const TinyCLR_Storage_Controller* self, bool& present) {
+    present = true;
+    return TinyCLR_Result::Success;
+}
+
+const TinyCLR_Startup_DeploymentConfiguration* LPC24_Deployment_GetDeploymentConfiguration() {
+    auto state = &deploymentState[0];
+
+    return reinterpret_cast<const TinyCLR_Startup_DeploymentConfiguration*>(&state->deploymentConfiguration);
 }
 
 
