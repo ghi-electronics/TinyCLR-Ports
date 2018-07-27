@@ -193,7 +193,7 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_Write(const 
             to = timeout;
 
             while (((STM32F7_FLASH->SR & FLASH_SR_EOP) == 0) || (STM32F7_FLASH->SR & FLASH_SR_BSY)) {
-                STM32F7_Time_Delay(nullptr, 1);
+                STM32F7_Time_Delay(nullptr, 1000);
                 to--;
 
                 if (to == 0)
