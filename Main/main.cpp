@@ -62,7 +62,7 @@ void OnSoftReset(const TinyCLR_Api_Manager* apiManager) {
 
 #ifdef INCLUDE_SD
     apiManager->Add(apiManager, TARGET(_SdCard_GetApi)());
-    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::SdCardController, TARGET(_SdCard_GetApi)()->Name);
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::StorageController, TARGET(_SdCard_GetApi)()->Name);
 #endif
 
 #ifdef INCLUDE_SPI
