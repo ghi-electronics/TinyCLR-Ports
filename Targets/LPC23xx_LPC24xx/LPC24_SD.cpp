@@ -2334,15 +2334,11 @@ TinyCLR_Result LPC24_SdCard_Read(const TinyCLR_Storage_Controller* self, uint64_
 
 TinyCLR_Result LPC24_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased) {
     erased = true;
+
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_SdCard_Erases(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout) {
-    auto  sector = address;
-    uint32_t addressStart = sector * LPC24_SD_SECTOR_SIZE;
-
-    uint32_t addressEnd = addressStart + (count * LPC24_SD_SECTOR_SIZE);
-
     return TinyCLR_Result::Success;
 }
 

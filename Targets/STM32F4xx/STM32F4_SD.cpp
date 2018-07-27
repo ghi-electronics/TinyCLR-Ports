@@ -2811,11 +2811,13 @@ TinyCLR_Result STM32F4_SdCard_Read(const TinyCLR_Storage_Controller* self, uint6
 }
 
 TinyCLR_Result STM32F4_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased) {
-    return TinyCLR_Result::NotImplemented;
+    erased = true;
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_SdCard_Erases(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout) {
-    return TinyCLR_Result::NotImplemented;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor) {

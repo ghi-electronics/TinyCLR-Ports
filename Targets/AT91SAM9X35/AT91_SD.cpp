@@ -2647,12 +2647,11 @@ TinyCLR_Result AT91_SdCard_Read(const TinyCLR_Storage_Controller* self, uint64_t
 
 TinyCLR_Result AT91_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased) {
     erased = true;
+
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_SdCard_Erases(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout) {
-
-
     return TinyCLR_Result::Success;
 }
 
