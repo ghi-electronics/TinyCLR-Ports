@@ -2634,7 +2634,7 @@ const TinyCLR_Api_Info* STM32F4_SdCard_GetApi() {
         sdCardControllers[i].SetPresenceChangedHandler = &STM32F4_SdCard_SetPresenceChangedHandler;
 
         sdCardApi[i].Author = "GHI Electronics, LLC";
-        sdCardApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.StorageController";
+        sdCardApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.SdCardStorageController";
         sdCardApi[i].Type = TinyCLR_Api_Type::StorageController;
         sdCardApi[i].Version = 0;
         sdCardApi[i].Implementation = &sdCardControllers[i];
