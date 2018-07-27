@@ -429,7 +429,6 @@ void LPC17_Startup_GetHeap(uint8_t*& start, size_t& length);
 void LPC17_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration);
 void LPC17_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration);
 void LPC17_Startup_GetRunApp(bool& runApp);
-void LPC17_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration);
 void LPC17_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider);
 void LPC17_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider);
 const TinyCLR_Startup_DeploymentConfiguration* LPC17_Deployment_GetDeploymentConfiguration();
