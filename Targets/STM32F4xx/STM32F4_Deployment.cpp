@@ -61,7 +61,7 @@ struct DeploymentState {
 static DeploymentState deploymentState[TOTAL_DEPLOYMENT_CONTROLLERS];
 
 const TinyCLR_Api_Info* STM32F4_Deployment_GetApi() {
-    for (int32_t i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
+    for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
         deploymentControllers[i].Acquire = &STM32F4_Flash_Acquire;
         deploymentControllers[i].Release = &STM32F4_Flash_Release;
