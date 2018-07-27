@@ -18,19 +18,21 @@
 
 #define TOTAL_DEPLOYMENT_CONTROLLERS 1
 
-static TinyCLR_Deployment_Controller deploymentControllers[TOTAL_DEPLOYMENT_CONTROLLERS];
+static TinyCLR_Storage_Controller deploymentControllers[TOTAL_DEPLOYMENT_CONTROLLERS];
 static TinyCLR_Api_Info deploymentApi[TOTAL_DEPLOYMENT_CONTROLLERS];
 
 const TinyCLR_Api_Info* LPC17_Deployment_GetApi() {
     for (int32_t i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
-        deploymentControllers[i].Initialize = &LPC17_Deployment_Initialize;
-        deploymentControllers[i].Uninitialize = &LPC17_Deployment_Uninitialize;
+        deploymentControllers[i].Acquire = &LPC17_Deployment_Acquire;
+        deploymentControllers[i].Release = &LPC17_Deployment_Release;
         deploymentControllers[i].Read = &LPC17_Deployment_Read;
         deploymentControllers[i].Write = &LPC17_Deployment_Write;
-        deploymentControllers[i].EraseSector = &LPC17_Deployment_EraseSector;
-        deploymentControllers[i].IsSectorErased = &LPC17_Deployment_IsSectorErased;
-        deploymentControllers[i].GetSectorMap = &LPC17_Deployment_GetSectorMap;
+        deploymentControllers[i].Erase = &LPC17_Deployment_Erase;
+        deploymentControllers[i].IsErased = &LPC17_Deployment_IsErased;
+        deploymentControllers[i].GetDescriptor = &LPC17_Deployment_GetDescriptor;
+        deploymentControllers[i].IsPresent = &LPC17_Deployment_IsPresent;
+        deploymentControllers[i].SetPresenceChangedHandler = &LPC17_Deployment_SetPresenceChangedHandler;
 
         deploymentApi[i].Author = "GHI Electronics, LLC";
         deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.DeploymentController";
@@ -43,49 +45,57 @@ const TinyCLR_Api_Info* LPC17_Deployment_GetApi() {
     return (const TinyCLR_Api_Info*)&deploymentApi;
 }
 
-TinyCLR_Result LPC17_Deployment_Initialize(const TinyCLR_Deployment_Controller* self, bool& supportXIP) {
+TinyCLR_Result LPC17_Deployment_Acquire(const TinyCLR_Storage_Controller* self) {
     const TinyCLR_Api_Info* spiApi = &CONCAT(DEVICE_TARGET, _Spi_GetApi)()[LPC17_DEPLOYMENT_SPI_PORT];
 
     TinyCLR_Spi_Controller* spiController = (TinyCLR_Spi_Controller*)spiApi->Implementation;
 
-    return S25FL032_Flash_Acquire(spiController, LPC17_DEPLOYMENT_SPI_ENABLE_PIN, supportXIP);
+    return S25FL032_Flash_Acquire(spiController, LPC17_DEPLOYMENT_SPI_ENABLE_PIN);
 }
 
-TinyCLR_Result LPC17_Deployment_Uninitialize(const TinyCLR_Deployment_Controller* self) {
+TinyCLR_Result LPC17_Deployment_Release(const TinyCLR_Storage_Controller* self) {
     return S25FL032_Flash_Release();
 }
 
-TinyCLR_Result LPC17_Deployment_Read(const TinyCLR_Deployment_Controller* self, uint64_t address, size_t length, uint8_t* buffer) {
-    return S25FL032_Flash_Read(address, length, buffer);
+TinyCLR_Result LPC17_Deployment_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
+    return S25FL032_Flash_Read(address, count, data);
 }
 
-TinyCLR_Result LPC17_Deployment_Write(const TinyCLR_Deployment_Controller* self, uint64_t address, size_t length, const uint8_t* buffer) {
-    return S25FL032_Flash_Write(address, length, buffer);;
+TinyCLR_Result LPC17_Deployment_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
+    return S25FL032_Flash_Write(address, count, data);;
 }
 
-TinyCLR_Result LPC17_Deployment_EraseSector(const TinyCLR_Deployment_Controller* self, uint64_t sector) {
+TinyCLR_Result LPC17_Deployment_Erase(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout) {
     sector += LPC17_DEPLOYMENT_SECTOR_START;
 
     return S25FL032_Flash_EraseBlock(sector);
 }
 
-TinyCLR_Result LPC17_Deployment_IsSectorErased(const TinyCLR_Deployment_Controller* self, uint64_t sector, bool& erased) {
+TinyCLR_Result LPC17_Deployment_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased) {
     sector += LPC17_DEPLOYMENT_SECTOR_START;
 
     return S25FL032_Flash_IsBlockErased(sector, erased);
 }
 
-TinyCLR_Result LPC17_Deployment_GetBytesPerSector(const TinyCLR_Deployment_Controller* self, uint32_t address, int32_t& size) {
+TinyCLR_Result LPC17_Deployment_GetBytesPerSector(const TinyCLR_Storage_Controller* self, uint32_t address, int32_t& size) {
     return S25FL032_Flash_GetBytesPerSector(address, size);
 }
 
-TinyCLR_Result LPC17_Deployment_GetSectorMap(const TinyCLR_Deployment_Controller* self, const uint64_t*& addresses, const size_t*& sizes, size_t& count) {
-    S25FL032_Flash_GetSectorMap(addresses, sizes, count);
+TinyCLR_Result LPC17_Deployment_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor) {
+    S25FL032_Flash_GetDescriptor(addresses, sizes, count);
 
     addresses += LPC17_DEPLOYMENT_SECTOR_START;
     sizes += LPC17_DEPLOYMENT_SECTOR_START;
     count = LPC17_DEPLOYMENT_SECTOR_NUM;
 
     return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result LPC17_Flash_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result LPC17_Flash_IsPresent(const TinyCLR_Storage_Controller* self, bool& present) {
+    return TinyCLR_Result::NotImplemented;
 }
 

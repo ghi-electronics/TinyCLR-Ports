@@ -16,67 +16,82 @@
 #include <LPC24.h>
 #include "../../Drivers/AT49BV322DT_Flash/AT49BV322DT_Flash.h"
 
-static TinyCLR_Deployment_Controller deploymentManager;
-static TinyCLR_Api_Info deploymentApi;
+#define TOTAL_DEPLOYMENT_CONTROLLERS 1
+
+static TinyCLR_Storage_Controller deploymentControllers[TOTAL_DEPLOYMENT_CONTROLLERS];
+static TinyCLR_Api_Info deploymentApi[TOTAL_DEPLOYMENT_CONTROLLERS];
 
 const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
-    deploymentManager.ApiInfo = &deploymentApi;
-    deploymentManager.Initialize = &LPC24_Deployment_Initialize;
-    deploymentManager.Uninitialize = &LPC24_Deployment_Uninitialize;
-    deploymentManager.Read = &LPC24_Deployment_Read;
-    deploymentManager.Write = &LPC24_Deployment_Write;
-    deploymentManager.EraseSector = &LPC24_Deployment_EraseBlock;
-    deploymentManager.IsSectorErased = &LPC24_Deployment_IsBlockErased;
-    deploymentManager.GetSectorMap = &LPC24_Deployment_GetSectorMap;
+    for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
+        deploymentControllers[i].ApiInfo = &deploymentApi[i];
+        deploymentControllers[i].Acquire = &LPC24_Deployment_Acquire;
+        deploymentControllers[i].Release = &LPC24_Deployment_Release;
+        deploymentControllers[i].Read = &LPC24_Deployment_Read;
+        deploymentControllers[i].Write = &LPC24_Deployment_Write;
+        deploymentControllers[i].Erase = &LPC24_Deployment_EraseBlock;
+        deploymentControllers[i].IsErased = &LPC24_Deployment_IsBlockErased;
+        deploymentControllers[i].GetDescriptor = &LPC24_Deployment_GetDescriptor;
+        deploymentControllers[i].IsPresent = &LPC24_Deployment_IsPresent;
+        deploymentControllers[i].SetPresenceChangedHandler = &LPC24_Deployment_SetPresenceChangedHandler;
 
-    deploymentApi.Author = "GHI Electronics, LLC";
-    deploymentApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT49BV322DT.DeploymentController";
-    deploymentApi.Type = TinyCLR_Api_Type::DeploymentController;
-    deploymentApi.Version = 0;
-    deploymentApi.Implementation = &deploymentManager;
+        deploymentApi[i].Author = "GHI Electronics, LLC";
+        deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.DeploymentController";
+        deploymentApi[i].Type = TinyCLR_Api_Type::DeploymentController;
+        deploymentApi[i].Version = 0;
+        deploymentApi[i].Implementation = &deploymentControllers[i];
+        deploymentApi[i].State = nullptr;
+    }
 
-    return &deploymentApi;
+    return (const TinyCLR_Api_Info*)&deploymentApi;
 }
 
-TinyCLR_Result LPC24_Deployment_Initialize(const TinyCLR_Deployment_Controller* self, bool& supportXIP) {
-    return AT49BV322DT_Flash_Acquire(supportXIP);
+TinyCLR_Result LPC24_Deployment_Acquire(const TinyCLR_Storage_Controller* self) {
+    return AT49BV322DT_Flash_Acquire();
 }
 
-TinyCLR_Result LPC24_Deployment_Uninitialize(const TinyCLR_Deployment_Controller* self) {
+TinyCLR_Result LPC24_Deployment_Release(const TinyCLR_Storage_Controller* self) {
     return AT49BV322DT_Flash_Release();
 }
 
-TinyCLR_Result LPC24_Deployment_Read(const TinyCLR_Deployment_Controller* self, uint64_t address, size_t length, uint8_t* buffer) {
-    return AT49BV322DT_Flash_Read(address, length, buffer);
+TinyCLR_Result LPC24_Deployment_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
+    return AT49BV322DT_Flash_Read(address, count, data);
 }
 
-TinyCLR_Result LPC24_Deployment_Write(const TinyCLR_Deployment_Controller* self, uint64_t address, size_t length, const uint8_t* buffer) {
-    return AT49BV322DT_Flash_Write(address, length, buffer);;
+TinyCLR_Result LPC24_Deployment_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
+    return AT49BV322DT_Flash_Write(address, count, data);;
 }
 
-TinyCLR_Result LPC24_Deployment_EraseBlock(const TinyCLR_Deployment_Controller* self, uint64_t sector) {
+TinyCLR_Result LPC24_Deployment_EraseBlock(const TinyCLR_Storage_Controller* self, uint64_t sector) {
     sector += LPC24_DEPLOYMENT_SECTOR_START;
 
     return AT49BV322DT_Flash_EraseBlock(sector);
 }
 
-TinyCLR_Result LPC24_Deployment_IsBlockErased(const TinyCLR_Deployment_Controller* self, uint64_t sector, bool& erased) {
+TinyCLR_Result LPC24_Deployment_IsBlockErased(const TinyCLR_Storage_Controller* self, uint64_t sector, bool& erased) {
     sector += LPC24_DEPLOYMENT_SECTOR_START;
 
     return AT49BV322DT_Flash_IsBlockErased(sector, erased);
 }
 
-TinyCLR_Result LPC24_Deployment_GetBytesPerSector(const TinyCLR_Deployment_Controller* self, uint32_t address, int32_t& size) {
+TinyCLR_Result LPC24_Deployment_GetBytesPerSector(const TinyCLR_Storage_Controller* self, uint32_t address, int32_t& size) {
     return AT49BV322DT_Flash_GetBytesPerSector(address, size);
 }
 
-TinyCLR_Result LPC24_Deployment_GetSectorMap(const TinyCLR_Deployment_Controller* self, const uint64_t*& addresses, const size_t*& sizes, size_t& count) {
-    AT49BV322DT_Flash_GetSectorMap(addresses, sizes, count);
+TinyCLR_Result LPC24_Deployment_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor) {
+    AT49BV322DT_Flash_GetDescriptor(addresses, sizes, count);
 
     addresses += LPC24_DEPLOYMENT_SECTOR_START;
     sizes += LPC24_DEPLOYMENT_SECTOR_START;
     count = LPC24_DEPLOYMENT_SECTOR_NUM;
 
     return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result LPC24_Flash_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result LPC24_Flash_IsPresent(const TinyCLR_Storage_Controller* self, bool& present) {
+    return TinyCLR_Result::NotImplemented;
 }
 

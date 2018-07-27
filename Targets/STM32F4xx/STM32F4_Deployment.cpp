@@ -36,32 +36,38 @@ struct DeploymentSector {
 #error Flash programming not allowed for HCLK below 1MHz
 #endif
 
-TinyCLR_Result STM32F4_Flash_GetSectorSizeForAddress(const TinyCLR_Deployment_Controller* self, uint32_t address, int32_t& size);
+TinyCLR_Result STM32F4_Flash_GetSectorSizeForAddress(const TinyCLR_Storage_Controller* self, uint32_t address, int32_t& size);
 
 static const DeploymentSector deploymentSectors[] = DEPLOYMENT_SECTORS;
-uint64_t deploymentSectorAddress[SIZEOF_ARRAY(deploymentSectors)];
-size_t deploymentSectorSize[SIZEOF_ARRAY(deploymentSectors)];
+static uint64_t deploymentSectorAddress[SIZEOF_ARRAY(deploymentSectors)];
+static size_t deploymentSectorSize[SIZEOF_ARRAY(deploymentSectors)];
 
 static const uint32_t STM32F4_FLASH_KEY1 = 0x45670123;
 static const uint32_t STM32F4_FLASH_KEY2 = 0xcdef89ab;
 
-static TinyCLR_Deployment_Controller deploymentControllers[TOTAL_DEPLOYMENT_CONTROLLERS];
+static TinyCLR_Storage_Controller deploymentControllers[TOTAL_DEPLOYMENT_CONTROLLERS];
 static TinyCLR_Api_Info deploymentApi[TOTAL_DEPLOYMENT_CONTROLLERS];
+static TinyCLR_Storage_Descriptor deploymentDescriptor;
+TinyCLR_Startup_DeploymentConfiguration deploymentConfiguration;
 
 const TinyCLR_Api_Info* STM32F4_Deployment_GetApi() {
     for (int32_t i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
-        deploymentControllers[i].Initialize = &STM32F4_Flash_Initialize;
-        deploymentControllers[i].Uninitialize = &STM32F4_Flash_Uninitialize;
+        deploymentControllers[i].Acquire = &STM32F4_Flash_Acquire;
+        deploymentControllers[i].Release = &STM32F4_Flash_Release;
+        deploymentControllers[i].Open = &STM32F4_Flash_Open;
+        deploymentControllers[i].Close = &STM32F4_Flash_Close;
         deploymentControllers[i].Read = &STM32F4_Flash_Read;
         deploymentControllers[i].Write = &STM32F4_Flash_Write;
-        deploymentControllers[i].EraseSector = &STM32F4_Flash_EraseSector;
-        deploymentControllers[i].IsSectorErased = &STM32F4_Flash_IsSectorErased;
-        deploymentControllers[i].GetSectorMap = &STM32F4_Flash_GetSectorMap;
+        deploymentControllers[i].Erase = &STM32F4_Flash_Erase;
+        deploymentControllers[i].IsErased = &STM32F4_Flash_IsErased;
+        deploymentControllers[i].GetDescriptor = &STM32F4_Flash_GetDescriptor;
+        deploymentControllers[i].IsPresent = &STM32F4_Flash_IsPresent;
+        deploymentControllers[i].SetPresenceChangedHandler = &STM32F4_Flash_SetPresenceChangedHandler;
 
         deploymentApi[i].Author = "GHI Electronics, LLC";
-        deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.DeploymentController";
-        deploymentApi[i].Type = TinyCLR_Api_Type::DeploymentController;
+        deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.StorageController";
+        deploymentApi[i].Type = TinyCLR_Api_Type::StorageController;
         deploymentApi[i].Version = 0;
         deploymentApi[i].Implementation = &deploymentControllers[i];
         deploymentApi[i].State = nullptr;
@@ -72,16 +78,16 @@ const TinyCLR_Api_Info* STM32F4_Deployment_GetApi() {
     return (const TinyCLR_Api_Info*)&deploymentApi;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Read(const TinyCLR_Deployment_Controller* self, uint64_t address, size_t length, uint8_t* buffer) {
+TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
     int32_t bytePerSector = 0;
 
-    if (buffer == nullptr) return TinyCLR_Result::ArgumentNull;
+    if (data == nullptr) return TinyCLR_Result::ArgumentNull;
     if (STM32F4_Flash_GetSectorSizeForAddress(self, address, bytePerSector) != TinyCLR_Result::Success)
         return TinyCLR_Result::IndexOutOfRange;
 
     uint32_t* addressStart = reinterpret_cast<uint32_t*>(address);
-    uint32_t* addressEnd = reinterpret_cast<uint32_t*>(address + length);
-    uint32_t* pBuf = (uint32_t*)buffer;
+    uint32_t* addressEnd = reinterpret_cast<uint32_t*>(address + count);
+    uint32_t* pBuf = (uint32_t*)data;
 
     while (addressStart < addressEnd) {
         *pBuf++ = *addressStart++;
@@ -90,10 +96,10 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Read(const T
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Write(const TinyCLR_Deployment_Controller* self, uint64_t address, size_t length, const uint8_t* buffer) {
+TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
     int32_t bytePerSector = 0;
 
-    if (buffer == nullptr) return TinyCLR_Result::ArgumentNull;
+    if (data == nullptr) return TinyCLR_Result::ArgumentNull;
     if (STM32F4_Flash_GetSectorSizeForAddress(self, address, bytePerSector) != TinyCLR_Result::Success)
         return TinyCLR_Result::IndexOutOfRange;
 
@@ -103,8 +109,8 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Write(const 
     }
 
     uint32_t* addressStart = reinterpret_cast<uint32_t*>(address);
-    uint32_t* addressEnd = reinterpret_cast<uint32_t*>(address + length);
-    uint32_t* pBuf = (uint32_t*)buffer;
+    uint32_t* addressEnd = reinterpret_cast<uint32_t*>(address + count);
+    uint32_t* pBuf = (uint32_t*)data;
 
     // enable programming
     STM32F4_FLASH->CR = FLASH_CR_PG | FLASH_CR_PSIZE_1;
@@ -130,7 +136,9 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Write(const 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_IsSectorErased(const TinyCLR_Deployment_Controller* self, uint64_t sector, bool &erased) {
+TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased) {
+    auto sector = address; //address is sector. Use sector for clear
+
     if (sector >= SIZEOF_ARRAY(deploymentSectors)) return TinyCLR_Result::IndexOutOfRange;
 
     uint32_t* addressStart = reinterpret_cast<uint32_t*>(deploymentSectors[sector].address);
@@ -151,7 +159,9 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_IsSectorEras
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_EraseSector(const TinyCLR_Deployment_Controller* self, uint64_t sector) {
+TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Erase(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout) {
+    auto sector = address; //address is sector. Use sector for clear
+
     if (sector >= SIZEOF_ARRAY(deploymentSectors)) return TinyCLR_Result::IndexOutOfRange;
 
     uint32_t num = deploymentSectors[sector].id;
@@ -180,18 +190,38 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_EraseSector(
     TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Flash_Initialize(const TinyCLR_Deployment_Controller* self, bool& supportsXip) {
-    supportsXip = true;
+TinyCLR_Result STM32F4_Flash_Acquire(const TinyCLR_Storage_Controller* self) {
+    deploymentDescriptor.CanReadDirect = true;
+    deploymentDescriptor.CanWriteDirect = true;
+    deploymentDescriptor.CanExecuteDirect = true;
+    deploymentDescriptor.EraseBeforeWrite = true;
+    deploymentDescriptor.Removable = false;
+    deploymentDescriptor.RegionsRepeat = false;
+
+    deploymentDescriptor.RegionCount = SIZEOF_ARRAY(deploymentSectors);
+    deploymentDescriptor.RegionAddresses = reinterpret_cast<const uint64_t*>(deploymentSectorAddress);
+    deploymentDescriptor.RegionSizes = reinterpret_cast<const size_t*>(deploymentSectorSize);
+
+    deploymentConfiguration.RegionCount = deploymentDescriptor.RegionCount;
+    deploymentConfiguration.RegionAddresses = deploymentDescriptor.RegionAddresses;
+    deploymentConfiguration.RegionSizes = deploymentDescriptor.RegionSizes;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Flash_Uninitialize(const TinyCLR_Deployment_Controller* self) {
-    // UnInitialize Flash can be here
+TinyCLR_Result STM32F4_Flash_Release(const TinyCLR_Storage_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Flash_GetSectorSizeForAddress(const TinyCLR_Deployment_Controller* self, uint32_t address, int32_t& size) {
+TinyCLR_Result STM32F4_Flash_Open(const TinyCLR_Storage_Controller* self) {
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Flash_Close(const TinyCLR_Storage_Controller* self) {
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Flash_GetSectorSizeForAddress(const TinyCLR_Storage_Controller* self, uint32_t address, int32_t& size) {
     int32_t sectors = SIZEOF_ARRAY(deploymentSectors);
 
     size = 0;
@@ -207,12 +237,19 @@ TinyCLR_Result STM32F4_Flash_GetSectorSizeForAddress(const TinyCLR_Deployment_Co
     return size > 0 ? TinyCLR_Result::Success : TinyCLR_Result::ArgumentInvalid;
 }
 
-TinyCLR_Result STM32F4_Flash_GetSectorMap(const TinyCLR_Deployment_Controller* self, const uint64_t*& addresses, const size_t*& sizes, size_t& count) {
-    addresses = deploymentSectorAddress;
-    sizes = deploymentSectorSize;
-    count = SIZEOF_ARRAY(deploymentSectorAddress);
+TinyCLR_Result STM32F4_Flash_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler) {
+    return TinyCLR_Result::Success;
+}
 
-    return count > 0 ? TinyCLR_Result::Success : TinyCLR_Result::NotImplemented;
+TinyCLR_Result STM32F4_Flash_IsPresent(const TinyCLR_Storage_Controller* self, bool& present) {
+    present = true;
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F4_Flash_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor) {
+    descriptor = &deploymentDescriptor;
+
+    return descriptor->RegionCount > 0 ? TinyCLR_Result::Success : TinyCLR_Result::NotImplemented;
 }
 
 void STM32F4_Deplpoyment_Reset() {
@@ -220,4 +257,5 @@ void STM32F4_Deplpoyment_Reset() {
         deploymentSectorAddress[i] = deploymentSectors[i].address;
         deploymentSectorSize[i] = deploymentSectors[i].size;
     }
+
 }

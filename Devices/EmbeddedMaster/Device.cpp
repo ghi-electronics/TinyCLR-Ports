@@ -43,9 +43,6 @@ const TinyCLR_Startup_UsbDebuggerConfiguration LPC24_Startup_UsbDebuggerConfigur
     0
 };
 
-const TinyCLR_Startup_UartDebuggerConfiguration LPC24_Startup_UartDebuggerConfiguration = {
-};
-
 void LPC24_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value, valueUsbActive;
@@ -63,8 +60,7 @@ void LPC24_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const v
         configuration = (const void*)&LPC24_Startup_UsbDebuggerConfiguration;
     }
     else {
-        api = LPC24_Uart_GetApi();
-        configuration = (const void*)&LPC24_Startup_UartDebuggerConfiguration;
+        api = LPC24_Uart_GetApi();        
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;

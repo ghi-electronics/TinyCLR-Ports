@@ -212,10 +212,6 @@ const TinyCLR_Startup_UsbDebuggerConfiguration AT91_Startup_UsbDebuggerConfigura
     0
 };
 
-const TinyCLR_Startup_UartDebuggerConfiguration AT91_Startup_UartDebuggerConfiguration = {
-
-};
-
 void AT91_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value;
@@ -231,8 +227,7 @@ void AT91_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const vo
         configuration = (const void*)&AT91_Startup_UsbDebuggerConfiguration;
     }
     else {
-        api = AT91_Uart_GetApi();
-        configuration = (const void*)&AT91_Startup_UartDebuggerConfiguration;
+        api = AT91_Uart_GetApi();        
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;

@@ -231,14 +231,14 @@ TinyCLR_Result LPC17_Rtc_SetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc
 ////////////////////////////////////////////////////////////////////////////////
 const TinyCLR_Api_Info* LPC17_SdCard_GetApi();
 
-TinyCLR_Result LPC17_SdCard_Acquire(const TinyCLR_SdCard_Controller* self);
-TinyCLR_Result LPC17_SdCard_Release(const TinyCLR_SdCard_Controller* self);
+TinyCLR_Result LPC17_SdCard_Acquire(const TinyCLR_Storage_Controller* self);
+TinyCLR_Result LPC17_SdCard_Release(const TinyCLR_Storage_Controller* self);
 
-TinyCLR_Result LPC17_SdCard_ReadSectors(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, uint8_t* data, uint32_t timeout);
-TinyCLR_Result LPC17_SdCard_WriteSectors(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, const uint8_t* data, uint32_t timeout);
-TinyCLR_Result LPC17_SdCard_IsSectorErased(const TinyCLR_SdCard_Controller* self, uint64_t sector, bool& erased);
-TinyCLR_Result LPC17_SdCard_EraseSectors(const TinyCLR_SdCard_Controller* self, uint64_t sector, size_t& count, uint32_t timeout);
-TinyCLR_Result LPC17_SdCard_GetSectorMap(const TinyCLR_SdCard_Controller* self, const size_t*& sizes, size_t& count, bool& isUniform);
+TinyCLR_Result LPC17_SdCard_ReadSectors(const TinyCLR_Storage_Controller* self, uint64_t sector, size_t& count, uint8_t* data, uint32_t timeout);
+TinyCLR_Result LPC17_SdCard_WriteSectors(const TinyCLR_Storage_Controller* self, uint64_t sector, size_t& count, const uint8_t* data, uint32_t timeout);
+TinyCLR_Result LPC17_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased);
+TinyCLR_Result LPC17_SdCard_Erases(const TinyCLR_Storage_Controller* self, uint64_t sector, size_t& count, uint32_t timeout);
+TinyCLR_Result LPC17_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* self, const size_t*& sizes, size_t& count, bool& isUniform);
 
 TinyCLR_Result LPC17_SdCard_Reset();
 
@@ -302,14 +302,16 @@ TinyCLR_Result LPC17_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self);
 
 //Deployment
 const TinyCLR_Api_Info* LPC17_Deployment_GetApi();
-TinyCLR_Result LPC17_Deployment_Initialize(const TinyCLR_Deployment_Controller* self, bool& supportXIP);
-TinyCLR_Result LPC17_Deployment_Uninitialize(const TinyCLR_Deployment_Controller* self);
-TinyCLR_Result LPC17_Deployment_Read(const TinyCLR_Deployment_Controller* self, uint64_t address, size_t length, uint8_t* buffer);
-TinyCLR_Result LPC17_Deployment_Write(const TinyCLR_Deployment_Controller* self, uint64_t address, size_t length, const uint8_t* buffer);
-TinyCLR_Result LPC17_Deployment_EraseSector(const TinyCLR_Deployment_Controller* self, uint64_t sector);
-TinyCLR_Result LPC17_Deployment_IsSectorErased(const TinyCLR_Deployment_Controller* self, uint64_t sector, bool& erased);
-TinyCLR_Result LPC17_Deployment_GetBytesPerSector(const TinyCLR_Deployment_Controller* self, uint32_t address, int32_t& size);
-TinyCLR_Result LPC17_Deployment_GetSectorMap(const TinyCLR_Deployment_Controller* self, const uint64_t*& addresses, const size_t*& sizes, size_t& count);
+TinyCLR_Result LPC17_Deployment_Acquire(const TinyCLR_Storage_Controller* self);
+TinyCLR_Result LPC17_Deployment_Release(const TinyCLR_Storage_Controller* self);
+TinyCLR_Result LPC17_Deployment_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout);
+TinyCLR_Result LPC17_Deployment_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout);
+TinyCLR_Result LPC17_Deployment_Erase(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout);
+TinyCLR_Result LPC17_Deployment_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased);
+TinyCLR_Result LPC17_Deployment_GetBytesPerSector(const TinyCLR_Storage_Controller* self, uint32_t address, int32_t& size);
+TinyCLR_Result LPC17_Deployment_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor);
+TinyCLR_Result LPC17_Flash_IsPresent(const TinyCLR_Storage_Controller* self, bool& present);
+TinyCLR_Result LPC17_Flash_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler);
 
 // Interrupt
 class LPC17_SmartPtr_IRQ {

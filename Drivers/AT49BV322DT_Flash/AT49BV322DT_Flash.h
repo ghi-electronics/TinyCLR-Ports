@@ -4,7 +4,7 @@
 
 //Deployment
 const TinyCLR_Api_Info* AT49BV322DT_Deployment_GetApi();
-TinyCLR_Result AT49BV322DT_Flash_Acquire(bool &supportXIP);
+TinyCLR_Result AT49BV322DT_Flash_Acquire();
 TinyCLR_Result AT49BV322DT_Flash_Release();
 TinyCLR_Result AT49BV322DT_Flash_Read(uint32_t address, size_t length, uint8_t* buffer);
 TinyCLR_Result AT49BV322DT_Flash_Write(uint32_t address, size_t length, const uint8_t* buffer);
