@@ -157,12 +157,12 @@ TinyCLR_Result LPC17_Deployment_IsPresent(const TinyCLR_Storage_Controller* self
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Deployment_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& storageDescriptor) {
+TinyCLR_Result LPC17_Deployment_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor) {
     auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);
 
-    storageDescriptor = &state->storageDescriptor;
+    descriptor = &state->storageDescriptor;
 
-    return storageDescriptor->RegionCount > 0 ? TinyCLR_Result::Success : TinyCLR_Result::NotImplemented;
+    return descriptor->RegionCount > 0 ? TinyCLR_Result::Success : TinyCLR_Result::NotImplemented;
 }
 
 const TinyCLR_Startup_DeploymentConfiguration* LPC17_Deployment_GetDeploymentConfiguration() {
