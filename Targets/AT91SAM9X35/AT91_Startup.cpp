@@ -261,4 +261,7 @@ void AT91_Startup_GetRunApp(bool& runApp) {
 #endif
 }
 
-
+void AT91_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
+    api = AT91_Deployment_GetApi();
+    configuration = AT91_Deployment_GetDeploymentConfiguration();
+}

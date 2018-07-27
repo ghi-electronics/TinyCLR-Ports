@@ -27,9 +27,6 @@
 #define CHARIZE2(c) #c
 #define CHARIZE(c) (CHARIZE2(c)[0])
 
-void AT91_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider);
-void AT91_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider);
-
 //
 //  PERIPHERAL ID DEFINITIONS FOR AT91SAM9RL64
 //
@@ -887,8 +884,10 @@ TinyCLR_Result AT91_Deployment_Erase(const TinyCLR_Storage_Controller* self, uin
 TinyCLR_Result AT91_Deployment_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased);
 TinyCLR_Result AT91_Deployment_GetBytesPerSector(const TinyCLR_Storage_Controller* self, uint32_t address, int32_t& size);
 TinyCLR_Result AT91_Deployment_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor);
-TinyCLR_Result AT91_Flash_IsPresent(const TinyCLR_Storage_Controller* self, bool& present);
-TinyCLR_Result AT91_Flash_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler);
+TinyCLR_Result AT91_Deployment_IsPresent(const TinyCLR_Storage_Controller* self, bool& present);
+TinyCLR_Result AT91_Deployment_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler);
+TinyCLR_Result AT91_Deployment_Open(const TinyCLR_Storage_Controller* self);
+TinyCLR_Result AT91_Deployment_Close(const TinyCLR_Storage_Controller* self);
 
 // Interrupt
 //////////////////////////////////////////////////////////////////////////////
@@ -1539,6 +1538,10 @@ void AT91_Startup_Initialize();
 void AT91_Startup_GetHeap(uint8_t*& start, size_t& length);
 void AT91_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration);
 void AT91_Startup_GetRunApp(bool& runApp);
+void AT91_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration);
+const TinyCLR_Startup_DeploymentConfiguration* AT91_Deployment_GetDeploymentConfiguration();
+void AT91_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider);
+void AT91_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider);
 
 struct AT91 {
 
