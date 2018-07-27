@@ -2147,6 +2147,8 @@ struct SdCardState {
     size_t  *regionSizes;
 
     TinyCLR_Storage_Descriptor descriptor;
+
+    bool isOpened = false;
 };
 
 static const LPC17_Gpio_Pin sdCardData0Pins[] = LPC17_SD_DATA0_PINS;
@@ -2188,6 +2190,8 @@ const TinyCLR_Api_Info* LPC17_SdCard_GetApi() {
 
 TinyCLR_Result LPC17_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
+
+    if (state->isOpened) return TinyCLR_Result::SharingViolation;
 
     auto controllerIndex = state->controllerIndex;
 
@@ -2233,6 +2237,8 @@ TinyCLR_Result LPC17_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
     if (!MCI_And_Card_initialize())
         return TinyCLR_Result::InvalidOperation;
 
+    state->isOpened = true;
+
     return TinyCLR_Result::Success;
 }
 
@@ -2254,10 +2260,12 @@ TinyCLR_Result LPC17_SdCard_Release(const TinyCLR_Storage_Controller* self) {
 
     LPC17_Interrupt_Deactivate(DMA_IRQn); /* Disable Interrupt */
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+    if (state->isOpened) {
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    memoryProvider->Free(memoryProvider, state->regionSizes);
-    memoryProvider->Free(memoryProvider, state->regionAddresses);
+        memoryProvider->Free(memoryProvider, state->regionSizes);
+        memoryProvider->Free(memoryProvider, state->regionAddresses);
+    }
 
     state->descriptor.RegionAddresses = nullptr;
     state->descriptor.RegionSizes = nullptr;
@@ -2267,6 +2275,8 @@ TinyCLR_Result LPC17_SdCard_Release(const TinyCLR_Storage_Controller* self) {
     LPC17_Gpio_ClosePin(d3.number);
     LPC17_Gpio_ClosePin(clk.number);
     LPC17_Gpio_ClosePin(cmd.number);
+
+    state->isOpened = false;
 
     return TinyCLR_Result::Success;
 }

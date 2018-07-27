@@ -2355,6 +2355,8 @@ struct SdCardState {
     uint8_t *pBufferAligned;
 
     TinyCLR_Storage_Descriptor descriptor;
+
+    bool isOpened = false;
 };
 
 static const AT91_Gpio_Pin sdCardData0Pins[] = AT91_SD_DATA0_PINS;
@@ -2402,6 +2404,8 @@ const TinyCLR_Api_Info* AT91_SdCard_GetApi() {
 
 TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
+
+    if (state->isOpened) return TinyCLR_Result::SharingViolation;
 
     auto controllerIndex = state->controllerIndex;
 
@@ -2469,6 +2473,8 @@ TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
     state->descriptor.RegionAddresses = reinterpret_cast<const uint64_t*>(state->regionAddresses);
     state->descriptor.RegionSizes = reinterpret_cast<const size_t*>(state->regionSizes);
 
+    state->isOpened = true;
+
     return TinyCLR_Result::Success;
 }
 
@@ -2491,11 +2497,13 @@ TinyCLR_Result AT91_SdCard_Release(const TinyCLR_Storage_Controller* self) {
 
     AT91_Interrupt_Deactivate(AT91C_ID_HSMCI0); /* Disable Interrupt */
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+    if (state->isOpened) {
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    memoryProvider->Free(memoryProvider, state->pBuffer);
-    memoryProvider->Free(memoryProvider, state->regionSizes);
-    memoryProvider->Free(memoryProvider, state->regionAddresses);
+        memoryProvider->Free(memoryProvider, state->pBuffer);
+        memoryProvider->Free(memoryProvider, state->regionSizes);
+        memoryProvider->Free(memoryProvider, state->regionAddresses);
+    }
 
     AT91_Gpio_ClosePin(d0.number);
     AT91_Gpio_ClosePin(d1.number);
@@ -2503,6 +2511,8 @@ TinyCLR_Result AT91_SdCard_Release(const TinyCLR_Storage_Controller* self) {
     AT91_Gpio_ClosePin(d3.number);
     AT91_Gpio_ClosePin(clk.number);
     AT91_Gpio_ClosePin(cmd.number);
+
+    state->isOpened = false;
 
     return TinyCLR_Result::Success;
 
