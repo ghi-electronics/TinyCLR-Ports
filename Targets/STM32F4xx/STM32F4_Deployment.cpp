@@ -83,6 +83,7 @@ const TinyCLR_Api_Info* STM32F4_Deployment_GetApi() {
         deploymentApi[i].State = &deploymentState[i];
 
         deploymentState[i].controllerIndex = i;
+        deploymentState[i].regionCount = SIZEOF_ARRAY(deploymentSectors);
     }
 
     STM32F4_Deplpoyment_Reset();
@@ -152,7 +153,7 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_IsErased(con
     auto sector = address; //address is sector. Use sector for clear
     auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);
 
-    if (sector >= SIZEOF_ARRAY(deploymentSectors)) return TinyCLR_Result::IndexOutOfRange;
+    if (sector >= state->regionCount) return TinyCLR_Result::IndexOutOfRange;
 
     uint32_t* addressStart = reinterpret_cast<uint32_t*>(deploymentSectors[sector].address);
     uint32_t* addressEnd = reinterpret_cast<uint32_t*>(deploymentSectors[sector].address + deploymentSectors[sector].size);
@@ -176,7 +177,7 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Erase(const 
     auto sector = address; //address is sector. Use sector for clear
     auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);
 
-    if (sector >= SIZEOF_ARRAY(deploymentSectors)) return TinyCLR_Result::IndexOutOfRange;
+    if (sector >= state->regionCount) return TinyCLR_Result::IndexOutOfRange;
 
     uint32_t num = deploymentSectors[sector].id;
 
@@ -226,7 +227,6 @@ TinyCLR_Result STM32F4_Flash_Open(const TinyCLR_Storage_Controller* self) {
     if (state->isOpened)
         return TinyCLR_Result::SharingViolation;
 
-    state->regionCount = SIZEOF_ARRAY(deploymentSectors);
     state->storageDescriptor.CanReadDirect = true;
     state->storageDescriptor.CanWriteDirect = true;
     state->storageDescriptor.CanExecuteDirect = true;
@@ -297,7 +297,7 @@ void STM32F4_Deplpoyment_Reset() {
     for (auto c = 0; c < TOTAL_DEPLOYMENT_CONTROLLERS; c++) {
         auto state = &deploymentState[c];
 
-        for (auto i = 0; i < SIZEOF_ARRAY(deploymentSectors); i++) {
+        for (auto i = 0; i < state->regionCount; i++) {
             state->regionAddresses[i] = deploymentSectors[i].address;
             state->regionSizes[i] = deploymentSectors[i].size;
         }
