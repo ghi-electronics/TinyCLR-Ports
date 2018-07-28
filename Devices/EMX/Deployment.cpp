@@ -37,7 +37,7 @@ struct DeploymentState {
 static DeploymentState deploymentState[TOTAL_DEPLOYMENT_CONTROLLERS];
 
 const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
-    for (int32_t i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
+    for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
         deploymentControllers[i].Acquire = &LPC24_Deployment_Acquire;
         deploymentControllers[i].Release = &LPC24_Deployment_Release;
