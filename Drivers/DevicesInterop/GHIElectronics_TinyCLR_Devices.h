@@ -301,23 +301,6 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc
     static const size_t FIELD___Nanosecond___I4 = 12;
 };
 
-struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SdCard_Provider_SdCardControllerApiWrapper {
-    static const size_t FIELD___impl___I = 1;
-    static const size_t FIELD___Api__BackingField___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeApi = 2;
-
-    static TinyCLR_Result ReadSectors___I4__I8__I4__SZARRAY_U1__I4__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result WriteSectors___I4__I8__I4__SZARRAY_U1__I4__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result EraseSectors___I4__I8__I4__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result IsSectorErased___BOOLEAN__I8(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result GetSectorMap___VOID__BYREF_SZARRAY_I4__BYREF_I4__BYREF_BOOLEAN(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result Acquire___VOID(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result Release___VOID(const TinyCLR_Interop_MethodData md);
-};
-
-struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_SdCard_SdCardController {
-    static const size_t FIELD___Provider__BackingField___GHIElectronicsTinyCLRDevicesSdCardProviderISdCardControllerProvider = 1;
-};
-
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Signals_PulseFeedback {
     static const size_t FIELD___mode___GHIElectronicsTinyCLRDevicesSignalsPulseFeedbackMode = 1;
     static const size_t FIELD___gpioApi___I = 2;
@@ -399,6 +382,45 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Spi_SpiDevice {
     static const size_t FIELD___ConnectionSettings__BackingField___GHIElectronicsTinyCLRDevicesSpiSpiConnectionSettings = 1;
     static const size_t FIELD___Controller__BackingField___GHIElectronicsTinyCLRDevicesSpiSpiController = 2;
+};
+
+struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Storage_PresenceChangedEventArgs {
+    static const size_t FIELD___Present__BackingField___BOOLEAN = 1;
+};
+
+struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper {
+    static const size_t FIELD___impl___I = 1;
+    static const size_t FIELD___presenceChangedDispatcher___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeNativeEventDispatcher = 2;
+    static const size_t FIELD___Api__BackingField___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeApi = 3;
+    static const size_t FIELD___PresenceChanged___GHIElectronicsTinyCLRDevicesStoragePresenceChangedEventHandler = 4;
+
+    static TinyCLR_Result get_IsPresent___BOOLEAN(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result get_Descriptor___GHIElectronicsTinyCLRDevicesStorageStorageDescriptor(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result Open___VOID(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result Close___VOID(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result Read___I4__I8__I4__SZARRAY_U1__I4__I8(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result Write___I4__I8__I4__SZARRAY_U1__I4__I8(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result Erase___I4__I8__I4__I8(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result IsErased___BOOLEAN__I8__I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result Acquire___VOID(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result Release___VOID(const TinyCLR_Interop_MethodData md);
+};
+
+struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Storage_StorageController {
+    static const size_t FIELD___Provider__BackingField___GHIElectronicsTinyCLRDevicesStorageProviderIStorageControllerProvider = 1;
+    static const size_t FIELD___PresenceChanged___GHIElectronicsTinyCLRDevicesStoragePresenceChangedEventHandler = 2;
+};
+
+struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Storage_StorageDescriptor {
+    static const size_t FIELD___CanReadDirect__BackingField___BOOLEAN = 1;
+    static const size_t FIELD___CanWriteDirect__BackingField___BOOLEAN = 2;
+    static const size_t FIELD___CanExecuteDirect__BackingField___BOOLEAN = 3;
+    static const size_t FIELD___EraseBeforeWrite__BackingField___BOOLEAN = 4;
+    static const size_t FIELD___Removable__BackingField___BOOLEAN = 5;
+    static const size_t FIELD___RegionsRepeat__BackingField___BOOLEAN = 6;
+    static const size_t FIELD___RegionCount__BackingField___I4 = 7;
+    static const size_t FIELD___RegionAddresses__BackingField___SZARRAY_I8 = 8;
+    static const size_t FIELD___RegionSizes__BackingField___SZARRAY_I4 = 9;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Uart_DataReceivedEventArgs {
