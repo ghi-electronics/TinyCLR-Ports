@@ -35,7 +35,7 @@
 static TinyCLR_Rtc_Controller rtcControllers[TOTAL_RTC_CONTROLLERS];
 static TinyCLR_Api_Info timeApi[TOTAL_RTC_CONTROLLERS];
 
-const TinyCLR_Api_Info* LPC24_Rtc_GetApi() {
+void LPC24_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_RTC_CONTROLLERS; i++) {
         rtcControllers[i].ApiInfo = &timeApi[i];
         rtcControllers[i].Acquire = &LPC24_Rtc_Acquire;
@@ -51,7 +51,7 @@ const TinyCLR_Api_Info* LPC24_Rtc_GetApi() {
         timeApi[i].State = nullptr;
     }
 
-    return (const TinyCLR_Api_Info*)&timeApi;
+    
 }
 
 TinyCLR_Result LPC24_Rtc_Acquire(const TinyCLR_Rtc_Controller* self) {

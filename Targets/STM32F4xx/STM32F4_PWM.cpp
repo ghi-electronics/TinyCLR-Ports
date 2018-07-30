@@ -76,7 +76,7 @@ static PwmState pwmStates[TOTAL_PWM_CONTROLLERS];
 static TinyCLR_Pwm_Controller pwmControllers[TOTAL_PWM_CONTROLLERS];
 static TinyCLR_Api_Info pwmApi[TOTAL_PWM_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F4_Pwm_GetApi() {
+void STM32F4_Pwm_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_PWM_CONTROLLERS; i++) {
         pwmControllers[i].ApiInfo = &pwmApi[i];
         pwmControllers[i].Acquire = &STM32F4_Pwm_Acquire;
@@ -101,7 +101,7 @@ const TinyCLR_Api_Info* STM32F4_Pwm_GetApi() {
         pwmStates[i].controllerIndex = i;
     }
 
-    return (const TinyCLR_Api_Info*)&pwmApi;
+    
 }
 
 //--//

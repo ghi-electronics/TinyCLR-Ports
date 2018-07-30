@@ -438,7 +438,7 @@ static TinyCLR_Api_Info spiApi[TOTAL_SPI_CONTROLLERS];
 
 void LPC17_Spi_Reset();
 
-const TinyCLR_Api_Info* LPC17_Spi_GetApi() {
+void LPC17_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         spiControllers[i].ApiInfo = &spiApi[i];
         spiControllers[i].Acquire = &LPC17_Spi_Acquire;
@@ -460,7 +460,7 @@ const TinyCLR_Api_Info* LPC17_Spi_GetApi() {
         spiStates[i].controllerIndex = i;
     }
 
-    return (const TinyCLR_Api_Info*)&spiApi;
+    
 }
 
 bool LPC17_Spi_Transaction_Start(int32_t controllerIndex) {

@@ -1183,7 +1183,7 @@ int32_t BinarySearch2(uint32_t *lowerBounds, uint32_t *upperBounds, int32_t firs
     return -1;    // failed to find key
 }
 
-const TinyCLR_Api_Info* AT91_Can_GetApi() {
+void AT91_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
         canControllers[i].ApiInfo = &canApi[i];
         canControllers[i].Acquire = &AT91_Can_Acquire;
@@ -1219,7 +1219,7 @@ const TinyCLR_Api_Info* AT91_Can_GetApi() {
         canStates[i].controllerIndex = i;
     }
 
-    return (const TinyCLR_Api_Info*)&canApi;
+    
 }
 
 uint32_t AT91_Can_GetLocalTime() {

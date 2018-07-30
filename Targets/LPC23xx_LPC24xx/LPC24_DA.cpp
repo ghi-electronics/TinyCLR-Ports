@@ -35,7 +35,7 @@ struct DacState {
 
 static DacState dacStates[TOTAL_DAC_CONTROLLERS];
 
-const TinyCLR_Api_Info* LPC24_Dac_GetApi() {
+void LPC24_Dac_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_DAC_CONTROLLERS; i++) {
         dacControllers[i].ApiInfo = &dacApi[i];
         dacControllers[i].Acquire = &LPC24_Dac_Acquire;
@@ -56,7 +56,7 @@ const TinyCLR_Api_Info* LPC24_Dac_GetApi() {
         dacApi[i].State = &dacStates[i];
     }
 
-    return (const TinyCLR_Api_Info*)&dacApi;
+    
 }
 
 TinyCLR_Result LPC24_Dac_Acquire(const TinyCLR_Dac_Controller* self) {

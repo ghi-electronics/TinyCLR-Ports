@@ -183,7 +183,7 @@ void LPC24_Time_InterruptHandler(void* Param) {
 static TinyCLR_NativeTime_Controller timerControllers[TOTAL_TIME_CONTROLLERS];
 static TinyCLR_Api_Info timeApi[TOTAL_TIME_CONTROLLERS];
 
-const TinyCLR_Api_Info* LPC24_Time_GetApi() {
+void LPC24_Time_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
         timerControllers[i].ApiInfo = &timeApi[i];
         timerControllers[i].ConvertNativeTimeToSystemTime = &LPC24_Time_GetTimeForProcessorTicks;
@@ -205,7 +205,7 @@ const TinyCLR_Api_Info* LPC24_Time_GetApi() {
         timeStates[i].controllerIndex = i;
     }
 
-    return (const TinyCLR_Api_Info*)&timeApi;
+    
 }
 
 uint32_t LPC24_Time_GetSystemClock(const TinyCLR_NativeTime_Controller* self) {

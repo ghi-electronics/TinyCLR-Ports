@@ -32,7 +32,7 @@
 #define G120E_DETECT3_STATE TinyCLR_Gpio_PinValue::Low
 
 void LPC17_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopManager) {
-    apiManager->Add(apiManager, SPIDisplay_GetApi());
+    SPIDisplay_AddApi(apiManager);
     interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices);
 }
 

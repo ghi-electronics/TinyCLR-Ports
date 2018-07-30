@@ -57,7 +57,7 @@ struct DeploymentState {
 
 static DeploymentState deploymentState[TOTAL_DEPLOYMENT_CONTROLLERS];
 
-const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
+void LPC24_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
         deploymentControllers[i].Acquire = &LPC24_Deployment_Acquire;
@@ -83,7 +83,7 @@ const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
         deploymentState[i].regionCount = DEPLOYMENT_SECTOR_NUM;
     }
 
-    return (const TinyCLR_Api_Info*)&deploymentApi;
+    
 }
 
 int32_t __section("SectionForFlashOperations") LPC24_Deployment_PrepaireSector(int32_t startsec, int32_t endsec) {

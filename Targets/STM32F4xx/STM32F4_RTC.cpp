@@ -78,7 +78,7 @@
 static TinyCLR_Rtc_Controller rtcControllers[TOTAL_RTC_CONTROLLERS];
 static TinyCLR_Api_Info timeApi[TOTAL_RTC_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F4_Rtc_GetApi() {
+void STM32F4_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_RTC_CONTROLLERS; i++) {
         rtcControllers[i].ApiInfo = &timeApi[i];
         rtcControllers[i].Acquire = &STM32F4_Rtc_Acquire;
@@ -94,7 +94,7 @@ const TinyCLR_Api_Info* STM32F4_Rtc_GetApi() {
         timeApi[i].State = nullptr;
     }
 
-    return (const TinyCLR_Api_Info*)&timeApi;
+    
 }
 uint8_t STM32F4_Rtc_ByteToBcd2(uint8_t value) {
     uint8_t bcdhigh = 0;

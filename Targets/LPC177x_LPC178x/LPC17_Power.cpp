@@ -29,7 +29,7 @@ static void(*PowerRestartHandler)();
 static TinyCLR_Power_Controller powerControllers[TOTAL_POWER_CONTROLLERS];
 static TinyCLR_Api_Info powerApi[TOTAL_POWER_CONTROLLERS];
 
-const TinyCLR_Api_Info* LPC17_Power_GetApi() {
+void LPC17_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_POWER_CONTROLLERS; i++) {
         powerControllers[i].ApiInfo = &powerApi[i];
         powerControllers[i].Initialize = &LPC17_Power_Initialize;
@@ -45,7 +45,7 @@ const TinyCLR_Api_Info* LPC17_Power_GetApi() {
         powerApi[i].State = nullptr;
     }
 
-    return (const TinyCLR_Api_Info*)&powerApi;
+    
 }
 
 void LPC17_Power_SetHandlers(void(*stop)(), void(*restart)()) {

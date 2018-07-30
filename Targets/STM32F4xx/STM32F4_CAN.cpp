@@ -1031,7 +1031,7 @@ bool CAN_ErrorHandler(uint8_t controllerIndex) {
 }
 
 
-const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
+void STM32F4_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
         canControllers[i].ApiInfo = &canApi[i];
         canControllers[i].Acquire = &STM32F4_Can_Acquire;
@@ -1067,7 +1067,7 @@ const TinyCLR_Api_Info* STM32F4_Can_GetApi() {
         canStates[i].controllerIndex = i;
     }
 
-    return (const TinyCLR_Api_Info*)&canApi;
+    
 }
 
 size_t STM32F4_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self) {

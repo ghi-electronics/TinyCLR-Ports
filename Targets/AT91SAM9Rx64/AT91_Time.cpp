@@ -216,7 +216,7 @@ static TimeState timeStates[TOTAL_TIME_CONTROLLERS];
 static TinyCLR_NativeTime_Controller timerControllers[TOTAL_TIME_CONTROLLERS];
 static TinyCLR_Api_Info timeApi[TOTAL_TIME_CONTROLLERS];
 
-const TinyCLR_Api_Info* AT91_Time_GetApi() {
+void AT91_Time_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
         timerControllers[i].ApiInfo = &timeApi[i];
         timerControllers[i].ConvertNativeTimeToSystemTime = &AT91_Time_GetTimeForProcessorTicks;
@@ -238,7 +238,7 @@ const TinyCLR_Api_Info* AT91_Time_GetApi() {
         timeStates[i].controllerIndex = i;
     }
 
-    return (const TinyCLR_Api_Info*)&timeApi;
+    
 }
 
 void AT91_Time_InterruptHandler(void* Param) {

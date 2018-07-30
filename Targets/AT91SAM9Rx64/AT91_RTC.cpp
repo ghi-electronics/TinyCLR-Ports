@@ -45,7 +45,7 @@
 static TinyCLR_Rtc_Controller rtcControllers[TOTAL_RTC_CONTROLLERS];
 static TinyCLR_Api_Info timeApi[TOTAL_RTC_CONTROLLERS];
 
-const TinyCLR_Api_Info* AT91_Rtc_GetApi() {
+void AT91_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_RTC_CONTROLLERS; i++) {
         rtcControllers[i].ApiInfo = &timeApi[i];
         rtcControllers[i].Acquire = &AT91_Rtc_Acquire;
@@ -61,7 +61,7 @@ const TinyCLR_Api_Info* AT91_Rtc_GetApi() {
         timeApi[i].State = nullptr;
     }
 
-    return (const TinyCLR_Api_Info*)&timeApi;
+    
 }
 
 void AT91_Rtc_BinaryCodedDecimalExtract(uint32_t valueToConvert, uint32_t &tens, uint32_t &ones) {

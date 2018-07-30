@@ -1173,7 +1173,7 @@ TinyCLR_Result AT91_Display_GetCapabilities(const TinyCLR_Display_Controller* se
     return TinyCLR_Result::Success;
 }
 
-const TinyCLR_Api_Info* AT91_Display_GetApi() {
+void AT91_Display_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_DISPLAY_CONTROLLERS; i++) {
         displayControllers[i].ApiInfo = &displayApi[i];
         displayControllers[i].Acquire = &AT91_Display_Acquire;
@@ -1196,7 +1196,7 @@ const TinyCLR_Api_Info* AT91_Display_GetApi() {
 
     m_AT91_Display_VituralRam = nullptr;
 
-    return (const TinyCLR_Api_Info*)&displayApi;
+    
 }
 
 void AT91_Display_Reset() {

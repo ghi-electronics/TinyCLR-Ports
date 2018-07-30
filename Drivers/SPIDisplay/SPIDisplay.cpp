@@ -12,7 +12,7 @@ static int32_t spiDisplayHeight = 0;
 static TinyCLR_Display_SpiConfiguration spiDisplayConfig;
 static const TinyCLR_Spi_Controller* spiDisplayBus;
 
-const TinyCLR_Api_Info* SPIDisplay_GetApi() {
+void SPIDisplay_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_SPI_DISPLAY_CONTROLLERS; i++) {
         spiDisplayControllers[i].ApiInfo = &spiDisplayApi[i];
         spiDisplayControllers[i].Acquire = &SPIDisplay_Acquire;

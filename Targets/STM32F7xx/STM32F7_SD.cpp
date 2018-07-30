@@ -2675,7 +2675,7 @@ static const STM32F7_Gpio_Pin sdCardCmdPins[] = STM32F7_SD_CMD_PINS;
 
 static SdCardState sdCardStates[TOTAL_SDCARD_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F7_SdCard_GetApi() {
+void STM32F7_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
         sdCardControllers[i].ApiInfo = &sdCardApi[i];
         sdCardControllers[i].Acquire = &STM32F7_SdCard_Acquire;
@@ -2700,7 +2700,7 @@ const TinyCLR_Api_Info* STM32F7_SdCard_GetApi() {
         sdCardStates[i].controllerIndex = i;
     }
 
-    return (const TinyCLR_Api_Info*)&sdCardApi;
+    
 }
 
 TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {

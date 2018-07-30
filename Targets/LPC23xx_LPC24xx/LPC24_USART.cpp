@@ -58,7 +58,7 @@ static UartState uartStates[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 
-const TinyCLR_Api_Info* LPC24_Uart_GetApi() {
+void LPC24_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
         uartControllers[i].ApiInfo = &uartApi[i];
         uartControllers[i].Acquire = &LPC24_Uart_Acquire;
@@ -92,7 +92,7 @@ const TinyCLR_Api_Info* LPC24_Uart_GetApi() {
         uartStates[i].controllerIndex = i;
     }
 
-    return (const TinyCLR_Api_Info*)&uartApi;
+    
 }
 
 size_t LPC24_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self) {

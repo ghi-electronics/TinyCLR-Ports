@@ -17,7 +17,7 @@
 
 #ifdef INCLUDE_SD
 
-const TinyCLR_Api_Info* AT91_SdCard_GetApi() {
+void AT91_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
     return nullptr;
 }
 

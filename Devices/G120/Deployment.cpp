@@ -36,7 +36,7 @@ struct DeploymentState {
 
 static DeploymentState deploymentState[TOTAL_DEPLOYMENT_CONTROLLERS];
 
-const TinyCLR_Api_Info* LPC17_Deployment_GetApi() {
+void LPC17_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
         deploymentControllers[i].Acquire = &LPC17_Deployment_Acquire;
@@ -66,7 +66,7 @@ const TinyCLR_Api_Info* LPC17_Deployment_GetApi() {
 }
 
 TinyCLR_Result LPC17_Deployment_Acquire(const TinyCLR_Storage_Controller* self) {
-    const TinyCLR_Api_Info* spiApi = &CONCAT(DEVICE_TARGET, _Spi_GetApi)()[LPC17_DEPLOYMENT_SPI_PORT];
+    void spiApi = &CONCAT(DEVICE_TARGET, _Spi_GetApi)()[LPC17_DEPLOYMENT_SPI_PORT];
 
     TinyCLR_Spi_Controller* spiController = (TinyCLR_Spi_Controller*)spiApi->Implementation;
 

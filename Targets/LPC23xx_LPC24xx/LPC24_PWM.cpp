@@ -76,7 +76,7 @@ static PwmState pwmStates[TOTAL_PWM_CONTROLLERS];
 static TinyCLR_Pwm_Controller pwmControllers[TOTAL_PWM_CONTROLLERS];
 static TinyCLR_Api_Info pwmApi[TOTAL_PWM_CONTROLLERS];
 
-const TinyCLR_Api_Info* LPC24_Pwm_GetApi() {
+void LPC24_Pwm_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_PWM_CONTROLLERS; i++) {
         pwmControllers[i].ApiInfo = &pwmApi[i];
         pwmControllers[i].Acquire = &LPC24_Pwm_Acquire;
@@ -101,7 +101,7 @@ const TinyCLR_Api_Info* LPC24_Pwm_GetApi() {
         pwmStates[i].controllerIndex = i;
     }
 
-    return (const TinyCLR_Api_Info*)&pwmApi;
+    
 }
 
 TinyCLR_Result LPC24_Pwm_OpenChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel) {

@@ -42,7 +42,7 @@ static I2cState i2cStates[TOTAL_I2C_CONTROLLERS];
 static TinyCLR_I2c_Controller i2cControllers[TOTAL_I2C_CONTROLLERS];
 static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];
 
-const TinyCLR_Api_Info* AT91_I2c_GetApi() {
+void AT91_I2c_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
         i2cControllers[i].ApiInfo = &i2cApi[i];
         i2cControllers[i].Acquire = &AT91_I2c_Acquire;
@@ -60,7 +60,7 @@ const TinyCLR_Api_Info* AT91_I2c_GetApi() {
         i2cStates[i].controllerIndex = i;
     }
 
-    return (const TinyCLR_Api_Info*)&i2cApi;
+    
 }
 
 TinyCLR_Result AT91_I2c_Read(const TinyCLR_I2c_Controller* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& error) {

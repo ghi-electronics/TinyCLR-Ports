@@ -41,7 +41,7 @@ static PwmState pwmStates[TOTAL_PWM_CONTROLLERS];
 static TinyCLR_Pwm_Controller pwmControllers[TOTAL_PWM_CONTROLLERS];
 static TinyCLR_Api_Info pwmApi[TOTAL_PWM_CONTROLLERS];
 
-const TinyCLR_Api_Info* AT91_Pwm_GetApi() {
+void AT91_Pwm_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_PWM_CONTROLLERS; i++) {
         pwmControllers[i].ApiInfo = &pwmApi[i];
         pwmControllers[i].Acquire = &AT91_Pwm_Acquire;
@@ -66,7 +66,7 @@ const TinyCLR_Api_Info* AT91_Pwm_GetApi() {
         pwmStates[i].controllerIndex = i;
     }
 
-    return (const TinyCLR_Api_Info*)&pwmApi;
+    
 }
 
 static const AT91_Gpio_Pin pwmPins[TOTAL_PWM_CONTROLLERS][MAX_PWM_PER_CONTROLLER] = AT91_PWM_PINS;

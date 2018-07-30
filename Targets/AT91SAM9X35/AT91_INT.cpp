@@ -82,7 +82,7 @@ TinyCLR_Interrupt_StartStopHandler AT91_Interrupt_Ended;
 static TinyCLR_Interrupt_Controller interruptControllers[TOTAL_INTERRUPT_CONTROLLERS];
 static TinyCLR_Api_Info interruptApi[TOTAL_INTERRUPT_CONTROLLERS];
 
-const TinyCLR_Api_Info* AT91_Interrupt_GetApi() {
+void AT91_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
         interruptControllers[i].ApiInfo = &interruptApi[i];
         interruptControllers[i].Initialize = &AT91_Interrupt_Initialize;
@@ -102,7 +102,7 @@ const TinyCLR_Api_Info* AT91_Interrupt_GetApi() {
         interruptApi[i].State = nullptr;
     }
 
-    return (const TinyCLR_Api_Info*)&interruptApi;
+    
 }
 
 AT91_Interrupt_Vectors* AT91_Interrupt_IrqToVector(uint32_t Irq) {

@@ -80,7 +80,7 @@ static I2cState i2cStates[TOTAL_I2C_CONTROLLERS];
 static TinyCLR_I2c_Controller i2cControllers[TOTAL_I2C_CONTROLLERS];
 static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F7_I2c_GetApi() {
+void STM32F7_I2c_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
         i2cControllers[i].ApiInfo = &i2cApi[i];
         i2cControllers[i].Acquire = &STM32F7_I2c_Acquire;
@@ -104,7 +104,7 @@ const TinyCLR_Api_Info* STM32F7_I2c_GetApi() {
     if (TOTAL_I2C_CONTROLLERS > 1)
         i2cPorts[1] = I2C2;
 
-    return (const TinyCLR_Api_Info*)&i2cApi;
+    
 }
 
 void STM32F7_I2c_Enable(I2C_TypeDef* i2c) {

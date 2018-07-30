@@ -24,7 +24,7 @@
 static TinyCLR_Power_Controller powerControllers[TOTAL_POWER_CONTROLLERS];
 static TinyCLR_Api_Info powerApi[TOTAL_POWER_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F7_Power_GetApi() {
+void STM32F7_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_POWER_CONTROLLERS; i++) {
         powerControllers[i].ApiInfo = &powerApi[i];
         powerControllers[i].Initialize = &STM32F7_Power_Initialize;
@@ -40,7 +40,7 @@ const TinyCLR_Api_Info* STM32F7_Power_GetApi() {
         powerApi[i].State = nullptr;
     }
 
-    return (const TinyCLR_Api_Info*)&powerApi;
+    
 }
 
 void STM32F7_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level) {

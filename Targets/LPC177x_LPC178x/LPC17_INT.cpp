@@ -25,7 +25,7 @@ TinyCLR_Interrupt_StartStopHandler LPC17_Interrupt_Ended;
 static TinyCLR_Interrupt_Controller interruptControllers[TOTAL_INTERRUPT_CONTROLLERS];
 static TinyCLR_Api_Info interruptApi[TOTAL_INTERRUPT_CONTROLLERS];
 
-const TinyCLR_Api_Info* LPC17_Interrupt_GetApi() {
+void LPC17_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
         interruptControllers[i].ApiInfo = &interruptApi[i];
         interruptControllers[i].Initialize = &LPC17_Interrupt_Initialize;
@@ -44,7 +44,7 @@ const TinyCLR_Api_Info* LPC17_Interrupt_GetApi() {
         interruptApi[i].State = nullptr;
     }
 
-    return (const TinyCLR_Api_Info*)&interruptApi;
+    
 }
 
 extern "C" {

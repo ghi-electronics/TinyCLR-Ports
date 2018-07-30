@@ -101,7 +101,7 @@ struct DeploymentState {
 
 static DeploymentState deploymentState[TOTAL_DEPLOYMENT_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F7_Deployment_GetApi() {
+void STM32F7_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
         deploymentControllers[i].Acquire = &STM32F7_Flash_Acquire;
@@ -129,7 +129,7 @@ const TinyCLR_Api_Info* STM32F7_Deployment_GetApi() {
 
     STM32F7_Deplpoyment_Reset();
 
-    return (const TinyCLR_Api_Info*)&deploymentApi;
+    
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {

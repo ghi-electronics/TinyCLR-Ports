@@ -26,7 +26,7 @@ TinyCLR_Interrupt_StartStopHandler STM32F7_Interrupt_Ended;
 static TinyCLR_Interrupt_Controller interruptControllers[TOTAL_INTERRUPT_CONTROLLERS];
 static TinyCLR_Api_Info interruptApi[TOTAL_INTERRUPT_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F7_Interrupt_GetApi() {
+void STM32F7_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
         interruptControllers[i].ApiInfo = &interruptApi[i];
         interruptControllers[i].Initialize = &STM32F7_Interrupt_Initialize;
@@ -45,7 +45,7 @@ const TinyCLR_Api_Info* STM32F7_Interrupt_GetApi() {
         interruptApi[i].State = nullptr;
     }
 
-    return (const TinyCLR_Api_Info*)&interruptApi;
+    
 }
 
 extern "C" {

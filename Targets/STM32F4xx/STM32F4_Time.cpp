@@ -41,7 +41,7 @@ static TimeState timeStates[TOTAL_TIME_CONTROLLERS];
 static TinyCLR_NativeTime_Controller timeControllers[TOTAL_TIME_CONTROLLERS];
 static TinyCLR_Api_Info timeApi[TOTAL_TIME_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F4_Time_GetApi() {
+void STM32F4_Time_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
         timeControllers[i].ApiInfo = &timeApi[i];
         timeControllers[i].Initialize = &STM32F4_Time_Initialize;
@@ -63,7 +63,7 @@ const TinyCLR_Api_Info* STM32F4_Time_GetApi() {
         timeStates[i].controllerIndex = i;
     }
 
-    return (const TinyCLR_Api_Info*)&timeApi;
+    
 }
 
 static uint64_t timerNextEvent;   // tick time of next event to be scheduled

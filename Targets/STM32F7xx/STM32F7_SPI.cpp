@@ -57,7 +57,7 @@ static SpiState spiStates[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Spi_Controller spiControllers[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Api_Info spiApi[TOTAL_SPI_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F7_Spi_GetApi() {
+void STM32F7_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         spiControllers[i].ApiInfo = &spiApi[i];
         spiControllers[i].Acquire = &STM32F7_Spi_Acquire;
@@ -97,7 +97,7 @@ const TinyCLR_Api_Info* STM32F7_Spi_GetApi() {
 #endif
 #endif
 #endif
-    return (const TinyCLR_Api_Info*)&spiApi;
+    
 }
 
 bool STM32F7_Spi_Transaction_Start(int32_t controllerIndex) {

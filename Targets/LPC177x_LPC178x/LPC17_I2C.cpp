@@ -86,7 +86,7 @@ static I2cState i2cStates[TOTAL_I2C_CONTROLLERS];
 static TinyCLR_I2c_Controller i2cControllers[TOTAL_I2C_CONTROLLERS];
 static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];
 
-const TinyCLR_Api_Info* LPC17_I2c_GetApi() {
+void LPC17_I2c_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
         i2cControllers[i].ApiInfo = &i2cApi[i];
         i2cControllers[i].Acquire = &LPC17_I2c_Acquire;
@@ -104,7 +104,7 @@ const TinyCLR_Api_Info* LPC17_I2c_GetApi() {
         i2cStates[i].controllerIndex = i;
     }
 
-    return (const TinyCLR_Api_Info*)&i2cApi;
+    
 }
 
 void LPC17_I2c_InterruptHandler(int32_t controllerIndex) {

@@ -2374,7 +2374,7 @@ static Mci mciDrv;
 /// SDCard state instance.
 static SdCard sdDrv;
 
-const TinyCLR_Api_Info* AT91_SdCard_GetApi() {
+void AT91_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
         sdCardControllers[i].ApiInfo = &sdCardApi[i];
         sdCardControllers[i].Acquire = &AT91_SdCard_Acquire;
@@ -2399,7 +2399,7 @@ const TinyCLR_Api_Info* AT91_SdCard_GetApi() {
         sdCardStates[i].controllerIndex = i;
     }
 
-    return (const TinyCLR_Api_Info*)&sdCardApi;
+    
 }
 
 TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {

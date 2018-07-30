@@ -36,7 +36,7 @@ struct DeploymentState {
 
 static DeploymentState deploymentState[TOTAL_DEPLOYMENT_CONTROLLERS];
 
-const TinyCLR_Api_Info* AT91_Deployment_GetApi() {
+void AT91_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
         deploymentControllers[i].Acquire = &AT91_Deployment_Acquire;
@@ -67,10 +67,10 @@ const TinyCLR_Api_Info* AT91_Deployment_GetApi() {
 
 
 TinyCLR_Result AT91_Deployment_Acquire(const TinyCLR_Storage_Controller* self) {
-    const TinyCLR_Api_Info* spiApi = &CONCAT(DEVICE_TARGET, _Spi_GetApi)()[AT91_DEPLOYMENT_SPI_PORT];
+    void spiApi = &CONCAT(DEVICE_TARGET, _Spi_GetApi)()[AT91_DEPLOYMENT_SPI_PORT];
     TinyCLR_Spi_Controller* spiController = (TinyCLR_Spi_Controller*)spiApi->Implementation;
 
-    const TinyCLR_Api_Info* timeApi = &CONCAT(DEVICE_TARGET, _Time_GetApi)()[0];
+    void timeApi = &CONCAT(DEVICE_TARGET, _Time_GetApi)()[0];
     TinyCLR_NativeTime_Controller* timerController = (TinyCLR_NativeTime_Controller*)timeApi->Implementation;
 
     return AT45DB321D_Flash_Acquire(spiController, timerController, AT91_DEPLOYMENT_SPI_ENABLE_PIN);

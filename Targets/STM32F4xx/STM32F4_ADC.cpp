@@ -54,7 +54,7 @@ struct AdcState {
 
 static AdcState adcStates[TOTAL_ADC_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F4_Adc_GetApi() {
+void STM32F4_Adc_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_ADC_CONTROLLERS; i++) {
         adcControllers[i].ApiInfo = &adcApi[i];
         adcControllers[i].Acquire = &STM32F4_Adc_Acquire;
@@ -78,7 +78,7 @@ const TinyCLR_Api_Info* STM32F4_Adc_GetApi() {
         adcApi[i].State = &adcStates[i];
     }
 
-    return (const TinyCLR_Api_Info*)&adcApi;
+    
 }
 
 TinyCLR_Result STM32F4_Adc_Acquire(const TinyCLR_Adc_Controller* self) {

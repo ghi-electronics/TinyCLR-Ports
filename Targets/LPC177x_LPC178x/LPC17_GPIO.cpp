@@ -78,7 +78,7 @@ static TinyCLR_Gpio_PinDriveMode pinDriveMode[TOTAL_GPIO_PINS];
 static TinyCLR_Gpio_Controller gpioControllers[TOTAL_GPIO_CONTROLLERS];
 static TinyCLR_Api_Info gpioApi[TOTAL_GPIO_CONTROLLERS];
 
-const TinyCLR_Api_Info* LPC17_Gpio_GetApi() {
+void LPC17_Gpio_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_GPIO_CONTROLLERS; i++) {
         gpioControllers[i].ApiInfo = &gpioApi[i];
         gpioControllers[i].Acquire = &LPC17_Gpio_Acquire;
@@ -105,7 +105,7 @@ const TinyCLR_Api_Info* LPC17_Gpio_GetApi() {
         gpioStates[i].controllerIndex = i;
     }
 
-    return (const TinyCLR_Api_Info*)&gpioApi;
+    
 }
 
 TinyCLR_Result LPC17_Gpio_Acquire(const TinyCLR_Gpio_Controller* self) {

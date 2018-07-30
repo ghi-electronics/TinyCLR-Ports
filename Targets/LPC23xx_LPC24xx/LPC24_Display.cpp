@@ -1036,7 +1036,7 @@ TinyCLR_Result LPC24_Display_GetCapabilities(const TinyCLR_Display_Controller* s
     return TinyCLR_Result::Success;
 }
 
-const TinyCLR_Api_Info* LPC24_Display_GetApi() {
+void LPC24_Display_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_DISPLAY_CONTROLLERS; i++) {
         displayControllers[i].ApiInfo = &displayApi[i];
         displayControllers[i].Acquire = &LPC24_Display_Acquire;
@@ -1059,7 +1059,7 @@ const TinyCLR_Api_Info* LPC24_Display_GetApi() {
 
     m_LPC24_Display_VituralRam = nullptr;
 
-    return (const TinyCLR_Api_Info*)&displayApi;
+    
 }
 
 void LPC24_Display_Reset() {

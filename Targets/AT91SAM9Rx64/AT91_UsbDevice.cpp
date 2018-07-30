@@ -798,7 +798,7 @@ void AT91_UsbDevice_EndpointIsr(UsClientState *usClientState, uint32_t endpoint)
     }
 }
 
-const TinyCLR_Api_Info* AT91_UsbDevice_GetApi() {
+void AT91_UsbDevice_AddApi(const TinyCLR_Api_Manager* apiManager) {
     return TinyCLR_UsbClient_GetApi();
 }
 

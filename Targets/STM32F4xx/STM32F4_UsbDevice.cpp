@@ -248,7 +248,7 @@ void STM32F4_UsbDevice_Interrupt(void* param);
 /* usClientState variables for the controllers */
 static UsbDeviceController usbDeviceControllers[STM32F4_TOTAL_USB_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F4_UsbDevice_GetApi() {
+void STM32F4_UsbDevice_AddApi(const TinyCLR_Api_Manager* apiManager) {
     return TinyCLR_UsbClient_GetApi();
 }
 void STM32F4_UsbDevice_Reset() {

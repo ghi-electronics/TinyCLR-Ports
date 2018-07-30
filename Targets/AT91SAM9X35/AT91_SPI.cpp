@@ -46,7 +46,7 @@ static SpiState spiStates[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Spi_Controller spiControllers[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Api_Info spiApi[TOTAL_SPI_CONTROLLERS];
 
-const TinyCLR_Api_Info* AT91_Spi_GetApi() {
+void AT91_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         spiControllers[i].ApiInfo = &spiApi[i];
         spiControllers[i].Acquire = &AT91_Spi_Acquire;
@@ -68,7 +68,7 @@ const TinyCLR_Api_Info* AT91_Spi_GetApi() {
         spiStates[i].controllerIndex = i;
     }
 
-    return (const TinyCLR_Api_Info*)&spiApi;
+    
 }
 
 bool AT91_Spi_Transaction_Start(int32_t controllerIndex) {

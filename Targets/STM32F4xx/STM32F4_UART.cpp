@@ -76,7 +76,7 @@ static UartState uartStates[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F4_Uart_GetApi() {
+void STM32F4_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
         uartControllers[i].ApiInfo = &uartApi[i];
         uartControllers[i].Acquire = &STM32F4_Uart_Acquire;
@@ -127,7 +127,7 @@ const TinyCLR_Api_Info* STM32F4_Uart_GetApi() {
 #endif
 #endif
 #endif
-    return (const TinyCLR_Api_Info*)&uartApi;
+    
 }
 
 size_t STM32F4_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self) {
