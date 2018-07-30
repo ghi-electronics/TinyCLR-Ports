@@ -294,6 +294,10 @@ uint64_t AT91_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller*
 
     auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
+    if (self == nullptr) { // some cases in hal layer call directly STM32F4_Time_GetCurrentProcessorTicks(nullptr), use first controller as default
+        state = &timeStates[0];
+    }
+
     state->m_lastRead &= (0xFFFFFFFF00000000ull);
 
     if (At91TimerDriver::DidTimerOverFlow(At91TimerDriver::c_SystemTimer)) {

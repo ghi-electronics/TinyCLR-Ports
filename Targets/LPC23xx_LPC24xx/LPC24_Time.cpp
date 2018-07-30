@@ -251,6 +251,10 @@ uint64_t LPC24_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller
 
     auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
+    if (self == nullptr) { // some cases in hal layer call directly STM32F4_Time_GetCurrentProcessorTicks(nullptr), use first controller as default
+        state = &timeStates[0];
+    }
+
     uint64_t lastValue = state->m_lastRead;
 
     uint32_t value = TimeState::ReadCounter(timer);
