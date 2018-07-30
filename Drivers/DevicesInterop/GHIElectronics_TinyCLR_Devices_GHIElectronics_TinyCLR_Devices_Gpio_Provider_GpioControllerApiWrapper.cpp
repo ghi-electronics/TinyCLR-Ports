@@ -6,7 +6,7 @@ static void TinyCLR_Gpio_PinChangeIsr(const TinyCLR_Gpio_Controller* self, uint3
     auto interopManager = reinterpret_cast<const TinyCLR_Interop_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::InteropManager));
 
     if (interopManager != nullptr)
-        interopManager->RaiseEvent(interopManager, "GHIElectronics.TinyCLR.NativeEventNames.Gpio.ValueChanged", self->ApiInfo->Name, 0, (uint64_t)pin, (uint64_t)(edge == TinyCLR_Gpio_PinChangeEdge::RisingEdge), 0);
+        interopManager->RaiseEvent(interopManager, "GHIElectronics.TinyCLR.NativeEventNames.Gpio.PinChanged", self->ApiInfo->Name, (uint64_t)pin, (uint64_t)(edge == TinyCLR_Gpio_PinChangeEdge::RisingEdge), 0, 0);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::get_PinCount___I4(const TinyCLR_Interop_MethodData md) {
