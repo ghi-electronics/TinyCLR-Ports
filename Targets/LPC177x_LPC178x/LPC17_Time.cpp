@@ -90,6 +90,10 @@ uint64_t LPC17_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller
 
     auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
+    if (self == nullptr) { // some cases in hal layer call directly STM32F4_Time_GetCurrentProcessorTicks(nullptr), use first controller as default
+        state = &timeStates[0];
+    }
+
     uint32_t tick_spent;
     uint32_t reg = SysTick->CTRL;
     uint32_t ticks = (SysTick->VAL & SysTick_LOAD_RELOAD_Msk);
