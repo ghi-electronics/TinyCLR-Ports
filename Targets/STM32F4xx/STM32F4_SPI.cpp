@@ -34,6 +34,10 @@ static const int TOTAL_SPI_CONTROLLERS = SIZEOF_ARRAY(spiClkPins);
 
 static ptr_SPI_TypeDef spiPortRegs[TOTAL_SPI_CONTROLLERS];
 
+const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.SpiController\\0"
+};
+
 struct SpiState {
     int32_t controllerIndex;
 
@@ -70,7 +74,7 @@ void STM32F4_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
         spiControllers[i].GetSupportedDataBitLengths = &STM32F4_Spi_GetSupportedDataBitLengths;
 
         spiApi[i].Author = "GHI Electronics, LLC";
-        spiApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.SpiController";
+        spiApi[i].Name = spiApiNames[i];
         spiApi[i].Type = TinyCLR_Api_Type::SpiController;
         spiApi[i].Version = 0;
         spiApi[i].Implementation = &spiControllers[i];
@@ -98,7 +102,7 @@ void STM32F4_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
 #endif
 #endif
 
-    
+
 }
 
 bool STM32F4_Spi_Transaction_Start(int32_t controllerIndex) {

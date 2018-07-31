@@ -48,6 +48,10 @@ static const uint8_t adcPins[] = STM32F4_ADC_PINS;
 static TinyCLR_Adc_Controller adcControllers[TOTAL_ADC_CONTROLLERS];
 static TinyCLR_Api_Info adcApi[TOTAL_ADC_CONTROLLERS];
 
+const char* adcApiNames[TOTAL_ADC_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.AdcController\\0"
+};
+
 struct AdcState {
     bool isOpen[STM32F4_AD_NUM];
 };
@@ -71,14 +75,14 @@ void STM32F4_Adc_AddApi(const TinyCLR_Api_Manager* apiManager) {
         adcControllers[i].GetChannelCount = &STM32F4_Adc_GetChannelCount;
 
         adcApi[i].Author = "GHI Electronics, LLC";
-        adcApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.AdcController";
+        adcApi[i].Name = adcApiNames[i];
         adcApi[i].Type = TinyCLR_Api_Type::AdcController;
         adcApi[i].Version = 0;
         adcApi[i].Implementation = &adcControllers[i];
         adcApi[i].State = &adcStates[i];
     }
 
-    
+
 }
 
 TinyCLR_Result STM32F4_Adc_Acquire(const TinyCLR_Adc_Controller* self) {

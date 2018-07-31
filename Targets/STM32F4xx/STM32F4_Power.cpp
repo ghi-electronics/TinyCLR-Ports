@@ -17,9 +17,14 @@
 #include "STM32F4.h"
 
 #define TOTAL_POWER_CONTROLLERS 1
+
 struct PowerState {
     uint32_t controllerIndex;
     bool tableInitialized;
+};
+
+const char* powerApiNames[TOTAL_POWER_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PowerController\\0"
 };
 
 static TinyCLR_Power_Controller powerControllers[TOTAL_POWER_CONTROLLERS];
@@ -38,7 +43,7 @@ void STM32F4_Power_EnsureTableInitialized() {
         powerControllers[i].Sleep = &STM32F4_Power_Sleep;
 
         powerApi[i].Author = "GHI Electronics, LLC";
-        powerApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.PowerController";
+        powerApi[i].Name = powerApiNames[i];
         powerApi[i].Type = TinyCLR_Api_Type::PowerController;
         powerApi[i].Version = 0;
         powerApi[i].Implementation = &powerControllers[i];

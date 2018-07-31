@@ -729,6 +729,9 @@ bool TinyCLR_UsbClient_CanReceivePackage(UsClientState* usClientState, int32_t e
 ///////////////////////////////////////////////////////////////////////////////////////////
 /// TinyCLR USBClient API
 ///////////////////////////////////////////////////////////////////////////////////////////
+const char* usbClientApiNames[TOTAL_USBCLIENT_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.UsbClientController\\0"
+};
 
 void TinyCLR_UsbClient_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_USBCLIENT_CONTROLLERS; i++) {
@@ -748,7 +751,7 @@ void TinyCLR_UsbClient_EnsureTableInitialized() {
         usbClientControllers[i].SetDeviceDescriptor = &TinyCLR_UsbClient_SetDeviceDescriptor;
 
         usbClientApi[i].Author = "GHI Electronics, LLC";
-        usbClientApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.Drivers.UsbClientController";
+        usbClientApi[i].Name = usbClientApiNames[i];
         usbClientApi[i].Type = TinyCLR_Api_Type::UsbClientController;
         usbClientApi[i].Version = 0;
         usbClientApi[i].Implementation = &usbClientControllers[i];

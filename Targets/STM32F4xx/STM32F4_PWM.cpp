@@ -71,6 +71,24 @@ static STM32F4_Gpio_Pin pwmPins[][PWM_PER_CONTROLLER] = STM32F4_PWM_PINS;
 
 #define TOTAL_PWM_CONTROLLERS SIZEOF_ARRAY(pwmPins)
 
+#include <string.h>
+const char* PwmApiNames[TOTAL_PWM_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\0",
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\1",
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\2",
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\3",
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\4",
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\5",
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\6",
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\7",
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\8",
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\9",
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\10",
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\11",
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\12",
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\13"
+};
+
 static PwmState pwmStates[TOTAL_PWM_CONTROLLERS];
 
 static TinyCLR_Pwm_Controller pwmControllers[TOTAL_PWM_CONTROLLERS];
@@ -92,7 +110,7 @@ void STM32F4_Pwm_AddApi(const TinyCLR_Api_Manager* apiManager) {
         pwmControllers[i].GetChannelCount = &STM32F4_Pwm_GetChannelCount;
 
         pwmApi[i].Author = "GHI Electronics, LLC";
-        pwmApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController";
+        pwmApi[i].Name = PwmApiNames[i];
         pwmApi[i].Type = TinyCLR_Api_Type::PwmController;
         pwmApi[i].Version = 0;
         pwmApi[i].Implementation = &pwmControllers[i];
@@ -100,11 +118,7 @@ void STM32F4_Pwm_AddApi(const TinyCLR_Api_Manager* apiManager) {
 
         pwmStates[i].controllerIndex = i;
     }
-
-    
 }
-
-//--//
 
 TinyCLR_Result STM32F4_Pwm_OpenChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel) {
     auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);

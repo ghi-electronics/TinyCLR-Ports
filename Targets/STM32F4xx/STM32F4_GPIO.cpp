@@ -56,6 +56,10 @@ static TinyCLR_Gpio_PinDriveMode pinDriveMode[TOTAL_GPIO_PINS];
 static TinyCLR_Gpio_Controller gpioControllers[TOTAL_GPIO_CONTROLLERS];
 static TinyCLR_Api_Info gpioApi[TOTAL_GPIO_CONTROLLERS];
 
+const char* GpioApiNames[TOTAL_GPIO_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.GpioController\\0"
+};
+
 void STM32F4_Gpio_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_GPIO_CONTROLLERS; i++) {
         if (gpioStates[i].tableInitialized)
@@ -77,7 +81,7 @@ void STM32F4_Gpio_EnsureTableInitialized() {
         gpioControllers[i].GetPinCount = &STM32F4_Gpio_GetPinCount;
 
         gpioApi[i].Author = "GHI Electronics, LLC";
-        gpioApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.GpioController";
+        gpioApi[i].Name = GpioApiNames[i];
         gpioApi[i].Type = TinyCLR_Api_Type::GpioController;
         gpioApi[i].Version = 0;
         gpioApi[i].Implementation = &gpioControllers[i];

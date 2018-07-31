@@ -78,6 +78,10 @@
 static TinyCLR_Rtc_Controller rtcControllers[TOTAL_RTC_CONTROLLERS];
 static TinyCLR_Api_Info timeApi[TOTAL_RTC_CONTROLLERS];
 
+const char* rtcApiNames[TOTAL_RTC_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.RtcController\\0"
+};
+
 void STM32F4_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_RTC_CONTROLLERS; i++) {
         rtcControllers[i].ApiInfo = &timeApi[i];
@@ -87,14 +91,14 @@ void STM32F4_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager) {
         rtcControllers[i].SetTime = &STM32F4_Rtc_SetTime;
 
         timeApi[i].Author = "GHI Electronics, LLC";
-        timeApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.RtcController";
+        timeApi[i].Name = rtcApiNames[i];
         timeApi[i].Type = TinyCLR_Api_Type::RtcController;
         timeApi[i].Version = 0;
         timeApi[i].Implementation = &rtcControllers[i];
         timeApi[i].State = nullptr;
     }
 
-    
+
 }
 uint8_t STM32F4_Rtc_ByteToBcd2(uint8_t value) {
     uint8_t bcdhigh = 0;

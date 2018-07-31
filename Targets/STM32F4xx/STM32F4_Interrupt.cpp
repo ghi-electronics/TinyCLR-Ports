@@ -28,6 +28,10 @@ struct InterruptState {
     bool tableInitialized;
 };
 
+const char* interruptApiNames[TOTAL_INTERRUPT_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.InterruptController\\0"
+};
+
 static TinyCLR_Interrupt_Controller interruptControllers[TOTAL_INTERRUPT_CONTROLLERS];
 static TinyCLR_Api_Info interruptApi[TOTAL_INTERRUPT_CONTROLLERS];
 static InterruptState interruptStates[TOTAL_INTERRUPT_CONTROLLERS];
@@ -47,7 +51,7 @@ void STM32F4_Interrupt_EnsureTableInitialized() {
         interruptControllers[i].Restore = &STM32F4_Interrupt_Restore;
 
         interruptApi[i].Author = "GHI Electronics, LLC";
-        interruptApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.InterruptController";
+        interruptApi[i].Name = interruptApiNames[i];
         interruptApi[i].Type = TinyCLR_Api_Type::InterruptController;
         interruptApi[i].Version = 0;
         interruptApi[i].Implementation = &interruptControllers[i];

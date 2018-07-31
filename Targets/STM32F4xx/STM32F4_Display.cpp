@@ -1183,6 +1183,10 @@ TinyCLR_Result STM32F4_Display_GetCapabilities(const TinyCLR_Display_Controller*
     return TinyCLR_Result::Success;
 }
 
+const char* displayApiNames[TOTAL_DISPLAY_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.DisplayController\\0"
+};
+
 void STM32F4_Display_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_DISPLAY_CONTROLLERS; i++) {
         displayControllers[i].ApiInfo = &displayApi[i];
@@ -1197,7 +1201,7 @@ void STM32F4_Display_AddApi(const TinyCLR_Api_Manager* apiManager) {
         displayControllers[i].DrawString = &STM32F4_Display_DrawString;
 
         displayApi[i].Author = "GHI Electronics, LLC";
-        displayApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.DisplayController";
+        displayApi[i].Name = displayApiNames[i];
         displayApi[i].Type = TinyCLR_Api_Type::DisplayController;
         displayApi[i].Version = 0;
         displayApi[i].Implementation = &displayControllers[i];
@@ -1206,7 +1210,7 @@ void STM32F4_Display_AddApi(const TinyCLR_Api_Manager* apiManager) {
 
     m_STM32F4_Display_VituralRam = nullptr;
 
-    
+
 }
 
 void STM32F4_Display_Reset() {

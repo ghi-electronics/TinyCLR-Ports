@@ -43,6 +43,11 @@ static TimeState timeStates[TOTAL_TIME_CONTROLLERS];
 static TinyCLR_NativeTime_Controller timeControllers[TOTAL_TIME_CONTROLLERS];
 static TinyCLR_Api_Info timeApi[TOTAL_TIME_CONTROLLERS];
 
+const char* timeApiNames[TOTAL_TIME_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.NativeTimeController\\0",
+
+};
+
 void STM32F4_Time_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
         if (timeStates[i].tableInitialized)
@@ -59,7 +64,7 @@ void STM32F4_Time_EnsureTableInitialized() {
         timeControllers[i].Wait = &STM32F4_Time_DelayNative;
 
         timeApi[i].Author = "GHI Electronics, LLC";
-        timeApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.NativeTimeController";
+        timeApi[i].Name = timeApiNames[i];
         timeApi[i].Type = TinyCLR_Api_Type::NativeTimeController;
         timeApi[i].Version = 0;
         timeApi[i].Implementation = &timeControllers[i];

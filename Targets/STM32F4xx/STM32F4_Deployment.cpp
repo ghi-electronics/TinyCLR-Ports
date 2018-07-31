@@ -61,6 +61,10 @@ struct DeploymentState {
 
 static DeploymentState deploymentState[TOTAL_DEPLOYMENT_CONTROLLERS];
 
+const char* flashApiNames[TOTAL_DEPLOYMENT_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.StorageController\\0"
+};
+
 void STM32F4_Flash_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
         if (deploymentState[i].tableInitialized)
@@ -80,7 +84,7 @@ void STM32F4_Flash_EnsureTableInitialized() {
         deploymentControllers[i].SetPresenceChangedHandler = &STM32F4_Flash_SetPresenceChangedHandler;
 
         deploymentApi[i].Author = "GHI Electronics, LLC";
-        deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.StorageController";
+        deploymentApi[i].Name = flashApiNames[i];
         deploymentApi[i].Type = TinyCLR_Api_Type::StorageController;
         deploymentApi[i].Version = 0;
         deploymentApi[i].Implementation = &deploymentControllers[i];

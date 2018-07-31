@@ -1030,6 +1030,10 @@ bool CAN_ErrorHandler(uint8_t controllerIndex) {
     return false;
 }
 
+const char* canApiNames[TOTAL_CAN_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.CanController\\0",
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.CanController\\1"
+};
 
 void STM32F4_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
@@ -1058,7 +1062,7 @@ void STM32F4_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
         canControllers[i].SetWriteBufferSize = &STM32F4_Can_SetWriteBufferSize;
 
         canApi[i].Author = "GHI Electronics, LLC";
-        canApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.CanController";
+        canApi[i].Name = canApiNames[i];
         canApi[i].Type = TinyCLR_Api_Type::CanController;
         canApi[i].Version = 0;
         canApi[i].Implementation = &canControllers[i];
@@ -1066,8 +1070,6 @@ void STM32F4_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
 
         canStates[i].controllerIndex = i;
     }
-
-    
 }
 
 size_t STM32F4_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self) {
