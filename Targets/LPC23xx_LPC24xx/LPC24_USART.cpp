@@ -63,6 +63,8 @@ void LPC24_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
         uartControllers[i].ApiInfo = &uartApi[i];
         uartControllers[i].Acquire = &LPC24_Uart_Acquire;
         uartControllers[i].Release = &LPC24_Uart_Release;
+        uartControllers[i].Enable = &LPC24_Uart_Enable;
+        uartControllers[i].Disable = &LPC24_Uart_Disable;
         uartControllers[i].SetActiveSettings = &LPC24_Uart_SetActiveSettings;
         uartControllers[i].Flush = &LPC24_Uart_Flush;
         uartControllers[i].Read = &LPC24_Uart_Read;
@@ -92,7 +94,7 @@ void LPC24_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
         uartStates[i].controllerIndex = i;
     }
 
-    
+
 }
 
 size_t LPC24_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self) {
@@ -846,9 +848,9 @@ TinyCLR_Result LPC24_Uart_GetControllerCount(const TinyCLR_Uart_Controller* self
 }
 
 TinyCLR_Result LPC24_Uart_Enable(const TinyCLR_Uart_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Uart_Disable(const TinyCLR_Uart_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    return TinyCLR_Result::Success;
 }

@@ -55,6 +55,8 @@ void AT91_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
         uartControllers[i].ApiInfo = &uartApi[i];
         uartControllers[i].Acquire = &AT91_Uart_Acquire;
         uartControllers[i].Release = &AT91_Uart_Release;
+        uartControllers[i].Enable = &AT91_Uart_Enable;
+        uartControllers[i].Disable = &AT91_Uart_Disable;
         uartControllers[i].SetActiveSettings = &AT91_Uart_SetActiveSettings;
         uartControllers[i].Flush = &AT91_Uart_Flush;
         uartControllers[i].Read = &AT91_Uart_Read;
@@ -84,7 +86,7 @@ void AT91_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
         uartStates[i].controllerIndex = i;
     }
 
-    
+
 }
 
 static const AT91_Gpio_Pin uartTxPins[] = AT91_UART_TX_PINS;
@@ -749,9 +751,9 @@ void AT91_Uart_Reset() {
 }
 
 TinyCLR_Result AT91_Uart_Enable(const TinyCLR_Uart_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Uart_Disable(const TinyCLR_Uart_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    return TinyCLR_Result::Success;
 }

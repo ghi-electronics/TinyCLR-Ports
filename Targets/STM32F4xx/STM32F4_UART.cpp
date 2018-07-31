@@ -92,6 +92,8 @@ void STM32F4_Uart_EnsureTableInitialized() {
         uartControllers[i].ApiInfo = &uartApi[i];
         uartControllers[i].Acquire = &STM32F4_Uart_Acquire;
         uartControllers[i].Release = &STM32F4_Uart_Release;
+        uartControllers[i].Enable = &STM32F4_Uart_Enable;
+        uartControllers[i].Disable = &STM32F4_Uart_Disable;
         uartControllers[i].SetActiveSettings = &STM32F4_Uart_SetActiveSettings;
         uartControllers[i].Flush = &STM32F4_Uart_Flush;
         uartControllers[i].Read = &STM32F4_Uart_Read;
@@ -868,9 +870,9 @@ TinyCLR_Result STM32F4_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self
 }
 
 TinyCLR_Result STM32F4_Uart_Enable(const TinyCLR_Uart_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Uart_Disable(const TinyCLR_Uart_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    return TinyCLR_Result::Success;
 }
