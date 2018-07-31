@@ -32,7 +32,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     md.InteropManager->GetReturn(md.InteropManager, md.Stack, ret);
 
-    ret.Data.Numeric->I8 = api->GetMaxFrequency(api);
+    ret.Data.Numeric->R8 = api->GetMaxFrequency(api);
 
     return TinyCLR_Result::Success;
 
@@ -97,8 +97,8 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     md.InteropManager->GetArgument(md.InteropManager, md.Stack, 2, arg2);
 
     auto channel = arg0.Data.Numeric->I4;
-    auto dutyCycle = arg1.Data.Numeric->I8;
-    auto polarity = static_cast<TinyCLR_Pwm_PulsePolarity>(arg1.Data.Numeric->I4);
+    auto dutyCycle = arg1.Data.Numeric->R8;
+    auto polarity = static_cast<TinyCLR_Pwm_PulsePolarity>(arg2.Data.Numeric->I4);
 
     return  api->SetPulseParameters(api, channel, dutyCycle, polarity);
 }
@@ -107,7 +107,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     auto api = reinterpret_cast<const TinyCLR_Pwm_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
-    TinyCLR_Interop_ClrValue arg0, arg1;
+    TinyCLR_Interop_ClrValue arg0;
 
     md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg0);
 
@@ -115,11 +115,11 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
     md.InteropManager->GetReturn(md.InteropManager, md.Stack, ret);
 
-    double frequencyInOut = arg0.Data.Numeric->I8;
+    double frequencyInOut = arg0.Data.Numeric->R8;
 
     auto result = api->SetDesiredFrequency(api, frequencyInOut);
 
-    ret.Data.Numeric->I8 = frequencyInOut;
+    ret.Data.Numeric->R8 = frequencyInOut;
 
     return result;
 }
