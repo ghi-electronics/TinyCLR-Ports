@@ -456,11 +456,13 @@ const TinyCLR_Startup_UsbDebuggerConfiguration STM32F4_Startup_UsbDebuggerConfig
 
 void STM32F4_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN) && defined(DEBUGGER_SELECTOR_PULL) && defined(DEBUGGER_SELECTOR_USB_STATE)
+    TinyCLR_Gpio_PinValue value;
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(STM32F4_Gpio_GetRequiredApi()->Implementation);
 
-    STM32F4_GpioInternal_OpenPin(DEBUGGER_SELECTOR_PIN);
-    STM32F4_GpioInternal_ConfigurePin(DEBUGGER_SELECTOR_PIN, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, DEBUGGER_SELECTOR_PULL == TinyCLR_Gpio_PinDriveMode::InputPullUp ? STM32F4_Gpio_PullDirection::PullUp : STM32F4_Gpio_PullDirection::PullDown, STM32F4_Gpio_AlternateFunction::AF0);
-    auto value = STM32F4_GpioInternal_ReadPin(DEBUGGER_SELECTOR_PIN) ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low;
-    STM32F4_GpioInternal_ClosePin(DEBUGGER_SELECTOR_PIN);
+    provider->OpenPin(provider, DEBUGGER_SELECTOR_PIN);
+    provider->SetDriveMode(provider, DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
+    provider->Read(provider, DEBUGGER_SELECTOR_PIN, value);
+    provider->ClosePin(provider, DEBUGGER_SELECTOR_PIN);
 
     if (value == DEBUGGER_SELECTOR_USB_STATE) {
         api = STM32F4_UsbClient_GetRequiredApi();
@@ -478,11 +480,13 @@ void STM32F4_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const
 
 void STM32F4_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN) && defined(RUN_APP_PULL) && defined(RUN_APP_STATE)
-    STM32F4_GpioInternal_OpenPin(RUN_APP_PIN);
-    STM32F4_GpioInternal_ConfigurePin(RUN_APP_PIN, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, RUN_APP_PULL == TinyCLR_Gpio_PinDriveMode::InputPullUp ? STM32F4_Gpio_PullDirection::PullUp : STM32F4_Gpio_PullDirection::PullDown, STM32F4_Gpio_AlternateFunction::AF0);
-    auto value = STM32F4_GpioInternal_ReadPin(RUN_APP_PIN) ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low;
-    STM32F4_GpioInternal_ClosePin(RUN_APP_PIN);
+    TinyCLR_Gpio_PinValue value;
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(STM32F4_Gpio_GetRequiredApi()->Implementation);
 
+    provider->OpenPin(provider, RUN_APP_PIN);
+    provider->SetDriveMode(provider, RUN_APP_PIN, RUN_APP_PULL);
+    provider->Read(provider, RUN_APP_PIN, value);
+    provider->ClosePin(provider, RUN_APP_PIN);
 
     runApp = value == RUN_APP_STATE;
 #elif defined(RUN_APP_FORCE_STATE)

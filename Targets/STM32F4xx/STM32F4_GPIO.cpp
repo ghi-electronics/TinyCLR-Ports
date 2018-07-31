@@ -43,6 +43,7 @@ struct GpioInterruptState {
 
 struct GpioState {
     int32_t controllerIndex;
+    bool tableInitialized;
 };
 
 static GpioState gpioStates[TOTAL_GPIO_CONTROLLERS];
@@ -55,14 +56,11 @@ static TinyCLR_Gpio_PinDriveMode pinDriveMode[TOTAL_GPIO_PINS];
 static TinyCLR_Gpio_Controller gpioControllers[TOTAL_GPIO_CONTROLLERS];
 static TinyCLR_Api_Info gpioApi[TOTAL_GPIO_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F4_Gpio_GetRequiredApi() {
-    STM32F4_Gpio_AddApi(nullptr);
-
-    return reinterpret_cast<const TinyCLR_Api_Info*>(gpioApi);
-}
-
-void STM32F4_Gpio_AddApi(const TinyCLR_Api_Manager* apiManager) {
+void STM32F4_Gpio_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_GPIO_CONTROLLERS; i++) {
+        if (gpioStates[i].tableInitialized)
+            continue;
+
         gpioControllers[i].ApiInfo = &gpioApi[i];
         gpioControllers[i].Acquire = &STM32F4_Gpio_Acquire;
         gpioControllers[i].Release = &STM32F4_Gpio_Release;
@@ -86,11 +84,21 @@ void STM32F4_Gpio_AddApi(const TinyCLR_Api_Manager* apiManager) {
         gpioApi[i].State = &gpioStates[i];
 
         gpioStates[i].controllerIndex = i;
+        gpioStates[i].tableInitialized = true;
+    }
+}
 
-        if (apiManager != nullptr) {
-            apiManager->Add(apiManager, &gpioApi[i]);
-        }
+const TinyCLR_Api_Info* STM32F4_Gpio_GetRequiredApi() {
+    STM32F4_Gpio_EnsureTableInitialized();
 
+    return &gpioApi[0];
+}
+
+void STM32F4_Gpio_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    STM32F4_Gpio_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_GPIO_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &gpioApi[i]);
     }
 }
 
