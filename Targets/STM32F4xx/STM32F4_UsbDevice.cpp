@@ -249,7 +249,11 @@ void STM32F4_UsbDevice_Interrupt(void* param);
 static UsbDeviceController usbDeviceControllers[STM32F4_TOTAL_USB_CONTROLLERS];
 
 void STM32F4_UsbDevice_AddApi(const TinyCLR_Api_Manager* apiManager) {
-    return TinyCLR_UsbClient_GetApi();
+    TinyCLR_UsbClient_AddApi(apiManager);
+
+}
+const TinyCLR_Api_Info* STM32F4_UsbClient_GetRequiredApi() {
+    return TinyCLR_UsbClient_GetRequiredApi();
 }
 void STM32F4_UsbDevice_Reset() {
     return TinyCLR_UsbClient_Reset(STM32F4_USB_FS_ID);
@@ -361,7 +365,7 @@ void STM32F4_UsbDevice_ResetEvent(OTG_TypeDef* OTG, UsClientState* usClientState
     OTG->GRXFSIZ = USB_RXFIFO_SIZE; // Rx Fifo
     OTG->DIEPTXF0 = (USB_TX0FIFO_SIZE << 16) | USB_RXFIFO_SIZE; // Tx Fifo 0
     uint32_t addr = USB_RXFIFO_SIZE + USB_TX0FIFO_SIZE;
-    for (int32_t i = 0; i < usClientState->totalEndpointsCount; i++) {
+    for (auto i = 0; i < usClientState->totalEndpointsCount; i++) {
         OTG->DIEPTXF[i] = (USB_TXnFIFO_SIZE << 16) | addr; // Tx Fifo i
         addr += USB_TXnFIFO_SIZE;
         OTG->DIEP[i].INT = 0xFF; // clear endpoint interrupts

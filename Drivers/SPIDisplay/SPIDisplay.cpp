@@ -32,8 +32,6 @@ void SPIDisplay_AddApi(const TinyCLR_Api_Manager* apiManager) {
         spiDisplayApi[i].Implementation = &spiDisplayControllers[i];
         spiDisplayApi[i].State = nullptr;
     }
-
-    return (const TinyCLR_Api_Info*)&spiDisplayApi;
 }
 
 TinyCLR_Result SPIDisplay_Acquire(const TinyCLR_Display_Controller* self) {

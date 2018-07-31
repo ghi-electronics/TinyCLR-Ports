@@ -106,7 +106,7 @@ int main() {
     TinyCLR_Startup_SetDeploymentApi(deploymentApi, deploymentConfiguration);
 
     TinyCLR_Startup_SetDeviceInformation(DEVICE_NAME, DEVICE_MANUFACTURER, DEVICE_VERSION);
-    //TinyCLR_Startup_SetRequiredApis(TARGET(_Interrupt_GetApi)(), TARGET(_Power_GetApi)(), TARGET(_Time_AddApi)(apiManager);
+    TinyCLR_Startup_SetRequiredApis(TARGET(_Interrupt_GetRequiredApi)(), TARGET(_Power_GetRequiredApi)(), TARGET(_Time_GetRequiredApi()));
 
     auto runApp = true;
 

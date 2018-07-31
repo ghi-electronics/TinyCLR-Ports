@@ -34,6 +34,8 @@ struct TimeState {
     TinyCLR_NativeTime_Callback m_DequeuAndExecute;
 
     static void Reload(uint32_t value);
+
+    bool tableInitialized;
 };
 
 static TimeState timeStates[TOTAL_TIME_CONTROLLERS];
@@ -41,8 +43,11 @@ static TimeState timeStates[TOTAL_TIME_CONTROLLERS];
 static TinyCLR_NativeTime_Controller timeControllers[TOTAL_TIME_CONTROLLERS];
 static TinyCLR_Api_Info timeApi[TOTAL_TIME_CONTROLLERS];
 
-void STM32F4_Time_AddApi(const TinyCLR_Api_Manager* apiManager) {
-    for (int32_t i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
+void STM32F4_Time_EnsureTableInitialized() {
+    for (auto i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
+        if (timeStates[i].tableInitialized)
+            continue;
+
         timeControllers[i].ApiInfo = &timeApi[i];
         timeControllers[i].Initialize = &STM32F4_Time_Initialize;
         timeControllers[i].Uninitialize = &STM32F4_Time_Uninitialize;
@@ -61,9 +66,22 @@ void STM32F4_Time_AddApi(const TinyCLR_Api_Manager* apiManager) {
         timeApi[i].State = &timeStates[i];
 
         timeStates[i].controllerIndex = i;
+        timeStates[i].tableInitialized = true;
     }
+}
 
-    
+const TinyCLR_Api_Info* STM32F4_Time_GetRequiredApi() {
+    STM32F4_Time_EnsureTableInitialized();
+
+    return &timeApi[0];
+}
+
+void STM32F4_Time_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    STM32F4_Time_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &timeApi[i]);
+    }
 }
 
 static uint64_t timerNextEvent;   // tick time of next event to be scheduled

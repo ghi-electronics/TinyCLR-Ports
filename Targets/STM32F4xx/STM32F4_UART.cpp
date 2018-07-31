@@ -59,6 +59,7 @@ struct UartState {
     TinyCLR_Uart_DataReceivedHandler dataReceivedEventHandler;
 
     const TinyCLR_Uart_Controller* controller;
+    bool tableInitialized;
 };
 
 static const STM32F4_Gpio_Pin uartTxPins[] = STM32F4_UART_TX_PINS;
@@ -76,8 +77,11 @@ static UartState uartStates[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 
-void STM32F4_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
+void STM32F4_Uart_EnsureTableInitialized() {
     for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        if (uartStates[i].tableInitialized)
+            continue;
+
         uartControllers[i].ApiInfo = &uartApi[i];
         uartControllers[i].Acquire = &STM32F4_Uart_Acquire;
         uartControllers[i].Release = &STM32F4_Uart_Release;
@@ -108,6 +112,9 @@ void STM32F4_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
         uartApi[i].State = &uartStates[i];
 
         uartStates[i].controllerIndex = i;
+
+
+        uartStates[i].tableInitialized = true;
     }
 
     if (TOTAL_UART_CONTROLLERS > 0) uartPortRegs[0] = USART1;
@@ -127,7 +134,21 @@ void STM32F4_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
 #endif
 #endif
 #endif
-    
+}
+
+const TinyCLR_Api_Info* STM32F4_Uart_GetRequiredApi() {
+    STM32F4_Uart_EnsureTableInitialized();
+
+    return &uartApi[0];
+}
+
+
+void STM32F4_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    STM32F4_Uart_EnsureTableInitialized();
+
+    for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &uartApi[i]);
+    }
 }
 
 size_t STM32F4_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self) {

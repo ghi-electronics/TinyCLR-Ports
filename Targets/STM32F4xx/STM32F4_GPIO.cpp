@@ -55,8 +55,14 @@ static TinyCLR_Gpio_PinDriveMode pinDriveMode[TOTAL_GPIO_PINS];
 static TinyCLR_Gpio_Controller gpioControllers[TOTAL_GPIO_CONTROLLERS];
 static TinyCLR_Api_Info gpioApi[TOTAL_GPIO_CONTROLLERS];
 
+const TinyCLR_Api_Info* STM32F4_Gpio_GetRequiredApi() {
+    STM32F4_Gpio_AddApi(nullptr);
+
+    return reinterpret_cast<const TinyCLR_Api_Info*>(gpioApi);
+}
+
 void STM32F4_Gpio_AddApi(const TinyCLR_Api_Manager* apiManager) {
-    for (int32_t i = 0; i < TOTAL_GPIO_CONTROLLERS; i++) {
+    for (auto i = 0; i < TOTAL_GPIO_CONTROLLERS; i++) {
         gpioControllers[i].ApiInfo = &gpioApi[i];
         gpioControllers[i].Acquire = &STM32F4_Gpio_Acquire;
         gpioControllers[i].Release = &STM32F4_Gpio_Release;
@@ -80,9 +86,12 @@ void STM32F4_Gpio_AddApi(const TinyCLR_Api_Manager* apiManager) {
         gpioApi[i].State = &gpioStates[i];
 
         gpioStates[i].controllerIndex = i;
-    }
 
-    
+        if (apiManager != nullptr) {
+            apiManager->Add(apiManager, &gpioApi[i]);
+        }
+
+    }
 }
 
 TinyCLR_Result STM32F4_Gpio_Acquire(const TinyCLR_Gpio_Controller* self) {

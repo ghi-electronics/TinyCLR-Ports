@@ -23,11 +23,20 @@
 TinyCLR_Interrupt_StartStopHandler STM32F4_Interrupt_Started;
 TinyCLR_Interrupt_StartStopHandler STM32F4_Interrupt_Ended;
 
+struct InterruptState {
+    uint32_t controllerIndex;
+    bool tableInitialized;
+};
+
 static TinyCLR_Interrupt_Controller interruptControllers[TOTAL_INTERRUPT_CONTROLLERS];
 static TinyCLR_Api_Info interruptApi[TOTAL_INTERRUPT_CONTROLLERS];
+static InterruptState interruptStates[TOTAL_INTERRUPT_CONTROLLERS];
 
-void STM32F4_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager) {
-    for (int32_t i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
+void STM32F4_Interrupt_EnsureTableInitialized() {
+    for (auto i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
+        if (interruptStates[i].tableInitialized)
+            continue;
+
         interruptControllers[i].ApiInfo = &interruptApi[i];
         interruptControllers[i].Initialize = &STM32F4_Interrupt_Initialize;
         interruptControllers[i].Uninitialize = &STM32F4_Interrupt_Uninitialize;
@@ -42,10 +51,25 @@ void STM32F4_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager) {
         interruptApi[i].Type = TinyCLR_Api_Type::InterruptController;
         interruptApi[i].Version = 0;
         interruptApi[i].Implementation = &interruptControllers[i];
-        interruptApi[i].State = nullptr;
-    }
+        interruptApi[i].State = &interruptStates[i];
 
-    
+        interruptStates[i].controllerIndex = i;
+        interruptStates[i].tableInitialized = true;
+    }
+}
+
+const TinyCLR_Api_Info* STM32F4_Interrupt_GetRequiredApi() {
+    STM32F4_Interrupt_EnsureTableInitialized();
+
+    return &interruptApi[0];
+}
+
+void STM32F4_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    STM32F4_Interrupt_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &interruptApi[i]);
+    }
 }
 
 extern "C" {

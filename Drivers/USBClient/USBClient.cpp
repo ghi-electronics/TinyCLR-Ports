@@ -23,7 +23,7 @@
 
 static TinyCLR_UsbClient_Controller usbClientControllers[TOTAL_USBCLIENT_CONTROLLERS];
 static TinyCLR_Api_Info usbClientApi[TOTAL_USBCLIENT_CONTROLLERS];
-static UsClientState usbClientDrivers[TOTAL_USBCLIENT_CONTROLLERS];
+static UsClientState usbClientStates[TOTAL_USBCLIENT_CONTROLLERS];
 
 TinyCLR_UsbClient_DataReceivedHandler TinyCLR_UsbClient_SetDataReceived;
 TinyCLR_UsbClient_RequestHandler TinyCLR_UsbClient_ProcessVendorClassRequest = nullptr;
@@ -729,8 +729,12 @@ bool TinyCLR_UsbClient_CanReceivePackage(UsClientState* usClientState, int32_t e
 ///////////////////////////////////////////////////////////////////////////////////////////
 /// TinyCLR USBClient API
 ///////////////////////////////////////////////////////////////////////////////////////////
-void TinyCLR_UsbClient_AddApi(const TinyCLR_Api_Manager* apiManager) {
+
+void TinyCLR_UsbClient_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_USBCLIENT_CONTROLLERS; i++) {
+        if (usbClientStates[i].tableInitialized)
+            continue;
+
         usbClientControllers[i].ApiInfo = &usbClientApi[i];
         usbClientControllers[i].Acquire = &TinyCLR_UsbClient_Acquire;
         usbClientControllers[i].Release = &TinyCLR_UsbClient_Release;
@@ -748,12 +752,25 @@ void TinyCLR_UsbClient_AddApi(const TinyCLR_Api_Manager* apiManager) {
         usbClientApi[i].Type = TinyCLR_Api_Type::UsbClientController;
         usbClientApi[i].Version = 0;
         usbClientApi[i].Implementation = &usbClientControllers[i];
-        usbClientApi[i].State = &usbClientDrivers[i];
+        usbClientApi[i].State = &usbClientStates[i];
 
-        usbClientDrivers[i].controllerIndex = i;
+        usbClientStates[i].controllerIndex = i;
+        usbClientStates[i].tableInitialized = true;
     }
+}
 
-    return (const TinyCLR_Api_Info*)&usbClientApi;
+const TinyCLR_Api_Info* TinyCLR_UsbClient_GetRequiredApi() {
+    TinyCLR_UsbClient_EnsureTableInitialized();
+
+    return &usbClientApi[0];
+}
+
+void TinyCLR_UsbClient_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    TinyCLR_UsbClient_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_USBCLIENT_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &usbClientApi[i]);
+    }
 }
 
 TinyCLR_Result TinyCLR_UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Controller* self, const TinyCLR_UsbClient_DeviceDescriptor* descriptor) {
@@ -1185,7 +1202,7 @@ TinyCLR_Result TinyCLR_UsbClient_SetVendorClassRequestHandler(const TinyCLR_UsbC
 
 
 void TinyCLR_UsbClient_Reset(int32_t controllerIndex) {
-    UsClientState * usClientState = &usbClientDrivers[controllerIndex];
+    UsClientState * usClientState = &usbClientStates[controllerIndex];
 
     for (auto pipe = 0; pipe < usClientState->totalPipesCount; pipe++) {
         TinyCLR_UsbClient_ClosePipe(&usbClientControllers[controllerIndex], pipe);

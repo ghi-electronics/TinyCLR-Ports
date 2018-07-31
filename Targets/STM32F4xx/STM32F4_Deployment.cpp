@@ -56,12 +56,16 @@ struct DeploymentState {
     TinyCLR_Startup_DeploymentConfiguration deploymentConfiguration;
 
     bool isOpened = false;
+    bool tableInitialized = false;
 };
 
 static DeploymentState deploymentState[TOTAL_DEPLOYMENT_CONTROLLERS];
 
-void STM32F4_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
+void STM32F4_Flash_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
+        if (deploymentState[i].tableInitialized)
+            continue;
+
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
         deploymentControllers[i].Acquire = &STM32F4_Flash_Acquire;
         deploymentControllers[i].Release = &STM32F4_Flash_Release;
@@ -84,11 +88,27 @@ void STM32F4_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
 
         deploymentState[i].controllerIndex = i;
         deploymentState[i].regionCount = SIZEOF_ARRAY(deploymentSectors);
+        deploymentState[i].tableInitialized = true;
+    }
+}
+
+void STM32F4_Flash_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
+    STM32F4_Flash_EnsureTableInitialized();
+
+    auto state = &deploymentState[0];
+
+    api = &deploymentApi[0];
+    configuration = &state->deploymentConfiguration;
+}
+
+void STM32F4_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    STM32F4_Flash_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &deploymentApi[i]);
     }
 
     STM32F4_Deplpoyment_Reset();
-
-    
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
@@ -261,7 +281,7 @@ TinyCLR_Result STM32F4_Flash_Close(const TinyCLR_Storage_Controller* self) {
 size_t STM32F4_Flash_GetSectorSizeFormAddress(const TinyCLR_Storage_Controller* self, uint32_t address) {
     auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);
 
-    for (int32_t i = 0; i < state->regionCount; i++) {
+    for (auto i = 0; i < state->regionCount; i++) {
         if (address >= state->regionAddresses[i] && address < state->regionAddresses[i] + state->regionSizes[i]) {
             return state->regionSizes[i];
         }

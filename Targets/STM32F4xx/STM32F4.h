@@ -42,13 +42,14 @@ TinyCLR_Result STM32F4_Flash_IsPresent(const TinyCLR_Storage_Controller* self, b
 TinyCLR_Result STM32F4_Flash_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler);
 TinyCLR_Result STM32F4_Flash_Open(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result STM32F4_Flash_Close(const TinyCLR_Storage_Controller* self);
-const TinyCLR_Startup_DeploymentConfiguration* STM32F4_Flash_GetDeploymentConfiguration();
+void STM32F4_Flash_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration);
 void STM32F4_Deplpoyment_Reset();
 
 ////////////////////////////////////////////////////////////////////////////////
 //Interrupt
 ////////////////////////////////////////////////////////////////////////////////
 void STM32F4_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* STM32F4_Interrupt_GetRequiredApi();
 TinyCLR_Result STM32F4_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
 TinyCLR_Result STM32F4_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self);
 bool STM32F4_Interrupt_Enable(bool force);
@@ -61,6 +62,7 @@ void STM32F4_Interrupt_Restore();
 //Power
 ////////////////////////////////////////////////////////////////////////////////
 void STM32F4_Power_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* STM32F4_Power_GetRequiredApi();
 TinyCLR_Result STM32F4_Power_Initialize(const TinyCLR_Power_Controller* self);
 TinyCLR_Result STM32F4_Power_Uninitialize(const TinyCLR_Power_Controller* self);
 void STM32F4_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter);
@@ -70,6 +72,7 @@ void STM32F4_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_Sle
 //Time
 ////////////////////////////////////////////////////////////////////////////////
 void STM32F4_Time_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* STM32F4_Time_GetRequiredApi();
 TinyCLR_Result STM32F4_Time_Initialize(const TinyCLR_NativeTime_Controller* self);
 TinyCLR_Result STM32F4_Time_Uninitialize(const TinyCLR_NativeTime_Controller* self);
 uint64_t STM32F4_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self);
@@ -157,6 +160,7 @@ void STM32F4_Dac_Reset();
 //GPIO
 ////////////////////////////////////////////////////////////////////////////////
 void STM32F4_Gpio_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* STM32F4_Gpio_GetRequiredApi();
 TinyCLR_Result STM32F4_Gpio_Acquire(const TinyCLR_Gpio_Controller* self);
 TinyCLR_Result STM32F4_Gpio_Release(const TinyCLR_Gpio_Controller* self);
 TinyCLR_Result STM32F4_Gpio_OpenPin(const TinyCLR_Gpio_Controller* self, uint32_t pin);
@@ -249,6 +253,7 @@ void STM32F4_Spi_Reset();
 //UART
 ////////////////////////////////////////////////////////////////////////////////
 void STM32F4_Uart_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* STM32F4_Uart_GetRequiredApi();
 TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Controller* self);
 TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Controller* self);
 TinyCLR_Result STM32F4_Uart_Enable(const TinyCLR_Uart_Controller* self);
@@ -277,6 +282,7 @@ void STM32F4_Uart_Reset();
 //USB Client
 ////////////////////////////////////////////////////////////////////////////////
 void STM32F4_UsbDevice_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info*  STM32F4_UsbClient_GetRequiredApi();
 void STM32F4_UsbDevice_Reset();
 
 struct USB_PACKET64;
