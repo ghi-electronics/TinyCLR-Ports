@@ -92,7 +92,13 @@ void STM32F4_Flash_EnsureTableInitialized() {
 
         deploymentState[i].controllerIndex = i;
         deploymentState[i].regionCount = SIZEOF_ARRAY(deploymentSectors);
+
         deploymentState[i].tableInitialized = true;
+
+        for (auto ii = 0; ii < deploymentState[i].regionCount; ii++) {
+            deploymentState[i].regionAddresses[ii] = deploymentSectors[ii].address;
+            deploymentState[i].regionSizes[ii] = deploymentSectors[ii].size;
+        }
     }
 }
 
@@ -112,7 +118,6 @@ void STM32F4_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
         apiManager->Add(apiManager, &deploymentApi[i]);
     }
 
-    STM32F4_Deplpoyment_Reset();
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
@@ -318,13 +323,4 @@ const TinyCLR_Startup_DeploymentConfiguration* STM32F4_Flash_GetDeploymentConfig
 }
 
 void STM32F4_Deplpoyment_Reset() {
-    for (auto c = 0; c < TOTAL_DEPLOYMENT_CONTROLLERS; c++) {
-        auto state = &deploymentState[c];
-
-        for (auto i = 0; i < state->regionCount; i++) {
-            state->regionAddresses[i] = deploymentSectors[i].address;
-            state->regionSizes[i] = deploymentSectors[i].size;
-        }
-    }
-
 }
