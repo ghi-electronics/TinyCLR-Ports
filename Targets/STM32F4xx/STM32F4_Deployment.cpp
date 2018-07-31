@@ -100,6 +100,8 @@ void STM32F4_Flash_EnsureTableInitialized() {
             deploymentState[i].regionSizes[ii] = deploymentSectors[ii].size;
         }
     }
+
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::StorageController, deploymentApi[0].Name);
 }
 
 void STM32F4_Flash_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {

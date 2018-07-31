@@ -43,7 +43,7 @@ struct GpioInterruptState {
 
 struct GpioState {
     int32_t controllerIndex;
-    bool tableInitialized;
+    bool tableInitialized = false;
 };
 
 static GpioState gpioStates[TOTAL_GPIO_CONTROLLERS];
@@ -104,6 +104,8 @@ void STM32F4_Gpio_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_GPIO_CONTROLLERS; i++) {
         apiManager->Add(apiManager, &gpioApi[i]);
     }
+
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::GpioController, STM32F4_Gpio_GetRequiredApi()->Name);
 }
 
 TinyCLR_Result STM32F4_Gpio_Acquire(const TinyCLR_Gpio_Controller* self) {

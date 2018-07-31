@@ -1210,7 +1210,7 @@ void STM32F4_Display_AddApi(const TinyCLR_Api_Manager* apiManager) {
 
     m_STM32F4_Display_VituralRam = nullptr;
 
-
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::DisplayController, displayApi[0].Name);
 }
 
 void STM32F4_Display_Reset() {

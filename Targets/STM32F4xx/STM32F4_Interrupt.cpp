@@ -74,6 +74,8 @@ void STM32F4_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
         apiManager->Add(apiManager, &interruptApi[i]);
     }
+
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::InterruptController, interruptApi[0].Name);
 }
 
 extern "C" {

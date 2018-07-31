@@ -58,7 +58,7 @@ void STM32F4_Dac_AddApi(const TinyCLR_Api_Manager* apiManager) {
         dacApi[i].State = &dacStates[i];
     }
 
-
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::DacController, dacApi[0].Name);
 }
 
 TinyCLR_Result STM32F4_Dac_Acquire(const TinyCLR_Dac_Controller* self) {

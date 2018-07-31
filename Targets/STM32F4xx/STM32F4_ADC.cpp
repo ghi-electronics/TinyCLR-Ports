@@ -82,7 +82,7 @@ void STM32F4_Adc_AddApi(const TinyCLR_Api_Manager* apiManager) {
         adcApi[i].State = &adcStates[i];
     }
 
-
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::AdcController, adcApi[0].Name);
 }
 
 TinyCLR_Result STM32F4_Adc_Acquire(const TinyCLR_Adc_Controller* self) {

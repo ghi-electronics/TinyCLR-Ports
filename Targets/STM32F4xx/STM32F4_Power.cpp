@@ -66,6 +66,8 @@ void STM32F4_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_POWER_CONTROLLERS; i++) {
         apiManager->Add(apiManager, &powerApi[i]);
     }
+
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::PowerController, powerApi[0].Name);
 }
 
 void STM32F4_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level) {

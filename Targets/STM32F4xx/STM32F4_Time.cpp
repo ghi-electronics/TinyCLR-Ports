@@ -87,6 +87,8 @@ void STM32F4_Time_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
         apiManager->Add(apiManager, &timeApi[i]);
     }
+
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::NativeTimeController, timeApi[0].Name);
 }
 
 static uint64_t timerNextEvent;   // tick time of next event to be scheduled
