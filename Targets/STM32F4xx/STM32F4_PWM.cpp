@@ -117,6 +117,8 @@ void STM32F4_Pwm_AddApi(const TinyCLR_Api_Manager* apiManager) {
         pwmApi[i].State = &pwmStates[i];
 
         pwmStates[i].controllerIndex = i;
+
+        apiManager->Add(apiManager, &pwmApi[i]);
     }
 }
 

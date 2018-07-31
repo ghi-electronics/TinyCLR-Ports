@@ -2647,6 +2647,8 @@ void STM32F4_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
         sdCardApi[i].State = &sdCardStates[i];
 
         sdCardStates[i].controllerIndex = i;
+
+        apiManager->Add(apiManager, &sdCardApi[i]);
     }
 
     apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::StorageController, sdCardApi[0].Name);

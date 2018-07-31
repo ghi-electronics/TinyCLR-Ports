@@ -100,8 +100,6 @@ void STM32F4_Flash_EnsureTableInitialized() {
             deploymentState[i].regionSizes[ii] = deploymentSectors[ii].size;
         }
     }
-
-    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::StorageController, deploymentApi[0].Name);
 }
 
 void STM32F4_Flash_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
@@ -120,6 +118,7 @@ void STM32F4_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
         apiManager->Add(apiManager, &deploymentApi[i]);
     }
 
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::StorageController, deploymentApi[0].Name);
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {

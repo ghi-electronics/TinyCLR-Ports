@@ -96,6 +96,8 @@ void STM32F4_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager) {
         rtcApi[i].Version = 0;
         rtcApi[i].Implementation = &rtcControllers[i];
         rtcApi[i].State = nullptr;
+
+        apiManager->Add(apiManager, &rtcApi[i]);
     }
 
     apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::RtcController, rtcApi[0].Name);

@@ -1206,6 +1206,8 @@ void STM32F4_Display_AddApi(const TinyCLR_Api_Manager* apiManager) {
         displayApi[i].Version = 0;
         displayApi[i].Implementation = &displayControllers[i];
         displayApi[i].State = nullptr;
+
+        apiManager->Add(apiManager, &displayApi[i]);
     }
 
     m_STM32F4_Display_VituralRam = nullptr;

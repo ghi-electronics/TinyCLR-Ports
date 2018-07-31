@@ -1069,6 +1069,8 @@ void STM32F4_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
         canApi[i].State = &canStates[i];
 
         canStates[i].controllerIndex = i;
+
+        apiManager->Add(apiManager, &canApi[i]);
     }
 }
 

@@ -81,6 +81,8 @@ void STM32F4_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
         spiApi[i].State = &spiStates[i];
 
         spiStates[i].controllerIndex = i;
+
+        apiManager->Add(apiManager, &spiApi[i]);
     }
 
 #ifdef SPI1

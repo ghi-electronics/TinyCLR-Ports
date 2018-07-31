@@ -83,6 +83,8 @@ void STM32F4_I2c_AddApi(const TinyCLR_Api_Manager* apiManager) {
         i2cApi[i].State = &i2cStates[i];
 
         i2cStates[i].controllerIndex = i;
+
+        apiManager->Add(apiManager, &i2cApi[i]);
     }
 
     if (TOTAL_I2C_CONTROLLERS > 0)

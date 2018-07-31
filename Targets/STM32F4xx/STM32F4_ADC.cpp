@@ -80,6 +80,8 @@ void STM32F4_Adc_AddApi(const TinyCLR_Api_Manager* apiManager) {
         adcApi[i].Version = 0;
         adcApi[i].Implementation = &adcControllers[i];
         adcApi[i].State = &adcStates[i];
+
+        apiManager->Add(apiManager, &adcApi[i]);
     }
 
     apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::AdcController, adcApi[0].Name);
