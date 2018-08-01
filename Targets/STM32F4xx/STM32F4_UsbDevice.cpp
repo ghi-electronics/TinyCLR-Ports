@@ -252,7 +252,7 @@ void STM32F4_UsbDevice_AddApi(const TinyCLR_Api_Manager* apiManager) {
     TinyCLR_UsbClient_AddApi(apiManager);
 
 }
-const TinyCLR_Api_Info* STM32F4_UsbClient_GetRequiredApi() {
+const TinyCLR_Api_Info* STM32F4_UsbDevice_GetRequiredApi() {
     return TinyCLR_UsbClient_GetRequiredApi();
 }
 void STM32F4_UsbDevice_Reset() {

@@ -465,7 +465,7 @@ void STM32F4_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const
     provider->ClosePin(provider, DEBUGGER_SELECTOR_PIN);
 
     if (value == DEBUGGER_SELECTOR_USB_STATE) {
-        api = STM32F4_UsbClient_GetRequiredApi();
+        api = STM32F4_UsbDevice_GetRequiredApi();
         configuration = (const void*)&STM32F4_Startup_UsbDebuggerConfiguration;
     }
     else {
