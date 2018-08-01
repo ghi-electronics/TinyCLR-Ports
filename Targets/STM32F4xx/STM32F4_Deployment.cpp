@@ -59,7 +59,7 @@ struct DeploymentState {
     bool tableInitialized = false;
 };
 
-static DeploymentState deploymentState[TOTAL_DEPLOYMENT_CONTROLLERS];
+static DeploymentState deploymentStates[TOTAL_DEPLOYMENT_CONTROLLERS];
 
 const char* flashApiNames[TOTAL_DEPLOYMENT_CONTROLLERS] = {
     "GHIElectronics.TinyCLR.NativeApis.STM32F4.StorageController\\0"
@@ -67,7 +67,7 @@ const char* flashApiNames[TOTAL_DEPLOYMENT_CONTROLLERS] = {
 
 void STM32F4_Flash_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
-        if (deploymentState[i].tableInitialized)
+        if (deploymentStates[i].tableInitialized)
             continue;
 
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
@@ -88,16 +88,16 @@ void STM32F4_Flash_EnsureTableInitialized() {
         deploymentApi[i].Type = TinyCLR_Api_Type::StorageController;
         deploymentApi[i].Version = 0;
         deploymentApi[i].Implementation = &deploymentControllers[i];
-        deploymentApi[i].State = &deploymentState[i];
+        deploymentApi[i].State = &deploymentStates[i];
 
-        deploymentState[i].controllerIndex = i;
-        deploymentState[i].regionCount = SIZEOF_ARRAY(deploymentSectors);
+        deploymentStates[i].controllerIndex = i;
+        deploymentStates[i].regionCount = SIZEOF_ARRAY(deploymentSectors);
 
-        deploymentState[i].tableInitialized = true;
+        deploymentStates[i].tableInitialized = true;
 
-        for (auto ii = 0; ii < deploymentState[i].regionCount; ii++) {
-            deploymentState[i].regionAddresses[ii] = deploymentSectors[ii].address;
-            deploymentState[i].regionSizes[ii] = deploymentSectors[ii].size;
+        for (auto ii = 0; ii < deploymentStates[i].regionCount; ii++) {
+            deploymentStates[i].regionAddresses[ii] = deploymentSectors[ii].address;
+            deploymentStates[i].regionSizes[ii] = deploymentSectors[ii].size;
         }
     }
 }
@@ -105,7 +105,7 @@ void STM32F4_Flash_EnsureTableInitialized() {
 void STM32F4_Flash_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
     STM32F4_Flash_EnsureTableInitialized();
 
-    auto state = &deploymentState[0];
+    auto state = &deploymentStates[0];
 
     api = &deploymentApi[0];
     configuration = &state->deploymentConfiguration;
@@ -318,7 +318,7 @@ TinyCLR_Result STM32F4_Flash_GetDescriptor(const TinyCLR_Storage_Controller* sel
 }
 
 const TinyCLR_Startup_DeploymentConfiguration* STM32F4_Flash_GetDeploymentConfiguration() {
-    auto state = &deploymentState[0];
+    auto state = &deploymentStates[0];
 
     return reinterpret_cast<const TinyCLR_Startup_DeploymentConfiguration*>(&state->deploymentConfiguration);
 }

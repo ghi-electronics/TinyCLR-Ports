@@ -99,7 +99,7 @@ struct DeploymentState {
     bool isOpened = false;
 };
 
-static DeploymentState deploymentState[TOTAL_DEPLOYMENT_CONTROLLERS];
+static DeploymentState deploymentStates[TOTAL_DEPLOYMENT_CONTROLLERS];
 
 void STM32F7_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
@@ -121,10 +121,10 @@ void STM32F7_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
         deploymentApi[i].Type = TinyCLR_Api_Type::StorageController;
         deploymentApi[i].Version = 0;
         deploymentApi[i].Implementation = &deploymentControllers[i];
-        deploymentApi[i].State = &deploymentState[i];
+        deploymentApi[i].State = &deploymentStates[i];
 
-        deploymentState[i].controllerIndex = i;
-        deploymentState[i].regionCount = SIZEOF_ARRAY(deploymentSectors);
+        deploymentStates[i].controllerIndex = i;
+        deploymentStates[i].regionCount = SIZEOF_ARRAY(deploymentSectors);
     }
 
     STM32F7_Deplpoyment_Reset();
@@ -372,14 +372,14 @@ TinyCLR_Result STM32F7_Flash_GetDescriptor(const TinyCLR_Storage_Controller* sel
 }
 
 const TinyCLR_Startup_DeploymentConfiguration* STM32F7_Flash_GetDeploymentConfiguration() {
-    auto state = &deploymentState[0];
+    auto state = &deploymentStates[0];
 
     return reinterpret_cast<const TinyCLR_Startup_DeploymentConfiguration*>(&state->deploymentConfiguration);
 }
 
 void STM32F7_Deplpoyment_Reset() {
     for (auto c = 0; c < TOTAL_DEPLOYMENT_CONTROLLERS; c++) {
-        auto state = &deploymentState[c];
+        auto state = &deploymentStates[c];
 
         for (auto i = 0; i < state->regionCount; i++) {
             state->regionAddresses[i] = deploymentSectors[i].address;

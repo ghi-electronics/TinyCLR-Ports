@@ -34,7 +34,7 @@ struct DeploymentState {
     bool isOpened = false;
 };
 
-static DeploymentState deploymentState[TOTAL_DEPLOYMENT_CONTROLLERS];
+static DeploymentState deploymentStates[TOTAL_DEPLOYMENT_CONTROLLERS];
 
 void AT91_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
@@ -56,10 +56,10 @@ void AT91_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
         deploymentApi[i].Type = TinyCLR_Api_Type::StorageController;
         deploymentApi[i].Version = 0;
         deploymentApi[i].Implementation = &deploymentControllers[i];
-        deploymentApi[i].State = &deploymentState[i];
+        deploymentApi[i].State = &deploymentStates[i];
 
-        deploymentState[i].controllerIndex = i;
-        deploymentState[i].regionCount = AT91_DEPLOYMENT_SECTOR_NUM;
+        deploymentStates[i].controllerIndex = i;
+        deploymentStates[i].regionCount = AT91_DEPLOYMENT_SECTOR_NUM;
     }
 
     return (const TinyCLR_Api_Info*)&deploymentApi;
@@ -173,7 +173,7 @@ TinyCLR_Result AT91_Deployment_GetDescriptor(const TinyCLR_Storage_Controller* s
 }
 
 const TinyCLR_Startup_DeploymentConfiguration* AT91_Deployment_GetDeploymentConfiguration() {
-    auto state = &deploymentState[0];
+    auto state = &deploymentStates[0];
 
     return reinterpret_cast<const TinyCLR_Startup_DeploymentConfiguration*>(&state->deploymentConfiguration);
 }
