@@ -1030,10 +1030,7 @@ bool CAN_ErrorHandler(uint8_t controllerIndex) {
     return false;
 }
 
-const char* canApiNames[TOTAL_CAN_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.STM32F4.CanController\\0",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F4.CanController\\1"
-};
+const char* canApiNames[TOTAL_CAN_CONTROLLERS] = STM32F4_CAN_CONTROLLER_NAMES;
 
 void STM32F4_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {

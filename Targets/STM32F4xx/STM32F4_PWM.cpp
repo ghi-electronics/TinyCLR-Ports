@@ -72,22 +72,7 @@ static STM32F4_Gpio_Pin pwmPins[][PWM_PER_CONTROLLER] = STM32F4_PWM_PINS;
 #define TOTAL_PWM_CONTROLLERS SIZEOF_ARRAY(pwmPins)
 
 #include <string.h>
-const char* PwmApiNames[TOTAL_PWM_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\0",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\1",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\2",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\3",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\4",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\5",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\6",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\7",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\8",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\9",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\10",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\11",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\12",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\13"
-};
+const char* PwmApiNames[TOTAL_PWM_CONTROLLERS] = STM32F4_PWM_CONTROLLER_NAMES;
 
 static PwmState pwmStates[TOTAL_PWM_CONTROLLERS];
 
