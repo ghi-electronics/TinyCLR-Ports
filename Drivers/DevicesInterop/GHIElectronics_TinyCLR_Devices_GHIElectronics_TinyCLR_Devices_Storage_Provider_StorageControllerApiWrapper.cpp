@@ -12,9 +12,60 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper::get_Descriptor___GHIElectronicsTinyCLRDevicesStorageStorageDescriptor(const TinyCLR_Interop_MethodData md) {
+    auto api = reinterpret_cast<const TinyCLR_Storage_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
+    const TinyCLR_Storage_Descriptor* descriptor;
 
-    return TinyCLR_Result::NotImplemented;
+    auto result = api->GetDescriptor(api, descriptor);
+
+    TinyCLR_Interop_ClrValue obj, ret;
+    TinyCLR_Interop_ClrTypeId type;
+
+    md.InteropManager->FindType(md.InteropManager, "GHIElectronics.TinyCLR.IO", "GHIElectronics.TinyCLR.Devices.Storage", "StorageDescriptor", type);
+
+    md.InteropManager->CreateObject(md.InteropManager, md.Stack, type, obj);
+
+    TinyCLR_Interop_ClrValue canReadDirectField, canWriteDirectField, canExecuteDirectField, eraseBeforeWriteField, removableField, regionsRepeatField, regionCountField, regionAddressesField, regionSizesField;
+
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Storage_StorageDescriptor::FIELD___CanReadDirect__BackingField___BOOLEAN, canReadDirectField);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Storage_StorageDescriptor::FIELD___CanWriteDirect__BackingField___BOOLEAN, canWriteDirectField);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Storage_StorageDescriptor::FIELD___CanExecuteDirect__BackingField___BOOLEAN, canExecuteDirectField);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Storage_StorageDescriptor::FIELD___EraseBeforeWrite__BackingField___BOOLEAN, eraseBeforeWriteField);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Storage_StorageDescriptor::FIELD___Removable__BackingField___BOOLEAN, regionsRepeatField);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Storage_StorageDescriptor::FIELD___RegionsRepeat__BackingField___BOOLEAN, regionsRepeatField);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Storage_StorageDescriptor::FIELD___RegionCount__BackingField___I4, regionCountField);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Storage_StorageDescriptor::FIELD___RegionAddresses__BackingField___SZARRAY_I8, regionAddressesField);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Storage_StorageDescriptor::FIELD___RegionSizes__BackingField___SZARRAY_I4, regionSizesField);
+
+    if (descriptor != nullptr) {
+        canReadDirectField.Data.Numeric->Boolean = descriptor->CanReadDirect;
+        canWriteDirectField.Data.Numeric->Boolean = descriptor->CanWriteDirect;
+        canExecuteDirectField.Data.Numeric->Boolean = descriptor->CanWriteDirect;
+        eraseBeforeWriteField.Data.Numeric->Boolean = descriptor->EraseBeforeWrite;
+        removableField.Data.Numeric->Boolean = descriptor->Removable;
+        regionsRepeatField.Data.Numeric->Boolean = descriptor->RegionsRepeat;
+        regionCountField.Data.Numeric->I4 = descriptor->RegionCount;
+
+        md.InteropManager->FindType(md.InteropManager, "mscorlib", "System", "Int64", type);
+        md.InteropManager->CreateArray(md.InteropManager, descriptor->RegionCount, type, regionAddressesField);
+
+        md.InteropManager->FindType(md.InteropManager, "mscorlib", "System", "Int32", type);
+        md.InteropManager->CreateArray(md.InteropManager, descriptor->RegionCount, type, regionSizesField);
+
+        auto regionAddresses = reinterpret_cast<int64_t*>(regionAddressesField.Data.SzArray.Data);
+        auto regionSizes = reinterpret_cast<int32_t*>(regionSizesField.Data.SzArray.Data);
+
+        for (auto i = 0; i < descriptor->RegionCount; i++) {
+            regionAddresses[i] = descriptor->RegionAddresses[i];
+            regionSizes[i] = descriptor->RegionSizes[i];
+        }
+
+        md.InteropManager->GetReturn(md.InteropManager, md.Stack, ret);
+
+        md.InteropManager->AssignObjectReference(md.InteropManager, ret, obj.Object);
+    }
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper::Open___VOID(const TinyCLR_Interop_MethodData md) {
