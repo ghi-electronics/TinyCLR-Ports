@@ -43,6 +43,7 @@ struct UartState {
     TinyCLR_Uart_DataReceivedHandler dataReceivedEventHandler;
 
     const TinyCLR_Uart_Controller* controller;
+    bool tableInitialized = false;
 };
 
 

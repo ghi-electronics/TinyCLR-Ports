@@ -39,6 +39,7 @@ struct SpiState {
     bool isOpened;
 
     TinyCLR_Spi_Mode spiMode;
+    bool tableInitialized = false;
 };
 
 static SpiState spiStates[TOTAL_SPI_CONTROLLERS];
@@ -56,12 +57,12 @@ void AT91_Spi_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         if (spiStates[i].tableInitialized)
             continue;
-        
+
         spiControllers[i].ApiInfo = &spiApi[i];
         spiControllers[i].Acquire = &AT91_Spi_Acquire;
         spiControllers[i].Release = &AT91_Spi_Release;
         spiControllers[i].WriteRead = &AT91_Spi_WriteRead;
-        spiControllers[i].SetActiveSettings = &AT91_Spi_SetActiveSettings;		
+        spiControllers[i].SetActiveSettings = &AT91_Spi_SetActiveSettings;
         spiControllers[i].GetChipSelectLineCount = &AT91_Spi_GetChipSelectLineCount;
         spiControllers[i].GetMinClockFrequency = &AT91_Spi_GetMinClockFrequency;
         spiControllers[i].GetMaxClockFrequency = &AT91_Spi_GetMaxClockFrequency;
@@ -76,7 +77,7 @@ void AT91_Spi_EnsureTableInitialized() {
 
         spiStates[i].controllerIndex = i;
         spiStates[i].tableInitialized = true;
-    } 
+    }
 }
 
 const TinyCLR_Api_Info* AT91_Spi_GetRequiredApi() {
@@ -86,11 +87,11 @@ const TinyCLR_Api_Info* AT91_Spi_GetRequiredApi() {
 }
 
 void AT91_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
-    AT91_Spi_EnsureTableInitialized(); 
+    AT91_Spi_EnsureTableInitialized();
 
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         apiManager->Add(apiManager, &spiApi[i]);
-    }    
+    }
 }
 
 bool AT91_Spi_Transaction_Start(int32_t controllerIndex) {

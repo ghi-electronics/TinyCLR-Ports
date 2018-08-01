@@ -227,7 +227,7 @@ void AT91_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const vo
         configuration = (const void*)&AT91_Startup_UsbDebuggerConfiguration;
     }
     else {
-        api = AT91_Uart_GetRequiredApi();        
+        api = AT91_Uart_GetRequiredApi();
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;
@@ -313,6 +313,5 @@ void AT91_SAM_ClockInit(void) {
 }
 
 void AT91_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
-    api = AT91_Deployment_GetApi();
-    configuration = AT91_Deployment_GetDeploymentConfiguration();
+    AT91_Deployment_GetDeploymentApi(api, configuration);
 }

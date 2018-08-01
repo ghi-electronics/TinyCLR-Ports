@@ -58,6 +58,22 @@ void LPC24_Power_EnsureTableInitialized() {
     }
 }
 
+const TinyCLR_Api_Info* LPC24_Power_GetRequiredApi() {
+    LPC24_Power_EnsureTableInitialized();
+
+    return &powerApi[0];
+}
+
+void LPC24_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    LPC24_Power_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_POWER_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &powerApi[i]);
+    }
+
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::PowerController, powerApi[0].Name);
+}
+
 void LPC24_Power_SetHandlers(void(*stop)(), void(*restart)()) {
     PowerStopHandler = stop;
     PowerRestartHandler = restart;

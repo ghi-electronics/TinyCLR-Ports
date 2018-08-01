@@ -463,6 +463,7 @@ struct AT91_Gpio_PinConfiguration {
 
 void AT91_Gpio_Reset();
 void AT91_Gpio_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* AT91_Gpio_GetRequiredApi();
 TinyCLR_Result AT91_Gpio_Acquire(const TinyCLR_Gpio_Controller* self);
 TinyCLR_Result AT91_Gpio_Release(const TinyCLR_Gpio_Controller* self);
 TinyCLR_Result AT91_Gpio_EnableAlternatePin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor, uint32_t alternate);
@@ -658,6 +659,7 @@ struct AT91_SPI {
 };
 
 void AT91_Spi_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* AT91_Spi_GetRequiredApi();
 void AT91_Spi_Reset();
 bool AT91_Spi_Transaction_Start(int32_t controller);
 bool AT91_Spi_Transaction_Stop(int32_t controller);
@@ -838,6 +840,7 @@ struct AT91_USART {
 };
 
 void AT91_Uart_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* AT91_Uart_GetRequiredApi();
 void AT91_Uart_Reset();
 int32_t AT91_Uart_GetTxPin(int32_t controller);
 int32_t AT91_Uart_GetRxPin(int32_t controller);
@@ -876,6 +879,7 @@ TinyCLR_Result AT91_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self);
 
 //Deployment
 void AT91_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager);
+void AT91_Deployment_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration);
 TinyCLR_Result AT91_Deployment_Acquire(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result AT91_Deployment_Release(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result AT91_Deployment_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout);
@@ -1022,6 +1026,7 @@ public:
 #define INTERRUPT_STARTED_SCOPED(name) AT91_SmartPtr_Interrupt name
 
 void AT91_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* AT91_Interrupt_GetRequiredApi();
 TinyCLR_Result AT91_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
 TinyCLR_Result AT91_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self);
 bool AT91_Interrupt_Activate(uint32_t Irq_Index, uint32_t *handler, void* ISR_Param);
@@ -1277,10 +1282,11 @@ struct AT91_TC {
 //
 // AT91 Timer Channel
 void AT91_Time_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* AT91_Time_GetRequiredApi();
 TinyCLR_Result AT91_Time_Initialize(const TinyCLR_NativeTime_Controller* self);
 TinyCLR_Result AT91_Time_Uninitialize(const TinyCLR_NativeTime_Controller* self);
 uint64_t AT91_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Controller* self, uint64_t ticks);
-uint64_t AT91_Time_TimeToTicks(const TinyCLR_NativeTime_Controller* self, uint64_t time);
+uint64_t AT91_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Controller* self, uint64_t time);
 uint64_t AT91_Time_MillisecondsToTicks(const TinyCLR_NativeTime_Controller* self, uint64_t ticks);
 uint64_t AT91_Time_MicrosecondsToTicks(const TinyCLR_NativeTime_Controller* self, uint64_t microseconds);
 uint64_t AT91_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self);
@@ -1293,6 +1299,7 @@ void AT91_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_t n
 
 // Power
 void AT91_Power_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* AT91_Power_GetRequiredApi();
 void AT91_Power_SetHandlers(void(*stop)(), void(*restart)());
 void AT91_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level);
 void AT91_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter);
@@ -1300,6 +1307,7 @@ TinyCLR_Result AT91_Power_Initialize(const TinyCLR_Power_Controller* self);
 TinyCLR_Result AT91_Power_Uninitialize(const TinyCLR_Power_Controller* self);
 
 //UsbClient
+const TinyCLR_Api_Info* AT91_UsbDevice_GetRequiredApi();
 void AT91_UsbDevice_AddApi(const TinyCLR_Api_Manager* apiManager);
 void AT91_UsbDevice_Reset();
 void AT91_UsbDevice_PinConfiguration();

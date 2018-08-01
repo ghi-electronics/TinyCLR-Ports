@@ -40,7 +40,6 @@ const char* PwmApiNames[TOTAL_PWM_CONTROLLERS] = {
     "GHIElectronics.TinyCLR.NativeApis.AT91.PwmController\\0",
     "GHIElectronics.TinyCLR.NativeApis.AT91.PwmController\\1",
     "GHIElectronics.TinyCLR.NativeApis.AT91.PwmController\\2",
-    "GHIElectronics.TinyCLR.NativeApis.AT91.PwmController\\3",
 };
 
 static PwmState pwmStates[TOTAL_PWM_CONTROLLERS];

@@ -40,6 +40,7 @@ struct TimeState {
     uint64_t m_nextCompare;
 
     TinyCLR_NativeTime_Callback m_DequeuAndExecute;
+    bool tableInitialized;
 
     static bool   Initialize(uint32_t timer, uint32_t* ISR, void* ISR_Param);
     static bool   Uninitialize(uint32_t timer);
@@ -250,7 +251,7 @@ uint64_t LPC24_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Controller
     return ticks;
 }
 
-uint64_t LPC24_Time_TimeToTicks(const TinyCLR_NativeTime_Controller* self, uint64_t time) {
+uint64_t LPC24_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Controller* self, uint64_t time) {
     return LPC24_Time_MicrosecondsToTicks(self, time / 10);
 }
 

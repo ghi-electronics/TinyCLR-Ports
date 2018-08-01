@@ -154,6 +154,7 @@ extern const TinyCLR_Api_Manager* apiManager;
 
 void LPC24_Gpio_Reset();
 void LPC24_Gpio_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* LPC24_Gpio_GetRequiredApi();
 TinyCLR_Result LPC24_Gpio_Acquire(const TinyCLR_Gpio_Controller* self);
 TinyCLR_Result LPC24_Gpio_Release(const TinyCLR_Gpio_Controller* self);
 TinyCLR_Result LPC24_Gpio_EnableAlternatePin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor, uint32_t alternate);
@@ -317,6 +318,7 @@ TinyCLR_Result LPC24_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller
 
 //Uart
 void LPC24_Uart_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* LPC24_Uart_GetRequiredApi();
 void LPC24_Uart_Reset();
 int32_t LPC24_Uart_GetTxPin(int32_t controller);
 int32_t LPC24_Uart_GetRxPin(int32_t controller);
@@ -355,6 +357,7 @@ TinyCLR_Result LPC24_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self);
 
 //Deployment
 void LPC24_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager);
+void LPC24_Deployment_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration);
 TinyCLR_Result LPC24_Deployment_Acquire(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result LPC24_Deployment_Release(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result LPC24_Deployment_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout);
@@ -436,7 +439,7 @@ void LPC24_Time_AddApi(const TinyCLR_Api_Manager* apiManager);
 TinyCLR_Result LPC24_Time_Initialize(const TinyCLR_NativeTime_Controller* self);
 TinyCLR_Result LPC24_Time_Uninitialize(const TinyCLR_NativeTime_Controller* self);
 uint64_t LPC24_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Controller* self, uint64_t ticks);
-uint64_t LPC24_Time_TimeToTicks(const TinyCLR_NativeTime_Controller* self, uint64_t time);
+uint64_t LPC24_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Controller* self, uint64_t time);
 uint64_t LPC24_Time_MillisecondsToTicks(const TinyCLR_NativeTime_Controller* self, uint64_t ticks);
 uint64_t LPC24_Time_MicrosecondsToTicks(const TinyCLR_NativeTime_Controller* self, uint64_t microseconds);
 uint64_t LPC24_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self);
@@ -484,6 +487,7 @@ TinyCLR_Result LPC24_Power_Uninitialize(const TinyCLR_Power_Controller* self);
 #define OTGClkCtrl (*(volatile unsigned *)0xFFE0CFF4)
 #define OTGClkSt (*(volatile unsigned *)0xFFE0CFF8)
 
+const TinyCLR_Api_Info* LPC24_UsbDevice_GetRequiredApi();
 void LPC24_UsbDevice_AddApi(const TinyCLR_Api_Manager* apiManager);
 void LPC24_UsbDevice_Reset();
 void LPC24_UsbDevice_PinConfiguration();

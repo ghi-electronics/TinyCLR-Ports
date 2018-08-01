@@ -203,6 +203,7 @@ struct TimeState {
     uint64_t m_nextCompare;
 
     TinyCLR_NativeTime_Callback m_DequeuAndExecute;
+    bool tableInitialized;
 };
 
 #define TOTAL_TIME_CONTROLLERS 1
@@ -213,7 +214,7 @@ static TimeState timeStates[TOTAL_TIME_CONTROLLERS];
 //////////////////////////////////////////////////////////////////////////////
 
 
-static TinyCLR_NativeTime_Controller timerControllers[TOTAL_TIME_CONTROLLERS];
+static TinyCLR_NativeTime_Controller timeControllers[TOTAL_TIME_CONTROLLERS];
 static TinyCLR_Api_Info timeApi[TOTAL_TIME_CONTROLLERS];
 
 const char* timeApiNames[TOTAL_TIME_CONTROLLERS] = {
@@ -293,7 +294,7 @@ uint64_t AT91_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Controller*
     return ticks;
 }
 
-uint64_t AT91_Time_TimeToTicks(const TinyCLR_NativeTime_Controller* self, uint64_t time) {
+uint64_t AT91_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Controller* self, uint64_t time) {
     return AT91_Time_MicrosecondsToTicks(self, time / 10);
 }
 

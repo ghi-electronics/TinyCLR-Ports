@@ -43,7 +43,7 @@ struct UartState {
     TinyCLR_Uart_DataReceivedHandler dataReceivedEventHandler;
 
     const TinyCLR_Uart_Controller* controller;
-
+    bool tableInitialized = false;
 };
 
 static UartState uartStates[TOTAL_UART_CONTROLLERS];
@@ -56,7 +56,6 @@ const char* uartApiNames[TOTAL_UART_CONTROLLERS] = {
     "GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\1",
     "GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\2",
     "GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\3",
-    "GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\4",
 };
 
 void AT91_Uart_EnsureTableInitialized() {
