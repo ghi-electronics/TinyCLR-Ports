@@ -204,7 +204,7 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_Write(const 
     uint32_t* pBuf = (uint32_t*)data;
 
     // enable programming
-    auto to = timeout;
+    auto to = timeout * 1000;
 
     while (addressStart < addressEnd) {
         if (*addressStart != *pBuf) {
@@ -223,7 +223,7 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_Write(const 
             to = timeout;
 
             while (((STM32F7_FLASH->SR & FLASH_SR_EOP) == 0) || (STM32F7_FLASH->SR & FLASH_SR_BSY)) {
-                STM32F7_Time_Delay(nullptr, 1000);
+                STM32F7_Time_Delay(nullptr, 1);
                 to--;
 
                 if (to == 0)
