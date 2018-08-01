@@ -1984,9 +1984,7 @@ struct LPC17_Can_Filter {
     uint32_t *lowerBoundFilters;
     uint32_t *upperBoundFilters;
     uint32_t groupFiltersSize;
-
 };
-
 
 typedef struct {
     uint32_t timeStampL;
@@ -2223,10 +2221,7 @@ int32_t BinarySearch2(uint32_t *lowerBounds, uint32_t *upperBounds, int32_t firs
     return -1;    // failed to find key
 }
 
-const char* canApiNames[TOTAL_CAN_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.LPC17.CanController\\0",
-    "GHIElectronics.TinyCLR.NativeApis.LPC17.CanController\\1"
-};
+const char* canApiNames[TOTAL_CAN_CONTROLLERS] = LPC17_CAN_CONTROLLER_NAMES;
 
 void LPC17_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {

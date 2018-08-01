@@ -59,12 +59,7 @@ static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 
 
-const char* uartApiNames[TOTAL_UART_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.LPC24.UartController\\0",
-    "GHIElectronics.TinyCLR.NativeApis.LPC24.UartController\\1",
-    "GHIElectronics.TinyCLR.NativeApis.LPC24.UartController\\2",
-    "GHIElectronics.TinyCLR.NativeApis.LPC24.UartController\\3",
-};
+const char* uartApiNames[TOTAL_UART_CONTROLLERS] = LPC24_UART_CONTROLLER_NAMES;
 
 void LPC24_Uart_EnsureTableInitialized() {
     for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {

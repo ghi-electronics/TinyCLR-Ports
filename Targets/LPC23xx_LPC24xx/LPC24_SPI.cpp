@@ -289,11 +289,7 @@ static SpiState spiStates[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Spi_Controller spiControllers[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Api_Info spiApi[TOTAL_SPI_CONTROLLERS];
 
-const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.LPC24.SpiController\\0"
-    "GHIElectronics.TinyCLR.NativeApis.LPC24.SpiController\\1"
-    "GHIElectronics.TinyCLR.NativeApis.LPC24.SpiController\\2"
-};
+const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = LPC24_SPI_CONTROLLER_NAMES;
 
 void LPC24_Spi_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {

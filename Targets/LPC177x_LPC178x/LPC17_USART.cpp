@@ -227,13 +227,7 @@ static UartState uartStates[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 
-const char* uartApiNames[TOTAL_UART_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.LPC17.UartController\\0",
-    "GHIElectronics.TinyCLR.NativeApis.LPC17.UartController\\1",
-    "GHIElectronics.TinyCLR.NativeApis.LPC17.UartController\\2",
-    "GHIElectronics.TinyCLR.NativeApis.LPC17.UartController\\3",
-    "GHIElectronics.TinyCLR.NativeApis.LPC17.UartController\\4",
-};
+const char* uartApiNames[TOTAL_UART_CONTROLLERS] = LPC17_UART_CONTROLLER_NAMES;
 
 void LPC17_Uart_EnsureTableInitialized() {
     for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {

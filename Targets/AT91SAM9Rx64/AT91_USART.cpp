@@ -51,12 +51,7 @@ static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 
 
-const char* uartApiNames[TOTAL_UART_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\0",
-    "GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\1",
-    "GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\2",
-    "GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\3",
-};
+const char* uartApiNames[TOTAL_UART_CONTROLLERS] = AT91_UART_CONTROLLER_NAMES;
 
 void AT91_Uart_EnsureTableInitialized() {
     for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {

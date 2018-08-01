@@ -64,10 +64,7 @@
 #define PWM_MICROSECONDS  1000000
 #define PWM_NANOSECONDS   1000000000
 
-const char* PwmApiNames[TOTAL_PWM_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.LPC17.PwmController\\0",
-    "GHIElectronics.TinyCLR.NativeApis.LPC17.PwmController\\1",
-};
+const char* PwmApiNames[TOTAL_PWM_CONTROLLERS] = LPC17_PWM_CONTROLLER_NAMES;
 
 static PwmState pwmStates[TOTAL_PWM_CONTROLLERS];
 
