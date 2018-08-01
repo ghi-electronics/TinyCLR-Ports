@@ -66,7 +66,7 @@ void AT91_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
 }
 
 TinyCLR_Result AT91_Deployment_Acquire(const TinyCLR_Storage_Controller* self) {
-    void spiApi = &CONCAT(DEVICE_TARGET, _Spi_GetApi)()[AT91_DEPLOYMENT_SPI_PORT];
+    void spiApi = &CONCAT(DEVICE_TARGET, _Spi_GetRequiredApi)()[AT91_DEPLOYMENT_SPI_PORT];
     TinyCLR_Spi_Controller* spiController = (TinyCLR_Spi_Controller*)spiApi->Implementation;
 
     void timeApi = &CONCAT(DEVICE_TARGET, _Time_GetApi)()[0];

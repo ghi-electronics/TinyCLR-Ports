@@ -66,6 +66,7 @@ struct GpioInterruptState {
 
 struct GpioState {
     int32_t controllerIndex;
+    bool tableInitialized = false;
 };
 
 static GpioState gpioStates[TOTAL_GPIO_CONTROLLERS];
@@ -78,8 +79,15 @@ static TinyCLR_Gpio_PinDriveMode pinDriveMode[TOTAL_GPIO_PINS];
 static TinyCLR_Gpio_Controller gpioControllers[TOTAL_GPIO_CONTROLLERS];
 static TinyCLR_Api_Info gpioApi[TOTAL_GPIO_CONTROLLERS];
 
-void LPC17_Gpio_AddApi(const TinyCLR_Api_Manager* apiManager) {
-    for (int32_t i = 0; i < TOTAL_GPIO_CONTROLLERS; i++) {
+const char* GpioApiNames[TOTAL_GPIO_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.LPC17.GpioController\\0"
+};
+
+void LPC17_Gpio_EnsureTableInitialized() {
+    for (auto i = 0; i < TOTAL_GPIO_CONTROLLERS; i++) {
+        if (gpioStates[i].tableInitialized)
+            continue;
+
         gpioControllers[i].ApiInfo = &gpioApi[i];
         gpioControllers[i].Acquire = &LPC17_Gpio_Acquire;
         gpioControllers[i].Release = &LPC17_Gpio_Release;
@@ -96,16 +104,31 @@ void LPC17_Gpio_AddApi(const TinyCLR_Api_Manager* apiManager) {
         gpioControllers[i].GetPinCount = &LPC17_Gpio_GetPinCount;
 
         gpioApi[i].Author = "GHI Electronics, LLC";
-        gpioApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.GpioController";
+        gpioApi[i].Name = GpioApiNames[i];
         gpioApi[i].Type = TinyCLR_Api_Type::GpioController;
         gpioApi[i].Version = 0;
         gpioApi[i].Implementation = &gpioControllers[i];
         gpioApi[i].State = &gpioStates[i];
 
         gpioStates[i].controllerIndex = i;
+        gpioStates[i].tableInitialized = true;
+    }
+}
+
+const TinyCLR_Api_Info* LPC17_Gpio_GetRequiredApi() {
+    LPC17_Gpio_EnsureTableInitialized();
+
+    return &gpioApi[0];
+}
+
+void LPC17_Gpio_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    LPC17_Gpio_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_GPIO_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &gpioApi[i]);
     }
 
-    
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::GpioController, LPC17_Gpio_GetRequiredApi()->Name);
 }
 
 TinyCLR_Result LPC17_Gpio_Acquire(const TinyCLR_Gpio_Controller* self) {

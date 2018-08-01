@@ -288,29 +288,51 @@ static SpiState spiStates[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Spi_Controller spiControllers[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Api_Info spiApi[TOTAL_SPI_CONTROLLERS];
 
-void LPC24_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
+const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.LPC24.SpiController\\0"
+    "GHIElectronics.TinyCLR.NativeApis.LPC24.SpiController\\1"
+    "GHIElectronics.TinyCLR.NativeApis.LPC24.SpiController\\2"
+};
+
+void LPC24_Spi_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
+        if (spiStates[i].tableInitialized)
+            continue;
+        
         spiControllers[i].ApiInfo = &spiApi[i];
         spiControllers[i].Acquire = &LPC24_Spi_Acquire;
         spiControllers[i].Release = &LPC24_Spi_Release;
-		spiControllers[i].WriteRead = &LPC24_Spi_WriteRead;
-        spiControllers[i].SetActiveSettings = &LPC24_Spi_SetActiveSettings;
+        spiControllers[i].WriteRead = &LPC24_Spi_WriteRead;
+        spiControllers[i].SetActiveSettings = &LPC24_Spi_SetActiveSettings;		
         spiControllers[i].GetChipSelectLineCount = &LPC24_Spi_GetChipSelectLineCount;
         spiControllers[i].GetMinClockFrequency = &LPC24_Spi_GetMinClockFrequency;
         spiControllers[i].GetMaxClockFrequency = &LPC24_Spi_GetMaxClockFrequency;
         spiControllers[i].GetSupportedDataBitLengths = &LPC24_Spi_GetSupportedDataBitLengths;
 
         spiApi[i].Author = "GHI Electronics, LLC";
-        spiApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.SpiController";
+        spiApi[i].Name = spiApiNames[i];
         spiApi[i].Type = TinyCLR_Api_Type::SpiController;
         spiApi[i].Version = 0;
         spiApi[i].Implementation = &spiControllers[i];
         spiApi[i].State = &spiStates[i];
 
         spiStates[i].controllerIndex = i;
-    }
+        spiStates[i].tableInitialized = true;
+    } 
+}
 
-    
+const TinyCLR_Api_Info* LPC24_Spi_GetRequiredApi() {
+    LPC24_Spi_EnsureTableInitialized();
+
+    return &spiApi[0];
+}
+
+void LPC24_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    LPC24_Spi_EnsureTableInitialized(); 
+
+    for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &spiApi[i]);
+    }    
 }
 
 bool LPC24_Spi_Transaction_Start(int32_t controllerIndex) {

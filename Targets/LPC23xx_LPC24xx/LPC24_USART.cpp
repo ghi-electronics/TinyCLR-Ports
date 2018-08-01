@@ -58,8 +58,20 @@ static UartState uartStates[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 
-void LPC24_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
+
+const char* uartApiNames[TOTAL_UART_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.LPC24.UartController\\0",
+    "GHIElectronics.TinyCLR.NativeApis.LPC24.UartController\\1",
+    "GHIElectronics.TinyCLR.NativeApis.LPC24.UartController\\2",
+    "GHIElectronics.TinyCLR.NativeApis.LPC24.UartController\\3",
+    "GHIElectronics.TinyCLR.NativeApis.LPC24.UartController\\4",
+};
+
+void LPC24_Uart_EnsureTableInitialized() {
     for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        if (uartStates[i].tableInitialized)
+            continue;
+
         uartControllers[i].ApiInfo = &uartApi[i];
         uartControllers[i].Acquire = &LPC24_Uart_Acquire;
         uartControllers[i].Release = &LPC24_Uart_Release;
@@ -85,16 +97,29 @@ void LPC24_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
         uartControllers[i].ClearWriteBuffer = &LPC24_Uart_ClearWriteBuffer;
 
         uartApi[i].Author = "GHI Electronics, LLC";
-        uartApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.UartController";
+        uartApi[i].Name = uartApiNames[i];
         uartApi[i].Type = TinyCLR_Api_Type::UartController;
         uartApi[i].Version = 0;
         uartApi[i].Implementation = &uartControllers[i];
         uartApi[i].State = &uartStates[i];
 
         uartStates[i].controllerIndex = i;
+        uartStates[i].tableInitialized = true;
     }
+}
 
+const TinyCLR_Api_Info* LPC24_Uart_GetRequiredApi() {
+    LPC24_Uart_EnsureTableInitialized();
 
+    return &uartApi[0];
+}
+
+void LPC24_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    LPC24_Uart_EnsureTableInitialized();
+
+    for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &uartApi[i]);
+    }
 }
 
 size_t LPC24_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self) {

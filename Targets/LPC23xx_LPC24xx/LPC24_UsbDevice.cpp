@@ -162,8 +162,12 @@ void LPC24_UsbDevice_ResumeEvent(UsClientState* usClientState);
 void LPC24_UsbDevice_ControlNext(UsClientState* usClientState);
 uint32_t LPC24_UsbDevice_EPAdr(uint32_t EPNum, int8_t in);
 
-void LPC24_UsbDevice_AddApi(const TinyCLR_Api_Manager* apiManager) {
-    return TinyCLR_UsbClient_GetApi();
+voidLPC24_UsbDevice_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    TinyCLR_UsbClient_AddApi(apiManager);
+
+}
+const TinyCLR_Api_Info*LPC24_UsbClient_GetRequiredApi() {
+    return TinyCLR_UsbClient_GetRequiredApi();
 }
 
 void LPC24_UsbDevice_Reset() {

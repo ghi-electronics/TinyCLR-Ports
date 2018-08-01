@@ -76,8 +76,11 @@ static UartState uartStates[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 
-void STM32F7_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
+void STM32F7_Uart_EnsureTableInitialized() {
     for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        if (uartStates[i].tableInitialized)
+            continue;
+
         uartControllers[i].ApiInfo = &uartApi[i];
         uartControllers[i].Acquire = &STM32F7_Uart_Acquire;
         uartControllers[i].Release = &STM32F7_Uart_Release;
@@ -103,13 +106,14 @@ void STM32F7_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
         uartControllers[i].ClearWriteBuffer = &STM32F7_Uart_ClearWriteBuffer;
 
         uartApi[i].Author = "GHI Electronics, LLC";
-        uartApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.UartController";
+        uartApi[i].Name = uartApiNames[i];
         uartApi[i].Type = TinyCLR_Api_Type::UartController;
         uartApi[i].Version = 0;
         uartApi[i].Implementation = &uartControllers[i];
         uartApi[i].State = &uartStates[i];
 
         uartStates[i].controllerIndex = i;
+        uartStates[i].tableInitialized = true;
     }
 
     if (TOTAL_UART_CONTROLLERS > 0) uartPortRegs[0] = USART1;
@@ -130,6 +134,21 @@ void STM32F7_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
 #endif
 #endif
 
+}
+
+const TinyCLR_Api_Info* STM32F7_Uart_GetRequiredApi() {
+    STM32F7_Uart_EnsureTableInitialized();
+
+    return &uartApi[0];
+}
+
+
+void STM32F7_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    STM32F7_Uart_EnsureTableInitialized();
+
+    for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &uartApi[i]);
+    }
 }
 
 size_t STM32F7_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self) {

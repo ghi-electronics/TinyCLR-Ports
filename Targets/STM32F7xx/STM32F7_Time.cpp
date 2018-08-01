@@ -42,8 +42,16 @@ static TimeState timeStates[TOTAL_TIME_CONTROLLERS];
 static TinyCLR_NativeTime_Controller timeControllers[TOTAL_TIME_CONTROLLERS];
 static TinyCLR_Api_Info timeApi[TOTAL_TIME_CONTROLLERS];
 
-void STM32F7_Time_AddApi(const TinyCLR_Api_Manager* apiManager) {
-    for (int32_t i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
+const char* timeApiNames[TOTAL_TIME_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F7.NativeTimeController\\0",
+
+};
+
+void STM32F7_Time_EnsureTableInitialized() {
+    for (auto i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
+        if (timeStates[i].tableInitialized)
+            continue;
+
         timeControllers[i].ApiInfo = &timeApi[i];
         timeControllers[i].Initialize = &STM32F7_Time_Initialize;
         timeControllers[i].Uninitialize = &STM32F7_Time_Uninitialize;
@@ -55,16 +63,31 @@ void STM32F7_Time_AddApi(const TinyCLR_Api_Manager* apiManager) {
         timeControllers[i].Wait = &STM32F7_Time_DelayNative;
 
         timeApi[i].Author = "GHI Electronics, LLC";
-        timeApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.NativeTimeController";
+        timeApi[i].Name = timeApiNames[i];
         timeApi[i].Type = TinyCLR_Api_Type::NativeTimeController;
         timeApi[i].Version = 0;
         timeApi[i].Implementation = &timeControllers[i];
         timeApi[i].State = &timeStates[i];
 
         timeStates[i].controllerIndex = i;
+        timeStates[i].tableInitialized = true;
+    }
+}
+
+const TinyCLR_Api_Info* STM32F7_Time_GetRequiredApi() {
+    STM32F7_Time_EnsureTableInitialized();
+
+    return &timeApi[0];
+}
+
+void STM32F7_Time_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    STM32F7_Time_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &timeApi[i]);
     }
 
-    
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::NativeTimeController, timeApi[0].Name);
 }
 
 static uint64_t timerNextEvent;   // tick time of next event to be scheduled
@@ -91,7 +114,7 @@ uint64_t STM32F7_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controll
 
     auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
-    if (self == nullptr) { // some cases in hal layer call directly STM32F4_Time_GetCurrentProcessorTicks(nullptr), use first controller as default
+    if (self == nullptr) { // some cases in hal layer call directly STM32F7_Time_GetCurrentProcessorTicks(nullptr), use first controller as default
         state = &timeStates[0];
     }
 

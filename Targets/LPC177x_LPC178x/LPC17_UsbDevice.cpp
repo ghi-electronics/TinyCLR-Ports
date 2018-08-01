@@ -194,7 +194,11 @@ void LPC17_UsbDevice_ControlNext(UsClientState* usClientState);
 uint32_t LPC17_UsbDevice_EPAdr(uint32_t EPNum, int8_t in);
 
 void LPC17_UsbDevice_AddApi(const TinyCLR_Api_Manager* apiManager) {
-    return TinyCLR_UsbClient_GetApi();
+    TinyCLR_UsbClient_AddApi(apiManager);
+
+}
+const TinyCLR_Api_Info* LPC17_UsbDevice_GetRequiredApi() {
+    return TinyCLR_UsbClient_GetRequiredApi();
 }
 
 void LPC17_UsbDevice_Reset() {

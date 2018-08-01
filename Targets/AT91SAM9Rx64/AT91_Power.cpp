@@ -20,11 +20,24 @@
 static void(*PowerStopHandler)();
 static void(*PowerRestartHandler)();
 
+struct PowerState {
+    uint32_t controllerIndex;
+    bool tableInitialized;
+};
+
+const char* powerApiNames[TOTAL_POWER_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.AT91.PowerController\\0"
+};
+
 static TinyCLR_Power_Controller powerControllers[TOTAL_POWER_CONTROLLERS];
 static TinyCLR_Api_Info powerApi[TOTAL_POWER_CONTROLLERS];
+static PowerState powerStates[TOTAL_POWER_CONTROLLERS];
 
-void AT91_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
-    for (int32_t i = 0; i < TOTAL_POWER_CONTROLLERS; i++) {
+void AT91_Power_EnsureTableInitialized() {
+    for (auto i = 0; i < TOTAL_POWER_CONTROLLERS; i++) {
+        if (powerStates[i].tableInitialized)
+            continue;
+
         powerControllers[i].ApiInfo = &powerApi[i];
         powerControllers[i].Initialize = &AT91_Power_Initialize;
         powerControllers[i].Uninitialize = &AT91_Power_Uninitialize;
@@ -32,14 +45,15 @@ void AT91_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
         powerControllers[i].Sleep = &AT91_Power_Sleep;
 
         powerApi[i].Author = "GHI Electronics, LLC";
-        powerApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.PowerController";
+        powerApi[i].Name = powerApiNames[i];
         powerApi[i].Type = TinyCLR_Api_Type::PowerController;
         powerApi[i].Version = 0;
         powerApi[i].Implementation = &powerControllers[i];
-        powerApi[i].State = nullptr;
-    }
+        powerApi[i].State = &powerStates[i];
 
-    
+        powerStates[i].controllerIndex = i;
+        powerStates[i].tableInitialized = true;
+    }
 }
 
 void AT91_Power_SetHandlers(void(*stop)(), void(*restart)()) {

@@ -183,29 +183,52 @@ void LPC24_Time_InterruptHandler(void* Param) {
 static TinyCLR_NativeTime_Controller timerControllers[TOTAL_TIME_CONTROLLERS];
 static TinyCLR_Api_Info timeApi[TOTAL_TIME_CONTROLLERS];
 
-void LPC24_Time_AddApi(const TinyCLR_Api_Manager* apiManager) {
+const char* timeApiNames[TOTAL_TIME_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.LPC24.NativeTimeController\\0",
+
+};
+
+void LPC24_Time_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
-        timerControllers[i].ApiInfo = &timeApi[i];
-        timerControllers[i].ConvertNativeTimeToSystemTime = &LPC24_Time_GetTimeForProcessorTicks;
-        timerControllers[i].ConvertSystemTimeToNativeTime = &LPC24_Time_TimeToTicks;
-        timerControllers[i].GetNativeTime = &LPC24_Time_GetCurrentProcessorTicks;
-        timerControllers[i].SetCallback = &LPC24_Time_SetTickCallback;
-        timerControllers[i].ScheduleCallback = &LPC24_Time_SetNextTickCallbackTime;
-        timerControllers[i].Initialize = &LPC24_Time_Initialize;
-        timerControllers[i].Uninitialize = &LPC24_Time_Uninitialize;
-        timerControllers[i].Wait = &LPC24_Time_DelayNative;
+        if (timeStates[i].tableInitialized)
+            continue;
+
+        timeControllers[i].ApiInfo = &timeApi[i];
+        timeControllers[i].Initialize = &LPC24_Time_Initialize;
+        timeControllers[i].Uninitialize = &LPC24_Time_Uninitialize;
+        timeControllers[i].GetNativeTime = &LPC24_Time_GetCurrentProcessorTicks;
+        timeControllers[i].ConvertNativeTimeToSystemTime = &LPC24_Time_GetTimeForProcessorTicks;
+        timeControllers[i].ConvertSystemTimeToNativeTime = &LPC24_Time_GetProcessorTicksForTime;
+        timeControllers[i].SetCallback = &LPC24_Time_SetTickCallback;
+        timeControllers[i].ScheduleCallback = &LPC24_Time_SetNextTickCallbackTime;
+        timeControllers[i].Wait = &LPC24_Time_DelayNative;
 
         timeApi[i].Author = "GHI Electronics, LLC";
-        timeApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.NativeTimeController";
+        timeApi[i].Name = timeApiNames[i];
         timeApi[i].Type = TinyCLR_Api_Type::NativeTimeController;
         timeApi[i].Version = 0;
-        timeApi[i].Implementation = &timerControllers[i];
+        timeApi[i].Implementation = &timeControllers[i];
         timeApi[i].State = &timeStates[i];
 
         timeStates[i].controllerIndex = i;
+        timeStates[i].tableInitialized = true;
+    }
+}
+
+const TinyCLR_Api_Info* LPC24_Time_GetRequiredApi() {
+    LPC24_Time_EnsureTableInitialized();
+
+    return &timeApi[0];
+}
+
+void LPC24_Time_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    LPC24_Time_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &timeApi[i]);
     }
 
-    
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::NativeTimeController, timeApi[0].Name);
 }
 
 uint32_t LPC24_Time_GetSystemClock(const TinyCLR_NativeTime_Controller* self) {
@@ -251,7 +274,7 @@ uint64_t LPC24_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller
 
     auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
-    if (self == nullptr) { // some cases in hal layer call directly STM32F4_Time_GetCurrentProcessorTicks(nullptr), use first controller as default
+    if (self == nullptr) { // some cases in hal layer call directly LPC24_Time_GetCurrentProcessorTicks(nullptr), use first controller as default
         state = &timeStates[0];
     }
 

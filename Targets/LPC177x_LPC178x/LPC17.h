@@ -160,6 +160,7 @@ struct LPC17_Gpio_PinConfiguration {
 
 void LPC17_Gpio_Reset();
 void LPC17_Gpio_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* LPC17_Gpio_GetRequiredApi();
 TinyCLR_Result LPC17_Gpio_Acquire(const TinyCLR_Gpio_Controller* self);
 TinyCLR_Result LPC17_Gpio_Release(const TinyCLR_Gpio_Controller* self);
 TinyCLR_Result LPC17_Gpio_EnableAlternatePin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor, uint32_t alternate);
@@ -249,6 +250,7 @@ TinyCLR_Result LPC17_SdCard_Reset();
 //SPI
 ////////////////////////////////////////////////////////////////////////////////
 void LPC17_Spi_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* LPC17_Spi_GetRequiredApi();
 void LPC17_Spi_Reset();
 bool LPC17_Spi_Transaction_Start(int32_t controllerIndex);
 bool LPC17_Spi_Transaction_Stop(int32_t controllerIndex);
@@ -267,6 +269,7 @@ TinyCLR_Result LPC17_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller
 
 //Uart
 void LPC17_Uart_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* LPC17_Uart_GetRequiredApi();
 void LPC17_Uart_Reset();
 int32_t LPC17_Uart_GetTxPin(int32_t controllerIndex);
 int32_t LPC17_Uart_GetRxPin(int32_t controllerIndex);
@@ -305,6 +308,7 @@ TinyCLR_Result LPC17_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self);
 
 //Deployment
 void LPC17_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager);
+void LPC17_Deployment_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration);
 TinyCLR_Result LPC17_Deployment_Acquire(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result LPC17_Deployment_Release(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result LPC17_Deployment_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout);
@@ -347,6 +351,7 @@ public:
 #define INTERRUPT_STARTED_SCOPED(name) LPC17_SmartPtr_Interrupt name
 
 void LPC17_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* LPC17_Interrupt_GetRequiredApi();
 TinyCLR_Result LPC17_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
 TinyCLR_Result LPC17_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self);
 bool LPC17_Interrupt_Activate(uint32_t Irq_Index, uint32_t *handler, void* ISR_Param);
@@ -377,6 +382,7 @@ void LPC17_I2c_StopTransaction(int32_t channel);
 
 // Time
 void LPC17_Time_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* LPC17_Time_GetRequiredApi();
 TinyCLR_Result LPC17_Time_Initialize(const TinyCLR_NativeTime_Controller* self);
 TinyCLR_Result LPC17_Time_Uninitialize(const TinyCLR_NativeTime_Controller* self);
 uint64_t LPC17_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self);
@@ -389,6 +395,7 @@ void LPC17_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_t 
 
 // Power
 void LPC17_Power_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* LPC17_Power_GetRequiredApi();
 void LPC17_Power_SetHandlers(void(*stop)(), void(*restart)());
 void LPC17_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level);
 void LPC17_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter);
@@ -396,6 +403,7 @@ TinyCLR_Result LPC17_Power_Initialize(const TinyCLR_Power_Controller* self);
 TinyCLR_Result LPC17_Power_Uninitialize(const TinyCLR_Power_Controller* self);
 
 //UsbClient
+const TinyCLR_Api_Info* LPC17_UsbDevice_GetRequiredApi();
 void LPC17_UsbDevice_AddApi(const TinyCLR_Api_Manager* apiManager);
 void LPC17_UsbDevice_Reset();
 

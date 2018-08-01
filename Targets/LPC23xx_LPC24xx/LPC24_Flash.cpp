@@ -53,12 +53,20 @@ struct DeploymentState {
     TinyCLR_Startup_DeploymentConfiguration deploymentConfiguration;
 
     bool isOpened = false;
+    bool tableInitialized = false;
 };
 
 static DeploymentState deploymentStates[TOTAL_DEPLOYMENT_CONTROLLERS];
 
-void LPC24_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
+const char* flashApiNames[TOTAL_DEPLOYMENT_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.StorageController\\0"
+};
+
+void LPC24_Deployment_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
+        if (deploymentStates[i].tableInitialized)
+            continue;
+
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
         deploymentControllers[i].Acquire = &LPC24_Deployment_Acquire;
         deploymentControllers[i].Release = &LPC24_Deployment_Release;
@@ -73,17 +81,22 @@ void LPC24_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
         deploymentControllers[i].SetPresenceChangedHandler = &LPC24_Deployment_SetPresenceChangedHandler;
 
         deploymentApi[i].Author = "GHI Electronics, LLC";
-        deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.StorageController";
+        deploymentApi[i].Name = flashApiNames[i];
         deploymentApi[i].Type = TinyCLR_Api_Type::StorageController;
         deploymentApi[i].Version = 0;
         deploymentApi[i].Implementation = &deploymentControllers[i];
         deploymentApi[i].State = &deploymentStates[i];
 
         deploymentStates[i].controllerIndex = i;
-        deploymentStates[i].regionCount = DEPLOYMENT_SECTOR_NUM;
-    }
+        deploymentStates[i].regionCount = SIZEOF_ARRAY(deploymentSectors);
 
-    
+        deploymentStates[i].tableInitialized = true;
+
+        for (auto ii = 0; ii < deploymentStates[i].regionCount; ii++) {
+            deploymentStates[i].regionAddresses[ii] = deploymentSectors[ii].address;
+            deploymentStates[i].regionSizes[ii] = deploymentSectors[ii].size;
+        }
+    }
 }
 
 int32_t __section("SectionForFlashOperations") LPC24_Deployment_PrepaireSector(int32_t startsec, int32_t endsec) {

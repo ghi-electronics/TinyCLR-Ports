@@ -45,25 +45,31 @@
 #define TOTAL_RTC_CONTROLLERS 1
 
 static TinyCLR_Rtc_Controller rtcControllers[TOTAL_RTC_CONTROLLERS];
-static TinyCLR_Api_Info timeApi[TOTAL_RTC_CONTROLLERS];
+static TinyCLR_Api_Info rtcApi[TOTAL_RTC_CONTROLLERS];
+
+const char* rtcApiNames[TOTAL_RTC_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.AT91.RtcController\\0"
+};
 
 void AT91_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_RTC_CONTROLLERS; i++) {
-        rtcControllers[i].ApiInfo = &timeApi[i];
+        rtcControllers[i].ApiInfo = &rtcApi[i];
         rtcControllers[i].Acquire = &AT91_Rtc_Acquire;
         rtcControllers[i].Release = &AT91_Rtc_Release;
         rtcControllers[i].GetTime = &AT91_Rtc_GetTime;
         rtcControllers[i].SetTime = &AT91_Rtc_SetTime;
 
-        timeApi[i].Author = "GHI Electronics, LLC";
-        timeApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.RtcController";
-        timeApi[i].Type = TinyCLR_Api_Type::RtcController;
-        timeApi[i].Version = 0;
-        timeApi[i].Implementation = &rtcControllers[i];
-        timeApi[i].State = nullptr;
+        rtcApi[i].Author = "GHI Electronics, LLC";
+        rtcApi[i].Name = rtcApiNames[i];
+        rtcApi[i].Type = TinyCLR_Api_Type::RtcController;
+        rtcApi[i].Version = 0;
+        rtcApi[i].Implementation = &rtcControllers[i];
+        rtcApi[i].State = nullptr;
+
+        apiManager->Add(apiManager, &rtcApi[i]);
     }
 
-    
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::RtcController, rtcApi[0].Name);
 }
 
 void AT91_Rtc_BinaryCodedDecimalExtract(uint32_t valueToConvert, uint32_t &tens, uint32_t &ones) {

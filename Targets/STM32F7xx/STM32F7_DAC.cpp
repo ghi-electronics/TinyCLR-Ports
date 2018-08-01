@@ -33,6 +33,10 @@ struct DacState {
 
 static DacState dacStates[TOTAL_DAC_CONTROLLERS];
 
+const char* dacApiNames[TOTAL_DAC_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F7.DacController\\0"
+};
+
 void STM32F7_Dac_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_DAC_CONTROLLERS; i++) {
         dacControllers[i].ApiInfo = &dacApi[i];
@@ -47,14 +51,16 @@ void STM32F7_Dac_AddApi(const TinyCLR_Api_Manager* apiManager) {
         dacControllers[i].GetChannelCount = &STM32F7_Dac_GetChannelCount;
 
         dacApi[i].Author = "GHI Electronics, LLC";
-        dacApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.DacController";
+        dacApi[i].Name = dacApiNames[i];
         dacApi[i].Type = TinyCLR_Api_Type::DacController;
         dacApi[i].Version = 0;
         dacApi[i].Implementation = &dacControllers[i];
         dacApi[i].State = &dacStates[i];
+
+        apiManager->Add(apiManager, &dacApi[i]);
     }
 
-    
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::DacController, dacApi[0].Name);
 }
 
 TinyCLR_Result STM32F7_Dac_Acquire(const TinyCLR_Dac_Controller* self) {

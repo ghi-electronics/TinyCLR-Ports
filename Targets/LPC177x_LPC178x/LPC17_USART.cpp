@@ -210,14 +210,10 @@ struct UartState {
     TinyCLR_Uart_DataReceivedHandler    dataReceivedEventHandler;
 
     const TinyCLR_Uart_Controller*        controller;
-
+    bool tableInitialized;
 };
 
-
-
 #define SET_BITS(Var,Shift,Mask,fieldsMask) {Var = setFieldValue(Var,Shift,Mask,fieldsMask);}
-
-
 
 uint32_t setFieldValue(volatile uint32_t oldVal, uint32_t shift, uint32_t mask, uint32_t val) {
     volatile uint32_t temp = oldVal;
@@ -231,8 +227,19 @@ static UartState uartStates[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 
-void LPC17_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
+const char* uartApiNames[TOTAL_UART_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.LPC17.UartController\\0",
+    "GHIElectronics.TinyCLR.NativeApis.LPC17.UartController\\1",
+    "GHIElectronics.TinyCLR.NativeApis.LPC17.UartController\\2",
+    "GHIElectronics.TinyCLR.NativeApis.LPC17.UartController\\3",
+    "GHIElectronics.TinyCLR.NativeApis.LPC17.UartController\\4",
+};
+
+void LPC17_Uart_EnsureTableInitialized() {
     for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        if (uartStates[i].tableInitialized)
+            continue;
+
         uartControllers[i].ApiInfo = &uartApi[i];
         uartControllers[i].Acquire = &LPC17_Uart_Acquire;
         uartControllers[i].Release = &LPC17_Uart_Release;
@@ -258,16 +265,29 @@ void LPC17_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
         uartControllers[i].ClearWriteBuffer = &LPC17_Uart_ClearWriteBuffer;
 
         uartApi[i].Author = "GHI Electronics, LLC";
-        uartApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.UartController";
+        uartApi[i].Name = uartApiNames[i];
         uartApi[i].Type = TinyCLR_Api_Type::UartController;
         uartApi[i].Version = 0;
         uartApi[i].Implementation = &uartControllers[i];
         uartApi[i].State = &uartStates[i];
 
         uartStates[i].controllerIndex = i;
+        uartStates[i].tableInitialized = true;
     }
+}
 
+const TinyCLR_Api_Info* LPC17_Uart_GetRequiredApi() {
+    LPC17_Uart_EnsureTableInitialized();
 
+    return &uartApi[0];
+}
+
+void LPC17_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    LPC17_Uart_EnsureTableInitialized();
+
+    for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &uartApi[i]);
+    }
 }
 
 size_t LPC17_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self) {
