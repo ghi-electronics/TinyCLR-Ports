@@ -34,7 +34,7 @@ struct TimeState {
     TinyCLR_NativeTime_Callback m_DequeuAndExecute;
 
     static void Reload(uint32_t value);
-
+    bool tableInitialized;
 };
 
 static TimeState timeStates[TOTAL_TIME_CONTROLLERS];

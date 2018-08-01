@@ -518,7 +518,6 @@ void STM32F7_Startup_CacheDisable(void) {
 }
 
 void STM32F7_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
-    api = STM32F7_Deployment_GetApi();
-    configuration = STM32F7_Flash_GetDeploymentConfiguration();
+    STM32F7_Flash_GetDeploymentApi(api, configuration);
 }
 

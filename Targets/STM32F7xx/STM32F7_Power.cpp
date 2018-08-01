@@ -56,6 +56,23 @@ void STM32F7_Power_EnsureTableInitialized() {
         powerStates[i].tableInitialized = true;
     }
 }
+
+const TinyCLR_Api_Info* STM32F7_Power_GetRequiredApi() {
+    STM32F7_Power_EnsureTableInitialized();
+
+    return &powerApi[0];
+}
+
+void STM32F7_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    STM32F7_Power_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_POWER_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &powerApi[i]);
+    }
+
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::PowerController, powerApi[0].Name);
+}
+
 void STM32F7_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level) {
     uint32_t tmpreg = 0;
     switch (level) {

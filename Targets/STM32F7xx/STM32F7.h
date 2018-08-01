@@ -31,6 +31,7 @@
 //Deployment
 ////////////////////////////////////////////////////////////////////////////////
 void STM32F7_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager);
+void STM32F7_Flash_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration);
 TinyCLR_Result STM32F7_Flash_Acquire(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result STM32F7_Flash_Release(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result STM32F7_Flash_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout);
@@ -50,6 +51,7 @@ void STM32F7_Deplpoyment_Reset();
 //Interrupt
 ////////////////////////////////////////////////////////////////////////////////
 void STM32F7_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* STM32F7_Interrupt_GetRequiredApi();
 const TinyCLR_Api_Info* STM32F7_Interrupt_GetRequiredApi();
 TinyCLR_Result STM32F7_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
 TinyCLR_Result STM32F7_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self);
@@ -284,7 +286,7 @@ void STM32F7_Uart_Reset();
 //USB Client
 ////////////////////////////////////////////////////////////////////////////////
 void STM32F7_UsbDevice_AddApi(const TinyCLR_Api_Manager* apiManager);
-const TinyCLR_Api_Info*  STM32F7_UsbClient_GetRequiredApi();
+const TinyCLR_Api_Info* STM32F7_UsbDevice_GetRequiredApi();
 void STM32F7_UsbDevice_Reset();
 
 struct USB_PACKET64;
