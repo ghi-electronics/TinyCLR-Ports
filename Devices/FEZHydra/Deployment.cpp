@@ -32,12 +32,20 @@ struct DeploymentState {
     TinyCLR_Startup_DeploymentConfiguration deploymentConfiguration;
 
     bool isOpened = false;
+    bool tableInitialized = false;
 };
 
 static DeploymentState deploymentStates[TOTAL_DEPLOYMENT_CONTROLLERS];
 
-void AT91_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
+const char* deploymentApiNames[TOTAL_DEPLOYMENT_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.LPC17.StorageController\\0"
+};
+
+void AT91_Deployment_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
+        if (deploymentStates[i].tableInitialized)
+            continue;
+
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
         deploymentControllers[i].Acquire = &AT91_Deployment_Acquire;
         deploymentControllers[i].Release = &AT91_Deployment_Release;
@@ -52,7 +60,7 @@ void AT91_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
         deploymentControllers[i].SetPresenceChangedHandler = &AT91_Deployment_SetPresenceChangedHandler;
 
         deploymentApi[i].Author = "GHI Electronics, LLC";
-        deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.StorageController";
+        deploymentApi[i].Name = deploymentApiNames[i];
         deploymentApi[i].Type = TinyCLR_Api_Type::StorageController;
         deploymentApi[i].Version = 0;
         deploymentApi[i].Implementation = &deploymentControllers[i];
@@ -60,16 +68,39 @@ void AT91_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
 
         deploymentStates[i].controllerIndex = i;
         deploymentStates[i].regionCount = AT91_DEPLOYMENT_SECTOR_NUM;
+
+        deploymentStates[i].tableInitialized = true;        
+    }
+}
+
+void AT91_Deployment_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
+    AT91_Deployment_EnsureTableInitialized();
+
+    auto state = &deploymentStates[0];
+
+    api = &deploymentApi[0];
+    configuration = &state->deploymentConfiguration;
+}
+
+void AT91_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    AT91_Deployment_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &deploymentApi[i]);
     }
 
-    return (const TinyCLR_Api_Info*)&deploymentApi;
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::StorageController, deploymentApi[0].Name);
 }
 
 TinyCLR_Result AT91_Deployment_Acquire(const TinyCLR_Storage_Controller* self) {
-    void spiApi = &CONCAT(DEVICE_TARGET, _Spi_GetRequiredApi)()[AT91_DEPLOYMENT_SPI_PORT];
+    auto spiApi = CONCAT(DEVICE_TARGET, _Spi_GetRequiredApi)();
+
+    spiApi += AT91_DEPLOYMENT_SPI_PORT;
+
     TinyCLR_Spi_Controller* spiController = (TinyCLR_Spi_Controller*)spiApi->Implementation;
 
-    void timeApi = &CONCAT(DEVICE_TARGET, _Time_GetApi)()[0];
+    auto timeApi = CONCAT(DEVICE_TARGET, _Time_GetRequiredApi)();
+
     TinyCLR_NativeTime_Controller* timerController = (TinyCLR_NativeTime_Controller*)timeApi->Implementation;
 
     return AT45DB321D_Flash_Acquire(spiController, timerController, AT91_DEPLOYMENT_SPI_ENABLE_PIN);
@@ -176,4 +207,5 @@ const TinyCLR_Startup_DeploymentConfiguration* AT91_Deployment_GetDeploymentConf
 
     return reinterpret_cast<const TinyCLR_Startup_DeploymentConfiguration*>(&state->deploymentConfiguration);
 }
+
 

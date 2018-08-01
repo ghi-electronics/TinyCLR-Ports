@@ -41,7 +41,7 @@ struct UartState {
     TinyCLR_Uart_DataReceivedHandler    dataReceivedEventHandler;
 
     const TinyCLR_Uart_Controller*        controller;
-
+    bool tableInitialized = false;
 };
 
 #define SET_BITS(Var,Shift,Mask,fieldsMask) {Var = setFieldValue(Var,Shift,Mask,fieldsMask);}
@@ -64,7 +64,6 @@ const char* uartApiNames[TOTAL_UART_CONTROLLERS] = {
     "GHIElectronics.TinyCLR.NativeApis.LPC24.UartController\\1",
     "GHIElectronics.TinyCLR.NativeApis.LPC24.UartController\\2",
     "GHIElectronics.TinyCLR.NativeApis.LPC24.UartController\\3",
-    "GHIElectronics.TinyCLR.NativeApis.LPC24.UartController\\4",
 };
 
 void LPC24_Uart_EnsureTableInitialized() {

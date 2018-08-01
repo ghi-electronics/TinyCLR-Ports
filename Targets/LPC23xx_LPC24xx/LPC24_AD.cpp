@@ -36,6 +36,8 @@ struct AdcState {
     static uint8_t isOpen;
 };
 
+static AdcState adcStates[TOTAL_ADC_CONTROLLERS];
+
 uint8_t AdcState::isOpen;
 
 void LPC24_Adc_AddApi(const TinyCLR_Api_Manager* apiManager) {
@@ -60,7 +62,7 @@ void LPC24_Adc_AddApi(const TinyCLR_Api_Manager* apiManager) {
         adcApi[i].Version = 0;
         adcApi[i].Implementation = &adcControllers[i];
         adcApi[i].State = &adcStates[i];
-        
+
         apiManager->Add(apiManager, &adcApi[i]);
     }
 

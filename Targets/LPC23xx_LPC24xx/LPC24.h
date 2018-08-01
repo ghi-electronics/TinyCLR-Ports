@@ -404,6 +404,7 @@ public:
 #define INTERRUPT_STARTED_SCOPED(name) LPC24_SmartPtr_Interrupt name
 
 void LPC24_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* LPC24_Interrupt_GetRequiredApi();
 TinyCLR_Result LPC24_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
 TinyCLR_Result LPC24_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self);
 bool LPC24_Interrupt_Activate(uint32_t Irq_Index, uint32_t *handler, void* ISR_Param);
@@ -436,6 +437,7 @@ void LPC24_I2c_StopTransaction(int32_t channel);
 
 // Time
 void LPC24_Time_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* LPC24_Time_GetRequiredApi();
 TinyCLR_Result LPC24_Time_Initialize(const TinyCLR_NativeTime_Controller* self);
 TinyCLR_Result LPC24_Time_Uninitialize(const TinyCLR_NativeTime_Controller* self);
 uint64_t LPC24_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Controller* self, uint64_t ticks);
@@ -452,6 +454,7 @@ void LPC24_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_t 
 
 // Power
 void LPC24_Power_AddApi(const TinyCLR_Api_Manager* apiManager);
+const TinyCLR_Api_Info* LPC24_Power_GetRequiredApi();
 void LPC24_Power_SetHandlers(void(*stop)(), void(*restart)());
 void LPC24_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level);
 void LPC24_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter);

@@ -281,6 +281,7 @@ struct SpiState {
     bool isOpened;
 
     TinyCLR_Spi_Mode spiMode;
+    bool tableInitialized = false;
 };
 
 static SpiState spiStates[TOTAL_SPI_CONTROLLERS];
@@ -298,12 +299,12 @@ void LPC24_Spi_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         if (spiStates[i].tableInitialized)
             continue;
-        
+
         spiControllers[i].ApiInfo = &spiApi[i];
         spiControllers[i].Acquire = &LPC24_Spi_Acquire;
         spiControllers[i].Release = &LPC24_Spi_Release;
         spiControllers[i].WriteRead = &LPC24_Spi_WriteRead;
-        spiControllers[i].SetActiveSettings = &LPC24_Spi_SetActiveSettings;		
+        spiControllers[i].SetActiveSettings = &LPC24_Spi_SetActiveSettings;
         spiControllers[i].GetChipSelectLineCount = &LPC24_Spi_GetChipSelectLineCount;
         spiControllers[i].GetMinClockFrequency = &LPC24_Spi_GetMinClockFrequency;
         spiControllers[i].GetMaxClockFrequency = &LPC24_Spi_GetMaxClockFrequency;
@@ -318,7 +319,7 @@ void LPC24_Spi_EnsureTableInitialized() {
 
         spiStates[i].controllerIndex = i;
         spiStates[i].tableInitialized = true;
-    } 
+    }
 }
 
 const TinyCLR_Api_Info* LPC24_Spi_GetRequiredApi() {
@@ -328,11 +329,11 @@ const TinyCLR_Api_Info* LPC24_Spi_GetRequiredApi() {
 }
 
 void LPC24_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
-    LPC24_Spi_EnsureTableInitialized(); 
+    LPC24_Spi_EnsureTableInitialized();
 
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         apiManager->Add(apiManager, &spiApi[i]);
-    }    
+    }
 }
 
 bool LPC24_Spi_Transaction_Start(int32_t controllerIndex) {

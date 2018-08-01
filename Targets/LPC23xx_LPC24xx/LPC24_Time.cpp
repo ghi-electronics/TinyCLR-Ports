@@ -181,7 +181,7 @@ void LPC24_Time_InterruptHandler(void* Param) {
 }
 
 
-static TinyCLR_NativeTime_Controller timerControllers[TOTAL_TIME_CONTROLLERS];
+static TinyCLR_NativeTime_Controller timeControllers[TOTAL_TIME_CONTROLLERS];
 static TinyCLR_Api_Info timeApi[TOTAL_TIME_CONTROLLERS];
 
 const char* timeApiNames[TOTAL_TIME_CONTROLLERS] = {
