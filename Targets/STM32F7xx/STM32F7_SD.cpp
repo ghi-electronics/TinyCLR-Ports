@@ -2700,7 +2700,6 @@ void STM32F7_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
         sdCardStates[i].controllerIndex = i;
     }
 
-    
 }
 
 TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
@@ -2752,12 +2751,18 @@ TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
 
     SD_DeInit();
 
+    auto trycount = 3;
+
+tryinit:
     if (SD_Init() == SD_OK) {
         state->isOpened = true;
 
         return TinyCLR_Result::Success;
     }
-
+    else {
+        if (trycount-- > 0)
+            goto tryinit;
+    }
     return TinyCLR_Result::InvalidOperation;
 }
 
