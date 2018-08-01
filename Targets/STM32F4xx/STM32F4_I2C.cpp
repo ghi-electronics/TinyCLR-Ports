@@ -65,6 +65,8 @@ static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];
 
 const char* i2cApiNames[TOTAL_I2C_CONTROLLERS] = {
     "GHIElectronics.TinyCLR.NativeApis.STM32F4.I2cController\\0"
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.I2cController\\1"
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.I2cController\\2"
 };
 
 void STM32F4_I2c_AddApi(const TinyCLR_Api_Manager* apiManager) {
