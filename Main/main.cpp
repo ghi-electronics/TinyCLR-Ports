@@ -24,27 +24,22 @@ void OnSoftReset(const TinyCLR_Api_Manager* apiManager) {
 
 #ifdef INCLUDE_ADC
     TARGET(_Adc_AddApi)(apiManager);
-    //apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::AdcController, TARGET(_Adc_GetApi)()->Name);
 #endif
 
 #ifdef INCLUDE_CAN
     TARGET(_Can_AddApi)(apiManager);
-    //apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::CanController, TARGET(_Can_GetApi)()->Name);
 #endif
 
 #ifdef INCLUDE_DAC
     TARGET(_Dac_AddApi)(apiManager);
-    //apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::DacController, TARGET(_Dac_GetApi)()->Name);
 #endif
 
 #ifdef INCLUDE_DISPLAY
     TARGET(_Display_AddApi)(apiManager);
-    //apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::DisplayController, TARGET(_Display_GetApi)()->Name);
 #endif
 
 #ifdef INCLUDE_GPIO
     TARGET(_Gpio_AddApi)(apiManager);
-    //apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::GpioController, TARGET(_Gpio_GetApi)()->Name);
 #endif
 
 #ifdef INCLUDE_I2C
@@ -57,12 +52,10 @@ void OnSoftReset(const TinyCLR_Api_Manager* apiManager) {
 
 #ifdef INCLUDE_RTC
     TARGET(_Rtc_AddApi)(apiManager);
-    //apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::RtcController, TARGET(_Rtc_GetApi)()->Name);
 #endif
 
 #ifdef INCLUDE_SD
     TARGET(_SdCard_AddApi)(apiManager);
-    //apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::StorageController, TARGET(_SdCard_GetApi)()->Name);
 #endif
 
 #ifdef INCLUDE_SPI
