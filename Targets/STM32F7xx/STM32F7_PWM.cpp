@@ -71,6 +71,8 @@ static STM32F7_Gpio_Pin pwmPins[][PWM_PER_CONTROLLER] = STM32F7_PWM_PINS;
 
 #define TOTAL_PWM_CONTROLLERS SIZEOF_ARRAY(pwmPins)
 
+const char* PwmApiNames[TOTAL_PWM_CONTROLLERS] = STM32F7_PWM_CONTROLLER_NAMES;
+
 static PwmState pwmStates[TOTAL_PWM_CONTROLLERS];
 
 static TinyCLR_Pwm_Controller pwmControllers[TOTAL_PWM_CONTROLLERS];
@@ -92,19 +94,17 @@ void STM32F7_Pwm_AddApi(const TinyCLR_Api_Manager* apiManager) {
         pwmControllers[i].GetChannelCount = &STM32F7_Pwm_GetChannelCount;
 
         pwmApi[i].Author = "GHI Electronics, LLC";
-        pwmApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController";
+        pwmApi[i].Name = PwmApiNames[i];
         pwmApi[i].Type = TinyCLR_Api_Type::PwmController;
         pwmApi[i].Version = 0;
         pwmApi[i].Implementation = &pwmControllers[i];
         pwmApi[i].State = &pwmStates[i];
 
         pwmStates[i].controllerIndex = i;
+
+        apiManager->Add(apiManager, &pwmApi[i]);
     }
-
-    
 }
-
-//--//
 
 TinyCLR_Result STM32F7_Pwm_OpenChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel) {
     auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);

@@ -77,15 +77,7 @@ static UartState uartStates[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 
-const char* uartApiNames[TOTAL_UART_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.STM32F7.UartController\\0",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F7.UartController\\1",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F7.UartController\\2",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F7.UartController\\3",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F7.UartController\\4",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F7.UartController\\5",
-    "GHIElectronics.TinyCLR.NativeApis.STM32F7.UartController\\6",
-};
+const char* uartApiNames[TOTAL_UART_CONTROLLERS] = STM32F7_UART_CONTROLLER_NAMES;
 
 void STM32F7_Uart_EnsureTableInitialized() {
     for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {

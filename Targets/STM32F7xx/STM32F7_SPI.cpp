@@ -57,9 +57,7 @@ static SpiState spiStates[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Spi_Controller spiControllers[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Api_Info spiApi[TOTAL_SPI_CONTROLLERS];
 
-const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.STM32F7.SpiController\\0"
-};
+const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = STM32F7_SPI_CONTROLLER_NAMES;
 
 void STM32F7_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
@@ -103,7 +101,7 @@ void STM32F7_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
 #endif
 #endif
 #endif
-    
+
 }
 
 bool STM32F7_Spi_Transaction_Start(int32_t controllerIndex) {
