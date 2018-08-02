@@ -120,8 +120,8 @@
 #define STM32F4_SD_CMD_PINS { { PIN(D, 2), AF(12) } }
 
 #define INCLUDE_SPI
-#define STM32F4_SPI_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.STM32F4.SpiController\\0"\
-                                       "GHIElectronics.TinyCLR.NativeApis.STM32F4.SpiController\\1"\
+#define STM32F4_SPI_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.STM32F4.SpiController\\0",\
+                                       "GHIElectronics.TinyCLR.NativeApis.STM32F4.SpiController\\1",\
                                      }
 #define STM32F4_SPI_SCLK_PINS { { PIN(B, 3), AF(5) }, { PIN(B, 10), AF(5) } }
 #define STM32F4_SPI_MISO_PINS { { PIN(B, 4), AF(5) }, { PIN(C,  2), AF(5) } }

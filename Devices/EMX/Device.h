@@ -52,8 +52,8 @@
 #define LPC24_ADC_PINS { { PIN(0,23), PF(1) }, { PIN(0,24), PF(1) }, { PIN(0,25), PF(1) }, { PIN(0,26), PF(1) }, { PIN_NONE, PF_NONE }, { PIN(1,31), PF(3) }, { PIN(0,12), PF(3) }, { PIN(0,13), PF(3) } }
 
 #define INCLUDE_CAN
-#define LPC24_CAN_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.LPC24.CanController\\0"\
-                                     "GHIElectronics.TinyCLR.NativeApis.LPC24.CanController\\1"\
+#define LPC24_CAN_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.LPC24.CanController\\0",\
+                                     "GHIElectronics.TinyCLR.NativeApis.LPC24.CanController\\1",\
                                      }
 #define LPC24_CAN_BUFFER_DEFAULT_SIZE { 128, 128 }
 #define LPC24_CAN_TX_PINS { { PIN(0, 1), PF(1) }, { PIN(0, 5), PF(2) } }
@@ -82,8 +82,8 @@
 #define INCLUDE_RTC
 
 #define INCLUDE_SPI
-#define LPC24_SPI_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.LPC24.SpiController\\0"\
-                                     "GHIElectronics.TinyCLR.NativeApis.LPC24.SpiController\\1"\
+#define LPC24_SPI_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.LPC24.SpiController\\0",\
+                                     "GHIElectronics.TinyCLR.NativeApis.LPC24.SpiController\\1",\
                                      }
 #define TOTAL_SPI_CONTROLLERS 2
 #define LPC24_SPI_SCLK_PINS { { PIN(0, 15), PF(2) }, { PIN(0,  7), PF(2) } }

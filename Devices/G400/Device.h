@@ -52,8 +52,8 @@
 #define AT91_ADC_PINS { { PIN(B,11), PS(D) }, { PIN(B,12), PS(D) }, { PIN(B,13), PS(D) }, { PIN(B,14), PS(D) }, { PIN(B,15), PS(D) }, { PIN(B,16), PS(D) }, { PIN(A,17), PS(D) }, { PIN(B,6), PS(D) }, { PIN(B,7), PS(D) }, { PIN(B,8), PS(D) }, { PIN(B,9), PS(D) }, { PIN(B,10), PS(D) } }
 
 #define INCLUDE_CAN
-#define AT91_CAN_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.AT91.CanController\\0"\
-                                    "GHIElectronics.TinyCLR.NativeApis.AT91.CanController\\1"\
+#define AT91_CAN_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.AT91.CanController\\0",\
+                                    "GHIElectronics.TinyCLR.NativeApis.AT91.CanController\\1",\
                                   }
 #define AT91_CAN_BUFFER_DEFAULT_SIZE { 128, 128 }
 #define AT91_CAN_TX_PINS { { PIN(A, 10), PS(B) }, { PIN(A, 6), PS(B) } }
@@ -92,8 +92,8 @@
 #define AT91_SD_CMD_PINS { { PIN(A, 16), PS(A) } }
 
 #define INCLUDE_SPI
-#define AT91_SPI_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.AT91.SpiController\\0"\
-                                    "GHIElectronics.TinyCLR.NativeApis.AT91.SpiController\\1"\
+#define AT91_SPI_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.AT91.SpiController\\0",\
+                                    "GHIElectronics.TinyCLR.NativeApis.AT91.SpiController\\1",\
                                     }
 #define TOTAL_SPI_CONTROLLERS 2
 #define AT91_SPI_MISO_PINS { { PIN(A,11), PS(A) }, { PIN(A,21), PS(B) } }
