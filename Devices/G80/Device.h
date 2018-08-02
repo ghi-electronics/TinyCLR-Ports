@@ -52,7 +52,7 @@
 #define INCLUDE_ADC
 
 #define INCLUDE_CAN
-#define STM32F4_CAN_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.STM32F4.CanController\\0"\
+#define STM32F4_CAN_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.STM32F4.CanController\\0",\
                                        "GHIElectronics.TinyCLR.NativeApis.STM32F4.CanController\\1"\
                                      }
 #define STM32F4_CAN_BUFFER_DEFAULT_SIZE { 128 , 128 }
