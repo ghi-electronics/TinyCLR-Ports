@@ -232,6 +232,14 @@ TinyCLR_Result AT91_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint
 
     auto controllerIndex = state->controllerIndex;
 
+    if (writeLength > 0 && readLength == 0) { // Do write only
+        return AT91_I2c_Write(self, writeBuffer, writeLength, error);
+    }
+    else if (writeLength == 0 && readLength > 0) { // Do Read only
+        return AT91_I2c_Read(self, readBuffer, readLength, error);
+    }
+
+    // WriteRead
     if (writeLength > 3) {
         AT91_I2c_Write(self, writeBuffer, writeLength, error);
 
