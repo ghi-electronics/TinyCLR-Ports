@@ -996,7 +996,11 @@ TinyCLR_Result LPC17_Display_GetCapabilities(const TinyCLR_Display_Controller* s
     return TinyCLR_Result::Success;
 }
 
-const TinyCLR_Api_Info* LPC17_Display_GetApi() {
+const char* displayApiNames[TOTAL_DISPLAY_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.LPC17.DisplayController\\0"
+};
+
+void LPC17_Display_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_DISPLAY_CONTROLLERS; i++) {
         displayControllers[i].ApiInfo = &displayApi[i];
         displayControllers[i].Acquire = &LPC17_Display_Acquire;
@@ -1010,16 +1014,18 @@ const TinyCLR_Api_Info* LPC17_Display_GetApi() {
         displayControllers[i].DrawString = &LPC17_Display_DrawString;
 
         displayApi[i].Author = "GHI Electronics, LLC";
-        displayApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.DisplayController";
+        displayApi[i].Name = displayApiNames[i];
         displayApi[i].Type = TinyCLR_Api_Type::DisplayController;
         displayApi[i].Version = 0;
         displayApi[i].Implementation = &displayControllers[i];
         displayApi[i].State = nullptr;
+
+        apiManager->Add(apiManager, &displayApi[i]);
     }
 
     m_LPC17_Display_VituralRam = nullptr;
 
-    return (const TinyCLR_Api_Info*)&displayApi;
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::DisplayController, displayApi[0].Name);
 }
 
 void LPC17_Display_Reset() {

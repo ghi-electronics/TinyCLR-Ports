@@ -42,25 +42,27 @@ static I2cState i2cStates[TOTAL_I2C_CONTROLLERS];
 static TinyCLR_I2c_Controller i2cControllers[TOTAL_I2C_CONTROLLERS];
 static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];
 
-const TinyCLR_Api_Info* AT91_I2c_GetApi() {
+const char* i2cApiNames[TOTAL_I2C_CONTROLLERS] = AT91_I2C_CONTROLLER_NAMES;
+
+void AT91_I2c_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
         i2cControllers[i].ApiInfo = &i2cApi[i];
         i2cControllers[i].Acquire = &AT91_I2c_Acquire;
         i2cControllers[i].Release = &AT91_I2c_Release;
-        i2cControllers[i].SetActiveSettings = &AT91_I2c_SetActiveSettings;        
+        i2cControllers[i].SetActiveSettings = &AT91_I2c_SetActiveSettings;
         i2cControllers[i].WriteRead = &AT91_I2c_WriteRead;
 
         i2cApi[i].Author = "GHI Electronics, LLC";
-        i2cApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.I2cController";
+        i2cApi[i].Name = i2cApiNames[i];
         i2cApi[i].Type = TinyCLR_Api_Type::I2cController;
         i2cApi[i].Version = 0;
         i2cApi[i].Implementation = &i2cControllers[i];
         i2cApi[i].State = &i2cStates[i];
 
         i2cStates[i].controllerIndex = i;
-    }
 
-    return (const TinyCLR_Api_Info*)&i2cApi;
+        apiManager->Add(apiManager, &i2cApi[i]);
+    }
 }
 
 TinyCLR_Result AT91_I2c_Read(const TinyCLR_I2c_Controller* self, uint8_t* buffer, size_t& length, TinyCLR_I2c_TransferStatus& error) {

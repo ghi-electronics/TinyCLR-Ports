@@ -20,7 +20,7 @@
 #include "../../Drivers/DevicesInterop/GHIElectronics_TinyCLR_Devices.h"
 
 void LPC24_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopManager) {
-    apiManager->Add(apiManager, SPIDisplay_GetApi());
+    SPIDisplay_AddApi(apiManager);
     interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices);
 }
 
@@ -46,7 +46,7 @@ const TinyCLR_Startup_UsbDebuggerConfiguration LPC24_Startup_UsbDebuggerConfigur
 void LPC24_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value, valueUsbActive;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetApi()->Implementation);
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetRequiredApi()->Implementation);
 
     provider->OpenPin(provider, DEBUGGER_SELECTOR_PIN);
     provider->SetDriveMode(provider, DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
@@ -56,11 +56,11 @@ void LPC24_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const v
     valueUsbActive = DEBUGGER_SELECTOR_USB_STATE;
 
     if (value == valueUsbActive) {
-        api = LPC24_UsbDevice_GetApi();
+        api = LPC24_UsbDevice_GetRequiredApi();
         configuration = (const void*)&LPC24_Startup_UsbDebuggerConfiguration;
     }
     else {
-        api = LPC24_Uart_GetApi();        
+        api = LPC24_Uart_GetRequiredApi();        
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;
@@ -73,7 +73,7 @@ void LPC24_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const v
 void LPC24_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetApi()->Implementation);
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC24_Gpio_GetRequiredApi()->Implementation);
 
     provider->OpenPin(provider, RUN_APP_PIN);
     provider->SetDriveMode(provider, RUN_APP_PIN, RUN_APP_PULL);

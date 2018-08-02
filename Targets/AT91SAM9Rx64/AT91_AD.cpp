@@ -30,37 +30,43 @@ static TinyCLR_Api_Info adcApi[TOTAL_ADC_CONTROLLERS];
 
 static const AT91_Gpio_Pin adcPins[] = AT91_ADC_PINS;
 
+const char* adcApiNames[TOTAL_ADC_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.AT91.AdcController\\0"
+};
+
 struct AdcState {
     bool isOpened[SIZEOF_ARRAY(adcPins)];
 };
 
 static AdcState adcStates[TOTAL_ADC_CONTROLLERS];
 
-const TinyCLR_Api_Info *AT91_Adc_GetApi() {
-    for (auto i = 0; i < TOTAL_ADC_CONTROLLERS; i++) {
+void AT91_Adc_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    for (int32_t i = 0; i < TOTAL_ADC_CONTROLLERS; i++) {
         adcControllers[i].ApiInfo = &adcApi[i];
         adcControllers[i].Acquire = &AT91_Adc_Acquire;
         adcControllers[i].Release = &AT91_Adc_Release;
         adcControllers[i].OpenChannel = &AT91_Adc_OpenChannel;
         adcControllers[i].CloseChannel = &AT91_Adc_CloseChannel;
-        adcControllers[i].IsChannelModeSupported = &AT91_Adc_IsChannelModeSupported;
         adcControllers[i].ReadChannel = &AT91_Adc_ReadChannel;
+        adcControllers[i].SetChannelMode = &AT91_Adc_SetChannelMode;
+        adcControllers[i].GetChannelMode = &AT91_Adc_GetChannelMode;
+        adcControllers[i].IsChannelModeSupported = &AT91_Adc_IsChannelModeSupported;
         adcControllers[i].GetMinValue = &AT91_Adc_GetMinValue;
         adcControllers[i].GetMaxValue = &AT91_Adc_GetMaxValue;
         adcControllers[i].GetResolutionInBits = &AT91_Adc_GetResolutionInBits;
         adcControllers[i].GetChannelCount = &AT91_Adc_GetChannelCount;
-        adcControllers[i].GetChannelMode = &AT91_Adc_GetChannelMode;
-        adcControllers[i].SetChannelMode = &AT91_Adc_SetChannelMode;
 
         adcApi[i].Author = "GHI Electronics, LLC";
-        adcApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.AdcController";
+        adcApi[i].Name = adcApiNames[i];
         adcApi[i].Type = TinyCLR_Api_Type::AdcController;
         adcApi[i].Version = 0;
         adcApi[i].Implementation = &adcControllers[i];
         adcApi[i].State = &adcStates[i];
+        
+        apiManager->Add(apiManager, &adcApi[i]);
     }
 
-    return (const TinyCLR_Api_Info*)&adcApi;
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::AdcController, adcApi[0].Name);
 }
 
 int32_t AT91_Adc_GetPin(int32_t channel) {

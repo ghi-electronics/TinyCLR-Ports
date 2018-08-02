@@ -43,6 +43,7 @@ struct GpioInterruptState {
 
 struct GpioState {
     int32_t controllerIndex;
+    bool tableInitialized = false;
 };
 
 static GpioState gpioStates[TOTAL_GPIO_CONTROLLERS];
@@ -55,16 +56,23 @@ static TinyCLR_Gpio_PinDriveMode pinDriveMode[TOTAL_GPIO_PINS];
 static TinyCLR_Gpio_Controller gpioControllers[TOTAL_GPIO_PINS];
 static TinyCLR_Api_Info gpioApi[TOTAL_GPIO_PINS];
 
-const TinyCLR_Api_Info* AT91_Gpio_GetApi() {
+const char* GpioApiNames[TOTAL_GPIO_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.AT91.GpioController\\0"
+};
+
+void AT91_Gpio_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_GPIO_CONTROLLERS; i++) {
+        if (gpioStates[i].tableInitialized)
+            continue;
+
         gpioControllers[i].ApiInfo = &gpioApi[i];
         gpioControllers[i].Acquire = &AT91_Gpio_Acquire;
         gpioControllers[i].Release = &AT91_Gpio_Release;
         gpioControllers[i].OpenPin = &AT91_Gpio_OpenPin;
         gpioControllers[i].ClosePin = &AT91_Gpio_ClosePin;
-        gpioControllers[i].IsDriveModeSupported = &AT91_Gpio_IsDriveModeSupported;
         gpioControllers[i].Read = &AT91_Gpio_Read;
         gpioControllers[i].Write = &AT91_Gpio_Write;
+        gpioControllers[i].IsDriveModeSupported = &AT91_Gpio_IsDriveModeSupported;
         gpioControllers[i].GetDriveMode = &AT91_Gpio_GetDriveMode;
         gpioControllers[i].SetDriveMode = &AT91_Gpio_SetDriveMode;
         gpioControllers[i].GetDebounceTimeout = &AT91_Gpio_GetDebounceTimeout;
@@ -73,16 +81,31 @@ const TinyCLR_Api_Info* AT91_Gpio_GetApi() {
         gpioControllers[i].GetPinCount = &AT91_Gpio_GetPinCount;
 
         gpioApi[i].Author = "GHI Electronics, LLC";
-        gpioApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.GpioController";
+        gpioApi[i].Name = GpioApiNames[i];
         gpioApi[i].Type = TinyCLR_Api_Type::GpioController;
         gpioApi[i].Version = 0;
         gpioApi[i].Implementation = &gpioControllers[i];
         gpioApi[i].State = &gpioStates[i];
 
         gpioStates[i].controllerIndex = i;
+        gpioStates[i].tableInitialized = true;
+    }
+}
+
+const TinyCLR_Api_Info* AT91_Gpio_GetRequiredApi() {
+    AT91_Gpio_EnsureTableInitialized();
+
+    return &gpioApi[0];
+}
+
+void AT91_Gpio_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    AT91_Gpio_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_GPIO_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &gpioApi[i]);
     }
 
-    return (const TinyCLR_Api_Info*)&gpioApi;
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::GpioController, AT91_Gpio_GetRequiredApi()->Name);
 }
 
 TinyCLR_Result AT91_Gpio_Acquire(const TinyCLR_Gpio_Controller* self) {

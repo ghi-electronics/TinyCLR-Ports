@@ -63,7 +63,9 @@ static I2cState i2cStates[TOTAL_I2C_CONTROLLERS];
 static TinyCLR_I2c_Controller i2cControllers[TOTAL_I2C_CONTROLLERS];
 static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F4_I2c_GetApi() {
+const char* i2cApiNames[TOTAL_I2C_CONTROLLERS] = STM32F4_I2C_CONTROLLER_NAMES;
+
+void STM32F4_I2c_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
         i2cControllers[i].ApiInfo = &i2cApi[i];
         i2cControllers[i].Acquire = &STM32F4_I2c_Acquire;
@@ -72,13 +74,15 @@ const TinyCLR_Api_Info* STM32F4_I2c_GetApi() {
         i2cControllers[i].WriteRead = &STM32F4_I2c_WriteRead;
 
         i2cApi[i].Author = "GHI Electronics, LLC";
-        i2cApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.I2cController";
+        i2cApi[i].Name = i2cApiNames[i];
         i2cApi[i].Type = TinyCLR_Api_Type::I2cController;
         i2cApi[i].Version = 0;
         i2cApi[i].Implementation = &i2cControllers[i];
         i2cApi[i].State = &i2cStates[i];
 
         i2cStates[i].controllerIndex = i;
+
+        apiManager->Add(apiManager, &i2cApi[i]);
     }
 
     if (TOTAL_I2C_CONTROLLERS > 0)
@@ -90,7 +94,7 @@ const TinyCLR_Api_Info* STM32F4_I2c_GetApi() {
     if (TOTAL_I2C_CONTROLLERS > 2)
         i2cPorts[2] = I2C3;
 
-    return (const TinyCLR_Api_Info*)&i2cApi;
+
 }
 
 void STM32F4_I2C_ER_Interrupt(int32_t controllerIndex) {// Error Interrupt Handler

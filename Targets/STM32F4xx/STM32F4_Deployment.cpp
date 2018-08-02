@@ -56,12 +56,20 @@ struct DeploymentState {
     TinyCLR_Startup_DeploymentConfiguration deploymentConfiguration;
 
     bool isOpened = false;
+    bool tableInitialized = false;
 };
 
-static DeploymentState deploymentState[TOTAL_DEPLOYMENT_CONTROLLERS];
+static DeploymentState deploymentStates[TOTAL_DEPLOYMENT_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F4_Deployment_GetApi() {
+const char* flashApiNames[TOTAL_DEPLOYMENT_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.StorageController\\0"
+};
+
+void STM32F4_Flash_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
+        if (deploymentStates[i].tableInitialized)
+            continue;
+
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
         deploymentControllers[i].Acquire = &STM32F4_Flash_Acquire;
         deploymentControllers[i].Release = &STM32F4_Flash_Release;
@@ -76,19 +84,41 @@ const TinyCLR_Api_Info* STM32F4_Deployment_GetApi() {
         deploymentControllers[i].SetPresenceChangedHandler = &STM32F4_Flash_SetPresenceChangedHandler;
 
         deploymentApi[i].Author = "GHI Electronics, LLC";
-        deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.StorageController";
+        deploymentApi[i].Name = flashApiNames[i];
         deploymentApi[i].Type = TinyCLR_Api_Type::StorageController;
         deploymentApi[i].Version = 0;
         deploymentApi[i].Implementation = &deploymentControllers[i];
-        deploymentApi[i].State = &deploymentState[i];
+        deploymentApi[i].State = &deploymentStates[i];
 
-        deploymentState[i].controllerIndex = i;
-        deploymentState[i].regionCount = SIZEOF_ARRAY(deploymentSectors);
+        deploymentStates[i].controllerIndex = i;
+        deploymentStates[i].regionCount = SIZEOF_ARRAY(deploymentSectors);
+
+        deploymentStates[i].tableInitialized = true;
+
+        for (auto ii = 0; ii < deploymentStates[i].regionCount; ii++) {
+            deploymentStates[i].regionAddresses[ii] = deploymentSectors[ii].address;
+            deploymentStates[i].regionSizes[ii] = deploymentSectors[ii].size;
+        }
+    }
+}
+
+void STM32F4_Flash_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
+    STM32F4_Flash_EnsureTableInitialized();
+
+    auto state = &deploymentStates[0];
+
+    api = &deploymentApi[0];
+    configuration = &state->deploymentConfiguration;
+}
+
+void STM32F4_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    STM32F4_Flash_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &deploymentApi[i]);
     }
 
-    STM32F4_Deplpoyment_Reset();
-
-    return (const TinyCLR_Api_Info*)&deploymentApi;
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::StorageController, deploymentApi[0].Name);
 }
 
 TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
@@ -261,7 +291,7 @@ TinyCLR_Result STM32F4_Flash_Close(const TinyCLR_Storage_Controller* self) {
 size_t STM32F4_Flash_GetSectorSizeFormAddress(const TinyCLR_Storage_Controller* self, uint32_t address) {
     auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);
 
-    for (int32_t i = 0; i < state->regionCount; i++) {
+    for (auto i = 0; i < state->regionCount; i++) {
         if (address >= state->regionAddresses[i] && address < state->regionAddresses[i] + state->regionSizes[i]) {
             return state->regionSizes[i];
         }
@@ -288,19 +318,10 @@ TinyCLR_Result STM32F4_Flash_GetDescriptor(const TinyCLR_Storage_Controller* sel
 }
 
 const TinyCLR_Startup_DeploymentConfiguration* STM32F4_Flash_GetDeploymentConfiguration() {
-    auto state = &deploymentState[0];
+    auto state = &deploymentStates[0];
 
     return reinterpret_cast<const TinyCLR_Startup_DeploymentConfiguration*>(&state->deploymentConfiguration);
 }
 
 void STM32F4_Deplpoyment_Reset() {
-    for (auto c = 0; c < TOTAL_DEPLOYMENT_CONTROLLERS; c++) {
-        auto state = &deploymentState[c];
-
-        for (auto i = 0; i < state->regionCount; i++) {
-            state->regionAddresses[i] = deploymentSectors[i].address;
-            state->regionSizes[i] = deploymentSectors[i].size;
-        }
-    }
-
 }

@@ -57,12 +57,14 @@ static SpiState spiStates[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Spi_Controller spiControllers[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Api_Info spiApi[TOTAL_SPI_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F7_Spi_GetApi() {
+const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = STM32F7_SPI_CONTROLLER_NAMES;
+
+void STM32F7_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         spiControllers[i].ApiInfo = &spiApi[i];
         spiControllers[i].Acquire = &STM32F7_Spi_Acquire;
         spiControllers[i].Release = &STM32F7_Spi_Release;
-		spiControllers[i].WriteRead = &STM32F7_Spi_WriteRead;
+        spiControllers[i].WriteRead = &STM32F7_Spi_WriteRead;
         spiControllers[i].SetActiveSettings = &STM32F7_Spi_SetActiveSettings;
         spiControllers[i].GetChipSelectLineCount = &STM32F7_Spi_GetChipSelectLineCount;
         spiControllers[i].GetMinClockFrequency = &STM32F7_Spi_GetMinClockFrequency;
@@ -70,13 +72,15 @@ const TinyCLR_Api_Info* STM32F7_Spi_GetApi() {
         spiControllers[i].GetSupportedDataBitLengths = &STM32F7_Spi_GetSupportedDataBitLengths;
 
         spiApi[i].Author = "GHI Electronics, LLC";
-        spiApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.SpiController";
+        spiApi[i].Name = spiApiNames[i];
         spiApi[i].Type = TinyCLR_Api_Type::SpiController;
         spiApi[i].Version = 0;
         spiApi[i].Implementation = &spiControllers[i];
         spiApi[i].State = &spiStates[i];
 
         spiStates[i].controllerIndex = i;
+
+        apiManager->Add(apiManager, &spiApi[i]);
     }
 
 #ifdef SPI1
@@ -97,7 +101,7 @@ const TinyCLR_Api_Info* STM32F7_Spi_GetApi() {
 #endif
 #endif
 #endif
-    return (const TinyCLR_Api_Info*)&spiApi;
+
 }
 
 bool STM32F7_Spi_Transaction_Start(int32_t controllerIndex) {

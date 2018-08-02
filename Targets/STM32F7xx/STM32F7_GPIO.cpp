@@ -41,8 +41,10 @@ struct GpioInterruptState {
     TinyCLR_Gpio_PinValue currentValue;
 };
 
+
 struct GpioState {
     int32_t controllerIndex;
+    bool tableInitialized = false;
 };
 
 static GpioState gpioStates[TOTAL_GPIO_CONTROLLERS];
@@ -55,8 +57,15 @@ static TinyCLR_Gpio_PinDriveMode pinDriveMode[TOTAL_GPIO_PINS];
 static TinyCLR_Gpio_Controller gpioControllers[TOTAL_GPIO_CONTROLLERS];
 static TinyCLR_Api_Info gpioApi[TOTAL_GPIO_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F7_Gpio_GetApi() {
-    for (int32_t i = 0; i < TOTAL_GPIO_CONTROLLERS; i++) {
+const char* GpioApiNames[TOTAL_GPIO_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F7.GpioController\\0"
+};
+
+void STM32F7_Gpio_EnsureTableInitialized() {
+    for (auto i = 0; i < TOTAL_GPIO_CONTROLLERS; i++) {
+        if (gpioStates[i].tableInitialized)
+            continue;
+
         gpioControllers[i].ApiInfo = &gpioApi[i];
         gpioControllers[i].Acquire = &STM32F7_Gpio_Acquire;
         gpioControllers[i].Release = &STM32F7_Gpio_Release;
@@ -73,16 +82,31 @@ const TinyCLR_Api_Info* STM32F7_Gpio_GetApi() {
         gpioControllers[i].GetPinCount = &STM32F7_Gpio_GetPinCount;
 
         gpioApi[i].Author = "GHI Electronics, LLC";
-        gpioApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.GpioController";
+        gpioApi[i].Name = GpioApiNames[i];
         gpioApi[i].Type = TinyCLR_Api_Type::GpioController;
         gpioApi[i].Version = 0;
         gpioApi[i].Implementation = &gpioControllers[i];
         gpioApi[i].State = &gpioStates[i];
 
         gpioStates[i].controllerIndex = i;
+        gpioStates[i].tableInitialized = true;
+    }
+}
+
+const TinyCLR_Api_Info* STM32F7_Gpio_GetRequiredApi() {
+    STM32F7_Gpio_EnsureTableInitialized();
+
+    return &gpioApi[0];
+}
+
+void STM32F7_Gpio_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    STM32F7_Gpio_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_GPIO_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &gpioApi[i]);
     }
 
-    return (const TinyCLR_Api_Info*)&gpioApi;
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::GpioController, STM32F7_Gpio_GetRequiredApi()->Name);
 }
 
 TinyCLR_Result STM32F7_Gpio_Acquire(const TinyCLR_Gpio_Controller* self) {

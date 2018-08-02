@@ -199,6 +199,7 @@ struct TimeState {
     uint64_t m_nextCompare;
 
     TinyCLR_NativeTime_Callback m_DequeuAndExecute;
+    bool tableInitialized;
 };
 
 #define TOTAL_TIME_CONTROLLERS 1
@@ -208,32 +209,55 @@ static TimeState timeStates[TOTAL_TIME_CONTROLLERS];
 // TimeState
 //////////////////////////////////////////////////////////////////////////////
 
-static TinyCLR_NativeTime_Controller timerControllers[TOTAL_TIME_CONTROLLERS];
+static TinyCLR_NativeTime_Controller timeControllers[TOTAL_TIME_CONTROLLERS];
 static TinyCLR_Api_Info timeApi[TOTAL_TIME_CONTROLLERS];
 
-const TinyCLR_Api_Info* AT91_Time_GetApi() {
+const char* timeApiNames[TOTAL_TIME_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.AT91.NativeTimeController\\0",
+
+};
+
+void AT91_Time_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
-        timerControllers[i].ApiInfo = &timeApi[i];
-        timerControllers[i].ConvertNativeTimeToSystemTime = &AT91_Time_GetTimeForProcessorTicks;
-        timerControllers[i].ConvertSystemTimeToNativeTime = &AT91_Time_TimeToTicks;
-        timerControllers[i].GetNativeTime = &AT91_Time_GetCurrentProcessorTicks;
-        timerControllers[i].SetCallback = &AT91_Time_SetTickCallback;
-        timerControllers[i].ScheduleCallback = &AT91_Time_SetNextTickCallbackTime;
-        timerControllers[i].Initialize = &AT91_Time_Initialize;
-        timerControllers[i].Uninitialize = &AT91_Time_Uninitialize;
-        timerControllers[i].Wait = &AT91_Time_DelayNative;
+        if (timeStates[i].tableInitialized)
+            continue;
+
+        timeControllers[i].ApiInfo = &timeApi[i];
+        timeControllers[i].Initialize = &AT91_Time_Initialize;
+        timeControllers[i].Uninitialize = &AT91_Time_Uninitialize;
+        timeControllers[i].GetNativeTime = &AT91_Time_GetCurrentProcessorTicks;
+        timeControllers[i].ConvertNativeTimeToSystemTime = &AT91_Time_GetTimeForProcessorTicks;
+        timeControllers[i].ConvertSystemTimeToNativeTime = &AT91_Time_GetProcessorTicksForTime;
+        timeControllers[i].SetCallback = &AT91_Time_SetTickCallback;
+        timeControllers[i].ScheduleCallback = &AT91_Time_SetNextTickCallbackTime;
+        timeControllers[i].Wait = &AT91_Time_DelayNative;
 
         timeApi[i].Author = "GHI Electronics, LLC";
-        timeApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.NativeTimeController";
+        timeApi[i].Name = timeApiNames[i];
         timeApi[i].Type = TinyCLR_Api_Type::NativeTimeController;
         timeApi[i].Version = 0;
-        timeApi[i].Implementation = &timerControllers[i];
+        timeApi[i].Implementation = &timeControllers[i];
         timeApi[i].State = &timeStates[i];
 
         timeStates[i].controllerIndex = i;
+        timeStates[i].tableInitialized = true;
+    }
+}
+
+const TinyCLR_Api_Info* AT91_Time_GetRequiredApi() {
+    AT91_Time_EnsureTableInitialized();
+
+    return &timeApi[0];
+}
+
+void AT91_Time_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    AT91_Time_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &timeApi[i]);
     }
 
-    return (const TinyCLR_Api_Info*)&timeApi;
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::NativeTimeController, timeApi[0].Name);
 }
 
 void AT91_Time_InterruptHandler(void* Param) {
@@ -265,7 +289,7 @@ uint64_t AT91_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Controller*
     return ticks;
 }
 
-uint64_t AT91_Time_TimeToTicks(const TinyCLR_NativeTime_Controller* self, uint64_t time) {
+uint64_t AT91_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Controller* self, uint64_t time) {
     return AT91_Time_MicrosecondsToTicks(self, time / 10);
 }
 
@@ -294,7 +318,7 @@ uint64_t AT91_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller*
 
     auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
-    if (self == nullptr) { // some cases in hal layer call directly STM32F4_Time_GetCurrentProcessorTicks(nullptr), use first controller as default
+    if (self == nullptr) { // some cases in hal layer call directly AT91_Time_GetCurrentProcessorTicks(nullptr), use first controller as default
         state = &timeStates[0];
     }
 

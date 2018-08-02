@@ -12,7 +12,11 @@ static int32_t spiDisplayHeight = 0;
 static TinyCLR_Display_SpiConfiguration spiDisplayConfig;
 static const TinyCLR_Spi_Controller* spiDisplayBus;
 
-const TinyCLR_Api_Info* SPIDisplay_GetApi() {
+const char* spiDisplayApiNames[TOTAL_SPI_DISPLAY_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.Drivers.SPIDisplay\\0"
+};
+
+void SPIDisplay_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_SPI_DISPLAY_CONTROLLERS; i++) {
         spiDisplayControllers[i].ApiInfo = &spiDisplayApi[i];
         spiDisplayControllers[i].Acquire = &SPIDisplay_Acquire;
@@ -26,14 +30,14 @@ const TinyCLR_Api_Info* SPIDisplay_GetApi() {
         spiDisplayControllers[i].DrawString = &SPIDisplay_DrawString;
 
         spiDisplayApi[i].Author = "GHI Electronics, LLC";
-        spiDisplayApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.Drivers.SPIDisplay";
+        spiDisplayApi[i].Name = spiDisplayApiNames[i];
         spiDisplayApi[i].Type = TinyCLR_Api_Type::DisplayController;
         spiDisplayApi[i].Version = 0;
         spiDisplayApi[i].Implementation = &spiDisplayControllers[i];
         spiDisplayApi[i].State = nullptr;
-    }
 
-    return (const TinyCLR_Api_Info*)&spiDisplayApi;
+        apiManager->Add(apiManager, &spiDisplayApi[i]);
+    }
 }
 
 TinyCLR_Result SPIDisplay_Acquire(const TinyCLR_Display_Controller* self) {

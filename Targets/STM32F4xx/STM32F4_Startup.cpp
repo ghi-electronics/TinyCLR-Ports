@@ -457,7 +457,7 @@ const TinyCLR_Startup_UsbDebuggerConfiguration STM32F4_Startup_UsbDebuggerConfig
 void STM32F4_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN) && defined(DEBUGGER_SELECTOR_PULL) && defined(DEBUGGER_SELECTOR_USB_STATE)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(STM32F4_Gpio_GetApi()->Implementation);
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(STM32F4_Gpio_GetRequiredApi()->Implementation);
 
     provider->OpenPin(provider, DEBUGGER_SELECTOR_PIN);
     provider->SetDriveMode(provider, DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
@@ -465,11 +465,11 @@ void STM32F4_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const
     provider->ClosePin(provider, DEBUGGER_SELECTOR_PIN);
 
     if (value == DEBUGGER_SELECTOR_USB_STATE) {
-        api = STM32F4_UsbDevice_GetApi();
+        api = STM32F4_UsbDevice_GetRequiredApi();
         configuration = (const void*)&STM32F4_Startup_UsbDebuggerConfiguration;
     }
     else {
-        api = STM32F4_Uart_GetApi();
+        api = STM32F4_Uart_GetRequiredApi();
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;
@@ -481,7 +481,7 @@ void STM32F4_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const
 void STM32F4_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN) && defined(RUN_APP_PULL) && defined(RUN_APP_STATE)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(STM32F4_Gpio_GetApi()->Implementation);
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(STM32F4_Gpio_GetRequiredApi()->Implementation);
 
     provider->OpenPin(provider, RUN_APP_PIN);
     provider->SetDriveMode(provider, RUN_APP_PIN, RUN_APP_PULL);
@@ -497,7 +497,6 @@ void STM32F4_Startup_GetRunApp(bool& runApp) {
 }
 
 void STM32F4_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
-    api = STM32F4_Deployment_GetApi();
-    configuration = STM32F4_Flash_GetDeploymentConfiguration();
+    STM32F4_Flash_GetDeploymentApi(api, configuration);
 }
 

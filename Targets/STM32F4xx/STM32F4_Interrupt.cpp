@@ -23,11 +23,24 @@
 TinyCLR_Interrupt_StartStopHandler STM32F4_Interrupt_Started;
 TinyCLR_Interrupt_StartStopHandler STM32F4_Interrupt_Ended;
 
+struct InterruptState {
+    uint32_t controllerIndex;
+    bool tableInitialized;
+};
+
+const char* interruptApiNames[TOTAL_INTERRUPT_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.InterruptController\\0"
+};
+
 static TinyCLR_Interrupt_Controller interruptControllers[TOTAL_INTERRUPT_CONTROLLERS];
 static TinyCLR_Api_Info interruptApi[TOTAL_INTERRUPT_CONTROLLERS];
+static InterruptState interruptStates[TOTAL_INTERRUPT_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F4_Interrupt_GetApi() {
-    for (int32_t i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
+void STM32F4_Interrupt_EnsureTableInitialized() {
+    for (auto i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
+        if (interruptStates[i].tableInitialized)
+            continue;
+
         interruptControllers[i].ApiInfo = &interruptApi[i];
         interruptControllers[i].Initialize = &STM32F4_Interrupt_Initialize;
         interruptControllers[i].Uninitialize = &STM32F4_Interrupt_Uninitialize;
@@ -38,14 +51,31 @@ const TinyCLR_Api_Info* STM32F4_Interrupt_GetApi() {
         interruptControllers[i].Restore = &STM32F4_Interrupt_Restore;
 
         interruptApi[i].Author = "GHI Electronics, LLC";
-        interruptApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.InterruptController";
+        interruptApi[i].Name = interruptApiNames[i];
         interruptApi[i].Type = TinyCLR_Api_Type::InterruptController;
         interruptApi[i].Version = 0;
         interruptApi[i].Implementation = &interruptControllers[i];
-        interruptApi[i].State = nullptr;
+        interruptApi[i].State = &interruptStates[i];
+
+        interruptStates[i].controllerIndex = i;
+        interruptStates[i].tableInitialized = true;
+    }
+}
+
+const TinyCLR_Api_Info* STM32F4_Interrupt_GetRequiredApi() {
+    STM32F4_Interrupt_EnsureTableInitialized();
+
+    return &interruptApi[0];
+}
+
+void STM32F4_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    STM32F4_Interrupt_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &interruptApi[i]);
     }
 
-    return (const TinyCLR_Api_Info*)&interruptApi;
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::InterruptController, interruptApi[0].Name);
 }
 
 extern "C" {

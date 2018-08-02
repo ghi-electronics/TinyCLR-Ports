@@ -221,7 +221,7 @@ const TinyCLR_Startup_UsbDebuggerConfiguration AT91_Startup_UsbDebuggerConfigura
 void AT91_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(AT91_Gpio_GetApi()->Implementation);
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(AT91_Gpio_GetRequiredApi()->Implementation);
 
     provider->OpenPin(provider, DEBUGGER_SELECTOR_PIN);
     provider->SetDriveMode(provider, DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
@@ -229,11 +229,11 @@ void AT91_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const vo
     provider->ClosePin(provider, DEBUGGER_SELECTOR_PIN);
 
     if (value == DEBUGGER_SELECTOR_USB_STATE) {
-        api = AT91_UsbDevice_GetApi();
+        api = AT91_UsbDevice_GetRequiredApi();
         configuration = (const void*)&AT91_Startup_UsbDebuggerConfiguration;
     }
     else {
-        api = AT91_Uart_GetApi();        
+        api = AT91_Uart_GetRequiredApi();
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;
@@ -246,7 +246,7 @@ void AT91_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const vo
 void AT91_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(AT91_Gpio_GetApi()->Implementation);
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(AT91_Gpio_GetRequiredApi()->Implementation);
 
     provider->OpenPin(provider, RUN_APP_PIN);
     provider->SetDriveMode(provider, RUN_APP_PIN, RUN_APP_PULL);
@@ -262,6 +262,5 @@ void AT91_Startup_GetRunApp(bool& runApp) {
 }
 
 void AT91_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
-    api = AT91_Deployment_GetApi();
-    configuration = AT91_Deployment_GetDeploymentConfiguration();
+    AT91_Deployment_GetDeploymentApi(api, configuration);
 }

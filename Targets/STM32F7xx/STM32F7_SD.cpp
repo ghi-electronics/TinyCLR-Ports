@@ -2675,7 +2675,11 @@ static const STM32F7_Gpio_Pin sdCardCmdPins[] = STM32F7_SD_CMD_PINS;
 
 static SdCardState sdCardStates[TOTAL_SDCARD_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F7_SdCard_GetApi() {
+const char* sdCardApiNames[TOTAL_SDCARD_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F7.SdCardStorageController\\0"
+};
+
+void STM32F7_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
         sdCardControllers[i].ApiInfo = &sdCardApi[i];
         sdCardControllers[i].Acquire = &STM32F7_SdCard_Acquire;
@@ -2691,16 +2695,18 @@ const TinyCLR_Api_Info* STM32F7_SdCard_GetApi() {
         sdCardControllers[i].SetPresenceChangedHandler = &STM32F7_SdCard_SetPresenceChangedHandler;
 
         sdCardApi[i].Author = "GHI Electronics, LLC";
-        sdCardApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.SdCardStorageController";
+        sdCardApi[i].Name = sdCardApiNames[i];
         sdCardApi[i].Type = TinyCLR_Api_Type::StorageController;
         sdCardApi[i].Version = 0;
         sdCardApi[i].Implementation = &sdCardControllers[i];
         sdCardApi[i].State = &sdCardStates[i];
 
         sdCardStates[i].controllerIndex = i;
+
+        apiManager->Add(apiManager, &sdCardApi[i]);
     }
 
-    return (const TinyCLR_Api_Info*)&sdCardApi;
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::StorageController, sdCardApi[0].Name);
 }
 
 TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
@@ -2752,12 +2758,18 @@ TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
 
     SD_DeInit();
 
+    auto trycount = 3;
+
+tryinit:
     if (SD_Init() == SD_OK) {
         state->isOpened = true;
 
         return TinyCLR_Result::Success;
     }
-
+    else {
+        if (trycount-- > 0)
+            goto tryinit;
+    }
     return TinyCLR_Result::InvalidOperation;
 }
 
@@ -2904,6 +2916,12 @@ TinyCLR_Result STM32F7_SdCard_IsPresent(const TinyCLR_Storage_Controller* self, 
 }
 
 TinyCLR_Result STM32F7_SdCard_Reset() {
+    for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
+        auto state = &sdCardStates[i];
+        
+        state->isOpened = false;
+    }
+
     return TinyCLR_Result::Success;
 }
 #endif // INCLUDE_SD

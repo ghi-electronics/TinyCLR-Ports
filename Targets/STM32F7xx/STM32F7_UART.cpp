@@ -59,6 +59,7 @@ struct UartState {
     TinyCLR_Uart_DataReceivedHandler dataReceivedEventHandler;
 
     const TinyCLR_Uart_Controller* controller;
+    bool tableInitialized;
 };
 
 static const STM32F7_Gpio_Pin uartTxPins[] = STM32F7_UART_TX_PINS;
@@ -76,11 +77,18 @@ static UartState uartStates[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 
-const TinyCLR_Api_Info* STM32F7_Uart_GetApi() {
+const char* uartApiNames[TOTAL_UART_CONTROLLERS] = STM32F7_UART_CONTROLLER_NAMES;
+
+void STM32F7_Uart_EnsureTableInitialized() {
     for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        if (uartStates[i].tableInitialized)
+            continue;
+
         uartControllers[i].ApiInfo = &uartApi[i];
         uartControllers[i].Acquire = &STM32F7_Uart_Acquire;
         uartControllers[i].Release = &STM32F7_Uart_Release;
+        uartControllers[i].Enable = &STM32F7_Uart_Enable;
+        uartControllers[i].Disable = &STM32F7_Uart_Disable;
         uartControllers[i].SetActiveSettings = &STM32F7_Uart_SetActiveSettings;
         uartControllers[i].Flush = &STM32F7_Uart_Flush;
         uartControllers[i].Read = &STM32F7_Uart_Read;
@@ -101,13 +109,14 @@ const TinyCLR_Api_Info* STM32F7_Uart_GetApi() {
         uartControllers[i].ClearWriteBuffer = &STM32F7_Uart_ClearWriteBuffer;
 
         uartApi[i].Author = "GHI Electronics, LLC";
-        uartApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.UartController";
+        uartApi[i].Name = uartApiNames[i];
         uartApi[i].Type = TinyCLR_Api_Type::UartController;
         uartApi[i].Version = 0;
         uartApi[i].Implementation = &uartControllers[i];
         uartApi[i].State = &uartStates[i];
 
         uartStates[i].controllerIndex = i;
+        uartStates[i].tableInitialized = true;
     }
 
     if (TOTAL_UART_CONTROLLERS > 0) uartPortRegs[0] = USART1;
@@ -127,7 +136,22 @@ const TinyCLR_Api_Info* STM32F7_Uart_GetApi() {
 #endif
 #endif
 #endif
-    return (const TinyCLR_Api_Info*)&uartApi;
+
+}
+
+const TinyCLR_Api_Info* STM32F7_Uart_GetRequiredApi() {
+    STM32F7_Uart_EnsureTableInitialized();
+
+    return &uartApi[0];
+}
+
+
+void STM32F7_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    STM32F7_Uart_EnsureTableInitialized();
+
+    for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &uartApi[i]);
+    }
 }
 
 size_t STM32F7_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self) {
@@ -842,9 +866,9 @@ TinyCLR_Result STM32F7_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self
 }
 
 TinyCLR_Result STM32F7_Uart_Enable(const TinyCLR_Uart_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F7_Uart_Disable(const TinyCLR_Uart_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    return TinyCLR_Result::Success;
 }

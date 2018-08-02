@@ -426,9 +426,10 @@ struct SpiState {
     int32_t dataBitLength;
     int32_t clockFrequency;
 
-    bool isOpened;
-
     TinyCLR_Spi_Mode spiMode;
+    
+    bool isOpened;
+    bool tableInitialized = false;
 };
 
 static SpiState spiStates[TOTAL_SPI_CONTROLLERS];
@@ -438,8 +439,13 @@ static TinyCLR_Api_Info spiApi[TOTAL_SPI_CONTROLLERS];
 
 void LPC17_Spi_Reset();
 
-const TinyCLR_Api_Info* LPC17_Spi_GetApi() {
+const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = LPC17_SPI_CONTROLLER_NAMES;
+
+void LPC17_Spi_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
+        if (spiStates[i].tableInitialized)
+            continue;
+        
         spiControllers[i].ApiInfo = &spiApi[i];
         spiControllers[i].Acquire = &LPC17_Spi_Acquire;
         spiControllers[i].Release = &LPC17_Spi_Release;
@@ -451,16 +457,29 @@ const TinyCLR_Api_Info* LPC17_Spi_GetApi() {
         spiControllers[i].GetSupportedDataBitLengths = &LPC17_Spi_GetSupportedDataBitLengths;
 
         spiApi[i].Author = "GHI Electronics, LLC";
-        spiApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.SpiController";
+        spiApi[i].Name = spiApiNames[i];
         spiApi[i].Type = TinyCLR_Api_Type::SpiController;
         spiApi[i].Version = 0;
         spiApi[i].Implementation = &spiControllers[i];
         spiApi[i].State = &spiStates[i];
 
         spiStates[i].controllerIndex = i;
-    }
+        spiStates[i].tableInitialized = true;
+    } 
+}
 
-    return (const TinyCLR_Api_Info*)&spiApi;
+const TinyCLR_Api_Info* LPC17_Spi_GetRequiredApi() {
+    LPC17_Spi_EnsureTableInitialized();
+
+    return &spiApi[0];
+}
+
+void LPC17_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    LPC17_Spi_EnsureTableInitialized(); 
+
+    for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &spiApi[i]);
+    }    
 }
 
 bool LPC17_Spi_Transaction_Start(int32_t controllerIndex) {

@@ -2,7 +2,7 @@
 
 #include <TinyCLR.h>
 
-const TinyCLR_Api_Info* SPIDisplay_GetApi();
+void SPIDisplay_AddApi(const TinyCLR_Api_Manager* apiManager);
 TinyCLR_Result SPIDisplay_Acquire(const TinyCLR_Display_Controller* self);
 TinyCLR_Result SPIDisplay_Release(const TinyCLR_Display_Controller* self);
 TinyCLR_Result SPIDisplay_Enable(const TinyCLR_Display_Controller* self);

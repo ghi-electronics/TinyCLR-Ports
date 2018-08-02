@@ -36,39 +36,40 @@
 #define PWM_MICROSECONDS  1000000
 #define PWM_NANOSECONDS   1000000000
 
+const char* PwmApiNames[TOTAL_PWM_CONTROLLERS] = AT91_PWM_CONTROLLER_NAMES;
+
 static PwmState pwmStates[TOTAL_PWM_CONTROLLERS];
 
 static TinyCLR_Pwm_Controller pwmControllers[TOTAL_PWM_CONTROLLERS];
 static TinyCLR_Api_Info pwmApi[TOTAL_PWM_CONTROLLERS];
 
-const TinyCLR_Api_Info* AT91_Pwm_GetApi() {
-    for (int32_t i = 0; i < TOTAL_PWM_CONTROLLERS; i++) {
+void AT91_Pwm_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    for (auto i = 0; i < TOTAL_PWM_CONTROLLERS; i++) {
         pwmControllers[i].ApiInfo = &pwmApi[i];
         pwmControllers[i].Acquire = &AT91_Pwm_Acquire;
         pwmControllers[i].Release = &AT91_Pwm_Release;
-        pwmControllers[i].SetDesiredFrequency = &AT91_Pwm_SetDesiredFrequency;
         pwmControllers[i].OpenChannel = &AT91_Pwm_OpenChannel;
         pwmControllers[i].CloseChannel = &AT91_Pwm_CloseChannel;
         pwmControllers[i].EnableChannel = &AT91_Pwm_EnableChannel;
         pwmControllers[i].DisableChannel = &AT91_Pwm_DisableChannel;
         pwmControllers[i].SetPulseParameters = &AT91_Pwm_SetPulseParameters;
+        pwmControllers[i].SetDesiredFrequency = &AT91_Pwm_SetDesiredFrequency;
         pwmControllers[i].GetMinFrequency = &AT91_Pwm_GetMinFrequency;
         pwmControllers[i].GetMaxFrequency = &AT91_Pwm_GetMaxFrequency;
         pwmControllers[i].GetChannelCount = &AT91_Pwm_GetChannelCount;
 
         pwmApi[i].Author = "GHI Electronics, LLC";
-        pwmApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.PwmController";
+        pwmApi[i].Name = PwmApiNames[i];
         pwmApi[i].Type = TinyCLR_Api_Type::PwmController;
         pwmApi[i].Version = 0;
         pwmApi[i].Implementation = &pwmControllers[i];
         pwmApi[i].State = &pwmStates[i];
 
         pwmStates[i].controllerIndex = i;
+
+        apiManager->Add(apiManager, &pwmApi[i]);
     }
-
-    return (const TinyCLR_Api_Info*)&pwmApi;
 }
-
 static const AT91_Gpio_Pin pwmPins[TOTAL_PWM_CONTROLLERS][MAX_PWM_PER_CONTROLLER] = AT91_PWM_PINS;
 
 AT91_Gpio_Pin AT91_Pwm_GetPins(int32_t controllerIndex, int32_t channel) {

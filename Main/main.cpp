@@ -23,58 +23,51 @@ void OnSoftReset(const TinyCLR_Api_Manager* apiManager) {
     ::apiManager = apiManager;
 
 #ifdef INCLUDE_ADC
-    apiManager->Add(apiManager, TARGET(_Adc_GetApi)());
-    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::AdcController, TARGET(_Adc_GetApi)()->Name);
+    TARGET(_Adc_AddApi)(apiManager);
 #endif
 
 #ifdef INCLUDE_CAN
-    apiManager->Add(apiManager, TARGET(_Can_GetApi)());
-    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::CanController, TARGET(_Can_GetApi)()->Name);
+    TARGET(_Can_AddApi)(apiManager);
 #endif
 
 #ifdef INCLUDE_DAC
-    apiManager->Add(apiManager, TARGET(_Dac_GetApi)());
-    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::DacController, TARGET(_Dac_GetApi)()->Name);
+    TARGET(_Dac_AddApi)(apiManager);
 #endif
 
 #ifdef INCLUDE_DISPLAY
-    apiManager->Add(apiManager, TARGET(_Display_GetApi)());
-    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::DisplayController, TARGET(_Display_GetApi)()->Name);
+    TARGET(_Display_AddApi)(apiManager);
 #endif
 
 #ifdef INCLUDE_GPIO
-    apiManager->Add(apiManager, TARGET(_Gpio_GetApi)());
-    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::GpioController, TARGET(_Gpio_GetApi)()->Name);
+    TARGET(_Gpio_AddApi)(apiManager);
 #endif
 
 #ifdef INCLUDE_I2C
-    apiManager->Add(apiManager, TARGET(_I2c_GetApi)());
+    TARGET(_I2c_AddApi)(apiManager);
 #endif
 
 #ifdef INCLUDE_PWM
-    apiManager->Add(apiManager, TARGET(_Pwm_GetApi)());
+    TARGET(_Pwm_AddApi)(apiManager);
 #endif
 
 #ifdef INCLUDE_RTC
-    apiManager->Add(apiManager, TARGET(_Rtc_GetApi)());
-    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::RtcController, TARGET(_Rtc_GetApi)()->Name);
+    TARGET(_Rtc_AddApi)(apiManager);
 #endif
 
 #ifdef INCLUDE_SD
-    apiManager->Add(apiManager, TARGET(_SdCard_GetApi)());
-    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::StorageController, TARGET(_SdCard_GetApi)()->Name);
+    TARGET(_SdCard_AddApi)(apiManager);
 #endif
 
 #ifdef INCLUDE_SPI
-    apiManager->Add(apiManager, TARGET(_Spi_GetApi)());
+    TARGET(_Spi_AddApi)(apiManager);
 #endif
 
 #ifdef INCLUDE_UART
-    apiManager->Add(apiManager, TARGET(_Uart_GetApi)());
+    TARGET(_Uart_AddApi)(apiManager);
 #endif
 
 #ifdef INCLUDE_USBCLIENT
-    apiManager->Add(apiManager, TARGET(_UsbDevice_GetApi)());
+    TARGET(_UsbDevice_AddApi)(apiManager);
 #endif
 
     auto interopManager = reinterpret_cast<const TinyCLR_Interop_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::InteropManager));
@@ -106,7 +99,7 @@ int main() {
     TinyCLR_Startup_SetDeploymentApi(deploymentApi, deploymentConfiguration);
 
     TinyCLR_Startup_SetDeviceInformation(DEVICE_NAME, DEVICE_MANUFACTURER, DEVICE_VERSION);
-    TinyCLR_Startup_SetRequiredApis(TARGET(_Interrupt_GetApi)(), TARGET(_Power_GetApi)(), TARGET(_Time_GetApi)());
+    TinyCLR_Startup_SetRequiredApis(TARGET(_Interrupt_GetRequiredApi)(), TARGET(_Power_GetRequiredApi)(), TARGET(_Time_GetRequiredApi()));
 
     auto runApp = true;
 

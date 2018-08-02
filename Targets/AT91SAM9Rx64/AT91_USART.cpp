@@ -43,18 +43,26 @@ struct UartState {
     TinyCLR_Uart_DataReceivedHandler dataReceivedEventHandler;
 
     const TinyCLR_Uart_Controller* controller;
-
+    bool tableInitialized = false;
 };
 
 static UartState uartStates[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 
-const TinyCLR_Api_Info* AT91_Uart_GetApi() {
+
+const char* uartApiNames[TOTAL_UART_CONTROLLERS] = AT91_UART_CONTROLLER_NAMES;
+
+void AT91_Uart_EnsureTableInitialized() {
     for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        if (uartStates[i].tableInitialized)
+            continue;
+
         uartControllers[i].ApiInfo = &uartApi[i];
         uartControllers[i].Acquire = &AT91_Uart_Acquire;
         uartControllers[i].Release = &AT91_Uart_Release;
+        uartControllers[i].Enable = &AT91_Uart_Enable;
+        uartControllers[i].Disable = &AT91_Uart_Disable;
         uartControllers[i].SetActiveSettings = &AT91_Uart_SetActiveSettings;
         uartControllers[i].Flush = &AT91_Uart_Flush;
         uartControllers[i].Read = &AT91_Uart_Read;
@@ -75,16 +83,29 @@ const TinyCLR_Api_Info* AT91_Uart_GetApi() {
         uartControllers[i].ClearWriteBuffer = &AT91_Uart_ClearWriteBuffer;
 
         uartApi[i].Author = "GHI Electronics, LLC";
-        uartApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.UartController";
+        uartApi[i].Name = uartApiNames[i];
         uartApi[i].Type = TinyCLR_Api_Type::UartController;
         uartApi[i].Version = 0;
         uartApi[i].Implementation = &uartControllers[i];
         uartApi[i].State = &uartStates[i];
 
         uartStates[i].controllerIndex = i;
+        uartStates[i].tableInitialized = true;
     }
+}
 
-    return (const TinyCLR_Api_Info*)&uartApi;
+const TinyCLR_Api_Info* AT91_Uart_GetRequiredApi() {
+    AT91_Uart_EnsureTableInitialized();
+
+    return &uartApi[0];
+}
+
+void AT91_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    AT91_Uart_EnsureTableInitialized();
+
+    for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &uartApi[i]);
+    }
 }
 
 static const AT91_Gpio_Pin uartTxPins[] = AT91_UART_TX_PINS;
@@ -749,9 +770,9 @@ void AT91_Uart_Reset() {
 }
 
 TinyCLR_Result AT91_Uart_Enable(const TinyCLR_Uart_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Uart_Disable(const TinyCLR_Uart_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    return TinyCLR_Result::Success;
 }

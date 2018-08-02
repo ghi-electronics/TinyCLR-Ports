@@ -2374,7 +2374,11 @@ static Mci mciDrv;
 /// SDCard state instance.
 static SdCard sdDrv;
 
-const TinyCLR_Api_Info* AT91_SdCard_GetApi() {
+const char* sdCardApiNames[TOTAL_SDCARD_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.AT91.SdCardStorageController\\0"
+};
+
+void AT91_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
         sdCardControllers[i].ApiInfo = &sdCardApi[i];
         sdCardControllers[i].Acquire = &AT91_SdCard_Acquire;
@@ -2390,18 +2394,19 @@ const TinyCLR_Api_Info* AT91_SdCard_GetApi() {
         sdCardControllers[i].SetPresenceChangedHandler = &AT91_SdCard_SetPresenceChangedHandler;
 
         sdCardApi[i].Author = "GHI Electronics, LLC";
-        sdCardApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.SdCardStorageController";
+        sdCardApi[i].Name = sdCardApiNames[i];
         sdCardApi[i].Type = TinyCLR_Api_Type::StorageController;
         sdCardApi[i].Version = 0;
         sdCardApi[i].Implementation = &sdCardControllers[i];
         sdCardApi[i].State = &sdCardStates[i];
 
         sdCardStates[i].controllerIndex = i;
+
+        apiManager->Add(apiManager, &sdCardApi[i]);
     }
 
-    return (const TinyCLR_Api_Info*)&sdCardApi;
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::StorageController, sdCardApi[0].Name);
 }
-
 TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
@@ -2725,6 +2730,12 @@ TinyCLR_Result AT91_SdCard_IsPresent(const TinyCLR_Storage_Controller* self, boo
 }
 
 TinyCLR_Result AT91_SdCard_Reset() {
+    for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
+        auto state = &sdCardStates[i];
+        
+        state->isOpened = false;
+    }
+
     return TinyCLR_Result::Success;
 }
 #endif // INCLUDE_SD

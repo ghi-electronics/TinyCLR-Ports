@@ -32,7 +32,7 @@
 #define G120E_DETECT3_STATE TinyCLR_Gpio_PinValue::Low
 
 void LPC17_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopManager) {
-    apiManager->Add(apiManager, SPIDisplay_GetApi());
+    SPIDisplay_AddApi(apiManager);
     interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices);
 }
 
@@ -93,7 +93,7 @@ const TinyCLR_Startup_UsbDebuggerConfiguration LPC17_Startup_UsbDebuggerConfigur
 void LPC17_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value, valueUsbActive;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC17_Gpio_GetApi()->Implementation);
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC17_Gpio_GetRequiredApi()->Implementation);
 
     provider->OpenPin(provider, LPC17_Startup_GetDebuggerSelectorPin());
     provider->SetDriveMode(provider, LPC17_Startup_GetDebuggerSelectorPin(), LPC17_Startup_GetDebuggerSelectorPull());
@@ -103,11 +103,11 @@ void LPC17_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const v
     valueUsbActive = LPC17_Startup_GetDebuggerSelectorUsbState();
 
     if (value == valueUsbActive) {
-        api = LPC17_UsbDevice_GetApi();
+        api = LPC17_UsbDevice_GetRequiredApi();
         configuration = (const void*)&LPC17_Startup_UsbDebuggerConfiguration;
     }
     else {
-        api = LPC17_Uart_GetApi();        
+        api = LPC17_Uart_GetRequiredApi();        
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;
@@ -120,7 +120,7 @@ void LPC17_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const v
 void LPC17_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC17_Gpio_GetApi()->Implementation);
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC17_Gpio_GetRequiredApi()->Implementation);
 
     provider->OpenPin(provider, RUN_APP_PIN);
     provider->SetDriveMode(provider, RUN_APP_PIN, RUN_APP_PULL);

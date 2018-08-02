@@ -64,12 +64,14 @@
 #define PWM_MICROSECONDS  1000000
 #define PWM_NANOSECONDS   1000000000
 
+const char* PwmApiNames[TOTAL_PWM_CONTROLLERS] = LPC17_PWM_CONTROLLER_NAMES;
+
 static PwmState pwmStates[TOTAL_PWM_CONTROLLERS];
 
 static TinyCLR_Pwm_Controller pwmControllers[TOTAL_PWM_CONTROLLERS];
 static TinyCLR_Api_Info pwmApi[TOTAL_PWM_CONTROLLERS];
 
-const TinyCLR_Api_Info* LPC17_Pwm_GetApi() {
+void LPC17_Pwm_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_PWM_CONTROLLERS; i++) {
         pwmControllers[i].ApiInfo = &pwmApi[i];
         pwmControllers[i].Acquire = &LPC17_Pwm_Acquire;
@@ -85,16 +87,16 @@ const TinyCLR_Api_Info* LPC17_Pwm_GetApi() {
         pwmControllers[i].GetChannelCount = &LPC17_Pwm_GetChannelCount;
 
         pwmApi[i].Author = "GHI Electronics, LLC";
-        pwmApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.PwmController";
+        pwmApi[i].Name = PwmApiNames[i];
         pwmApi[i].Type = TinyCLR_Api_Type::PwmController;
         pwmApi[i].Version = 0;
         pwmApi[i].Implementation = &pwmControllers[i];
         pwmApi[i].State = &pwmStates[i];
 
         pwmStates[i].controllerIndex = i;
-    }
 
-    return (const TinyCLR_Api_Info*)&pwmApi;
+        apiManager->Add(apiManager, &pwmApi[i]);
+    }
 }
 
 TinyCLR_Result LPC17_Pwm_OpenChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel) {

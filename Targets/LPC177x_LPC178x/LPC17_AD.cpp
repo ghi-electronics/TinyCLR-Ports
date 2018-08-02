@@ -235,13 +235,17 @@ static const LPC17_Gpio_Pin adcPins[] = LPC17_ADC_PINS;
 static TinyCLR_Adc_Controller adcControllers[TOTAL_ADC_CONTROLLERS];
 static TinyCLR_Api_Info adcApi[TOTAL_ADC_CONTROLLERS];
 
+const char* adcApiNames[TOTAL_ADC_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.LPC17.AdcController\\0"
+};
+
 struct AdcState {
     bool isOpen[SIZEOF_ARRAY(adcPins)];
 };
 
 static AdcState adcStates[TOTAL_ADC_CONTROLLERS];
 
-const TinyCLR_Api_Info* LPC17_Adc_GetApi() {
+void LPC17_Adc_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_ADC_CONTROLLERS; i++) {
         adcControllers[i].ApiInfo = &adcApi[i];
         adcControllers[i].Acquire = &LPC17_Adc_Acquire;
@@ -258,14 +262,16 @@ const TinyCLR_Api_Info* LPC17_Adc_GetApi() {
         adcControllers[i].GetChannelCount = &LPC17_Adc_GetChannelCount;
 
         adcApi[i].Author = "GHI Electronics, LLC";
-        adcApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.AdcController";
+        adcApi[i].Name = adcApiNames[i];
         adcApi[i].Type = TinyCLR_Api_Type::AdcController;
         adcApi[i].Version = 0;
         adcApi[i].Implementation = &adcControllers[i];
         adcApi[i].State = &adcStates[i];
+        
+        apiManager->Add(apiManager, &adcApi[i]);
     }
 
-    return (const TinyCLR_Api_Info*)&adcApi;
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::AdcController, adcApi[0].Name);
 }
 
 TinyCLR_Result LPC17_Adc_Acquire(const TinyCLR_Adc_Controller* self) {

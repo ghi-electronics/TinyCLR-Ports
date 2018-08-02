@@ -53,12 +53,20 @@ struct DeploymentState {
     TinyCLR_Startup_DeploymentConfiguration deploymentConfiguration;
 
     bool isOpened = false;
+    bool tableInitialized = false;
 };
 
-static DeploymentState deploymentState[TOTAL_DEPLOYMENT_CONTROLLERS];
+static DeploymentState deploymentStates[TOTAL_DEPLOYMENT_CONTROLLERS];
 
-const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
+const char* flashApiNames[TOTAL_DEPLOYMENT_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.LPC24.StorageController\\0"
+};
+
+void LPC24_Deployment_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
+        if (deploymentStates[i].tableInitialized)
+            continue;
+
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
         deploymentControllers[i].Acquire = &LPC24_Deployment_Acquire;
         deploymentControllers[i].Release = &LPC24_Deployment_Release;
@@ -73,17 +81,41 @@ const TinyCLR_Api_Info* LPC24_Deployment_GetApi() {
         deploymentControllers[i].SetPresenceChangedHandler = &LPC24_Deployment_SetPresenceChangedHandler;
 
         deploymentApi[i].Author = "GHI Electronics, LLC";
-        deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.StorageController";
+        deploymentApi[i].Name = flashApiNames[i];
         deploymentApi[i].Type = TinyCLR_Api_Type::StorageController;
         deploymentApi[i].Version = 0;
         deploymentApi[i].Implementation = &deploymentControllers[i];
-        deploymentApi[i].State = &deploymentState[i];
+        deploymentApi[i].State = &deploymentStates[i];
 
-        deploymentState[i].controllerIndex = i;
-        deploymentState[i].regionCount = DEPLOYMENT_SECTOR_NUM;
+        deploymentStates[i].controllerIndex = i;
+        deploymentStates[i].regionCount = DEPLOYMENT_SECTOR_NUM;
+
+        deploymentStates[i].tableInitialized = true;
+
+        for (auto ii = 0; ii < deploymentStates[i].regionCount; ii++) {
+            deploymentStates[i].regionAddresses[ii] = flashAddresses[ii + DEPLOYMENT_SECTOR_START];
+            deploymentStates[i].regionSizes[ii] = flashSize[ii + DEPLOYMENT_SECTOR_START];
+        }
+    }
+}
+
+void LPC24_Deployment_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
+    LPC24_Deployment_EnsureTableInitialized();
+
+    auto state = &deploymentStates[0];
+
+    api = &deploymentApi[0];
+    configuration = &state->deploymentConfiguration;
+}
+
+void LPC24_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    LPC24_Deployment_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &deploymentApi[i]);
     }
 
-    return (const TinyCLR_Api_Info*)&deploymentApi;
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::StorageController, deploymentApi[0].Name);
 }
 
 int32_t __section("SectionForFlashOperations") LPC24_Deployment_PrepaireSector(int32_t startsec, int32_t endsec) {
@@ -359,7 +391,7 @@ TinyCLR_Result LPC24_Deployment_IsPresent(const TinyCLR_Storage_Controller* self
 }
 
 const TinyCLR_Startup_DeploymentConfiguration* LPC24_Deployment_GetDeploymentConfiguration() {
-    auto state = &deploymentState[0];
+    auto state = &deploymentStates[0];
 
     return reinterpret_cast<const TinyCLR_Startup_DeploymentConfiguration*>(&state->deploymentConfiguration);
 }

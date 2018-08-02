@@ -39,6 +39,7 @@ struct SpiState {
     bool isOpened;
 
     TinyCLR_Spi_Mode spiMode;
+    bool tableInitialized = false;
 };
 
 static SpiState spiStates[TOTAL_SPI_CONTROLLERS];
@@ -46,29 +47,47 @@ static SpiState spiStates[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Spi_Controller spiControllers[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Api_Info spiApi[TOTAL_SPI_CONTROLLERS];
 
-const TinyCLR_Api_Info* AT91_Spi_GetApi() {
+const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = AT91_SPI_CONTROLLER_NAMES;
+
+void AT91_Spi_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
+        if (spiStates[i].tableInitialized)
+            continue;
+
         spiControllers[i].ApiInfo = &spiApi[i];
         spiControllers[i].Acquire = &AT91_Spi_Acquire;
         spiControllers[i].Release = &AT91_Spi_Release;
-		spiControllers[i].WriteRead = &AT91_Spi_WriteRead;
-        spiControllers[i].SetActiveSettings = &AT91_Spi_SetActiveSettings;		
+        spiControllers[i].WriteRead = &AT91_Spi_WriteRead;
+        spiControllers[i].SetActiveSettings = &AT91_Spi_SetActiveSettings;
         spiControllers[i].GetChipSelectLineCount = &AT91_Spi_GetChipSelectLineCount;
         spiControllers[i].GetMinClockFrequency = &AT91_Spi_GetMinClockFrequency;
         spiControllers[i].GetMaxClockFrequency = &AT91_Spi_GetMaxClockFrequency;
         spiControllers[i].GetSupportedDataBitLengths = &AT91_Spi_GetSupportedDataBitLengths;
 
         spiApi[i].Author = "GHI Electronics, LLC";
-        spiApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.SpiController";
+        spiApi[i].Name = spiApiNames[i];
         spiApi[i].Type = TinyCLR_Api_Type::SpiController;
         spiApi[i].Version = 0;
         spiApi[i].Implementation = &spiControllers[i];
         spiApi[i].State = &spiStates[i];
 
         spiStates[i].controllerIndex = i;
+        spiStates[i].tableInitialized = true;
     }
+}
 
-    return (const TinyCLR_Api_Info*)&spiApi;
+const TinyCLR_Api_Info* AT91_Spi_GetRequiredApi() {
+    AT91_Spi_EnsureTableInitialized();
+
+    return &spiApi[0];
+}
+
+void AT91_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    AT91_Spi_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &spiApi[i]);
+    }
 }
 
 bool AT91_Spi_Transaction_Start(int32_t controllerIndex) {

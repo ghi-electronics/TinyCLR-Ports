@@ -252,6 +252,5 @@ void LPC24_Startup_Initialize() {
 }
 
 void LPC24_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
-    api = LPC24_Deployment_GetApi();
-    configuration = LPC24_Deployment_GetDeploymentConfiguration();
+    LPC24_Deployment_GetDeploymentApi(api, configuration);
 }

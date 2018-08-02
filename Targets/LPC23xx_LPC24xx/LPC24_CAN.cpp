@@ -2222,7 +2222,9 @@ int32_t BinarySearch2(uint32_t *lowerBounds, uint32_t *upperBounds, int32_t firs
     return -1;    // failed to find key
 }
 
-const TinyCLR_Api_Info* LPC24_Can_GetApi() {
+const char* canApiNames[TOTAL_CAN_CONTROLLERS] = LPC24_CAN_CONTROLLER_NAMES;
+
+void LPC24_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
         canControllers[i].ApiInfo = &canApi[i];
         canControllers[i].Acquire = &LPC24_Can_Acquire;
@@ -2239,7 +2241,7 @@ const TinyCLR_Api_Info* LPC24_Can_GetApi() {
         canControllers[i].SetErrorReceivedHandler = &LPC24_Can_SetErrorReceivedHandler;
         canControllers[i].SetExplicitFilters = &LPC24_Can_SetExplicitFilters;
         canControllers[i].SetGroupFilters = &LPC24_Can_SetGroupFilters;
-        canControllers[i].ClearReadBuffer = &LPC24_Can_ClearReadBuffer;        
+        canControllers[i].ClearReadBuffer = &LPC24_Can_ClearReadBuffer;
         canControllers[i].GetWriteErrorCount = &LPC24_Can_GetWriteErrorCount;
         canControllers[i].GetReadErrorCount = &LPC24_Can_GetReadErrorCount;
         canControllers[i].GetSourceClock = &LPC24_Can_GetSourceClock;
@@ -2249,16 +2251,16 @@ const TinyCLR_Api_Info* LPC24_Can_GetApi() {
         canControllers[i].SetWriteBufferSize = &LPC24_Can_SetWriteBufferSize;
 
         canApi[i].Author = "GHI Electronics, LLC";
-        canApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.CanController";
+        canApi[i].Name = canApiNames[i];
         canApi[i].Type = TinyCLR_Api_Type::CanController;
         canApi[i].Version = 0;
         canApi[i].Implementation = &canControllers[i];
         canApi[i].State = &canStates[i];
 
         canStates[i].controllerIndex = i;
-    }
 
-    return (const TinyCLR_Api_Info*)&canApi;
+        apiManager->Add(apiManager, &canApi[i]);
+    }
 }
 
 uint32_t LPC24_Can_GetLocalTime() {

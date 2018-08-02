@@ -1183,7 +1183,9 @@ int32_t BinarySearch2(uint32_t *lowerBounds, uint32_t *upperBounds, int32_t firs
     return -1;    // failed to find key
 }
 
-const TinyCLR_Api_Info* AT91_Can_GetApi() {
+const char* canApiNames[TOTAL_CAN_CONTROLLERS] = AT91_CAN_CONTROLLER_NAMES;
+
+void AT91_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
         canControllers[i].ApiInfo = &canApi[i];
         canControllers[i].Acquire = &AT91_Can_Acquire;
@@ -1200,26 +1202,26 @@ const TinyCLR_Api_Info* AT91_Can_GetApi() {
         canControllers[i].SetErrorReceivedHandler = &AT91_Can_SetErrorReceivedHandler;
         canControllers[i].SetExplicitFilters = &AT91_Can_SetExplicitFilters;
         canControllers[i].SetGroupFilters = &AT91_Can_SetGroupFilters;
-        canControllers[i].ClearReadBuffer = &AT91_Can_ClearReadBuffer;        
+        canControllers[i].ClearReadBuffer = &AT91_Can_ClearReadBuffer;
         canControllers[i].GetWriteErrorCount = &AT91_Can_GetWriteErrorCount;
         canControllers[i].GetReadErrorCount = &AT91_Can_GetReadErrorCount;
         canControllers[i].GetSourceClock = &AT91_Can_GetSourceClock;
-        canControllers[i].GetReadBufferSize = AT91_Can_GetReadBufferSize;
-        canControllers[i].SetReadBufferSize = AT91_Can_SetReadBufferSize;
-        canControllers[i].GetWriteBufferSize = AT91_Can_GetWriteBufferSize;
-        canControllers[i].SetWriteBufferSize = AT91_Can_SetWriteBufferSize;
+        canControllers[i].GetReadBufferSize = &AT91_Can_GetReadBufferSize;
+        canControllers[i].SetReadBufferSize = &AT91_Can_SetReadBufferSize;
+        canControllers[i].GetWriteBufferSize = &AT91_Can_GetWriteBufferSize;
+        canControllers[i].SetWriteBufferSize = &AT91_Can_SetWriteBufferSize;
 
         canApi[i].Author = "GHI Electronics, LLC";
-        canApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.AT91.CanController";
+        canApi[i].Name = canApiNames[i];
         canApi[i].Type = TinyCLR_Api_Type::CanController;
         canApi[i].Version = 0;
         canApi[i].Implementation = &canControllers[i];
         canApi[i].State = &canStates[i];
 
         canStates[i].controllerIndex = i;
-    }
 
-    return (const TinyCLR_Api_Info*)&canApi;
+        apiManager->Add(apiManager, &canApi[i]);
+    }
 }
 
 uint32_t AT91_Can_GetLocalTime() {
