@@ -224,7 +224,10 @@ TinyCLR_Result AT91_I2c_Write(const TinyCLR_I2c_Controller* self, const uint8_t*
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result AT91_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool sendStopAfter, TinyCLR_I2c_TransferStatus& error) {
+TinyCLR_Result AT91_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool sendStartCondition, bool sendStopCondition, TinyCLR_I2c_TransferStatus& error) {
+    if ((!(sendStartCondition & sendStopCondition)) || (readLength == 0 && writeLength == 0))
+        return TinyCLR_Result::NotSupported;
+
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;

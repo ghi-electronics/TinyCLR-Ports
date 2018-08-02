@@ -400,7 +400,7 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
     nullptr,
     nullptr,
     nullptr,
-    Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_I2cControllerApiWrapper::WriteRead___GHIElectronicsTinyCLRDevicesI2cI2cTransferStatus__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4__BOOLEAN__BYREF_I4__BYREF_I4,
+    Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_I2cControllerApiWrapper::WriteRead___GHIElectronicsTinyCLRDevicesI2cI2cTransferStatus__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4__BOOLEAN__BOOLEAN__BYREF_I4__BYREF_I4,
     nullptr,
     nullptr,
     Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_I2cControllerApiWrapper::Acquire___VOID,
@@ -765,6 +765,6 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
 
 const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices = {
     "GHIElectronics.TinyCLR.Devices",
-    0x2002FA8A,
+    0xBA903BDB,
     methods
 };

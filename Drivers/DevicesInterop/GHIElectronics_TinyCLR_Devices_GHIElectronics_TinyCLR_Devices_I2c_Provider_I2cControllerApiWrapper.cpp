@@ -1,7 +1,7 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 #include "GHIElectronics_TinyCLR_InteropUtil.h"
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_I2cControllerApiWrapper::WriteRead___GHIElectronicsTinyCLRDevicesI2cI2cTransferStatus__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4__BOOLEAN__BYREF_I4__BYREF_I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_I2c_Provider_I2cControllerApiWrapper::WriteRead___GHIElectronicsTinyCLRDevicesI2cI2cTransferStatus__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4__BOOLEAN__BOOLEAN__BYREF_I4__BYREF_I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_I2c_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     uint8_t* writeData = nullptr;
@@ -12,7 +12,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     int32_t readOffset = 0;
     size_t readLength = 0;
 
-    TinyCLR_Interop_ClrValue arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8;
+    TinyCLR_Interop_ClrValue arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9;
 
     md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg0);
     md.InteropManager->GetArgument(md.InteropManager, md.Stack, 1, arg1);
@@ -23,6 +23,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     md.InteropManager->GetArgument(md.InteropManager, md.Stack, 6, arg6);
     md.InteropManager->GetArgument(md.InteropManager, md.Stack, 7, arg7);
     md.InteropManager->GetArgument(md.InteropManager, md.Stack, 8, arg8);
+    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 9, arg9);
 
     uint8_t* writeBuffer = (uint8_t*)arg0.Data.SzArray.Data;
 
@@ -38,14 +39,15 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     readOffset = arg4.Data.Numeric->I4;
     readLength = arg5.Data.Numeric->I4;
 
-    bool sendStopAfter = arg6.Data.Numeric->Boolean;
+    bool sendStartCondition = arg6.Data.Numeric->Boolean;
+    bool sendStopCondition = arg7.Data.Numeric->Boolean;
 
     TinyCLR_I2c_TransferStatus error;
 
-    auto result = api->WriteRead(api, writeData + writeOffset, writeLength, readData + readOffset, readLength, sendStopAfter, error);
+    auto result = api->WriteRead(api, writeData + writeOffset, writeLength, readData + readOffset, readLength, sendStartCondition, sendStopCondition, error);
 
-    arg7.Data.Numeric->I4 = writeLength;
-    arg8.Data.Numeric->I4 = readLength;
+    arg8.Data.Numeric->I4 = writeLength;
+    arg9.Data.Numeric->I4 = readLength;
 
     TinyCLR_Interop_ClrValue ret;
 
