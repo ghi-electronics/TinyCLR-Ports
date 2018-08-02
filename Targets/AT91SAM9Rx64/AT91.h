@@ -1137,7 +1137,7 @@ void AT91_I2c_Reset();
 TinyCLR_Result AT91_I2c_Acquire(const TinyCLR_I2c_Controller* self);
 TinyCLR_Result AT91_I2c_Release(const TinyCLR_I2c_Controller* self);
 TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, uint32_t slaveAddress, TinyCLR_I2c_AddressFormat addressFormat, TinyCLR_I2c_BusSpeed busSpeed);
-TinyCLR_Result AT91_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool sendStopAfter, TinyCLR_I2c_TransferStatus& error);
+TinyCLR_Result AT91_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool sendStartCondition, bool sendStopCondition, TinyCLR_I2c_TransferStatus& error);
 void AT91_I2c_StartTransaction();
 void AT91_I2c_StopTransaction();
 
