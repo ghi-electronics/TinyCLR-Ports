@@ -273,11 +273,7 @@ uint64_t LPC24_Time_MicrosecondsToTicks(const TinyCLR_NativeTime_Controller* sel
 uint64_t LPC24_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self) {
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
 
-    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
-
-    if (self == nullptr) { // some cases in hal layer call directly LPC24_Time_GetCurrentProcessorTicks(nullptr), use first controller as default
-        state = &timeStates[0];
-    }
+    TimeState* state = ((self == nullptr) ? &timeStates[0] : reinterpret_cast<TimeState*>(self->ApiInfo->State));
 
     uint64_t lastValue = state->m_lastRead;
 
@@ -298,7 +294,7 @@ uint64_t LPC24_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller
 TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Controller* self, uint64_t processorTicks) {
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
 
-    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+    TimeState* state = ((self == nullptr) ? &timeStates[0] : reinterpret_cast<TimeState*>(self->ApiInfo->State));
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -371,7 +367,7 @@ TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Contr
 TinyCLR_Result LPC24_Time_Initialize(const TinyCLR_NativeTime_Controller* self) {
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
 
-    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+    TimeState* state = ((self == nullptr) ? &timeStates[0] : reinterpret_cast<TimeState*>(self->ApiInfo->State));
 
     state->m_lastRead = 0;
     state->m_nextCompare = TIMER_IDLE_VALUE;
@@ -396,7 +392,7 @@ TinyCLR_Result LPC24_Time_Uninitialize(const TinyCLR_NativeTime_Controller* self
 }
 
 TinyCLR_Result LPC24_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* self, TinyCLR_NativeTime_Callback callback) {
-    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+    TimeState* state = ((self == nullptr) ? &timeStates[0] : reinterpret_cast<TimeState*>(self->ApiInfo->State));
 
     if (state->m_DequeuAndExecute != nullptr)
         return TinyCLR_Result::InvalidOperation;
