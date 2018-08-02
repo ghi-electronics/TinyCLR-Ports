@@ -71,7 +71,6 @@ static STM32F4_Gpio_Pin pwmPins[][PWM_PER_CONTROLLER] = STM32F4_PWM_PINS;
 
 #define TOTAL_PWM_CONTROLLERS SIZEOF_ARRAY(pwmPins)
 
-#include <string.h>
 const char* PwmApiNames[TOTAL_PWM_CONTROLLERS] = STM32F4_PWM_CONTROLLER_NAMES;
 
 static PwmState pwmStates[TOTAL_PWM_CONTROLLERS];
