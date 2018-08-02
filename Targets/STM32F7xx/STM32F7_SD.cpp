@@ -2876,7 +2876,7 @@ TinyCLR_Result STM32F7_SdCard_Read(const TinyCLR_Storage_Controller* self, uint6
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased) {
+TinyCLR_Result STM32F7_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t count, bool& erased) {
     erased = true;
 
     return TinyCLR_Result::Success;

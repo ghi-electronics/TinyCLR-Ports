@@ -255,7 +255,7 @@ end_programing:
     return timeout != 0 ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased) {
+TinyCLR_Result __section("SectionForFlashOperations") STM32F7_Flash_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t count, bool& erased) {
     auto sector = address; //address is sector. Use sector for clear
     auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);
 

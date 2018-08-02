@@ -235,7 +235,7 @@ TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_Write(con
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased) {
+TinyCLR_Result __section("SectionForFlashOperations") LPC24_Deployment_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t count, bool& erased) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);

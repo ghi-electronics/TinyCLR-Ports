@@ -179,7 +179,7 @@ TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_Write(const 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased) {
+TinyCLR_Result __section("SectionForFlashOperations") STM32F4_Flash_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t count, bool& erased) {
     auto sector = address; //address is sector. Use sector for clear
     auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);
 
