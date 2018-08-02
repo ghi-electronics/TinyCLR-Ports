@@ -22,80 +22,96 @@
 #define LPC24_DAC_MAX_VALUE 	(1<<LPC24_DAC_PRECISION_BITS)
 
 ///////////////////////////////////////////////////////////////////////////////
+#define TOTAL_DAC_CONTROLLERS 1
 
-static TinyCLR_Dac_Provider dacProvider;
-static TinyCLR_Api_Info dacApi;
+static TinyCLR_Dac_Controller dacControllers[TOTAL_DAC_CONTROLLERS];
+static TinyCLR_Api_Info dacApi[TOTAL_DAC_CONTROLLERS];
 
-static const LPC24_Gpio_Pin g_LPC24_Dac_Pins[] = LPC24_DAC_PINS;
+static const LPC24_Gpio_Pin dacPins[] = LPC24_DAC_PINS;
 
-bool g_LPC24_Dac_IsOpened[SIZEOF_ARRAY(g_LPC24_Dac_Pins)];
+struct DacState {
+    bool isOpened[SIZEOF_ARRAY(dacPins)];
+};
 
-const TinyCLR_Api_Info* LPC24_Dac_GetApi() {
-    dacProvider.Parent = &dacApi;
-    dacProvider.Acquire = &LPC24_Dac_Acquire;
-    dacProvider.Release = &LPC24_Dac_Release;
-    dacProvider.AcquireChannel = &LPC24_Dac_AcquireChannel;
-    dacProvider.ReleaseChannel = &LPC24_Dac_ReleaseChannel;
-    dacProvider.WriteValue = &LPC24_Dac_WriteValue;
-    dacProvider.GetChannelCount = &LPC24_Dac_GetChannelCount;
-    dacProvider.GetResolutionInBits = &LPC24_Dac_GetResolutionInBits;
-    dacProvider.GetMinValue = &LPC24_Dac_GetMinValue;
-    dacProvider.GetMaxValue = &LPC24_Dac_GetMaxValue;
-    dacProvider.GetControllerCount = &LPC24_Dac_GetControllerCount;
+static DacState dacStates[TOTAL_DAC_CONTROLLERS];
 
-    dacApi.Author = "GHI Electronics, LLC";
-    dacApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.DacProvider";
-    dacApi.Type = TinyCLR_Api_Type::DacProvider;
-    dacApi.Version = 0;
-    dacApi.Implementation = &dacProvider;
+const char* dacApiNames[TOTAL_DAC_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.LPC24.DacController\\0"
+};
 
-    return &dacApi;
+void LPC24_Dac_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    for (int32_t i = 0; i < TOTAL_DAC_CONTROLLERS; i++) {
+        dacControllers[i].ApiInfo = &dacApi[i];
+        dacControllers[i].Acquire = &LPC24_Dac_Acquire;
+        dacControllers[i].Release = &LPC24_Dac_Release;
+        dacControllers[i].OpenChannel = &LPC24_Dac_OpenChannel;
+        dacControllers[i].CloseChannel = &LPC24_Dac_CloseChannel;
+        dacControllers[i].WriteValue = &LPC24_Dac_WriteValue;
+        dacControllers[i].GetMinValue = &LPC24_Dac_GetMinValue;
+        dacControllers[i].GetMaxValue = &LPC24_Dac_GetMaxValue;
+        dacControllers[i].GetResolutionInBits = &LPC24_Dac_GetResolutionInBits;
+        dacControllers[i].GetChannelCount = &LPC24_Dac_GetChannelCount;
+
+        dacApi[i].Author = "GHI Electronics, LLC";
+        dacApi[i].Name = dacApiNames[i];
+        dacApi[i].Type = TinyCLR_Api_Type::DacController;
+        dacApi[i].Version = 0;
+        dacApi[i].Implementation = &dacControllers[i];
+        dacApi[i].State = &dacStates[i];
+
+        apiManager->Add(apiManager, &dacApi[i]);
+    }
+
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::DacController, dacApi[0].Name);
 }
 
-TinyCLR_Result LPC24_Dac_Acquire(const TinyCLR_Dac_Provider* self, int32_t controller) {
+TinyCLR_Result LPC24_Dac_Acquire(const TinyCLR_Dac_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Dac_Release(const TinyCLR_Dac_Provider* self, int32_t controller) {
+TinyCLR_Result LPC24_Dac_Release(const TinyCLR_Dac_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel) {
-    if (channel >= LPC24_Dac_GetChannelCount(self, controller))
+TinyCLR_Result LPC24_Dac_OpenChannel(const TinyCLR_Dac_Controller* self, uint32_t channel) {
+    if (channel >= LPC24_Dac_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    if (!LPC24_Gpio_OpenPin(g_LPC24_Dac_Pins[channel].number))
+    if (!LPC24_Gpio_OpenPin(dacPins[channel].number))
         return TinyCLR_Result::SharingViolation;
 
-    LPC24_Gpio_ConfigurePin(g_LPC24_Dac_Pins[channel].number, LPC24_Gpio_Direction::Input, g_LPC24_Dac_Pins[channel].pinFunction, LPC24_Gpio_PinMode::Inactive);
+    auto state = reinterpret_cast<DacState*>(self->ApiInfo->State);
+
+    LPC24_Gpio_ConfigurePin(dacPins[channel].number, LPC24_Gpio_Direction::Input, dacPins[channel].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
     DACR = (0 << 6); // This sets the initial starting voltage at 0
 
-    g_LPC24_Dac_IsOpened[channel] = true;
+    state->isOpened[channel] = true;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel) {
-    if (channel >= LPC24_Dac_GetChannelCount(self, controller))
+TinyCLR_Result LPC24_Dac_CloseChannel(const TinyCLR_Dac_Controller* self, uint32_t channel) {
+    if (channel >= LPC24_Dac_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    if (g_LPC24_Dac_IsOpened[channel])
-        LPC24_Gpio_ClosePin(g_LPC24_Dac_Pins[channel].number);
+    auto state = reinterpret_cast<DacState*>(self->ApiInfo->State);
+    if (state->isOpened[channel])
+        LPC24_Gpio_ClosePin(dacPins[channel].number);
 
-    g_LPC24_Dac_IsOpened[channel] = false;
+    state->isOpened[channel] = false;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel, int32_t value) {
-    if (channel >= LPC24_Dac_GetChannelCount(self, controller))
+TinyCLR_Result LPC24_Dac_WriteValue(const TinyCLR_Dac_Controller* self, uint32_t channel, int32_t value) {
+    if (channel >= LPC24_Dac_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 
     if (value > LPC24_DAC_MAX_VALUE) {
@@ -111,33 +127,29 @@ TinyCLR_Result LPC24_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t co
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC24_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self, int32_t controller) {
-    return SIZEOF_ARRAY(g_LPC24_Dac_Pins);
+uint32_t LPC24_Dac_GetChannelCount(const TinyCLR_Dac_Controller* self) {
+    return SIZEOF_ARRAY(dacPins);
 }
 
-int32_t LPC24_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self, int32_t controller) {
+uint32_t LPC24_Dac_GetResolutionInBits(const TinyCLR_Dac_Controller* self) {
     return LPC24_DAC_PRECISION_BITS;
 }
 
-int32_t LPC24_Dac_GetMinValue(const TinyCLR_Dac_Provider* self, int32_t controller) {
+int32_t LPC24_Dac_GetMinValue(const TinyCLR_Dac_Controller* self) {
     return 0;
 }
 
-int32_t LPC24_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self, int32_t controller) {
+int32_t LPC24_Dac_GetMaxValue(const TinyCLR_Dac_Controller* self) {
     return ((1 << LPC24_DAC_PRECISION_BITS) - 1);
 }
 
 void LPC24_Dac_Reset() {
-    for (auto ch = 0; ch < LPC24_Dac_GetChannelCount(&dacProvider, 0); ch++) {
-        LPC24_Dac_ReleaseChannel(&dacProvider, 0, ch);
+    for (auto c = 0; c < TOTAL_DAC_CONTROLLERS; c++) {
+        for (auto ch = 0; ch < LPC24_Dac_GetChannelCount(&dacControllers[c]); ch++) {
+            LPC24_Dac_CloseChannel(&dacControllers[c], ch);
 
-        g_LPC24_Dac_IsOpened[ch] = false;
+            dacStates[c].isOpened[ch] = false;
+        }
     }
-}
-
-TinyCLR_Result LPC24_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t& count) {
-    count = 1;
-
-    return TinyCLR_Result::Success;
 }
 

@@ -68,21 +68,12 @@
 #define LPC24_I2C_SDA_PINS { { PIN(0, 27), PF(1) } }
 
 #define INCLUDE_PWM
-#define TOTAL_PWM_CONTROLLER 2
+#define TOTAL_PWM_CONTROLLERS 2
 #define MAX_PWM_PER_CONTROLLER 6
 #define LPC2478_PWM_PINS  { { { PIN(3, 16), PF(2) }, { PIN(3, 17), PF(2) }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE  , PF_NONE } }, { { PIN(3, 24), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN(3, 26), PF(3) }, { PIN(3, 27), PF(3) }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE } } }
 #define LPC2468_PWM_PINS  { { { PIN(3, 16), PF(2) }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE  , PF_NONE } }, { { PIN(3, 24), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE } } }
 
 #define INCLUDE_RTC
-
-#define INCLUDE_SD
-#define LPC24_SD_DATA0_PINS { { PIN(1, 6), PF(2) } }
-#define LPC24_SD_DATA1_PINS { { PIN(1, 7), PF(2) } }
-#define LPC24_SD_DATA2_PINS { { PIN(1, 11), PF(2) } }
-#define LPC24_SD_DATA3_PINS { { PIN(1, 12), PF(2) } }
-#define LPC24_SD_CLK_PINS { { PIN(1, 2), PF(2) } }
-#define LPC24_SD_CMD_PINS { { PIN(1, 3), PF(2) } }
-#define LPC24_SD_PWR_PINS  { { PIN(1, 5), PF(0) } }
 
 #define INCLUDE_SPI
 #define TOTAL_SPI_CONTROLLERS 2
@@ -113,11 +104,6 @@
 #define LPC24_USB_ENDPOINT0_SIZE 64
 #define LPC24_USB_ENDPOINT_COUNT 16
 #define LPC24_USB_PIPE_COUNT 16
-
-#define INCLUDE_DISPLAY
-#define LPC24_DISPLAY_CONTROLLER_PINS { { PIN(1, 20), PF(1) }, { PIN(1, 21), PF(1) }, { PIN(1, 22), PF(1) }, { PIN(1, 23), PF(1) }, { PIN(1, 24), PF(1) }, { PIN(1, 25), PF(1) }, { PIN(1, 26), PF(1) }, { PIN(1, 27), PF(1) }, { PIN(1, 28), PF(1)}, { PIN(1, 29), PF(1) }, { PIN(2, 2), PF(3) }, { PIN(2, 3), PF(3) }, { PIN(2, 5), PF(3) }, { PIN(2, 6), PF(3) }, { PIN(2, 7), PF(3) }, { PIN(2, 8), PF(3) }, { PIN(2, 9), PF(3) }, { PIN(2, 12), PF(1) }, { PIN(2, 13), PF(1) } }
-#define LPC24_DISPLAY_BACKLIGHT_PIN  { PIN_NONE, PF_NONE }
-#define LPC24_DISPLAY_ENABLE_PIN  { PIN(2, 4), PF(3) }
 
 #define LPC2468_PARTID                      0x1600FF35
 

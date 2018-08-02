@@ -18,7 +18,6 @@
 
 #include "../../Drivers/SPIDisplay/SPIDisplay.h"
 #include "../../Drivers/DevicesInterop/GHIElectronics_TinyCLR_Devices.h"
-#include "../../Drivers/DevicesInterop/GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Interop.h"
 
 // G120, G120E
 #define LPC17_G120                         1
@@ -32,15 +31,15 @@
 #define G120E_DETECT2_STATE TinyCLR_Gpio_PinValue::Low
 #define G120E_DETECT3_STATE TinyCLR_Gpio_PinValue::Low
 
-void LPC17_Startup_OnSoftResetDevice(const TinyCLR_Api_Provider* apiProvider, const TinyCLR_Interop_Provider* interopProvider) {
-    apiProvider->Add(apiProvider, SPIDisplay_GetApi());
-    interopProvider->Add(interopProvider, &Interop_GHIElectronics_TinyCLR_Devices);
+void LPC17_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopManager) {
+    SPIDisplay_AddApi(apiManager);
+    interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices);
 }
 
 static int32_t lpc178_deviceId = -1;
 
 int32_t LPC17_Startup_GetDeviceId() {
-    TinyCLR_Gpio_Provider* provider = nullptr;
+    TinyCLR_Gpio_Controller* provider = nullptr;
 
     auto gpioController = 0; //TODO Temporary set to 0
 
@@ -51,9 +50,9 @@ int32_t LPC17_Startup_GetDeviceId() {
         LPC17_Gpio_EnableInputPin(G120E_DETECT2_PIN, TinyCLR_Gpio_PinDriveMode::InputPullUp);
         LPC17_Gpio_EnableInputPin(G120E_DETECT3_PIN, TinyCLR_Gpio_PinDriveMode::InputPullUp);
 
-        LPC17_Gpio_Read(provider, gpioController, G120E_DETECT1_PIN, value1);
-        LPC17_Gpio_Read(provider, gpioController, G120E_DETECT2_PIN, value2);
-        LPC17_Gpio_Read(provider, gpioController, G120E_DETECT3_PIN, value3);
+        LPC17_Gpio_Read(provider, G120E_DETECT1_PIN, value1);
+        LPC17_Gpio_Read(provider, G120E_DETECT2_PIN, value2);
+        LPC17_Gpio_Read(provider, G120E_DETECT3_PIN, value3);
 
         if ((G120E_DETECT1_STATE == value1) && (G120E_DETECT2_STATE == value2) && (G120E_DETECT3_STATE == value3))
             lpc178_deviceId = LPC17_G120E;
@@ -91,27 +90,24 @@ const TinyCLR_Startup_UsbDebuggerConfiguration LPC17_Startup_UsbDebuggerConfigur
     0
 };
 
-void LPC17_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, size_t& index, const void*& configuration) {
+void LPC17_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value, valueUsbActive;
-    auto provider = static_cast<const TinyCLR_Gpio_Provider*>(LPC17_Gpio_GetApi()->Implementation);
-    auto gpioController = 0; //TODO Temporary set to 0
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC17_Gpio_GetRequiredApi()->Implementation);
 
-    provider->AcquirePin(provider, gpioController, LPC17_Startup_GetDebuggerSelectorPin());
-    provider->SetDriveMode(provider, gpioController, LPC17_Startup_GetDebuggerSelectorPin(), LPC17_Startup_GetDebuggerSelectorPull());
-    provider->Read(provider, gpioController, LPC17_Startup_GetDebuggerSelectorPin(), value);
-    provider->ReleasePin(provider, gpioController, LPC17_Startup_GetDebuggerSelectorPin());
+    provider->OpenPin(provider, LPC17_Startup_GetDebuggerSelectorPin());
+    provider->SetDriveMode(provider, LPC17_Startup_GetDebuggerSelectorPin(), LPC17_Startup_GetDebuggerSelectorPull());
+    provider->Read(provider, LPC17_Startup_GetDebuggerSelectorPin(), value);
+    provider->ClosePin(provider, LPC17_Startup_GetDebuggerSelectorPin());
 
     valueUsbActive = LPC17_Startup_GetDebuggerSelectorUsbState();
 
     if (value == valueUsbActive) {
-        api = LPC17_UsbClient_GetApi();
-        index = USB_DEBUGGER_INDEX;
+        api = LPC17_UsbDevice_GetRequiredApi();
         configuration = (const void*)&LPC17_Startup_UsbDebuggerConfiguration;
     }
     else {
-        api = LPC17_Uart_GetApi();
-        index = UART_DEBUGGER_INDEX;
+        api = LPC17_Uart_GetRequiredApi();        
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;
@@ -124,13 +120,12 @@ void LPC17_Startup_GetDebuggerTransportProvider(const TinyCLR_Api_Info*& api, si
 void LPC17_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Provider*>(LPC17_Gpio_GetApi()->Implementation);
-    auto gpioController = 0; //TODO Temporary set to 0
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(LPC17_Gpio_GetRequiredApi()->Implementation);
 
-    provider->AcquirePin(provider, gpioController, RUN_APP_PIN);
-    provider->SetDriveMode(provider, gpioController, RUN_APP_PIN, RUN_APP_PULL);
-    provider->Read(provider, gpioController, RUN_APP_PIN, value);
-    provider->ReleasePin(provider, gpioController, RUN_APP_PIN);
+    provider->OpenPin(provider, RUN_APP_PIN);
+    provider->SetDriveMode(provider, RUN_APP_PIN, RUN_APP_PULL);
+    provider->Read(provider, RUN_APP_PIN, value);
+    provider->ClosePin(provider, RUN_APP_PIN);
 
     runApp = value == RUN_APP_STATE;
 #elif defined(RUN_APP_FORCE_STATE)
@@ -141,81 +136,81 @@ void LPC17_Startup_GetRunApp(bool& runApp) {
 }
 
 // PWM
-const LPC17_Gpio_Pin g_lpc17_g120_pwm_pins[TOTAL_PWM_CONTROLLER][MAX_PWM_PER_CONTROLLER] = LPC17_G120_PWM_PINS;
-const LPC17_Gpio_Pin g_lpc17_g120e_pwm_pins[TOTAL_PWM_CONTROLLER][MAX_PWM_PER_CONTROLLER] = LPC17_G120E_PWM_PINS;
+const LPC17_Gpio_Pin g120PwmPins[TOTAL_PWM_CONTROLLERS][MAX_PWM_PER_CONTROLLER] = LPC17_G120_PWM_PINS;
+const LPC17_Gpio_Pin g120ePwmPins[TOTAL_PWM_CONTROLLERS][MAX_PWM_PER_CONTROLLER] = LPC17_G120E_PWM_PINS;
 
 LPC17_Gpio_Pin LPC17_Pwm_GetPins(int32_t controller, int32_t channel) {
     if (LPC17_Startup_GetDeviceId() == LPC17_G120) {
-        return g_lpc17_g120_pwm_pins[controller][channel];
+        return g120PwmPins[controller][channel];
     }
     else {
-        return g_lpc17_g120e_pwm_pins[controller][channel];
+        return g120ePwmPins[controller][channel];
     }
 }
 
 // Uart
-static const LPC17_Gpio_Pin g_lpc17_g120_uart_tx_pins[] = LPC17_G120_UART_TX_PINS;
-static const LPC17_Gpio_Pin g_lpc17_g120_uart_rx_pins[] = LPC17_G120_UART_RX_PINS;
-static const LPC17_Gpio_Pin g_lpc17_g120_uart_rts_pins[] = LPC17_G120_UART_RTS_PINS;
-static const LPC17_Gpio_Pin g_lpc17_g120_uart_cts_pins[] = LPC17_G120_UART_CTS_PINS;
+static const LPC17_Gpio_Pin g120UartTxPins[] = LPC17_G120_UART_TX_PINS;
+static const LPC17_Gpio_Pin g120UartRxPins[] = LPC17_G120_UART_RX_PINS;
+static const LPC17_Gpio_Pin g120UartRtsPins[] = LPC17_G120_UART_RTS_PINS;
+static const LPC17_Gpio_Pin g120UartCtsPins[] = LPC17_G120_UART_CTS_PINS;
 
-static const LPC17_Gpio_Pin g_lpc17_g120e_uart_tx_pins[] = LPC17_G120E_UART_TX_PINS;
-static const LPC17_Gpio_Pin g_lpc17_g120e_uart_rx_pins[] = LPC17_G120E_UART_RX_PINS;
-static const LPC17_Gpio_Pin g_lpc17_g120e_uart_rts_pins[] = LPC17_G120E_UART_RTS_PINS;
-static const LPC17_Gpio_Pin g_lpc17_g120e_uart_cts_pins[] = LPC17_G120E_UART_CTS_PINS;
+static const LPC17_Gpio_Pin g120eUartTxPins[] = LPC17_G120E_UART_TX_PINS;
+static const LPC17_Gpio_Pin g120eUartRxPins[] = LPC17_G120E_UART_RX_PINS;
+static const LPC17_Gpio_Pin g120eUartRtsPins[] = LPC17_G120E_UART_RTS_PINS;
+static const LPC17_Gpio_Pin g120eUartCtsPins[] = LPC17_G120E_UART_CTS_PINS;
 
 int32_t LPC17_Uart_GetTxPin(int32_t portNum) {
     if (LPC17_Startup_GetDeviceId() == LPC17_G120)
-        return g_lpc17_g120_uart_tx_pins[portNum].number;
+        return g120UartTxPins[portNum].number;
     else
-        return g_lpc17_g120e_uart_tx_pins[portNum].number;
+        return g120eUartTxPins[portNum].number;
 }
 
 int32_t LPC17_Uart_GetRxPin(int32_t portNum) {
     if (LPC17_Startup_GetDeviceId() == LPC17_G120)
-        return g_lpc17_g120_uart_rx_pins[portNum].number;
+        return g120UartRxPins[portNum].number;
     else
-        return g_lpc17_g120e_uart_rx_pins[portNum].number;
+        return g120eUartRxPins[portNum].number;
 }
 
 int32_t LPC17_Uart_GetRtsPin(int32_t portNum) {
     if (LPC17_Startup_GetDeviceId() == LPC17_G120)
-        return g_lpc17_g120_uart_rts_pins[portNum].number;
+        return g120UartRtsPins[portNum].number;
     else
-        return g_lpc17_g120e_uart_rts_pins[portNum].number;
+        return g120eUartRtsPins[portNum].number;
 }
 
 int32_t LPC17_Uart_GetCtsPin(int32_t portNum) {
     if (LPC17_Startup_GetDeviceId() == LPC17_G120)
-        return g_lpc17_g120_uart_cts_pins[portNum].number;
+        return g120UartCtsPins[portNum].number;
     else
-        return g_lpc17_g120e_uart_cts_pins[portNum].number;
+        return g120eUartCtsPins[portNum].number;
 }
 
 LPC17_Gpio_PinFunction LPC17_Uart_GetTxAlternateFunction(int32_t portNum) {
     if (LPC17_Startup_GetDeviceId() == LPC17_G120)
-        return g_lpc17_g120_uart_tx_pins[portNum].pinFunction;
+        return g120UartTxPins[portNum].pinFunction;
     else
-        return g_lpc17_g120e_uart_tx_pins[portNum].pinFunction;
+        return g120eUartTxPins[portNum].pinFunction;
 }
 
 LPC17_Gpio_PinFunction LPC17_Uart_GetRxAlternateFunction(int32_t portNum) {
     if (LPC17_Startup_GetDeviceId() == LPC17_G120)
-        return g_lpc17_g120_uart_rx_pins[portNum].pinFunction;
+        return g120UartRxPins[portNum].pinFunction;
     else
-        return g_lpc17_g120e_uart_rx_pins[portNum].pinFunction;
+        return g120eUartRxPins[portNum].pinFunction;
 }
 
 LPC17_Gpio_PinFunction LPC17_Uart_GetRtsAlternateFunction(int32_t portNum) {
     if (LPC17_Startup_GetDeviceId() == LPC17_G120)
-        return g_lpc17_g120_uart_rts_pins[portNum].pinFunction;
+        return g120UartRtsPins[portNum].pinFunction;
     else
-        return g_lpc17_g120e_uart_rts_pins[portNum].pinFunction;
+        return g120eUartRtsPins[portNum].pinFunction;
 }
 
 LPC17_Gpio_PinFunction LPC17_Uart_GetCtsAlternateFunction(int32_t portNum) {
     if (LPC17_Startup_GetDeviceId() == LPC17_G120)
-        return g_lpc17_g120_uart_cts_pins[portNum].pinFunction;
+        return g120UartCtsPins[portNum].pinFunction;
     else
-        return g_lpc17_g120e_uart_cts_pins[portNum].pinFunction;
+        return g120eUartCtsPins[portNum].pinFunction;
 }

@@ -30,27 +30,37 @@
 #define RTC_MONTH 0xE0024038
 #define RTC_YEAR 0xE002403C
 
+#define TOTAL_RTC_CONTROLLERS 1
 
-static TinyCLR_Rtc_Provider rtcProvider;
-static TinyCLR_Api_Info timeApi;
+static TinyCLR_Rtc_Controller rtcControllers[TOTAL_RTC_CONTROLLERS];
+static TinyCLR_Api_Info rtcApi[TOTAL_RTC_CONTROLLERS];
 
-const TinyCLR_Api_Info* LPC24_Rtc_GetApi() {
-    rtcProvider.Parent = &timeApi;
-    rtcProvider.Acquire = &LPC24_Rtc_Acquire;
-    rtcProvider.Release = &LPC24_Rtc_Release;
-    rtcProvider.GetNow = &LPC24_Rtc_GetNow;
-    rtcProvider.SetNow = &LPC24_Rtc_SetNow;
+const char* rtcApiNames[TOTAL_RTC_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.LPC24.RtcController\\0"
+};
 
-    timeApi.Author = "GHI Electronics, LLC";
-    timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.RtcProvider";
-    timeApi.Type = TinyCLR_Api_Type::RtcProvider;
-    timeApi.Version = 0;
-    timeApi.Implementation = &rtcProvider;
+void LPC24_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    for (auto i = 0; i < TOTAL_RTC_CONTROLLERS; i++) {
+        rtcControllers[i].ApiInfo = &rtcApi[i];
+        rtcControllers[i].Acquire = &LPC24_Rtc_Acquire;
+        rtcControllers[i].Release = &LPC24_Rtc_Release;
+        rtcControllers[i].GetTime = &LPC24_Rtc_GetTime;
+        rtcControllers[i].SetTime = &LPC24_Rtc_SetTime;
 
-    return &timeApi;
+        rtcApi[i].Author = "GHI Electronics, LLC";
+        rtcApi[i].Name = rtcApiNames[i];
+        rtcApi[i].Type = TinyCLR_Api_Type::RtcController;
+        rtcApi[i].Version = 0;
+        rtcApi[i].Implementation = &rtcControllers[i];
+        rtcApi[i].State = nullptr;
+
+        apiManager->Add(apiManager, &rtcApi[i]);
+    }
+
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::RtcController, rtcApi[0].Name);
 }
 
-TinyCLR_Result LPC24_Rtc_Acquire(const TinyCLR_Rtc_Provider* self) {
+TinyCLR_Result LPC24_Rtc_Acquire(const TinyCLR_Rtc_Controller* self) {
     LPC24XX::SYSCON().PCONP |= PCONP_PCRTC;
 
     uint32_t* rtc_ccr_reg = reinterpret_cast<uint32_t*>(RTC_CCR);
@@ -63,11 +73,11 @@ TinyCLR_Result LPC24_Rtc_Acquire(const TinyCLR_Rtc_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Rtc_Release(const TinyCLR_Rtc_Provider* self) {
+TinyCLR_Result LPC24_Rtc_Release(const TinyCLR_Rtc_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime& value) {
+TinyCLR_Result LPC24_Rtc_GetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value) {
     uint32_t* rtc_ccr_reg = reinterpret_cast<uint32_t*>(RTC_CCR);
 
     if (*rtc_ccr_reg != (1 | (1 << 4))) {
@@ -101,7 +111,7 @@ TinyCLR_Result LPC24_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_Da
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime value) {
+TinyCLR_Result LPC24_Rtc_SetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value) {
     uint32_t* rtc_ccr_reg = reinterpret_cast<uint32_t*>(RTC_CCR);
     if (*rtc_ccr_reg != (1 | (1 << 4))) {
         TinyCLR_Result::InvalidOperation;

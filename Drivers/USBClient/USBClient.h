@@ -21,7 +21,7 @@
 #define __min(a,b)  (((a) < (b)) ? (a) : (b))
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-/// USB Debugger driver
+/// USB Debugger state
 ///////////////////////////////////////////////////////////////////////////////////////////
 // USB 2.0 host requests
 #define USB_GET_STATUS           0
@@ -117,7 +117,7 @@
 
 struct USB_PACKET64 {
     uint32_t Size;
-    uint8_t  Buffer[64];
+    uint8_t Buffer[64];
 };
 
 struct USB_PIPE_MAP {
@@ -125,80 +125,83 @@ struct USB_PIPE_MAP {
     uint8_t TxEP;
 };
 
-struct USB_CONTROLLER_STATE {
-    bool                                                        initialized;
-    uint8_t                                                     currentState;
-    uint8_t                                                     controllerNum;
-    uint32_t                                                    event;
+struct UsClientState {
+    int32_t controllerIndex;
+    bool initialized;
+    uint8_t currentState;
+    uint32_t event;
 
-    TinyCLR_UsbClient_DeviceDescriptor                          deviceDescriptor;
+    TinyCLR_UsbClient_DeviceDescriptor deviceDescriptor;
 
     /* queues & maxPacketSize must be initialized by the HAL */
-    USB_PACKET64**                                   	        queues;
-    uint8_t*                                                    currentPacketOffset;
-    bool*                                                       isTxQueue;
+    USB_PACKET64** queues;
+    uint8_t* currentPacketOffset;
+    bool* isTxQueue;
 
     /* Arbitrarily as many pipes as endpoints since that is the maximum number of pipes
        necessary to represent the maximum number of endpoints */
-    USB_PIPE_MAP*                                               pipes;
-    uint8_t                                                     totalPipesCount;
+    USB_PIPE_MAP* pipes;
+    uint8_t totalPipesCount;
 
     /* used for transferring packets between upper & lower */
-    uint8_t*                                                    ptrData;
-    uint8_t                                                     dataSize;
+    uint8_t* ptrData;
+    uint8_t dataSize;
 
     /* USB hardware information */
-    uint8_t                                                     address;
-    uint8_t                                                     deviceState;
-    uint8_t*                                                    maxEndpointsPacketSize;
-    uint8_t                                                     configurationNum;
-    uint32_t                                                    firstGetDescriptor;
+    uint8_t address;
+    uint8_t deviceState;
+    uint8_t* maxEndpointsPacketSize;
+    uint8_t configurationNum;
+    uint32_t firstGetDescriptor;
 
     /* USB status information, used in
        GET_STATUS, SET_FEATURE, CLEAR_FEATURE */
-    uint16_t                                                    deviceStatus;
+    uint16_t deviceStatus;
 
-    uint16_t*                                                   endpointStatus;
-    uint8_t                                                     totalEndpointsCount;
-    uint8_t                                                     endpointStatusChange;
+    uint16_t* endpointStatus;
+    uint8_t totalEndpointsCount;
+    uint8_t endpointStatusChange;
 
     /* callback function for getting next packet */
-    USB_NEXT_CALLBACK                                           dataCallback;
+    USB_NEXT_CALLBACK dataCallback;
 
     /* for helping out upper layer during callbacks */
-    uint8_t*                                                    residualData;
-    uint16_t                                                    residualCount;
-    uint16_t                                                    expected;
+    uint8_t* residualData;
+    uint16_t residualCount;
+    uint16_t expected;
 
-    uint8_t*                                                    fifoPacketIn;
-    uint8_t*                                                    fifoPacketOut;
-    uint8_t*                                                    fifoPacketCount;
-    uint8_t                                                     maxFifoPacketCount;
+    uint8_t* fifoPacketIn;
+    uint8_t* fifoPacketOut;
+    uint8_t* fifoPacketCount;
+    uint8_t maxFifoPacketCount;
 
-    uint8_t*                                                    controlEndpointBuffer;
+    uint8_t* controlEndpointBuffer;
+
+    bool tableInitialized;
 };
 
-const TinyCLR_Api_Info* TinyCLR_UsbClient_GetApi();
+const TinyCLR_Api_Info* TinyCLR_UsbClient_GetRequiredApi();
+void TinyCLR_UsbClient_AddApi(const TinyCLR_Api_Manager* apiManager);
 void TinyCLR_UsbClient_Reset(int32_t controller);
 
-TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Provider* self, int32_t controller);
-TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Provider* self, int32_t controller);
-TinyCLR_Result TinyCLR_UsbClient_Open(const TinyCLR_UsbClient_Provider* self, int32_t controller, int32_t& pipe, uint8_t writeEndpoint, uint8_t readEndpoint);
-TinyCLR_Result TinyCLR_UsbClient_Close(const TinyCLR_UsbClient_Provider* self, int32_t controller, int32_t pipe);
-TinyCLR_Result TinyCLR_UsbClient_Write(const TinyCLR_UsbClient_Provider* self, int32_t controller, int32_t pipe, const uint8_t* data, size_t& length);
-TinyCLR_Result TinyCLR_UsbClient_Read(const TinyCLR_UsbClient_Provider* self, int32_t controller, int32_t pipe, uint8_t* data, size_t& length);
-TinyCLR_Result TinyCLR_UsbClient_Flush(const TinyCLR_UsbClient_Provider* self, int32_t controller, int32_t pipe);
-TinyCLR_Result TinyCLR_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Provider* self, int32_t controller, TinyCLR_UsbClient_DataReceivedHandler handler);
-TinyCLR_Result TinyCLR_UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Provider* self, int32_t controller, const TinyCLR_UsbClient_DeviceDescriptor* descriptor);
-TinyCLR_Result TinyCLR_UsbClient_SetVendorClassRequestHandler(const TinyCLR_UsbClient_Provider* self, int32_t controller, TinyCLR_UsbClient_RequestHandler handler);
-const uint8_t* TinyCLR_UsbClient_FindRecord(USB_CONTROLLER_STATE* usbState, uint8_t marker, TinyCLR_UsbClient_SetupPacket * iValue);
+TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Controller* self);
+TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Controller* self);
+TinyCLR_Result TinyCLR_UsbClient_OpenPipe(const TinyCLR_UsbClient_Controller* self, uint8_t writeEndpoint, uint8_t readEndpoint, uint32_t& pipe);
+TinyCLR_Result TinyCLR_UsbClient_ClosePipe(const TinyCLR_UsbClient_Controller* self, uint32_t pipe);
+TinyCLR_Result TinyCLR_UsbClient_WritePipe(const TinyCLR_UsbClient_Controller* self, uint32_t pipe, const uint8_t* data, size_t& length);
+TinyCLR_Result TinyCLR_UsbClient_ReadPipe(const TinyCLR_UsbClient_Controller* self, uint32_t pipe, uint8_t* data, size_t& length);
+TinyCLR_Result TinyCLR_UsbClient_FlushPipe(const TinyCLR_UsbClient_Controller* self, uint32_t pipe);
+TinyCLR_Result TinyCLR_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Controller* self, TinyCLR_UsbClient_DataReceivedHandler handler);
+TinyCLR_Result TinyCLR_UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Controller* self, const TinyCLR_UsbClient_DeviceDescriptor* descriptor);
+TinyCLR_Result TinyCLR_UsbClient_SetVendorClassRequestHandler(const TinyCLR_UsbClient_Controller* self, TinyCLR_UsbClient_RequestHandler handler);
+const uint8_t* TinyCLR_UsbClient_FindRecord(UsClientState* usClientState, uint8_t marker, TinyCLR_UsbClient_SetupPacket * iValue);
 
-bool TinyCLR_UsbClient_Initialize(USB_CONTROLLER_STATE* usbState);
-bool TinyCLR_UsbClient_Uninitialize(USB_CONTROLLER_STATE* usbState);
-bool TinyCLR_UsbClient_StartOutput(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
-bool TinyCLR_UsbClient_RxEnable(USB_CONTROLLER_STATE* usbState, int32_t endpoint);
+bool TinyCLR_UsbClient_Initialize(UsClientState* usClientState);
+bool TinyCLR_UsbClient_Uninitialize(UsClientState* usClientState);
+bool TinyCLR_UsbClient_StartOutput(UsClientState* usClientState, int32_t endpoint);
+bool TinyCLR_UsbClient_RxEnable(UsClientState* usClientState, int32_t endpoint);
 void TinyCLR_UsbClient_Delay(uint64_t microseconds);
-TinyCLR_Result TinyCLR_UsbClient_GetControllerCount(const TinyCLR_UsbClient_Provider* self, int32_t& count);
+TinyCLR_Result TinyCLR_UsbClient_GetControllerCount(const TinyCLR_UsbClient_Controller* self, int32_t& count);
 
-void TinyCLR_UsbClient_InitializeConfiguration(USB_CONTROLLER_STATE *usbState);
+void TinyCLR_UsbClient_InitializeConfiguration(UsClientState *usClientState);
 uint32_t TinyCLR_UsbClient_GetEndpointSize(int32_t endpoint);

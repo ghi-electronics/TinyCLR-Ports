@@ -228,85 +228,104 @@
 
 #define LPC17_ADC_BASE 0x40034010
 
-static const LPC17_Gpio_Pin g_lpc17_adc_pins[] = LPC17_ADC_PINS;
+#define TOTAL_ADC_CONTROLLERS 1
 
-static TinyCLR_Adc_Provider adcProvider;
-static TinyCLR_Api_Info adcApi;
+static const LPC17_Gpio_Pin adcPins[] = LPC17_ADC_PINS;
 
-bool g_lpc17_adc_isOpened[SIZEOF_ARRAY(g_lpc17_adc_pins)];
+static TinyCLR_Adc_Controller adcControllers[TOTAL_ADC_CONTROLLERS];
+static TinyCLR_Api_Info adcApi[TOTAL_ADC_CONTROLLERS];
 
-const TinyCLR_Api_Info* LPC17_Adc_GetApi() {
-    adcProvider.Parent = &adcApi;
-    adcProvider.Acquire = &LPC17_Adc_Acquire;
-    adcProvider.Release = &LPC17_Adc_Release;
-    adcProvider.AcquireChannel = &LPC17_Adc_AcquireChannel;
-    adcProvider.ReleaseChannel = &LPC17_Adc_ReleaseChannel;
-    adcProvider.IsChannelModeSupported = &LPC17_Adc_IsChannelModeSupported;
-    adcProvider.ReadValue = &LPC17_Adc_ReadValue;
-    adcProvider.GetMinValue = &LPC17_Adc_GetMinValue;
-    adcProvider.GetMaxValue = &LPC17_Adc_GetMaxValue;
-    adcProvider.GetResolutionInBits = &LPC17_Adc_GetResolutionInBits;
-    adcProvider.GetChannelCount = &LPC17_Adc_GetChannelCount;
-    adcProvider.GetChannelMode = &LPC17_Adc_GetChannelMode;
-    adcProvider.GetControllerCount = &LPC17_Adc_GetControllerCount;
+const char* adcApiNames[TOTAL_ADC_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.LPC17.AdcController\\0"
+};
 
-    adcApi.Author = "GHI Electronics, LLC";
-    adcApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.AdcProvider";
-    adcApi.Type = TinyCLR_Api_Type::AdcProvider;
-    adcApi.Version = 0;
-    adcApi.Implementation = &adcProvider;
+struct AdcState {
+    bool isOpen[SIZEOF_ARRAY(adcPins)];
+};
 
-    return &adcApi;
+static AdcState adcStates[TOTAL_ADC_CONTROLLERS];
+
+void LPC17_Adc_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    for (int32_t i = 0; i < TOTAL_ADC_CONTROLLERS; i++) {
+        adcControllers[i].ApiInfo = &adcApi[i];
+        adcControllers[i].Acquire = &LPC17_Adc_Acquire;
+        adcControllers[i].Release = &LPC17_Adc_Release;
+        adcControllers[i].OpenChannel = &LPC17_Adc_OpenChannel;
+        adcControllers[i].CloseChannel = &LPC17_Adc_CloseChannel;
+        adcControllers[i].ReadChannel = &LPC17_Adc_ReadChannel;
+        adcControllers[i].SetChannelMode = &LPC17_Adc_SetChannelMode;
+        adcControllers[i].GetChannelMode = &LPC17_Adc_GetChannelMode;
+        adcControllers[i].IsChannelModeSupported = &LPC17_Adc_IsChannelModeSupported;
+        adcControllers[i].GetMinValue = &LPC17_Adc_GetMinValue;
+        adcControllers[i].GetMaxValue = &LPC17_Adc_GetMaxValue;
+        adcControllers[i].GetResolutionInBits = &LPC17_Adc_GetResolutionInBits;
+        adcControllers[i].GetChannelCount = &LPC17_Adc_GetChannelCount;
+
+        adcApi[i].Author = "GHI Electronics, LLC";
+        adcApi[i].Name = adcApiNames[i];
+        adcApi[i].Type = TinyCLR_Api_Type::AdcController;
+        adcApi[i].Version = 0;
+        adcApi[i].Implementation = &adcControllers[i];
+        adcApi[i].State = &adcStates[i];
+        
+        apiManager->Add(apiManager, &adcApi[i]);
+    }
+
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::AdcController, adcApi[0].Name);
 }
 
-TinyCLR_Result LPC17_Adc_Acquire(const TinyCLR_Adc_Provider* self, int32_t controller) {
+TinyCLR_Result LPC17_Adc_Acquire(const TinyCLR_Adc_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Adc_Release(const TinyCLR_Adc_Provider* self, int32_t controller) {
+TinyCLR_Result LPC17_Adc_Release(const TinyCLR_Adc_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Adc_AcquireChannel(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t channel) {
-    if (channel >= SIZEOF_ARRAY(g_lpc17_adc_pins))
+TinyCLR_Result LPC17_Adc_OpenChannel(const TinyCLR_Adc_Controller* self, uint32_t channel) {
+    if (channel >= SIZEOF_ARRAY(adcPins))
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    if (!LPC17_Gpio_OpenPin(g_lpc17_adc_pins[channel].number))
+    if (!LPC17_Gpio_OpenPin(adcPins[channel].number))
         return  TinyCLR_Result::SharingViolation;
+
+    auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
     LPC_SC->PCONP |= PCONP_PCAD; // To enable power on ADC  Possibly add a check to see if power is enabled before setting and for the ability to check if any ADC are active in uninitialize
 
-    LPC17_Gpio_ConfigurePin(g_lpc17_adc_pins[channel].number, LPC17_Gpio_Direction::Input, g_lpc17_adc_pins[channel].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+    LPC17_Gpio_ConfigurePin(adcPins[channel].number, LPC17_Gpio_Direction::Input, adcPins[channel].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
     AD0CR |= (1 << channel) | // Selects this channel in the register to initialize
         ((5 - 1) << 8) | // Divide the clock (60 MHz) by 5 (60 / (4 + 1) = 12) <-- must be < 12.5
         (1 << 16) | // Burst Mode set
         (1 << 21); // Set convertion operation to opperational
 
-    g_lpc17_adc_isOpened[channel] = true;
+    state->isOpen[channel] = true;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Adc_ReleaseChannel(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t channel) {
-    if (g_lpc17_adc_isOpened[channel])
-        LPC17_Gpio_ClosePin(g_lpc17_adc_pins[channel].number);
+TinyCLR_Result LPC17_Adc_CloseChannel(const TinyCLR_Adc_Controller* self, uint32_t channel) {
+    auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
-    g_lpc17_adc_isOpened[channel] = false;
+    if (state->isOpen[channel])
+        LPC17_Gpio_ClosePin(adcPins[channel].number);
+
+    state->isOpen[channel] = false;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t controller, int32_t channel, int32_t& value) {
+TinyCLR_Result LPC17_Adc_ReadChannel(const TinyCLR_Adc_Controller* self, uint32_t channel, int32_t& value) {
     uint32_t result = 0;
 
-    if (channel >= SIZEOF_ARRAY(g_lpc17_adc_pins))
+    if (channel >= SIZEOF_ARRAY(adcPins))
         return TinyCLR_Result::ArgumentOutOfRange;
 
     value = 0;
@@ -326,46 +345,42 @@ TinyCLR_Result LPC17_Adc_ReadValue(const TinyCLR_Adc_Provider* self, int32_t con
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC17_Adc_GetChannelCount(const TinyCLR_Adc_Provider* self, int32_t controller) {
-    return SIZEOF_ARRAY(g_lpc17_adc_pins);
+uint32_t LPC17_Adc_GetChannelCount(const TinyCLR_Adc_Controller* self) {
+    return SIZEOF_ARRAY(adcPins);
 }
 
-int32_t LPC17_Adc_GetResolutionInBits(const TinyCLR_Adc_Provider* self, int32_t controller) {
+uint32_t LPC17_Adc_GetResolutionInBits(const TinyCLR_Adc_Controller* self) {
     return 12;
 }
 
-int32_t LPC17_Adc_GetMinValue(const TinyCLR_Adc_Provider* self, int32_t controller) {
+int32_t LPC17_Adc_GetMinValue(const TinyCLR_Adc_Controller* self) {
     return 0;
 }
 
-int32_t LPC17_Adc_GetMaxValue(const TinyCLR_Adc_Provider* self, int32_t controller) {
-    return (1 << LPC17_Adc_GetResolutionInBits(self, controller)) - 1;
+int32_t LPC17_Adc_GetMaxValue(const TinyCLR_Adc_Controller* self) {
+    return (1 << LPC17_Adc_GetResolutionInBits(self)) - 1;
 }
 
-TinyCLR_Adc_ChannelMode LPC17_Adc_GetChannelMode(const TinyCLR_Adc_Provider* self, int32_t controller) {
+TinyCLR_Adc_ChannelMode LPC17_Adc_GetChannelMode(const TinyCLR_Adc_Controller* self) {
     return TinyCLR_Adc_ChannelMode::SingleEnded;
 }
 
-TinyCLR_Result LPC17_Adc_SetChannelMode(const TinyCLR_Adc_Provider* self, int32_t controller, TinyCLR_Adc_ChannelMode mode) {
+TinyCLR_Result LPC17_Adc_SetChannelMode(const TinyCLR_Adc_Controller* self, TinyCLR_Adc_ChannelMode mode) {
     return mode == TinyCLR_Adc_ChannelMode::SingleEnded ? TinyCLR_Result::Success : TinyCLR_Result::NotSupported;
 }
 
-bool LPC17_Adc_IsChannelModeSupported(const TinyCLR_Adc_Provider* self, int32_t controller, TinyCLR_Adc_ChannelMode mode) {
+bool LPC17_Adc_IsChannelModeSupported(const TinyCLR_Adc_Controller* self, TinyCLR_Adc_ChannelMode mode) {
     return mode == TinyCLR_Adc_ChannelMode::SingleEnded;
 }
 
 void LPC17_Adc_Reset() {
     LPC_SC->PCONP &= ~PCONP_PCAD;
 
-    for (auto ch = 0; ch < SIZEOF_ARRAY(g_lpc17_adc_pins); ch++) {
-        LPC17_Adc_ReleaseChannel(&adcProvider, 0, ch);
+    for (auto c = 0; c < TOTAL_ADC_CONTROLLERS; c++) {
+        for (auto ch = 0; ch < SIZEOF_ARRAY(adcPins); ch++) {
+            LPC17_Adc_CloseChannel(&adcControllers[c], ch);
 
-        g_lpc17_adc_isOpened[ch] = false;
+            adcStates[c].isOpen[ch] = false;
+        }
     }
-}
-
-TinyCLR_Result LPC17_Adc_GetControllerCount(const TinyCLR_Adc_Provider* self, int32_t& count) {
-    count = 1;
-
-    return TinyCLR_Result::Success;
 }

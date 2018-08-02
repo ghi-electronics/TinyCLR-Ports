@@ -19,54 +19,69 @@
 #ifdef INCLUDE_DAC
 ///////////////////////////////////////////////////////////////////////////////
 
-#define STM32F4_DAC_CONTROLLERS             2       // number of channels
-#define STM32F4_DAC_FIRST_PIN           4       // channel 0 pin (A4)
-#define STM32F4_DAC_RESOLUTION_INT_BIT    12      // max resolution in bit
+#define TOTAL_DAC_CONTROLLERS 1
+#define STM32F4_DAC_CHANNEL_NUMS 2
+#define STM32F4_DAC_FIRST_PIN 4
+#define STM32F4_DAC_RESOLUTION_INT_BIT 12
 
-static TinyCLR_Dac_Provider dacProvider;
-static TinyCLR_Api_Info dacApi;
+static TinyCLR_Dac_Controller dacControllers[TOTAL_DAC_CONTROLLERS];
+static TinyCLR_Api_Info dacApi[TOTAL_DAC_CONTROLLERS];
 
-bool g_STM32F4_DA_IsOpened[STM32F4_DAC_CONTROLLERS];
+struct DacState {
+    bool isOpened[STM32F4_DAC_CHANNEL_NUMS];
+};
 
-const TinyCLR_Api_Info* STM32F4_Dac_GetApi() {
-    dacProvider.Parent = &dacApi;
-    dacProvider.Acquire = &STM32F4_Dac_Acquire;
-    dacProvider.Release = &STM32F4_Dac_Release;
-    dacProvider.AcquireChannel = &STM32F4_Dac_AcquireChannel;
-    dacProvider.ReleaseChannel = &STM32F4_Dac_ReleaseChannel;
-    dacProvider.WriteValue = &STM32F4_Dac_WriteValue;
-    dacProvider.GetMinValue = &STM32F4_Dac_GetMinValue;
-    dacProvider.GetMaxValue = &STM32F4_Dac_GetMaxValue;
-    dacProvider.GetResolutionInBits = &STM32F4_Dac_GetResolutionInBits;
-    dacProvider.GetChannelCount = &STM32F4_Dac_GetChannelCount;
-    dacProvider.GetControllerCount = &STM32F4_Dac_GetControllerCount;
+static DacState dacStates[TOTAL_DAC_CONTROLLERS];
 
-    dacApi.Author = "GHI Electronics, LLC";
-    dacApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F4.DacProvider";
-    dacApi.Type = TinyCLR_Api_Type::DacProvider;
-    dacApi.Version = 0;
-    dacApi.Implementation = &dacProvider;
+const char* dacApiNames[TOTAL_DAC_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F4.DacController\\0"
+};
 
-    return &dacApi;
+void STM32F4_Dac_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    for (int32_t i = 0; i < TOTAL_DAC_CONTROLLERS; i++) {
+        dacControllers[i].ApiInfo = &dacApi[i];
+        dacControllers[i].Acquire = &STM32F4_Dac_Acquire;
+        dacControllers[i].Release = &STM32F4_Dac_Release;
+        dacControllers[i].OpenChannel = &STM32F4_Dac_OpenChannel;
+        dacControllers[i].CloseChannel = &STM32F4_Dac_CloseChannel;
+        dacControllers[i].WriteValue = &STM32F4_Dac_WriteValue;
+        dacControllers[i].GetMinValue = &STM32F4_Dac_GetMinValue;
+        dacControllers[i].GetMaxValue = &STM32F4_Dac_GetMaxValue;
+        dacControllers[i].GetResolutionInBits = &STM32F4_Dac_GetResolutionInBits;
+        dacControllers[i].GetChannelCount = &STM32F4_Dac_GetChannelCount;
+
+        dacApi[i].Author = "GHI Electronics, LLC";
+        dacApi[i].Name = dacApiNames[i];
+        dacApi[i].Type = TinyCLR_Api_Type::DacController;
+        dacApi[i].Version = 0;
+        dacApi[i].Implementation = &dacControllers[i];
+        dacApi[i].State = &dacStates[i];
+
+        apiManager->Add(apiManager, &dacApi[i]);
+    }
+
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::DacController, dacApi[0].Name);
 }
 
-TinyCLR_Result STM32F4_Dac_Acquire(const TinyCLR_Dac_Provider* self, int32_t controller) {
+TinyCLR_Result STM32F4_Dac_Acquire(const TinyCLR_Dac_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Dac_Release(const TinyCLR_Dac_Provider* self, int32_t controller) {
+TinyCLR_Result STM32F4_Dac_Release(const TinyCLR_Dac_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel) {
+TinyCLR_Result STM32F4_Dac_OpenChannel(const TinyCLR_Dac_Controller* self, uint32_t channel) {
     if (!STM32F4_GpioInternal_OpenPin(STM32F4_DAC_FIRST_PIN + channel))
         return TinyCLR_Result::SharingViolation;
+
+    auto state = reinterpret_cast<DacState*>(self->ApiInfo->State);
 
     // enable DA clock
     RCC->APB1ENR |= RCC_APB1ENR_DACEN;
@@ -81,12 +96,14 @@ TinyCLR_Result STM32F4_Dac_AcquireChannel(const TinyCLR_Dac_Provider* self, int3
         DAC->CR |= DAC_CR_EN1; // enable channel 1
     }
 
-    g_STM32F4_DA_IsOpened[channel] = true;
+    state->isOpened[channel] = true;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel) {
+TinyCLR_Result STM32F4_Dac_CloseChannel(const TinyCLR_Dac_Controller* self, uint32_t channel) {
+    auto state = reinterpret_cast<DacState*>(self->ApiInfo->State);
+
     if (channel) {
         DAC->CR &= ~DAC_CR_EN2; // disable channel 2
     }
@@ -99,15 +116,15 @@ TinyCLR_Result STM32F4_Dac_ReleaseChannel(const TinyCLR_Dac_Provider* self, int3
         RCC->APB1ENR &= ~RCC_APB1ENR_DACEN;
     }
 
-    if (g_STM32F4_DA_IsOpened[channel])
+    if (state->isOpened[channel])
         STM32F4_GpioInternal_ClosePin(STM32F4_DAC_FIRST_PIN + channel);
 
-    g_STM32F4_DA_IsOpened[channel] = false;
+    state->isOpened[channel] = false;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t controller, int32_t channel, int32_t value) {
+TinyCLR_Result STM32F4_Dac_WriteValue(const TinyCLR_Dac_Controller* self, uint32_t channel, int32_t value) {
     value &= 0x00000FFF;
 
     if (channel)
@@ -118,33 +135,29 @@ TinyCLR_Result STM32F4_Dac_WriteValue(const TinyCLR_Dac_Provider* self, int32_t 
     return TinyCLR_Result::Success;
 }
 
-int32_t STM32F4_Dac_GetChannelCount(const TinyCLR_Dac_Provider* self, int32_t controller) {
-    return STM32F4_DAC_CONTROLLERS;
+uint32_t STM32F4_Dac_GetChannelCount(const TinyCLR_Dac_Controller* self) {
+    return STM32F4_DAC_CHANNEL_NUMS;
 }
 
-int32_t STM32F4_Dac_GetResolutionInBits(const TinyCLR_Dac_Provider* self, int32_t controller) {
+uint32_t STM32F4_Dac_GetResolutionInBits(const TinyCLR_Dac_Controller* self) {
     return STM32F4_DAC_RESOLUTION_INT_BIT;
 }
 
-int32_t STM32F4_Dac_GetMinValue(const TinyCLR_Dac_Provider* self, int32_t controller) {
+int32_t STM32F4_Dac_GetMinValue(const TinyCLR_Dac_Controller* self) {
     return 0;
 }
 
-int32_t STM32F4_Dac_GetMaxValue(const TinyCLR_Dac_Provider* self, int32_t controller) {
+int32_t STM32F4_Dac_GetMaxValue(const TinyCLR_Dac_Controller* self) {
     return ((1 << STM32F4_DAC_RESOLUTION_INT_BIT) - 1);
 }
 
 void STM32F4_Dac_Reset() {
-    for (auto i = 0; i < STM32F4_Dac_GetChannelCount(&dacProvider, 0); i++) {
-        STM32F4_Dac_ReleaseChannel(&dacProvider, 0, i);
+    for (auto c = 0; c < TOTAL_DAC_CONTROLLERS; c++) {
+        for (uint32_t i = 0; i < STM32F4_Dac_GetChannelCount(&dacControllers[c]); i++) {
+            STM32F4_Dac_CloseChannel(&dacControllers[c], i);
 
-        g_STM32F4_DA_IsOpened[i] = false;
+            dacStates[c].isOpened[i] = false;
+        }
     }
-}
-
-TinyCLR_Result STM32F4_Dac_GetControllerCount(const TinyCLR_Dac_Provider* self, int32_t& count) {
-    count = 1;
-
-    return TinyCLR_Result::Success;
 }
 #endif

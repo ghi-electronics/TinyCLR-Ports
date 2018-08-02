@@ -17,30 +17,64 @@
 
 #define DISABLED_MASK  0x00000001
 
+#define TOTAL_INTERRUPT_CONTROLLERS 1
+
 TinyCLR_Interrupt_StartStopHandler LPC17_Interrupt_Started;
 TinyCLR_Interrupt_StartStopHandler LPC17_Interrupt_Ended;
 
-static TinyCLR_Interrupt_Provider interruptProvider;
-static TinyCLR_Api_Info interruptApi;
+struct InterruptState {
+    uint32_t controllerIndex;
+    bool tableInitialized;
+};
 
-const TinyCLR_Api_Info* LPC17_Interrupt_GetApi() {
-    interruptProvider.Parent = &interruptApi;
-    interruptProvider.Parent = &interruptApi;
-    interruptProvider.Acquire = &LPC17_Interrupt_Acquire;
-    interruptProvider.Release = &LPC17_Interrupt_Release;
-    interruptProvider.Enable = &LPC17_Interrupt_GlobalEnabled;
-    interruptProvider.Disable = &LPC17_Interrupt_GlobalDisabled;
-    interruptProvider.WaitForInterrupt = &LPC17_Interrupt_GlobalWaitForInterrupt;
-    interruptProvider.IsDisabled = &LPC17_Interrupt_GlobalIsDisabled;
-    interruptProvider.Restore = &LPC17_Interrupt_GlobalRestore;
+const char* interruptApiNames[TOTAL_INTERRUPT_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.LPC17.InterruptController\\0"
+};
 
-    interruptApi.Author = "GHI Electronics, LLC";
-    interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.InterruptProvider";
-    interruptApi.Type = TinyCLR_Api_Type::InterruptProvider;
-    interruptApi.Version = 0;
-    interruptApi.Implementation = &interruptProvider;
+static TinyCLR_Interrupt_Controller interruptControllers[TOTAL_INTERRUPT_CONTROLLERS];
+static TinyCLR_Api_Info interruptApi[TOTAL_INTERRUPT_CONTROLLERS];
+static InterruptState interruptStates[TOTAL_INTERRUPT_CONTROLLERS];
 
-    return &interruptApi;
+void LPC17_Interrupt_EnsureTableInitialized() {
+    for (auto i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
+        if (interruptStates[i].tableInitialized)
+            continue;
+
+        interruptControllers[i].ApiInfo = &interruptApi[i];
+        interruptControllers[i].Initialize = &LPC17_Interrupt_Initialize;
+        interruptControllers[i].Uninitialize = &LPC17_Interrupt_Uninitialize;
+        interruptControllers[i].Enable = &LPC17_Interrupt_GlobalEnabled;
+        interruptControllers[i].Disable = &LPC17_Interrupt_GlobalDisabled;
+        interruptControllers[i].WaitForInterrupt = &LPC17_Interrupt_GlobalWaitForInterrupt;
+        interruptControllers[i].IsDisabled = &LPC17_Interrupt_GlobalIsDisabled;
+        interruptControllers[i].Restore = &LPC17_Interrupt_GlobalRestore;
+
+        interruptApi[i].Author = "GHI Electronics, LLC";
+        interruptApi[i].Name = interruptApiNames[i];
+        interruptApi[i].Type = TinyCLR_Api_Type::InterruptController;
+        interruptApi[i].Version = 0;
+        interruptApi[i].Implementation = &interruptControllers[i];
+        interruptApi[i].State = &interruptStates[i];
+
+        interruptStates[i].controllerIndex = i;
+        interruptStates[i].tableInitialized = true;
+    }
+}
+
+const TinyCLR_Api_Info* LPC17_Interrupt_GetRequiredApi() {
+    LPC17_Interrupt_EnsureTableInitialized();
+
+    return &interruptApi[0];
+}
+
+void LPC17_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    LPC17_Interrupt_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &interruptApi[i]);
+    }
+
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::InterruptController, interruptApi[0].Name);
 }
 
 extern "C" {
@@ -48,7 +82,7 @@ extern "C" {
     extern uint32_t __Vectors;
 }
 
-TinyCLR_Result LPC17_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
+TinyCLR_Result LPC17_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
     uint32_t *irq_vectors = (uint32_t*)&__Vectors;
 
     // disable all interrupts
@@ -76,7 +110,7 @@ TinyCLR_Result LPC17_Interrupt_Acquire(TinyCLR_Interrupt_StartStopHandler onInte
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Interrupt_Release() {
+TinyCLR_Result LPC17_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self) {
     return TinyCLR_Result::Success;
 }
 

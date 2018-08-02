@@ -65,7 +65,7 @@
 #define LPC24_I2C_SDA_PINS { { PIN(0, 27), PF(1) } }
 
 #define INCLUDE_PWM
-#define TOTAL_PWM_CONTROLLER 1
+#define TOTAL_PWM_CONTROLLERS 1
 #define MAX_PWM_PER_CONTROLLER 6
 #define LPC24_PWM_PINS  { { PIN(1, 18), PF(2) }, { PIN(1, 20), PF(2) }, { PIN(1, 21), PF(2) }, { PIN(2, 3), PF(1) }, { PIN(2, 4), PF(1) }, { PIN(2, 5), PF(1) } }
 

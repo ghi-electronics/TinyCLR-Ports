@@ -14,26 +14,37 @@
 
 #include "LPC17.h"
 
-static TinyCLR_Rtc_Provider rtcProvider;
-static TinyCLR_Api_Info timeApi;
+#define TOTAL_RTC_CONTROLLERS 1
 
-const TinyCLR_Api_Info* LPC17_Rtc_GetApi() {
-    rtcProvider.Parent = &timeApi;
-    rtcProvider.Acquire = &LPC17_Rtc_Acquire;
-    rtcProvider.Release = &LPC17_Rtc_Release;
-    rtcProvider.GetNow = &LPC17_Rtc_GetNow;
-    rtcProvider.SetNow = &LPC17_Rtc_SetNow;
+static TinyCLR_Rtc_Controller rtcControllers[TOTAL_RTC_CONTROLLERS];
+static TinyCLR_Api_Info rtcApi[TOTAL_RTC_CONTROLLERS];
 
-    timeApi.Author = "GHI Electronics, LLC";
-    timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.RtcProvider";
-    timeApi.Type = TinyCLR_Api_Type::RtcProvider;
-    timeApi.Version = 0;
-    timeApi.Implementation = &rtcProvider;
+const char* rtcApiNames[TOTAL_RTC_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.LPC17.RtcController\\0"
+};
 
-    return &timeApi;
+void LPC17_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    for (auto i = 0; i < TOTAL_RTC_CONTROLLERS; i++) {
+        rtcControllers[i].ApiInfo = &rtcApi[i];
+        rtcControllers[i].Acquire = &LPC17_Rtc_Acquire;
+        rtcControllers[i].Release = &LPC17_Rtc_Release;
+        rtcControllers[i].GetTime = &LPC17_Rtc_GetTime;
+        rtcControllers[i].SetTime = &LPC17_Rtc_SetTime;
+
+        rtcApi[i].Author = "GHI Electronics, LLC";
+        rtcApi[i].Name = rtcApiNames[i];
+        rtcApi[i].Type = TinyCLR_Api_Type::RtcController;
+        rtcApi[i].Version = 0;
+        rtcApi[i].Implementation = &rtcControllers[i];
+        rtcApi[i].State = nullptr;
+
+        apiManager->Add(apiManager, &rtcApi[i]);
+    }
+
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::RtcController, rtcApi[0].Name);
 }
 
-TinyCLR_Result LPC17_Rtc_Acquire(const TinyCLR_Rtc_Provider* self) {
+TinyCLR_Result LPC17_Rtc_Acquire(const TinyCLR_Rtc_Controller* self) {
     LPC_SC->PCONP |= PCONP_PCRTC;
 
     if (LPC_RTC->CCR != 1) {
@@ -44,11 +55,11 @@ TinyCLR_Result LPC17_Rtc_Acquire(const TinyCLR_Rtc_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Rtc_Release(const TinyCLR_Rtc_Provider* self) {
+TinyCLR_Result LPC17_Rtc_Release(const TinyCLR_Rtc_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime& value) {
+TinyCLR_Result LPC17_Rtc_GetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value) {
     if (LPC_RTC->CCR != 1) {
         TinyCLR_Result::InvalidOperation;
     }
@@ -67,7 +78,7 @@ TinyCLR_Result LPC17_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_Da
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime value) {
+TinyCLR_Result LPC17_Rtc_SetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value) {
     if (LPC_RTC->CCR != 1) {
         TinyCLR_Result::InvalidOperation;
     }

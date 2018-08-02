@@ -52,6 +52,9 @@
 #define LPC24_ADC_PINS { { PIN(0,23), PF(1) }, { PIN(0,24), PF(1) }, { PIN(0,25), PF(1) }, { PIN(0,26), PF(1) }, { PIN_NONE, PF_NONE }, { PIN(1,31), PF(3) }, { PIN(0,12), PF(3) }, { PIN(0,13), PF(3) } }
 
 #define INCLUDE_CAN
+#define LPC24_CAN_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.LPC24.CanController\\0",\
+                                     "GHIElectronics.TinyCLR.NativeApis.LPC24.CanController\\1",\
+                                     }
 #define LPC24_CAN_BUFFER_DEFAULT_SIZE { 128, 128 }
 #define LPC24_CAN_TX_PINS { { PIN(0, 1), PF(1) }, { PIN(0, 5), PF(2) } }
 #define LPC24_CAN_RX_PINS { { PIN(0, 0), PF(1) }, { PIN(0, 4), PF(2) } }
@@ -64,26 +67,24 @@
 #define LPC24_DEPLOYMENT_SECTOR_NUM (LPC24_DEPLOYMENT_SECTOR_END - LPC24_DEPLOYMENT_SECTOR_START + 1)
 
 #define INCLUDE_I2C
+#define LPC24_I2C_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.LPC24.I2cController\\0" }
 #define LPC24_I2C_SCL_PINS { { PIN(0, 28), PF(1) } }
 #define LPC24_I2C_SDA_PINS { { PIN(0, 27), PF(1) } }
 
 #define INCLUDE_PWM
-#define TOTAL_PWM_CONTROLLER 2
+#define LPC24_PWM_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.LPC24.PwmController\\0",\
+                                     "GHIElectronics.TinyCLR.NativeApis.LPC24.PwmController\\1",\
+                                     }
+#define TOTAL_PWM_CONTROLLERS 2
 #define MAX_PWM_PER_CONTROLLER 6
 #define LPC24_PWM_PINS  { { { PIN(3, 16), PF(2) }, { PIN(3, 17), PF(2) }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE, PF_NONE }, { PIN_NONE  , PF_NONE } }, { { PIN(3, 24), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN(3, 26), PF(3) }, { PIN(3, 27), PF(3) }, { PIN_NONE, PF_NONE }, { PIN(3, 29), PF(3) } } }
 
 #define INCLUDE_RTC
 
-#define INCLUDE_SD
-#define LPC24_SD_DATA0_PINS { { PIN(1, 6), PF(2) } }
-#define LPC24_SD_DATA1_PINS { { PIN(1, 7), PF(2) } }
-#define LPC24_SD_DATA2_PINS { { PIN(1, 11), PF(2) } }
-#define LPC24_SD_DATA3_PINS { { PIN(1, 12), PF(2) } }
-#define LPC24_SD_CLK_PINS { { PIN(1, 2), PF(2) } }
-#define LPC24_SD_CMD_PINS { { PIN(1, 3), PF(2) } }
-#define LPC24_SD_PWR_PINS  { { PIN(1, 5), PF(0) } }
-
 #define INCLUDE_SPI
+#define LPC24_SPI_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.LPC24.SpiController\\0",\
+                                     "GHIElectronics.TinyCLR.NativeApis.LPC24.SpiController\\1",\
+                                     }
 #define TOTAL_SPI_CONTROLLERS 2
 #define LPC24_SPI_SCLK_PINS { { PIN(0, 15), PF(2) }, { PIN(0,  7), PF(2) } }
 #define LPC24_SPI_MISO_PINS { { PIN(0, 17), PF(2) }, { PIN(0,  8), PF(2) } }
@@ -92,6 +93,11 @@
 #define LPC24_TIME_DEFAULT_CONTROLLER_ID 0
 
 #define INCLUDE_UART
+#define LPC24_UART_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.LPC24.UartController\\0",\
+                                      "GHIElectronics.TinyCLR.NativeApis.LPC24.UartController\\1",\
+                                      "GHIElectronics.TinyCLR.NativeApis.LPC24.UartController\\2",\
+                                      "GHIElectronics.TinyCLR.NativeApis.LPC24.UartController\\3",\
+                                    }
 #define TOTAL_UART_CONTROLLERS 4
 #define LPC24_UART_DEFAULT_TX_BUFFER_SIZE { 16 * 1024, 16 * 1024, 16 * 1024, 16 * 1024 }
 #define LPC24_UART_DEFAULT_RX_BUFFER_SIZE { 16 * 1024, 16 * 1024, 16 * 1024, 16 * 1024 }
@@ -107,10 +113,5 @@
 #define LPC24_USB_ENDPOINT0_SIZE 64
 #define LPC24_USB_ENDPOINT_COUNT 16
 #define LPC24_USB_PIPE_COUNT 16
-
-#define INCLUDE_DISPLAY
-#define LPC24_DISPLAY_CONTROLLER_PINS { { PIN(1, 20), PF(1) }, { PIN(1, 21), PF(1) }, { PIN(1, 22), PF(1) }, { PIN(1, 23), PF(1) }, { PIN(1, 24), PF(1) }, { PIN(1, 25), PF(1) }, { PIN(1, 26), PF(1) }, { PIN(1, 27), PF(1) }, { PIN(1, 28), PF(1)}, { PIN(1, 29), PF(1) }, { PIN(2, 2), PF(3) }, { PIN(2, 3), PF(3) }, { PIN(2, 5), PF(3) }, { PIN(2, 6), PF(3) }, { PIN(2, 7), PF(3) }, { PIN(2, 8), PF(3) }, { PIN(2, 9), PF(3) }, { PIN(2, 12), PF(1) }, { PIN(2, 13), PF(1) } }
-#define LPC24_DISPLAY_BACKLIGHT_PIN  { PIN_NONE, PF_NONE }
-#define LPC24_DISPLAY_ENABLE_PIN  { PIN(2, 4), PF(3) }
 
 #include <LPC24.h>

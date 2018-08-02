@@ -17,6 +17,8 @@
 
 #define TIMER_IDLE_VALUE  0x0000FFFFFFFFFFFFFull
 
+#define TOTAL_TIME_CONTROLLERS 1
+
 #define CORTEXM_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS 3
 #define  LPC24_TIME_OVERFLOW_FLAG 0x80000000
 
@@ -26,16 +28,19 @@
 #define SLOW_CLOCKS_MILLISECOND_GCD          1000 // GCD(SLOW_CLOCKS_PER_SECOND, 1k)
 
 //////////////////////////////////////////////////////////////////////////////
-// LPC24 TIMER driver
+// LPC24 TIMER state
 //
 
-struct LPC24_Timer_Controller {
+struct TimeState {
+    int32_t controllerIndex;
+
     bool m_configured;
 
     uint64_t m_lastRead;
     uint64_t m_nextCompare;
 
     TinyCLR_NativeTime_Callback m_DequeuAndExecute;
+    bool tableInitialized;
 
     static bool   Initialize(uint32_t timer, uint32_t* ISR, void* ISR_Param);
     static bool   Uninitialize(uint32_t timer);
@@ -83,15 +88,17 @@ struct LPC24_Timer_Controller {
     }
 };
 //
-// LPC24 TIMER driver
+// LPC24 TIMER state
 //////////////////////////////////////////////////////////////////////////////
 
-LPC24_Timer_Controller g_LPC24_Timer_Controller;
+static TimeState timeStates[TOTAL_TIME_CONTROLLERS];
 
-bool LPC24_Timer_Controller::Initialize(uint32_t timer, uint32_t* ISR, void* ISR_Param) {
+bool TimeState::Initialize(uint32_t timer, uint32_t* ISR, void* ISR_Param) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (g_LPC24_Timer_Controller.m_configured == true) return false;
+    auto state = &timeStates[LPC24_TIME_DEFAULT_CONTROLLER_ID];
+
+    if (state->m_configured == true) return false;
 
     //--//
 
@@ -105,16 +112,17 @@ bool LPC24_Timer_Controller::Initialize(uint32_t timer, uint32_t* ISR, void* ISR
 
     //--//
 
-    g_LPC24_Timer_Controller.m_configured = true;
+    state->m_configured = true;
 
     return true;
 }
 
-bool LPC24_Timer_Controller::Uninitialize(uint32_t timer) {
-
+bool TimeState::Uninitialize(uint32_t timer) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (g_LPC24_Timer_Controller.m_configured == false) return false;
+    auto state = &timeStates[LPC24_TIME_DEFAULT_CONTROLLER_ID];
+
+    if (state->m_configured == false) return false;
 
     //--//
 
@@ -129,14 +137,14 @@ bool LPC24_Timer_Controller::Uninitialize(uint32_t timer) {
 
     //--//
 
-    g_LPC24_Timer_Controller.m_configured = false;
+    state->m_configured = false;
 
     return true;
 }
 
 #pragma arm section code = "SectionForFlashOperations"
 
-uint32_t __section("SectionForFlashOperations") LPC24_Timer_Controller::ReadCounter(uint32_t timer) {
+uint32_t __section("SectionForFlashOperations") TimeState::ReadCounter(uint32_t timer) {
 
     LPC24XX_TIMER& TIMER = LPC24XX::TIMER(timer);
 
@@ -147,83 +155,114 @@ uint32_t __section("SectionForFlashOperations") LPC24_Timer_Controller::ReadCoun
 //--//
 
 void LPC24_Time_InterruptHandler(void* Param) {
-    TinyCLR_NativeTime_Provider *provider = (TinyCLR_NativeTime_Provider*)Param;
+    TinyCLR_NativeTime_Controller *provider = (TinyCLR_NativeTime_Controller*)Param;
+
+    auto state = reinterpret_cast<TimeState*>(provider->ApiInfo->State);
 
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
 
-    if (LPC24_Timer_Controller::DidCompareHit(timer)) {
-        LPC24_Timer_Controller::ResetCompareHit(timer);
+    if (TimeState::DidCompareHit(timer)) {
+        TimeState::ResetCompareHit(timer);
     }
 
-    g_LPC24_Timer_Controller.m_lastRead = LPC24_Time_GetCurrentProcessorTicks(provider);
+    state->m_lastRead = LPC24_Time_GetCurrentProcessorTicks(provider);
 
-    if (g_LPC24_Timer_Controller.m_lastRead >= g_LPC24_Timer_Controller.m_nextCompare) {
+    if (state->m_lastRead >= state->m_nextCompare) {
         // this also schedules the next one, if there is one
-        g_LPC24_Timer_Controller.m_DequeuAndExecute();
+        state->m_DequeuAndExecute();
     }
     else {
         //
         // Because we are limited in the resolution of timer,
         // resetting the compare will properly configure the next interrupt.
         //
-        LPC24_Time_SetNextTickCallbackTime(provider, g_LPC24_Timer_Controller.m_nextCompare);
+        LPC24_Time_SetNextTickCallbackTime(provider, state->m_nextCompare);
     }
 }
 
-static TinyCLR_NativeTime_Provider timeProvider;
-static TinyCLR_Api_Info timeApi;
 
-const TinyCLR_Api_Info* LPC24_Time_GetApi() {
-    timeProvider.Parent = &timeApi;
-    timeProvider.ConvertNativeTimeToSystemTime = &LPC24_Time_GetTimeForProcessorTicks;
-    timeProvider.ConvertSystemTimeToNativeTime = &LPC24_Time_TimeToTicks;
-    timeProvider.GetNativeTime = &LPC24_Time_GetCurrentProcessorTicks;
-    timeProvider.SetCallback = &LPC24_Time_SetTickCallback;
-    timeProvider.ScheduleCallback = &LPC24_Time_SetNextTickCallbackTime;
-    timeProvider.Acquire = &LPC24_Time_Acquire;
-    timeProvider.Release = &LPC24_Time_Release;
-    timeProvider.WaitMicroseconds = &LPC24_Time_Delay;
+static TinyCLR_NativeTime_Controller timeControllers[TOTAL_TIME_CONTROLLERS];
+static TinyCLR_Api_Info timeApi[TOTAL_TIME_CONTROLLERS];
 
-    timeApi.Author = "GHI Electronics, LLC";
-    timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.NativeTimeProvider";
-    timeApi.Type = TinyCLR_Api_Type::NativeTimeProvider;
-    timeApi.Version = 0;
-    timeApi.Implementation = &timeProvider;
+const char* timeApiNames[TOTAL_TIME_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.LPC24.NativeTimeController\\0",
 
-    return &timeApi;
+};
+
+void LPC24_Time_EnsureTableInitialized() {
+    for (auto i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
+        if (timeStates[i].tableInitialized)
+            continue;
+
+        timeControllers[i].ApiInfo = &timeApi[i];
+        timeControllers[i].Initialize = &LPC24_Time_Initialize;
+        timeControllers[i].Uninitialize = &LPC24_Time_Uninitialize;
+        timeControllers[i].GetNativeTime = &LPC24_Time_GetCurrentProcessorTicks;
+        timeControllers[i].ConvertNativeTimeToSystemTime = &LPC24_Time_GetTimeForProcessorTicks;
+        timeControllers[i].ConvertSystemTimeToNativeTime = &LPC24_Time_GetProcessorTicksForTime;
+        timeControllers[i].SetCallback = &LPC24_Time_SetTickCallback;
+        timeControllers[i].ScheduleCallback = &LPC24_Time_SetNextTickCallbackTime;
+        timeControllers[i].Wait = &LPC24_Time_DelayNative;
+
+        timeApi[i].Author = "GHI Electronics, LLC";
+        timeApi[i].Name = timeApiNames[i];
+        timeApi[i].Type = TinyCLR_Api_Type::NativeTimeController;
+        timeApi[i].Version = 0;
+        timeApi[i].Implementation = &timeControllers[i];
+        timeApi[i].State = &timeStates[i];
+
+        timeStates[i].controllerIndex = i;
+        timeStates[i].tableInitialized = true;
+    }
 }
 
-uint32_t LPC24_Time_GetSystemClock(const TinyCLR_NativeTime_Provider* self) {
+const TinyCLR_Api_Info* LPC24_Time_GetRequiredApi() {
+    LPC24_Time_EnsureTableInitialized();
+
+    return &timeApi[0];
+}
+
+void LPC24_Time_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    LPC24_Time_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_TIME_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &timeApi[i]);
+    }
+
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::NativeTimeController, timeApi[0].Name);
+}
+
+uint32_t LPC24_Time_GetSystemClock(const TinyCLR_NativeTime_Controller* self) {
     return SYSTEM_CLOCK_HZ;
 }
 
-uint32_t LPC24_Time_GetTicksPerSecond(const TinyCLR_NativeTime_Provider* self) {
+uint32_t LPC24_Time_GetTicksPerSecond(const TinyCLR_NativeTime_Controller* self) {
     return SLOW_CLOCKS_PER_SECOND;
 }
 
-uint32_t LPC24_Time_GetSystemCycleClock(const TinyCLR_NativeTime_Provider* self) {
+uint32_t LPC24_Time_GetSystemCycleClock(const TinyCLR_NativeTime_Controller* self) {
     return LPC24_AHB_CLOCK_HZ;
 }
 
-uint64_t LPC24_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Provider* self, uint64_t ticks) {
+uint64_t LPC24_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Controller* self, uint64_t ticks) {
     ticks *= (10000000 / SLOW_CLOCKS_TEN_MHZ_GCD);
     ticks /= (SLOW_CLOCKS_PER_SECOND / SLOW_CLOCKS_TEN_MHZ_GCD);
 
     return ticks;
 }
 
-uint64_t LPC24_Time_TimeToTicks(const TinyCLR_NativeTime_Provider* self, uint64_t time) {
+uint64_t LPC24_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Controller* self, uint64_t time) {
     return LPC24_Time_MicrosecondsToTicks(self, time / 10);
 }
 
-uint64_t LPC24_Time_MillisecondsToTicks(const TinyCLR_NativeTime_Provider* self, uint64_t ticks) {
+uint64_t LPC24_Time_MillisecondsToTicks(const TinyCLR_NativeTime_Controller* self, uint64_t ticks) {
     ticks *= (SLOW_CLOCKS_PER_SECOND / SLOW_CLOCKS_MILLISECOND_GCD);
     ticks /= (1000 / SLOW_CLOCKS_MILLISECOND_GCD);
 
     return ticks;
 }
 
-uint64_t LPC24_Time_MicrosecondsToTicks(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds) {
+uint64_t LPC24_Time_MicrosecondsToTicks(const TinyCLR_NativeTime_Controller* self, uint64_t microseconds) {
 #if 1000000 <= SLOW_CLOCKS_PER_SECOND
     return microseconds * (SLOW_CLOCKS_PER_SECOND / 1000000);
 #else
@@ -231,12 +270,18 @@ uint64_t LPC24_Time_MicrosecondsToTicks(const TinyCLR_NativeTime_Provider* self,
 #endif
 }
 
-uint64_t LPC24_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Provider* self) {
+uint64_t LPC24_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self) {
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
 
-    uint64_t lastValue = g_LPC24_Timer_Controller.m_lastRead;
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
-    uint32_t value = LPC24_Timer_Controller::ReadCounter(timer);
+    if (self == nullptr) { // some cases in hal layer call directly LPC24_Time_GetCurrentProcessorTicks(nullptr), use first controller as default
+        state = &timeStates[0];
+    }
+
+    uint64_t lastValue = state->m_lastRead;
+
+    uint32_t value = TimeState::ReadCounter(timer);
 
     uint32_t resHigh = (uint32_t)(lastValue >> 32);
     uint32_t resLow = (uint32_t)lastValue;
@@ -250,28 +295,30 @@ uint64_t LPC24_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Provider* 
     return (uint64_t)resHigh << 32 | value;
 }
 
-TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Provider* self, uint64_t processorTicks) {
+TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Controller* self, uint64_t processorTicks) {
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
+
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    g_LPC24_Timer_Controller.m_nextCompare = processorTicks;
+    state->m_nextCompare = processorTicks;
 
-    if (g_LPC24_Timer_Controller.m_nextCompare >= TIMER_IDLE_VALUE && g_LPC24_Timer_Controller.m_lastRead >= TIMER_IDLE_VALUE) {
-        g_LPC24_Timer_Controller.m_nextCompare = g_LPC24_Timer_Controller.m_nextCompare > g_LPC24_Timer_Controller.m_lastRead ? (g_LPC24_Timer_Controller.m_nextCompare - g_LPC24_Timer_Controller.m_lastRead) : 0;
+    if (state->m_nextCompare >= TIMER_IDLE_VALUE && state->m_lastRead >= TIMER_IDLE_VALUE) {
+        state->m_nextCompare = state->m_nextCompare > state->m_lastRead ? (state->m_nextCompare - state->m_lastRead) : 0;
 
-        g_LPC24_Timer_Controller.m_lastRead = 0;
+        state->m_lastRead = 0;
     }
 
-    uint32_t highComp = (uint32_t)(g_LPC24_Timer_Controller.m_nextCompare >> 32);
-    uint32_t lowComp = (uint32_t)g_LPC24_Timer_Controller.m_nextCompare;
+    uint32_t highComp = (uint32_t)(state->m_nextCompare >> 32);
+    uint32_t lowComp = (uint32_t)state->m_nextCompare;
 
-    uint32_t highRead = (uint32_t)(g_LPC24_Timer_Controller.m_lastRead >> 32);
-    uint32_t lowRead = (uint32_t)g_LPC24_Timer_Controller.m_lastRead;
+    uint32_t highRead = (uint32_t)(state->m_lastRead >> 32);
+    uint32_t lowRead = (uint32_t)state->m_lastRead;
 
     bool fForceInterrupt = false;
 
-    uint32_t lowReadNew = LPC24_Timer_Controller::ReadCounter(timer);
+    uint32_t lowReadNew = TimeState::ReadCounter(timer);
 
     if ((lowRead & LPC24_TIME_OVERFLOW_FLAG) != (lowReadNew & LPC24_TIME_OVERFLOW_FLAG)) {
         fForceInterrupt = true;
@@ -301,9 +348,9 @@ TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Provi
                 nextComp = lowComp;
             }
 
-            LPC24_Timer_Controller::SetCompare(timer, nextComp);
+            TimeState::SetCompare(timer, nextComp);
 
-            lowReadNew = LPC24_Timer_Controller::ReadCounter(timer);
+            lowReadNew = TimeState::ReadCounter(timer);
 
             int32_t diff = nextComp - lowReadNew;
 
@@ -315,49 +362,53 @@ TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Provi
 
     if (fForceInterrupt) {
         // Force interrupt to process this.
-        LPC24_Timer_Controller::ForceInterrupt(timer);
+        TimeState::ForceInterrupt(timer);
     }
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Time_Acquire(const TinyCLR_NativeTime_Provider* self) {
+TinyCLR_Result LPC24_Time_Initialize(const TinyCLR_NativeTime_Controller* self) {
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
 
-    g_LPC24_Timer_Controller.m_lastRead = 0;
-    g_LPC24_Timer_Controller.m_nextCompare = TIMER_IDLE_VALUE;
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
 
-    if (!LPC24_Timer_Controller::Initialize(timer, (uint32_t*)&LPC24_Time_InterruptHandler, (void*)self))
+    state->m_lastRead = 0;
+    state->m_nextCompare = TIMER_IDLE_VALUE;
+
+    if (!TimeState::Initialize(timer, (uint32_t*)&LPC24_Time_InterruptHandler, (void*)self))
         return TinyCLR_Result::InvalidOperation;
 
-    LPC24_Timer_Controller::SetCompare(timer, LPC24_TIME_OVERFLOW_FLAG);
+    TimeState::SetCompare(timer, LPC24_TIME_OVERFLOW_FLAG);
 
-    LPC24_Timer_Controller::EnableCompareInterrupt(timer);
+    TimeState::EnableCompareInterrupt(timer);
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Time_Release(const TinyCLR_NativeTime_Provider* self) {
+TinyCLR_Result LPC24_Time_Uninitialize(const TinyCLR_NativeTime_Controller* self) {
     int32_t timer = LPC24_TIME_DEFAULT_CONTROLLER_ID;
 
-    if (LPC24_Timer_Controller::Uninitialize(timer) == false)
+    if (TimeState::Uninitialize(timer) == false)
         return TinyCLR_Result::InvalidOperation;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Time_SetTickCallback(const TinyCLR_NativeTime_Provider* self, TinyCLR_NativeTime_Callback callback) {
-    if (g_LPC24_Timer_Controller.m_DequeuAndExecute != nullptr)
+TinyCLR_Result LPC24_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* self, TinyCLR_NativeTime_Callback callback) {
+    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+
+    if (state->m_DequeuAndExecute != nullptr)
         return TinyCLR_Result::InvalidOperation;
 
-    g_LPC24_Timer_Controller.m_DequeuAndExecute = callback;
+    state->m_DequeuAndExecute = callback;
 
     return TinyCLR_Result::Success;
 }
 
 extern "C" void IDelayLoop(int32_t iterations);
 
-void LPC24_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microseconds) {
+void LPC24_Time_Delay(const TinyCLR_NativeTime_Controller* self, uint64_t microseconds) {
 
     // iterations must be signed so that negative iterations will result in the minimum delay
 
@@ -368,6 +419,14 @@ void LPC24_Time_Delay(const TinyCLR_NativeTime_Provider* self, uint64_t microsec
     // overhead cycles required to call this subroutine.
     int32_t iterations = (int32_t)microseconds - 5;      // Subtract off call & calculation overhead
     IDelayLoop(iterations);
+}
+
+void LPC24_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_t nativeTime) {
+    //TODO do inline later, don't call out to Delay
+
+    auto microseconds = LPC24_Time_GetTimeForProcessorTicks(self, nativeTime) / 10;
+
+    LPC24_Time_Delay(self, microseconds);
 }
 
 //******************** Profiler ********************
