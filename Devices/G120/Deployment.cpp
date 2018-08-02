@@ -169,7 +169,7 @@ TinyCLR_Result LPC17_Deployment_Erase(const TinyCLR_Storage_Controller* self, ui
     return S25FL032_Flash_EraseBlock(sector);
 }
 
-TinyCLR_Result LPC17_Deployment_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased) {
+TinyCLR_Result LPC17_Deployment_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t count, bool& erased) {
     auto sector = address;
 
     sector += LPC17_DEPLOYMENT_SECTOR_START;

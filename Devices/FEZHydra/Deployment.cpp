@@ -173,7 +173,7 @@ TinyCLR_Result AT91_Deployment_Erase(const TinyCLR_Storage_Controller* self, uin
     return AT45DB321D_Flash_EraseBlock(sector);
 }
 
-TinyCLR_Result AT91_Deployment_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased) {
+TinyCLR_Result AT91_Deployment_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t count, bool& erased) {
     auto sector = address;
 
     sector += AT91_DEPLOYMENT_SECTOR_START;

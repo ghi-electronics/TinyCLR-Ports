@@ -41,7 +41,7 @@ TinyCLR_Result AT91_SdCard_Read(const TinyCLR_Storage_Controller* self, uint64_t
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result AT91_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, bool& erased) {
+TinyCLR_Result AT91_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t count, bool& erased) {
     return TinyCLR_Result::NotImplemented;
 }
 
