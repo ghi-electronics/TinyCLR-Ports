@@ -2874,7 +2874,7 @@ bool LPC24_Can_CanWriteMessage(const TinyCLR_Can_Controller* self) {
         allowed = true;
     }
 	
-	return false;
+	return allowed;
 }
 
 bool LPC24_Can_CanReadMessage(const TinyCLR_Can_Controller* self) {
