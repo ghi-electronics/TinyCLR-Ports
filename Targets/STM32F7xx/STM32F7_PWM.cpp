@@ -67,11 +67,54 @@ struct PwmState {
 void STM32F7_Pwm_ResetController(int32_t controllerIndex);
 STM32F7_Gpio_Pin* STM32F7_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel);
 
-static STM32F7_Gpio_Pin pwmPins[][PWM_PER_CONTROLLER] = STM32F7_PWM_PINS;
+static const STM32F7_Gpio_Pin pwmPins[][PWM_PER_CONTROLLER] = STM32F7_PWM_PINS;
 
-#define TOTAL_PWM_CONTROLLERS SIZEOF_ARRAY(pwmPins)
+static const int TOTAL_PWM_CONTROLLERS = SIZEOF_ARRAY(pwmPins);
 
-const char* PwmApiNames[TOTAL_PWM_CONTROLLERS] = STM32F7_PWM_CONTROLLER_NAMES;
+const char* PwmApiNames[] = {
+#if TOTAL_PWM_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\0",
+#if TOTAL_PWM_CONTROLLERS > 1
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\1",
+#if TOTAL_PWM_CONTROLLERS > 2
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\2",
+#if TOTAL_PWM_CONTROLLERS > 3
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\3",
+#if TOTAL_PWM_CONTROLLERS > 4
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\4",
+#if TOTAL_PWM_CONTROLLERS > 5
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\5",
+#if TOTAL_PWM_CONTROLLERS > 6
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\6",
+#if TOTAL_PWM_CONTROLLERS > 7
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\7",
+#if TOTAL_PWM_CONTROLLERS > 8
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\8",
+#if TOTAL_PWM_CONTROLLERS > 9
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\9",
+#if TOTAL_PWM_CONTROLLERS > 10
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\10",
+#if TOTAL_PWM_CONTROLLERS > 11
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\11",
+#if TOTAL_PWM_CONTROLLERS > 12
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\12",
+#if TOTAL_PWM_CONTROLLERS > 13
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\13"
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+};
 
 static PwmState pwmStates[TOTAL_PWM_CONTROLLERS];
 
