@@ -361,8 +361,8 @@ TinyCLR_Result LPC17_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
     if (!LPC17_Gpio_OpenPin(i2cSdaPins[controllerIndex].number) || !LPC17_Gpio_OpenPin(i2cSclPins[controllerIndex].number))
         return TinyCLR_Result::SharingViolation;
 
-    LPC17_Gpio_ConfigurePin(i2cSdaPins[controllerIndex].number, LPC17_Gpio_Direction::Input, i2cSdaPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(i2cSclPins[controllerIndex].number, LPC17_Gpio_Direction::Input, i2cSclPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+    LPC17_Gpio_ConfigurePin(i2cSdaPins[controllerIndex].number, LPC17_Gpio_Direction::Input, i2cSdaPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::OpenDrain);
+    LPC17_Gpio_ConfigurePin(i2cSclPins[controllerIndex].number, LPC17_Gpio_Direction::Input, i2cSclPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::OpenDrain);
 
     // enable the I2c module
     I2C.I2CONSET = LPC17xx_I2C::I2EN;
