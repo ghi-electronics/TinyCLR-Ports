@@ -1019,6 +1019,10 @@ TinyCLR_Result LPC24_Display_DrawBuffer(const TinyCLR_Display_Controller* self, 
     return TinyCLR_Result::Success;
 }
 
+TinyCLR_Result LPC24_Display_DrawPixel(const TinyCLR_Display_Controller* self, uint32_t x, uint32_t y, uint64_t color) {
+    return TinyCLR_Result::NotImplemented;
+}
+
 TinyCLR_Result LPC24_Display_DrawString(const TinyCLR_Display_Controller* self, const char* data, size_t length) {
     for (size_t i = 0; i < length; i++)
         LPC24_Display_WriteFormattedChar(data[i]);
@@ -1051,6 +1055,7 @@ void LPC24_Display_AddApi(const TinyCLR_Api_Manager* apiManager) {
         displayControllers[i].GetConfiguration = &LPC24_Display_GetConfiguration;
         displayControllers[i].GetCapabilities = &LPC24_Display_GetCapabilities;
         displayControllers[i].DrawBuffer = &LPC24_Display_DrawBuffer;
+        displayControllers[i].DrawPixel = &LPC24_Display_DrawPixel;
         displayControllers[i].DrawString = &LPC24_Display_DrawString;
 
         displayApi[i].Author = "GHI Electronics, LLC";

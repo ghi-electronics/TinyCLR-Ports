@@ -1445,6 +1445,7 @@ TinyCLR_Result AT91_Display_GetCapabilities(const TinyCLR_Display_Controller* se
 TinyCLR_Result AT91_Display_GetConfiguration(const TinyCLR_Display_Controller* self, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration);
 TinyCLR_Result AT91_Display_SetConfiguration(const TinyCLR_Display_Controller* self, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration);
 TinyCLR_Result AT91_Display_DrawBuffer(const TinyCLR_Display_Controller* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data);
+TinyCLR_Result AT91_Display_DrawPixel(const TinyCLR_Display_Controller* self, uint32_t x, uint32_t y, uint64_t color);
 TinyCLR_Result AT91_Display_WriteString(const TinyCLR_Display_Controller* self, const char* buffer, size_t length);
 
 //WatchDog

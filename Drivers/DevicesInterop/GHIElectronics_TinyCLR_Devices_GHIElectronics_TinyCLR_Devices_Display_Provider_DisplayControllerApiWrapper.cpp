@@ -39,6 +39,22 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
 }
 
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::DrawPixel___VOID__I4__I4__I8(const TinyCLR_Interop_MethodData md) {
+    auto api = reinterpret_cast<const TinyCLR_Display_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
+
+    TinyCLR_Interop_ClrValue arg0, arg1, arg2;
+
+    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg0);
+    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 1, arg1);
+    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 2, arg2);
+
+    auto x = arg0.Data.Numeric->U4;
+    auto y = arg1.Data.Numeric->U4;
+    auto color = arg2.Data.Numeric->U8;
+
+    return api->DrawPixel(api, x, y, color);
+}
+
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::DrawString___VOID__STRING(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Display_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 

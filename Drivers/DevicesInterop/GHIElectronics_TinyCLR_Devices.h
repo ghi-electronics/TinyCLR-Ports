@@ -151,6 +151,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Dis
     static TinyCLR_Result Enable___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Disable___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result DrawBuffer___VOID__I4__I4__I4__I4__SZARRAY_U1__I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result DrawPixel___VOID__I4__I4__I8(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result DrawString___VOID__STRING(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_Interface___GHIElectronicsTinyCLRDevicesDisplayDisplayInterface(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_SupportedDataFormats___SZARRAY_GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat(const TinyCLR_Interop_MethodData md);

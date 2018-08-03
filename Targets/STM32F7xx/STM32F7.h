@@ -420,7 +420,8 @@ TinyCLR_Result STM32F7_Display_Disable(const TinyCLR_Display_Controller* self);
 TinyCLR_Result STM32F7_Display_GetCapabilities(const TinyCLR_Display_Controller* self, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount);
 TinyCLR_Result STM32F7_Display_GetConfiguration(const TinyCLR_Display_Controller* self, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration);
 TinyCLR_Result STM32F7_Display_SetConfiguration(const TinyCLR_Display_Controller* self, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration);
-TinyCLR_Result STM32F7_Display_DrawBuffer(const TinyCLR_Display_Controller* self, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data);
+TinyCLR_Result STM32F7_Display_DrawBuffer(const TinyCLR_Display_Controller* self, int32_t x, uint32_t y, int32_t width, int32_t height, const uint8_t* data);
+TinyCLR_Result STM32F7_Display_DrawPixel(const TinyCLR_Display_Controller* self, uint32_t x, uint32_t y, uint64_t color);
 TinyCLR_Result STM32F7_Display_WriteString(const TinyCLR_Display_Controller* self, const char* buffer, size_t length);
 
 void STM32F7_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider);

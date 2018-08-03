@@ -1163,6 +1163,10 @@ TinyCLR_Result AT91_Display_DrawString(const TinyCLR_Display_Controller* self, c
     return TinyCLR_Result::Success;
 }
 
+TinyCLR_Result AT91_Display_DrawPixel(const TinyCLR_Display_Controller* self, uint32_t x, uint32_t y, uint64_t color) {
+    return TinyCLR_Result::NotImplemented;
+}
+
 TinyCLR_Display_DataFormat dataFormats[] = { TinyCLR_Display_DataFormat::Rgb565 };
 
 TinyCLR_Result AT91_Display_GetCapabilities(const TinyCLR_Display_Controller* self, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount) {
@@ -1188,6 +1192,7 @@ void AT91_Display_AddApi(const TinyCLR_Api_Manager* apiManager) {
         displayControllers[i].GetConfiguration = &AT91_Display_GetConfiguration;
         displayControllers[i].GetCapabilities = &AT91_Display_GetCapabilities;
         displayControllers[i].DrawBuffer = &AT91_Display_DrawBuffer;
+        displayControllers[i].DrawPixel = &AT91_Display_DrawPixel;
         displayControllers[i].DrawString = &AT91_Display_DrawString;
 
         displayApi[i].Author = "GHI Electronics, LLC";
