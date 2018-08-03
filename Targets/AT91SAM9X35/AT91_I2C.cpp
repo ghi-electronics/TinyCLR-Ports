@@ -473,10 +473,3 @@ void AT91_I2c_Reset() {
         state->isOpened = false;
     }
 }
-
-TinyCLR_Result AT91_I2c_GetControllerCount(const TinyCLR_I2c_Controller* self, int32_t& count) {
-    count = SIZEOF_ARRAY(i2cSclPins);
-
-    return TinyCLR_Result::Success;
-}
-

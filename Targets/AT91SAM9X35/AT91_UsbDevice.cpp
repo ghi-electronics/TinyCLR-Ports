@@ -933,12 +933,6 @@ bool AT91_UsbDevice_RxEnable(UsClientState* usClientState, int32_t endpoint) {
     return true;
 }
 
-TinyCLR_Result TinyCLR_UsbClient_GetControllerCount(const TinyCLR_UsbClient_Controller* self, int32_t& count) {
-    count = AT91_TOTAL_USB_CONTROLLERS;
-
-    return TinyCLR_Result::Success;
-}
-
 bool TinyCLR_UsbClient_Initialize(UsClientState* usClientState) {
     return AT91_UsbDevice_Initialize(usClientState);
 }

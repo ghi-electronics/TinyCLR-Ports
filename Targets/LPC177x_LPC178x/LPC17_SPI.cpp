@@ -966,9 +966,3 @@ void LPC17_Spi_Reset() {
         spiStates[i].isOpened = false;
     }
 }
-
-TinyCLR_Result LPC17_Spi_GetControllerCount(const TinyCLR_Spi_Controller* self, int32_t& count) {
-    count = TOTAL_SPI_CONTROLLERS;
-
-    return TinyCLR_Result::Success;
-}

@@ -1032,12 +1032,6 @@ void LPC17_Uart_Reset() {
     }
 }
 
-TinyCLR_Result LPC17_Uart_GetControllerCount(const TinyCLR_Uart_Controller* self, int32_t& count) {
-    count = TOTAL_UART_CONTROLLERS;
-
-    return TinyCLR_Result::Success;
-}
-
 TinyCLR_Result LPC17_Uart_Enable(const TinyCLR_Uart_Controller* self) {
     return TinyCLR_Result::Success;
 }

@@ -2816,12 +2816,6 @@ void LPC17_Can_Reset() {
     }
 }
 
-TinyCLR_Result LPC17_Can_GetControllerCount(const TinyCLR_Can_Controller* self, int32_t& count) {
-    count = TOTAL_CAN_CONTROLLERS;
-
-    return TinyCLR_Result::Success;
-}
-
 TinyCLR_Result LPC17_Can_Enable(const TinyCLR_Can_Controller* self) {
     return TinyCLR_Result::NotImplemented;
 }

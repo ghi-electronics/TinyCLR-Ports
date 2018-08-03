@@ -880,12 +880,6 @@ bool LPC17_UsbDevice_ProtectPins(int32_t controllerIndex, bool On) {
     return false;
 }
 
-TinyCLR_Result TinyCLR_UsbClient_GetControllerCount(const TinyCLR_UsbClient_Controller* self, int32_t& count) {
-    count = LPC17_TOTAL_USB_CONTROLLERS;
-
-    return TinyCLR_Result::Success;
-}
-
 bool TinyCLR_UsbClient_Initialize(UsClientState* usClientState) {
     return LPC17_UsbDevice_Initialize(usClientState);
 }
