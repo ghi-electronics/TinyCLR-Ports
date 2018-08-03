@@ -1051,7 +1051,7 @@ struct CanState {
 static const AT91_Gpio_Pin canTxPins[] = AT91_CAN_TX_PINS;
 static const AT91_Gpio_Pin canRxPins[] = AT91_CAN_RX_PINS;
 
-#define TOTAL_CAN_CONTROLLERS SIZEOF_ARRAY(canTxPins)
+static const int TOTAL_CAN_CONTROLLERS = SIZEOF_ARRAY(canTxPins);
 
 static CanState canStates[TOTAL_CAN_CONTROLLERS];
 
@@ -1183,7 +1183,14 @@ int32_t BinarySearch2(uint32_t *lowerBounds, uint32_t *upperBounds, int32_t firs
     return -1;    // failed to find key
 }
 
-const char* canApiNames[TOTAL_CAN_CONTROLLERS] = AT91_CAN_CONTROLLER_NAMES;
+const char* canApiNames[] = {
+#if TOTAL_CAN_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.AT91.CanController\\0",
+#if TOTAL_CAN_CONTROLLERS > 1
+"GHIElectronics.TinyCLR.NativeApis.AT91.CanController\\1"
+#endif
+#endif
+};
 
 void AT91_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
@@ -1857,7 +1864,7 @@ size_t AT91_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self) {
 
     auto controllerIndex = state->controllerIndex;
 
-	return state->can_rxBufferSize == 0 ? canDefaultBuffersSize[controllerIndex] : state->can_rxBufferSize;
+    return state->can_rxBufferSize == 0 ? canDefaultBuffersSize[controllerIndex] : state->can_rxBufferSize;
 }
 
 TinyCLR_Result AT91_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
@@ -1876,7 +1883,7 @@ TinyCLR_Result AT91_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, si
 }
 
 size_t AT91_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self) {
-	return 1;
+    return 1;
 }
 
 TinyCLR_Result AT91_Can_SetWriteBufferSize(const TinyCLR_Can_Controller* self, size_t size) {

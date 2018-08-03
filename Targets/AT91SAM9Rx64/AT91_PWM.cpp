@@ -36,7 +36,20 @@
 #define PWM_MICROSECONDS  1000000
 #define PWM_NANOSECONDS   1000000000
 
-const char* PwmApiNames[TOTAL_PWM_CONTROLLERS] = AT91_PWM_CONTROLLER_NAMES;
+const char* PwmApiNames[] = {
+#if TOTAL_PWM_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.AT91.PwmController\\0",
+#if TOTAL_PWM_CONTROLLERS > 1
+"GHIElectronics.TinyCLR.NativeApis.AT91.PwmController\\1",
+#if TOTAL_PWM_CONTROLLERS > 2
+"GHIElectronics.TinyCLR.NativeApis.AT91.PwmController\\2",
+#if TOTAL_PWM_CONTROLLERS > 3
+"GHIElectronics.TinyCLR.NativeApis.AT91.PwmController\\3",
+#endif
+#endif
+#endif
+#endif
+};
 
 static PwmState pwmStates[TOTAL_PWM_CONTROLLERS];
 

@@ -16,8 +16,6 @@
 #include <algorithm>
 #include "AT91.h"
 
-
-
 static const uint32_t uartTxDefaultBuffersSize[] = AT91_UART_DEFAULT_TX_BUFFER_SIZE;
 static const uint32_t uartRxDefaultBuffersSize[] = AT91_UART_DEFAULT_RX_BUFFER_SIZE;
 
@@ -50,8 +48,26 @@ static UartState uartStates[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 
-
-const char* uartApiNames[TOTAL_UART_CONTROLLERS] = AT91_UART_CONTROLLER_NAMES;
+const char* uartApiNames[] = {
+#if TOTAL_UART_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\0",
+#if TOTAL_UART_CONTROLLERS > 1
+"GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\1",
+#if TOTAL_UART_CONTROLLERS > 2
+"GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\2",
+#if TOTAL_UART_CONTROLLERS > 3
+"GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\3",
+#if TOTAL_UART_CONTROLLERS > 4
+"GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\4",
+#if TOTAL_UART_CONTROLLERS > 5
+"GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\5",
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+};
 
 void AT91_Uart_EnsureTableInitialized() {
     for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
