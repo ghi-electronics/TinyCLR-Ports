@@ -477,7 +477,6 @@ void STM32F7_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;
-    index = DEBUGGER_FORCE_INDEX;
 #else
 #error You must specify a debugger mode pin or specify the API explicitly.
 #endif
