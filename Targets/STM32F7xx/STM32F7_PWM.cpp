@@ -437,7 +437,6 @@ void STM32F7_Pwm_Reset() {
     if (TOTAL_PWM_CONTROLLERS > 1) pwmStates[1].timReg = TIM2;
     if (TOTAL_PWM_CONTROLLERS > 2) pwmStates[2].timReg = TIM3;
     if (TOTAL_PWM_CONTROLLERS > 3) pwmStates[3].timReg = TIM4;
-#if !defined(STM32F701xE) && !defined(STM32F711xE)
     if (TOTAL_PWM_CONTROLLERS > 4) pwmStates[4].timReg = TIM5;
     if (TOTAL_PWM_CONTROLLERS > 5) pwmStates[5].timReg = TIM6;
     if (TOTAL_PWM_CONTROLLERS > 6) pwmStates[6].timReg = TIM7;
@@ -448,7 +447,6 @@ void STM32F7_Pwm_Reset() {
     if (TOTAL_PWM_CONTROLLERS > 11) pwmStates[11].timReg = TIM12;
     if (TOTAL_PWM_CONTROLLERS > 12) pwmStates[12].timReg = TIM13;
     if (TOTAL_PWM_CONTROLLERS > 13) pwmStates[13].timReg = TIM14;
-#endif
 
     for (auto controllerIndex = 0u; controllerIndex < TOTAL_PWM_CONTROLLERS; controllerIndex++) {
         STM32F7_Pwm_ResetController(controllerIndex);

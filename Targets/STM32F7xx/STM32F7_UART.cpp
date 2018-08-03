@@ -121,7 +121,6 @@ void STM32F7_Uart_EnsureTableInitialized() {
 
     if (TOTAL_UART_CONTROLLERS > 0) uartPortRegs[0] = USART1;
     if (TOTAL_UART_CONTROLLERS > 1) uartPortRegs[1] = USART2;
-#if !defined(STM32F701xE) && !defined(STM32F711xE)
     if (TOTAL_UART_CONTROLLERS > 2) uartPortRegs[2] = USART3;
     if (TOTAL_UART_CONTROLLERS > 3) uartPortRegs[3] = UART4;
     if (TOTAL_UART_CONTROLLERS > 4) uartPortRegs[4] = UART5;
@@ -132,7 +131,6 @@ void STM32F7_Uart_EnsureTableInitialized() {
     if (TOTAL_UART_CONTROLLERS > 7) uartPortRegs[7] = UART8;
 #ifdef UART9
     if (TOTAL_UART_CONTROLLERS > 8) uartPortRegs[8] = UART9;
-#endif
 #endif
 #endif
 #endif
@@ -299,7 +297,6 @@ void STM32F7_Uart_Interrupt1(void* param) {
     STM32F7_Uart_InterruptHandler(1, sr);
 }
 
-#if !defined(STM32F701xE) && !defined(STM32F711xE)
 void STM32F7_Uart_Interrupt2(void* param) {
     uint16_t sr = USART3->ISR;
 
@@ -341,7 +338,6 @@ void STM32F7_Uart_Interrupt8(void* param) {
 
     STM32F7_Uart_InterruptHandler(8, sr);
 }
-#endif
 #endif
 #endif
 #endif
@@ -395,7 +391,6 @@ TinyCLR_Result STM32F7_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
         RCC->APB1ENR |= RCC_APB1ENR_USART2EN >> 1 << controllerIndex;
         clk = STM32F7_APB1_CLOCK_HZ;
     }
-#if !defined(STM32F701xE) && !defined(STM32F711xE)
 #ifdef UART7
     else if (controllerIndex == 6) {
         RCC->APB1ENR |= RCC_APB1ENR_UART7EN;
@@ -411,7 +406,6 @@ TinyCLR_Result STM32F7_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
         RCC->APB2ENR |= RCC_APB2ENR_UART9EN;
         clk = STM32F7_APB2_CLOCK_HZ;
     }
-#endif
 #endif
 #endif
 #endif
@@ -501,7 +495,6 @@ TinyCLR_Result STM32F7_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
     case 1:
         STM32F7_InterruptInternal_Activate(USART2_IRQn, (uint32_t*)&STM32F7_Uart_Interrupt1, 0);
         break;
-#if !defined(STM32F701xE) && !defined(STM32F711xE)
     case 2:
         STM32F7_InterruptInternal_Activate(USART3_IRQn, (uint32_t*)&STM32F7_Uart_Interrupt2, 0);
         break;
@@ -532,7 +525,6 @@ TinyCLR_Result STM32F7_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
     case 8:
         STM32F7_InterruptInternal_Activate(UART9_IRQn, (uint32_t*)&STM32F7_Uart_Interrupt8, 0);
         break;
-#endif
 #endif
 #endif
 #endif
@@ -575,7 +567,6 @@ TinyCLR_Result STM32F7_Uart_Release(const TinyCLR_Uart_Controller* self) {
     case 1:
         STM32F7_InterruptInternal_Deactivate(USART2_IRQn);
         break;
-#if !defined(STM32F701xE) && !defined(STM32F711xE)
     case 2:
         STM32F7_InterruptInternal_Deactivate(USART3_IRQn);
         break;
@@ -609,7 +600,6 @@ TinyCLR_Result STM32F7_Uart_Release(const TinyCLR_Uart_Controller* self) {
 #endif
 #endif
 #endif
-#endif
     }
 
     STM32F7_Uart_RxBufferFullInterruptEnable(controllerIndex, false);
@@ -625,7 +615,6 @@ TinyCLR_Result STM32F7_Uart_Release(const TinyCLR_Uart_Controller* self) {
     else if (controllerIndex < 5) { // COM2-5 on APB1
         RCC->APB1ENR &= ~(RCC_APB1ENR_USART2EN >> 1 << controllerIndex);
     }
-#if !defined(STM32F701xE) && !defined(STM32F711xE)
 #ifdef UART7
     else if (controllerIndex == 6) {
         RCC->APB1ENR &= ~RCC_APB1ENR_UART7EN;
@@ -640,7 +629,6 @@ TinyCLR_Result STM32F7_Uart_Release(const TinyCLR_Uart_Controller* self) {
     else if (controllerIndex == 8) {
         RCC->APB2ENR &= ~RCC_APB2ENR_UART9EN;
     }
-#endif
 #endif
 #endif
 #endif
