@@ -52,9 +52,6 @@
 #define INCLUDE_ADC
 
 #define INCLUDE_CAN
-#define STM32F4_CAN_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.STM32F4.CanController\\0",\
-                                       "GHIElectronics.TinyCLR.NativeApis.STM32F4.CanController\\1"\
-                                     }
 #define STM32F4_CAN_BUFFER_DEFAULT_SIZE { 128 , 128 }
 #define STM32F4_CAN_TX_PINS { { PIN(B, 9), AF(9) }, { PIN(B, 6), AF(9) } }
 #define STM32F4_CAN_RX_PINS { { PIN(B, 8), AF(9) }, { PIN(B, 5), AF(9) } }
@@ -70,27 +67,10 @@
                           }
 
 #define INCLUDE_I2C
-#define STM32F4_I2C_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.STM32F4.I2cController\\0" }
 #define STM32F4_I2C_SCL_PINS { { PIN(B, 6), AF(4) } }
 #define STM32F4_I2C_SDA_PINS { { PIN(B, 7), AF(4) } }
 
 #define INCLUDE_PWM
-#define STM32F4_PWM_CONTROLLER_NAMES {                                                               \
-                                        "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\0",\
-                                        "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\1",\
-                                        "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\2",\
-                                        "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\3",\
-                                        "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\4",\
-                                        "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\5",\
-                                        "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\6",\
-                                        "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\7",\
-                                        "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\8",\
-                                        "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\9",\
-                                        "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\10",\
-                                        "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\11",\
-                                        "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\12",\
-                                        "GHIElectronics.TinyCLR.NativeApis.STM32F4.PwmController\\13"\
-                                        }
 #define STM32F4_PWM_PINS {/*          0                           1                        2                        3                       */\
                           /* TIM1  */ { { PIN(A,  8) , AF(1)   }, { PIN(A, 9) , AF(1)   }, { PIN(A,10) , AF(1)   }, { PIN_NONE   , AF_NONE }  },\
                           /* TIM2  */ { { PIN(A, 15) , AF(1)   }, { PIN(B, 3) , AF(1)   }, { PIN(B,10) , AF(1)   }, { PIN(B, 11) , AF(1)   }  },\
@@ -119,19 +99,11 @@
 #define STM32F4_SD_CMD_PINS { { PIN(D, 2), AF(12) } }
 
 #define INCLUDE_SPI
-#define STM32F4_SPI_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.STM32F4.SpiController\\0" }
 #define STM32F4_SPI_SCLK_PINS { { PIN(B, 3), AF(5) } }
 #define STM32F4_SPI_MISO_PINS { { PIN(B, 4), AF(5) } }
 #define STM32F4_SPI_MOSI_PINS { { PIN(B, 5), AF(5) } }
 
 #define INCLUDE_UART
-#define STM32F4_UART_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.STM32F4.UartController\\0",\
-                                        "GHIElectronics.TinyCLR.NativeApis.STM32F4.UartController\\1",\
-                                        "GHIElectronics.TinyCLR.NativeApis.STM32F4.UartController\\2",\
-                                        "GHIElectronics.TinyCLR.NativeApis.STM32F4.UartController\\3",\
-										"GHIElectronics.TinyCLR.NativeApis.STM32F4.UartController\\4",\
-										"GHIElectronics.TinyCLR.NativeApis.STM32F4.UartController\\5",\
-                                    }
 #define STM32F4_UART_DEFAULT_TX_BUFFER_SIZE  { 256, 256, 256, 256, 256, 256 }
 #define STM32F4_UART_DEFAULT_RX_BUFFER_SIZE  { 512, 512, 512, 512, 512, 512 }
 #define STM32F4_UART_TX_PINS  { { PIN(B,  6), AF(7)   }, { PIN(A, 2), AF(7) }, { PIN(B, 10), AF(7) } , { PIN_NONE  , AF_NONE } , { PIN_NONE  , AF_NONE } , { PIN(C, 6) , AF(8)   } }

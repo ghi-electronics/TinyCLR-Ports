@@ -57,17 +57,11 @@
 #define AT91_DEPLOYMENT_SPI_PORT 0
 #define AT91_DEPLOYMENT_SPI_ENABLE_PIN PIN(A,28)
 
-#define INCLUDE_I2C
-#define AT91_I2C_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.AT91.I2cController\\0" }
-                                  
+#define INCLUDE_I2C                                
 #define AT91_I2C_SCL_PINS { { PIN(A,24), PS(A) } }
 #define AT91_I2C_SDA_PINS { { PIN(A,23), PS(A) } }
 
 #define INCLUDE_PWM
-#define AT91_PWM_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.AT91.PwmController\\0",\
-                                    "GHIElectronics.TinyCLR.NativeApis.AT91.PwmController\\1",\
-                                    "GHIElectronics.TinyCLR.NativeApis.AT91.PwmController\\2",\
-                                  }
 #define MAX_PWM_PER_CONTROLLER 1
 #define TOTAL_PWM_CONTROLLERS 3
 #define AT91_PWM_PINS { { { PIN(D,14), PS(B) } }, { { PIN(D,15), PS(B) } }, { { PIN(D,16), PS(B) } } }
@@ -75,7 +69,6 @@
 #define INCLUDE_RTC
 
 #define INCLUDE_SPI
-#define AT91_SPI_CONTROLLER_NAMES { "GHIElectronics.TinyCLR.NativeApis.AT91.SpiController\\0" }
 #define TOTAL_SPI_CONTROLLERS 1
 #define AT91_SPI_MISO_PINS { { PIN(A,25), PS(A) } }
 #define AT91_SPI_MOSI_PINS { { PIN(A,26), PS(A) } }
@@ -84,11 +77,6 @@
 #define AT91_TIME_DEFAULT_CONTROLLER_ID 0
 
 #define INCLUDE_UART
-#define AT91_UART_CONTROLLER_NAMES {"GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\0",\
-                                    "GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\1",\
-                                    "GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\2",\
-                                    "GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\3",\
-                                   }
 #define TOTAL_UART_CONTROLLERS 4
 #define AT91_UART_DEFAULT_TX_BUFFER_SIZE  { 16*1024, 16*1024, 16*1024, 16*1024 }
 #define AT91_UART_DEFAULT_RX_BUFFER_SIZE  { 16*1024, 16*1024, 16*1024, 16*1024 }
