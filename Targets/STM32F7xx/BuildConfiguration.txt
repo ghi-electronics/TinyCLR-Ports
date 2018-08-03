@@ -1,2 +1,2 @@
 TargetArchitecture:CortexM7
-AdditionalTargetDrivers:USBClient
+AdditionalTargetDrivers:USBClient,DevicesInterop
