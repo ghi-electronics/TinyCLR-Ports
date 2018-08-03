@@ -34,7 +34,14 @@ static const int TOTAL_SPI_CONTROLLERS = SIZEOF_ARRAY(spiClkPins);
 
 static ptr_SPI_TypeDef spiPortRegs[TOTAL_SPI_CONTROLLERS];
 
-const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = STM32F4_SPI_CONTROLLER_NAMES;
+const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = {
+#if TOTAL_SPI_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.STM32F4.SpiController\\0",
+#if TOTAL_SPI_CONTROLLERS > 1
+"GHIElectronics.TinyCLR.NativeApis.STM32F4.SpiController\\1",
+#endif
+#endif
+};
 
 struct SpiState {
     int32_t controllerIndex;
