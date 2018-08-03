@@ -2029,7 +2029,7 @@ struct CanState {
 static const LPC17_Gpio_Pin canTxPins[] = LPC17_CAN_TX_PINS;
 static const LPC17_Gpio_Pin canRxPins[] = LPC17_CAN_RX_PINS;
 
-#define TOTAL_CAN_CONTROLLERS  SIZEOF_ARRAY(canTxPins)
+static const int TOTAL_CAN_CONTROLLERS = SIZEOF_ARRAY(canTxPins);
 
 static CanState canStates[TOTAL_CAN_CONTROLLERS];
 
@@ -2221,7 +2221,14 @@ int32_t BinarySearch2(uint32_t *lowerBounds, uint32_t *upperBounds, int32_t firs
     return -1;    // failed to find key
 }
 
-const char* canApiNames[TOTAL_CAN_CONTROLLERS] = LPC17_CAN_CONTROLLER_NAMES;
+const char* canApiNames[] = {
+#if TOTAL_CAN_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.LPC17.CanController\\0",
+#if TOTAL_CAN_CONTROLLERS > 1
+"GHIElectronics.TinyCLR.NativeApis.LPC17.CanController\\1"
+#endif
+#endif
+};
 
 void LPC17_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
@@ -2530,10 +2537,10 @@ TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32
         flags |= 0x40000000;
 
     flags |= (length & 0x0F) << 16;
-    
+
     uint32_t timeout = CAN_TRANSFER_TIMEOUT;
 
-    while (LPC17_Can_CanWriteMessage(self) == false && timeout-- > 0) {        
+    while (LPC17_Can_CanWriteMessage(self) == false && timeout-- > 0) {
         LPC17_Time_Delay(nullptr, 1);
     }
 
@@ -2674,7 +2681,7 @@ TinyCLR_Result LPC17_Can_SetErrorReceivedHandler(const TinyCLR_Can_Controller* s
 }
 
 TinyCLR_Result LPC17_Can_SetExplicitFilters(const TinyCLR_Can_Controller* self, const uint32_t* filters, size_t count) {
-    uint32_t *_matchFilters;    
+    uint32_t *_matchFilters;
 
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
@@ -2777,7 +2784,7 @@ size_t LPC17_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
     auto controllerIndex = state->controllerIndex;
 
-	return state->can_rxBufferSize == 0 ? canDefaultBuffersSize[controllerIndex] : state->can_rxBufferSize;
+    return state->can_rxBufferSize == 0 ? canDefaultBuffersSize[controllerIndex] : state->can_rxBufferSize;
 }
 
 TinyCLR_Result LPC17_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
@@ -2795,7 +2802,7 @@ TinyCLR_Result LPC17_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, s
 }
 
 size_t LPC17_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self) {
-	return 1;
+    return 1;
 }
 
 TinyCLR_Result LPC17_Can_SetWriteBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
@@ -2839,8 +2846,8 @@ bool LPC17_Can_CanWriteMessage(const TinyCLR_Can_Controller* self) {
         (status & 0x00040000)) {
         allowed = true;
     }
-	
-	return allowed;
+
+    return allowed;
 }
 
 bool LPC17_Can_CanReadMessage(const TinyCLR_Can_Controller* self) {

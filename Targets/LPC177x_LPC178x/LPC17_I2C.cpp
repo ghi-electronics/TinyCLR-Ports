@@ -42,8 +42,6 @@ struct LPC17xx_I2C {
     /****/ volatile uint32_t I2CONCLR;
 };
 
-#define TOTAL_I2C_CONTROLLERS SIZEOF_ARRAY(i2cSclPins)
-
 struct I2cConfiguration {
 
     int32_t                  address;
@@ -80,13 +78,17 @@ struct I2cState {
     I2cTransaction   readI2cTransactionAction;
     I2cTransaction   writeI2cTransactionAction;
 };
-
+static const int TOTAL_I2C_CONTROLLERS = SIZEOF_ARRAY(i2cSclPins);
 static I2cState i2cStates[TOTAL_I2C_CONTROLLERS];
 
 static TinyCLR_I2c_Controller i2cControllers[TOTAL_I2C_CONTROLLERS];
 static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];
 
-const char* i2cApiNames[TOTAL_I2C_CONTROLLERS] = LPC17_I2C_CONTROLLER_NAMES;
+const char* i2cApiNames[] = {
+#if TOTAL_I2C_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.LPC17.I2cController\\0"
+#endif
+};
 
 void LPC17_I2c_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {

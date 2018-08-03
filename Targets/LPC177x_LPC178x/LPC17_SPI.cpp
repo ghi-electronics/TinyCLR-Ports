@@ -427,7 +427,7 @@ struct SpiState {
     int32_t clockFrequency;
 
     TinyCLR_Spi_Mode spiMode;
-    
+
     bool isOpened;
     bool tableInitialized = false;
 };
@@ -439,18 +439,28 @@ static TinyCLR_Api_Info spiApi[TOTAL_SPI_CONTROLLERS];
 
 void LPC17_Spi_Reset();
 
-const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = LPC17_SPI_CONTROLLER_NAMES;
+const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = {
+#if TOTAL_SPI_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.LPC17.SpiController\\0",
+#if TOTAL_SPI_CONTROLLERS > 1
+"GHIElectronics.TinyCLR.NativeApis.LPC17.SpiController\\1",
+#if TOTAL_SPI_CONTROLLERS > 2
+"GHIElectronics.TinyCLR.NativeApis.LPC17.SpiController\\2",
+#endif
+#endif
+#endif
+};
 
 void LPC17_Spi_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         if (spiStates[i].tableInitialized)
             continue;
-        
+
         spiControllers[i].ApiInfo = &spiApi[i];
         spiControllers[i].Acquire = &LPC17_Spi_Acquire;
         spiControllers[i].Release = &LPC17_Spi_Release;
         spiControllers[i].WriteRead = &LPC17_Spi_WriteRead;
-        spiControllers[i].SetActiveSettings = &LPC17_Spi_SetActiveSettings;		
+        spiControllers[i].SetActiveSettings = &LPC17_Spi_SetActiveSettings;
         spiControllers[i].GetChipSelectLineCount = &LPC17_Spi_GetChipSelectLineCount;
         spiControllers[i].GetMinClockFrequency = &LPC17_Spi_GetMinClockFrequency;
         spiControllers[i].GetMaxClockFrequency = &LPC17_Spi_GetMaxClockFrequency;
@@ -465,7 +475,7 @@ void LPC17_Spi_EnsureTableInitialized() {
 
         spiStates[i].controllerIndex = i;
         spiStates[i].tableInitialized = true;
-    } 
+    }
 }
 
 const TinyCLR_Api_Info* LPC17_Spi_GetRequiredApi() {
@@ -475,11 +485,11 @@ const TinyCLR_Api_Info* LPC17_Spi_GetRequiredApi() {
 }
 
 void LPC17_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
-    LPC17_Spi_EnsureTableInitialized(); 
+    LPC17_Spi_EnsureTableInitialized();
 
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         apiManager->Add(apiManager, &spiApi[i]);
-    }    
+    }
 }
 
 bool LPC17_Spi_Transaction_Start(int32_t controllerIndex) {
