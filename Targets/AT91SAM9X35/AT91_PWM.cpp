@@ -387,7 +387,7 @@ TinyCLR_Result AT91_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self, u
     convertedDuration = (uint32_t)(dutyCycle * convertedPeriod);
 
     // Flips the pulse
-    if (polarity == TinyCLR_Pwm_PulsePolarity::ActiveHigh)
+    if (polarity == TinyCLR_Pwm_PulsePolarity::ActiveLow)
         pulseBeginsOnHighEdge = 1;
     else
         pulseBeginsOnHighEdge = 0;

@@ -366,7 +366,7 @@ TinyCLR_Result STM32F4_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self
 
     uint32_t invBit = TIM_CCER_CC1P << (4 * channel);
 
-    if (polarity == TinyCLR_Pwm_PulsePolarity::ActiveHigh) {
+    if (polarity == TinyCLR_Pwm_PulsePolarity::ActiveLow) {
         treg->CCER |= invBit;
     }
     else {
