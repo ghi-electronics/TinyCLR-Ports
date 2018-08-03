@@ -124,7 +124,6 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::SetParallelConfiguration___VOID__I4__I4__GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat__BOOLEAN__BOOLEAN__BOOLEAN__I4__BOOLEAN__I4__I4__I4__BOOLEAN__I4__I4__I4(const TinyCLR_Interop_MethodData md) {
-#ifdef INCLUDE_DISPLAY
     auto api = reinterpret_cast<const TinyCLR_Display_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Display_ParallelConfiguration config;
@@ -166,9 +165,6 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     config.VerticalBackPorch = arg14.Data.Numeric->U4;
 
     return api->SetConfiguration(api, type, width, height, &config);
-#else
-    return TinyCLR_Result::NotImplemented;
-#endif
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::SetSpiConfiguration___VOID__I4__I4__GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat__STRING(const TinyCLR_Interop_MethodData md) {
