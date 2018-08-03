@@ -1,5 +1,5 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
-#include "GHIElectronics_TinyCLR_InteropUtil.h"
+#include "../GHIElectronics_TinyCLR_InteropUtil.h"
 
 static void TinyCLR_Can_ErrorReceivedIsr(const TinyCLR_Can_Controller* self, TinyCLR_Can_Error error) {
     extern const TinyCLR_Api_Manager* apiManager;

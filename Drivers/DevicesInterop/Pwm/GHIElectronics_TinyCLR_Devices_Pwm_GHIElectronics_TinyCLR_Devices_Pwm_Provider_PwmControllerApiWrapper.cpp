@@ -1,5 +1,5 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
-#include "GHIElectronics_TinyCLR_InteropUtil.h"
+#include "../GHIElectronics_TinyCLR_InteropUtil.h"
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::get_ChannelCount___I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Pwm_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
