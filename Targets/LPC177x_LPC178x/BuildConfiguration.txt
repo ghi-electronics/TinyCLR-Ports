@@ -1,2 +1,2 @@
 TargetArchitecture:CortexM3
-AdditionalTargetDrivers:USBClient,DevicesInterop
+AdditionalTargetDrivers:USBClient
