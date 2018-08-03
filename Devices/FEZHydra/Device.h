@@ -68,6 +68,8 @@
 
 #define INCLUDE_RTC
 
+#define INCLUDE_SIGNALS
+
 #define INCLUDE_SPI
 #define TOTAL_SPI_CONTROLLERS 1
 #define AT91_SPI_MISO_PINS { { PIN(A,25), PS(A) } }
@@ -75,6 +77,8 @@
 #define AT91_SPI_SCLK_PINS { { PIN(A,27), PS(A) } }
 
 #define AT91_TIME_DEFAULT_CONTROLLER_ID 0
+
+#define INCLUDE_STORAGE
 
 #define INCLUDE_UART
 #define TOTAL_UART_CONTROLLERS 4

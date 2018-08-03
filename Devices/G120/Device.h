@@ -92,11 +92,15 @@
 #define LPC17_SD_CMD_PINS { { PIN(1, 3), PF(2) } }
 #define LPC17_SD_PWR_PINS  { { PIN(1, 5), PF(0) } }
 
+#define INCLUDE_SIGNALS
+
 #define INCLUDE_SPI
 #define TOTAL_SPI_CONTROLLERS 3
 #define LPC17_SPI_SCLK_PINS { { PIN(0, 15), PF(2) }, { PIN(0,  7), PF(2) }, { PIN(1,  0), PF(4) } }
 #define LPC17_SPI_MISO_PINS { { PIN(0, 17), PF(2) }, { PIN(0,  8), PF(2) }, { PIN(1,  4), PF(4) } }
 #define LPC17_SPI_MOSI_PINS { { PIN(0, 18), PF(2) }, { PIN(0,  9), PF(2) }, { PIN(1,  1), PF(4) } }
+
+#define INCLUDE_STORAGE
 
 #define INCLUDE_UART
 #define TOTAL_UART_CONTROLLERS 5

@@ -16,10 +16,10 @@
 #include <Device.h>
 
 #include "../../Drivers/AT49BV322DT_Flash/AT49BV322DT_Flash.h"
-#include "../../Drivers/DevicesInterop/GHIElectronics_TinyCLR_Devices.h"
+#include "../../Drivers/DevicesInterop/GHIElectronics_TinyCLR_InteropUtil.h"
 
 void LPC24_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopManager) {
-    interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices);
+    DevicesInterop_Add(interopManager);
 }
 
 static int32_t lpc24_deviceId = 0;

@@ -81,6 +81,8 @@
 #define AT91_SD_CLK_PINS { { PIN(A, 17), PS(A) } }
 #define AT91_SD_CMD_PINS { { PIN(A, 16), PS(A) } }
 
+#define INCLUDE_SIGNALS
+
 #define INCLUDE_SPI
 #define TOTAL_SPI_CONTROLLERS 2
 #define AT91_SPI_MISO_PINS { { PIN(A,11), PS(A) }, { PIN(A,21), PS(B) } }
@@ -88,6 +90,8 @@
 #define AT91_SPI_SCLK_PINS { { PIN(A,13), PS(A) }, { PIN(A,23), PS(B) } }
 
 #define AT91_TIME_DEFAULT_CONTROLLER_ID 0
+
+#define INCLUDE_STORAGE
 
 #define INCLUDE_UART
 #define TOTAL_UART_CONTROLLERS 6

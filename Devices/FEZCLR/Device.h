@@ -73,10 +73,14 @@
 
 #define INCLUDE_RTC
 
+#define INCLUDE_SIGNALS
+
 #define INCLUDE_SPI
 #define STM32F4_SPI_SCLK_PINS { { PIN(B, 3), AF(5) }, { PIN(B, 13), AF(5) } }
 #define STM32F4_SPI_MISO_PINS { { PIN(B, 4), AF(5) }, { PIN(B, 14), AF(5) } }
 #define STM32F4_SPI_MOSI_PINS { { PIN(B, 5), AF(5) }, { PIN(B, 15), AF(5) } }
+
+#define INCLUDE_STORAGE
 
 #define INCLUDE_UART
 #define STM32F4_UART_DEFAULT_TX_BUFFER_SIZE  { 256, 256 }

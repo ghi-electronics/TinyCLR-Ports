@@ -69,6 +69,8 @@
 #define MAX_PWM_PER_CONTROLLER 6
 #define LPC24_PWM_PINS  { { PIN(1, 18), PF(2) }, { PIN(1, 20), PF(2) }, { PIN(1, 21), PF(2) }, { PIN(2, 3), PF(1) }, { PIN(2, 4), PF(1) }, { PIN(2, 5), PF(1) } }
 
+#define INCLUDE_SIGNALS
+
 #define INCLUDE_SPI
 #define TOTAL_SPI_CONTROLLERS 2
 #define LPC24_SPI_SCLK_PINS { { PIN(0, 15), PF(2) }, { PIN(0,  7), PF(2) } }
@@ -76,6 +78,8 @@
 #define LPC24_SPI_MOSI_PINS { { PIN(0, 18), PF(2) }, { PIN(0,  9), PF(2) } }
 
 #define LPC24_TIME_DEFAULT_CONTROLLER_ID 0
+
+#define INCLUDE_STORAGE
 
 #define INCLUDE_UART
 #define TOTAL_UART_CONTROLLERS 4

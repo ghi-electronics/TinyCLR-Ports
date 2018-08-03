@@ -16,7 +16,7 @@
 #include <LPC17.h>
 #include <Device.h>
 
-#include "../../Drivers/DevicesInterop/GHIElectronics_TinyCLR_Devices.h"
+#include "../../Drivers/DevicesInterop/GHIElectronics_TinyCLR_InteropUtil.h"
 
 // G120, G120E
 #define LPC17_G120                         1
@@ -31,7 +31,7 @@
 #define G120E_DETECT3_STATE TinyCLR_Gpio_PinValue::Low
 
 void LPC17_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopManager) {
-    interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices);
+    DevicesInterop_Add(interopManager);
 }
 
 static int32_t lpc178_deviceId = -1;
