@@ -1212,4 +1212,6 @@ void TinyCLR_UsbClient_Reset(int32_t controllerIndex) {
     }
 
     TinyCLR_UsbClient_Release(&usbClientControllers[controllerIndex]);
+
+    usbClientStates[controllerIndex].tableInitialized = false;
 }

@@ -415,5 +415,7 @@ void STM32F7_Deplpoyment_Reset() {
             state->regionAddresses[i] = deploymentSectors[i].address;
             state->regionSizes[i] = deploymentSectors[i].size;
         }
+        
+        state->tableInitialized = false;
     }
 }

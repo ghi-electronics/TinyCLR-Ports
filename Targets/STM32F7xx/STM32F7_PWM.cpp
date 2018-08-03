@@ -67,11 +67,54 @@ struct PwmState {
 void STM32F7_Pwm_ResetController(int32_t controllerIndex);
 STM32F7_Gpio_Pin* STM32F7_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel);
 
-static STM32F7_Gpio_Pin pwmPins[][PWM_PER_CONTROLLER] = STM32F7_PWM_PINS;
+static const STM32F7_Gpio_Pin pwmPins[][PWM_PER_CONTROLLER] = STM32F7_PWM_PINS;
 
-#define TOTAL_PWM_CONTROLLERS SIZEOF_ARRAY(pwmPins)
+static const int TOTAL_PWM_CONTROLLERS = SIZEOF_ARRAY(pwmPins);
 
-const char* PwmApiNames[TOTAL_PWM_CONTROLLERS] = STM32F7_PWM_CONTROLLER_NAMES;
+const char* PwmApiNames[] = {
+#if TOTAL_PWM_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\0",
+#if TOTAL_PWM_CONTROLLERS > 1
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\1",
+#if TOTAL_PWM_CONTROLLERS > 2
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\2",
+#if TOTAL_PWM_CONTROLLERS > 3
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\3",
+#if TOTAL_PWM_CONTROLLERS > 4
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\4",
+#if TOTAL_PWM_CONTROLLERS > 5
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\5",
+#if TOTAL_PWM_CONTROLLERS > 6
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\6",
+#if TOTAL_PWM_CONTROLLERS > 7
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\7",
+#if TOTAL_PWM_CONTROLLERS > 8
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\8",
+#if TOTAL_PWM_CONTROLLERS > 9
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\9",
+#if TOTAL_PWM_CONTROLLERS > 10
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\10",
+#if TOTAL_PWM_CONTROLLERS > 11
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\11",
+#if TOTAL_PWM_CONTROLLERS > 12
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\12",
+#if TOTAL_PWM_CONTROLLERS > 13
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\13"
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+};
 
 static PwmState pwmStates[TOTAL_PWM_CONTROLLERS];
 
@@ -366,7 +409,7 @@ TinyCLR_Result STM32F7_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self
 
     uint32_t invBit = TIM_CCER_CC1P << (4 * channel);
 
-    if (polarity == TinyCLR_Pwm_PulsePolarity::ActiveHigh) {
+    if (polarity == TinyCLR_Pwm_PulsePolarity::ActiveLow) {
         treg->CCER |= invBit;
     }
     else {
@@ -437,7 +480,6 @@ void STM32F7_Pwm_Reset() {
     if (TOTAL_PWM_CONTROLLERS > 1) pwmStates[1].timReg = TIM2;
     if (TOTAL_PWM_CONTROLLERS > 2) pwmStates[2].timReg = TIM3;
     if (TOTAL_PWM_CONTROLLERS > 3) pwmStates[3].timReg = TIM4;
-#if !defined(STM32F701xE) && !defined(STM32F711xE)
     if (TOTAL_PWM_CONTROLLERS > 4) pwmStates[4].timReg = TIM5;
     if (TOTAL_PWM_CONTROLLERS > 5) pwmStates[5].timReg = TIM6;
     if (TOTAL_PWM_CONTROLLERS > 6) pwmStates[6].timReg = TIM7;
@@ -448,7 +490,6 @@ void STM32F7_Pwm_Reset() {
     if (TOTAL_PWM_CONTROLLERS > 11) pwmStates[11].timReg = TIM12;
     if (TOTAL_PWM_CONTROLLERS > 12) pwmStates[12].timReg = TIM13;
     if (TOTAL_PWM_CONTROLLERS > 13) pwmStates[13].timReg = TIM14;
-#endif
 
     for (auto controllerIndex = 0u; controllerIndex < TOTAL_PWM_CONTROLLERS; controllerIndex++) {
         STM32F7_Pwm_ResetController(controllerIndex);

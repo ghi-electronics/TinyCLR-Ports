@@ -29,10 +29,6 @@ TinyCLR_Result AT91_SdCard_Release(const TinyCLR_Storage_Controller* self) {
     return TinyCLR_Result::NotImplemented;
 }
 
-TinyCLR_Result AT91_SdCard_GetControllerCount(const TinyCLR_Storage_Controller* self, int32_t& count) {
-    return TinyCLR_Result::NotImplemented;
-}
-
 TinyCLR_Result AT91_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
     return TinyCLR_Result::NotImplemented;
 }

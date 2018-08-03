@@ -324,4 +324,5 @@ const TinyCLR_Startup_DeploymentConfiguration* STM32F4_Flash_GetDeploymentConfig
 }
 
 void STM32F4_Deplpoyment_Reset() {
+    deploymentStates[0].tableInitialized = false;
 }

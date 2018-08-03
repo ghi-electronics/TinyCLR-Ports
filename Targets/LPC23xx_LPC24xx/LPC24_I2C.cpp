@@ -16,7 +16,6 @@
 #include "LPC24.h"
 
 #define I2C_TRANSACTION_TIMEOUT 2000 // 2 seconds
-#define TOTAL_I2C_CONTROLLERS SIZEOF_ARRAY(i2cSclPins)
 
 struct I2cConfiguration {
 
@@ -52,12 +51,17 @@ struct I2cState {
     I2cTransaction   writeI2cTransactionAction;
 };
 
+static const int TOTAL_I2C_CONTROLLERS = SIZEOF_ARRAY(i2cSclPins);
 static I2cState i2cStates[TOTAL_I2C_CONTROLLERS];
 
 static TinyCLR_I2c_Controller i2cControllers[TOTAL_I2C_CONTROLLERS];
 static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];
 
-const char* i2cApiNames[TOTAL_I2C_CONTROLLERS] = LPC24_I2C_CONTROLLER_NAMES;
+const char* i2cApiNames[] = {
+#if TOTAL_I2C_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.LPC24.I2cController\\0"
+#endif
+};
 
 void LPC24_I2c_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
@@ -276,6 +280,9 @@ TinyCLR_Result LPC24_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, u
 
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
+
+    if (addressFormat == TinyCLR_I2c_AddressFormat::TenBit)
+        return TinyCLR_Result::NotSupported;
 
     if (busSpeed == TinyCLR_I2c_BusSpeed::FastMode)
         rateKhz = 400; // FastMode

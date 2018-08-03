@@ -69,7 +69,7 @@ static const STM32F4_Gpio_Pin uartRtsPins[] = STM32F4_UART_RTS_PINS;
 static const uint32_t uartRxDefaultBuffersSize[] = STM32F4_UART_DEFAULT_RX_BUFFER_SIZE;
 static const uint32_t uartTxDefaultBuffersSize[] = STM32F4_UART_DEFAULT_TX_BUFFER_SIZE;
 
-#define TOTAL_UART_CONTROLLERS SIZEOF_ARRAY(uartTxPins)
+static const int TOTAL_UART_CONTROLLERS = SIZEOF_ARRAY(uartTxPins);
 
 static USART_TypeDef_Ptr uartPortRegs[TOTAL_UART_CONTROLLERS];
 
@@ -77,7 +77,35 @@ static UartState uartStates[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 
-const char* uartApiNames[TOTAL_UART_CONTROLLERS] = STM32F4_UART_CONTROLLER_NAMES;
+const char* uartApiNames[] = {
+#if TOTAL_UART_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.STM32F4.UartController\\0",
+#if TOTAL_UART_CONTROLLERS > 1
+"GHIElectronics.TinyCLR.NativeApis.STM32F4.UartController\\1",
+#if TOTAL_UART_CONTROLLERS > 2
+"GHIElectronics.TinyCLR.NativeApis.STM32F4.UartController\\2",
+#if TOTAL_UART_CONTROLLERS > 3
+"GHIElectronics.TinyCLR.NativeApis.STM32F4.UartController\\3",
+#if TOTAL_UART_CONTROLLERS > 4
+"GHIElectronics.TinyCLR.NativeApis.STM32F4.UartController\\4",
+#if TOTAL_UART_CONTROLLERS > 5
+"GHIElectronics.TinyCLR.NativeApis.STM32F4.UartController\\5",
+#if TOTAL_UART_CONTROLLERS > 6
+"GHIElectronics.TinyCLR.NativeApis.STM32F4.UartController\\6",
+#if TOTAL_UART_CONTROLLERS > 7
+"GHIElectronics.TinyCLR.NativeApis.STM32F4.UartController\\7",
+#if TOTAL_UART_CONTROLLERS > 8
+"GHIElectronics.TinyCLR.NativeApis.STM32F4.UartController\\8",
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+};
 
 void STM32F4_Uart_EnsureTableInitialized() {
     for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
@@ -682,6 +710,7 @@ void STM32F4_Uart_Reset() {
         STM32F4_Uart_Release(&uartControllers[i]);
 
         uartStates[i].isOpened = false;
+        uartStates[i].tableInitialized = false;
     }
 }
 

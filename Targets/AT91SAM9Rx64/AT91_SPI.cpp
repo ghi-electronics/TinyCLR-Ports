@@ -47,7 +47,14 @@ static SpiState spiStates[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Spi_Controller spiControllers[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Api_Info spiApi[TOTAL_SPI_CONTROLLERS];
 
-const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = AT91_SPI_CONTROLLER_NAMES;
+const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = {
+#if TOTAL_SPI_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.AT91.SpiController\\0",
+#if TOTAL_SPI_CONTROLLERS > 1
+"GHIElectronics.TinyCLR.NativeApis.AT91.SpiController\\1",
+#endif
+#endif
+};
 
 void AT91_Spi_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
@@ -467,5 +474,6 @@ void AT91_Spi_Reset() {
         AT91_Spi_Release(&spiControllers[i]);
 
         spiStates[i].isOpened = false;
+        spiStates[i].tableInitialized = false;
     }
 }

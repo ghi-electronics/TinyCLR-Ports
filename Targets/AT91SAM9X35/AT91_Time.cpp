@@ -263,7 +263,7 @@ void AT91_Time_AddApi(const TinyCLR_Api_Manager* apiManager) {
 void AT91_Time_InterruptHandler(void* Param) {
     TinyCLR_NativeTime_Controller *self = (TinyCLR_NativeTime_Controller*)Param;
 
-    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+    TimeState* state = ((self == nullptr) ? &timeStates[0] : reinterpret_cast<TimeState*>(self->ApiInfo->State));
 
     if (AT91_Time_GetCurrentProcessorTicks(self) >= state->m_nextCompare) {
         // this also schedules the next one, if there is one
@@ -316,11 +316,7 @@ uint64_t AT91_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller*
 
     uint32_t value = At91TimerDriver::ReadCounter(At91TimerDriver::c_SystemTimer);
 
-    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
-
-    if (self == nullptr) { // some cases in hal layer call directly AT91_Time_GetCurrentProcessorTicks(nullptr), use first controller as default
-        state = &timeStates[0];
-    }
+    TimeState* state = ((self == nullptr) ? &timeStates[0] : reinterpret_cast<TimeState*>(self->ApiInfo->State));
 
     state->m_lastRead &= (0xFFFFFFFF00000000ull);
 
@@ -338,7 +334,7 @@ TinyCLR_Result AT91_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Contro
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+    TimeState* state = ((self == nullptr) ? &timeStates[0] : reinterpret_cast<TimeState*>(self->ApiInfo->State));
 
     state->m_nextCompare = processorTicks;
 
@@ -391,7 +387,7 @@ TinyCLR_Result AT91_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Contro
 TinyCLR_Result AT91_Time_Initialize(const TinyCLR_NativeTime_Controller* self) {
     int32_t timer = AT91_TIME_DEFAULT_CONTROLLER_ID;
 
-    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+    TimeState* state = ((self == nullptr) ? &timeStates[0] : reinterpret_cast<TimeState*>(self->ApiInfo->State));
 
     state->m_lastRead = 0;
     state->m_nextCompare = (uint64_t)At91TimerDriver::c_MaxTimerValue;
@@ -414,7 +410,7 @@ TinyCLR_Result AT91_Time_Uninitialize(const TinyCLR_NativeTime_Controller* self)
 }
 
 TinyCLR_Result AT91_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* self, TinyCLR_NativeTime_Callback callback) {
-    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+    TimeState* state = ((self == nullptr) ? &timeStates[0] : reinterpret_cast<TimeState*>(self->ApiInfo->State));
 
     if (state->m_DequeuAndExecute != nullptr)
         return TinyCLR_Result::InvalidOperation;

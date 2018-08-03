@@ -487,6 +487,8 @@ void LPC17_Gpio_Reset() {
                     LPC17_Gpio_WritePin(pin, p.outputDirection);
             }
         }
+
+        gpioStates[c].tableInitialized = false;
     }
 
     *GPIO_Port_0_INT_RisingEdge_Register = 0x0;

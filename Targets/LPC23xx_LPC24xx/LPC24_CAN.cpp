@@ -2030,7 +2030,7 @@ struct CanState {
 static const LPC24_Gpio_Pin canTxPins[] = LPC24_CAN_TX_PINS;
 static const LPC24_Gpio_Pin canRxPins[] = LPC24_CAN_RX_PINS;
 
-#define TOTAL_CAN_CONTROLLERS  SIZEOF_ARRAY(canTxPins)
+static const int TOTAL_CAN_CONTROLLERS = SIZEOF_ARRAY(canTxPins);
 
 static CanState canStates[TOTAL_CAN_CONTROLLERS];
 
@@ -2222,7 +2222,14 @@ int32_t BinarySearch2(uint32_t *lowerBounds, uint32_t *upperBounds, int32_t firs
     return -1;    // failed to find key
 }
 
-const char* canApiNames[TOTAL_CAN_CONTROLLERS] = LPC24_CAN_CONTROLLER_NAMES;
+const char* canApiNames[] = {
+#if TOTAL_CAN_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.LPC24.CanController\\0",
+#if TOTAL_CAN_CONTROLLERS > 1
+"GHIElectronics.TinyCLR.NativeApis.LPC24.CanController\\1"
+#endif
+#endif
+};
 
 void LPC24_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (int32_t i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
@@ -2535,7 +2542,7 @@ TinyCLR_Result LPC24_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32
 
     uint32_t timeout = CAN_TRANSFER_TIMEOUT;
 
-    while (LPC24_Can_CanWriteMessage(self) == false && timeout-- > 0) {        
+    while (LPC24_Can_CanWriteMessage(self) == false && timeout-- > 0) {
         LPC24_Time_Delay(nullptr, 1);
     }
 
@@ -2805,7 +2812,7 @@ size_t LPC24_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
     auto controllerIndex = state->controllerIndex;
 
-	return state->can_rxBufferSize == 0 ? canDefaultBuffersSize[controllerIndex] : state->can_rxBufferSize;
+    return state->can_rxBufferSize == 0 ? canDefaultBuffersSize[controllerIndex] : state->can_rxBufferSize;
 }
 
 TinyCLR_Result LPC24_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
@@ -2823,7 +2830,7 @@ TinyCLR_Result LPC24_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, s
 }
 
 size_t LPC24_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self) {
-	return 1;
+    return 1;
 }
 
 TinyCLR_Result LPC24_Can_SetWriteBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
@@ -2842,12 +2849,6 @@ void LPC24_Can_Reset() {
 
         canStates[i].isOpened = false;
     }
-}
-
-TinyCLR_Result LPC24_Can_GetControllerCount(const TinyCLR_Can_Controller* self, int32_t& count) {
-    count = TOTAL_CAN_CONTROLLERS;
-
-    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Can_Enable(const TinyCLR_Can_Controller* self) {
@@ -2873,8 +2874,8 @@ bool LPC24_Can_CanWriteMessage(const TinyCLR_Can_Controller* self) {
         (status & 0x00040000)) {
         allowed = true;
     }
-	
-	return false;
+
+    return allowed;
 }
 
 bool LPC24_Can_CanReadMessage(const TinyCLR_Can_Controller* self) {

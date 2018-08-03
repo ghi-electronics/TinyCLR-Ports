@@ -71,7 +71,14 @@
 #define PWM_MICROSECONDS  1000000
 #define PWM_NANOSECONDS   1000000000
 
-const char* PwmApiNames[TOTAL_PWM_CONTROLLERS] = LPC24_PWM_CONTROLLER_NAMES;
+const char* PwmApiNames[] = {
+#if TOTAL_PWM_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.LPC24.PwmController\\0",
+#if TOTAL_PWM_CONTROLLERS > 1
+"GHIElectronics.TinyCLR.NativeApis.LPC24.PwmController\\1",
+#endif
+#endif
+};
 
 static PwmState pwmStates[TOTAL_PWM_CONTROLLERS];
 
@@ -339,7 +346,7 @@ TinyCLR_Result LPC24_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self, 
     if (highTicks > periodTicks)
         highTicks = periodTicks;
 
-    if (polarity == TinyCLR_Pwm_PulsePolarity::ActiveHigh)
+    if (polarity == TinyCLR_Pwm_PulsePolarity::ActiveLow)
         highTicks = periodTicks - highTicks;
 
     if (periodInNanoSeconds == 0 || durationInNanoSeconds == 0) {

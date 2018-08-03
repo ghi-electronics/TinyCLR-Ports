@@ -289,7 +289,17 @@ static SpiState spiStates[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Spi_Controller spiControllers[TOTAL_SPI_CONTROLLERS];
 static TinyCLR_Api_Info spiApi[TOTAL_SPI_CONTROLLERS];
 
-const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = LPC24_SPI_CONTROLLER_NAMES;
+const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = {
+#if TOTAL_SPI_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.LPC24.SpiController\\0",
+#if TOTAL_SPI_CONTROLLERS > 1
+"GHIElectronics.TinyCLR.NativeApis.LPC24.SpiController\\1",
+#if TOTAL_SPI_CONTROLLERS > 2
+"GHIElectronics.TinyCLR.NativeApis.LPC24.SpiController\\2",
+#endif
+#endif
+#endif
+};
 
 void LPC24_Spi_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
@@ -797,11 +807,6 @@ void LPC24_Spi_Reset() {
         LPC24_Spi_Release(&spiControllers[i]);
 
         spiStates[i].isOpened = false;
+        spiStates[i].tableInitialized = false;
     }
-}
-
-TinyCLR_Result LPC24_Spi_GetControllerCount(const TinyCLR_Spi_Controller* self, int32_t& count) {
-    count = TOTAL_SPI_CONTROLLERS;
-
-    return TinyCLR_Result::Success;
 }

@@ -24,8 +24,6 @@ struct I2cConfiguration {
 
 #define I2C_TRANSACTION_TIMEOUT 2000000
 
-#define TOTAL_I2C_CONTROLLERS SIZEOF_ARRAY(i2cSclPins)
-
 static const AT91_Gpio_Pin i2cSclPins[] = AT91_I2C_SCL_PINS;
 static const AT91_Gpio_Pin i2cSdaPins[] = AT91_I2C_SDA_PINS;
 
@@ -37,12 +35,18 @@ struct I2cState {
     bool isOpened;
 };
 
+static const int TOTAL_I2C_CONTROLLERS = SIZEOF_ARRAY(i2cSclPins);
+
 static I2cState i2cStates[TOTAL_I2C_CONTROLLERS];
 
 static TinyCLR_I2c_Controller i2cControllers[TOTAL_I2C_CONTROLLERS];
 static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];
 
-const char* i2cApiNames[TOTAL_I2C_CONTROLLERS] = AT91_I2C_CONTROLLER_NAMES;
+const char* i2cApiNames[] = {
+#if TOTAL_I2C_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.AT91.I2cController\\0"
+#endif
+};
 
 void AT91_I2c_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
@@ -232,6 +236,14 @@ TinyCLR_Result AT91_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint
 
     auto controllerIndex = state->controllerIndex;
 
+    if (writeLength > 0 && readLength == 0) { // Do write only
+        return AT91_I2c_Write(self, writeBuffer, writeLength, error);
+    }
+    else if (writeLength == 0 && readLength > 0) { // Do Read only
+        return AT91_I2c_Read(self, readBuffer, readLength, error);
+    }
+
+    // WriteRead
     if (writeLength > 3) {
         AT91_I2c_Write(self, writeBuffer, writeLength, error);
 
@@ -338,6 +350,9 @@ TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, ui
 
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
+
+    if (addressFormat == TinyCLR_I2c_AddressFormat::TenBit)
+        return TinyCLR_Result::NotSupported;
 
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
@@ -462,10 +477,3 @@ void AT91_I2c_Reset() {
         state->isOpened = false;
     }
 }
-
-TinyCLR_Result AT91_I2c_GetControllerCount(const TinyCLR_I2c_Controller* self, int32_t& count) {
-    count = SIZEOF_ARRAY(i2cSclPins);
-
-    return TinyCLR_Result::Success;
-}
-

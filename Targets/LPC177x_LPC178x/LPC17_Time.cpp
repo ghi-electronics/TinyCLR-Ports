@@ -113,11 +113,7 @@ uint64_t LPC17_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Controller
 uint64_t LPC17_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
-
-    if (self == nullptr) { // some cases in hal layer call directly LPC17_Time_GetCurrentProcessorTicks(nullptr), use first controller as default
-        state = &timeStates[0];
-    }
+    TimeState* state = ((self == nullptr) ? &timeStates[0] : reinterpret_cast<TimeState*>(self->ApiInfo->State));
 
     uint32_t tick_spent;
     uint32_t reg = SysTick->CTRL;
@@ -147,7 +143,7 @@ TinyCLR_Result LPC17_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Contr
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+    TimeState* state = ((self == nullptr) ? &timeStates[0] : reinterpret_cast<TimeState*>(self->ApiInfo->State));
 
     ticks = LPC17_Time_GetCurrentProcessorTicks(self);
 
@@ -215,7 +211,7 @@ extern "C" {
 TinyCLR_Result LPC17_Time_Initialize(const TinyCLR_NativeTime_Controller* self) {
     timerNextEvent = TIMER_IDLE_VALUE;
 
-    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+    TimeState* state = ((self == nullptr) ? &timeStates[0] : reinterpret_cast<TimeState*>(self->ApiInfo->State));
 
     state->m_lastRead = 0;
 
@@ -235,7 +231,7 @@ TinyCLR_Result LPC17_Time_Uninitialize(const TinyCLR_NativeTime_Controller* self
 }
 
 TinyCLR_Result LPC17_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* self, TinyCLR_NativeTime_Callback callback) {
-    auto state = reinterpret_cast<TimeState*>(self->ApiInfo->State);
+    TimeState* state = ((self == nullptr) ? &timeStates[0] : reinterpret_cast<TimeState*>(self->ApiInfo->State));
 
     if (state->m_DequeuAndExecute != nullptr) return TinyCLR_Result::InvalidOperation;
 

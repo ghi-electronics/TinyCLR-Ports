@@ -42,8 +42,6 @@ struct LPC17xx_I2C {
     /****/ volatile uint32_t I2CONCLR;
 };
 
-#define TOTAL_I2C_CONTROLLERS SIZEOF_ARRAY(i2cSclPins)
-
 struct I2cConfiguration {
 
     int32_t                  address;
@@ -80,13 +78,17 @@ struct I2cState {
     I2cTransaction   readI2cTransactionAction;
     I2cTransaction   writeI2cTransactionAction;
 };
-
+static const int TOTAL_I2C_CONTROLLERS = SIZEOF_ARRAY(i2cSclPins);
 static I2cState i2cStates[TOTAL_I2C_CONTROLLERS];
 
 static TinyCLR_I2c_Controller i2cControllers[TOTAL_I2C_CONTROLLERS];
 static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];
 
-const char* i2cApiNames[TOTAL_I2C_CONTROLLERS] = LPC17_I2C_CONTROLLER_NAMES;
+const char* i2cApiNames[] = {
+#if TOTAL_I2C_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.LPC17.I2cController\\0"
+#endif
+};
 
 void LPC17_I2c_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
@@ -317,6 +319,9 @@ TinyCLR_Result LPC17_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, u
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
+    if (addressFormat == TinyCLR_I2c_AddressFormat::TenBit)
+        return TinyCLR_Result::NotSupported;
+
     if (busSpeed == TinyCLR_I2c_BusSpeed::FastMode)
         rateKhz = 400; // FastMode
     else if (busSpeed == TinyCLR_I2c_BusSpeed::StandardMode)
@@ -361,8 +366,8 @@ TinyCLR_Result LPC17_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
     if (!LPC17_Gpio_OpenPin(i2cSdaPins[controllerIndex].number) || !LPC17_Gpio_OpenPin(i2cSclPins[controllerIndex].number))
         return TinyCLR_Result::SharingViolation;
 
-    LPC17_Gpio_ConfigurePin(i2cSdaPins[controllerIndex].number, LPC17_Gpio_Direction::Input, i2cSdaPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(i2cSclPins[controllerIndex].number, LPC17_Gpio_Direction::Input, i2cSclPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+    LPC17_Gpio_ConfigurePin(i2cSdaPins[controllerIndex].number, LPC17_Gpio_Direction::Input, i2cSdaPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::OpenDrain);
+    LPC17_Gpio_ConfigurePin(i2cSclPins[controllerIndex].number, LPC17_Gpio_Direction::Input, i2cSclPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::OpenDrain);
 
     // enable the I2c module
     I2C.I2CONSET = LPC17xx_I2C::I2EN;
