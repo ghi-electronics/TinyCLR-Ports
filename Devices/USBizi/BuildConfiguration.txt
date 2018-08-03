@@ -1,3 +1,4 @@
 TargetName:LPC23xx_LPC24xx
 ImageGenParameters:0x36FDC5C3 0x3DAD4575 0x00004000 0x0004C000
 OptimizeLevel:-O2
+AdditionalDeviceDrivers:DevicesInterop\Adc,DevicesInterop\Can,DevicesInterop\Dac,DevicesInterop\Display,DevicesInterop\Gpio,DevicesInterop\I2c,DevicesInterop\Pwm,DevicesInterop\Storage,DevicesInterop\Uart,DevicesInterop\Rtc,DevicesInterop\Signals,DevicesInterop\Spi

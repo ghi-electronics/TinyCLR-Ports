@@ -1,4 +1,4 @@
 TargetName:AT91SAM9Rx64
 ImageGenParameters:0x73721954 0x6D5F426A 0x00008400 0x00262800
 OptimizeLevel:-Ofast
-AdditionalDeviceDrivers:AT45DB321D_Flash
+AdditionalDeviceDrivers:AT45DB321D_Flash,DevicesInterop\Adc,DevicesInterop\Can,DevicesInterop\Dac,DevicesInterop\Display,DevicesInterop\Gpio,DevicesInterop\I2c,DevicesInterop\Pwm,DevicesInterop\Storage,DevicesInterop\Uart,DevicesInterop\Rtc,DevicesInterop\Signals,DevicesInterop\Spi
