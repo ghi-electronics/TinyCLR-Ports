@@ -423,6 +423,10 @@ struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Sto
     static const size_t FIELD___RegionSizes__BackingField___SZARRAY_I4 = 9;
 };
 
+struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Uart_ClearToSendChangedEventArgs {
+    static const size_t FIELD___State__BackingField___BOOLEAN = 1;
+};
+
 struct Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Uart_DataReceivedEventArgs {
     static const size_t FIELD___Count__BackingField___I4 = 1;
 };

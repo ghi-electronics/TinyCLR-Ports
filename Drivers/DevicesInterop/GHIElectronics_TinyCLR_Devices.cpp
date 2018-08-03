@@ -703,6 +703,8 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
     nullptr,
     nullptr,
     nullptr,
+    nullptr,
+    nullptr,
     Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::get_WriteBufferSize___I4,
     Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::set_WriteBufferSize___VOID__I4,
     Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::get_ReadBufferSize___I4,
@@ -765,6 +767,6 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
 
 const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices = {
     "GHIElectronics.TinyCLR.Devices",
-    0xBA903BDB,
+    0xCEEDFF39,
     methods
 };
