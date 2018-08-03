@@ -22,8 +22,6 @@ void STM32F4_I2c_StopTransaction(int32_t controllerIndex);
 static const STM32F4_Gpio_Pin i2cSclPins[] = STM32F4_I2C_SCL_PINS;
 static const STM32F4_Gpio_Pin i2cSdaPins[] = STM32F4_I2C_SDA_PINS;
 
-static const int TOTAL_I2C_CONTROLLERS = SIZEOF_ARRAY(i2cSclPins);
-
 static I2C_TypeDef* i2cPorts[TOTAL_I2C_CONTROLLERS];
 
 #define I2C_TRANSACTION_TIMEOUT 2000 // 2 seconds
