@@ -39,6 +39,15 @@ const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = {
 "GHIElectronics.TinyCLR.NativeApis.STM32F4.SpiController\\0",
 #if TOTAL_SPI_CONTROLLERS > 1
 "GHIElectronics.TinyCLR.NativeApis.STM32F4.SpiController\\1",
+#if TOTAL_SPI_CONTROLLERS > 2
+"GHIElectronics.TinyCLR.NativeApis.STM32F4.SpiController\\2",
+#if TOTAL_SPI_CONTROLLERS > 3
+"GHIElectronics.TinyCLR.NativeApis.STM32F4.SpiController\\3",
+#if TOTAL_SPI_CONTROLLERS > 4
+"GHIElectronics.TinyCLR.NativeApis.STM32F4.SpiController\\4",
+#endif
+#endif
+#endif
 #endif
 #endif
 };
