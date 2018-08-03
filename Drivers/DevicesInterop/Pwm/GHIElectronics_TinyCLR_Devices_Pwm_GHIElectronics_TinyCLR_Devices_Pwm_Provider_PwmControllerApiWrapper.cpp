@@ -1,4 +1,4 @@
-#include "GHIElectronics_TinyCLR_Devices.h"
+#include "GHIElectronics_TinyCLR_Devices_Pwm.h"
 #include "../GHIElectronics_TinyCLR_InteropUtil.h"
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Pwm_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::get_ChannelCount___I4(const TinyCLR_Interop_MethodData md) {

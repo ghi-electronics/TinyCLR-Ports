@@ -1,4 +1,4 @@
-#include "GHIElectronics_TinyCLR_Devices.h"
+#include "GHIElectronics_TinyCLR_Devices_Gpio.h"
 #include "../GHIElectronics_TinyCLR_InteropUtil.h"
 
 static void TinyCLR_Gpio_PinChangeIsr(const TinyCLR_Gpio_Controller* self, uint32_t pin, TinyCLR_Gpio_PinChangeEdge edge) {

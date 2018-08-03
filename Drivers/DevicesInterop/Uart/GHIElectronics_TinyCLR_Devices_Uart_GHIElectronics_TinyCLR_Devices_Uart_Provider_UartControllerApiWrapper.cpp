@@ -1,4 +1,4 @@
-#include "GHIElectronics_TinyCLR_Devices.h"
+#include "GHIElectronics_TinyCLR_Devices_Uart.h"
 #include "../GHIElectronics_TinyCLR_InteropUtil.h"
 
 void TinyCLR_Uart_DataReceivedIsr(const TinyCLR_Uart_Controller* self, size_t count) {

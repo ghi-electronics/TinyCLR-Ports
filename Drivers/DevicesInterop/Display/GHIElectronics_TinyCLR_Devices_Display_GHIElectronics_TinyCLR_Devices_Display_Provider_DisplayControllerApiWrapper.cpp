@@ -1,4 +1,4 @@
-#include "GHIElectronics_TinyCLR_Devices.h"
+#include "GHIElectronics_TinyCLR_Devices_Display.h"
 #include "../GHIElectronics_TinyCLR_InteropUtil.h"
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::Enable___VOID(const TinyCLR_Interop_MethodData md) {
@@ -114,7 +114,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_Tin
 
         interop->FindType(interop, "GHIElectronics.TinyCLR.Devices", "GHIElectronics.TinyCLR.Devices.Display", "DisplayDataFormat", idx);
 
-        interop->GetField(interop, ret.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_DisplayControllerSettings::FIELD___DataFormat__BackingField___GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat, arr);
+        interop->GetField(interop, ret.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_DisplayControllerSettings::FIELD___DataFormat__BackingField___GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat, arr);
 
         interop->CreateArray(interop, supportedDataFormatCount, idx, arr);
 

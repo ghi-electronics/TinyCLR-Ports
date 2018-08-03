@@ -1,4 +1,4 @@
-#include "GHIElectronics_TinyCLR_Devices.h"
+#include "GHIElectronics_TinyCLR_Devices_Rtc.h"
 #include "../GHIElectronics_TinyCLR_InteropUtil.h"
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerApiWrapper::GetTime___GHIElectronicsTinyCLRDevicesRtcRtcDateTime(const TinyCLR_Interop_MethodData md) {
@@ -17,18 +17,18 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR
 
     TinyCLR_Interop_ClrValue year, month, week, dayofweek, dayofmonth, dayofyear, hour, minute, second, milisecond, microsecond, nanosecond;
 
-    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Year___I4, year);
-    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Month___I4, month);
-    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Week___I4, week);
-    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___DayOfYear___I4, dayofweek);
-    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___DayOfMonth___I4, dayofmonth);
-    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___DayOfWeek___I4, dayofyear);
-    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Hour___I4, hour);
-    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Minute___I4, minute);
-    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Second___I4, second);
-    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Millisecond___I4, milisecond);
-    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Microsecond___I4, microsecond);
-    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Nanosecond___I4, nanosecond);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Year___I4, year);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Month___I4, month);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Week___I4, week);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___DayOfYear___I4, dayofweek);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___DayOfMonth___I4, dayofmonth);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___DayOfWeek___I4, dayofyear);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Hour___I4, hour);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Minute___I4, minute);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Second___I4, second);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Millisecond___I4, milisecond);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Microsecond___I4, microsecond);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Nanosecond___I4, nanosecond);
 
     year.Data.Numeric->I4 = now.Year;
     month.Data.Numeric->I4 = now.Month;
@@ -61,18 +61,18 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR
 
     TinyCLR_Interop_ClrValue year, month, week, dayofweek, dayofmonth, dayofyear, hour, minute, second, milisecond, microsecond, nanosecond;
 
-    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Year___I4, year);
-    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Month___I4, month);
-    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Week___I4, week);
-    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___DayOfYear___I4, dayofweek);
-    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___DayOfMonth___I4, dayofmonth);
-    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___DayOfWeek___I4, dayofyear);
-    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Hour___I4, hour);
-    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Minute___I4, minute);
-    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Second___I4, second);
-    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Millisecond___I4, milisecond);
-    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Microsecond___I4, microsecond);
-    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Nanosecond___I4, nanosecond);
+    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Year___I4, year);
+    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Month___I4, month);
+    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Week___I4, week);
+    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___DayOfYear___I4, dayofweek);
+    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___DayOfMonth___I4, dayofmonth);
+    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___DayOfWeek___I4, dayofyear);
+    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Hour___I4, hour);
+    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Minute___I4, minute);
+    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Second___I4, second);
+    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Millisecond___I4, milisecond);
+    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Microsecond___I4, microsecond);
+    md.InteropManager->GetField(md.InteropManager, arg0.Object, Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_RtcDateTime::FIELD___Nanosecond___I4, nanosecond);
 
     now.Year = year.Data.Numeric->I4;
     now.Month = month.Data.Numeric->I4;
