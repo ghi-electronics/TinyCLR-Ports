@@ -339,7 +339,7 @@ TinyCLR_Result LPC24_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self, 
     if (highTicks > periodTicks)
         highTicks = periodTicks;
 
-    if (polarity == TinyCLR_Pwm_PulsePolarity::ActiveHigh)
+    if (polarity == TinyCLR_Pwm_PulsePolarity::ActiveLow)
         highTicks = periodTicks - highTicks;
 
     if (periodInNanoSeconds == 0 || durationInNanoSeconds == 0) {
