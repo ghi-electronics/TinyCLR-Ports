@@ -30,8 +30,6 @@ static const STM32F4_Gpio_Pin spiClkPins[] = STM32F4_SPI_SCLK_PINS;
 static const STM32F4_Gpio_Pin spiMisoPins[] = STM32F4_SPI_MISO_PINS;
 static const STM32F4_Gpio_Pin spiMosiPins[] = STM32F4_SPI_MOSI_PINS;
 
-static const int TOTAL_SPI_CONTROLLERS = SIZEOF_ARRAY(spiClkPins);
-
 static ptr_SPI_TypeDef spiPortRegs[TOTAL_SPI_CONTROLLERS];
 
 const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = {

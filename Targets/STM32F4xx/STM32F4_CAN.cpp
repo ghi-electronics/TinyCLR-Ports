@@ -328,8 +328,6 @@ static const STM32F4_Gpio_Pin canTxPins[] = STM32F4_CAN_TX_PINS;
 static const STM32F4_Gpio_Pin canRxPins[] = STM32F4_CAN_RX_PINS;
 static const uint32_t canDefaultBuffersSize[] = STM32F4_CAN_BUFFER_DEFAULT_SIZE;
 
-static const int TOTAL_CAN_CONTROLLERS = SIZEOF_ARRAY(canTxPins);
-
 static CanState canStates[TOTAL_CAN_CONTROLLERS];
 
 static TinyCLR_Can_Controller canControllers[TOTAL_CAN_CONTROLLERS];;

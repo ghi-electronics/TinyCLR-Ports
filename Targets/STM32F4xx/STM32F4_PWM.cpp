@@ -68,7 +68,6 @@ void STM32F4_Pwm_ResetController(int32_t controllerIndex);
 STM32F4_Gpio_Pin* STM32F4_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel);
 
 static const STM32F4_Gpio_Pin pwmPins[][PWM_PER_CONTROLLER] = STM32F4_PWM_PINS;
-static const int TOTAL_PWM_CONTROLLERS = SIZEOF_ARRAY(pwmPins);
 
 const char* PwmApiNames[] = {
 #if TOTAL_PWM_CONTROLLERS > 0
