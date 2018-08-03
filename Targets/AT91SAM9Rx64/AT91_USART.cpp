@@ -766,6 +766,7 @@ void AT91_Uart_Reset() {
         AT91_Uart_Release(&uartControllers[i]);
 
         uartStates[i].isOpened = false;
+        uartStates[i].tableInitialized = false;
     }
 }
 

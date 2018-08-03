@@ -1029,6 +1029,7 @@ void LPC17_Uart_Reset() {
         LPC17_Uart_Release(&uartControllers[i]);
 
         uartStates[i].isOpened = false;
+        uartStates[i].tableInitialized = false;
     }
 }
 

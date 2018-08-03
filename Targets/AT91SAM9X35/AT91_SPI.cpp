@@ -477,5 +477,6 @@ void AT91_Spi_Reset() {
         AT91_Spi_Release(&spiControllers[i]);
 
         spiStates[i].isOpened = false;
+        spiStates[i].tableInitialized = false;
     }
 }

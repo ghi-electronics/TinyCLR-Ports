@@ -447,4 +447,6 @@ void STM32F7_Gpio_Reset() {
     STM32F7_InterruptInternal_Activate(EXTI4_IRQn, (uint32_t*)&STM32F7_Gpio_Interrupt4, 0);
     STM32F7_InterruptInternal_Activate(EXTI9_5_IRQn, (uint32_t*)&STM32F7_Gpio_Interrupt5, 0);
     STM32F7_InterruptInternal_Activate(EXTI15_10_IRQn, (uint32_t*)&STM32F7_Gpio_Interrupt10, 0);
+
+    gpioStates[0].tableInitialized = false;
 }

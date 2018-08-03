@@ -512,5 +512,7 @@ void LPC24_Gpio_Reset() {
                     LPC24_Gpio_WritePin(pin, p.outputDirection);
             }
         }
+
+        gpioStates[c].tableInitialized = false;
     }
 }

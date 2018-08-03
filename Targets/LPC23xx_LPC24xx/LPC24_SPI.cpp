@@ -797,5 +797,6 @@ void LPC24_Spi_Reset() {
         LPC24_Spi_Release(&spiControllers[i]);
 
         spiStates[i].isOpened = false;
+        spiStates[i].tableInitialized = false;
     }
 }

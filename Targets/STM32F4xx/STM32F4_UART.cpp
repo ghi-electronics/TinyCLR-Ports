@@ -682,6 +682,7 @@ void STM32F4_Uart_Reset() {
         STM32F4_Uart_Release(&uartControllers[i]);
 
         uartStates[i].isOpened = false;
+        uartStates[i].tableInitialized = false;
     }
 }
 

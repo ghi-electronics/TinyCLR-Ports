@@ -857,6 +857,7 @@ void LPC24_Uart_Reset() {
         LPC24_Uart_Release(&uartControllers[i]);
 
         uartStates[i].isOpened = false;
+        uartStates[i].tableInitialized = false;
     }
 }
 
