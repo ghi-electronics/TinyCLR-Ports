@@ -317,6 +317,9 @@ TinyCLR_Result LPC17_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, u
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
+    if (addressFormat == TinyCLR_I2c_AddressFormat::TenBit)
+        return TinyCLR_Result::NotSupported;
+
     if (busSpeed == TinyCLR_I2c_BusSpeed::FastMode)
         rateKhz = 400; // FastMode
     else if (busSpeed == TinyCLR_I2c_BusSpeed::StandardMode)
