@@ -1,2 +1,2 @@
 TargetArchitecture:ARM7
-AdditionalTargetDrivers:SPIDisplay,USBClient,DevicesInterop
+AdditionalTargetDrivers:USBClient,DevicesInterop

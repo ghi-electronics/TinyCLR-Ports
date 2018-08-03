@@ -16,7 +16,6 @@
 #include <LPC17.h>
 #include <Device.h>
 
-#include "../../Drivers/SPIDisplay/SPIDisplay.h"
 #include "../../Drivers/DevicesInterop/GHIElectronics_TinyCLR_Devices.h"
 
 // G120, G120E

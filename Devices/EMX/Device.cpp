@@ -16,7 +16,6 @@
 #include <Device.h>
 
 #include "../../Drivers/AT49BV322DT_Flash/AT49BV322DT_Flash.h"
-#include "../../Drivers/SPIDisplay/SPIDisplay.h"
 #include "../../Drivers/DevicesInterop/GHIElectronics_TinyCLR_Devices.h"
 
 void LPC24_Startup_OnSoftResetDevice(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopManager) {
