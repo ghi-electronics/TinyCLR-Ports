@@ -18,6 +18,10 @@
 
 #define TOTAL_DEPLOYMENT_CONTROLLERS 1
 
+const char* deploymentApiNames[TOTAL_DEPLOYMENT_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.LPC24.StorageController\\0"
+};
+
 static TinyCLR_Storage_Controller deploymentControllers[TOTAL_DEPLOYMENT_CONTROLLERS];
 static TinyCLR_Api_Info deploymentApi[TOTAL_DEPLOYMENT_CONTROLLERS];
 
@@ -32,12 +36,16 @@ struct DeploymentState {
     TinyCLR_Startup_DeploymentConfiguration deploymentConfiguration;
 
     bool isOpened = false;
+    bool tableInitialized = false;
 };
 
 static DeploymentState deploymentStates[TOTAL_DEPLOYMENT_CONTROLLERS];
 
-void LPC24_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
+void LPC24_Deployment_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
+        if (deploymentStates[i].tableInitialized)
+            continue;
+
         deploymentControllers[i].ApiInfo = &deploymentApi[i];
         deploymentControllers[i].Acquire = &LPC24_Deployment_Acquire;
         deploymentControllers[i].Release = &LPC24_Deployment_Release;
@@ -52,7 +60,7 @@ void LPC24_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
         deploymentControllers[i].SetPresenceChangedHandler = &LPC24_Deployment_SetPresenceChangedHandler;
 
         deploymentApi[i].Author = "GHI Electronics, LLC";
-        deploymentApi[i].Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.StorageController";
+        deploymentApi[i].Name = deploymentApiNames[i];
         deploymentApi[i].Type = TinyCLR_Api_Type::StorageController;
         deploymentApi[i].Version = 0;
         deploymentApi[i].Implementation = &deploymentControllers[i];
@@ -60,9 +68,28 @@ void LPC24_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
 
         deploymentStates[i].controllerIndex = i;
         deploymentStates[i].regionCount = LPC24_DEPLOYMENT_SECTOR_NUM;
+
+        deploymentStates[i].tableInitialized = true;        
+    }
+}
+
+void LPC24_Deployment_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
+    LPC24_Deployment_EnsureTableInitialized();
+
+    auto state = &deploymentStates[0];
+
+    api = &deploymentApi[0];
+    configuration = &state->deploymentConfiguration;
+}
+
+void LPC24_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    LPC24_Deployment_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_DEPLOYMENT_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &deploymentApi[i]);
     }
 
-    return (const TinyCLR_Api_Info*)&deploymentApi;
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::StorageController, deploymentApi[0].Name);
 }
 
 TinyCLR_Result LPC24_Deployment_Acquire(const TinyCLR_Storage_Controller* self) {
