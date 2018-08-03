@@ -1,7 +1,7 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 #include "../GHIElectronics_TinyCLR_InteropUtil.h"
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerApiWrapper::GetTime___GHIElectronicsTinyCLRDevicesRtcRtcDateTime(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerApiWrapper::GetTime___GHIElectronicsTinyCLRDevicesRtcRtcDateTime(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Rtc_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Rtc_DateTime now;
@@ -50,7 +50,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return result;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerApiWrapper::SetTime___VOID__GHIElectronicsTinyCLRDevicesRtcRtcDateTime(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerApiWrapper::SetTime___VOID__GHIElectronicsTinyCLRDevicesRtcRtcDateTime(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Rtc_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg0;
@@ -90,13 +90,13 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return api->SetTime(api, now);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerApiWrapper::Acquire___VOID(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerApiWrapper::Acquire___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Rtc_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     return api->Acquire(api);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerApiWrapper::Release___VOID(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerApiWrapper::Release___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Rtc_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     return api->Release(api);

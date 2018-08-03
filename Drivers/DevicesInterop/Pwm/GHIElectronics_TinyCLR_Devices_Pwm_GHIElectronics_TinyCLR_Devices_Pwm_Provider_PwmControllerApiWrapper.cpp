@@ -1,7 +1,7 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 #include "../GHIElectronics_TinyCLR_InteropUtil.h"
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::get_ChannelCount___I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Pwm_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::get_ChannelCount___I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Pwm_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue ret;
@@ -13,7 +13,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::get_MinFrequency___R8(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Pwm_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::get_MinFrequency___R8(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Pwm_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue ret;
@@ -25,7 +25,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::get_MaxFrequency___R8(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Pwm_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::get_MaxFrequency___R8(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Pwm_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue ret;
@@ -38,7 +38,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::OpenChannel___VOID__I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Pwm_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::OpenChannel___VOID__I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Pwm_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg0;
@@ -50,7 +50,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return  api->OpenChannel(api, channel);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::CloseChannel___VOID__I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Pwm_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::CloseChannel___VOID__I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Pwm_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg0;
@@ -62,7 +62,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return  api->CloseChannel(api, channel);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::EnableChannel___VOID__I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Pwm_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::EnableChannel___VOID__I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Pwm_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg0;
@@ -75,7 +75,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::DisableChannel___VOID__I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Pwm_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::DisableChannel___VOID__I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Pwm_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg0;
@@ -87,7 +87,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return  api->DisableChannel(api, channel);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::SetPulseParameters___VOID__I4__R8__GHIElectronicsTinyCLRDevicesPwmPwmPulsePolarity(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Pwm_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::SetPulseParameters___VOID__I4__R8__GHIElectronicsTinyCLRDevicesPwmPwmPulsePolarity(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Pwm_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg0, arg1, arg2;
@@ -103,7 +103,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return  api->SetPulseParameters(api, channel, dutyCycle, polarity);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::SetDesiredFrequency___R8__R8(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Pwm_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::SetDesiredFrequency___R8__R8(const TinyCLR_Interop_MethodData md) {
 
     auto api = reinterpret_cast<const TinyCLR_Pwm_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
@@ -124,13 +124,13 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return result;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::Acquire___VOID(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Pwm_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::Acquire___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Pwm_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     return api->Acquire(api);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::Release___VOID(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Pwm_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::Release___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Pwm_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     return api->Release(api);

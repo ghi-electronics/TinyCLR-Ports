@@ -9,7 +9,7 @@ static void TinyCLR_Gpio_PinChangeIsr(const TinyCLR_Gpio_Controller* self, uint3
         interopManager->RaiseEvent(interopManager, "GHIElectronics.TinyCLR.NativeEventNames.Gpio.PinChanged", self->ApiInfo->Name, (uint64_t)pin, (uint64_t)(edge == TinyCLR_Gpio_PinChangeEdge::RisingEdge), 0, 0);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::get_PinCount___I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::get_PinCount___I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Gpio_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue ret;
@@ -21,7 +21,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::OpenPin___VOID__I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::OpenPin___VOID__I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Gpio_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg;
@@ -31,7 +31,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return api->OpenPin(api, arg.Data.Numeric->I4);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::ClosePin___VOID__I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::ClosePin___VOID__I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Gpio_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg;
@@ -41,7 +41,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return api->ClosePin(api, arg.Data.Numeric->I4);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::GetDebounceTimeout___mscorlibSystemTimeSpan__I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::GetDebounceTimeout___mscorlibSystemTimeSpan__I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Gpio_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue ret, arg;
@@ -57,7 +57,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::SetDebounceTimeout___VOID__I4__mscorlibSystemTimeSpan(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::SetDebounceTimeout___VOID__I4__mscorlibSystemTimeSpan(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Gpio_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg0, arg1;
@@ -71,7 +71,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return api->SetDebounceTimeout(api, pin, value);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::GetDriveMode___GHIElectronicsTinyCLRDevicesGpioGpioPinDriveMode__I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::GetDriveMode___GHIElectronicsTinyCLRDevicesGpioGpioPinDriveMode__I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Gpio_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue ret, arg;
@@ -86,7 +86,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::SetDriveMode___VOID__I4__GHIElectronicsTinyCLRDevicesGpioGpioPinDriveMode(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::SetDriveMode___VOID__I4__GHIElectronicsTinyCLRDevicesGpioGpioPinDriveMode(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Gpio_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg0, arg1;
@@ -138,7 +138,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::Read___GHIElectronicsTinyCLRDevicesGpioGpioPinValue__I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::Read___GHIElectronicsTinyCLRDevicesGpioGpioPinValue__I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Gpio_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
     TinyCLR_Interop_ClrValue arg0, ret;
 
@@ -155,7 +155,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::Write___VOID__I4__GHIElectronicsTinyCLRDevicesGpioGpioPinValue(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::Write___VOID__I4__GHIElectronicsTinyCLRDevicesGpioGpioPinValue(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Gpio_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
     TinyCLR_Interop_ClrValue arg0, arg1;
 
@@ -167,7 +167,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return api->Write(api, arg0.Data.Numeric->I4, value);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::IsDriveModeSupported___BOOLEAN__I4__GHIElectronicsTinyCLRDevicesGpioGpioPinDriveMode(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::IsDriveModeSupported___BOOLEAN__I4__GHIElectronicsTinyCLRDevicesGpioGpioPinDriveMode(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Gpio_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
     TinyCLR_Interop_ClrValue arg0, arg1, ret;
 
@@ -182,19 +182,19 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::Acquire___VOID(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::Acquire___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Gpio_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     return api->Acquire(api);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::Release___VOID(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::Release___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Gpio_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     return api->Release(api);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::SetPinChangedEdge___VOID__I4__GHIElectronicsTinyCLRDevicesGpioGpioPinEdge(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::SetPinChangedEdge___VOID__I4__GHIElectronicsTinyCLRDevicesGpioGpioPinEdge(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Gpio_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg0, arg1;
@@ -208,7 +208,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return api->SetPinChangedHandler(api, pin, edge, TinyCLR_Gpio_PinChangeIsr);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::ClearPinChangedEdge___VOID__I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::ClearPinChangedEdge___VOID__I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Gpio_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg0;

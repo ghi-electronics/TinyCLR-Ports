@@ -22,7 +22,7 @@ static void TinyCLR_Can_MessageReceivedIsr(const TinyCLR_Can_Controller* self, s
         interopManager->RaiseEvent(interopManager, "GHIElectronics.TinyCLR.NativeEventNames.Can.MessageReceived", self->ApiInfo->Name, controllerIndex, (uint64_t)count, 0, 0);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_WriteBufferSize___I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_WriteBufferSize___I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue ret;
@@ -34,7 +34,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::set_WriteBufferSize___VOID__I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::set_WriteBufferSize___VOID__I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
     TinyCLR_Interop_ClrValue arg;
 
@@ -43,7 +43,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return api->SetWriteBufferSize(api, arg.Data.Numeric->U4);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_ReadBufferSize___I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_ReadBufferSize___I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue ret;
@@ -55,7 +55,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::set_ReadBufferSize___VOID__I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::set_ReadBufferSize___VOID__I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
     TinyCLR_Interop_ClrValue arg;
 
@@ -64,7 +64,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return api->SetReadBufferSize(api, arg.Data.Numeric->U4);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_MessagesToWrite___I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_MessagesToWrite___I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue ret;
@@ -76,7 +76,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_MessagesToRead___I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_MessagesToRead___I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue ret;
@@ -88,7 +88,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_CanWriteMessage___BOOLEAN(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_CanWriteMessage___BOOLEAN(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue ret;
@@ -100,7 +100,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_CanReadMessage___BOOLEAN(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_CanReadMessage___BOOLEAN(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue ret;
@@ -112,7 +112,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_WriteErrorCount___I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_WriteErrorCount___I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue ret;
@@ -124,7 +124,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_ReadErrorCount___I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_ReadErrorCount___I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue ret;
@@ -136,7 +136,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_SourceClock___I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_SourceClock___I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue ret;
@@ -148,19 +148,19 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::Enable___VOID(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::Enable___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     return api->Enable(api);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::Disable___VOID(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::Disable___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     return api->Disable(api);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::WriteMessages___I4__SZARRAY_GHIElectronicsTinyCLRDevicesCanCanMessage__I4__I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::WriteMessages___I4__SZARRAY_GHIElectronicsTinyCLRDevicesCanCanMessage__I4__I4(const TinyCLR_Interop_MethodData md) {
     uint8_t* data;
 
     uint32_t arbID;
@@ -227,7 +227,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::ReadMessages___I4__SZARRAY_GHIElectronicsTinyCLRDevicesCanCanMessage__I4__I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::ReadMessages___I4__SZARRAY_GHIElectronicsTinyCLRDevicesCanCanMessage__I4__I4(const TinyCLR_Interop_MethodData md) {
     uint8_t* data;
 
     uint32_t arbID;
@@ -304,7 +304,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::SetBitTiming___VOID__GHIElectronicsTinyCLRDevicesCanCanBitTiming(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::SetBitTiming___VOID__GHIElectronicsTinyCLRDevicesCanCanBitTiming(const TinyCLR_Interop_MethodData md) {
     TinyCLR_Interop_ClrValue arg, arg1, arg2, arg3, arg4, arg5, arg6;
 
     md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg);
@@ -329,7 +329,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return  api->SetBitTiming(api, propagation, phase1, phase2, brp, synchronizationJumpWidth, useMultiBitSampling);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::SetExplicitFilters___VOID__SZARRAY_I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::SetExplicitFilters___VOID__SZARRAY_I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg;
@@ -346,7 +346,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return api->SetExplicitFilters(api, filterData, length);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::SetGroupFilters___VOID__SZARRAY_I4__SZARRAY_I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::SetGroupFilters___VOID__SZARRAY_I4__SZARRAY_I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg0, arg1;
@@ -365,19 +365,19 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return api->SetGroupFilters(api, lowerBounds, upperBounds, length);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::ClearWriteBuffer___VOID(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::ClearWriteBuffer___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     return api->ClearWriteBuffer(api);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::ClearReadBuffer___VOID(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::ClearReadBuffer___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     return api->ClearReadBuffer(api);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::Acquire___VOID(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::Acquire___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     if (api != nullptr) {
@@ -394,7 +394,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return TinyCLR_Result::ArgumentNull;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::Release___VOID(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::Release___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     return api->Release(api);

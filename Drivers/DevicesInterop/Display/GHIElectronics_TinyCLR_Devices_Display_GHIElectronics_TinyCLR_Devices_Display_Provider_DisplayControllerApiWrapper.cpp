@@ -1,19 +1,19 @@
 #include "GHIElectronics_TinyCLR_Devices.h"
 #include "../GHIElectronics_TinyCLR_InteropUtil.h"
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::Enable___VOID(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::Enable___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Display_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     return api->Enable(api);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::Disable___VOID(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::Disable___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Display_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     return api->Disable(api);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::DrawBuffer___VOID__I4__I4__I4__I4__SZARRAY_U1__I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::DrawBuffer___VOID__I4__I4__I4__I4__SZARRAY_U1__I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Display_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg0, arg1, arg2, arg3, arg4, arg5;
@@ -39,7 +39,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
 
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::DrawPixel___VOID__I4__I4__I8(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::DrawPixel___VOID__I4__I4__I8(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Display_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg0, arg1, arg2;
@@ -55,7 +55,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return api->DrawPixel(api, x, y, color);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::DrawString___VOID__STRING(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::DrawString___VOID__STRING(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Display_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg0;
@@ -67,7 +67,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return api->DrawString(api, stringType.Data, stringType.Length);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::get_Interface___GHIElectronicsTinyCLRDevicesDisplayDisplayInterface(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::get_Interface___GHIElectronicsTinyCLRDevicesDisplayDisplayInterface(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Display_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Display_InterfaceType type;
@@ -87,7 +87,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return res;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::get_SupportedDataFormats___SZARRAY_GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::get_SupportedDataFormats___SZARRAY_GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Display_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Display_InterfaceType type;
@@ -127,19 +127,19 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return res;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::Acquire___VOID(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::Acquire___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Display_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     return api->Acquire(api);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::Release___VOID(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::Release___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Display_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     return api->Release(api);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::SetParallelConfiguration___VOID__I4__I4__GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat__BOOLEAN__BOOLEAN__BOOLEAN__I4__BOOLEAN__I4__I4__I4__BOOLEAN__I4__I4__I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::SetParallelConfiguration___VOID__I4__I4__GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat__BOOLEAN__BOOLEAN__BOOLEAN__I4__BOOLEAN__I4__I4__I4__BOOLEAN__I4__I4__I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Display_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Display_ParallelConfiguration config;
@@ -183,7 +183,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Dev
     return api->SetConfiguration(api, type, width, height, &config);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::SetSpiConfiguration___VOID__I4__I4__GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat__STRING(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::SetSpiConfiguration___VOID__I4__I4__GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat__STRING(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Display_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue arg0, arg1, arg2, arg3;
