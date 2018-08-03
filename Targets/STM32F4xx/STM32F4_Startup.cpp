@@ -17,73 +17,40 @@
 #include "STM32F4.h"
 #include <stdio.h>
 
-#include"../../Drivers/DevicesInterop/Adc/GHIElectronics_TinyCLR_Devices_Adc.h"
-#include"../../Drivers/DevicesInterop/Can/GHIElectronics_TinyCLR_Devices_Can.h"
-#include"../../Drivers/DevicesInterop/Dac/GHIElectronics_TinyCLR_Devices_Dac.h"
-#include"../../Drivers/DevicesInterop/Display/GHIElectronics_TinyCLR_Devices_Display.h"
-#include"../../Drivers/DevicesInterop/Gpio/GHIElectronics_TinyCLR_Devices_Gpio.h"
-#include"../../Drivers/DevicesInterop/I2c/GHIElectronics_TinyCLR_Devices_I2c.h"
-#include"../../Drivers/DevicesInterop/Pwm/GHIElectronics_TinyCLR_Devices_Pwm.h"
-#include"../../Drivers/DevicesInterop/Rtc/GHIElectronics_TinyCLR_Devices_Rtc.h"
-#include"../../Drivers/DevicesInterop/Signals/GHIElectronics_TinyCLR_Devices_Signals.h"
-#include"../../Drivers/DevicesInterop/Spi/GHIElectronics_TinyCLR_Devices_Spi.h"
-#include"../../Drivers/DevicesInterop/Storage/GHIElectronics_TinyCLR_Devices_Storage.h"
-#include"../../Drivers/DevicesInterop/Uart/GHIElectronics_TinyCLR_Devices_Uart.h"
-
 void STM32F4_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopManager) {
 #ifdef INCLUDE_ADC
     STM32F4_Adc_Reset();
-	interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices_Adc);
 #endif
 #ifdef INCLUDE_CAN
     STM32F4_Can_Reset();
-	interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices_Can);
 #endif
 #ifdef INCLUDE_DAC
     STM32F4_Dac_Reset();
-	interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices_Dac);
 #endif
 #ifdef INCLUDE_DISPLAY
     STM32F4_Display_Reset();
-	interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices_Display);
 #endif
 #ifdef INCLUDE_GPIO
     STM32F4_Gpio_Reset();
-	interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices_Gpio);
 #endif
 #ifdef INCLUDE_I2C
     STM32F4_I2c_Reset();
-	interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices_I2c);
 #endif
 #ifdef INCLUDE_PWM
     STM32F4_Pwm_Reset();
-	interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices_Pwm);
 #endif
 #ifdef INCLUDE_SD
     STM32F4_SdCard_Reset();
 #endif
 #ifdef INCLUDE_SPI
     STM32F4_Spi_Reset();
-	interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices_Spi);
 #endif
 #ifdef INCLUDE_UART
     STM32F4_Uart_Reset();
-	interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices_Uart);
 #endif
 #ifdef INCLUDE_USBCLIENT
     STM32F4_UsbDevice_Reset();
 #endif
-
-#ifdef INCLUDE_RTC
-	interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices_Rtc);
-#endif
-#ifdef INCLUDE_SIGNALS
-	interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices_Signals);
-#endif
-#ifdef INCLUDE_STORAGE
-	interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices_Storage);
-#endif
-
 }
 
 #ifndef FLASH
