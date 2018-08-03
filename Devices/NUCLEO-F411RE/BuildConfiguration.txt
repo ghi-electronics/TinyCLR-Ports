@@ -1,3 +1,2 @@
 TargetName:STM32F4xx
 OptimizeLevel:-Ofast
-AdditionalDeviceDrivers:DevicesInterop\Adc,DevicesInterop\Can,DevicesInterop\Dac,DevicesInterop\Display,DevicesInterop\Gpio,DevicesInterop\I2c,DevicesInterop\Pwm,DevicesInterop\Storage,DevicesInterop\Uart,DevicesInterop\Rtc,DevicesInterop\Signals,DevicesInterop\Spi

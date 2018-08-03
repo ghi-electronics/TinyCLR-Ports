@@ -1,4 +1,4 @@
 TargetName:LPC23xx_LPC24xx
 ImageGenParameters:0xB2C5A27D 0x1888FBFB 0x00004000 0x0007B000
 OptimizeLevel:-Ofast
-AdditionalDeviceDrivers:AT49BV322DT_Flash,DevicesInterop\Adc,DevicesInterop\Can,DevicesInterop\Dac,DevicesInterop\Display,DevicesInterop\Gpio,DevicesInterop\I2c,DevicesInterop\Pwm,DevicesInterop\Storage,DevicesInterop\Uart,DevicesInterop\Rtc,DevicesInterop\Signals,DevicesInterop\Spi
+AdditionalDeviceDrivers:AT49BV322DT_Flash
