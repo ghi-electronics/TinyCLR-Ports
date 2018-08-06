@@ -2029,8 +2029,6 @@ struct CanState {
 static const LPC17_Gpio_Pin canTxPins[] = LPC17_CAN_TX_PINS;
 static const LPC17_Gpio_Pin canRxPins[] = LPC17_CAN_RX_PINS;
 
-static const int TOTAL_CAN_CONTROLLERS = SIZEOF_ARRAY(canTxPins);
-
 static CanState canStates[TOTAL_CAN_CONTROLLERS];
 
 static TinyCLR_Can_Controller canControllers[TOTAL_CAN_CONTROLLERS];

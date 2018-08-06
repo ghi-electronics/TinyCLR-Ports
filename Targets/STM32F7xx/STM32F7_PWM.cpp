@@ -69,8 +69,6 @@ STM32F7_Gpio_Pin* STM32F7_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Controller*
 
 static const STM32F7_Gpio_Pin pwmPins[][PWM_PER_CONTROLLER] = STM32F7_PWM_PINS;
 
-static const int TOTAL_PWM_CONTROLLERS = SIZEOF_ARRAY(pwmPins);
-
 const char* PwmApiNames[] = {
 #if TOTAL_PWM_CONTROLLERS > 0
 "GHIElectronics.TinyCLR.NativeApis.STM32F7.PwmController\\0",

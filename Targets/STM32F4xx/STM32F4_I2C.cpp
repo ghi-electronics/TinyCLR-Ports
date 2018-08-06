@@ -63,11 +63,11 @@ static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];
 
 const char* i2cApiNames[] = {
 #if TOTAL_I2C_CONTROLLERS > 0
-"GHIElectronics.TinyCLR.NativeApis.STM32F4.I2cController\\0"
+"GHIElectronics.TinyCLR.NativeApis.STM32F4.I2cController\\0",
 #if TOTAL_I2C_CONTROLLERS > 1
-"GHIElectronics.TinyCLR.NativeApis.STM32F4.I2cController\\0"
+"GHIElectronics.TinyCLR.NativeApis.STM32F4.I2cController\\1",
 #if TOTAL_I2C_CONTROLLERS > 2
-"GHIElectronics.TinyCLR.NativeApis.STM32F4.I2cController\\0"
+"GHIElectronics.TinyCLR.NativeApis.STM32F4.I2cController\\2"
 #endif
 #endif
 #endif

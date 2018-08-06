@@ -57,7 +57,8 @@
 #define AT91_DEPLOYMENT_SPI_PORT 0
 #define AT91_DEPLOYMENT_SPI_ENABLE_PIN PIN(A,28)
 
-#define INCLUDE_I2C                                
+#define INCLUDE_I2C
+#define TOTAL_I2C_CONTROLLERS 1
 #define AT91_I2C_SCL_PINS { { PIN(A,24), PS(A) } }
 #define AT91_I2C_SDA_PINS { { PIN(A,23), PS(A) } }
 

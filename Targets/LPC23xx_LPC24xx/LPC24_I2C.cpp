@@ -51,7 +51,6 @@ struct I2cState {
     I2cTransaction   writeI2cTransactionAction;
 };
 
-static const int TOTAL_I2C_CONTROLLERS = SIZEOF_ARRAY(i2cSclPins);
 static I2cState i2cStates[TOTAL_I2C_CONTROLLERS];
 
 static TinyCLR_I2c_Controller i2cControllers[TOTAL_I2C_CONTROLLERS];
