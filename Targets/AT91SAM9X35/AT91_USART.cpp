@@ -16,140 +16,177 @@
 #include <algorithm>
 #include "AT91.h"
 
-static const uint32_t g_AT91_Uart_TxDefaultBuffersSize[] = AT91_UART_DEFAULT_TX_BUFFER_SIZE;
-static const uint32_t g_AT91_Uart_RxDefaultBuffersSize[] = AT91_UART_DEFAULT_RX_BUFFER_SIZE;
+static const uint32_t uartTxDefaultBuffersSize[] = AT91_UART_DEFAULT_TX_BUFFER_SIZE;
+static const uint32_t uartRxDefaultBuffersSize[] = AT91_UART_DEFAULT_RX_BUFFER_SIZE;
 
-struct AT91_Uart_Controller {
+struct UartState {
+    int32_t controllerIndex;
 
+    uint8_t *TxBuffer;
+    uint8_t *RxBuffer;
+    size_t txBufferCount;
+    size_t txBufferIn;
+    size_t txBufferOut;
+    size_t txBufferSize;
 
-    uint8_t                             *TxBuffer;
-    uint8_t                             *RxBuffer;
-    size_t                              txBufferCount;
-    size_t                              txBufferIn;
-    size_t                              txBufferOut;
-    size_t                              txBufferSize;
+    size_t rxBufferCount;
+    size_t rxBufferIn;
+    size_t rxBufferOut;
+    size_t rxBufferSize;
 
-    size_t                              rxBufferCount;
-    size_t                              rxBufferIn;
-    size_t                              rxBufferOut;
-    size_t                              rxBufferSize;
+    bool isOpened;
+    bool handshakeEnable;
 
-    bool                                isOpened;
-    bool                                handshakeEnable;
+    TinyCLR_Uart_ErrorReceivedHandler errorEventHandler;
+    TinyCLR_Uart_DataReceivedHandler dataReceivedEventHandler;
 
-    TinyCLR_Uart_ErrorReceivedHandler   errorEventHandler;
-    TinyCLR_Uart_DataReceivedHandler    dataReceivedEventHandler;
-
-    const TinyCLR_Uart_Provider*        provider;
-    int32_t        controller;
-
+    const TinyCLR_Uart_Controller* controller;
+    bool tableInitialized = false;
 };
 
-static AT91_Uart_Controller g_UartController[TOTAL_UART_CONTROLLERS];
+static UartState uartStates[TOTAL_UART_CONTROLLERS];
+static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
+static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 
-#define SET_BITS(Var,Shift,Mask,fieldsMask) {Var = setFieldValue(Var,Shift,Mask,fieldsMask);}
+const char* uartApiNames[] = {
+#if TOTAL_UART_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\0",
+#if TOTAL_UART_CONTROLLERS > 1
+"GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\1",
+#if TOTAL_UART_CONTROLLERS > 2
+"GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\2",
+#if TOTAL_UART_CONTROLLERS > 3
+"GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\3",
+#if TOTAL_UART_CONTROLLERS > 4
+"GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\4",
+#if TOTAL_UART_CONTROLLERS > 5
+"GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\5",
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+};
 
-static TinyCLR_Uart_Provider uartProviders;
-static TinyCLR_Api_Info uartApi;
+void AT91_Uart_EnsureTableInitialized() {
+    for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        if (uartStates[i].tableInitialized)
+            continue;
 
-const TinyCLR_Api_Info* AT91_Uart_GetApi() {
-    uartProviders.ApiInfo = &uartApi;
-    uartProviders.Acquire = &AT91_Uart_Acquire;
-    uartProviders.Release = &AT91_Uart_Release;
-    uartProviders.SetActiveSettings = &AT91_Uart_SetActiveSettings;
-    uartProviders.Flush = &AT91_Uart_Flush;
-    uartProviders.Read = &AT91_Uart_Read;
-    uartProviders.Write = &AT91_Uart_Write;
-    uartProviders.SetPinChangedHandler = &AT91_Uart_SetPinChangedHandler;
-    uartProviders.SetErrorReceivedHandler = &AT91_Uart_SetErrorReceivedHandler;
-    uartProviders.SetDataReceivedHandler = &AT91_Uart_SetDataReceivedHandler;
-    uartProviders.GetBreakSignalState = &AT91_Uart_GetBreakSignalState;
-    uartProviders.SetBreakSignalState = &AT91_Uart_SetBreakSignalState;
-    uartProviders.GetCarrierDetectState = &AT91_Uart_GetCarrierDetectState;
-    uartProviders.GetClearToSendState = &AT91_Uart_GetClearToSendState;
-    uartProviders.GetDataReadyState = &AT91_Uart_GetDataReadyState;
-    uartProviders.GetIsDataTerminalReadyEnabled = &AT91_Uart_GetIsDataTerminalReadyEnabled;
-    uartProviders.SetIsDataTerminalReadyEnabled = &AT91_Uart_SetIsDataTerminalReadyEnabled;
-    uartProviders.GetIsRequestToSendEnabled = &AT91_Uart_GetIsRequestToSendEnabled;
-    uartProviders.SetIsRequestToSendEnabled = &AT91_Uart_SetIsRequestToSendEnabled;
-    uartProviders.GetReadBufferSize = &AT91_Uart_GetReadBufferSize;
-    uartProviders.SetReadBufferSize = &AT91_Uart_SetReadBufferSize;
-    uartProviders.GetWriteBufferSize = &AT91_Uart_GetWriteBufferSize;
-    uartProviders.SetWriteBufferSize = &AT91_Uart_SetWriteBufferSize;
-    uartProviders.GetUnreadCount = &AT91_Uart_GetUnreadCount;
-    uartProviders.GetUnwrittenCount = &AT91_Uart_GetUnwrittenCount;
-    uartProviders.ClearReadBuffer = &AT91_Uart_ClearReadBuffer;
-    uartProviders.ClearWriteBuffer = &AT91_Uart_ClearWriteBuffer;
-    uartProviders.GetControllerCount = &AT91_Uart_GetControllerCount;
+        uartControllers[i].ApiInfo = &uartApi[i];
+        uartControllers[i].Acquire = &AT91_Uart_Acquire;
+        uartControllers[i].Release = &AT91_Uart_Release;
+        uartControllers[i].Enable = &AT91_Uart_Enable;
+        uartControllers[i].Disable = &AT91_Uart_Disable;
+        uartControllers[i].SetActiveSettings = &AT91_Uart_SetActiveSettings;
+        uartControllers[i].Flush = &AT91_Uart_Flush;
+        uartControllers[i].Read = &AT91_Uart_Read;
+        uartControllers[i].Write = &AT91_Uart_Write;
+        uartControllers[i].SetErrorReceivedHandler = &AT91_Uart_SetErrorReceivedHandler;
+        uartControllers[i].SetDataReceivedHandler = &AT91_Uart_SetDataReceivedHandler;
+        uartControllers[i].GetClearToSendState = &AT91_Uart_GetClearToSendState;
+        uartControllers[i].SetClearToSendChangedHandler = &AT91_Uart_SetClearToSendChangedHandler;
+        uartControllers[i].GetIsRequestToSendEnabled = &AT91_Uart_GetIsRequestToSendEnabled;
+        uartControllers[i].SetIsRequestToSendEnabled = &AT91_Uart_SetIsRequestToSendEnabled;
+        uartControllers[i].GetReadBufferSize = &AT91_Uart_GetReadBufferSize;
+        uartControllers[i].SetReadBufferSize = &AT91_Uart_SetReadBufferSize;
+        uartControllers[i].GetWriteBufferSize = &AT91_Uart_GetWriteBufferSize;
+        uartControllers[i].SetWriteBufferSize = &AT91_Uart_SetWriteBufferSize;
+        uartControllers[i].GetBytesToRead = &AT91_Uart_GetBytesToRead;
+        uartControllers[i].GetBytesToWrite = &AT91_Uart_GetBytesToWrite;
+        uartControllers[i].ClearReadBuffer = &AT91_Uart_ClearReadBuffer;
+        uartControllers[i].ClearWriteBuffer = &AT91_Uart_ClearWriteBuffer;
 
-    uartApi.Author = "GHI Electronics, LLC";
-    uartApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.UartProvider";
-    uartApi.Type = TinyCLR_Api_Type::UartProvider;
-    uartApi.Version = 0;
-    uartApi.Implementation = &uartProviders;
+        uartApi[i].Author = "GHI Electronics, LLC";
+        uartApi[i].Name = uartApiNames[i];
+        uartApi[i].Type = TinyCLR_Api_Type::UartController;
+        uartApi[i].Version = 0;
+        uartApi[i].Implementation = &uartControllers[i];
+        uartApi[i].State = &uartStates[i];
 
-    return &uartApi;
+        uartStates[i].controllerIndex = i;
+        uartStates[i].tableInitialized = true;
+    }
 }
 
-static const AT91_Gpio_Pin g_at91_uart_tx_pins[] = AT91_UART_TX_PINS;
-static const AT91_Gpio_Pin g_at91_uart_rx_pins[] = AT91_UART_RX_PINS;
-static const AT91_Gpio_Pin g_at91_uart_rts_pins[] = AT91_UART_RTS_PINS;
-static const AT91_Gpio_Pin g_at91_uart_cts_pins[] = AT91_UART_CTS_PINS;
+const TinyCLR_Api_Info* AT91_Uart_GetRequiredApi() {
+    AT91_Uart_EnsureTableInitialized();
 
-int32_t AT91_Uart_GetTxPin(int32_t controller) {
-    return g_at91_uart_tx_pins[controller].number;
+    return &uartApi[0];
 }
 
-int32_t AT91_Uart_GetRxPin(int32_t controller) {
-    return g_at91_uart_rx_pins[controller].number;
+void AT91_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    AT91_Uart_EnsureTableInitialized();
+
+    for (int32_t i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &uartApi[i]);
+    }
 }
 
-int32_t AT91_Uart_GetRtsPin(int32_t controller) {
-    return g_at91_uart_rts_pins[controller].number;
+static const AT91_Gpio_Pin uartTxPins[] = AT91_UART_TX_PINS;
+static const AT91_Gpio_Pin uartRxPins[] = AT91_UART_RX_PINS;
+static const AT91_Gpio_Pin uartRtsPins[] = AT91_UART_RTS_PINS;
+static const AT91_Gpio_Pin uartCtsPins[] = AT91_UART_CTS_PINS;
+
+int32_t AT91_Uart_GetTxPin(int32_t controllerIndex) {
+    return uartTxPins[controllerIndex].number;
 }
 
-int32_t AT91_Uart_GetCtsPin(int32_t controller) {
-    return g_at91_uart_cts_pins[controller].number;
+int32_t AT91_Uart_GetRxPin(int32_t controllerIndex) {
+    return uartRxPins[controllerIndex].number;
 }
 
-AT91_Gpio_PeripheralSelection AT91_Uart_GetTxAlternateFunction(int32_t controller) {
-    return g_at91_uart_tx_pins[controller].peripheralSelection;
+int32_t AT91_Uart_GetRtsPin(int32_t controllerIndex) {
+    return uartRtsPins[controllerIndex].number;
 }
 
-AT91_Gpio_PeripheralSelection AT91_Uart_GetRxAlternateFunction(int32_t controller) {
-    return g_at91_uart_rx_pins[controller].peripheralSelection;
+int32_t AT91_Uart_GetCtsPin(int32_t controllerIndex) {
+    return uartCtsPins[controllerIndex].number;
 }
 
-AT91_Gpio_PeripheralSelection AT91_Uart_GetRtsAlternateFunction(int32_t controller) {
-    return g_at91_uart_rts_pins[controller].peripheralSelection;
+AT91_Gpio_PeripheralSelection AT91_Uart_GetTxAlternateFunction(int32_t controllerIndex) {
+    return uartTxPins[controllerIndex].peripheralSelection;
 }
 
-AT91_Gpio_PeripheralSelection AT91_Uart_GetCtsAlternateFunction(int32_t controller) {
-    return g_at91_uart_cts_pins[controller].peripheralSelection;
+AT91_Gpio_PeripheralSelection AT91_Uart_GetRxAlternateFunction(int32_t controllerIndex) {
+    return uartRxPins[controllerIndex].peripheralSelection;
 }
 
-TinyCLR_Result AT91_Uart_GetReadBufferSize(const TinyCLR_Uart_Provider* self, int32_t controller, size_t& size) {
-    size = g_UartController[controller].rxBufferSize == 0 ? g_AT91_Uart_RxDefaultBuffersSize[controller] : g_UartController[controller].rxBufferSize;
-
-    return TinyCLR_Result::Success;
+AT91_Gpio_PeripheralSelection AT91_Uart_GetRtsAlternateFunction(int32_t controllerIndex) {
+    return uartRtsPins[controllerIndex].peripheralSelection;
 }
 
-TinyCLR_Result AT91_Uart_SetReadBufferSize(const TinyCLR_Uart_Provider* self, int32_t controller, size_t size) {
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+AT91_Gpio_PeripheralSelection AT91_Uart_GetCtsAlternateFunction(int32_t controllerIndex) {
+    return uartCtsPins[controllerIndex].peripheralSelection;
+}
+
+size_t AT91_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+
+    auto controllerIndex = state->controllerIndex;
+
+    return state->rxBufferSize == 0 ? uartRxDefaultBuffersSize[controllerIndex] : state->rxBufferSize;
+}
+
+TinyCLR_Result AT91_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
 
-    if (g_UartController[controller].rxBufferSize) {
-        memoryProvider->Free(memoryProvider, g_UartController[controller].RxBuffer);
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+
+    if (state->rxBufferSize) {
+        memoryProvider->Free(memoryProvider, state->RxBuffer);
     }
 
-    g_UartController[controller].rxBufferSize = size;
+    state->rxBufferSize = size;
 
-    g_UartController[controller].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
+    state->RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
 
-    if (g_UartController[controller].RxBuffer == nullptr) {
-        g_UartController[controller].rxBufferSize = 0;
+    if (state->RxBuffer == nullptr) {
+        state->rxBufferSize = 0;
 
         return TinyCLR_Result::OutOfMemory;
     }
@@ -157,28 +194,32 @@ TinyCLR_Result AT91_Uart_SetReadBufferSize(const TinyCLR_Uart_Provider* self, in
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Uart_GetWriteBufferSize(const TinyCLR_Uart_Provider* self, int32_t controller, size_t& size) {
-    size = g_UartController[controller].txBufferSize == 0 ? g_AT91_Uart_TxDefaultBuffersSize[controller] : g_UartController[controller].txBufferSize;
+size_t AT91_Uart_GetWriteBufferSize(const TinyCLR_Uart_Controller* self) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    return TinyCLR_Result::Success;
+    auto controllerIndex = state->controllerIndex;
+
+    return state->txBufferSize == 0 ? uartTxDefaultBuffersSize[controllerIndex] : state->txBufferSize;
 }
 
-TinyCLR_Result AT91_Uart_SetWriteBufferSize(const TinyCLR_Uart_Provider* self, int32_t controller, size_t size) {
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+TinyCLR_Result AT91_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
 
-    if (g_UartController[controller].txBufferSize) {
-        memoryProvider->Free(memoryProvider, g_UartController[controller].TxBuffer);
+    if (state->txBufferSize) {
+        memoryProvider->Free(memoryProvider, state->TxBuffer);
     }
 
-    g_UartController[controller].txBufferSize = size;
+    state->txBufferSize = size;
 
-    g_UartController[controller].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
+    state->TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
 
-    if (g_UartController[controller].TxBuffer == nullptr) {
-        g_UartController[controller].txBufferSize = 0;
+    if (state->TxBuffer == nullptr) {
+        state->txBufferSize = 0;
 
         return TinyCLR_Result::OutOfMemory;
     }
@@ -186,22 +227,24 @@ TinyCLR_Result AT91_Uart_SetWriteBufferSize(const TinyCLR_Uart_Provider* self, i
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Uart_PinConfiguration(int controller, bool enable) {
+TinyCLR_Result AT91_Uart_PinConfiguration(int controllerIndex, bool enable) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    uint32_t txPin = AT91_Uart_GetTxPin(controller);
-    uint32_t rxPin = AT91_Uart_GetRxPin(controller);
-    uint32_t ctsPin = AT91_Uart_GetCtsPin(controller);
-    uint32_t rtsPin = AT91_Uart_GetRtsPin(controller);
+    auto state = &uartStates[controllerIndex];
 
-    AT91_Gpio_PeripheralSelection txPinMode = AT91_Uart_GetTxAlternateFunction(controller);
-    AT91_Gpio_PeripheralSelection rxPinMode = AT91_Uart_GetRxAlternateFunction(controller);
-    AT91_Gpio_PeripheralSelection ctsPinMode = AT91_Uart_GetCtsAlternateFunction(controller);
-    AT91_Gpio_PeripheralSelection rtsPinMode = AT91_Uart_GetRtsAlternateFunction(controller);
+    uint32_t txPin = AT91_Uart_GetTxPin(controllerIndex);
+    uint32_t rxPin = AT91_Uart_GetRxPin(controllerIndex);
+    uint32_t ctsPin = AT91_Uart_GetCtsPin(controllerIndex);
+    uint32_t rtsPin = AT91_Uart_GetRtsPin(controllerIndex);
 
-    AT91_Uart_TxBufferEmptyInterruptEnable(controller, enable);
+    AT91_Gpio_PeripheralSelection txPinMode = AT91_Uart_GetTxAlternateFunction(controllerIndex);
+    AT91_Gpio_PeripheralSelection rxPinMode = AT91_Uart_GetRxAlternateFunction(controllerIndex);
+    AT91_Gpio_PeripheralSelection ctsPinMode = AT91_Uart_GetCtsAlternateFunction(controllerIndex);
+    AT91_Gpio_PeripheralSelection rtsPinMode = AT91_Uart_GetRtsAlternateFunction(controllerIndex);
 
-    AT91_Uart_RxBufferFullInterruptEnable(controller, enable);
+    AT91_Uart_TxBufferEmptyInterruptEnable(controllerIndex, enable);
+
+    AT91_Uart_RxBufferFullInterruptEnable(controllerIndex, enable);
 
     if (enable) {
         // Connect pin to UART
@@ -209,7 +252,7 @@ TinyCLR_Result AT91_Uart_PinConfiguration(int controller, bool enable) {
         // Connect pin to UART
         AT91_Gpio_ConfigurePin(rxPin, AT91_Gpio_Direction::Input, rxPinMode, AT91_Gpio_ResistorMode::Inactive);
 
-        if (g_UartController[controller].handshakeEnable) {
+        if (state->handshakeEnable) {
             if (ctsPin == PIN_NONE || rtsPin == PIN_NONE)
                 return TinyCLR_Result::NotSupported;
 
@@ -223,7 +266,7 @@ TinyCLR_Result AT91_Uart_PinConfiguration(int controller, bool enable) {
         // Connect pin to UART
         AT91_Gpio_ConfigurePin(rxPin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::Inactive);
 
-        if (g_UartController[controller].handshakeEnable) {
+        if (state->handshakeEnable) {
             AT91_Gpio_ConfigurePin(ctsPin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::Inactive);
             AT91_Gpio_ConfigurePin(rtsPin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::Inactive);
         }
@@ -232,59 +275,66 @@ TinyCLR_Result AT91_Uart_PinConfiguration(int controller, bool enable) {
     return TinyCLR_Result::Success;
 }
 
-void AT91_Uart_SetErrorEvent(int32_t controller, TinyCLR_Uart_Error error) {
-    if (g_UartController[controller].errorEventHandler != nullptr)
-        g_UartController[controller].errorEventHandler(g_UartController[controller].provider, controller, error);
+void AT91_Uart_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error) {
+
+    auto state = &uartStates[controllerIndex];
+
+    if (state->errorEventHandler != nullptr)
+        state->errorEventHandler(state->controller, error);
 }
 
-void AT91_Uart_ReceiveData(int32_t controller, uint32_t sr) {
-    AT91_USART &usart = AT91::USART(controller);
+void AT91_Uart_ReceiveData(int32_t controllerIndex, uint32_t sr) {
+    AT91_USART &usart = AT91::USART(controllerIndex);
 
     uint8_t rxdata = usart.US_RHR;
 
-    if (g_UartController[controller].rxBufferCount == g_UartController[controller].rxBufferSize) {
-        AT91_Uart_SetErrorEvent(controller, TinyCLR_Uart_Error::ReceiveFull);
+    auto state = &uartStates[controllerIndex];
+
+    if (state->rxBufferCount == state->rxBufferSize) {
+        AT91_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferFull);
 
         return;
     }
 
-    g_UartController[controller].RxBuffer[g_UartController[controller].rxBufferIn++] = rxdata;
+    state->RxBuffer[state->rxBufferIn++] = rxdata;
 
-    g_UartController[controller].rxBufferCount++;
+    state->rxBufferCount++;
 
-    if (g_UartController[controller].rxBufferIn == g_UartController[controller].rxBufferSize)
-        g_UartController[controller].rxBufferIn = 0;
+    if (state->rxBufferIn == state->rxBufferSize)
+        state->rxBufferIn = 0;
 
-    if (g_UartController[controller].dataReceivedEventHandler != nullptr)
-        g_UartController[controller].dataReceivedEventHandler(g_UartController[controller].provider, controller, 1);
+    if (state->dataReceivedEventHandler != nullptr)
+        state->dataReceivedEventHandler(state->controller, 1);
 
     if (sr & AT91_USART::US_OVRE)
-        AT91_Uart_SetErrorEvent(controller, TinyCLR_Uart_Error::BufferOverrun);
+        AT91_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
 
     if (sr & AT91_USART::US_FRAME)
-        AT91_Uart_SetErrorEvent(controller, TinyCLR_Uart_Error::Frame);
+        AT91_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
 
     if (sr & AT91_USART::US_PARE)
-        AT91_Uart_SetErrorEvent(controller, TinyCLR_Uart_Error::ReceiveParity);
+        AT91_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveParity);
 
 }
 
-void AT91_Uart_TransmitData(int32_t controller) {
-    AT91_USART &usart = AT91::USART(controller);
+void AT91_Uart_TransmitData(int32_t controllerIndex) {
+    AT91_USART &usart = AT91::USART(controllerIndex);
 
-    if (g_UartController[controller].txBufferCount > 0) {
-        uint8_t txdata = g_UartController[controller].TxBuffer[g_UartController[controller].txBufferOut++];
+    auto state = &uartStates[controllerIndex];
 
-        g_UartController[controller].txBufferCount--;
+    if (state->txBufferCount > 0) {
+        uint8_t txdata = state->TxBuffer[state->txBufferOut++];
 
-        if (g_UartController[controller].txBufferOut == g_UartController[controller].txBufferSize)
-            g_UartController[controller].txBufferOut = 0;
+        state->txBufferCount--;
+
+        if (state->txBufferOut == state->txBufferSize)
+            state->txBufferOut = 0;
 
         usart.US_THR = txdata; // write TX data
 
     }
     else {
-        AT91_Uart_TxBufferEmptyInterruptEnable(controller, false); // Disable interrupt when no more data to send.
+        AT91_Uart_TxBufferEmptyInterruptEnable(controllerIndex, false); // Disable interrupt when no more data to send.
     }
 
 }
@@ -293,77 +343,80 @@ void AT91_Uart_InterruptHandler(void *param) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    uint32_t controller = *reinterpret_cast<uint32_t*>(param);
+    uint32_t controllerIndex = *reinterpret_cast<uint32_t*>(param);
 
-    AT91_USART &usart = AT91::USART(controller);
+    AT91_USART &usart = AT91::USART(controllerIndex);
 
     uint32_t status = usart.US_CSR;
 
     if (status & AT91_USART::US_RXRDY) {
-        AT91_Uart_ReceiveData(controller, status);
+        AT91_Uart_ReceiveData(controllerIndex, status);
     }
 
     if (status & AT91_USART::US_TXRDY) {
-        AT91_Uart_TransmitData(controller);
+        AT91_Uart_TransmitData(controllerIndex);
     }
 
 }
-int32_t AT91_Uart_GetPeripheralId(int32_t controller) {
+int32_t AT91_Uart_GetPeripheralId(int32_t controllerIndex) {
     int32_t usartId;
 
-    if (controller == 0) {
+    if (controllerIndex == 0) {
         usartId = (AT91C_ID_SYS);
     }
-    else if ((controller > 0) && (controller < 4)) {
-        usartId = (AT91C_ID_USART0 + (controller - 1));
+    else if ((controllerIndex > 0) && (controllerIndex < 4)) {
+        usartId = (AT91C_ID_USART0 + (controllerIndex - 1));
     }
     else {
-        usartId = (AT91C_ID_UART0 + (controller - 4));
+        usartId = (AT91C_ID_UART0 + (controllerIndex - 4));
     }
 
     return usartId;
 }
 
-TinyCLR_Result AT91_Uart_Acquire(const TinyCLR_Uart_Provider* self, int32_t controller) {
-
-
-    if (controller >= TOTAL_UART_CONTROLLERS)
-        return TinyCLR_Result::ArgumentInvalid;
-
+TinyCLR_Result AT91_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    int32_t txPin = AT91_Uart_GetTxPin(controller);
-    int32_t rxPin = AT91_Uart_GetRxPin(controller);
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    if (g_UartController[controller].isOpened || !AT91_Gpio_OpenPin(txPin) || !AT91_Gpio_OpenPin(rxPin))
+    auto controllerIndex = state->controllerIndex;
+
+    int32_t txPin = AT91_Uart_GetTxPin(controllerIndex);
+    int32_t rxPin = AT91_Uart_GetRxPin(controllerIndex);
+
+    if (state->isOpened || !AT91_Gpio_OpenPin(txPin) || !AT91_Gpio_OpenPin(rxPin))
         return TinyCLR_Result::SharingViolation;
 
-    g_UartController[controller].txBufferCount = 0;
-    g_UartController[controller].txBufferIn = 0;
-    g_UartController[controller].txBufferOut = 0;
+    state->txBufferCount = 0;
+    state->txBufferIn = 0;
+    state->txBufferOut = 0;
 
-    g_UartController[controller].rxBufferCount = 0;
-    g_UartController[controller].rxBufferIn = 0;
-    g_UartController[controller].rxBufferOut = 0;
+    state->rxBufferCount = 0;
+    state->rxBufferIn = 0;
+    state->rxBufferOut = 0;
 
-    g_UartController[controller].provider = self;
+    state->controller = self;
 
     AT91_PMC &pmc = AT91::PMC();
 
-    int32_t uartId = AT91_Uart_GetPeripheralId(controller);
+    int32_t uartId = AT91_Uart_GetPeripheralId(controllerIndex);
 
     pmc.EnablePeriphClock(uartId);
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, int32_t controller, uint32_t baudRate, uint32_t dataBits, TinyCLR_Uart_Parity parity, TinyCLR_Uart_StopBitCount stopBits, TinyCLR_Uart_Handshake handshaking) {
+TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self, uint32_t baudRate, uint32_t dataBits, TinyCLR_Uart_Parity parity, TinyCLR_Uart_StopBitCount stopBits, TinyCLR_Uart_Handshake handshaking) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    int32_t uartId = AT91_Uart_GetPeripheralId(controller);
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    AT91_USART &usart = AT91::USART(controller);
+    auto controllerIndex = state->controllerIndex;
+
+    int32_t uartId = AT91_Uart_GetPeripheralId(controllerIndex);
+
+    AT91_USART &usart = AT91::USART(controllerIndex);
 
     // Disable interrupts
     usart.US_IDR = 0xFFFFFFFF;
@@ -391,10 +444,10 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, in
     // Write the Timeguard Register
     usart.US_TTGR = 0;
 
-    g_UartController[controller].controller = controller;
-    AT91_Interrupt_Activate(uartId, (uint32_t*)&AT91_Uart_InterruptHandler, (void*)&g_UartController[controller].controller);
+    state->controllerIndex = controllerIndex;
+    AT91_Interrupt_Activate(uartId, (uint32_t*)&AT91_Uart_InterruptHandler, (void*)&state->controllerIndex);
 
-    if (AT91_Uart_PinConfiguration(controller, true) == TinyCLR_Result::NotSupported)
+    if (AT91_Uart_PinConfiguration(controllerIndex, true) == TinyCLR_Result::NotSupported)
         return TinyCLR_Result::NotSupported;
 
     // Enable Transmitter
@@ -453,27 +506,27 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, in
         return TinyCLR_Result::NotSupported;
     }
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    if (g_UartController[controller].txBufferSize == 0) {
-        g_UartController[controller].txBufferSize = g_AT91_Uart_TxDefaultBuffersSize[controller];
+    if (state->txBufferSize == 0) {
+        state->txBufferSize = uartTxDefaultBuffersSize[controllerIndex];
 
-        g_UartController[controller].TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_UartController[controller].txBufferSize);
+        state->TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, state->txBufferSize);
 
-        if (g_UartController[controller].TxBuffer == nullptr) {
-            g_UartController[controller].txBufferSize = 0;
+        if (state->TxBuffer == nullptr) {
+            state->txBufferSize = 0;
 
             return TinyCLR_Result::OutOfMemory;
         }
     }
 
-    if (g_UartController[controller].rxBufferSize == 0) {
-        g_UartController[controller].rxBufferSize = g_AT91_Uart_RxDefaultBuffersSize[controller];
+    if (state->rxBufferSize == 0) {
+        state->rxBufferSize = uartRxDefaultBuffersSize[controllerIndex];
 
-        g_UartController[controller].RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, g_UartController[controller].rxBufferSize);
+        state->RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, state->rxBufferSize);
 
-        if (g_UartController[controller].RxBuffer == nullptr) {
-            g_UartController[controller].rxBufferSize = 0;
+        if (state->RxBuffer == nullptr) {
+            state->rxBufferSize = 0;
 
             return TinyCLR_Result::OutOfMemory;
         }
@@ -484,59 +537,63 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Provider* self, in
     usart.US_CR = AT91_USART::US_RXEN;
     usart.US_CR = AT91_USART::US_TXEN;
 
-    g_UartController[controller].isOpened = true;
+    state->isOpened = true;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Uart_Release(const TinyCLR_Uart_Provider* self, int32_t controller) {
+TinyCLR_Result AT91_Uart_Release(const TinyCLR_Uart_Controller* self) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    g_UartController[controller].txBufferCount = 0;
-    g_UartController[controller].txBufferIn = 0;
-    g_UartController[controller].txBufferOut = 0;
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    g_UartController[controller].rxBufferCount = 0;
-    g_UartController[controller].rxBufferIn = 0;
-    g_UartController[controller].rxBufferOut = 0;
+    auto controllerIndex = state->controllerIndex;
 
-    g_UartController[controller].isOpened = false;
-    g_UartController[controller].handshakeEnable = false;
+    state->txBufferCount = 0;
+    state->txBufferIn = 0;
+    state->txBufferOut = 0;
+
+    state->rxBufferCount = 0;
+    state->rxBufferIn = 0;
+    state->rxBufferOut = 0;
+
+    state->isOpened = false;
+    state->handshakeEnable = false;
 
     AT91_PMC &pmc = AT91::PMC();
 
-    int32_t uartId = AT91_Uart_GetPeripheralId(controller);
+    int32_t uartId = AT91_Uart_GetPeripheralId(controllerIndex);
 
     AT91_Interrupt_Disable(uartId);
 
-    if (g_UartController[controller].isOpened)
-        AT91_Uart_PinConfiguration(controller, false);
+    if (state->isOpened)
+        AT91_Uart_PinConfiguration(controllerIndex, false);
 
     pmc.DisablePeriphClock(uartId);
 
-    if (apiProvider != nullptr) {
-        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    if (apiManager != nullptr) {
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-        if (g_UartController[controller].txBufferSize != 0) {
-            memoryProvider->Free(memoryProvider, g_UartController[controller].TxBuffer);
+        if (state->txBufferSize != 0) {
+            memoryProvider->Free(memoryProvider, state->TxBuffer);
 
-            g_UartController[controller].txBufferSize = 0;
+            state->txBufferSize = 0;
         }
 
-        if (g_UartController[controller].rxBufferSize != 0) {
-            memoryProvider->Free(memoryProvider, g_UartController[controller].RxBuffer);
+        if (state->rxBufferSize != 0) {
+            memoryProvider->Free(memoryProvider, state->RxBuffer);
 
-            g_UartController[controller].rxBufferSize = 0;
+            state->rxBufferSize = 0;
         }
     }
 
     return TinyCLR_Result::Success;
 }
 
-void AT91_Uart_TxBufferEmptyInterruptEnable(int controller, bool enable) {
+void AT91_Uart_TxBufferEmptyInterruptEnable(int controllerIndex, bool enable) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    AT91_USART &usart = AT91::USART(controller);
+    AT91_USART &usart = AT91::USART(controllerIndex);
 
     if (enable) {
         usart.US_IER = AT91_USART::US_TXRDY;
@@ -546,10 +603,10 @@ void AT91_Uart_TxBufferEmptyInterruptEnable(int controller, bool enable) {
     }
 }
 
-void AT91_Uart_RxBufferFullInterruptEnable(int controller, bool enable) {
+void AT91_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    AT91_USART &usart = AT91::USART(controller);
+    AT91_USART &usart = AT91::USART(controllerIndex);
 
     if (enable) {
         usart.US_IER = AT91_USART::US_RXRDY;
@@ -559,190 +616,180 @@ void AT91_Uart_RxBufferFullInterruptEnable(int controller, bool enable) {
     }
 }
 
-bool AT91_Uart_TxHandshakeEnabledState(int controller) {
+bool AT91_Uart_TxHandshakeEnabledState(int controllerIndex) {
     return true; // If this handshake input is not being used, it is assumed to be good
 }
 
-TinyCLR_Result AT91_Uart_Flush(const TinyCLR_Uart_Provider* self, int32_t controller) {
+TinyCLR_Result AT91_Uart_Flush(const TinyCLR_Uart_Controller* self) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
+    auto controllerIndex = state->controllerIndex;
 
-    if (g_UartController[controller].isOpened == false)
+    if (state->isOpened == false)
         return TinyCLR_Result::NotAvailable;
 
     // Make sute interrupt is enable
-    AT91_Uart_TxBufferEmptyInterruptEnable(controller, true);
+    AT91_Uart_TxBufferEmptyInterruptEnable(controllerIndex, true);
 
-    while (g_UartController[controller].txBufferCount > 0) {
+    while (state->txBufferCount > 0) {
         AT91_Time_Delay(nullptr, 1);
     }
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Uart_Read(const TinyCLR_Uart_Provider* self, int32_t controller, uint8_t* buffer, size_t& length) {
+TinyCLR_Result AT91_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* buffer, size_t& length) {
 
     size_t i = 0;;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (g_UartController[controller].isOpened == false || g_UartController[controller].rxBufferSize == 0) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+
+    if (state->isOpened == false || state->rxBufferSize == 0) {
         length = 0;
 
         return TinyCLR_Result::NotAvailable;
     }
 
-    length = std::min(g_UartController[controller].rxBufferCount, length);
+    length = std::min(state->rxBufferCount, length);
 
     while (i < length) {
-        buffer[i] = g_UartController[controller].RxBuffer[g_UartController[controller].rxBufferOut];
+        buffer[i] = state->RxBuffer[state->rxBufferOut];
 
-        g_UartController[controller].rxBufferOut++;
+        state->rxBufferOut++;
         i++;
-        g_UartController[controller].rxBufferCount--;
+        state->rxBufferCount--;
 
-        if (g_UartController[controller].rxBufferOut == g_UartController[controller].rxBufferSize)
-            g_UartController[controller].rxBufferOut = 0;
+        if (state->rxBufferOut == state->rxBufferSize)
+            state->rxBufferOut = 0;
     }
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Uart_Write(const TinyCLR_Uart_Provider* self, int32_t controller, const uint8_t* buffer, size_t& length) {
+TinyCLR_Result AT91_Uart_Write(const TinyCLR_Uart_Controller* self, const uint8_t* buffer, size_t& length) {
 
     int32_t i = 0;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (g_UartController[controller].isOpened == false || g_UartController[controller].txBufferSize == 0) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+
+    auto controllerIndex = state->controllerIndex;
+
+    if (state->isOpened == false || state->txBufferSize == 0) {
         length = 0;
 
         return TinyCLR_Result::NotAvailable;
     }
 
-    if (g_UartController[controller].txBufferCount == g_UartController[controller].txBufferSize) {
-        AT91_Uart_SetErrorEvent(controller, TinyCLR_Uart_Error::TransmitFull);
+    if (state->txBufferCount == state->txBufferSize) {
+        AT91_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferFull);
 
         return TinyCLR_Result::Busy;
     }
 
-    length = std::min(g_UartController[controller].txBufferSize - g_UartController[controller].txBufferCount, length);
+    length = std::min(state->txBufferSize - state->txBufferCount, length);
 
 
     while (i < length) {
 
-        g_UartController[controller].TxBuffer[g_UartController[controller].txBufferIn] = buffer[i];
+        state->TxBuffer[state->txBufferIn] = buffer[i];
 
-        g_UartController[controller].txBufferCount++;
+        state->txBufferCount++;
 
         i++;
 
-        g_UartController[controller].txBufferIn++;
+        state->txBufferIn++;
 
-        if (g_UartController[controller].txBufferIn == g_UartController[controller].txBufferSize)
-            g_UartController[controller].txBufferIn = 0;
+        if (state->txBufferIn == state->txBufferSize)
+            state->txBufferIn = 0;
     }
 
     if (length > 0) {
-        AT91_Uart_TxBufferEmptyInterruptEnable(controller, true); // Enable Tx to start transfer
+        AT91_Uart_TxBufferEmptyInterruptEnable(controllerIndex, true); // Enable Tx to start transfer
     }
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Uart_SetPinChangedHandler(const TinyCLR_Uart_Provider* self, int32_t controller, TinyCLR_Uart_PinChangedHandler handler) {
-    //TODO
-    return TinyCLR_Result::Success;
-}
-TinyCLR_Result AT91_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Provider* self, int32_t controller, TinyCLR_Uart_ErrorReceivedHandler handler) {
+TinyCLR_Result AT91_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ErrorReceivedHandler handler) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-
-    g_UartController[controller].errorEventHandler = handler;
+    state->errorEventHandler = handler;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Provider* self, int32_t controller, TinyCLR_Uart_DataReceivedHandler handler) {
+TinyCLR_Result AT91_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_DataReceivedHandler handler) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-
-    g_UartController[controller].dataReceivedEventHandler = handler;
-
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result AT91_Uart_GetBreakSignalState(const TinyCLR_Uart_Provider* self, int32_t controller, bool& state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result AT91_Uart_SetBreakSignalState(const TinyCLR_Uart_Provider* self, int32_t controller, bool state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result AT91_Uart_GetCarrierDetectState(const TinyCLR_Uart_Provider* self, int32_t controller, bool& state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result AT91_Uart_GetClearToSendState(const TinyCLR_Uart_Provider* self, int32_t controller, bool& state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result AT91_Uart_GetDataReadyState(const TinyCLR_Uart_Provider* self, int32_t controller, bool& state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result AT91_Uart_GetIsDataTerminalReadyEnabled(const TinyCLR_Uart_Provider* self, int32_t controller, bool& state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result AT91_Uart_SetIsDataTerminalReadyEnabled(const TinyCLR_Uart_Provider* self, int32_t controller, bool state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result AT91_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Provider* self, int32_t controller, bool& state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result AT91_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Provider* self, int32_t controller, bool state) {
-    return TinyCLR_Result::NotImplemented;
-}
-
-TinyCLR_Result AT91_Uart_GetUnreadCount(const TinyCLR_Uart_Provider* self, int32_t controller, size_t& count) {
-    count = g_UartController[controller].rxBufferCount;
+    state->dataReceivedEventHandler = handler;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Uart_GetUnwrittenCount(const TinyCLR_Uart_Provider* self, int32_t controller, size_t& count) {
-    count = g_UartController[controller].txBufferCount;
+TinyCLR_Result AT91_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* self, bool& state) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result AT91_Uart_SetClearToSendChangedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ClearToSendChangedHandler handler) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result AT91_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool& state) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result AT91_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool state) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+size_t AT91_Uart_GetBytesToRead(const TinyCLR_Uart_Controller* self) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+
+    return state->rxBufferCount;
+}
+
+size_t AT91_Uart_GetBytesToWrite(const TinyCLR_Uart_Controller* self) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+
+    return state->txBufferCount;
+}
+
+TinyCLR_Result AT91_Uart_ClearReadBuffer(const TinyCLR_Uart_Controller* self) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+
+    state->rxBufferCount = state->rxBufferIn = state->rxBufferOut = 0;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Uart_ClearReadBuffer(const TinyCLR_Uart_Provider* self, int32_t controller) {
-    g_UartController[controller].rxBufferCount = g_UartController[controller].rxBufferIn = g_UartController[controller].rxBufferOut = 0;
+TinyCLR_Result AT91_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result AT91_Uart_ClearWriteBuffer(const TinyCLR_Uart_Provider* self, int32_t controller) {
-    g_UartController[controller].txBufferCount = g_UartController[controller].txBufferIn = g_UartController[controller].txBufferOut = 0;
+    state->txBufferCount = state->txBufferIn = state->txBufferOut = 0;
 
     return TinyCLR_Result::Success;
 }
 
 void AT91_Uart_Reset() {
     for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
-        g_UartController[i].txBufferSize = 0;
-        g_UartController[i].rxBufferSize = 0;
+        uartStates[i].txBufferSize = 0;
+        uartStates[i].rxBufferSize = 0;
 
-        AT91_Uart_Release(&uartProviders, i);
+        AT91_Uart_Release(&uartControllers[i]);
 
-        g_UartController[i].isOpened = false;
+        uartStates[i].isOpened = false;
+        uartStates[i].tableInitialized = false;
     }
 }
 
-TinyCLR_Result AT91_Uart_GetControllerCount(const TinyCLR_Uart_Provider* self, int32_t& count) {
-    count = TOTAL_UART_CONTROLLERS;
-
+TinyCLR_Result AT91_Uart_Enable(const TinyCLR_Uart_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
+TinyCLR_Result AT91_Uart_Disable(const TinyCLR_Uart_Controller* self) {
+    return TinyCLR_Result::Success;
+}

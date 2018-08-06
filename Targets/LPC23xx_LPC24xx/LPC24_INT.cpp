@@ -115,33 +115,68 @@ void LPC24_Interrupt_StubIrqVector(void* Param) {
 
 }
 
+#define TOTAL_INTERRUPT_CONTROLLERS 1
+
 TinyCLR_Interrupt_StartStopHandler LPC24_Interrupt_Started;
 TinyCLR_Interrupt_StartStopHandler LPC24_Interrupt_Ended;
 
-static TinyCLR_Interrupt_Provider interruptProvider;
-static TinyCLR_Api_Info interruptApi;
+struct InterruptState {
+    uint32_t controllerIndex;
+    bool tableInitialized;
+};
 
-const TinyCLR_Api_Info* LPC24_Interrupt_GetApi() {
-    interruptProvider.ApiInfo = &interruptApi;
-    interruptProvider.Initialize = &LPC24_Interrupt_Initialize;
-    interruptProvider.Uninitialize = &LPC24_Interrupt_Uninitialize;
+const char* interruptApiNames[TOTAL_INTERRUPT_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.LPC24.InterruptController\\0"
+};
 
-    interruptProvider.IsDisabled = &LPC24_Interrupt_GlobalIsDisabled;
-    interruptProvider.Enable = &LPC24_Interrupt_GlobalEnable;
-    interruptProvider.Disable = &LPC24_Interrupt_GlobalDisable;
-    interruptProvider.Restore = &LPC24_Interrupt_GlobalRestore;
-    interruptProvider.WaitForInterrupt = &LPC24_Interrupt_GlobalWaitForInterrupt;
+static TinyCLR_Interrupt_Controller interruptControllers[TOTAL_INTERRUPT_CONTROLLERS];
+static TinyCLR_Api_Info interruptApi[TOTAL_INTERRUPT_CONTROLLERS];
+static InterruptState interruptStates[TOTAL_INTERRUPT_CONTROLLERS];
 
-    interruptApi.Author = "GHI Electronics, LLC";
-    interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.InterruptProvider";
-    interruptApi.Type = TinyCLR_Api_Type::InterruptProvider;
-    interruptApi.Version = 0;
-    interruptApi.Implementation = &interruptProvider;
+void LPC24_Interrupt_EnsureTableInitialized() {
+    for (auto i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
+        if (interruptStates[i].tableInitialized)
+            continue;
 
-    return &interruptApi;
+        interruptControllers[i].ApiInfo = &interruptApi[i];
+        interruptControllers[i].Initialize = &LPC24_Interrupt_Initialize;
+        interruptControllers[i].Uninitialize = &LPC24_Interrupt_Uninitialize;
+        interruptControllers[i].Enable = &LPC24_Interrupt_GlobalEnabled;
+        interruptControllers[i].Disable = &LPC24_Interrupt_GlobalDisabled;
+        interruptControllers[i].WaitForInterrupt = &LPC24_Interrupt_GlobalWaitForInterrupt;
+        interruptControllers[i].IsDisabled = &LPC24_Interrupt_GlobalIsDisabled;
+        interruptControllers[i].Restore = &LPC24_Interrupt_GlobalRestore;
+
+        interruptApi[i].Author = "GHI Electronics, LLC";
+        interruptApi[i].Name = interruptApiNames[i];
+        interruptApi[i].Type = TinyCLR_Api_Type::InterruptController;
+        interruptApi[i].Version = 0;
+        interruptApi[i].Implementation = &interruptControllers[i];
+        interruptApi[i].State = &interruptStates[i];
+
+        interruptStates[i].controllerIndex = i;
+        interruptStates[i].tableInitialized = true;
+    }
 }
 
-TinyCLR_Result LPC24_Interrupt_Initialize(const TinyCLR_Interrupt_Provider* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
+const TinyCLR_Api_Info* LPC24_Interrupt_GetRequiredApi() {
+    LPC24_Interrupt_EnsureTableInitialized();
+
+    return &interruptApi[0];
+}
+
+void LPC24_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    LPC24_Interrupt_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &interruptApi[i]);
+    }
+
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::InterruptController, interruptApi[0].Name);
+}
+
+
+TinyCLR_Result LPC24_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
     LPC24_Interrupt_Started = onInterruptStart;
     LPC24_Interrupt_Ended = onInterruptEnd;
 
@@ -161,7 +196,7 @@ TinyCLR_Result LPC24_Interrupt_Initialize(const TinyCLR_Interrupt_Provider* self
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Interrupt_Uninitialize(const TinyCLR_Interrupt_Provider* self) {
+TinyCLR_Result LPC24_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
@@ -318,7 +353,7 @@ bool LPC24_Interrupt_GlobalIsDisabled() {
     return (IRQ_LOCK_GetState_asm() & DISABLED_MASK);
 }
 
-bool LPC24_Interrupt_GlobalEnable(bool force) {
+bool LPC24_Interrupt_GlobalEnabled(bool force) {
     if (!force) {
         return (IRQ_LOCK_Release_asm() & DISABLED_MASK == 0);
     }
@@ -330,7 +365,7 @@ void LPC24_Interrupt_GlobalRestore() {
     IRQ_LOCK_Restore_asm();
 }
 
-bool LPC24_Interrupt_GlobalDisable(bool force) {
+bool LPC24_Interrupt_GlobalDisabled(bool force) {
     if (!force) {
         return ((IRQ_LOCK_Disable_asm() & DISABLED_MASK) == DISABLED_MASK);
     }

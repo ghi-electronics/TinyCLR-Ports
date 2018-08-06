@@ -408,82 +408,116 @@ struct LPC17xx_SPI {
     static const uint32_t CONTROLREG_POL_1 = 0x00000010;
 };
 
-static const LPC17_Gpio_Pin g_lpc17_spi_miso_pins[] = LPC17_SPI_MISO_PINS;
-static const LPC17_Gpio_Pin g_lpc17_spi_mosi_pins[] = LPC17_SPI_MOSI_PINS;
-static const LPC17_Gpio_Pin g_lpc17_spi_sclk_pins[] = LPC17_SPI_SCLK_PINS;
+static const LPC17_Gpio_Pin spiMisoPins[] = LPC17_SPI_MISO_PINS;
+static const LPC17_Gpio_Pin spiMosiPins[] = LPC17_SPI_MOSI_PINS;
+static const LPC17_Gpio_Pin spiClkPins[] = LPC17_SPI_SCLK_PINS;
 
-struct SpiController {
+struct SpiState {
+    int32_t controllerIndex;
+
     uint8_t *readBuffer;
     uint8_t *writeBuffer;
 
-    size_t writeLength;
     size_t readLength;
+    size_t writeLength;
     size_t readOffset;
 
     int32_t chipSelectLine;
-    int32_t clockFrequency;
     int32_t dataBitLength;
-
-    bool isOpened;
+    int32_t clockFrequency;
 
     TinyCLR_Spi_Mode spiMode;
+
+    bool isOpened;
+    bool tableInitialized = false;
 };
 
-static SpiController g_SpiController[TOTAL_SPI_CONTROLLERS];
+static SpiState spiStates[TOTAL_SPI_CONTROLLERS];
 
-static TinyCLR_Spi_Provider spiProviders;
-static TinyCLR_Api_Info spiApi;
+static TinyCLR_Spi_Controller spiControllers[TOTAL_SPI_CONTROLLERS];
+static TinyCLR_Api_Info spiApi[TOTAL_SPI_CONTROLLERS];
 
 void LPC17_Spi_Reset();
 
-const TinyCLR_Api_Info* LPC17_Spi_GetApi() {
-    spiProviders.ApiInfo = &spiApi;
-    spiProviders.Acquire = &LPC17_Spi_Acquire;
-    spiProviders.Release = &LPC17_Spi_Release;
-    spiProviders.SetActiveSettings = &LPC17_Spi_SetActiveSettings;
-    spiProviders.Read = &LPC17_Spi_Read;
-    spiProviders.Write = &LPC17_Spi_Write;
-    spiProviders.TransferFullDuplex = &LPC17_Spi_TransferFullDuplex;
-    spiProviders.TransferSequential = &LPC17_Spi_TransferSequential;
-    spiProviders.GetChipSelectLineCount = &LPC17_Spi_GetChipSelectLineCount;
-    spiProviders.GetMinClockFrequency = &LPC17_Spi_GetMinClockFrequency;
-    spiProviders.GetMaxClockFrequency = &LPC17_Spi_GetMaxClockFrequency;
-    spiProviders.GetSupportedDataBitLengths = &LPC17_Spi_GetSupportedDataBitLengths;
-    spiProviders.GetControllerCount = &LPC17_Spi_GetControllerCount;
+const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = {
+#if TOTAL_SPI_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.LPC17.SpiController\\0",
+#if TOTAL_SPI_CONTROLLERS > 1
+"GHIElectronics.TinyCLR.NativeApis.LPC17.SpiController\\1",
+#if TOTAL_SPI_CONTROLLERS > 2
+"GHIElectronics.TinyCLR.NativeApis.LPC17.SpiController\\2",
+#endif
+#endif
+#endif
+};
 
-    spiApi.Author = "GHI Electronics, LLC";
-    spiApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC17.SpiProvider";
-    spiApi.Type = TinyCLR_Api_Type::SpiProvider;
-    spiApi.Version = 0;
-    spiApi.Implementation = &spiProviders;
+void LPC17_Spi_EnsureTableInitialized() {
+    for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
+        if (spiStates[i].tableInitialized)
+            continue;
 
-    return &spiApi;
+        spiControllers[i].ApiInfo = &spiApi[i];
+        spiControllers[i].Acquire = &LPC17_Spi_Acquire;
+        spiControllers[i].Release = &LPC17_Spi_Release;
+        spiControllers[i].WriteRead = &LPC17_Spi_WriteRead;
+        spiControllers[i].SetActiveSettings = &LPC17_Spi_SetActiveSettings;
+        spiControllers[i].GetChipSelectLineCount = &LPC17_Spi_GetChipSelectLineCount;
+        spiControllers[i].GetMinClockFrequency = &LPC17_Spi_GetMinClockFrequency;
+        spiControllers[i].GetMaxClockFrequency = &LPC17_Spi_GetMaxClockFrequency;
+        spiControllers[i].GetSupportedDataBitLengths = &LPC17_Spi_GetSupportedDataBitLengths;
+
+        spiApi[i].Author = "GHI Electronics, LLC";
+        spiApi[i].Name = spiApiNames[i];
+        spiApi[i].Type = TinyCLR_Api_Type::SpiController;
+        spiApi[i].Version = 0;
+        spiApi[i].Implementation = &spiControllers[i];
+        spiApi[i].State = &spiStates[i];
+
+        spiStates[i].controllerIndex = i;
+        spiStates[i].tableInitialized = true;
+    }
 }
 
-bool LPC17_Spi_Transaction_Start(int32_t controller) {
-    auto gpioController = 0; //TODO Temporary set to 0
+const TinyCLR_Api_Info* LPC17_Spi_GetRequiredApi() {
+    LPC17_Spi_EnsureTableInitialized();
 
-    LPC17_Gpio_Write(nullptr, gpioController, g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::Low);
+    return &spiApi[0];
+}
+
+void LPC17_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    LPC17_Spi_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &spiApi[i]);
+    }
+}
+
+bool LPC17_Spi_Transaction_Start(int32_t controllerIndex) {
+    auto state = &spiStates[controllerIndex];
+
+    LPC17_Gpio_Write(nullptr, state->chipSelectLine, TinyCLR_Gpio_PinValue::Low);
     return true;
 }
 
-bool LPC17_Spi_Transaction_Stop(int32_t controller) {
-    auto gpioController = 0; //TODO Temporary set to 0
+bool LPC17_Spi_Transaction_Stop(int32_t controllerIndex) {
+    auto state = &spiStates[controllerIndex];
 
-    LPC17_Gpio_Write(nullptr, gpioController, g_SpiController[controller].chipSelectLine, TinyCLR_Gpio_PinValue::High);
+    LPC17_Gpio_Write(nullptr, state->chipSelectLine, TinyCLR_Gpio_PinValue::High);
     return true;
 }
 
 
-bool LPC17_Spi_Transaction_nWrite8_nRead8(int32_t controller) {
-    LPC17xx_SPI & SPI = *(LPC17xx_SPI*)(size_t)((controller == 0) ? (LPC17xx_SPI::c_SPI0_Base) : ((controller == 1) ? (LPC17xx_SPI::c_SPI1_Base) : (LPC17xx_SPI::c_SPI2_Base)));
+bool LPC17_Spi_Transaction_nWrite8_nRead8(int32_t controllerIndex) {
+    auto state = &spiStates[controllerIndex];
+
+    LPC17xx_SPI & SPI = *(LPC17xx_SPI*)(size_t)((controllerIndex == 0) ? (LPC17xx_SPI::c_SPI0_Base) : ((controllerIndex == 1) ? (LPC17xx_SPI::c_SPI1_Base) : (LPC17xx_SPI::c_SPI2_Base)));
 
     uint8_t Data8;
-    uint8_t* Write8 = g_SpiController[controller].writeBuffer;
-    int32_t WriteCount = g_SpiController[controller].writeLength;
-    uint8_t* Read8 = g_SpiController[controller].readBuffer;
-    int32_t ReadCount = g_SpiController[controller].readLength;
-    int32_t ReadStartOffset = g_SpiController[controller].readOffset;
+    uint8_t* Write8 = state->writeBuffer;
+    int32_t WriteCount = state->writeLength;
+    uint8_t* Read8 = state->readBuffer;
+    int32_t ReadCount = state->readLength;
+    int32_t ReadStartOffset = state->readOffset;
     int32_t ReadTotal = 0;
 
     if (ReadCount) {
@@ -534,29 +568,29 @@ bool LPC17_Spi_Transaction_nWrite8_nRead8(int32_t controller) {
 
         // wait while the Transmission is in progress
         // No error checking as there is no mechanism to report errors
-        if (controller == 0) { // SPI 0\
+        if (controllerIndex == 0) { // SPI 0\
             while (!(SSP0SR & 0x04));//SPIF
             while ((SSP0SR & 0x10));//BSY
 
         }
-        else if (controller == 1) {
+        else if (controllerIndex == 1) {
             while (!(SSP1SR & 0x04));//SPIF
             while ((SSP1SR & 0x10));//BSY
         }
-        else if (controller == 2) {
+        else if (controllerIndex == 2) {
             while (!(SSP2SR & 0x04));//SPIF
             while ((SSP2SR & 0x10));//BSY
         }
 
         // Read recieved data
-        if (controller == 0) {
+        if (controllerIndex == 0) {
             Data8 = ((uint8_t)SSP0DR);
 
         }
-        else if (controller == 1) {
+        else if (controllerIndex == 1) {
             Data8 = ((uint8_t)SSP1DR);
         }
-        else if (controller == 2) {
+        else if (controllerIndex == 2) {
             Data8 = ((uint8_t)SSP2DR);
         }
 
@@ -572,120 +606,135 @@ bool LPC17_Spi_Transaction_nWrite8_nRead8(int32_t controller) {
     return true;
 }
 
-bool LPC17_Spi_Transaction_nWrite16_nRead16(int32_t controller) {
-
-    return true;
+bool LPC17_Spi_Transaction_nWrite16_nRead16(int32_t controllerIndex) {
+    return false;
 }
 
-TinyCLR_Result LPC17_Spi_TransferSequential(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
-    if (LPC17_Spi_Write(self, controller, writeBuffer, writeLength) != TinyCLR_Result::Success)
+TinyCLR_Result LPC17_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter) {
+    if (LPC17_Spi_Write(self, writeBuffer, writeLength) != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
 
-    return LPC17_Spi_Read(self, controller, readBuffer, readLength);
+    return LPC17_Spi_Read(self, readBuffer, readLength);
 }
 
-TinyCLR_Result LPC17_Spi_TransferFullDuplex(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength) {
-    if (controller >= TOTAL_SPI_CONTROLLERS)
+TinyCLR_Result LPC17_Spi_WriteRead(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter) {
+    auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
+
+    auto controllerIndex = state->controllerIndex;
+
+    if (controllerIndex >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
-    if (!LPC17_Spi_Transaction_Start(controller))
+    if (!LPC17_Spi_Transaction_Start(controllerIndex))
         return TinyCLR_Result::InvalidOperation;
 
-    g_SpiController[controller].readBuffer = readBuffer;
-    g_SpiController[controller].readLength = readLength;
-    g_SpiController[controller].writeBuffer = (uint8_t*)writeBuffer;
-    g_SpiController[controller].writeLength = writeLength;
+    state->readBuffer = readBuffer;
+    state->readLength = readLength;
+    state->writeBuffer = (uint8_t*)writeBuffer;
+    state->writeLength = writeLength;
 
-    if (g_SpiController[controller].dataBitLength == DATA_BIT_LENGTH_16) {
-        if (!LPC17_Spi_Transaction_nWrite16_nRead16(controller))
+    if (state->dataBitLength == DATA_BIT_LENGTH_16) {
+        if (!LPC17_Spi_Transaction_nWrite16_nRead16(controllerIndex))
             return TinyCLR_Result::InvalidOperation;
     }
     else {
-        if (!LPC17_Spi_Transaction_nWrite8_nRead8(controller))
+        if (!LPC17_Spi_Transaction_nWrite8_nRead8(controllerIndex))
             return TinyCLR_Result::InvalidOperation;
     }
 
-    if (!LPC17_Spi_Transaction_Stop(controller))
+    if (!LPC17_Spi_Transaction_Stop(controllerIndex))
         return TinyCLR_Result::InvalidOperation;
 
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Spi_Read(const TinyCLR_Spi_Provider* self, int32_t controller, uint8_t* buffer, size_t& length) {
-    if (controller >= TOTAL_SPI_CONTROLLERS)
+TinyCLR_Result LPC17_Spi_Read(const TinyCLR_Spi_Controller* self, uint8_t* buffer, size_t& length) {
+    auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
+
+    auto controllerIndex = state->controllerIndex;
+
+    if (controllerIndex >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
-    if (!LPC17_Spi_Transaction_Start(controller))
+    if (!LPC17_Spi_Transaction_Start(controllerIndex))
         return TinyCLR_Result::InvalidOperation;
 
-    g_SpiController[controller].readBuffer = buffer;
-    g_SpiController[controller].readLength = length;
-    g_SpiController[controller].writeBuffer = nullptr;
-    g_SpiController[controller].writeLength = 0;
+    state->readBuffer = buffer;
+    state->readLength = length;
+    state->writeBuffer = nullptr;
+    state->writeLength = 0;
 
-    if (g_SpiController[controller].dataBitLength == DATA_BIT_LENGTH_16) {
-        if (!LPC17_Spi_Transaction_nWrite16_nRead16(controller))
+    if (state->dataBitLength == DATA_BIT_LENGTH_16) {
+        if (!LPC17_Spi_Transaction_nWrite16_nRead16(controllerIndex))
             return TinyCLR_Result::InvalidOperation;
     }
     else {
-        if (!LPC17_Spi_Transaction_nWrite8_nRead8(controller))
+        if (!LPC17_Spi_Transaction_nWrite8_nRead8(controllerIndex))
             return TinyCLR_Result::InvalidOperation;
     }
 
-    if (!LPC17_Spi_Transaction_Stop(controller))
+    if (!LPC17_Spi_Transaction_Stop(controllerIndex))
         return TinyCLR_Result::InvalidOperation;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Spi_Write(const TinyCLR_Spi_Provider* self, int32_t controller, const uint8_t* buffer, size_t& length) {
-    if (controller >= TOTAL_SPI_CONTROLLERS)
+TinyCLR_Result LPC17_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8_t* buffer, size_t& length) {
+    auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
+
+    auto controllerIndex = state->controllerIndex;
+
+    if (controllerIndex >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
-    if (!LPC17_Spi_Transaction_Start(controller))
+    if (!LPC17_Spi_Transaction_Start(controllerIndex))
         return TinyCLR_Result::InvalidOperation;
 
-    g_SpiController[controller].readBuffer = nullptr;
-    g_SpiController[controller].readLength = 0;
-    g_SpiController[controller].writeBuffer = (uint8_t*)buffer;
-    g_SpiController[controller].writeLength = length;
+    state->readBuffer = nullptr;
+    state->readLength = 0;
+    state->writeBuffer = (uint8_t*)buffer;
+    state->writeLength = length;
 
-    if (g_SpiController[controller].dataBitLength == DATA_BIT_LENGTH_16) {
-        if (!LPC17_Spi_Transaction_nWrite16_nRead16(controller))
+    if (state->dataBitLength == DATA_BIT_LENGTH_16) {
+        if (!LPC17_Spi_Transaction_nWrite16_nRead16(controllerIndex))
             return TinyCLR_Result::InvalidOperation;
     }
     else {
-        if (!LPC17_Spi_Transaction_nWrite8_nRead8(controller))
+        if (!LPC17_Spi_Transaction_nWrite8_nRead8(controllerIndex))
             return TinyCLR_Result::InvalidOperation;
     }
 
-    if (!LPC17_Spi_Transaction_Stop(controller))
+    if (!LPC17_Spi_Transaction_Stop(controllerIndex))
         return TinyCLR_Result::InvalidOperation;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int32_t controller, int32_t chipSelectLine, int32_t clockFrequency, int32_t dataBitLength, TinyCLR_Spi_Mode mode) {
-    if (controller >= TOTAL_SPI_CONTROLLERS)
+TinyCLR_Result LPC17_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, uint32_t chipSelectLine, bool useControllerChipSelect, uint32_t clockFrequency, uint32_t dataBitLength, TinyCLR_Spi_Mode mode) {
+    auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
+
+    auto controllerIndex = state->controllerIndex;
+
+    if (controllerIndex >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
-    if (g_SpiController[controller].chipSelectLine == chipSelectLine
-        && g_SpiController[controller].dataBitLength == dataBitLength
-        && g_SpiController[controller].spiMode == mode
-        && g_SpiController[controller].clockFrequency == clockFrequency) {
+    if (state->chipSelectLine == chipSelectLine
+        && state->dataBitLength == dataBitLength
+        && state->spiMode == mode
+        && state->clockFrequency == clockFrequency) {
         return TinyCLR_Result::Success;
     }
 
-    g_SpiController[controller].chipSelectLine = chipSelectLine;
-    g_SpiController[controller].clockFrequency = clockFrequency;
-    g_SpiController[controller].dataBitLength = dataBitLength;
-    g_SpiController[controller].spiMode = mode;
+    state->chipSelectLine = chipSelectLine;
+    state->clockFrequency = clockFrequency;
+    state->dataBitLength = dataBitLength;
+    state->spiMode = mode;
 
-    LPC17xx_SPI & SPI = *(LPC17xx_SPI *)(size_t)((controller == 0) ? (LPC17xx_SPI::c_SPI0_Base) : ((controller == 1) ? (LPC17xx_SPI::c_SPI1_Base) : (LPC17xx_SPI::c_SPI2_Base)));
+    LPC17xx_SPI & SPI = *(LPC17xx_SPI *)(size_t)((controllerIndex == 0) ? (LPC17xx_SPI::c_SPI0_Base) : ((controllerIndex == 1) ? (LPC17xx_SPI::c_SPI1_Base) : (LPC17xx_SPI::c_SPI2_Base)));
 
     int SCR, CPSDVSR;
-    uint32_t clockKhz = g_SpiController[controller].clockFrequency / 1000;
+    uint32_t clockKhz = state->clockFrequency / 1000;
     uint32_t divider = (100 * LPC17xx_SPI::c_SPI_Clk_KHz / clockKhz); // 100 is only to avoid floating points
     divider /= 2; // because CPSDVSR is even numbeer 2 to 254, so we are calculating using X = 2*CPSDVSR (x:1 to 127);
     divider += 50;
@@ -707,7 +756,7 @@ TinyCLR_Result LPC17_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int
     // Ensure that out frequency is smaller than input value
     uint32_t freq_out = (LPC17xx_SPI::c_SPI_Clk_KHz * 1000) / (CPSDVSR * (SCR + 1));
 
-    while ((g_SpiController[controller].clockFrequency > 0) && (freq_out > g_SpiController[controller].clockFrequency)) {
+    while ((state->clockFrequency > 0) && (freq_out > state->clockFrequency)) {
         CPSDVSR++;
         if (CPSDVSR >= 254) {
 
@@ -729,7 +778,7 @@ TinyCLR_Result LPC17_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int
     SPI.SSPxCR1 = 0x02;//master
 
     // set how many bits
-    if (g_SpiController[controller].dataBitLength == DATA_BIT_LENGTH_16) {
+    if (state->dataBitLength == DATA_BIT_LENGTH_16) {
 
         SPI.SSPxCR0 = 0x0F;
 
@@ -743,7 +792,7 @@ TinyCLR_Result LPC17_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int
     SPI.SSPxCR0 &= ~(1 << 7);
     SPI.SSPxCR0 &= ~(1 << 6);
 
-    switch (g_SpiController[controller].spiMode) {
+    switch (state->spiMode) {
 
     case TinyCLR_Spi_Mode::Mode0: // CPOL = 0, CPHA = 0.
 
@@ -765,9 +814,9 @@ TinyCLR_Result LPC17_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int
     SPI.SSPxCR0 &= ~(0xFF << 8);
     SPI.SSPxCR0 |= (SCR << 8);
 
-    if (g_SpiController[controller].chipSelectLine != PIN_NONE) {
-        if (LPC17_Gpio_OpenPin(g_SpiController[controller].chipSelectLine)) {
-            LPC17_Gpio_EnableOutputPin(g_SpiController[controller].chipSelectLine, true);
+    if (state->chipSelectLine != PIN_NONE) {
+        if (LPC17_Gpio_OpenPin(state->chipSelectLine)) {
+            LPC17_Gpio_EnableOutputPin(state->chipSelectLine, true);
         }
         else {
             return TinyCLR_Result::SharingViolation;
@@ -777,7 +826,11 @@ TinyCLR_Result LPC17_Spi_SetActiveSettings(const TinyCLR_Spi_Provider* self, int
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Spi_Acquire(const TinyCLR_Spi_Provider* self, int32_t controller) {
+TinyCLR_Result LPC17_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
+    auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
+
+    auto controllerIndex = state->controllerIndex;
+
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
@@ -785,13 +838,13 @@ TinyCLR_Result LPC17_Spi_Acquire(const TinyCLR_Spi_Provider* self, int32_t contr
 
     LPC17_Gpio_PinFunction clkMode, misoMode, mosiMode;
 
-    clkPin = g_lpc17_spi_sclk_pins[controller].number;
-    misoPin = g_lpc17_spi_miso_pins[controller].number;
-    mosiPin = g_lpc17_spi_mosi_pins[controller].number;
+    clkPin = spiClkPins[controllerIndex].number;
+    misoPin = spiMisoPins[controllerIndex].number;
+    mosiPin = spiMosiPins[controllerIndex].number;
 
-    clkMode = g_lpc17_spi_sclk_pins[controller].pinFunction;
-    misoMode = g_lpc17_spi_miso_pins[controller].pinFunction;
-    mosiMode = g_lpc17_spi_mosi_pins[controller].pinFunction;
+    clkMode = spiClkPins[controllerIndex].pinFunction;
+    misoMode = spiMisoPins[controllerIndex].pinFunction;
+    mosiMode = spiMosiPins[controllerIndex].pinFunction;
 
     // Check each pin single time make sure once fail not effect to other pins
     if (!LPC17_Gpio_OpenPin(clkPin))
@@ -803,7 +856,7 @@ TinyCLR_Result LPC17_Spi_Acquire(const TinyCLR_Spi_Provider* self, int32_t contr
     if (!LPC17_Gpio_OpenPin(mosiPin))
         return TinyCLR_Result::SharingViolation;
 
-    switch (controller) {
+    switch (controllerIndex) {
     case 0:
         LPC_SC->PCONP |= PCONP_PCSSP0;
         break;
@@ -821,16 +874,20 @@ TinyCLR_Result LPC17_Spi_Acquire(const TinyCLR_Spi_Provider* self, int32_t contr
     LPC17_Gpio_ConfigurePin(misoPin, LPC17_Gpio_Direction::Input, misoMode, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
     LPC17_Gpio_ConfigurePin(mosiPin, LPC17_Gpio_Direction::Input, mosiMode, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
-    g_SpiController[controller].isOpened = true;
+    state->isOpened = true;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Provider* self, int32_t controller) {
+TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    switch (controller) {
+    auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
+
+    auto controllerIndex = state->controllerIndex;
+
+    switch (controllerIndex) {
     case 0:
         LPC_SC->PCONP &= ~PCONP_PCSSP0;
         break;
@@ -844,48 +901,48 @@ TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Provider* self, int32_t contr
         break;
     }
 
-    g_SpiController[controller].clockFrequency = 0;
-    g_SpiController[controller].dataBitLength = 0;
+    state->clockFrequency = 0;
+    state->dataBitLength = 0;
 
-    if (g_SpiController[controller].isOpened) {
-        int32_t clkPin = g_lpc17_spi_sclk_pins[controller].number;
-        int32_t misoPin = g_lpc17_spi_miso_pins[controller].number;
-        int32_t mosiPin = g_lpc17_spi_mosi_pins[controller].number;
+    if (state->isOpened) {
+        int32_t clkPin = spiClkPins[controllerIndex].number;
+        int32_t misoPin = spiMisoPins[controllerIndex].number;
+        int32_t mosiPin = spiMosiPins[controllerIndex].number;
 
         LPC17_Gpio_ClosePin(clkPin);
         LPC17_Gpio_ClosePin(misoPin);
         LPC17_Gpio_ClosePin(mosiPin);
 
-        if (g_SpiController[controller].chipSelectLine != PIN_NONE) {
+        if (state->chipSelectLine != PIN_NONE) {
             // Release the pin, set pin un-reserved
-            LPC17_Gpio_ClosePin(g_SpiController[controller].chipSelectLine);
+            LPC17_Gpio_ClosePin(state->chipSelectLine);
 
             // Keep chip select is inactive by internal pull up
-            LPC17_Gpio_ConfigurePin(g_SpiController[controller].chipSelectLine, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+            LPC17_Gpio_ConfigurePin(state->chipSelectLine, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
-            g_SpiController[controller].chipSelectLine = PIN_NONE;
+            state->chipSelectLine = PIN_NONE;
         }
     }
 
-    g_SpiController[controller].isOpened = false;
+    state->isOpened = false;
 
     return TinyCLR_Result::Success;
 }
 
-int32_t LPC17_Spi_GetMinClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller) {
+uint32_t LPC17_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self) {
     // CPSDVSR min 2, max 254
     // SCR min 0, max 127
     return (LPC17_AHB_CLOCK_HZ / 2) / (254 * (127 + 1));
 
 }
 
-int32_t LPC17_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Provider* self, int32_t controller) {
+uint32_t LPC17_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self) {
     // CPSDVSR min 2, max 254
     // SCR min 0, max 127
     return (LPC17_AHB_CLOCK_HZ / 2) / (2 * (0 + 1));
 }
 
-int32_t LPC17_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self, int32_t controller) {
+uint32_t LPC17_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self) {
     // This could maintain a map of the actual pins
     // that are available for a particular port.
     // (Not all pins can be mapped to all ports.)
@@ -896,15 +953,14 @@ int32_t LPC17_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Provider* self, int32
     // pins as possible so that the selected Chip select
     // line coresponds to a GPIO pin number directly
     // without needing any additional translation/mapping.
-    auto gpioController = 0; //TODO Temporary set to 0
 
-    return LPC17_Gpio_GetPinCount(nullptr, gpioController);
+    return LPC17_Gpio_GetPinCount(nullptr);
 }
 
 static const int32_t dataBitsCount = 2;
 static int32_t dataBits[dataBitsCount] = { 8, 16 };
 
-TinyCLR_Result LPC17_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* self, int32_t controller, int32_t* dataBitLengths, size_t& dataBitLengthsCount) {
+TinyCLR_Result LPC17_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller* self, uint32_t* dataBitLengths, size_t& dataBitLengthsCount) {
     if (dataBitLengths != nullptr)
         memcpy(dataBitLengths, dataBits, (dataBitsCount < dataBitLengthsCount ? dataBitsCount : dataBitLengthsCount) * sizeof(int32_t));
 
@@ -915,14 +971,9 @@ TinyCLR_Result LPC17_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Provider* 
 
 void LPC17_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        LPC17_Spi_Release(&spiProviders, i);
+        LPC17_Spi_Release(&spiControllers[i]);
 
-        g_SpiController[i].isOpened = false;
+        spiStates[i].isOpened = false;
+        spiStates[i].tableInitialized = false;
     }
-}
-
-TinyCLR_Result LPC17_Spi_GetControllerCount(const TinyCLR_Spi_Provider* self, int32_t& count) {
-    count = TOTAL_SPI_CONTROLLERS;
-
-    return TinyCLR_Result::Success;
 }

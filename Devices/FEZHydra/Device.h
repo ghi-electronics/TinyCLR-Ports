@@ -58,15 +58,18 @@
 #define AT91_DEPLOYMENT_SPI_ENABLE_PIN PIN(A,28)
 
 #define INCLUDE_I2C
+#define TOTAL_I2C_CONTROLLERS 1
 #define AT91_I2C_SCL_PINS { { PIN(A,24), PS(A) } }
 #define AT91_I2C_SDA_PINS { { PIN(A,23), PS(A) } }
 
 #define INCLUDE_PWM
 #define MAX_PWM_PER_CONTROLLER 1
-#define TOTAL_PWM_CONTROLLER 3
+#define TOTAL_PWM_CONTROLLERS 3
 #define AT91_PWM_PINS { { { PIN(D,14), PS(B) } }, { { PIN(D,15), PS(B) } }, { { PIN(D,16), PS(B) } } }
 
 #define INCLUDE_RTC
+
+#define INCLUDE_SIGNALS
 
 #define INCLUDE_SPI
 #define TOTAL_SPI_CONTROLLERS 1
@@ -75,6 +78,8 @@
 #define AT91_SPI_SCLK_PINS { { PIN(A,27), PS(A) } }
 
 #define AT91_TIME_DEFAULT_CONTROLLER_ID 0
+
+#define INCLUDE_STORAGE
 
 #define INCLUDE_UART
 #define TOTAL_UART_CONTROLLERS 4

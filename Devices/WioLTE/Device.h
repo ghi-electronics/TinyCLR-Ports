@@ -29,7 +29,7 @@
 #define UART_DEBUGGER_INDEX 0
 #define USB_DEBUGGER_INDEX 0
 
-#define DEBUGGER_FORCE_API STM32F4_UsbClient_GetApi()
+#define DEBUGGER_FORCE_API STM32F4_UsbDevice_GetRequiredApi()
 #define DEBUGGER_FORCE_INDEX USB_DEBUGGER_INDEX
 
 #define RUN_APP_PIN PIN(B, 7)
@@ -67,10 +67,14 @@
                           /* TIM4  */ { { PIN(B,  7), AF(2)   }, { PIN(B,  7), AF(2)   }, { PIN(B,  8), AF(2)   }, { PIN(B,  9), AF(2)   } },\
                          }
 
-//#define INCLUDE_SPI
+//#define INCLUDE_SIGNALS
+
+#define INCLUDE_SPI
 #define STM32F4_SPI_SCLK_PINS { { PIN(B, 3), AF(5) }, { PIN(B, 13), AF(5) } }
 #define STM32F4_SPI_MISO_PINS { { PIN(B, 4), AF(5) }, { PIN(B, 14), AF(5) } }
 #define STM32F4_SPI_MOSI_PINS { { PIN(B, 5), AF(5) }, { PIN(B, 15), AF(5) } }
+
+#define INCLUDE_STORAGE
 
 #define INCLUDE_UART
 #define STM32F4_UART_DEFAULT_TX_BUFFER_SIZE  { 256, 256 }

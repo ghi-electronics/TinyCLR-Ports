@@ -17,6 +17,8 @@
 #include <string.h>
 #include "STM32F7.h"
 
+#ifdef INCLUDE_DISPLAY
+
 #define MAX_LAYER  2
 
 /**
@@ -366,8 +368,10 @@ uint32_t STM32F7_Display_GetPixelClockDivider();
 int32_t STM32F7_Display_GetOrientation();
 uint32_t* STM32F7_Display_GetFrameBuffer();
 
-static TinyCLR_Display_Provider displayProvider;
-static TinyCLR_Api_Info displayApi;
+#define TOTAL_DISPLAY_CONTROLLERS 1
+
+static TinyCLR_Display_Controller displayControllers[TOTAL_DISPLAY_CONTROLLERS];
+static TinyCLR_Api_Info displayApi[TOTAL_DISPLAY_CONTROLLERS];
 
 bool STM32F7_Ltdc_Initialize(LTDC_HandleTypeDef *hltdc) {
     uint32_t tmp = 0, tmp1 = 0;
@@ -1018,7 +1022,7 @@ void STM32F7_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenH
     }
 }
 
-TinyCLR_Result STM32F7_Display_Acquire(const TinyCLR_Display_Provider* self, int32_t controller) {
+TinyCLR_Result STM32F7_Display_Acquire(const TinyCLR_Display_Controller* self) {
     m_STM32F7_Display_CurrentRotation = STM32F7xx_LCD_Rotation::rotateNormal_0;
 
     if (!STM32F7_Display_SetPinConfiguration(true)) {
@@ -1028,7 +1032,7 @@ TinyCLR_Result STM32F7_Display_Acquire(const TinyCLR_Display_Provider* self, int
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Display_Release(const TinyCLR_Display_Provider* self, int32_t controller) {
+TinyCLR_Result STM32F7_Display_Release(const TinyCLR_Display_Controller* self) {
     STM32F7_Display_Uninitialize();
 
     STM32F7_Display_SetPinConfiguration(false);
@@ -1036,7 +1040,7 @@ TinyCLR_Result STM32F7_Display_Release(const TinyCLR_Display_Provider* self, int
     m_STM32F7_DisplayEnable = false;
 
     if (m_STM32F7_Display_VituralRam != nullptr) {
-        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
         memoryProvider->Free(memoryProvider, m_STM32F7_Display_VituralRam);
 
@@ -1046,7 +1050,7 @@ TinyCLR_Result STM32F7_Display_Release(const TinyCLR_Display_Provider* self, int
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Display_Enable(const TinyCLR_Display_Provider* self, int32_t controller) {
+TinyCLR_Result STM32F7_Display_Enable(const TinyCLR_Display_Controller* self) {
     if (m_STM32F7_DisplayEnable || STM32F7_Display_Initialize()) {
         m_STM32F7_DisplayEnable = true;
 
@@ -1056,7 +1060,7 @@ TinyCLR_Result STM32F7_Display_Enable(const TinyCLR_Display_Provider* self, int3
     return TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result STM32F7_Display_Disable(const TinyCLR_Display_Provider* self, int32_t controller) {
+TinyCLR_Result STM32F7_Display_Disable(const TinyCLR_Display_Controller* self) {
     STM32F7_Display_Uninitialize();
 
     m_STM32F7_DisplayEnable = false;
@@ -1064,7 +1068,7 @@ TinyCLR_Result STM32F7_Display_Disable(const TinyCLR_Display_Provider* self, int
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Display_SetConfiguration(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration) {
+TinyCLR_Result STM32F7_Display_SetConfiguration(const TinyCLR_Display_Controller* self, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration) {
     if (dataFormat != TinyCLR_Display_DataFormat::Rgb565) return TinyCLR_Result::NotSupported;
 
     m_STM32F7_DisplayWidth = width;
@@ -1101,7 +1105,7 @@ TinyCLR_Result STM32F7_Display_SetConfiguration(const TinyCLR_Display_Provider* 
             break;
         }
 
-        auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
         if (m_STM32F7_Display_VituralRam != nullptr) {
             memoryProvider->Free(memoryProvider, m_STM32F7_Display_VituralRam);
@@ -1130,7 +1134,7 @@ TinyCLR_Result STM32F7_Display_SetConfiguration(const TinyCLR_Display_Provider* 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Display_GetConfiguration(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration) {
+TinyCLR_Result STM32F7_Display_GetConfiguration(const TinyCLR_Display_Controller* self, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration) {
     dataFormat = TinyCLR_Display_DataFormat::Rgb565;
     width = m_STM32F7_DisplayWidth;
     height = m_STM32F7_DisplayHeight;
@@ -1162,21 +1166,25 @@ TinyCLR_Result STM32F7_Display_GetConfiguration(const TinyCLR_Display_Provider* 
     return TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result STM32F7_Display_DrawBuffer(const TinyCLR_Display_Provider* self, int32_t controller, int32_t x, int32_t y, int32_t width, int32_t height, const uint8_t* data) {
+TinyCLR_Result STM32F7_Display_DrawBuffer(const TinyCLR_Display_Controller* self, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const uint8_t* data) {
     STM32F7_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Display_WriteString(const TinyCLR_Display_Provider* self, int32_t controller, const char* buffer, size_t length) {
+TinyCLR_Result STM32F7_Display_DrawPixel(const TinyCLR_Display_Controller* self, uint32_t x, uint32_t y, uint64_t color) {
+    return TinyCLR_Result::NotImplemented;
+}
+
+TinyCLR_Result STM32F7_Display_DrawString(const TinyCLR_Display_Controller* self, const char* data, size_t length) {
     for (size_t i = 0; i < length; i++)
-        STM32F7_Display_WriteFormattedChar(buffer[i]);
+        STM32F7_Display_WriteFormattedChar(data[i]);
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Display_DataFormat dataFormats[] = { TinyCLR_Display_DataFormat::Rgb565 };
 
-TinyCLR_Result STM32F7_Display_GetCapabilities(const TinyCLR_Display_Provider* self, int32_t controller, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount) {
+TinyCLR_Result STM32F7_Display_GetCapabilities(const TinyCLR_Display_Controller* self, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount) {
     type = TinyCLR_Display_InterfaceType::Parallel;
     supportedDataFormatCount = SIZEOF_ARRAY(dataFormats);
     supportedDataFormats = dataFormats;
@@ -1184,41 +1192,45 @@ TinyCLR_Result STM32F7_Display_GetCapabilities(const TinyCLR_Display_Provider* s
     return TinyCLR_Result::Success;
 }
 
-const TinyCLR_Api_Info* STM32F7_Display_GetApi() {
-    displayProvider.ApiInfo = &displayApi;
-    displayProvider.Acquire = &STM32F7_Display_Acquire;
-    displayProvider.Release = &STM32F7_Display_Release;
-    displayProvider.Enable = &STM32F7_Display_Enable;
-    displayProvider.Disable = &STM32F7_Display_Disable;
-    displayProvider.SetConfiguration = &STM32F7_Display_SetConfiguration;
-    displayProvider.GetConfiguration = &STM32F7_Display_GetConfiguration;
-    displayProvider.GetCapabilities = &STM32F7_Display_GetCapabilities;
-    displayProvider.DrawBuffer = &STM32F7_Display_DrawBuffer;
-    displayProvider.WriteString = &STM32F7_Display_WriteString;
-    displayProvider.GetControllerCount = &STM32F7_Display_GetControllerCount;
+const char* displayApiNames[TOTAL_DISPLAY_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F7.DisplayController\\0"
+};
 
-    displayApi.Author = "GHI Electronics, LLC";
-    displayApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.DisplayProvider";
-    displayApi.Type = TinyCLR_Api_Type::DisplayProvider;
-    displayApi.Version = 0;
-    displayApi.Implementation = &displayProvider;
+void STM32F7_Display_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    for (auto i = 0; i < TOTAL_DISPLAY_CONTROLLERS; i++) {
+        displayControllers[i].ApiInfo = &displayApi[i];
+        displayControllers[i].Acquire = &STM32F7_Display_Acquire;
+        displayControllers[i].Release = &STM32F7_Display_Release;
+        displayControllers[i].Enable = &STM32F7_Display_Enable;
+        displayControllers[i].Disable = &STM32F7_Display_Disable;
+        displayControllers[i].SetConfiguration = &STM32F7_Display_SetConfiguration;
+        displayControllers[i].GetConfiguration = &STM32F7_Display_GetConfiguration;
+        displayControllers[i].GetCapabilities = &STM32F7_Display_GetCapabilities;
+        displayControllers[i].DrawBuffer = &STM32F7_Display_DrawBuffer;
+        displayControllers[i].DrawPixel = &STM32F7_Display_DrawPixel;
+        displayControllers[i].DrawString = &STM32F7_Display_DrawString;
+
+        displayApi[i].Author = "GHI Electronics, LLC";
+        displayApi[i].Name = displayApiNames[i];
+        displayApi[i].Type = TinyCLR_Api_Type::DisplayController;
+        displayApi[i].Version = 0;
+        displayApi[i].Implementation = &displayControllers[i];
+        displayApi[i].State = nullptr;
+
+        apiManager->Add(apiManager, &displayApi[i]);
+    }
 
     m_STM32F7_Display_VituralRam = nullptr;
 
-    return &displayApi;
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::DisplayController, displayApi[0].Name);
 }
 
 void STM32F7_Display_Reset() {
     STM32F7_Display_Clear();
 
     if (m_STM32F7_DisplayEnable)
-        STM32F7_Display_Release(&displayProvider, 0);
+        STM32F7_Display_Release(&displayControllers[0]);
 
     m_STM32F7_DisplayEnable = false;
 }
-
-TinyCLR_Result STM32F7_Display_GetControllerCount(const TinyCLR_Display_Provider* self, int32_t& count) {
-    count = 1;
-
-    return TinyCLR_Result::Success;
-}
+#endif

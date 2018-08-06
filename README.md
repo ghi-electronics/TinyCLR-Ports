@@ -1,7 +1,9 @@
 # TinyCLR Ports
-This repository hosts ports of TinyCLR to many different devices. For information on porting TinyCLR to your device or building a firmware for an existing port, see https://docs.ghielectronics.com/software/tinyclr/porting/intro.html.
+This repository hosts ports of TinyCLR to many different devices and targets -- along with the TinyCLR OS reference implementation: the FEZ. For information on porting TinyCLR to your device or building a firmware for an existing port, see https://docs.ghielectronics.com/software/tinyclr/porting/intro.html.
 
-Some targets and devices are maintained by GHI Electronics while others are maintained by community contributions. Right now, the below devices and targets are officially supported and maintained by us. See [the docs](http://docs.ghielectronics.com/software/tinyclr/boards/intro.html) for more information. 
+Some targets and devices are maintained by GHI Electronics while others are maintained by community contributions. Right now, the below devices and targets are officially supported and maintained by us. See [the docs](https://docs.ghielectronics.com/software/tinyclr/supported-devices.html) for more information.
+
+Keep in mind that building a firmware from source here will not include the additional commercial features that can be found in the pre-compiled firmwares we provide for a number of our devices. 
 
 ## Devices
 - FEZCLR

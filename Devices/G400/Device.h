@@ -52,6 +52,7 @@
 #define AT91_ADC_PINS { { PIN(B,11), PS(D) }, { PIN(B,12), PS(D) }, { PIN(B,13), PS(D) }, { PIN(B,14), PS(D) }, { PIN(B,15), PS(D) }, { PIN(B,16), PS(D) }, { PIN(A,17), PS(D) }, { PIN(B,6), PS(D) }, { PIN(B,7), PS(D) }, { PIN(B,8), PS(D) }, { PIN(B,9), PS(D) }, { PIN(B,10), PS(D) } }
 
 #define INCLUDE_CAN
+#define TOTAL_CAN_CONTROLLERS 2
 #define AT91_CAN_BUFFER_DEFAULT_SIZE { 128, 128 }
 #define AT91_CAN_TX_PINS { { PIN(A, 10), PS(B) }, { PIN(A, 6), PS(B) } }
 #define AT91_CAN_RX_PINS { { PIN(A,  9), PS(B) }, { PIN(A, 5), PS(B) } }
@@ -63,12 +64,13 @@
 #define AT91_DEPLOYMENT_SPI_ENABLE_PIN PIN(A,14)
 
 #define INCLUDE_I2C
+#define TOTAL_I2C_CONTROLLERS 1
 #define AT91_I2C_SCL_PINS { { PIN(A,31), PS(A) } }
 #define AT91_I2C_SDA_PINS { { PIN(A,30), PS(A) } }
 
 #define INCLUDE_PWM
 #define MAX_PWM_PER_CONTROLLER 1
-#define TOTAL_PWM_CONTROLLER 4
+#define TOTAL_PWM_CONTROLLERS 4
 #define AT91_PWM_PINS { { { PIN(C,18), PS(C) } }, { { PIN(C,19), PS(C) } }, { { PIN(C,20), PS(C) } }, { { PIN(C,21), PS(C) } } }
 
 #define INCLUDE_RTC
@@ -81,6 +83,8 @@
 #define AT91_SD_CLK_PINS { { PIN(A, 17), PS(A) } }
 #define AT91_SD_CMD_PINS { { PIN(A, 16), PS(A) } }
 
+#define INCLUDE_SIGNALS
+
 #define INCLUDE_SPI
 #define TOTAL_SPI_CONTROLLERS 2
 #define AT91_SPI_MISO_PINS { { PIN(A,11), PS(A) }, { PIN(A,21), PS(B) } }
@@ -88,6 +92,8 @@
 #define AT91_SPI_SCLK_PINS { { PIN(A,13), PS(A) }, { PIN(A,23), PS(B) } }
 
 #define AT91_TIME_DEFAULT_CONTROLLER_ID 0
+
+#define INCLUDE_STORAGE
 
 #define INCLUDE_UART
 #define TOTAL_UART_CONTROLLERS 6

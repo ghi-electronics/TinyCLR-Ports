@@ -36,74 +36,100 @@
 #define PWM_MICROSECONDS  1000000
 #define PWM_NANOSECONDS   1000000000
 
-static PwmController g_PwmController[TOTAL_PWM_CONTROLLER];
+const char* PwmApiNames[] = {
+#if TOTAL_PWM_CONTROLLERS > 0
+"GHIElectronics.TinyCLR.NativeApis.AT91.PwmController\\0",
+#if TOTAL_PWM_CONTROLLERS > 1
+"GHIElectronics.TinyCLR.NativeApis.AT91.PwmController\\1",
+#if TOTAL_PWM_CONTROLLERS > 2
+"GHIElectronics.TinyCLR.NativeApis.AT91.PwmController\\2",
+#if TOTAL_PWM_CONTROLLERS > 3
+"GHIElectronics.TinyCLR.NativeApis.AT91.PwmController\\3",
+#endif
+#endif
+#endif
+#endif
+};
 
-static TinyCLR_Pwm_Provider pwmProviders;
-static TinyCLR_Api_Info pwmApi;
+static PwmState pwmStates[TOTAL_PWM_CONTROLLERS];
 
-const TinyCLR_Api_Info* AT91_Pwm_GetApi() {
-    pwmProviders.ApiInfo = &pwmApi;
-    pwmProviders.Acquire = &AT91_Pwm_Acquire;
-    pwmProviders.Release = &AT91_Pwm_Release;
-    pwmProviders.SetDesiredFrequency = &AT91_Pwm_SetDesiredFrequency;
-    pwmProviders.AcquirePin = &AT91_Pwm_AcquirePin;
-    pwmProviders.ReleasePin = &AT91_Pwm_ReleasePin;
-    pwmProviders.EnablePin = &AT91_Pwm_EnablePin;
-    pwmProviders.DisablePin = &AT91_Pwm_DisablePin;
-    pwmProviders.SetPulseParameters = &AT91_Pwm_SetPulseParameters;
-    pwmProviders.GetMinFrequency = &AT91_Pwm_GetMinFrequency;
-    pwmProviders.GetMaxFrequency = &AT91_Pwm_GetMaxFrequency;
-    pwmProviders.GetPinCount = &AT91_Pwm_GetPinCount;
-    pwmProviders.GetControllerCount = &AT91_Pwm_GetControllerCount;
+static TinyCLR_Pwm_Controller pwmControllers[TOTAL_PWM_CONTROLLERS];
+static TinyCLR_Api_Info pwmApi[TOTAL_PWM_CONTROLLERS];
 
-    pwmApi.Author = "GHI Electronics, LLC";
-    pwmApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.PwmProvider";
-    pwmApi.Type = TinyCLR_Api_Type::PwmProvider;
-    pwmApi.Version = 0;
-    pwmApi.Implementation = &pwmProviders;
+void AT91_Pwm_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    for (auto i = 0; i < TOTAL_PWM_CONTROLLERS; i++) {
+        pwmControllers[i].ApiInfo = &pwmApi[i];
+        pwmControllers[i].Acquire = &AT91_Pwm_Acquire;
+        pwmControllers[i].Release = &AT91_Pwm_Release;
+        pwmControllers[i].OpenChannel = &AT91_Pwm_OpenChannel;
+        pwmControllers[i].CloseChannel = &AT91_Pwm_CloseChannel;
+        pwmControllers[i].EnableChannel = &AT91_Pwm_EnableChannel;
+        pwmControllers[i].DisableChannel = &AT91_Pwm_DisableChannel;
+        pwmControllers[i].SetPulseParameters = &AT91_Pwm_SetPulseParameters;
+        pwmControllers[i].SetDesiredFrequency = &AT91_Pwm_SetDesiredFrequency;
+        pwmControllers[i].GetMinFrequency = &AT91_Pwm_GetMinFrequency;
+        pwmControllers[i].GetMaxFrequency = &AT91_Pwm_GetMaxFrequency;
+        pwmControllers[i].GetChannelCount = &AT91_Pwm_GetChannelCount;
 
-    return &pwmApi;
+        pwmApi[i].Author = "GHI Electronics, LLC";
+        pwmApi[i].Name = PwmApiNames[i];
+        pwmApi[i].Type = TinyCLR_Api_Type::PwmController;
+        pwmApi[i].Version = 0;
+        pwmApi[i].Implementation = &pwmControllers[i];
+        pwmApi[i].State = &pwmStates[i];
+
+        pwmStates[i].controllerIndex = i;
+
+        apiManager->Add(apiManager, &pwmApi[i]);
+    }
+}
+static const AT91_Gpio_Pin pwmPins[TOTAL_PWM_CONTROLLERS][MAX_PWM_PER_CONTROLLER] = AT91_PWM_PINS;
+
+AT91_Gpio_Pin AT91_Pwm_GetPins(int32_t controllerIndex, int32_t channel) {
+    return pwmPins[controllerIndex][channel];
 }
 
-static const AT91_Gpio_Pin g_at91_pwm_pins[TOTAL_PWM_CONTROLLER][MAX_PWM_PER_CONTROLLER] = AT91_PWM_PINS;
-
-AT91_Gpio_Pin AT91_Pwm_GetPins(int32_t controller, int32_t channel) {
-    return g_at91_pwm_pins[controller][channel];
-}
-
-bool AT91_Pwm_SetPinState(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin, bool state) {
-    int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, controller, pin);
+bool AT91_Pwm_SetPinState(const TinyCLR_Pwm_Controller* self, uint32_t channel, bool state) {
+    int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, channel);
 
     AT91_Gpio_EnableOutputPin(actualPin, state);
 
     return true;
 }
 
-TinyCLR_Result AT91_Pwm_AcquirePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin) {
-    int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, controller, pin);
+TinyCLR_Result AT91_Pwm_OpenChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel) {
+    int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, channel);
 
     if (!AT91_Gpio_OpenPin(actualPin))
         return TinyCLR_Result::SharingViolation;
 
-    PWM_ENABLE_REGISTER |= (1 << controller);
-    PWM_INTERUPT_ENABLE_REGISTER |= (1 << controller);
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
-    AT91_Pwm_SetPinState(self, controller, pin, false);
+    auto controllerIndex = state->controllerIndex;
 
-    g_PwmController[controller].isOpened[pin] = true;
+    PWM_ENABLE_REGISTER |= (1 << controllerIndex);
+    PWM_INTERUPT_ENABLE_REGISTER |= (1 << controllerIndex);
+
+    AT91_Pwm_SetPinState(self, channel, false);
+
+    state->isOpened[channel] = true;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Pwm_ReleasePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin) {
-    int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, controller, pin);
+TinyCLR_Result AT91_Pwm_CloseChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel) {
+    int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, channel);
 
-    PWM_DISABLE_REGISTER |= (1 << controller);
-    PWM_INTERUPT_DISABLE_REGISTER |= (1 << controller);
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
+
+    auto controllerIndex = state->controllerIndex;
+
+    PWM_DISABLE_REGISTER |= (1 << controllerIndex);
+    PWM_INTERUPT_DISABLE_REGISTER |= (1 << controllerIndex);
 
     AT91_Gpio_ClosePin(actualPin);
 
-    g_PwmController[controller].isOpened[pin] = false;
+    state->isOpened[channel] = false;
 
     return TinyCLR_Result::Success;
 }
@@ -205,13 +231,15 @@ void AT91_Pwm_GetDivider(uint32_t period, uint32_t& divider, uint32_t& registerD
         registerDividerFlag = 0;
     }
 }
-uint32_t AT91_Pwm_GetPeriod(const TinyCLR_Pwm_Provider* self, int32_t controller, uint32_t period, uint32_t divider) {
+uint32_t AT91_Pwm_GetPeriod(const TinyCLR_Pwm_Controller* self, uint32_t period, uint32_t divider) {
     // make sure out frequency <= in frequency
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
+
     double d = divider * 7.6;
     double p = (double)period;
     double mck_clk = (double)AT91_SYSTEM_PERIPHERAL_CLOCK_HZ;
     double freq_out = (double)(mck_clk / (p / (d)));
-    double frequency = g_PwmController[controller].frequency;
+    double frequency = state->frequency;
 
     if ((p > 0) && (freq_out > frequency)) {
 
@@ -232,13 +260,15 @@ uint32_t AT91_Pwm_GetPeriod(const TinyCLR_Pwm_Provider* self, int32_t controller
     return period;
 }
 
-double AT91_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller) {
+double AT91_Pwm_GetActualFrequency(const TinyCLR_Pwm_Controller* self) {
     uint32_t period = 0;
     uint32_t scale = 0;
 
     uint32_t convertedPeriod = 0;
 
-    double frequency = g_PwmController[controller].frequency;
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
+
+    double frequency = state->frequency;
 
     AT91_Pwm_GetScaleFactor(frequency, period, scale);
 
@@ -266,7 +296,7 @@ double AT91_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self, int32_t con
     AT91_Pwm_GetDivider(convertedPeriod, divider, registerDividerFlag);
 
     if (divider > 0)
-        convertedPeriod = AT91_Pwm_GetPeriod(self, controller, convertedPeriod, divider);
+        convertedPeriod = AT91_Pwm_GetPeriod(self, convertedPeriod, divider);
 
     if (convertedPeriod > 503308801)
         convertedPeriod = 503308801; // max period
@@ -295,39 +325,43 @@ double AT91_Pwm_GetActualFrequency(const TinyCLR_Pwm_Provider* self, int32_t con
 
 }
 
-TinyCLR_Result AT91_Pwm_EnablePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin) {
-    int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, controller, pin);
+TinyCLR_Result AT91_Pwm_EnableChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel) {
+    int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, channel);
 
-    AT91_Gpio_ConfigurePin(actualPin, AT91_Gpio_Direction::Input, g_PwmController[controller].gpioPin[pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result AT91_Pwm_DisablePin(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin) {
-    int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, controller, pin);
-
-    AT91_Pwm_SetPinState(self, controller, pin, false);
+    AT91_Gpio_ConfigurePin(actualPin, AT91_Gpio_Direction::Input, state->gpioPin[channel].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
 
     return TinyCLR_Result::Success;
 }
 
-int32_t AT91_Pwm_GetPinCount(const TinyCLR_Pwm_Provider* self, int32_t controller) {
+TinyCLR_Result AT91_Pwm_DisableChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel) {
+    int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, channel);
+
+    AT91_Pwm_SetPinState(self, channel, false);
+
+    return TinyCLR_Result::Success;
+}
+
+uint32_t AT91_Pwm_GetChannelCount(const TinyCLR_Pwm_Controller* self) {
     return MAX_PWM_PER_CONTROLLER;
 }
 
-int32_t AT91_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin) {
-    return g_PwmController[controller].gpioPin[pin].number;
+uint32_t AT91_Pwm_GetGpioPinForChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel) {
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
+
+    return state->gpioPin[channel].number;
 }
 
-double AT91_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller) {
+double AT91_Pwm_GetMaxFrequency(const TinyCLR_Pwm_Controller* self) {
     return AT91_MAX_PWM_FREQUENCY;
 }
 
-double AT91_Pwm_GetMinFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller) {
+double AT91_Pwm_GetMinFrequency(const TinyCLR_Pwm_Controller* self) {
     return AT91_MIN_PWM_FREQUENCY;
 }
 
-TinyCLR_Result AT91_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int32_t controller, int32_t pin, double dutyCycle, bool invertPolarity) {
+TinyCLR_Result AT91_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self, uint32_t channel, double dutyCycle, TinyCLR_Pwm_PulsePolarity polarity) {
     uint32_t period = 0;
     uint32_t scale = 0;
 
@@ -338,7 +372,9 @@ TinyCLR_Result AT91_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int
     uint32_t divider = 4; // Sets the default period/duration clock divider to 4 --> (MCK / divider) // MCK = 100 MHz
     uint32_t registerDividerFlag = 0x2; // Sets the default channel clock divider to 4 --> (MCK / divider) // MCK = 100 MHz
 
-    double frequency = g_PwmController[controller].frequency;
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
+
+    double frequency = state->frequency;
 
     AT91_Pwm_GetScaleFactor(frequency, period, scale);
 
@@ -359,46 +395,52 @@ TinyCLR_Result AT91_Pwm_SetPulseParameters(const TinyCLR_Pwm_Provider* self, int
     AT91_Pwm_GetDivider(convertedPeriod, divider, registerDividerFlag);
 
     if (divider > 0)
-        convertedPeriod = AT91_Pwm_GetPeriod(self, controller, convertedPeriod, divider);
+        convertedPeriod = AT91_Pwm_GetPeriod(self, convertedPeriod, divider);
 
     convertedDuration = (uint32_t)(dutyCycle * convertedPeriod);
 
     // Flips the pulse
-    if (invertPolarity == 0)
+    if (polarity == TinyCLR_Pwm_PulsePolarity::ActiveLow)
         pulseBeginsOnHighEdge = 1;
     else
         pulseBeginsOnHighEdge = 0;
 
-    *g_PwmController[controller].channelModeReg = (volatile unsigned long)(registerDividerFlag | (pulseBeginsOnHighEdge << 9) | (1 << 10));
-    *g_PwmController[controller].channelUpdateReg = (volatile unsigned long)(convertedPeriod / (divider * 7.5));
-    *g_PwmController[controller].dutyCycleReg = (volatile unsigned long)(convertedDuration / (divider * 7.5));
+    *state->channelModeReg = (volatile unsigned long)(registerDividerFlag | (pulseBeginsOnHighEdge << 9) | (1 << 10));
+    *state->channelUpdateReg = (volatile unsigned long)(convertedPeriod / (divider * 7.5));
+    *state->dutyCycleReg = (volatile unsigned long)(convertedDuration / (divider * 7.5));
 
-    g_PwmController[controller].invert[pin] = invertPolarity;
-    g_PwmController[controller].dutyCycle[pin] = dutyCycle;
+    state->invert[channel] = polarity;
+    state->dutyCycle[channel] = dutyCycle;
 
     return TinyCLR_Result::Success;
 
 }
 
-TinyCLR_Result AT91_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Provider* self, int32_t controller, double& frequency) {
-    g_PwmController[controller].frequency = frequency;
+TinyCLR_Result AT91_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Controller* self, double& frequency) {
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
+
+    state->frequency = frequency;
 
     // Calculate actual frequency
-    frequency = AT91_Pwm_GetActualFrequency(self, controller);
+    frequency = AT91_Pwm_GetActualFrequency(self);
 
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++)
-        if (g_PwmController[controller].gpioPin[p].number != PIN_NONE)
-            if (AT91_Pwm_SetPulseParameters(self, controller, p, g_PwmController[controller].dutyCycle[p], g_PwmController[controller].invert[p]) != TinyCLR_Result::Success)
+        if (state->gpioPin[p].number != PIN_NONE)
+            if (AT91_Pwm_SetPulseParameters(self, p, state->dutyCycle[p], state->invert[p]) != TinyCLR_Result::Success)
                 return TinyCLR_Result::InvalidOperation;
 
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Pwm_Acquire(const TinyCLR_Pwm_Provider* self, int32_t controller) {
+TinyCLR_Result AT91_Pwm_Acquire(const TinyCLR_Pwm_Controller* self) {
     if (self == nullptr) return TinyCLR_Result::ArgumentNull;
 
-    AT91_Pwm_ResetController(controller);
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
+
+    auto controllerIndex = state->controllerIndex;
+
+    AT91_Pwm_ResetController(controllerIndex);
 
     AT91_PMC &pmc = AT91::PMC();
     pmc.EnablePeriphClock(AT91C_ID_PWMC);
@@ -409,47 +451,45 @@ TinyCLR_Result AT91_Pwm_Acquire(const TinyCLR_Pwm_Provider* self, int32_t contro
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Pwm_Release(const TinyCLR_Pwm_Provider* self, int32_t controller) {
+TinyCLR_Result AT91_Pwm_Release(const TinyCLR_Pwm_Controller* self) {
     if (self == nullptr) return TinyCLR_Result::ArgumentNull;
 
-    AT91_Pwm_ResetController(controller);
+    auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
+
+    auto controllerIndex = state->controllerIndex;
+
+    AT91_Pwm_ResetController(controllerIndex);
 
     return TinyCLR_Result::Success;
 }
 
 void AT91_Pwm_Reset() {
-    for (auto controller = 0; controller < TOTAL_PWM_CONTROLLER; controller++) {
-        AT91_Pwm_ResetController(controller);
+    for (auto c = 0; c < TOTAL_PWM_CONTROLLERS; c++) {
+        AT91_Pwm_ResetController(c);
     }
 }
 
-void AT91_Pwm_ResetController(int32_t controller) {
+void AT91_Pwm_ResetController(int32_t controllerIndex) {
+    auto state = &pwmStates[controllerIndex];
+
     for (int p = 0; p < MAX_PWM_PER_CONTROLLER; p++) {
-        g_PwmController[controller].gpioPin[p] = AT91_Pwm_GetPins(controller, p);
+        state->gpioPin[p] = AT91_Pwm_GetPins(controllerIndex, p);
 
-        if (g_PwmController[controller].gpioPin[p].number != PIN_NONE) {
+        if (state->gpioPin[p].number != PIN_NONE) {
             // Reset values
-            g_PwmController[controller].channelModeReg = PWM_CHANNEL_MODE_REGISTER(controller);
-            g_PwmController[controller].dutyCycleReg = PWM_DUTY_REGISTER(controller);
-            g_PwmController[controller].channelUpdateReg = PWM_CHANNEL_UPDATE_REGISTER(controller);
-            g_PwmController[controller].invert[p] = false;
-            g_PwmController[controller].frequency = 0.0;
-            g_PwmController[controller].dutyCycle[p] = 0.0;
+            state->channelModeReg = PWM_CHANNEL_MODE_REGISTER(controllerIndex);
+            state->dutyCycleReg = PWM_DUTY_REGISTER(controllerIndex);
+            state->channelUpdateReg = PWM_CHANNEL_UPDATE_REGISTER(controllerIndex);
+            state->invert[p] = TinyCLR_Pwm_PulsePolarity::ActiveLow;
+            state->frequency = 0.0;
+            state->dutyCycle[p] = 0.0;
 
-            if (g_PwmController[controller].isOpened[p] == true) {
-                AT91_Pwm_DisablePin(&pwmProviders, controller, p);
-                AT91_Pwm_ReleasePin(&pwmProviders, controller, p);
+            if (state->isOpened[p] == true) {
+                AT91_Pwm_DisableChannel(&pwmControllers[controllerIndex], p);
+                AT91_Pwm_CloseChannel(&pwmControllers[controllerIndex], p);
             }
 
-            g_PwmController[controller].isOpened[p] = false;
+            state->isOpened[p] = false;
         }
     }
 }
-
-TinyCLR_Result AT91_Pwm_GetControllerCount(const TinyCLR_Pwm_Provider* self, int32_t& count) {
-    count = TOTAL_PWM_CONTROLLER;
-
-    return TinyCLR_Result::Success;
-}
-
-

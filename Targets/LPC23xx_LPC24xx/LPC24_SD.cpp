@@ -2131,59 +2131,80 @@ int32_t MCI_Cmd_SendIfCond(void) {
 }
 
 // LPC24
-static TinyCLR_SdCard_Provider sdCardProvider;
-static TinyCLR_Api_Info sdApi;
-
 #define LPC24_SD_SECTOR_SIZE 512
 #define LPC24_SD_TIMEOUT 5000000
+#define TOTAL_SDCARD_CONTROLLERS 1
 
-struct SdController {
-    int32_t controller;
-    size_t  sectorCount;
+static TinyCLR_Storage_Controller sdCardControllers[TOTAL_SDCARD_CONTROLLERS];
+static TinyCLR_Api_Info sdCardApi[TOTAL_SDCARD_CONTROLLERS];
 
-    size_t  *sectorSizes;
+struct SdCardState {
+    int32_t controllerIndex;
+
+    uint64_t *regionAddresses;
+    size_t  *regionSizes;
+
+    TinyCLR_Storage_Descriptor descriptor;
+
+    bool isOpened = false;
 };
 
-static const LPC24_Gpio_Pin g_LPC24_SdCard_Data0_Pins[] = LPC24_SD_DATA0_PINS;
-static const LPC24_Gpio_Pin g_LPC24_SdCard_Data1_Pins[] = LPC24_SD_DATA1_PINS;
-static const LPC24_Gpio_Pin g_LPC24_SdCard_Data2_Pins[] = LPC24_SD_DATA2_PINS;
-static const LPC24_Gpio_Pin g_LPC24_SdCard_Data3_Pins[] = LPC24_SD_DATA3_PINS;
-static const LPC24_Gpio_Pin g_LPC24_SdCard_Clk_Pins[] = LPC24_SD_CLK_PINS;
-static const LPC24_Gpio_Pin g_LPC24_SdCard_Cmd_Pins[] = LPC24_SD_CMD_PINS;
+static const LPC24_Gpio_Pin sdCardData0Pins[] = LPC24_SD_DATA0_PINS;
+static const LPC24_Gpio_Pin sdCardData1Pins[] = LPC24_SD_DATA1_PINS;
+static const LPC24_Gpio_Pin sdCardData2Pins[] = LPC24_SD_DATA2_PINS;
+static const LPC24_Gpio_Pin sdCardData3Pins[] = LPC24_SD_DATA3_PINS;
+static const LPC24_Gpio_Pin sdCardClkPins[] = LPC24_SD_CLK_PINS;
+static const LPC24_Gpio_Pin sdCardCmdPins[] = LPC24_SD_CMD_PINS;
 
-SdController sdController[1];
+static SdCardState sdCardStates[TOTAL_SDCARD_CONTROLLERS];
 
-const TinyCLR_Api_Info* LPC24_SdCard_GetApi() {
-    sdCardProvider.ApiInfo = &sdApi;
+const char* sdCardApiNames[TOTAL_SDCARD_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.LPC24.SdCardStorageController\\0"
+};
 
-    sdCardProvider.Acquire = &LPC24_SdCard_Acquire;
-    sdCardProvider.Release = &LPC24_SdCard_Release;
-    sdCardProvider.GetControllerCount = &LPC24_SdCard_GetControllerCount;
+void LPC24_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
+        sdCardControllers[i].ApiInfo = &sdCardApi[i];
+        sdCardControllers[i].Acquire = &LPC24_SdCard_Acquire;
+        sdCardControllers[i].Release = &LPC24_SdCard_Release;
+        sdCardControllers[i].Open = &LPC24_SdCard_Open;
+        sdCardControllers[i].Close = &LPC24_SdCard_Close;
+        sdCardControllers[i].Write = &LPC24_SdCard_Write;
+        sdCardControllers[i].Read = &LPC24_SdCard_Read;
+        sdCardControllers[i].Erase = &LPC24_SdCard_Erases;
+        sdCardControllers[i].IsErased = &LPC24_SdCard_IsErased;
+        sdCardControllers[i].GetDescriptor = &LPC24_SdCard_GetDescriptor;
+        sdCardControllers[i].IsPresent = &LPC24_SdCard_IsPresent;
+        sdCardControllers[i].SetPresenceChangedHandler = &LPC24_SdCard_SetPresenceChangedHandler;
 
-    sdCardProvider.WriteSectors = &LPC24_SdCard_WriteSector;
-    sdCardProvider.ReadSectors = &LPC24_SdCard_ReadSector;
-    sdCardProvider.EraseSectors = &LPC24_SdCard_EraseSector;
-    sdCardProvider.IsSectorErased = &LPC24_SdCard_IsSectorErased;
-    sdCardProvider.GetSectorMap = &LPC24_SdCard_GetSectorMap;
+        sdCardApi[i].Author = "GHI Electronics, LLC";
+        sdCardApi[i].Name = sdCardApiNames[i];
+        sdCardApi[i].Type = TinyCLR_Api_Type::StorageController;
+        sdCardApi[i].Version = 0;
+        sdCardApi[i].Implementation = &sdCardControllers[i];
+        sdCardApi[i].State = &sdCardStates[i];
 
-    sdApi.Author = "GHI Electronics, LLC";
-    sdApi.Name = "GHIElectronics.TinyCLR.NativeApis.LPC24.SdCardProvider";
-    sdApi.Type = TinyCLR_Api_Type::SdCardProvider;
-    sdApi.Version = 0;
-    sdApi.Implementation = &sdCardProvider;
+        sdCardStates[i].controllerIndex = i;
 
-    return &sdApi;
+        apiManager->Add(apiManager, &sdCardApi[i]);
+    }
+
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::StorageController, sdCardApi[0].Name);
 }
 
-TinyCLR_Result LPC24_SdCard_Acquire(const TinyCLR_SdCard_Provider* self, int32_t controller) {
-    sdController[controller].controller = controller;
+TinyCLR_Result LPC24_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
+    auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
-    auto d0 = g_LPC24_SdCard_Data0_Pins[controller];
-    auto d1 = g_LPC24_SdCard_Data1_Pins[controller];
-    auto d2 = g_LPC24_SdCard_Data2_Pins[controller];
-    auto d3 = g_LPC24_SdCard_Data3_Pins[controller];
-    auto clk = g_LPC24_SdCard_Clk_Pins[controller];
-    auto cmd = g_LPC24_SdCard_Cmd_Pins[controller];
+    if (state->isOpened) return TinyCLR_Result::SharingViolation;
+
+    auto controllerIndex = state->controllerIndex;
+
+    auto d0 = sdCardData0Pins[controllerIndex];
+    auto d1 = sdCardData1Pins[controllerIndex];
+    auto d2 = sdCardData2Pins[controllerIndex];
+    auto d3 = sdCardData3Pins[controllerIndex];
+    auto clk = sdCardClkPins[controllerIndex];
+    auto cmd = sdCardCmdPins[controllerIndex];
 
     if (!LPC24_Gpio_OpenPin(d0.number)
         || !LPC24_Gpio_OpenPin(d1.number)
@@ -2201,23 +2222,40 @@ TinyCLR_Result LPC24_SdCard_Acquire(const TinyCLR_SdCard_Provider* self, int32_t
     LPC24_Gpio_ConfigurePin(clk.number, LPC24_Gpio_Direction::Input, clk.pinFunction, LPC24_Gpio_PinMode::Inactive);
     LPC24_Gpio_ConfigurePin(cmd.number, LPC24_Gpio_Direction::Input, cmd.pinFunction, LPC24_Gpio_PinMode::PullUp);
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    sdController[controller].sectorSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
+    state->regionAddresses = (uint64_t*)memoryProvider->Allocate(memoryProvider, sizeof(uint64_t));
+    state->regionSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
+
+    state->descriptor.CanReadDirect = true;
+    state->descriptor.CanWriteDirect = true;
+    state->descriptor.CanExecuteDirect = false;
+    state->descriptor.EraseBeforeWrite = false;
+    state->descriptor.Removable = true;
+    state->descriptor.RegionsRepeat = true;
+
+    state->descriptor.RegionAddresses = reinterpret_cast<const uint64_t*>(state->regionAddresses);
+    state->descriptor.RegionSizes = reinterpret_cast<const size_t*>(state->regionSizes);
 
     if (!MCI_And_Card_initialize())
         return TinyCLR_Result::InvalidOperation;
 
+    state->isOpened = true;
+
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_SdCard_Release(const TinyCLR_SdCard_Provider* self, int32_t controller) {
-    auto d0 = g_LPC24_SdCard_Data0_Pins[controller];
-    auto d1 = g_LPC24_SdCard_Data1_Pins[controller];
-    auto d2 = g_LPC24_SdCard_Data2_Pins[controller];
-    auto d3 = g_LPC24_SdCard_Data3_Pins[controller];
-    auto clk = g_LPC24_SdCard_Clk_Pins[controller];
-    auto cmd = g_LPC24_SdCard_Cmd_Pins[controller];
+TinyCLR_Result LPC24_SdCard_Release(const TinyCLR_Storage_Controller* self) {
+    auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
+
+    auto controllerIndex = state->controllerIndex;
+
+    auto d0 = sdCardData0Pins[controllerIndex];
+    auto d1 = sdCardData1Pins[controllerIndex];
+    auto d2 = sdCardData2Pins[controllerIndex];
+    auto d3 = sdCardData3Pins[controllerIndex];
+    auto clk = sdCardClkPins[controllerIndex];
+    auto cmd = sdCardCmdPins[controllerIndex];
 
     LPC24XX::SYSCON().PCONP &= ~(1 << 28); /* Disable clock to the Mci block */
 
@@ -2225,9 +2263,12 @@ TinyCLR_Result LPC24_SdCard_Release(const TinyCLR_SdCard_Provider* self, int32_t
 
     LPC24_Interrupt_Deactivate(LPC24XX_VIC::c_IRQ_INDEX_SD); /* Disable Interrupt */
 
-    auto memoryProvider = (const TinyCLR_Memory_Provider*)apiProvider->FindDefault(apiProvider, TinyCLR_Api_Type::MemoryProvider);
+    if (state->isOpened) {
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    memoryProvider->Free(memoryProvider, sdController[controller].sectorSizes);
+        memoryProvider->Free(memoryProvider, state->regionSizes);
+        memoryProvider->Free(memoryProvider, state->regionAddresses);
+    }
 
     LPC24_Gpio_ClosePin(d0.number);
     LPC24_Gpio_ClosePin(d1.number);
@@ -2236,23 +2277,19 @@ TinyCLR_Result LPC24_SdCard_Release(const TinyCLR_SdCard_Provider* self, int32_t
     LPC24_Gpio_ClosePin(clk.number);
     LPC24_Gpio_ClosePin(cmd.number);
 
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result LPC24_SdCard_GetControllerCount(const TinyCLR_SdCard_Provider* self, int32_t& count) {
-    count = SIZEOF_ARRAY(g_LPC24_SdCard_Data0_Pins);
+    state->isOpened = false;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, size_t& count, const uint8_t* data, int32_t timeout) {
+TinyCLR_Result LPC24_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
     int32_t index = 0;
 
     int32_t to = timeout;
 
     auto sectorCount = count;
 
-    auto sectorNum = sector;
+    auto sectorNum = address;
 
     uint8_t* pData = (uint8_t*)data;
 
@@ -2274,14 +2311,14 @@ TinyCLR_Result LPC24_SdCard_WriteSector(const TinyCLR_SdCard_Provider* self, int
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, size_t& count, uint8_t* data, int32_t timeout) {
+TinyCLR_Result LPC24_SdCard_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
     int32_t index = 0;
 
     int32_t to = timeout;
 
     auto sectorCount = count;
 
-    auto sectorNum = sector;
+    auto sectorNum = address;
 
     while (sectorCount) {
         if (MCI_ReadSector(sectorNum, &data[index]) == true) {
@@ -2301,29 +2338,52 @@ TinyCLR_Result LPC24_SdCard_ReadSector(const TinyCLR_SdCard_Provider* self, int3
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_SdCard_IsSectorErased(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, bool& erased) {
+TinyCLR_Result LPC24_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t count, bool& erased) {
     erased = true;
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result LPC24_SdCard_EraseSector(const TinyCLR_SdCard_Provider* self, int32_t controller, uint64_t sector, size_t& count, int32_t timeout) {
-    uint32_t addressStart = sector * LPC24_SD_SECTOR_SIZE;
-
-    uint32_t addressEnd = addressStart + (count * LPC24_SD_SECTOR_SIZE);
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_SdCard_GetSectorMap(const TinyCLR_SdCard_Provider* self, int32_t controller, const size_t*& sizes, size_t& count, bool& isUniform) {
-    sdController[controller].sectorSizes[0] = LPC24_SD_SECTOR_SIZE;
+TinyCLR_Result LPC24_SdCard_Erases(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout) {
+    return TinyCLR_Result::Success;
+}
 
-    sizes = sdController[controller].sectorSizes;
-    count = sdMediaSize / LPC24_SD_SECTOR_SIZE;
+TinyCLR_Result LPC24_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor) {
+    auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
+
+    state->regionSizes[0] = LPC24_SD_SECTOR_SIZE;
+    state->descriptor.RegionCount = sdMediaSize / LPC24_SD_SECTOR_SIZE;
+
+    descriptor = reinterpret_cast<const TinyCLR_Storage_Descriptor*>(&state->descriptor);
+
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result LPC24_SdCard_Open(const TinyCLR_Storage_Controller* self) {
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result LPC24_SdCard_Close(const TinyCLR_Storage_Controller* self) {
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result LPC24_SdCard_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler) {
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result LPC24_SdCard_IsPresent(const TinyCLR_Storage_Controller* self, bool& present) {
+    present = true;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_SdCard_Reset() {
+    for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
+        auto state = &sdCardStates[i];
+        
+        state->isOpened = false;
+    }
+
     return TinyCLR_Result::Success;
 }
 #endif // INCLUDE_SD

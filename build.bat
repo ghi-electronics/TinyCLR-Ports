@@ -33,11 +33,11 @@ IF NOT "%BuildConfiguration%" == "debug" IF NOT "%BuildConfiguration%" == "relea
     GOTO :EOF
 )
 
-IF NOT EXIST "%GccDirectory%" SET GccDirectory=C:\Program Files (x86)\GNU Tools ARM Embedded\7 2017-q4-major
-IF NOT EXIST "%GccDirectory%" SET GccDirectory=C:\Program Files\GNU Tools ARM Embedded\7 2017-q4-major
+IF NOT EXIST "%GccDirectory%" SET GccDirectory=C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update
+IF NOT EXIST "%GccDirectory%" SET GccDirectory=C:\Program Files\GNU Tools ARM Embedded\7 2018-q2-update
 
 IF NOT EXIST "%GccDirectory%" (
-    ECHO Cannot find GCC. Try passing the directory explicitly like `build.bat device build release normal "C:\Program Files (x86)\GNU Tools ARM Embedded\7 2017-q4-major"`
+    ECHO Cannot find GCC. Try passing the directory explicitly like `build.bat device build release normal "C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update"`
     GOTO :EOF
 )
 
@@ -87,7 +87,7 @@ IF "%NeedCmsis%" == "1" (
     )
 )
 
-SET AdditionalIncludes=%AdditionalIncludes% -I"%GccDirectory%\lib\gcc\arm-none-eabi\7.2.1\include"
+SET AdditionalIncludes=%AdditionalIncludes% -I"%GccDirectory%\lib\gcc\arm-none-eabi\7.3.1\include"
 SET AdditionalIncludes=%AdditionalIncludes% -I"%ScriptRoot%\Targets\%TargetName%"
 SET AdditionalIncludes=%AdditionalIncludes% -I"%ScriptRoot%\Devices\%DeviceName%"
 SET AdditionalIncludes=%AdditionalIncludes% -I"%ScriptRoot%\Core"

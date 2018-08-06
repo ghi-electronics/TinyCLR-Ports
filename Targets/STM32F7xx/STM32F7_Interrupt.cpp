@@ -18,29 +18,64 @@
 
 #define DISABLED_MASK  0x00000001
 
+#define TOTAL_INTERRUPT_CONTROLLERS 1
+
 TinyCLR_Interrupt_StartStopHandler STM32F7_Interrupt_Started;
 TinyCLR_Interrupt_StartStopHandler STM32F7_Interrupt_Ended;
 
-static TinyCLR_Interrupt_Provider interruptProvider;
-static TinyCLR_Api_Info interruptApi;
+struct InterruptState {
+    uint32_t controllerIndex;
+    bool tableInitialized;
+};
 
-const TinyCLR_Api_Info* STM32F7_Interrupt_GetApi() {
-    interruptProvider.ApiInfo = &interruptApi;
-    interruptProvider.Initialize = &STM32F7_Interrupt_Initialize;
-    interruptProvider.Uninitialize = &STM32F7_Interrupt_Uninitialize;
-    interruptProvider.Enable = &STM32F7_Interrupt_Enable;
-    interruptProvider.Disable = &STM32F7_Interrupt_Disable;
-    interruptProvider.WaitForInterrupt = &STM32F7_Interrupt_WaitForInterrupt;
-    interruptProvider.IsDisabled = &STM32F7_Interrupt_IsDisabled;
-    interruptProvider.Restore = &STM32F7_Interrupt_Restore;
+const char* interruptApiNames[TOTAL_INTERRUPT_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.STM32F7.InterruptController\\0"
+};
 
-    interruptApi.Author = "GHI Electronics, LLC";
-    interruptApi.Name = "GHIElectronics.TinyCLR.NativeApis.STM32F7.InterruptProvider";
-    interruptApi.Type = TinyCLR_Api_Type::InterruptProvider;
-    interruptApi.Version = 0;
-    interruptApi.Implementation = &interruptProvider;
+static TinyCLR_Interrupt_Controller interruptControllers[TOTAL_INTERRUPT_CONTROLLERS];
+static TinyCLR_Api_Info interruptApi[TOTAL_INTERRUPT_CONTROLLERS];
+static InterruptState interruptStates[TOTAL_INTERRUPT_CONTROLLERS];
 
-    return &interruptApi;
+void STM32F7_Interrupt_EnsureTableInitialized() {
+    for (auto i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
+        if (interruptStates[i].tableInitialized)
+            continue;
+
+        interruptControllers[i].ApiInfo = &interruptApi[i];
+        interruptControllers[i].Initialize = &STM32F7_Interrupt_Initialize;
+        interruptControllers[i].Uninitialize = &STM32F7_Interrupt_Uninitialize;
+        interruptControllers[i].Enable = &STM32F7_Interrupt_Enable;
+        interruptControllers[i].Disable = &STM32F7_Interrupt_Disable;
+        interruptControllers[i].WaitForInterrupt = &STM32F7_Interrupt_WaitForInterrupt;
+        interruptControllers[i].IsDisabled = &STM32F7_Interrupt_IsDisabled;
+        interruptControllers[i].Restore = &STM32F7_Interrupt_Restore;
+
+        interruptApi[i].Author = "GHI Electronics, LLC";
+        interruptApi[i].Name = interruptApiNames[i];
+        interruptApi[i].Type = TinyCLR_Api_Type::InterruptController;
+        interruptApi[i].Version = 0;
+        interruptApi[i].Implementation = &interruptControllers[i];
+        interruptApi[i].State = &interruptStates[i];
+
+        interruptStates[i].controllerIndex = i;
+        interruptStates[i].tableInitialized = true;
+    }
+}
+
+const TinyCLR_Api_Info* STM32F7_Interrupt_GetRequiredApi() {
+    STM32F7_Interrupt_EnsureTableInitialized();
+
+    return &interruptApi[0];
+}
+
+void STM32F7_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    STM32F7_Interrupt_EnsureTableInitialized();
+
+    for (auto i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
+        apiManager->Add(apiManager, &interruptApi[i]);
+    }
+
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::InterruptController, interruptApi[0].Name);
 }
 
 extern "C" {
@@ -48,7 +83,7 @@ extern "C" {
     extern uint32_t __Vectors;
 }
 
-TinyCLR_Result STM32F7_Interrupt_Initialize(const TinyCLR_Interrupt_Provider* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
+TinyCLR_Result STM32F7_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
     uint32_t *irq_vectors = (uint32_t*)&__Vectors;
 
     // disable all interrupts
@@ -78,7 +113,7 @@ TinyCLR_Result STM32F7_Interrupt_Initialize(const TinyCLR_Interrupt_Provider* se
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Interrupt_Uninitialize(const TinyCLR_Interrupt_Provider* self) {
+TinyCLR_Result STM32F7_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self) {
     return TinyCLR_Result::Success;
 }
 

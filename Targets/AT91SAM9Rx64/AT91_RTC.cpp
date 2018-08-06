@@ -40,23 +40,34 @@
 #define PMC_MCKR        (*(reinterpret_cast<volatile uint32_t*>(AT91C_BASE_PMC + 0x0030)))
 #define PMC_SR          (*(reinterpret_cast<volatile uint32_t*>(AT91C_BASE_PMC + 0x0068)))
 
-static TinyCLR_Rtc_Provider rtcProvider;
-static TinyCLR_Api_Info timeApi;
+#define TOTAL_RTC_CONTROLLERS 1
 
-const TinyCLR_Api_Info* AT91_Rtc_GetApi() {
-    rtcProvider.ApiInfo = &timeApi;
-    rtcProvider.Acquire = &AT91_Rtc_Acquire;
-    rtcProvider.Release = &AT91_Rtc_Release;
-    rtcProvider.GetNow = &AT91_Rtc_GetNow;
-    rtcProvider.SetNow = &AT91_Rtc_SetNow;
+static TinyCLR_Rtc_Controller rtcControllers[TOTAL_RTC_CONTROLLERS];
+static TinyCLR_Api_Info rtcApi[TOTAL_RTC_CONTROLLERS];
 
-    timeApi.Author = "GHI Electronics, LLC";
-    timeApi.Name = "GHIElectronics.TinyCLR.NativeApis.AT91.RtcProvider";
-    timeApi.Type = TinyCLR_Api_Type::RtcProvider;
-    timeApi.Version = 0;
-    timeApi.Implementation = &rtcProvider;
+const char* rtcApiNames[TOTAL_RTC_CONTROLLERS] = {
+    "GHIElectronics.TinyCLR.NativeApis.AT91.RtcController\\0"
+};
 
-    return &timeApi;
+void AT91_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    for (auto i = 0; i < TOTAL_RTC_CONTROLLERS; i++) {
+        rtcControllers[i].ApiInfo = &rtcApi[i];
+        rtcControllers[i].Acquire = &AT91_Rtc_Acquire;
+        rtcControllers[i].Release = &AT91_Rtc_Release;
+        rtcControllers[i].GetTime = &AT91_Rtc_GetTime;
+        rtcControllers[i].SetTime = &AT91_Rtc_SetTime;
+
+        rtcApi[i].Author = "GHI Electronics, LLC";
+        rtcApi[i].Name = rtcApiNames[i];
+        rtcApi[i].Type = TinyCLR_Api_Type::RtcController;
+        rtcApi[i].Version = 0;
+        rtcApi[i].Implementation = &rtcControllers[i];
+        rtcApi[i].State = nullptr;
+
+        apiManager->Add(apiManager, &rtcApi[i]);
+    }
+
+    apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::RtcController, rtcApi[0].Name);
 }
 
 void AT91_Rtc_BinaryCodedDecimalExtract(uint32_t valueToConvert, uint32_t &tens, uint32_t &ones) {
@@ -73,7 +84,7 @@ uint32_t AT91_Rtc_BinaryCodedDecimalCombine(uint32_t tens, uint32_t ones) {
     return CombinedBinaryCodedDecimal;
 }
 
-TinyCLR_Result AT91_Rtc_Acquire(const TinyCLR_Rtc_Provider* self) {
+TinyCLR_Result AT91_Rtc_Acquire(const TinyCLR_Rtc_Controller* self) {
     if ((PMC_MCKR & AT91C_PMC_CSS) != 0) {
         volatile uint32_t dumpReg = SCKCR_SCKCR;
 
@@ -99,11 +110,11 @@ TinyCLR_Result AT91_Rtc_Acquire(const TinyCLR_Rtc_Provider* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Rtc_Release(const TinyCLR_Rtc_Provider* self) {
+TinyCLR_Result AT91_Rtc_Release(const TinyCLR_Rtc_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime& value) {
+TinyCLR_Result AT91_Rtc_GetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value) {
     uint32_t calenderRegister = RTC_CALR;
     uint32_t timeRegister = RTC_TIMR;
     uint32_t fullYear = 0;
@@ -143,7 +154,7 @@ TinyCLR_Result AT91_Rtc_GetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_Dat
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Rtc_SetNow(const TinyCLR_Rtc_Provider* self, TinyCLR_Rtc_DateTime value) {
+TinyCLR_Result AT91_Rtc_SetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value) {
     uint32_t calenderRegister = 0;
     uint32_t timeRegister = 0;
     uint32_t lowerHundredYears = 0;
