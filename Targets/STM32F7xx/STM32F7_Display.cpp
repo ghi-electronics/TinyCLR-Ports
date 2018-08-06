@@ -814,16 +814,10 @@ bool STM32F7_Display_SetPinConfiguration(bool enable) {
             STM32F7_GpioInternal_ConfigurePin(g_Display_ControllerPins[i].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::None, g_Display_ControllerPins[i].alternateFunction);
         }
 
-        if (!STM32F7_GpioInternal_OpenPin(g_Display_EnablePin.number)) {
-            return false;
-        }
-
-        if (m_STM32F7_DisplayOutputEnableIsFixed) {
-            STM32F7_GpioInternal_ConfigurePin(g_Display_EnablePin.number, STM32F7_Gpio_PortMode::GeneralPurposeOutput, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::None, STM32F7_Gpio_AlternateFunction::AF0);
-            STM32F7_GpioInternal_WritePin(g_Display_EnablePin.number, m_STM32F7_DisplayOutputEnablePolarity);
-        }
-        else {
-            STM32F7_GpioInternal_ConfigurePin(g_Display_EnablePin.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::None, g_Display_EnablePin.alternateFunction);
+        if (g_Display_EnablePin.number != PIN_NONE) {
+            if (!STM32F7_GpioInternal_OpenPin(g_Display_EnablePin.number)) {
+                return false;
+            }
         }
 
         if (g_Display_BacklightPin.number != PIN_NONE) {
@@ -1123,6 +1117,17 @@ TinyCLR_Result STM32F7_Display_SetConfiguration(const TinyCLR_Display_Controller
 
         if (m_STM32F7_Display_VituralRam == nullptr) {
             return TinyCLR_Result::OutOfMemory;
+        }
+
+        // Set g_Display_EnablePin following m_STM32F7_DisplayOutputEnableIsFixed
+        if (g_Display_EnablePin.number != PIN_NONE) {
+            if (m_STM32F7_DisplayOutputEnableIsFixed) {
+                STM32F7_GpioInternal_ConfigurePin(g_Display_EnablePin.number, STM32F7_Gpio_PortMode::GeneralPurposeOutput, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::None, STM32F7_Gpio_AlternateFunction::AF0);
+                STM32F7_GpioInternal_WritePin(g_Display_EnablePin.number, m_STM32F7_DisplayOutputEnablePolarity);
+            }
+            else {
+                STM32F7_GpioInternal_ConfigurePin(g_Display_EnablePin.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::None, g_Display_EnablePin.alternateFunction);
+            }
         }
     }
 
