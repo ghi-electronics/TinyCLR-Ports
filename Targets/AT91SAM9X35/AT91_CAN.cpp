@@ -1051,8 +1051,6 @@ struct CanState {
 static const AT91_Gpio_Pin canTxPins[] = AT91_CAN_TX_PINS;
 static const AT91_Gpio_Pin canRxPins[] = AT91_CAN_RX_PINS;
 
-static const int TOTAL_CAN_CONTROLLERS = SIZEOF_ARRAY(canTxPins);
-
 static CanState canStates[TOTAL_CAN_CONTROLLERS];
 
 static TinyCLR_Can_Controller canControllers[TOTAL_CAN_CONTROLLERS];

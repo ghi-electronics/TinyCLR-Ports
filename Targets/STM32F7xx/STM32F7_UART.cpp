@@ -69,8 +69,6 @@ static const STM32F7_Gpio_Pin uartRtsPins[] = STM32F7_UART_RTS_PINS;
 static const uint32_t uartRxDefaultBuffersSize[] = STM32F7_UART_DEFAULT_RX_BUFFER_SIZE;
 static const uint32_t uartTxDefaultBuffersSize[] = STM32F7_UART_DEFAULT_TX_BUFFER_SIZE;
 
-static const int TOTAL_UART_CONTROLLERS = SIZEOF_ARRAY(uartTxPins);
-
 static USART_TypeDef_Ptr uartPortRegs[TOTAL_UART_CONTROLLERS];
 
 static UartState uartStates[TOTAL_UART_CONTROLLERS];

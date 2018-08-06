@@ -41,8 +41,6 @@ void STM32F7_I2c_StopTransaction(int32_t controllerIndex);
 static const STM32F7_Gpio_Pin i2cSclPins[] = STM32F7_I2C_SCL_PINS;
 static const STM32F7_Gpio_Pin i2cSdaPins[] = STM32F7_I2C_SDA_PINS;
 
-static const int TOTAL_I2C_CONTROLLERS = SIZEOF_ARRAY(i2cSclPins);
-
 static I2C_TypeDef* i2cPorts[TOTAL_I2C_CONTROLLERS];
 
 struct I2cConfiguration {
@@ -82,11 +80,11 @@ static TinyCLR_Api_Info i2cApi[TOTAL_I2C_CONTROLLERS];
 
 const char* i2cApiNames[] = {
 #if TOTAL_I2C_CONTROLLERS > 0
-"GHIElectronics.TinyCLR.NativeApis.STM32F7.I2cController\\0"
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.I2cController\\0",
 #if TOTAL_I2C_CONTROLLERS > 1
-"GHIElectronics.TinyCLR.NativeApis.STM32F7.I2cController\\0"
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.I2cController\\1",
 #if TOTAL_I2C_CONTROLLERS > 2
-"GHIElectronics.TinyCLR.NativeApis.STM32F7.I2cController\\0"
+"GHIElectronics.TinyCLR.NativeApis.STM32F7.I2cController\\2"
 #endif
 #endif
 #endif
