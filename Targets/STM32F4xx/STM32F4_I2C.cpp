@@ -201,30 +201,35 @@ void STM32F4_I2C_EV_Interrupt(int32_t controllerIndex) {// Event Interrupt Handl
         }
     }
 }
-
+#if TOTAL_I2C_CONTROLLERS > 0
 void STM32F4_I2C1_ER_Interrupt(void *param) {
     STM32F4_I2C_ER_Interrupt(0);
-}
-
-void STM32F4_I2C2_ER_Interrupt(void *param) {
-    STM32F4_I2C_ER_Interrupt(1);
-}
-
-void STM32F4_I2C3_ER_Interrupt(void *param) {
-    STM32F4_I2C_ER_Interrupt(2);
 }
 
 void STM32F4_I2C1_EV_Interrupt(void *param) {
     STM32F4_I2C_EV_Interrupt(0);
 }
 
+#if TOTAL_I2C_CONTROLLERS > 1
+void STM32F4_I2C2_ER_Interrupt(void *param) {
+    STM32F4_I2C_ER_Interrupt(1);
+}
+
 void STM32F4_I2C2_EV_Interrupt(void *param) {
     STM32F4_I2C_EV_Interrupt(1);
+}
+
+#if TOTAL_I2C_CONTROLLERS > 2
+void STM32F4_I2C3_ER_Interrupt(void *param) {
+    STM32F4_I2C_ER_Interrupt(2);
 }
 
 void STM32F4_I2C3_EV_Interrupt(void *param) {
     STM32F4_I2C_EV_Interrupt(2);
 }
+#endif
+#endif
+#endif
 
 void STM32F4_I2c_StartTransaction(int32_t controllerIndex) {
     auto& I2Cx = i2cPorts[controllerIndex];
@@ -380,21 +385,25 @@ TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
     RCC->APB1RSTR = (controllerIndex == 0 ? RCC_APB1RSTR_I2C1RST : controllerIndex == 1 ? RCC_APB1RSTR_I2C2RST : RCC_APB1RSTR_I2C3RST);
 
     switch (controllerIndex) {
+#if TOTAL_I2C_CONTROLLERS > 0
     case 0:
         STM32F4_InterruptInternal_Activate(I2C1_EV_IRQn, (uint32_t*)&STM32F4_I2C1_EV_Interrupt, 0);
         STM32F4_InterruptInternal_Activate(I2C1_ER_IRQn, (uint32_t*)&STM32F4_I2C1_ER_Interrupt, 0);
         break;
-
+#if TOTAL_I2C_CONTROLLERS > 1
     case 1:
 
         STM32F4_InterruptInternal_Activate(I2C2_EV_IRQn, (uint32_t*)&STM32F4_I2C2_EV_Interrupt, 0);
         STM32F4_InterruptInternal_Activate(I2C2_ER_IRQn, (uint32_t*)&STM32F4_I2C2_ER_Interrupt, 0);
         break;
-
+#if TOTAL_I2C_CONTROLLERS > 2
     case 2:
         STM32F4_InterruptInternal_Activate(I2C3_EV_IRQn, (uint32_t*)&STM32F4_I2C3_EV_Interrupt, 0);
         STM32F4_InterruptInternal_Activate(I2C3_ER_IRQn, (uint32_t*)&STM32F4_I2C3_ER_Interrupt, 0);
         break;
+#endif
+#endif
+#endif
     }
 
     RCC->APB1RSTR = 0;
