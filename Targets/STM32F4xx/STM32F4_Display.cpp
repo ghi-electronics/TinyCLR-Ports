@@ -1176,12 +1176,23 @@ TinyCLR_Result STM32F4_Display_DrawPixel(const TinyCLR_Display_Controller* self,
     uint8_t G = (color >> 8) & 0xFF;
     uint8_t B = (color) & 0xFF;
 
-    uint32_t rgb565 = (R & 0xF8) << 11;
+    uint16_t rgb565 = (R & 0xF8) << 11;
     rgb565 |= (G & 0xFC) << 5;
     rgb565 |= (B & 0xF8);
 
+    volatile uint16_t * loc;
 
-    STM32F7_Display_BitBltEx(x, y, 1, 1, &rgb565);
+    if (m_STM32F4_DisplayEnable == false)
+        return TinyCLR_Result::InvalidOperation;
+
+    if (x >= m_STM32F4_DisplayWidth)
+        return TinyCLR_Result::InvalidOperation;
+    if (y >= m_STM32F4_DisplayHeight)
+        return TinyCLR_Result::InvalidOperation;
+
+    loc = m_STM32F4_Display_VituralRam + (y *m_STM32F4_DisplayWidth) + (x);
+
+    *loc = rgb565;
 
     return TinyCLR_Result::Success;
 }

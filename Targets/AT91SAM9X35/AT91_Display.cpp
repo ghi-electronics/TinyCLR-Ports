@@ -1409,12 +1409,23 @@ TinyCLR_Result AT91_Display_DrawPixel(const TinyCLR_Display_Controller* self, ui
     uint8_t G = (color >> 8) & 0xFF;
     uint8_t B = (color) & 0xFF;
 
-    uint32_t rgb565 = (R & 0xF8) << 11;
+    uint16_t rgb565 = (R & 0xF8) << 11;
     rgb565 |= (G & 0xFC) << 5;
     rgb565 |= (B & 0xF8);
 
+    volatile uint16_t * loc;
 
-    STM32F7_Display_BitBltEx(x, y, 1, 1, &rgb565);
+    if (m_AT91_DisplayEnable == false)
+        return TinyCLR_Result::InvalidOperation;
+
+    if (x >= m_AT91_DisplayWidth)
+        return TinyCLR_Result::InvalidOperation;
+    if (y >= m_AT91_DisplayHeight)
+        return TinyCLR_Result::InvalidOperation;
+
+    loc = m_AT91_Display_VituralRam + (y *m_AT91_DisplayWidth) + (x);
+
+    *loc = rgb565;
 
     return TinyCLR_Result::Success;
 }
