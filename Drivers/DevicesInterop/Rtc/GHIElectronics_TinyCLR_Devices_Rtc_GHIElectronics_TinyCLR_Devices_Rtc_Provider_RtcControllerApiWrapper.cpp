@@ -11,7 +11,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR
     TinyCLR_Interop_ClrValue obj, ret;
     TinyCLR_Interop_ClrTypeId type;
 
-    md.InteropManager->FindType(md.InteropManager, "GHIElectronics.TinyCLR.Devices", "GHIElectronics.TinyCLR.Devices.Rtc", "RtcDateTime", type);
+    md.InteropManager->FindType(md.InteropManager, "GHIElectronics.TinyCLR.Devices.Rtc", "GHIElectronics.TinyCLR.Devices.Rtc", "RtcDateTime", type);
 
     md.InteropManager->CreateObject(md.InteropManager, md.Stack, type, obj);
 

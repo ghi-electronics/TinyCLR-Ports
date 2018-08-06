@@ -21,7 +21,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_Tin
     TinyCLR_Interop_ClrValue obj, ret;
     TinyCLR_Interop_ClrTypeId type;
 
-    md.InteropManager->FindType(md.InteropManager, "GHIElectronics.TinyCLR.IO", "GHIElectronics.TinyCLR.Devices.Storage", "StorageDescriptor", type);
+    md.InteropManager->FindType(md.InteropManager, "GHIElectronics.TinyCLR.Devices.Storage", "GHIElectronics.TinyCLR.Devices.Storage", "StorageDescriptor", type);
 
     md.InteropManager->CreateObject(md.InteropManager, md.Stack, type, obj);
 
