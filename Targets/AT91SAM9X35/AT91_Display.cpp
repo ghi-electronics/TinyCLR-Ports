@@ -1405,7 +1405,29 @@ TinyCLR_Result AT91_Display_DrawBuffer(const TinyCLR_Display_Controller* self, u
 }
 
 TinyCLR_Result AT91_Display_DrawPixel(const TinyCLR_Display_Controller* self, uint32_t x, uint32_t y, uint64_t color) {
-    return TinyCLR_Result::NotImplemented;
+    uint8_t R = (color >> 16) & 0xFF;
+    uint8_t G = (color >> 8) & 0xFF;
+    uint8_t B = (color) & 0xFF;
+
+    uint16_t rgb565 = (R & 0xF8) << 11;
+    rgb565 |= (G & 0xFC) << 5;
+    rgb565 |= (B & 0xF8);
+
+    volatile uint16_t * loc;
+
+    if (m_AT91_DisplayEnable == false)
+        return TinyCLR_Result::InvalidOperation;
+
+    if (x >= m_AT91_DisplayWidth)
+        return TinyCLR_Result::InvalidOperation;
+    if (y >= m_AT91_DisplayHeight)
+        return TinyCLR_Result::InvalidOperation;
+
+    loc = m_AT91_Display_VituralRam + (y *m_AT91_DisplayWidth) + (x);
+
+    *loc = rgb565;
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Display_DrawString(const TinyCLR_Display_Controller* self, const char* data, size_t length) {
