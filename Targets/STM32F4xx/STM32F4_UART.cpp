@@ -896,5 +896,10 @@ TinyCLR_Result STM32F4_Uart_Enable(const TinyCLR_Uart_Controller* self) {
 }
 
 TinyCLR_Result STM32F4_Uart_Disable(const TinyCLR_Uart_Controller* self) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+
+    state->errorEventHandler = nullptr;
+    state->dataReceivedEventHandler = nullptr;
+
     return TinyCLR_Result::Success;
 }
