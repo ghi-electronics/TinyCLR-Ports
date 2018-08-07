@@ -39,6 +39,7 @@ struct GpioInterruptState {
     const TinyCLR_Gpio_Controller* controller;
     TinyCLR_Gpio_PinChangedHandler handler;
     TinyCLR_Gpio_PinValue currentValue;
+    TinyCLR_Gpio_PinChangeEdge edge;
 };
 
 
@@ -149,7 +150,7 @@ void STM32F7_Gpio_ISR(int num)  // 0 <= num <= 15
 
         }
 
-        if (executeIsr)
+        if (executeIsr && (edge == interruptState->edge))
             interruptState->handler(interruptState->controller, interruptState->pin, edge);
     }
 }
@@ -227,6 +228,7 @@ TinyCLR_Result STM32F7_Gpio_SetPinChangedHandler(const TinyCLR_Gpio_Controller* 
         interruptState->debounce = STM32F7_Gpio_GetDebounceTimeout(self, pin);
         interruptState->handler = handler;
         interruptState->lastDebounceTicks = STM32F7_Time_GetTimeForProcessorTicks(nullptr, STM32F7_Time_GetCurrentProcessorTicks(nullptr));
+        interruptState->edge = edge;
 
         EXTI->RTSR &= ~bit;
         EXTI->FTSR &= ~bit;

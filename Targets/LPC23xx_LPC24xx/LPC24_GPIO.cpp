@@ -111,6 +111,7 @@ struct GpioInterruptState {
     const TinyCLR_Gpio_Controller* controller;
     TinyCLR_Gpio_PinChangedHandler handler;
     TinyCLR_Gpio_PinValue currentValue;
+    TinyCLR_Gpio_PinChangeEdge edge;
 };
 
 struct GpioState {
@@ -216,13 +217,12 @@ void LPC24_Gpio_InterruptHandler(void* param) {
                 }
             }
 
-            if (executeIsr) {
-                LPC24_Gpio_Read(interruptState->controller, interruptState->pin, interruptState->currentValue); // read value as soon as possible
+            LPC24_Gpio_Read(interruptState->controller, interruptState->pin, interruptState->currentValue); // read value as soon as possible
 
-                auto edge = interruptState->currentValue == TinyCLR_Gpio_PinValue::High ? TinyCLR_Gpio_PinChangeEdge::RisingEdge : TinyCLR_Gpio_PinChangeEdge::FallingEdge;
+            auto edge = interruptState->currentValue == TinyCLR_Gpio_PinValue::High ? TinyCLR_Gpio_PinChangeEdge::RisingEdge : TinyCLR_Gpio_PinChangeEdge::FallingEdge;
 
-                interruptState->handler(interruptState->controller, interruptState->pin, edge);
-            }
+            if (executeIsr && (edge == interruptState->edge))
+                interruptState->handler(interruptState->controller, interruptState->pin, edge);            
         }
     }
 }
@@ -250,6 +250,7 @@ TinyCLR_Result LPC24_Gpio_SetPinChangedHandler(const TinyCLR_Gpio_Controller* se
         interruptState->debounce = LPC24_Gpio_GetDebounceTimeout(self, pin);
         interruptState->handler = handler;
         interruptState->lastDebounceTicks = LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr));
+        interruptState->edge = edge;
 
         SET_PIN_INTERRUPT_RISING_EDGE(GET_PORT(pin), GET_PIN(pin));
         SET_PIN_INTERRUPT_FALLING_EDGE(GET_PORT(pin), GET_PIN(pin));
