@@ -134,16 +134,19 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCL
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::Enable___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Uart_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
-    if (api->SetDataReceivedHandler(api, TinyCLR_Uart_DataReceivedIsr) == TinyCLR_Result::Success)
-        if (api->SetErrorReceivedHandler(api, TinyCLR_Uart_ErrorReceivedIsr) == TinyCLR_Result::Success)
-            if (api->SetClearToSendChangedHandler(api, TinyCLR_Uart_ClearToSendIsr) == TinyCLR_Result::Success)
-                return api->Enable(api);
+    api->SetDataReceivedHandler(api, TinyCLR_Uart_DataReceivedIsr);
+    api->SetErrorReceivedHandler(api, TinyCLR_Uart_ErrorReceivedIsr);
+    api->SetClearToSendChangedHandler(api, TinyCLR_Uart_ClearToSendIsr);
 
-    return TinyCLR_Result::InvalidOperation;
+    return api->Enable(api);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::Disable___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Uart_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
+
+    api->SetDataReceivedHandler(api, nullptr);
+    api->SetErrorReceivedHandler(api, nullptr);
+    api->SetClearToSendChangedHandler(api, nullptr);
 
     return api->Disable(api);
 }
