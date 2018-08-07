@@ -2379,9 +2379,8 @@ TinyCLR_Result LPC24_SdCard_IsPresent(const TinyCLR_Storage_Controller* self, bo
 
 TinyCLR_Result LPC24_SdCard_Reset() {
     for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
-        auto state = &sdCardStates[i];
-        
-        state->isOpened = false;
+        LPC24_SdCard_Close(&sdCardControllers[i]);
+        LPC24_SdCard_Release(&sdCardControllers[i]);
     }
 
     return TinyCLR_Result::Success;
