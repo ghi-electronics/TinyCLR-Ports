@@ -60,13 +60,12 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCL
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::SetDebounceTimeout___VOID__I4__mscorlibSystemTimeSpan(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Gpio_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
-    TinyCLR_Interop_ClrValue arg0, arg1;
+    TinyCLR_Interop_ClrValue arg[2], ret;
+    TinyCLR_Interop_GetArguments(md, &arg[0], 0, 2);
 
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg0);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 1, arg1);
 
-    auto pin = arg0.Data.Numeric->I4;
-    auto value = arg1.Data.Numeric->I8;
+    auto pin = arg[0].Data.Numeric->I4;
+    auto value = arg[1].Data.Numeric->I8;
 
     return api->SetDebounceTimeout(api, pin, value);
 }
@@ -89,16 +88,14 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCL
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::SetDriveMode___VOID__I4__GHIElectronicsTinyCLRDevicesGpioGpioPinDriveMode(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Gpio_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
-    TinyCLR_Interop_ClrValue arg0, arg1;
-
     auto keepPinState = false;
 
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg0);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 1, arg1);
+    TinyCLR_Interop_ClrValue arg[2], ret;
+    TinyCLR_Interop_GetArguments(md, &arg[0], 0, 2);
 
-    auto pin = arg0.Data.Numeric->I4;
+    auto pin = arg[0].Data.Numeric->I4;
 
-    auto driveMode = static_cast<TinyCLR_Gpio_PinDriveMode>(arg1.Data.Numeric->I4);
+    auto driveMode = static_cast<TinyCLR_Gpio_PinDriveMode>(arg[1].Data.Numeric->I4);
 
     TinyCLR_Result result;
 

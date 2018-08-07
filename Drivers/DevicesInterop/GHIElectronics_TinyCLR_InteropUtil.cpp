@@ -35,6 +35,11 @@ TinyCLR_Interop_ClrValue TinyCLR_Interop_GetFieldSelf(const TinyCLR_Interop_Meth
     return fld;
 }
 
+void TinyCLR_Interop_GetArguments(const TinyCLR_Interop_MethodData md, TinyCLR_Interop_ClrValue* arg, int32_t argOffset, size_t argCount) {
+    for (auto i = argOffset; i < argCount; i++) {
+        md.InteropManager->GetArgument(md.InteropManager, md.Stack, i, arg[i]);
+    }
+}
 void DevicesInterop_Add(const TinyCLR_Interop_Manager* interopManager) {
 #ifdef INCLUDE_ADC
     interopManager->Add(interopManager, &Interop_GHIElectronics_TinyCLR_Devices_Adc);

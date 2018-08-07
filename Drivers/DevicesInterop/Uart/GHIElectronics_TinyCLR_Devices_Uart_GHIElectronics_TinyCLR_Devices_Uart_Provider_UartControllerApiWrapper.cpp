@@ -154,19 +154,14 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCL
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::SetActiveSettings___VOID__I4__I4__GHIElectronicsTinyCLRDevicesUartUartParity__GHIElectronicsTinyCLRDevicesUartUartStopBitCount__GHIElectronicsTinyCLRDevicesUartUartHandshake(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Uart_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
-    TinyCLR_Interop_ClrValue arg0, arg1, arg2, arg3, arg4;
+    TinyCLR_Interop_ClrValue arg[5], ret;
+    TinyCLR_Interop_GetArguments(md, &arg[0], 0, 5);
 
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg0);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 1, arg1);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 2, arg2);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 3, arg3);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 4, arg4);
-
-    auto baudRate = arg0.Data.Numeric->I4;
-    auto dataBits = arg1.Data.Numeric->I4;
-    auto parity = static_cast<TinyCLR_Uart_Parity>(arg2.Data.Numeric->I4);
-    auto stopBits = static_cast<TinyCLR_Uart_StopBitCount>(arg3.Data.Numeric->I4);
-    auto handshaking = static_cast<TinyCLR_Uart_Handshake>(arg4.Data.Numeric->I4);
+    auto baudRate = arg[0].Data.Numeric->I4;
+    auto dataBits = arg[1].Data.Numeric->I4;
+    auto parity = static_cast<TinyCLR_Uart_Parity>(arg[2].Data.Numeric->I4);
+    auto stopBits = static_cast<TinyCLR_Uart_StopBitCount>(arg[3].Data.Numeric->I4);
+    auto handshaking = static_cast<TinyCLR_Uart_Handshake>(arg[4].Data.Numeric->I4);
 
     return api->SetActiveSettings(api, baudRate, dataBits, parity, stopBits, handshaking);
 }
