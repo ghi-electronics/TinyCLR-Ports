@@ -379,8 +379,6 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
     if (controllerIndex >= TOTAL_UART_CONTROLLERS)
         return TinyCLR_Result::ArgumentInvalid;
 
-    DISABLE_INTERRUPTS_SCOPED(irq);
-
     if (state->isOpened || !STM32F4_GpioInternal_OpenPin(uartRxPins[controllerIndex].number) || !STM32F4_GpioInternal_OpenPin(uartTxPins[controllerIndex].number))
         return TinyCLR_Result::SharingViolation;
 
