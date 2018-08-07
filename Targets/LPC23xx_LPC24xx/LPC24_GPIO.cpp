@@ -163,6 +163,8 @@ void LPC24_Gpio_EnsureTableInitialized() {
         gpioStates[i].controllerIndex = i;
         gpioStates[i].tableInitialized = true;
     }
+
+    SCS_BASE |= (1 << 0); // Enable for port 0 and 1
 }
 
 const TinyCLR_Api_Info* LPC24_Gpio_GetRequiredApi() {
@@ -501,8 +503,6 @@ uint32_t LPC24_Gpio_GetPinCount(const TinyCLR_Gpio_Controller* self) {
 }
 
 void LPC24_Gpio_Reset() {
-    SCS_BASE |= (1 << 0); // Enable for port 0 and 1
-
     for (auto c = 0; c < TOTAL_GPIO_CONTROLLERS; c++) {
         for (auto pin = 0; pin < LPC24_Gpio_GetPinCount(&gpioControllers[c]); pin++) {
             auto& p = gpioPins[pin];
