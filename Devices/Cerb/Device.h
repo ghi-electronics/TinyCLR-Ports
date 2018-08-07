@@ -52,6 +52,7 @@
 #define INCLUDE_ADC
 
 #define INCLUDE_CAN
+#define TOTAL_CAN_CONTROLLERS 2
 #define STM32F4_CAN_BUFFER_DEFAULT_SIZE { 128 , 128 }
 #define STM32F4_CAN_TX_PINS { { PIN(B, 9), AF(9) }, { PIN(B, 6), AF(9) } }
 #define STM32F4_CAN_RX_PINS { { PIN(B, 8), AF(9) }, { PIN(B, 5), AF(9) } }
@@ -67,10 +68,12 @@
                           }
 
 #define INCLUDE_I2C
+#define TOTAL_I2C_CONTROLLERS 1
 #define STM32F4_I2C_SCL_PINS { { PIN(B, 6), AF(4) } }
 #define STM32F4_I2C_SDA_PINS { { PIN(B, 7), AF(4) } }
 
 #define INCLUDE_PWM
+#define TOTAL_PWM_CONTROLLERS 14
 #define STM32F4_PWM_PINS {/*          0                           1                        2                        3                       */\
                           /* TIM1  */ { { PIN(A,  8) , AF(1)   }, { PIN(A, 9) , AF(1)   }, { PIN(A,10) , AF(1)   }, { PIN_NONE   , AF_NONE }  },\
                           /* TIM2  */ { { PIN(A, 15) , AF(1)   }, { PIN(B, 3) , AF(1)   }, { PIN(B,10) , AF(1)   }, { PIN(B, 11) , AF(1)   }  },\
@@ -101,6 +104,7 @@
 #define INCLUDE_SIGNALS
 
 #define INCLUDE_SPI
+#define TOTAL_SPI_CONTROLLERS 1
 #define STM32F4_SPI_SCLK_PINS { { PIN(B, 3), AF(5) } }
 #define STM32F4_SPI_MISO_PINS { { PIN(B, 4), AF(5) } }
 #define STM32F4_SPI_MOSI_PINS { { PIN(B, 5), AF(5) } }
@@ -108,6 +112,7 @@
 #define INCLUDE_STORAGE
 
 #define INCLUDE_UART
+#define TOTAL_UART_CONTROLLERS 6
 #define STM32F4_UART_DEFAULT_TX_BUFFER_SIZE  { 256, 256, 256, 256, 256, 256 }
 #define STM32F4_UART_DEFAULT_RX_BUFFER_SIZE  { 512, 512, 512, 512, 512, 512 }
 #define STM32F4_UART_TX_PINS  { { PIN(B,  6), AF(7)   }, { PIN(A, 2), AF(7) }, { PIN(B, 10), AF(7) } , { PIN_NONE  , AF_NONE } , { PIN_NONE  , AF_NONE } , { PIN(C, 6) , AF(8)   } }
