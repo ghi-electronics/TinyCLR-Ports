@@ -143,21 +143,25 @@ void AT91_Gpio_InterruptHandler(void* param) {
 
             GpioInterruptState* interruptState = &gpioInterruptState[bitIndex + port * 32];;
 
-            if (interruptState->debounce) {
-                if ((AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr)) - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {
-                    interruptState->lastDebounceTicks = AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr));
-                }
-                else {
-                    executeIsr = false;
-                }
-            }
-
             AT91_Gpio_Read(interruptState->controller, interruptState->pin, interruptState->currentValue); // read value as soon as possible
 
             auto edge = interruptState->currentValue == TinyCLR_Gpio_PinValue::High ? TinyCLR_Gpio_PinChangeEdge::RisingEdge : TinyCLR_Gpio_PinChangeEdge::FallingEdge;
+            auto expectedEdgeInterger = static_cast<uint32_t>(interruptState->edge);
+            auto currentEdgeInterger = static_cast<uint32_t>(edge);
 
-            if (executeIsr && (edge == interruptState->edge))
-                interruptState->handler(interruptState->controller, interruptState->pin, edge);
+            if (interruptState->handler && ((expectedEdgeInterger & currentEdgeInterger) || (expectedEdgeInterger == 0))) {
+                if (interruptState->debounce) {
+                    if ((AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr)) - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {
+                        interruptState->lastDebounceTicks = AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr));
+                    }
+                    else {
+                        executeIsr = false;
+                    }
+                }
+
+                if (executeIsr)
+                    interruptState->handler(interruptState->controller, interruptState->pin, edge);
+            }
         }
 
         interruptsActive ^= bitMask;

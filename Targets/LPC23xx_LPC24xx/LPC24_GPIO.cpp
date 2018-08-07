@@ -208,21 +208,25 @@ void LPC24_Gpio_InterruptHandler(void* param) {
 
             CLEAR_PIN_INTERRUPT(port, pin); // Clear this pin's IRQ
 
-            if (interruptState->debounce) {
-                if ((LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr)) - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {
-                    interruptState->lastDebounceTicks = LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr));
-                }
-                else {
-                    executeIsr = false;
-                }
-            }
-
             LPC24_Gpio_Read(interruptState->controller, interruptState->pin, interruptState->currentValue); // read value as soon as possible
 
             auto edge = interruptState->currentValue == TinyCLR_Gpio_PinValue::High ? TinyCLR_Gpio_PinChangeEdge::RisingEdge : TinyCLR_Gpio_PinChangeEdge::FallingEdge;
+            auto expectedEdgeInterger = static_cast<uint32_t>(interruptState->edge);
+            auto currentEdgeInterger = static_cast<uint32_t>(edge);
 
-            if (executeIsr && (edge == interruptState->edge))
-                interruptState->handler(interruptState->controller, interruptState->pin, edge);            
+            if (interruptState->handler && ((expectedEdgeInterger & currentEdgeInterger) || (expectedEdgeInterger == 0))) {
+                if (interruptState->debounce) {
+                    if ((LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr)) - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {
+                        interruptState->lastDebounceTicks = LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr));
+                    }
+                    else {
+                        executeIsr = false;
+                    }
+                }
+
+                if (executeIsr)
+                    interruptState->handler(interruptState->controller, interruptState->pin, edge);
+            }
         }
     }
 }
