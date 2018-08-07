@@ -39,6 +39,7 @@ struct GpioInterruptState {
     const TinyCLR_Gpio_Controller* controller;
     TinyCLR_Gpio_PinChangedHandler handler;
     TinyCLR_Gpio_PinValue currentValue;
+    TinyCLR_Gpio_PinChangeEdge edge;
 };
 
 struct GpioState {
@@ -136,8 +137,10 @@ void STM32F4_Gpio_ISR(int num)  // 0 <= num <= 15
     EXTI->PR = bit;   // reset pending bit
 
     auto edge = interruptState->currentValue == TinyCLR_Gpio_PinValue::High ? TinyCLR_Gpio_PinChangeEdge::RisingEdge : TinyCLR_Gpio_PinChangeEdge::FallingEdge;
+    auto expectedEdgeInterger = static_cast<uint32_t>(interruptState->edge);
+    auto currentEdgeInterger = static_cast<uint32_t>(edge);
 
-    if (interruptState->handler) {
+    if (interruptState->handler && ((expectedEdgeInterger & currentEdgeInterger) || (expectedEdgeInterger == 0))) {
         if (interruptState->debounce) {   // debounce enabled
             if ((STM32F4_Time_GetTimeForProcessorTicks(nullptr, STM32F4_Time_GetCurrentProcessorTicks(nullptr)) - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {
                 interruptState->lastDebounceTicks = STM32F4_Time_GetTimeForProcessorTicks(nullptr, STM32F4_Time_GetCurrentProcessorTicks(nullptr));
@@ -145,7 +148,6 @@ void STM32F4_Gpio_ISR(int num)  // 0 <= num <= 15
             else {
                 executeIsr = false;
             }
-
         }
 
         if (executeIsr)
@@ -226,6 +228,7 @@ TinyCLR_Result STM32F4_Gpio_SetPinChangedHandler(const TinyCLR_Gpio_Controller* 
         interruptState->debounce = STM32F4_Gpio_GetDebounceTimeout(self, pin);
         interruptState->handler = handler;
         interruptState->lastDebounceTicks = STM32F4_Time_GetTimeForProcessorTicks(nullptr, STM32F4_Time_GetCurrentProcessorTicks(nullptr));
+        interruptState->edge = edge;
 
         EXTI->RTSR &= ~bit;
         EXTI->FTSR &= ~bit;

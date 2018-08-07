@@ -41,6 +41,7 @@ struct GpioInterruptState {
     const TinyCLR_Gpio_Controller* controller;
     TinyCLR_Gpio_PinChangedHandler handler;
     TinyCLR_Gpio_PinValue currentValue;
+    TinyCLR_Gpio_PinChangeEdge edge;
 };
 
 struct GpioState {
@@ -144,27 +145,29 @@ void AT91_Gpio_InterruptHandler(void* param) {
 
             GpioInterruptState* interruptState = &gpioInterruptState[bitIndex + port * 32];;
 
-            if (interruptState->debounce) {
-                if ((AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr)) - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {
-                    interruptState->lastDebounceTicks = AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr));
+            AT91_Gpio_Read(interruptState->controller, interruptState->pin, interruptState->currentValue); // read value as soon as possible
+
+            auto edge = interruptState->currentValue == TinyCLR_Gpio_PinValue::High ? TinyCLR_Gpio_PinChangeEdge::RisingEdge : TinyCLR_Gpio_PinChangeEdge::FallingEdge;
+            auto expectedEdgeInterger = static_cast<uint32_t>(interruptState->edge);
+            auto currentEdgeInterger = static_cast<uint32_t>(edge);
+
+            if (interruptState->handler && ((expectedEdgeInterger & currentEdgeInterger) || (expectedEdgeInterger == 0))) {
+                if (interruptState->debounce) {
+                    if ((AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr)) - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {
+                        interruptState->lastDebounceTicks = AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr));
+                    }
+                    else {
+                        executeIsr = false;
+                    }
                 }
-                else {
-                    executeIsr = false;
-                }
+
+                if (executeIsr)
+                    interruptState->handler(interruptState->controller, interruptState->pin, edge);
             }
-
-            if (executeIsr) {
-                AT91_Gpio_Read(interruptState->controller, interruptState->pin, interruptState->currentValue); // read value as soon as possible
-
-                auto edge = interruptState->currentValue == TinyCLR_Gpio_PinValue::High ? TinyCLR_Gpio_PinChangeEdge::RisingEdge : TinyCLR_Gpio_PinChangeEdge::FallingEdge;
-
-                interruptState->handler(interruptState->controller, interruptState->pin, edge);
-            }
-
-            interruptsActive ^= bitMask;
         }
-    }
 
+        interruptsActive ^= bitMask;
+    }
 }
 
 TinyCLR_Result AT91_Gpio_SetPinChangedHandler(const TinyCLR_Gpio_Controller* self, uint32_t pin, TinyCLR_Gpio_PinChangeEdge edge, TinyCLR_Gpio_PinChangedHandler handler) {
@@ -189,6 +192,7 @@ TinyCLR_Result AT91_Gpio_SetPinChangedHandler(const TinyCLR_Gpio_Controller* sel
         interruptState->debounce = AT91_Gpio_GetDebounceTimeout(self, pin);
         interruptState->handler = handler;
         interruptState->lastDebounceTicks = AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr));
+        interruptState->edge = edge;
 
         pioX.PIO_IER = bitmask; // Enable interrupt
     }
