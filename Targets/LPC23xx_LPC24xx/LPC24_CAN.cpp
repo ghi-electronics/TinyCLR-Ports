@@ -2025,6 +2025,8 @@ struct CanState {
     LPC24_Can_Filter canDataFilter;
 
     bool isOpened;
+
+    uint32_t intializeCount;
 };
 
 static const LPC24_Gpio_Pin canTxPins[] = LPC24_CAN_TX_PINS;
@@ -2425,39 +2427,44 @@ TinyCLR_Result LPC24_Can_Acquire(const TinyCLR_Can_Controller* self) {
         return TinyCLR_Result::ArgumentNull;
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
-    auto controllerIndex = state->controllerIndex;
 
-    if (!LPC24_Gpio_OpenPin(canTxPins[controllerIndex].number))
-        return TinyCLR_Result::SharingViolation;
+    if (state->intializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    if (!LPC24_Gpio_OpenPin(canRxPins[controllerIndex].number))
-        return TinyCLR_Result::SharingViolation;
+        if (!LPC24_Gpio_OpenPin(canTxPins[controllerIndex].number))
+            return TinyCLR_Result::SharingViolation;
 
-    // set pin as analog
-    LPC24_Gpio_ConfigurePin(canTxPins[controllerIndex].number, LPC24_Gpio_Direction::Input, canTxPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
-    LPC24_Gpio_ConfigurePin(canRxPins[controllerIndex].number, LPC24_Gpio_Direction::Input, canRxPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
+        if (!LPC24_Gpio_OpenPin(canRxPins[controllerIndex].number))
+            return TinyCLR_Result::SharingViolation;
 
-    state->can_rx_count = 0;
-    state->can_rx_in = 0;
-    state->can_rx_out = 0;
-    state->baudrate = 0;
-    state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
-    state->provider = self;
+        // set pin as analog
+        LPC24_Gpio_ConfigurePin(canTxPins[controllerIndex].number, LPC24_Gpio_Direction::Input, canTxPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
+        LPC24_Gpio_ConfigurePin(canRxPins[controllerIndex].number, LPC24_Gpio_Direction::Input, canRxPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
-    state->canDataFilter.matchFiltersSize = 0;
-    state->canDataFilter.groupFiltersSize = 0;
+        state->can_rx_count = 0;
+        state->can_rx_in = 0;
+        state->can_rx_out = 0;
+        state->baudrate = 0;
+        state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
+        state->provider = self;
 
-    state->canRxMessagesFifo = nullptr;
+        state->canDataFilter.matchFiltersSize = 0;
+        state->canDataFilter.groupFiltersSize = 0;
 
-    if (controllerIndex == 0)
-        LPC24XX::SYSCON().PCONP |= (1 << 13);    // Enable clock to the peripheral
+        state->canRxMessagesFifo = nullptr;
 
-    if (controllerIndex == 1)
-        LPC24XX::SYSCON().PCONP |= (1 << 14);    // Enable clock to the peripheral
+        if (controllerIndex == 0)
+            LPC24XX::SYSCON().PCONP |= (1 << 13);    // Enable clock to the peripheral
 
-    CAN_SetACCF(ACCF_BYPASS);
+        if (controllerIndex == 1)
+            LPC24XX::SYSCON().PCONP |= (1 << 14);    // Enable clock to the peripheral
 
-    state->isOpened = true;
+        CAN_SetACCF(ACCF_BYPASS);
+
+        state->isOpened = true;
+    }
+
+    state->intializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -2469,23 +2476,29 @@ TinyCLR_Result LPC24_Can_Release(const TinyCLR_Can_Controller* self) {
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
-    auto controllerIndex = state->controllerIndex;
+    if (state->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    if (state->canRxMessagesFifo != nullptr) {
-        memoryProvider->Free(memoryProvider, state->canRxMessagesFifo);
+    state->intializeCount--;
 
-        state->canRxMessagesFifo = nullptr;
+    if (state->intializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
+
+        if (state->canRxMessagesFifo != nullptr) {
+            memoryProvider->Free(memoryProvider, state->canRxMessagesFifo);
+
+            state->canRxMessagesFifo = nullptr;
+        }
+
+        CAN_DisableExplicitFilters(controllerIndex);
+        CAN_DisableGroupFilters(controllerIndex);
+
+        if (state->isOpened) {
+            LPC24_Gpio_ClosePin(canTxPins[controllerIndex].number);
+            LPC24_Gpio_ClosePin(canRxPins[controllerIndex].number);
+        }
+
+        state->isOpened = false;
     }
-
-    CAN_DisableExplicitFilters(controllerIndex);
-    CAN_DisableGroupFilters(controllerIndex);
-
-    if (state->isOpened) {
-        LPC24_Gpio_ClosePin(canTxPins[controllerIndex].number);
-        LPC24_Gpio_ClosePin(canRxPins[controllerIndex].number);
-    }
-
-    state->isOpened = false;
 
     return TinyCLR_Result::Success;
 }
@@ -2846,6 +2859,7 @@ void LPC24_Can_Reset() {
         LPC24_Can_Release(&canControllers[i]);
 
         canStates[i].isOpened = false;
+        canStates[i].intializeCount = 0;
     }
 }
 

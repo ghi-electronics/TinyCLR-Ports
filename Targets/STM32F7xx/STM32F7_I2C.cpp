@@ -71,6 +71,8 @@ struct I2cState {
     I2cTransaction   *currentI2cTransactionAction;
     I2cTransaction   readI2cTransactionAction;
     I2cTransaction   writeI2cTransactionAction;
+
+    uint32_t intializeCount;
 };
 
 static I2cState i2cStates[TOTAL_I2C_CONTROLLERS];
@@ -440,37 +442,41 @@ TinyCLR_Result STM32F7_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
 
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->intializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    auto& I2Cx = i2cPorts[controllerIndex];
-    auto& scl = i2cSclPins[controllerIndex];
-    auto& sda = i2cSdaPins[controllerIndex];
+        auto& I2Cx = i2cPorts[controllerIndex];
+        auto& scl = i2cSclPins[controllerIndex];
+        auto& sda = i2cSdaPins[controllerIndex];
 
-    if (!STM32F7_GpioInternal_OpenPin(sda.number) || !STM32F7_GpioInternal_OpenPin(scl.number))
-        return TinyCLR_Result::SharingViolation;
+        if (!STM32F7_GpioInternal_OpenPin(sda.number) || !STM32F7_GpioInternal_OpenPin(scl.number))
+            return TinyCLR_Result::SharingViolation;
 
-    STM32F7_GpioInternal_ConfigurePin(sda.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::OpenDrain, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::PullUp, sda.alternateFunction);
-    STM32F7_GpioInternal_ConfigurePin(scl.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::OpenDrain, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::PullUp, scl.alternateFunction);
+        STM32F7_GpioInternal_ConfigurePin(sda.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::OpenDrain, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::PullUp, sda.alternateFunction);
+        STM32F7_GpioInternal_ConfigurePin(scl.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::OpenDrain, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::PullUp, scl.alternateFunction);
 
-    switch (controllerIndex) {
-    case 0:
-        RCC->APB1ENR |= RCC_APB1ENR_I2C1EN; // enable I2C clock
-        RCC->APB1RSTR = RCC_APB1RSTR_I2C1RST; // reset I2C peripheral
-        STM32F7_InterruptInternal_Activate(I2C1_EV_IRQn, (uint32_t*)&STM32F7_I2C1_EV_Interrupt, 0);
-        STM32F7_InterruptInternal_Activate(I2C1_ER_IRQn, (uint32_t*)&STM32F7_I2C1_ER_Interrupt, 0);
-        break;
+        switch (controllerIndex) {
+        case 0:
+            RCC->APB1ENR |= RCC_APB1ENR_I2C1EN; // enable I2C clock
+            RCC->APB1RSTR = RCC_APB1RSTR_I2C1RST; // reset I2C peripheral
+            STM32F7_InterruptInternal_Activate(I2C1_EV_IRQn, (uint32_t*)&STM32F7_I2C1_EV_Interrupt, 0);
+            STM32F7_InterruptInternal_Activate(I2C1_ER_IRQn, (uint32_t*)&STM32F7_I2C1_ER_Interrupt, 0);
+            break;
 
-    case 1:
-        RCC->APB1ENR |= RCC_APB1ENR_I2C2EN; // enable I2C clock
-        RCC->APB1RSTR = RCC_APB1RSTR_I2C2RST; // reset I2C peripheral
-        STM32F7_InterruptInternal_Activate(I2C2_EV_IRQn, (uint32_t*)&STM32F7_I2C2_EV_Interrupt, 0);
-        STM32F7_InterruptInternal_Activate(I2C2_ER_IRQn, (uint32_t*)&STM32F7_I2C2_ER_Interrupt, 0);
-        break;
+        case 1:
+            RCC->APB1ENR |= RCC_APB1ENR_I2C2EN; // enable I2C clock
+            RCC->APB1RSTR = RCC_APB1RSTR_I2C2RST; // reset I2C peripheral
+            STM32F7_InterruptInternal_Activate(I2C2_EV_IRQn, (uint32_t*)&STM32F7_I2C2_EV_Interrupt, 0);
+            STM32F7_InterruptInternal_Activate(I2C2_ER_IRQn, (uint32_t*)&STM32F7_I2C2_ER_Interrupt, 0);
+            break;
+        }
+
+        RCC->APB1RSTR = 0;
+
+        state->i2cConfiguration.isOpened = true;
     }
 
-    RCC->APB1RSTR = 0;
-
-    state->i2cConfiguration.isOpened = true;
+    state->intializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -481,40 +487,46 @@ TinyCLR_Result STM32F7_I2c_Release(const TinyCLR_I2c_Controller* self) {
 
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    auto& I2Cx = i2cPorts[controllerIndex];
+    state->intializeCount--;
 
-    STM32F7_I2c_InterruptDisable(I2Cx, I2C_CR1_ERRIE | I2C_CR1_TCIE | I2C_CR1_STOPIE | I2C_CR1_NACKIE | I2C_CR1_TXIE | I2C_CR1_RXIE); // disable interrupts
-    switch (controllerIndex) {
-    case 0:
+    if (state->intializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
+
+        auto& I2Cx = i2cPorts[controllerIndex];
+
+        STM32F7_I2c_InterruptDisable(I2Cx, I2C_CR1_ERRIE | I2C_CR1_TCIE | I2C_CR1_STOPIE | I2C_CR1_NACKIE | I2C_CR1_TXIE | I2C_CR1_RXIE); // disable interrupts
+        switch (controllerIndex) {
+        case 0:
 
 
-        STM32F7_InterruptInternal_Deactivate(I2C1_EV_IRQn);
-        STM32F7_InterruptInternal_Deactivate(I2C1_ER_IRQn);
+            STM32F7_InterruptInternal_Deactivate(I2C1_EV_IRQn);
+            STM32F7_InterruptInternal_Deactivate(I2C1_ER_IRQn);
 
-        STM32F7_I2c_Disable(I2Cx);
-        RCC->APB1ENR &= ~RCC_APB1ENR_I2C1EN; // disable I2C clock
-        break;
+            STM32F7_I2c_Disable(I2Cx);
+            RCC->APB1ENR &= ~RCC_APB1ENR_I2C1EN; // disable I2C clock
+            break;
 
-    case 1:
-        STM32F7_InterruptInternal_Deactivate(I2C2_EV_IRQn);
-        STM32F7_InterruptInternal_Deactivate(I2C2_ER_IRQn);
+        case 1:
+            STM32F7_InterruptInternal_Deactivate(I2C2_EV_IRQn);
+            STM32F7_InterruptInternal_Deactivate(I2C2_ER_IRQn);
 
-        STM32F7_I2c_Disable(I2Cx);
-        RCC->APB1ENR &= ~RCC_APB1ENR_I2C2EN; // disable I2C clock
-        break;
+            STM32F7_I2c_Disable(I2Cx);
+            RCC->APB1ENR &= ~RCC_APB1ENR_I2C2EN; // disable I2C clock
+            break;
+        }
+
+        if (state->i2cConfiguration.isOpened) {
+            auto& scl = i2cSclPins[controllerIndex];
+            auto& sda = i2cSdaPins[controllerIndex];
+
+            STM32F7_GpioInternal_ClosePin(sda.number);
+            STM32F7_GpioInternal_ClosePin(scl.number);
+        }
+
+        state->i2cConfiguration.isOpened = false;
     }
-
-    if (state->i2cConfiguration.isOpened) {
-        auto& scl = i2cSclPins[controllerIndex];
-        auto& sda = i2cSdaPins[controllerIndex];
-
-        STM32F7_GpioInternal_ClosePin(sda.number);
-        STM32F7_GpioInternal_ClosePin(scl.number);
-    }
-
-    state->i2cConfiguration.isOpened = false;
 
     return TinyCLR_Result::Success;
 }
@@ -537,5 +549,6 @@ void STM32F7_I2c_Reset() {
         state->writeI2cTransactionAction.bytesTransferred = 0;
 
         state->i2cConfiguration.isOpened = false;
+        state->intializeCount = 0;
     }
 }

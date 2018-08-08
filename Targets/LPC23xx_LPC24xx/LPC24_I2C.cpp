@@ -49,6 +49,8 @@ struct I2cState {
     I2cTransaction   *currentI2cTransactionAction;
     I2cTransaction   readI2cTransactionAction;
     I2cTransaction   writeI2cTransactionAction;
+
+    uint32_t intializeCount;
 };
 
 static I2cState i2cStates[TOTAL_I2C_CONTROLLERS];
@@ -305,25 +307,30 @@ TinyCLR_Result LPC24_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
         return TinyCLR_Result::ArgumentNull;
 
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
-    auto controllerIndex = state->controllerIndex;
 
-    LPC24XX_I2C& I2C = LPC24XX::I2C(controllerIndex);
+    if (state->intializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    if (!LPC24_Gpio_OpenPin(i2cSdaPins[controllerIndex].number) || !LPC24_Gpio_OpenPin(i2cSclPins[controllerIndex].number))
-        return TinyCLR_Result::SharingViolation;
+        LPC24XX_I2C& I2C = LPC24XX::I2C(controllerIndex);
 
-    LPC24_Gpio_ConfigurePin(i2cSdaPins[controllerIndex].number, LPC24_Gpio_Direction::Input, i2cSdaPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
-    LPC24_Gpio_ConfigurePin(i2cSclPins[controllerIndex].number, LPC24_Gpio_Direction::Input, i2cSclPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
+        if (!LPC24_Gpio_OpenPin(i2cSdaPins[controllerIndex].number) || !LPC24_Gpio_OpenPin(i2cSclPins[controllerIndex].number))
+            return TinyCLR_Result::SharingViolation;
 
-    LPC24_Interrupt_Activate(controllerIndex == 0 ? LPC24XX_VIC::c_IRQ_INDEX_I2C0 : (controllerIndex == 1 ? LPC24XX_VIC::c_IRQ_INDEX_I2C1 : LPC24XX_VIC::c_IRQ_INDEX_I2C2), (uint32_t*)&LPC24_I2c_InterruptHandler, (uint32_t*)&state->controllerIndex);
+        LPC24_Gpio_ConfigurePin(i2cSdaPins[controllerIndex].number, LPC24_Gpio_Direction::Input, i2cSdaPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
+        LPC24_Gpio_ConfigurePin(i2cSclPins[controllerIndex].number, LPC24_Gpio_Direction::Input, i2cSclPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
-    // enable the I2c module
-    I2C.I2CONSET = LPC24XX_I2C::I2EN;
+        LPC24_Interrupt_Activate(controllerIndex == 0 ? LPC24XX_VIC::c_IRQ_INDEX_I2C0 : (controllerIndex == 1 ? LPC24XX_VIC::c_IRQ_INDEX_I2C1 : LPC24XX_VIC::c_IRQ_INDEX_I2C2), (uint32_t*)&LPC24_I2c_InterruptHandler, (uint32_t*)&state->controllerIndex);
 
-    // set the slave address
-    I2C.I2ADR = 0x7E;
+        // enable the I2c module
+        I2C.I2CONSET = LPC24XX_I2C::I2EN;
 
-    state->i2cConfiguration.isOpened = true;
+        // set the slave address
+        I2C.I2ADR = 0x7E;
+
+        state->i2cConfiguration.isOpened = true;
+    }
+
+    state->intializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -333,20 +340,26 @@ TinyCLR_Result LPC24_I2c_Release(const TinyCLR_I2c_Controller* self) {
         return TinyCLR_Result::ArgumentNull;
 
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
-    auto controllerIndex = state->controllerIndex;
+    if (state->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    LPC24XX_I2C& I2C = LPC24XX::I2C(controllerIndex);
+    state->intializeCount--;
 
-    LPC24_Interrupt_Deactivate(controllerIndex == 0 ? LPC24XX_VIC::c_IRQ_INDEX_I2C0 : (controllerIndex == 1 ? LPC24XX_VIC::c_IRQ_INDEX_I2C1 : LPC24XX_VIC::c_IRQ_INDEX_I2C2));
+    if (state->intializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    I2C.I2CONCLR = (LPC24XX_I2C::AA | LPC24XX_I2C::SI | LPC24XX_I2C::STO | LPC24XX_I2C::STA | LPC24XX_I2C::I2EN);
+        LPC24XX_I2C& I2C = LPC24XX::I2C(controllerIndex);
 
-    if (state->i2cConfiguration.isOpened) {
-        LPC24_Gpio_ClosePin(i2cSclPins[controllerIndex].number);
-        LPC24_Gpio_ClosePin(i2cSdaPins[controllerIndex].number);
+        LPC24_Interrupt_Deactivate(controllerIndex == 0 ? LPC24XX_VIC::c_IRQ_INDEX_I2C0 : (controllerIndex == 1 ? LPC24XX_VIC::c_IRQ_INDEX_I2C1 : LPC24XX_VIC::c_IRQ_INDEX_I2C2));
+
+        I2C.I2CONCLR = (LPC24XX_I2C::AA | LPC24XX_I2C::SI | LPC24XX_I2C::STO | LPC24XX_I2C::STA | LPC24XX_I2C::I2EN);
+
+        if (state->i2cConfiguration.isOpened) {
+            LPC24_Gpio_ClosePin(i2cSclPins[controllerIndex].number);
+            LPC24_Gpio_ClosePin(i2cSdaPins[controllerIndex].number);
+        }
+
+        state->i2cConfiguration.isOpened = false;
     }
-
-    state->i2cConfiguration.isOpened = false;
 
     return TinyCLR_Result::Success;
 }
@@ -368,6 +381,7 @@ void LPC24_I2c_Reset() {
         state->writeI2cTransactionAction.bytesTransferred = 0;
 
         state->i2cConfiguration.isOpened = false;
+        state->intializeCount = 0;
     }
 }
 

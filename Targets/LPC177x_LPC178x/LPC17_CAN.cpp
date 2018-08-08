@@ -2024,6 +2024,8 @@ struct CanState {
     LPC17_Can_Filter canDataFilter;
 
     bool isOpened;
+
+    uint32_t intializeCount;
 };
 
 static const LPC17_Gpio_Pin canTxPins[] = LPC17_CAN_TX_PINS;
@@ -2424,39 +2426,44 @@ TinyCLR_Result LPC17_Can_Acquire(const TinyCLR_Can_Controller* self) {
         return TinyCLR_Result::ArgumentNull;
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
-    auto controllerIndex = state->controllerIndex;
 
-    if (!LPC17_Gpio_OpenPin(canTxPins[controllerIndex].number))
-        return TinyCLR_Result::SharingViolation;
+    if (state->intializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    if (!LPC17_Gpio_OpenPin(canRxPins[controllerIndex].number))
-        return TinyCLR_Result::SharingViolation;
+        if (!LPC17_Gpio_OpenPin(canTxPins[controllerIndex].number))
+            return TinyCLR_Result::SharingViolation;
 
-    // set pin as analog
-    LPC17_Gpio_ConfigurePin(canTxPins[controllerIndex].number, LPC17_Gpio_Direction::Input, canTxPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(canRxPins[controllerIndex].number, LPC17_Gpio_Direction::Input, canRxPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        if (!LPC17_Gpio_OpenPin(canRxPins[controllerIndex].number))
+            return TinyCLR_Result::SharingViolation;
 
-    state->can_rx_count = 0;
-    state->can_rx_in = 0;
-    state->can_rx_out = 0;
-    state->baudrate = 0;
-    state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
-    state->provider = self;
+        // set pin as analog
+        LPC17_Gpio_ConfigurePin(canTxPins[controllerIndex].number, LPC17_Gpio_Direction::Input, canTxPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        LPC17_Gpio_ConfigurePin(canRxPins[controllerIndex].number, LPC17_Gpio_Direction::Input, canRxPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
-    state->canDataFilter.matchFiltersSize = 0;
-    state->canDataFilter.groupFiltersSize = 0;
+        state->can_rx_count = 0;
+        state->can_rx_in = 0;
+        state->can_rx_out = 0;
+        state->baudrate = 0;
+        state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
+        state->provider = self;
 
-    state->canRxMessagesFifo = nullptr;
+        state->canDataFilter.matchFiltersSize = 0;
+        state->canDataFilter.groupFiltersSize = 0;
 
-    if (controllerIndex == 0)
-        LPC_SC->PCONP |= (1 << 13);    // Enable clock to the peripheral
+        state->canRxMessagesFifo = nullptr;
 
-    if (controllerIndex == 1)
-        LPC_SC->PCONP |= (1 << 14);    // Enable clock to the peripheral
+        if (controllerIndex == 0)
+            LPC_SC->PCONP |= (1 << 13);    // Enable clock to the peripheral
 
-    CAN_SetACCF(ACCF_BYPASS);
+        if (controllerIndex == 1)
+            LPC_SC->PCONP |= (1 << 14);    // Enable clock to the peripheral
 
-    state->isOpened = true;
+        CAN_SetACCF(ACCF_BYPASS);
+
+        state->isOpened = true;
+    }
+
+    state->intializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -2465,26 +2472,34 @@ TinyCLR_Result LPC17_Can_Release(const TinyCLR_Can_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
-
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
-    auto controllerIndex = state->controllerIndex;
 
-    if (state->canRxMessagesFifo != nullptr) {
-        memoryProvider->Free(memoryProvider, state->canRxMessagesFifo);
+    if (state->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-        state->canRxMessagesFifo = nullptr;
+    state->intializeCount--;
+
+    if (state->intializeCount == 0) {
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+
+        auto controllerIndex = state->controllerIndex;
+
+        if (state->canRxMessagesFifo != nullptr) {
+            memoryProvider->Free(memoryProvider, state->canRxMessagesFifo);
+
+            state->canRxMessagesFifo = nullptr;
+        }
+
+        CAN_DisableExplicitFilters(controllerIndex);
+        CAN_DisableGroupFilters(controllerIndex);
+
+        if (state->isOpened) {
+            LPC17_Gpio_ClosePin(canTxPins[controllerIndex].number);
+            LPC17_Gpio_ClosePin(canRxPins[controllerIndex].number);
+        }
+
+        state->isOpened = false;
     }
-
-    CAN_DisableExplicitFilters(controllerIndex);
-    CAN_DisableGroupFilters(controllerIndex);
-
-    if (state->isOpened) {
-        LPC17_Gpio_ClosePin(canTxPins[controllerIndex].number);
-        LPC17_Gpio_ClosePin(canRxPins[controllerIndex].number);
-    }
-
-    state->isOpened = false;
 
     return TinyCLR_Result::Success;
 }
@@ -2818,6 +2833,7 @@ void LPC17_Can_Reset() {
         LPC17_Can_Release(&canControllers[i]);
 
         canStates[i].isOpened = false;
+        canStates[i].intializeCount = 0;
     }
 }
 

@@ -2357,6 +2357,8 @@ struct SdCardState {
     TinyCLR_Storage_Descriptor descriptor;
 
     bool isOpened = false;
+
+    uint32_t intializeCount;
 };
 
 static const AT91_Gpio_Pin sdCardData0Pins[] = AT91_SD_DATA0_PINS;
@@ -2410,75 +2412,78 @@ void AT91_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
 TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
-    if (state->isOpened) return TinyCLR_Result::SharingViolation;
+    if (state->intializeCount == 0) {
 
-    auto controllerIndex = state->controllerIndex;
+        auto controllerIndex = state->controllerIndex;
 
-    auto d0 = sdCardData0Pins[controllerIndex];
-    auto d1 = sdCardData1Pins[controllerIndex];
-    auto d2 = sdCardData2Pins[controllerIndex];
-    auto d3 = sdCardData3Pins[controllerIndex];
-    auto clk = sdCardClkPins[controllerIndex];
-    auto cmd = sdCardCmdPins[controllerIndex];
+        auto d0 = sdCardData0Pins[controllerIndex];
+        auto d1 = sdCardData1Pins[controllerIndex];
+        auto d2 = sdCardData2Pins[controllerIndex];
+        auto d3 = sdCardData3Pins[controllerIndex];
+        auto clk = sdCardClkPins[controllerIndex];
+        auto cmd = sdCardCmdPins[controllerIndex];
 
-    if (!AT91_Gpio_OpenPin(d0.number)
-        || !AT91_Gpio_OpenPin(d1.number)
-        || !AT91_Gpio_OpenPin(d2.number)
-        || !AT91_Gpio_OpenPin(d3.number)
-        || !AT91_Gpio_OpenPin(clk.number)
-        || !AT91_Gpio_OpenPin(cmd.number)
-        )
-        return TinyCLR_Result::SharingViolation;
+        if (!AT91_Gpio_OpenPin(d0.number)
+            || !AT91_Gpio_OpenPin(d1.number)
+            || !AT91_Gpio_OpenPin(d2.number)
+            || !AT91_Gpio_OpenPin(d3.number)
+            || !AT91_Gpio_OpenPin(clk.number)
+            || !AT91_Gpio_OpenPin(cmd.number)
+            )
+            return TinyCLR_Result::SharingViolation;
 
-    AT91_Gpio_ConfigurePin(d0.number, AT91_Gpio_Direction::Input, d0.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
-    AT91_Gpio_ConfigurePin(d1.number, AT91_Gpio_Direction::Input, d1.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
-    AT91_Gpio_ConfigurePin(d2.number, AT91_Gpio_Direction::Input, d2.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
-    AT91_Gpio_ConfigurePin(d3.number, AT91_Gpio_Direction::Input, d3.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
-    AT91_Gpio_ConfigurePin(clk.number, AT91_Gpio_Direction::Input, clk.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-    AT91_Gpio_ConfigurePin(cmd.number, AT91_Gpio_Direction::Input, cmd.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
+        AT91_Gpio_ConfigurePin(d0.number, AT91_Gpio_Direction::Input, d0.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
+        AT91_Gpio_ConfigurePin(d1.number, AT91_Gpio_Direction::Input, d1.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
+        AT91_Gpio_ConfigurePin(d2.number, AT91_Gpio_Direction::Input, d2.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
+        AT91_Gpio_ConfigurePin(d3.number, AT91_Gpio_Direction::Input, d3.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
+        AT91_Gpio_ConfigurePin(clk.number, AT91_Gpio_Direction::Input, clk.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+        AT91_Gpio_ConfigurePin(cmd.number, AT91_Gpio_Direction::Input, cmd.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
 
-    AT91_PMC &pmc = AT91::PMC();
-    pmc.EnablePeriphClock(AT91C_ID_HSMCI0);
+        AT91_PMC &pmc = AT91::PMC();
+        pmc.EnablePeriphClock(AT91C_ID_HSMCI0);
 
-    DMA_Init();
+        DMA_Init();
 
-    MCI_Init(&mciDrv, (AT91PS_MCI)AT91C_BASE_MCI, AT91C_ID_HSMCI0, MCI_SD_SLOTA);
+        MCI_Init(&mciDrv, (AT91PS_MCI)AT91C_BASE_MCI, AT91C_ID_HSMCI0, MCI_SD_SLOTA);
 
-    AT91_Interrupt_Activate(AT91C_ID_HSMCI0, (uint32_t*)&MCI_Handler, (void*)&mciDrv);
+        AT91_Interrupt_Activate(AT91C_ID_HSMCI0, (uint32_t*)&MCI_Handler, (void*)&mciDrv);
 
-    if (SD_Init(&sdDrv, (SdDriver *)&mciDrv) != SD_ERROR_NO_ERROR) {
+        if (SD_Init(&sdDrv, (SdDriver *)&mciDrv) != SD_ERROR_NO_ERROR) {
 
-        return TinyCLR_Result::InvalidOperation;
+            return TinyCLR_Result::InvalidOperation;
+        }
+
+        MCI_SetSpeed(&mciDrv, 8000000);
+
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+        state->pBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, AT91_SD_SECTOR_SIZE + 4);
+
+        uint32_t alignAddress = (uint32_t)state->pBuffer;
+
+        while (alignAddress % 4 > 0) {
+            alignAddress++;
+        }
+
+        state->pBufferAligned = (uint8_t*)alignAddress;
+
+        state->regionAddresses = (uint64_t*)memoryProvider->Allocate(memoryProvider, sizeof(uint64_t));
+        state->regionSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
+
+        state->descriptor.CanReadDirect = true;
+        state->descriptor.CanWriteDirect = true;
+        state->descriptor.CanExecuteDirect = false;
+        state->descriptor.EraseBeforeWrite = false;
+        state->descriptor.Removable = true;
+        state->descriptor.RegionsRepeat = true;
+
+        state->descriptor.RegionAddresses = reinterpret_cast<const uint64_t*>(state->regionAddresses);
+        state->descriptor.RegionSizes = reinterpret_cast<const size_t*>(state->regionSizes);
+
+        state->isOpened = true;
     }
 
-    MCI_SetSpeed(&mciDrv, 8000000);
-
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
-
-    state->pBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, AT91_SD_SECTOR_SIZE + 4);
-
-    uint32_t alignAddress = (uint32_t)state->pBuffer;
-
-    while (alignAddress % 4 > 0) {
-        alignAddress++;
-    }
-
-    state->pBufferAligned = (uint8_t*)alignAddress;
-
-    state->regionAddresses = (uint64_t*)memoryProvider->Allocate(memoryProvider, sizeof(uint64_t));
-    state->regionSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
-
-    state->descriptor.CanReadDirect = true;
-    state->descriptor.CanWriteDirect = true;
-    state->descriptor.CanExecuteDirect = false;
-    state->descriptor.EraseBeforeWrite = false;
-    state->descriptor.Removable = true;
-    state->descriptor.RegionsRepeat = true;
-
-    state->descriptor.RegionAddresses = reinterpret_cast<const uint64_t*>(state->regionAddresses);
-    state->descriptor.RegionSizes = reinterpret_cast<const size_t*>(state->regionSizes);
-
-    state->isOpened = true;
+    state->intializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -2486,38 +2491,44 @@ TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
 TinyCLR_Result AT91_SdCard_Release(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    auto d0 = sdCardData0Pins[controllerIndex];
-    auto d1 = sdCardData1Pins[controllerIndex];
-    auto d2 = sdCardData2Pins[controllerIndex];
-    auto d3 = sdCardData3Pins[controllerIndex];
-    auto clk = sdCardClkPins[controllerIndex];
-    auto cmd = sdCardCmdPins[controllerIndex];
+    state->intializeCount--;
 
-    AT91_PMC &pmc = AT91::PMC();
+    if (state->intializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    pmc.DisablePeriphClock(AT91C_ID_HSMCI0); /* Disable clock to the Mci block */
-    pmc.DisablePeriphClock(AT91C_ID_DMAC0); /* Disable clock to the Dma block */
+        auto d0 = sdCardData0Pins[controllerIndex];
+        auto d1 = sdCardData1Pins[controllerIndex];
+        auto d2 = sdCardData2Pins[controllerIndex];
+        auto d3 = sdCardData3Pins[controllerIndex];
+        auto clk = sdCardClkPins[controllerIndex];
+        auto cmd = sdCardCmdPins[controllerIndex];
 
-    AT91_Interrupt_Deactivate(AT91C_ID_HSMCI0); /* Disable Interrupt */
+        AT91_PMC &pmc = AT91::PMC();
 
-    if (state->isOpened) {
-        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+        pmc.DisablePeriphClock(AT91C_ID_HSMCI0); /* Disable clock to the Mci block */
+        pmc.DisablePeriphClock(AT91C_ID_DMAC0); /* Disable clock to the Dma block */
 
-        memoryProvider->Free(memoryProvider, state->pBuffer);
-        memoryProvider->Free(memoryProvider, state->regionSizes);
-        memoryProvider->Free(memoryProvider, state->regionAddresses);
+        AT91_Interrupt_Deactivate(AT91C_ID_HSMCI0); /* Disable Interrupt */
+
+        if (state->isOpened) {
+            auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+            memoryProvider->Free(memoryProvider, state->pBuffer);
+            memoryProvider->Free(memoryProvider, state->regionSizes);
+            memoryProvider->Free(memoryProvider, state->regionAddresses);
+        }
+
+        AT91_Gpio_ClosePin(d0.number);
+        AT91_Gpio_ClosePin(d1.number);
+        AT91_Gpio_ClosePin(d2.number);
+        AT91_Gpio_ClosePin(d3.number);
+        AT91_Gpio_ClosePin(clk.number);
+        AT91_Gpio_ClosePin(cmd.number);
+
+        state->isOpened = false;
     }
-
-    AT91_Gpio_ClosePin(d0.number);
-    AT91_Gpio_ClosePin(d1.number);
-    AT91_Gpio_ClosePin(d2.number);
-    AT91_Gpio_ClosePin(d3.number);
-    AT91_Gpio_ClosePin(clk.number);
-    AT91_Gpio_ClosePin(cmd.number);
-
-    state->isOpened = false;
 
     return TinyCLR_Result::Success;
 
@@ -2733,6 +2744,7 @@ TinyCLR_Result AT91_SdCard_Reset() {
     for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
         AT91_SdCard_Close(&sdCardControllers[i]);
         AT91_SdCard_Release(&sdCardControllers[i]);
+        sdCardStates[i].intializeCount = 0;
     }
 
     return TinyCLR_Result::Success;

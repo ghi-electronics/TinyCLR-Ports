@@ -396,6 +396,7 @@ bool m_LPC24_DisplayHorizontalSyncPolarity = false;
 bool m_LPC24_DisplayVerticalSyncPolarity = false;
 bool m_LPC24_DisplayEnable = false;
 
+uint32_t displayInitializeCount = 0;
 uint16_t* m_LPC24_Display_VituralRam = nullptr;
 size_t m_LPC24_DisplayBufferSize = 0;
 uint8_t m_LPC24_Display_TextBuffer[LCD_MAX_COLUMN][LCD_MAX_ROW];
@@ -879,30 +880,38 @@ void LPC24_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenHei
 }
 
 TinyCLR_Result LPC24_Display_Acquire(const TinyCLR_Display_Controller* self) {
-    m_LPC24_Display_CurrentRotation = LPC24xx_LCD_Rotation::rotateNormal_0;
+    if (displayInitializeCount == 0) {
+        m_LPC24_Display_CurrentRotation = LPC24xx_LCD_Rotation::rotateNormal_0;
 
-    if (!LPC24_Display_SetPinConfiguration(true)) {
-        return TinyCLR_Result::SharingViolation;
+        if (!LPC24_Display_SetPinConfiguration(true)) {
+            return TinyCLR_Result::SharingViolation;
+        }
     }
+    displayInitializeCount++;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Display_Release(const TinyCLR_Display_Controller* self) {
-    LPC24_Display_Uninitialize();
+TinyCLR_Result LPC17_Display_Release(const TinyCLR_Display_Controller* self) {
+    if (displayInitializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    LPC24_Display_SetPinConfiguration(false);
+    displayInitializeCount--;
 
-    m_LPC24_DisplayEnable = false;
+    if (displayInitializeCount == 0) {
+        LPC24_Display_Uninitialize();
 
-    if (m_LPC24_Display_VituralRam != nullptr) {
-        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+        LPC24_Display_SetPinConfiguration(false);
 
-        memoryProvider->Free(memoryProvider, m_LPC24_Display_VituralRam);
+        m_LPC24_DisplayEnable = false;
 
-        m_LPC24_Display_VituralRam = nullptr;
+        if (m_LPC24_Display_VituralRam != nullptr) {
+            auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+            memoryProvider->Free(memoryProvider, m_LPC24_Display_VituralRam);
+
+            m_LPC24_Display_VituralRam = nullptr;
+        }
     }
-
     return TinyCLR_Result::Success;
 }
 
@@ -1106,5 +1115,6 @@ void LPC24_Display_Reset() {
         LPC24_Display_Release(&displayControllers[0]);
 
     m_LPC24_DisplayEnable = false;
+    displayInitializeCount = 0;
 }
 #endif

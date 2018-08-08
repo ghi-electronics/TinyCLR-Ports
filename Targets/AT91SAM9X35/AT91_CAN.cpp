@@ -1046,6 +1046,8 @@ struct CanState {
     AT91_Can_Filter canDataFilter;
 
     bool isOpened;
+
+    uint32_t intializeCount;
 };
 
 static const AT91_Gpio_Pin canTxPins[] = AT91_CAN_TX_PINS;
@@ -1453,38 +1455,42 @@ TinyCLR_Result AT91_Can_Acquire(const TinyCLR_Can_Controller* self) {
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->intializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    if (!AT91_Gpio_OpenPin(canTxPins[controllerIndex].number))
-        return TinyCLR_Result::SharingViolation;
+        if (!AT91_Gpio_OpenPin(canTxPins[controllerIndex].number))
+            return TinyCLR_Result::SharingViolation;
 
-    if (!AT91_Gpio_OpenPin(canRxPins[controllerIndex].number))
-        return TinyCLR_Result::SharingViolation;
+        if (!AT91_Gpio_OpenPin(canRxPins[controllerIndex].number))
+            return TinyCLR_Result::SharingViolation;
 
 
-    AT91_Gpio_ConfigurePin(canTxPins[controllerIndex].number, AT91_Gpio_Direction::Input, canTxPins[controllerIndex].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-    AT91_Gpio_ConfigurePin(canRxPins[controllerIndex].number, AT91_Gpio_Direction::Input, canRxPins[controllerIndex].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+        AT91_Gpio_ConfigurePin(canTxPins[controllerIndex].number, AT91_Gpio_Direction::Input, canTxPins[controllerIndex].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+        AT91_Gpio_ConfigurePin(canRxPins[controllerIndex].number, AT91_Gpio_Direction::Input, canRxPins[controllerIndex].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
 
-    state->can_rx_count = 0;
-    state->can_rx_in = 0;
-    state->can_rx_out = 0;
-    state->baudrate = 0;
-    state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
-    state->controller = self;
+        state->can_rx_count = 0;
+        state->can_rx_in = 0;
+        state->can_rx_out = 0;
+        state->baudrate = 0;
+        state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
+        state->controller = self;
 
-    state->canDataFilter.matchFiltersSize = 0;
-    state->canDataFilter.groupFiltersSize = 0;
+        state->canDataFilter.matchFiltersSize = 0;
+        state->canDataFilter.groupFiltersSize = 0;
 
-    state->cand.pHw = (controllerIndex == 0 ? AT91_CAN0 : AT91_CAN1);
-    state->cand.bID = (controllerIndex == 0 ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
+        state->cand.pHw = (controllerIndex == 0 ? AT91_CAN0 : AT91_CAN1);
+        state->cand.bID = (controllerIndex == 0 ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
 
-    AT91_PMC &pmc = AT91::PMC();
-    pmc.EnablePeriphClock((controllerIndex == 0) ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
+        AT91_PMC &pmc = AT91::PMC();
+        pmc.EnablePeriphClock((controllerIndex == 0) ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
 
-    CAN_DisableIt(state->cand.pHw, 0xFFFFFFFF);
+        CAN_DisableIt(state->cand.pHw, 0xFFFFFFFF);
 
-    state->isOpened = true;
-    state->controllerIndex = controllerIndex;
+        state->isOpened = true;
+        state->controllerIndex = controllerIndex;
+    }
+
+    state->intializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -1495,30 +1501,36 @@ TinyCLR_Result AT91_Can_Release(const TinyCLR_Can_Controller* self) {
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+    state->intializeCount--;
 
-    CAN_DisableIt(state->cand.pHw, 0xFFFFFFFF);
+    if (state->intializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    AT91_PMC &pmc = AT91::PMC();
-    pmc.DisablePeriphClock((controllerIndex == 0) ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    if (state->isOpened) {
-        AT91_Gpio_ClosePin(canTxPins[controllerIndex].number);
-        AT91_Gpio_ClosePin(canRxPins[controllerIndex].number);
+        CAN_DisableIt(state->cand.pHw, 0xFFFFFFFF);
+
+        AT91_PMC &pmc = AT91::PMC();
+        pmc.DisablePeriphClock((controllerIndex == 0) ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
+
+        if (state->isOpened) {
+            AT91_Gpio_ClosePin(canTxPins[controllerIndex].number);
+            AT91_Gpio_ClosePin(canRxPins[controllerIndex].number);
+        }
+
+        if (state->canRxMessagesFifo != nullptr) {
+            memoryProvider->Free(memoryProvider, state->canRxMessagesFifo);
+
+            state->canRxMessagesFifo = nullptr;
+        }
+
+        CAN_DisableExplicitFilters(controllerIndex);
+        CAN_DisableGroupFilters(controllerIndex);
+
+        state->isOpened = false;
     }
-
-    if (state->canRxMessagesFifo != nullptr) {
-        memoryProvider->Free(memoryProvider, state->canRxMessagesFifo);
-
-        state->canRxMessagesFifo = nullptr;
-    }
-
-    CAN_DisableExplicitFilters(controllerIndex);
-    CAN_DisableGroupFilters(controllerIndex);
-
-    state->isOpened = false;
 
     return TinyCLR_Result::Success;
 }
@@ -1899,6 +1911,7 @@ void AT91_Can_Reset() {
         AT91_Can_Release(&canControllers[i]);
 
         canStates[i].isOpened = false;
+        canStates[i].intializeCount = 0;
     }
 
 }

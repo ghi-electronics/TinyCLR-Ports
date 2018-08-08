@@ -60,6 +60,7 @@ struct UartState {
 
     const TinyCLR_Uart_Controller* controller;
     bool tableInitialized;
+    uint32_t intializeCount;
 };
 
 static const STM32F4_Gpio_Pin uartTxPins[] = STM32F4_UART_TX_PINS;
@@ -374,26 +375,30 @@ void STM32F4_Uart_Interrupt8(void* param) {
 TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    int32_t controllerIndex = state->controllerIndex;
+    if (state->intializeCount == 0) {
+        int32_t controllerIndex = state->controllerIndex;
 
-    if (controllerIndex >= TOTAL_UART_CONTROLLERS)
-        return TinyCLR_Result::ArgumentInvalid;
+        if (controllerIndex >= TOTAL_UART_CONTROLLERS)
+            return TinyCLR_Result::ArgumentInvalid;
 
-    if (state->isOpened || !STM32F4_GpioInternal_OpenPin(uartRxPins[controllerIndex].number) || !STM32F4_GpioInternal_OpenPin(uartTxPins[controllerIndex].number))
-        return TinyCLR_Result::SharingViolation;
+        if (state->isOpened || !STM32F4_GpioInternal_OpenPin(uartRxPins[controllerIndex].number) || !STM32F4_GpioInternal_OpenPin(uartTxPins[controllerIndex].number))
+            return TinyCLR_Result::SharingViolation;
 
-    state->txBufferCount = 0;
-    state->txBufferIn = 0;
-    state->txBufferOut = 0;
+        state->txBufferCount = 0;
+        state->txBufferIn = 0;
+        state->txBufferOut = 0;
 
-    state->rxBufferCount = 0;
-    state->rxBufferIn = 0;
-    state->rxBufferOut = 0;
+        state->rxBufferCount = 0;
+        state->rxBufferIn = 0;
+        state->rxBufferOut = 0;
 
-    state->portReg = uartPortRegs[controllerIndex];
-    state->controller = self;
+        state->portReg = uartPortRegs[controllerIndex];
+        state->controller = self;
 
-    state->handshaking = false;
+        state->handshaking = false;
+    }
+
+    state->intializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -586,114 +591,120 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Controller* self) {
 
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    int32_t controllerIndex = state->controllerIndex;
+    if (state->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    state->portReg->CR1 = 0; // stop uart
+    state->intializeCount--;
 
-    switch (controllerIndex) {
-    case 0:
-        STM32F4_InterruptInternal_Deactivate(USART1_IRQn);
-        break;
+    if (state->intializeCount == 0) {
+        int32_t controllerIndex = state->controllerIndex;
 
-    case 1:
-        STM32F4_InterruptInternal_Deactivate(USART2_IRQn);
-        break;
+        state->portReg->CR1 = 0; // stop uart
+
+        switch (controllerIndex) {
+        case 0:
+            STM32F4_InterruptInternal_Deactivate(USART1_IRQn);
+            break;
+
+        case 1:
+            STM32F4_InterruptInternal_Deactivate(USART2_IRQn);
+            break;
 #if !defined(STM32F401xE) && !defined(STM32F411xE)
-    case 2:
-        STM32F4_InterruptInternal_Deactivate(USART3_IRQn);
-        break;
+        case 2:
+            STM32F4_InterruptInternal_Deactivate(USART3_IRQn);
+            break;
 
-    case 3:
-        STM32F4_InterruptInternal_Deactivate(UART4_IRQn);
-        break;
+        case 3:
+            STM32F4_InterruptInternal_Deactivate(UART4_IRQn);
+            break;
 
-    case 4:
-        STM32F4_InterruptInternal_Deactivate(UART5_IRQn);
-        break;
+        case 4:
+            STM32F4_InterruptInternal_Deactivate(UART5_IRQn);
+            break;
 
-    case 5:
-        STM32F4_InterruptInternal_Deactivate(USART6_IRQn);
-        break;
+        case 5:
+            STM32F4_InterruptInternal_Deactivate(USART6_IRQn);
+            break;
 
 #ifdef UART7
-    case 6:
-        STM32F4_InterruptInternal_Deactivate(UART7_IRQn);
-        break;
+        case 6:
+            STM32F4_InterruptInternal_Deactivate(UART7_IRQn);
+            break;
 
 #ifdef UART8
-    case 7:
-        STM32F4_InterruptInternal_Deactivate(UART8_IRQn);
-        break;
+        case 7:
+            STM32F4_InterruptInternal_Deactivate(UART8_IRQn);
+            break;
 
 #ifdef UART9
-    case 8:
-        STM32F4_InterruptInternal_Deactivate(UART9_IRQn);
-        break;
+        case 8:
+            STM32F4_InterruptInternal_Deactivate(UART9_IRQn);
+            break;
 #endif
 #endif
 #endif
 #endif
-    }
+        }
 
-    STM32F4_Uart_RxBufferFullInterruptEnable(controllerIndex, false);
-    STM32F4_Uart_TxBufferEmptyInterruptEnable(controllerIndex, false);
+        STM32F4_Uart_RxBufferFullInterruptEnable(controllerIndex, false);
+        STM32F4_Uart_TxBufferEmptyInterruptEnable(controllerIndex, false);
 
-    // disable UART clock
-    if (controllerIndex == 5) { // COM6 on APB2
-        RCC->APB2ENR &= ~RCC_APB2ENR_USART6EN;
-    }
-    else if (controllerIndex == 0) { // COM1 on APB2
-        RCC->APB2ENR &= ~RCC_APB2ENR_USART1EN;
-    }
-    else if (controllerIndex < 5) { // COM2-5 on APB1
-        RCC->APB1ENR &= ~(RCC_APB1ENR_USART2EN >> 1 << controllerIndex);
-    }
+        // disable UART clock
+        if (controllerIndex == 5) { // COM6 on APB2
+            RCC->APB2ENR &= ~RCC_APB2ENR_USART6EN;
+        }
+        else if (controllerIndex == 0) { // COM1 on APB2
+            RCC->APB2ENR &= ~RCC_APB2ENR_USART1EN;
+        }
+        else if (controllerIndex < 5) { // COM2-5 on APB1
+            RCC->APB1ENR &= ~(RCC_APB1ENR_USART2EN >> 1 << controllerIndex);
+        }
 #if !defined(STM32F401xE) && !defined(STM32F411xE)
 #ifdef UART7
-    else if (controllerIndex == 6) {
-        RCC->APB1ENR &= ~RCC_APB1ENR_UART7EN;
-    }
+        else if (controllerIndex == 6) {
+            RCC->APB1ENR &= ~RCC_APB1ENR_UART7EN;
+        }
 
 #ifdef UART8
-    else if (controllerIndex == 7) {
-        RCC->APB1ENR &= ~RCC_APB1ENR_UART8EN;
-    }
+        else if (controllerIndex == 7) {
+            RCC->APB1ENR &= ~RCC_APB1ENR_UART8EN;
+        }
 
 #ifdef UART9
-    else if (controllerIndex == 8) {
-        RCC->APB2ENR &= ~RCC_APB2ENR_UART9EN;
-    }
+        else if (controllerIndex == 8) {
+            RCC->APB2ENR &= ~RCC_APB2ENR_UART9EN;
+        }
 #endif
 #endif
 #endif
 #endif
-    if (apiManager != nullptr) {
-        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+        if (apiManager != nullptr) {
+            auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-        if (state->txBufferSize != 0) {
-            memoryProvider->Free(memoryProvider, state->TxBuffer);
+            if (state->txBufferSize != 0) {
+                memoryProvider->Free(memoryProvider, state->TxBuffer);
 
-            state->txBufferSize = 0;
+                state->txBufferSize = 0;
+            }
+
+            if (state->rxBufferSize != 0) {
+                memoryProvider->Free(memoryProvider, state->RxBuffer);
+
+                state->rxBufferSize = 0;
+            }
         }
 
-        if (state->rxBufferSize != 0) {
-            memoryProvider->Free(memoryProvider, state->RxBuffer);
+        if (state->isOpened) {
+            STM32F4_GpioInternal_ClosePin(uartRxPins[controllerIndex].number);
+            STM32F4_GpioInternal_ClosePin(uartTxPins[controllerIndex].number);
 
-            state->rxBufferSize = 0;
+            if (state->handshaking) {
+                STM32F4_GpioInternal_ClosePin(uartCtsPins[controllerIndex].number);
+                STM32F4_GpioInternal_ClosePin(uartRtsPins[controllerIndex].number);
+            }
         }
+
+        state->isOpened = false;
     }
-
-    if (state->isOpened) {
-        STM32F4_GpioInternal_ClosePin(uartRxPins[controllerIndex].number);
-        STM32F4_GpioInternal_ClosePin(uartTxPins[controllerIndex].number);
-
-        if (state->handshaking) {
-            STM32F4_GpioInternal_ClosePin(uartCtsPins[controllerIndex].number);
-            STM32F4_GpioInternal_ClosePin(uartRtsPins[controllerIndex].number);
-        }
-    }
-
-    state->isOpened = false;
 
     return TinyCLR_Result::Success;
 }
@@ -707,6 +718,7 @@ void STM32F4_Uart_Reset() {
 
         uartStates[i].isOpened = false;
         uartStates[i].tableInitialized = false;
+        uartStates[i].intializeCount = 0;
     }
 }
 

@@ -41,7 +41,10 @@ struct UartState {
     TinyCLR_Uart_DataReceivedHandler dataReceivedEventHandler;
 
     const TinyCLR_Uart_Controller* controller;
+
     bool tableInitialized = false;
+
+    uint32_t intializeCount;
 };
 
 static UartState uartStates[TOTAL_UART_CONTROLLERS];
@@ -379,29 +382,33 @@ TinyCLR_Result AT91_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
 
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->intializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    int32_t txPin = AT91_Uart_GetTxPin(controllerIndex);
-    int32_t rxPin = AT91_Uart_GetRxPin(controllerIndex);
+        int32_t txPin = AT91_Uart_GetTxPin(controllerIndex);
+        int32_t rxPin = AT91_Uart_GetRxPin(controllerIndex);
 
-    if (state->isOpened || !AT91_Gpio_OpenPin(txPin) || !AT91_Gpio_OpenPin(rxPin))
-        return TinyCLR_Result::SharingViolation;
+        if (state->isOpened || !AT91_Gpio_OpenPin(txPin) || !AT91_Gpio_OpenPin(rxPin))
+            return TinyCLR_Result::SharingViolation;
 
-    state->txBufferCount = 0;
-    state->txBufferIn = 0;
-    state->txBufferOut = 0;
+        state->txBufferCount = 0;
+        state->txBufferIn = 0;
+        state->txBufferOut = 0;
 
-    state->rxBufferCount = 0;
-    state->rxBufferIn = 0;
-    state->rxBufferOut = 0;
+        state->rxBufferCount = 0;
+        state->rxBufferIn = 0;
+        state->rxBufferOut = 0;
 
-    state->controller = self;
+        state->controller = self;
 
-    AT91_PMC &pmc = AT91::PMC();
+        AT91_PMC &pmc = AT91::PMC();
 
-    int32_t uartId = AT91_Uart_GetPeripheralId(controllerIndex);
+        int32_t uartId = AT91_Uart_GetPeripheralId(controllerIndex);
 
-    pmc.EnablePeriphClock(uartId);
+        pmc.EnablePeriphClock(uartId);
+    }
+
+    state->intializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -547,43 +554,49 @@ TinyCLR_Result AT91_Uart_Release(const TinyCLR_Uart_Controller* self) {
 
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    state->txBufferCount = 0;
-    state->txBufferIn = 0;
-    state->txBufferOut = 0;
+    state->intializeCount--;
 
-    state->rxBufferCount = 0;
-    state->rxBufferIn = 0;
-    state->rxBufferOut = 0;
+    if (state->intializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    state->isOpened = false;
-    state->handshakeEnable = false;
+        state->txBufferCount = 0;
+        state->txBufferIn = 0;
+        state->txBufferOut = 0;
 
-    AT91_PMC &pmc = AT91::PMC();
+        state->rxBufferCount = 0;
+        state->rxBufferIn = 0;
+        state->rxBufferOut = 0;
 
-    int32_t uartId = AT91_Uart_GetPeripheralId(controllerIndex);
+        state->isOpened = false;
+        state->handshakeEnable = false;
 
-    AT91_Interrupt_Disable(uartId);
+        AT91_PMC &pmc = AT91::PMC();
 
-    if (state->isOpened)
-        AT91_Uart_PinConfiguration(controllerIndex, false);
+        int32_t uartId = AT91_Uart_GetPeripheralId(controllerIndex);
 
-    pmc.DisablePeriphClock(uartId);
+        AT91_Interrupt_Disable(uartId);
 
-    if (apiManager != nullptr) {
-        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+        if (state->isOpened)
+            AT91_Uart_PinConfiguration(controllerIndex, false);
 
-        if (state->txBufferSize != 0) {
-            memoryProvider->Free(memoryProvider, state->TxBuffer);
+        pmc.DisablePeriphClock(uartId);
 
-            state->txBufferSize = 0;
-        }
+        if (apiManager != nullptr) {
+            auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-        if (state->rxBufferSize != 0) {
-            memoryProvider->Free(memoryProvider, state->RxBuffer);
+            if (state->txBufferSize != 0) {
+                memoryProvider->Free(memoryProvider, state->TxBuffer);
 
-            state->rxBufferSize = 0;
+                state->txBufferSize = 0;
+            }
+
+            if (state->rxBufferSize != 0) {
+                memoryProvider->Free(memoryProvider, state->RxBuffer);
+
+                state->rxBufferSize = 0;
+            }
         }
     }
 
@@ -783,6 +796,7 @@ void AT91_Uart_Reset() {
 
         uartStates[i].isOpened = false;
         uartStates[i].tableInitialized = false;
+        uartStates[i].intializeCount = 0;
     }
 }
 
