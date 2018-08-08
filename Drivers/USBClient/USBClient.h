@@ -179,7 +179,7 @@ struct UsClientState {
 
     bool tableInitialized;
 
-    uint32_t intializeCount;
+    uint16_t initializeCount;
 };
 
 const TinyCLR_Api_Info* TinyCLR_UsbClient_GetRequiredApi();

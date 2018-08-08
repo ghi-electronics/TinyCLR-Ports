@@ -213,7 +213,7 @@ struct UartState {
 
     bool tableInitialized;
 
-    uint32_t intializeCount;
+    uint16_t initializeCount;
 };
 
 #define SET_BITS(Var,Shift,Mask,fieldsMask) {Var = setFieldValue(Var,Shift,Mask,fieldsMask);}
@@ -561,7 +561,7 @@ void UART4_IntHandler(void *param) {
 TinyCLR_Result LPC17_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    if (state->intializeCount == 0) {
+    if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
         if (controllerIndex >= TOTAL_UART_CONTROLLERS)
@@ -601,7 +601,7 @@ TinyCLR_Result LPC17_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         }
     }
 
-    state->intializeCount++;
+    state->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -792,11 +792,11 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Controller* self) {
 
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    if (state->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    state->intializeCount--;
+    state->initializeCount--;
 
-    if (state->intializeCount == 0) {
+    if (state->initializeCount == 0) {
 
         auto controllerIndex = state->controllerIndex;
 
@@ -1060,7 +1060,7 @@ void LPC17_Uart_Reset() {
 
         uartStates[i].isOpened = false;
         uartStates[i].tableInitialized = false;
-        uartStates[i].intializeCount = 0;
+        uartStates[i].initializeCount = 0;
     }
 }
 

@@ -34,7 +34,7 @@ struct I2cState {
 
     bool isOpened;
 
-    uint32_t intializeCount;
+    uint16_t initializeCount;
 };
 
 static I2cState i2cStates[TOTAL_I2C_CONTROLLERS];
@@ -409,7 +409,7 @@ TinyCLR_Result AT91_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
 
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
-    if (state->intializeCount == 0) {
+    if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
         AT91_I2C& I2C = AT91::I2C(controllerIndex);
@@ -429,7 +429,7 @@ TinyCLR_Result AT91_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
         }
     }
 
-    state->intializeCount++;
+    state->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -440,11 +440,11 @@ TinyCLR_Result AT91_I2c_Release(const TinyCLR_I2c_Controller* self) {
 
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
-    if (state->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    state->intializeCount--;
+    state->initializeCount--;
 
-    if (state->intializeCount == 0) {
+    if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
         AT91_I2C& I2C = AT91::I2C(controllerIndex);
@@ -485,6 +485,6 @@ void AT91_I2c_Reset() {
         state->i2cConfiguration.clockRate2 = 0;
 
         state->isOpened = false;
-        state->intializeCount = 0;
+        state->initializeCount = 0;
     }
 }

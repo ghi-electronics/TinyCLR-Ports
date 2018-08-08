@@ -1047,7 +1047,7 @@ struct CanState {
 
     bool isOpened;
 
-    uint32_t intializeCount;
+    uint16_t initializeCount;
 };
 
 static const AT91_Gpio_Pin canTxPins[] = AT91_CAN_TX_PINS;
@@ -1455,7 +1455,7 @@ TinyCLR_Result AT91_Can_Acquire(const TinyCLR_Can_Controller* self) {
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    if (state->intializeCount == 0) {
+    if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
         if (!AT91_Gpio_OpenPin(canTxPins[controllerIndex].number))
@@ -1490,7 +1490,7 @@ TinyCLR_Result AT91_Can_Acquire(const TinyCLR_Can_Controller* self) {
         state->controllerIndex = controllerIndex;
     }
 
-    state->intializeCount++;
+    state->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -1501,11 +1501,11 @@ TinyCLR_Result AT91_Can_Release(const TinyCLR_Can_Controller* self) {
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    if (state->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    state->intializeCount--;
+    state->initializeCount--;
 
-    if (state->intializeCount == 0) {
+    if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
@@ -1911,7 +1911,7 @@ void AT91_Can_Reset() {
         AT91_Can_Release(&canControllers[i]);
 
         canStates[i].isOpened = false;
-        canStates[i].intializeCount = 0;
+        canStates[i].initializeCount = 0;
     }
 
 }

@@ -2026,7 +2026,7 @@ struct CanState {
 
     bool isOpened;
 
-    uint32_t intializeCount;
+    uint16_t initializeCount;
 };
 
 static const LPC24_Gpio_Pin canTxPins[] = LPC24_CAN_TX_PINS;
@@ -2428,7 +2428,7 @@ TinyCLR_Result LPC24_Can_Acquire(const TinyCLR_Can_Controller* self) {
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    if (state->intializeCount == 0) {
+    if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
         if (!LPC24_Gpio_OpenPin(canTxPins[controllerIndex].number))
@@ -2464,7 +2464,7 @@ TinyCLR_Result LPC24_Can_Acquire(const TinyCLR_Can_Controller* self) {
         state->isOpened = true;
     }
 
-    state->intializeCount++;
+    state->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -2476,11 +2476,11 @@ TinyCLR_Result LPC24_Can_Release(const TinyCLR_Can_Controller* self) {
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
-    if (state->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    state->intializeCount--;
+    state->initializeCount--;
 
-    if (state->intializeCount == 0) {
+    if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
         if (state->canRxMessagesFifo != nullptr) {
@@ -2859,7 +2859,7 @@ void LPC24_Can_Reset() {
         LPC24_Can_Release(&canControllers[i]);
 
         canStates[i].isOpened = false;
-        canStates[i].intializeCount = 0;
+        canStates[i].initializeCount = 0;
     }
 }
 

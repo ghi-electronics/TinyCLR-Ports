@@ -2150,7 +2150,7 @@ struct SdCardState {
 
     bool isOpened = false;
 
-    uint32_t intializeCount;
+    uint16_t initializeCount;
 };
 
 static const LPC17_Gpio_Pin sdCardData0Pins[] = LPC17_SD_DATA0_PINS;
@@ -2199,7 +2199,7 @@ void LPC17_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
 TinyCLR_Result LPC17_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
-    if (state->intializeCount == 0) {
+    if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
         auto d0 = sdCardData0Pins[controllerIndex];
@@ -2247,7 +2247,7 @@ TinyCLR_Result LPC17_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
         state->isOpened = true;
     }
 
-    state->intializeCount++;
+    state->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -2255,11 +2255,11 @@ TinyCLR_Result LPC17_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
 TinyCLR_Result LPC17_SdCard_Release(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
-    if (state->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    state->intializeCount--;
+    state->initializeCount--;
 
-    if (state->intializeCount == 0) {
+    if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
         auto d0 = sdCardData0Pins[controllerIndex];
@@ -2398,7 +2398,7 @@ TinyCLR_Result LPC17_SdCard_Reset() {
         LPC17_SdCard_Close(&sdCardControllers[i]);
         LPC17_SdCard_Release(&sdCardControllers[i]);
 
-        sdCardStates[i].intializeCount = 0;
+        sdCardStates[i].initializeCount = 0;
     }
 
     return TinyCLR_Result::Success;

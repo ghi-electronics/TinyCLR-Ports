@@ -72,7 +72,7 @@ struct I2cState {
     I2cTransaction   readI2cTransactionAction;
     I2cTransaction   writeI2cTransactionAction;
 
-    uint32_t intializeCount;
+    uint16_t initializeCount;
 };
 
 static I2cState i2cStates[TOTAL_I2C_CONTROLLERS];
@@ -442,7 +442,7 @@ TinyCLR_Result STM32F7_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
 
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
-    if (state->intializeCount == 0) {
+    if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
         auto& I2Cx = i2cPorts[controllerIndex];
@@ -476,7 +476,7 @@ TinyCLR_Result STM32F7_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
         state->i2cConfiguration.isOpened = true;
     }
 
-    state->intializeCount++;
+    state->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -487,11 +487,11 @@ TinyCLR_Result STM32F7_I2c_Release(const TinyCLR_I2c_Controller* self) {
 
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
-    if (state->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    state->intializeCount--;
+    state->initializeCount--;
 
-    if (state->intializeCount == 0) {
+    if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
         auto& I2Cx = i2cPorts[controllerIndex];
@@ -549,6 +549,6 @@ void STM32F7_I2c_Reset() {
         state->writeI2cTransactionAction.bytesTransferred = 0;
 
         state->i2cConfiguration.isOpened = false;
-        state->intializeCount = 0;
+        state->initializeCount = 0;
     }
 }

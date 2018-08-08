@@ -791,7 +791,7 @@ TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Controller* sel
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (usClientState->intializeCount == 0) {
+    if (usClientState->initializeCount == 0) {
         TinyCLR_UsbClient_InitializeConfiguration(usClientState);
 
         usClientState->currentState = USB_DEVICE_STATE_UNINITIALIZED;
@@ -855,7 +855,7 @@ TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Controller* sel
         return TinyCLR_Result::ArgumentNull;
     }
 
-    usClientState->intializeCount++;
+    usClientState->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -863,11 +863,11 @@ TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Controller* sel
 TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Controller* self) {
     auto usClientState = reinterpret_cast<UsClientState*>(self->ApiInfo->State);
 
-    if (usClientState->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
+    if (usClientState->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    usClientState->intializeCount--;
+    usClientState->initializeCount--;
 
-    if (usClientState->intializeCount == 0) {
+    if (usClientState->initializeCount == 0) {
         if (usClientState->initialized) {
             DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -1225,5 +1225,5 @@ void TinyCLR_UsbClient_Reset(int32_t controllerIndex) {
     TinyCLR_UsbClient_Release(&usbClientControllers[controllerIndex]);
 
     usbClientStates[controllerIndex].tableInitialized = false;
-    usbClientStates[controllerIndex].intializeCount = 0;
+    usbClientStates[controllerIndex].initializeCount = 0;
 }

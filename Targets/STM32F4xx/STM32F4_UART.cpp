@@ -60,7 +60,7 @@ struct UartState {
 
     const TinyCLR_Uart_Controller* controller;
     bool tableInitialized;
-    uint32_t intializeCount;
+    uint16_t initializeCount;
 };
 
 static const STM32F4_Gpio_Pin uartTxPins[] = STM32F4_UART_TX_PINS;
@@ -375,7 +375,7 @@ void STM32F4_Uart_Interrupt8(void* param) {
 TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    if (state->intializeCount == 0) {
+    if (state->initializeCount == 0) {
         int32_t controllerIndex = state->controllerIndex;
 
         if (controllerIndex >= TOTAL_UART_CONTROLLERS)
@@ -398,7 +398,7 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->handshaking = false;
     }
 
-    state->intializeCount++;
+    state->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -591,11 +591,11 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Controller* self) {
 
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    if (state->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    state->intializeCount--;
+    state->initializeCount--;
 
-    if (state->intializeCount == 0) {
+    if (state->initializeCount == 0) {
         int32_t controllerIndex = state->controllerIndex;
 
         state->portReg->CR1 = 0; // stop uart
@@ -718,7 +718,7 @@ void STM32F4_Uart_Reset() {
 
         uartStates[i].isOpened = false;
         uartStates[i].tableInitialized = false;
-        uartStates[i].intializeCount = 0;
+        uartStates[i].initializeCount = 0;
     }
 }
 

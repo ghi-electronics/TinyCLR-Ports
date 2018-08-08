@@ -43,7 +43,7 @@ struct UartState {
     const TinyCLR_Uart_Controller* controller;
     bool tableInitialized = false;
 
-    uint32_t intializeCount;
+    uint16_t initializeCount;
 };
 
 static UartState uartStates[TOTAL_UART_CONTROLLERS];
@@ -381,7 +381,7 @@ TinyCLR_Result AT91_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
 
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    if (state->intializeCount == 0) {
+    if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
         int32_t txPin = AT91_Uart_GetTxPin(controllerIndex);
@@ -407,7 +407,7 @@ TinyCLR_Result AT91_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         pmc.EnablePeriphClock(uartId);
     }
 
-    state->intializeCount++;
+    state->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -552,11 +552,11 @@ TinyCLR_Result AT91_Uart_Release(const TinyCLR_Uart_Controller* self) {
 
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    if (state->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    state->intializeCount--;
+    state->initializeCount--;
 
-    if (state->intializeCount == 0) {
+    if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
         state->txBufferCount = 0;
@@ -795,7 +795,7 @@ void AT91_Uart_Reset() {
 
         uartStates[i].isOpened = false;
         uartStates[i].tableInitialized = false;
-        uartStates[i].intializeCount = 0;
+        uartStates[i].initializeCount = 0;
     }
 }
 
