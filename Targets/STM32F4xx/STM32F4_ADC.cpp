@@ -54,6 +54,7 @@ const char* adcApiNames[TOTAL_ADC_CONTROLLERS] = {
 
 struct AdcState {
     bool isOpen[STM32F4_AD_NUM];
+    uint32_t initializeCount;
 };
 
 static AdcState adcStates[TOTAL_ADC_CONTROLLERS];
@@ -88,18 +89,26 @@ void STM32F4_Adc_AddApi(const TinyCLR_Api_Manager* apiManager) {
 }
 
 TinyCLR_Result STM32F4_Adc_Acquire(const TinyCLR_Adc_Controller* self) {
+    auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
+
+    state->initializeCount++;
+
     return self == nullptr ? TinyCLR_Result::ArgumentNull : TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Adc_Release(const TinyCLR_Adc_Controller* self) {
+    auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
+
+    state->initializeCount = state->initializeCount == 0 ? 0 : state->initializeCount--;
+
     return self == nullptr ? TinyCLR_Result::ArgumentNull : TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Adc_OpenChannel(const TinyCLR_Adc_Controller* self, uint32_t channel) {
     auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
-    if (channel <= 15 && !STM32F4_GpioInternal_OpenPin(adcPins[channel]))
-        return TinyCLR_Result::SharingViolation;
+    if (channel <= 15 && state->initializeCount == 1)
+        STM32F4_GpioInternal_OpenPin(adcPins[channel]);
 
     // init this channel if it's listed in the STM32F4_AD_CHANNELS array
     for (int i = 0; i < STM32F4_AD_NUM; i++) {
@@ -134,13 +143,15 @@ TinyCLR_Result STM32F4_Adc_OpenChannel(const TinyCLR_Adc_Controller* self, uint3
 TinyCLR_Result STM32F4_Adc_CloseChannel(const TinyCLR_Adc_Controller* self, uint32_t channel) {
     auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
-    // free GPIO pin if this channel is listed in the STM32F4_AD_CHANNELS array
-    // and if it's not one of the internally connected ones as these channels don't take any GPIO pins
-    if (channel <= 15 && channel < STM32F4_AD_NUM)
-        if (state->isOpen[channel])
-            STM32F4_GpioInternal_ClosePin(adcPins[channel]);
+    if (state->initializeCount == 1) {
+        // free GPIO pin if this channel is listed in the STM32F4_AD_CHANNELS array
+        // and if it's not one of the internally connected ones as these channels don't take any GPIO pins
+        if (channel <= 15 && channel < STM32F4_AD_NUM)
+            if (state->isOpen[channel])
+                STM32F4_GpioInternal_ClosePin(adcPins[channel]);
 
-    state->isOpen[channel] = false;
+        state->isOpen[channel] = false;
+    }
 
     return TinyCLR_Result::Success;
 }
