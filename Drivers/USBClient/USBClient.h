@@ -178,6 +178,8 @@ struct UsClientState {
     uint8_t* controlEndpointBuffer;
 
     bool tableInitialized;
+
+    uint32_t intializeCount;
 };
 
 const TinyCLR_Api_Info* TinyCLR_UsbClient_GetRequiredApi();

@@ -791,98 +791,110 @@ TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Controller* sel
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    TinyCLR_UsbClient_InitializeConfiguration(usClientState);
+    if (usClientState->intializeCount == 0) {
+        TinyCLR_UsbClient_InitializeConfiguration(usClientState);
 
-    usClientState->currentState = USB_DEVICE_STATE_UNINITIALIZED;
-    usClientState->deviceState = USB_DEVICE_STATE_UNINITIALIZED;
-    usClientState->deviceStatus = USB_STATUS_DEVICE_SELF_POWERED;
+        usClientState->currentState = USB_DEVICE_STATE_UNINITIALIZED;
+        usClientState->deviceState = USB_DEVICE_STATE_UNINITIALIZED;
+        usClientState->deviceStatus = USB_STATUS_DEVICE_SELF_POWERED;
 
-    if (apiManager != nullptr) {
-        auto memoryManager = reinterpret_cast<const TinyCLR_Memory_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager));
+        if (apiManager != nullptr) {
+            auto memoryManager = reinterpret_cast<const TinyCLR_Memory_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager));
 
-        usClientState->queues = reinterpret_cast<USB_PACKET64**>(memoryManager->Allocate(memoryManager, usClientState->totalEndpointsCount * sizeof(uint32_t)));
-        usClientState->currentPacketOffset = reinterpret_cast<uint8_t*>(memoryManager->Allocate(memoryManager, usClientState->totalEndpointsCount * sizeof(uint8_t)));
-        usClientState->isTxQueue = reinterpret_cast<bool*>(memoryManager->Allocate(memoryManager, usClientState->totalEndpointsCount * sizeof(bool)));
+            usClientState->queues = reinterpret_cast<USB_PACKET64**>(memoryManager->Allocate(memoryManager, usClientState->totalEndpointsCount * sizeof(uint32_t)));
+            usClientState->currentPacketOffset = reinterpret_cast<uint8_t*>(memoryManager->Allocate(memoryManager, usClientState->totalEndpointsCount * sizeof(uint8_t)));
+            usClientState->isTxQueue = reinterpret_cast<bool*>(memoryManager->Allocate(memoryManager, usClientState->totalEndpointsCount * sizeof(bool)));
 
-        usClientState->fifoPacketIn = reinterpret_cast<uint8_t*>(memoryManager->Allocate(memoryManager, usClientState->totalEndpointsCount * sizeof(uint8_t)));
-        usClientState->fifoPacketOut = reinterpret_cast<uint8_t*>(memoryManager->Allocate(memoryManager, usClientState->totalEndpointsCount * sizeof(uint8_t)));
-        usClientState->fifoPacketCount = reinterpret_cast<uint8_t*>(memoryManager->Allocate(memoryManager, usClientState->totalEndpointsCount * sizeof(uint8_t)));
+            usClientState->fifoPacketIn = reinterpret_cast<uint8_t*>(memoryManager->Allocate(memoryManager, usClientState->totalEndpointsCount * sizeof(uint8_t)));
+            usClientState->fifoPacketOut = reinterpret_cast<uint8_t*>(memoryManager->Allocate(memoryManager, usClientState->totalEndpointsCount * sizeof(uint8_t)));
+            usClientState->fifoPacketCount = reinterpret_cast<uint8_t*>(memoryManager->Allocate(memoryManager, usClientState->totalEndpointsCount * sizeof(uint8_t)));
 
-        usClientState->pipes = reinterpret_cast<USB_PIPE_MAP*>(memoryManager->Allocate(memoryManager, usClientState->totalPipesCount * sizeof(USB_PIPE_MAP)));
+            usClientState->pipes = reinterpret_cast<USB_PIPE_MAP*>(memoryManager->Allocate(memoryManager, usClientState->totalPipesCount * sizeof(USB_PIPE_MAP)));
 
-        usClientState->controlEndpointBuffer = reinterpret_cast<uint8_t*>(memoryManager->Allocate(memoryManager, USB_ENDPOINT_CONTROL_BUFFER_SIZE));
+            usClientState->controlEndpointBuffer = reinterpret_cast<uint8_t*>(memoryManager->Allocate(memoryManager, USB_ENDPOINT_CONTROL_BUFFER_SIZE));
 
-        usClientState->endpointStatus = reinterpret_cast<uint16_t*>(memoryManager->Allocate(memoryManager, usClientState->totalEndpointsCount * sizeof(uint16_t)));
-        usClientState->maxEndpointsPacketSize = reinterpret_cast<uint8_t*>(memoryManager->Allocate(memoryManager, usClientState->totalEndpointsCount * sizeof(uint8_t)));
+            usClientState->endpointStatus = reinterpret_cast<uint16_t*>(memoryManager->Allocate(memoryManager, usClientState->totalEndpointsCount * sizeof(uint16_t)));
+            usClientState->maxEndpointsPacketSize = reinterpret_cast<uint8_t*>(memoryManager->Allocate(memoryManager, usClientState->totalEndpointsCount * sizeof(uint8_t)));
 
-        if (usClientState->queues == nullptr
-            || usClientState->currentPacketOffset == nullptr
-            || usClientState->isTxQueue == nullptr
-            || usClientState->fifoPacketIn == nullptr
-            || usClientState->fifoPacketOut == nullptr
-            || usClientState->fifoPacketCount == nullptr
-            || usClientState->pipes == nullptr
-            || usClientState->controlEndpointBuffer == nullptr
-            || usClientState->maxEndpointsPacketSize == nullptr
-            || usClientState->endpointStatus == nullptr)
-            goto acquire_error;
+            if (usClientState->queues == nullptr
+                || usClientState->currentPacketOffset == nullptr
+                || usClientState->isTxQueue == nullptr
+                || usClientState->fifoPacketIn == nullptr
+                || usClientState->fifoPacketOut == nullptr
+                || usClientState->fifoPacketCount == nullptr
+                || usClientState->pipes == nullptr
+                || usClientState->controlEndpointBuffer == nullptr
+                || usClientState->maxEndpointsPacketSize == nullptr
+                || usClientState->endpointStatus == nullptr)
+                goto acquire_error;
 
-        // Reset buffer, make sure no random value in RAM after soft reset
-        memset(reinterpret_cast<uint8_t*>(usClientState->queues), 0x00, usClientState->totalEndpointsCount * sizeof(uint32_t));
-        memset(reinterpret_cast<uint8_t*>(usClientState->currentPacketOffset), 0x00, usClientState->totalEndpointsCount * sizeof(uint8_t));
+            // Reset buffer, make sure no random value in RAM after soft reset
+            memset(reinterpret_cast<uint8_t*>(usClientState->queues), 0x00, usClientState->totalEndpointsCount * sizeof(uint32_t));
+            memset(reinterpret_cast<uint8_t*>(usClientState->currentPacketOffset), 0x00, usClientState->totalEndpointsCount * sizeof(uint8_t));
 
-        memset(reinterpret_cast<uint8_t*>(usClientState->fifoPacketIn), 0x00, usClientState->totalEndpointsCount * sizeof(uint8_t));
-        memset(reinterpret_cast<uint8_t*>(usClientState->fifoPacketOut), 0x00, usClientState->totalEndpointsCount * sizeof(uint8_t));
-        memset(reinterpret_cast<uint8_t*>(usClientState->fifoPacketCount), 0x00, usClientState->totalEndpointsCount * sizeof(uint8_t));
+            memset(reinterpret_cast<uint8_t*>(usClientState->fifoPacketIn), 0x00, usClientState->totalEndpointsCount * sizeof(uint8_t));
+            memset(reinterpret_cast<uint8_t*>(usClientState->fifoPacketOut), 0x00, usClientState->totalEndpointsCount * sizeof(uint8_t));
+            memset(reinterpret_cast<uint8_t*>(usClientState->fifoPacketCount), 0x00, usClientState->totalEndpointsCount * sizeof(uint8_t));
 
-        for (auto i = 0; i < usClientState->totalPipesCount; i++) {
-            usClientState->pipes[i].RxEP = USB_ENDPOINT_NULL;
-            usClientState->pipes[i].TxEP = USB_ENDPOINT_NULL;
+            for (auto i = 0; i < usClientState->totalPipesCount; i++) {
+                usClientState->pipes[i].RxEP = USB_ENDPOINT_NULL;
+                usClientState->pipes[i].TxEP = USB_ENDPOINT_NULL;
+            }
+
+            for (auto i = 0; i < usClientState->totalEndpointsCount; i++) {
+                usClientState->maxEndpointsPacketSize[i] = TinyCLR_UsbClient_GetEndpointSize(i);
+            }
+
+            usClientState->initialized = true;
+
+            return TinyCLR_Result::Success;
+
         }
 
-        for (auto i = 0; i < usClientState->totalEndpointsCount; i++) {
-            usClientState->maxEndpointsPacketSize[i] = TinyCLR_UsbClient_GetEndpointSize(i);
-        }
-
-        usClientState->initialized = true;
-
-        return TinyCLR_Result::Success;
-
+    acquire_error:
+        return TinyCLR_Result::ArgumentNull;
     }
 
-acquire_error:
-    return TinyCLR_Result::ArgumentNull;
+    usClientState->intializeCount++;
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Controller* self) {
     auto usClientState = reinterpret_cast<UsClientState*>(self->ApiInfo->State);
 
-    if (usClientState->initialized) {
-        DISABLE_INTERRUPTS_SCOPED(irq);
+    if (usClientState->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-        TinyCLR_UsbClient_Uninitialize(usClientState);
+    usClientState->intializeCount--;
 
-        usClientState->initialized = false;
+    if (usClientState->intializeCount == 0) {
+        if (usClientState->initialized) {
+            DISABLE_INTERRUPTS_SCOPED(irq);
 
-        // for soft reboot allow the USB to be off for at least 100ms
-        TinyCLR_UsbClient_Delay(100000); // 100ms
+            TinyCLR_UsbClient_Uninitialize(usClientState);
 
-        if (apiManager != nullptr) {
-            auto memoryManager = reinterpret_cast<const TinyCLR_Memory_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager));
+            usClientState->initialized = false;
 
-            memoryManager->Free(memoryManager, usClientState->queues);
-            memoryManager->Free(memoryManager, usClientState->currentPacketOffset);
-            memoryManager->Free(memoryManager, usClientState->isTxQueue);
+            // for soft reboot allow the USB to be off for at least 100ms
+            TinyCLR_UsbClient_Delay(100000); // 100ms
 
-            memoryManager->Free(memoryManager, usClientState->fifoPacketIn);
-            memoryManager->Free(memoryManager, usClientState->fifoPacketOut);
-            memoryManager->Free(memoryManager, usClientState->fifoPacketCount);
+            if (apiManager != nullptr) {
+                auto memoryManager = reinterpret_cast<const TinyCLR_Memory_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager));
 
-            memoryManager->Free(memoryManager, usClientState->pipes);
+                memoryManager->Free(memoryManager, usClientState->queues);
+                memoryManager->Free(memoryManager, usClientState->currentPacketOffset);
+                memoryManager->Free(memoryManager, usClientState->isTxQueue);
 
-            memoryManager->Free(memoryManager, usClientState->controlEndpointBuffer);
-            memoryManager->Free(memoryManager, usClientState->endpointStatus);
-            memoryManager->Free(memoryManager, usClientState->maxEndpointsPacketSize);
+                memoryManager->Free(memoryManager, usClientState->fifoPacketIn);
+                memoryManager->Free(memoryManager, usClientState->fifoPacketOut);
+                memoryManager->Free(memoryManager, usClientState->fifoPacketCount);
+
+                memoryManager->Free(memoryManager, usClientState->pipes);
+
+                memoryManager->Free(memoryManager, usClientState->controlEndpointBuffer);
+                memoryManager->Free(memoryManager, usClientState->endpointStatus);
+                memoryManager->Free(memoryManager, usClientState->maxEndpointsPacketSize);
+            }
         }
     }
 
@@ -1203,7 +1215,6 @@ TinyCLR_Result TinyCLR_UsbClient_SetVendorClassRequestHandler(const TinyCLR_UsbC
     return TinyCLR_Result::Success;
 }
 
-
 void TinyCLR_UsbClient_Reset(int32_t controllerIndex) {
     UsClientState * usClientState = &usbClientStates[controllerIndex];
 
@@ -1214,4 +1225,5 @@ void TinyCLR_UsbClient_Reset(int32_t controllerIndex) {
     TinyCLR_UsbClient_Release(&usbClientControllers[controllerIndex]);
 
     usbClientStates[controllerIndex].tableInitialized = false;
+    usbClientStates[controllerIndex].intializeCount = 0;
 }
