@@ -2610,7 +2610,7 @@ struct SdCardState {
 
     bool isOpened = false;
 
-    uint32_t initializeCount;
+    uint16_t initializeCount;
 };
 
 static const STM32F4_Gpio_Pin sdCardData0Pins[] = STM32F4_SD_DATA0_PINS;

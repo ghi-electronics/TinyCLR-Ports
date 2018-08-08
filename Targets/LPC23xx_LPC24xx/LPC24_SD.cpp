@@ -2148,7 +2148,7 @@ struct SdCardState {
 
     bool isOpened = false;
 
-    uint32_t initializeCount;
+    uint16_t initializeCount;
 };
 
 static const LPC24_Gpio_Pin sdCardData0Pins[] = LPC24_SD_DATA0_PINS;

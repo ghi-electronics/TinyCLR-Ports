@@ -213,7 +213,7 @@ struct UartState {
 
     bool tableInitialized;
 
-    uint32_t initializeCount;
+    uint16_t initializeCount;
 };
 
 #define SET_BITS(Var,Shift,Mask,fieldsMask) {Var = setFieldValue(Var,Shift,Mask,fieldsMask);}

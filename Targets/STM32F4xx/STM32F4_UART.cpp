@@ -60,7 +60,7 @@ struct UartState {
 
     const TinyCLR_Uart_Controller* controller;
     bool tableInitialized;
-    uint32_t initializeCount;
+    uint16_t initializeCount;
 };
 
 static const STM32F4_Gpio_Pin uartTxPins[] = STM32F4_UART_TX_PINS;

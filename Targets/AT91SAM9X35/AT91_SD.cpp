@@ -2358,7 +2358,7 @@ struct SdCardState {
 
     bool isOpened = false;
 
-    uint32_t initializeCount;
+    uint16_t initializeCount;
 };
 
 static const AT91_Gpio_Pin sdCardData0Pins[] = AT91_SD_DATA0_PINS;

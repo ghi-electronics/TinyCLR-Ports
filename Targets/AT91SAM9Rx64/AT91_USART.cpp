@@ -43,7 +43,7 @@ struct UartState {
     const TinyCLR_Uart_Controller* controller;
     bool tableInitialized = false;
 
-    uint32_t initializeCount;
+    uint16_t initializeCount;
 };
 
 static UartState uartStates[TOTAL_UART_CONTROLLERS];

@@ -1047,7 +1047,7 @@ struct CanState {
 
     bool isOpened;
 
-    uint32_t initializeCount;
+    uint16_t initializeCount;
 };
 
 static const AT91_Gpio_Pin canTxPins[] = AT91_CAN_TX_PINS;

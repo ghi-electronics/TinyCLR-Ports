@@ -34,7 +34,7 @@ struct I2cState {
 
     bool isOpened;
 
-    uint32_t initializeCount;
+    uint16_t initializeCount;
 };
 
 static I2cState i2cStates[TOTAL_I2C_CONTROLLERS];

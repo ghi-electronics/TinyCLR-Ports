@@ -41,7 +41,7 @@ struct SpiState {
     TinyCLR_Spi_Mode spiMode;
     bool tableInitialized = false;
 
-    uint32_t initializeCount;
+    uint16_t initializeCount;
 };
 
 static SpiState spiStates[TOTAL_SPI_CONTROLLERS];

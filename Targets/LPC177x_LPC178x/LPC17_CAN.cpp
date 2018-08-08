@@ -2025,7 +2025,7 @@ struct CanState {
 
     bool isOpened;
 
-    uint32_t initializeCount;
+    uint16_t initializeCount;
 };
 
 static const LPC17_Gpio_Pin canTxPins[] = LPC17_CAN_TX_PINS;

@@ -62,7 +62,7 @@ struct UartState {
 
     bool tableInitialized;
 
-    uint32_t initializeCount;
+    uint16_t initializeCount;
 };
 
 static const STM32F7_Gpio_Pin uartTxPins[] = STM32F7_UART_TX_PINS;
