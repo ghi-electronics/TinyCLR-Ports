@@ -90,15 +90,15 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Pwm_GHIElectronics_TinyCLR
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Pwm_GHIElectronics_TinyCLR_Devices_Pwm_Provider_PwmControllerApiWrapper::SetPulseParameters___VOID__I4__R8__GHIElectronicsTinyCLRDevicesPwmPwmPulsePolarity(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Pwm_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
-    TinyCLR_Interop_ClrValue arg0, arg1, arg2;
+    TinyCLR_Interop_ClrValue args[3];
 
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg0);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 1, arg1);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 2, arg2);
+    for (auto i = 0; i < sizeof(args) / sizeof(TinyCLR_Interop_ClrValue); i++) {
+        md.InteropManager->GetArgument(md.InteropManager, md.Stack, i, args[i]);
+    }
 
-    auto channel = arg0.Data.Numeric->I4;
-    auto dutyCycle = arg1.Data.Numeric->R8;
-    auto polarity = static_cast<TinyCLR_Pwm_PulsePolarity>(arg2.Data.Numeric->I4);
+    auto channel = args[0].Data.Numeric->I4;
+    auto dutyCycle = args[1].Data.Numeric->R8;
+    auto polarity = static_cast<TinyCLR_Pwm_PulsePolarity>(args[2].Data.Numeric->I4);
 
     return  api->SetPulseParameters(api, channel, dutyCycle, polarity);
 }

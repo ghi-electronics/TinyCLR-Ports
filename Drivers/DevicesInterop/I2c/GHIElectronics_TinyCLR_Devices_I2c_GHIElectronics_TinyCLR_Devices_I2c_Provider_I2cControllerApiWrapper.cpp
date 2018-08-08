@@ -12,42 +12,35 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR
     int32_t readOffset = 0;
     size_t readLength = 0;
 
-    TinyCLR_Interop_ClrValue arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9;
+    TinyCLR_Interop_ClrValue args[10];
 
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg0);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 1, arg1);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 2, arg2);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 3, arg3);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 4, arg4);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 5, arg5);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 6, arg6);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 7, arg7);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 8, arg8);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 9, arg9);
+    for (auto i = 0; i < sizeof(args) / sizeof(TinyCLR_Interop_ClrValue); i++) {
+        md.InteropManager->GetArgument(md.InteropManager, md.Stack, i, args[i]);
+    }
 
-    uint8_t* writeBuffer = (uint8_t*)arg0.Data.SzArray.Data;
+    uint8_t* writeBuffer = (uint8_t*)args[0].Data.SzArray.Data;
 
-    uint8_t* readBuffer = (uint8_t*)arg3.Data.SzArray.Data;
+    uint8_t* readBuffer = (uint8_t*)args[3].Data.SzArray.Data;
 
     writeData = writeBuffer;
 
-    writeOffset = arg1.Data.Numeric->I4;
-    writeLength = arg2.Data.Numeric->I4;
+    writeOffset = args[1].Data.Numeric->I4;
+    writeLength = args[2].Data.Numeric->I4;
 
     readData = readBuffer;
 
-    readOffset = arg4.Data.Numeric->I4;
-    readLength = arg5.Data.Numeric->I4;
+    readOffset = args[4].Data.Numeric->I4;
+    readLength = args[5].Data.Numeric->I4;
 
-    bool sendStartCondition = arg6.Data.Numeric->Boolean;
-    bool sendStopCondition = arg7.Data.Numeric->Boolean;
+    bool sendStartCondition = args[6].Data.Numeric->Boolean;
+    bool sendStopCondition = args[7].Data.Numeric->Boolean;
 
     TinyCLR_I2c_TransferStatus error;
 
     auto result = api->WriteRead(api, writeData + writeOffset, writeLength, readData + readOffset, readLength, sendStartCondition, sendStopCondition, error);
 
-    arg8.Data.Numeric->I4 = writeLength;
-    arg9.Data.Numeric->I4 = readLength;
+    args[8].Data.Numeric->I4 = writeLength;
+    args[9].Data.Numeric->I4 = readLength;
 
     TinyCLR_Interop_ClrValue ret;
 
@@ -73,15 +66,15 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR_Devices_I2c_Provider_I2cControllerApiWrapper::SetActiveSettings___VOID__I4__GHIElectronicsTinyCLRDevicesI2cI2cAddressFormat__GHIElectronicsTinyCLRDevicesI2cI2cBusSpeed(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_I2c_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
-    TinyCLR_Interop_ClrValue arg0, arg1, arg2;
+    TinyCLR_Interop_ClrValue args[3];
 
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg0);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 1, arg1);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 2, arg2);
+    for (auto i = 0; i < sizeof(args) / sizeof(TinyCLR_Interop_ClrValue); i++) {
+        md.InteropManager->GetArgument(md.InteropManager, md.Stack, i, args[i]);
+    }
 
-    auto slaveAddress = arg0.Data.Numeric->I4;
-    auto addressFormat = static_cast<TinyCLR_I2c_AddressFormat>(arg1.Data.Numeric->I4);
-    auto busSpeed = static_cast<TinyCLR_I2c_BusSpeed>(arg2.Data.Numeric->I4);
+    auto slaveAddress = args[0].Data.Numeric->I4;
+    auto addressFormat = static_cast<TinyCLR_I2c_AddressFormat>(args[1].Data.Numeric->I4);
+    auto busSpeed = static_cast<TinyCLR_I2c_BusSpeed>(args[2].Data.Numeric->I4);
 
     return api->SetActiveSettings(api, slaveAddress, addressFormat, busSpeed);
 }

@@ -67,25 +67,21 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_Provider_SpiControllerApiWrapper::WriteRead___VOID__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4__BOOLEAN(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Spi_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
-    TinyCLR_Interop_ClrValue arg0, arg1, arg2, arg3, arg4, arg5, arg6;
+    TinyCLR_Interop_ClrValue args[7];
 
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg0);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 1, arg1);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 2, arg2);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 3, arg3);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 4, arg4);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 5, arg5);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 6, arg6);
+    for (auto i = 0; i < sizeof(args) / sizeof(TinyCLR_Interop_ClrValue); i++) {
+        md.InteropManager->GetArgument(md.InteropManager, md.Stack, i, args[i]);
+    }
 
-    auto writeData = reinterpret_cast<uint8_t*>(arg0.Data.SzArray.Data);
-    auto writeOffset = arg1.Data.Numeric->I4;
-    auto writeLength = static_cast<size_t>(arg2.Data.Numeric->I4);
+    auto writeData = reinterpret_cast<uint8_t*>(args[0].Data.SzArray.Data);
+    auto writeOffset = args[1].Data.Numeric->I4;
+    auto writeLength = static_cast<size_t>(args[2].Data.Numeric->I4);
 
-    auto readData = reinterpret_cast<uint8_t*>(arg3.Data.SzArray.Data);
-    auto readOffset = arg4.Data.Numeric->I4;
-    auto readLength = static_cast<size_t>(arg5.Data.Numeric->I4);
+    auto readData = reinterpret_cast<uint8_t*>(args[3].Data.SzArray.Data);
+    auto readOffset = args[4].Data.Numeric->I4;
+    auto readLength = static_cast<size_t>(args[5].Data.Numeric->I4);
 
-    auto deselectAfter = arg6.Data.Numeric->Boolean;
+    auto deselectAfter = args[6].Data.Numeric->Boolean;
 
     return  api->WriteRead(api, reinterpret_cast<const uint8_t*>(writeData + writeOffset), writeLength, readData + readOffset, readLength, deselectAfter);
 }
@@ -105,19 +101,17 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_Provider_SpiControllerApiWrapper::SetActiveSettings___VOID__I4__BOOLEAN__I4__I4__GHIElectronicsTinyCLRDevicesSpiSpiMode(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Spi_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
-    TinyCLR_Interop_ClrValue arg0, arg1, arg2, arg3, arg4;
+    TinyCLR_Interop_ClrValue args[5];
 
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg0);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 1, arg1);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 2, arg2);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 3, arg3);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 4, arg4);
+    for (auto i = 0; i < sizeof(args) / sizeof(TinyCLR_Interop_ClrValue); i++) {
+        md.InteropManager->GetArgument(md.InteropManager, md.Stack, i, args[i]);
+    }
 
-    auto chipSelectLine = arg0.Data.Numeric->I4;
-    auto useControllerChipSelect = arg1.Data.Numeric->Boolean;
-    auto clockFrequency = arg2.Data.Numeric->I4;
-    auto dataBitLength = arg3.Data.Numeric->I4;
-    auto mode = static_cast<TinyCLR_Spi_Mode>(arg4.Data.Numeric->I4);
+    auto chipSelectLine = args[0].Data.Numeric->I4;
+    auto useControllerChipSelect = args[1].Data.Numeric->Boolean;
+    auto clockFrequency = args[2].Data.Numeric->I4;
+    auto dataBitLength = args[3].Data.Numeric->I4;
+    auto mode = static_cast<TinyCLR_Spi_Mode>(args[4].Data.Numeric->I4);
 
     return  api->SetActiveSettings(api, chipSelectLine, useControllerChipSelect, clockFrequency, dataBitLength, mode);
 }
