@@ -284,7 +284,7 @@ struct SpiState {
 
     bool tableInitialized = false;
 
-    uint32_t intializeCount;
+    uint32_t initializeCount;
 };
 
 static SpiState spiStates[TOTAL_SPI_CONTROLLERS];
@@ -685,7 +685,7 @@ TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
 
     auto controllerIndex = state->controllerIndex;
 
-    if (state->intializeCount == 0) {
+    if (state->initializeCount == 0) {
 
         uint32_t clkPin, misoPin, mosiPin;
         LPC24_Gpio_PinFunction clkMode, misoMode, mosiMode;
@@ -724,7 +724,7 @@ TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
         state->isOpened = true;
     }
 
-    state->intializeCount++;
+    state->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -735,11 +735,11 @@ TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Controller* self) {
 
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
-    if (state->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    state->intializeCount--;
+    state->initializeCount--;
 
-    if (state->intializeCount == 0) {
+    if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
         switch (controllerIndex) {
@@ -819,6 +819,6 @@ void LPC24_Spi_Reset() {
 
         spiStates[i].isOpened = false;
         spiStates[i].tableInitialized = false;
-        spiStates[i].intializeCount = 0;
+        spiStates[i].initializeCount = 0;
     }
 }
