@@ -429,7 +429,7 @@ TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
 TinyCLR_Result STM32F4_I2c_Release(const TinyCLR_I2c_Controller* self) {
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
-    if (state->initializeCount == 0) return TinyCLR::InvalidOperation;
+    if (state->intializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
     state->intializeCount--;
 
