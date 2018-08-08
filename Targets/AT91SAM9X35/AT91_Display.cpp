@@ -729,6 +729,8 @@ bool m_AT91_DisplayHorizontalSyncPolarity = false;
 bool m_AT91_DisplayVerticalSyncPolarity = false;
 bool m_AT91_DisplayEnable = false;
 
+uint32_t displayInitializeCount = 0;
+
 uint16_t* m_AT91_Display_VituralRam = nullptr;
 size_t m_AT91_DisplayBufferSize = 0;
 
@@ -1258,28 +1260,38 @@ void AT91_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenHeig
 }
 
 TinyCLR_Result AT91_Display_Acquire(const TinyCLR_Display_Controller* self) {
-    m_AT91_Display_CurrentRotation = AT91_LCD_Rotation::rotateNormal_0;
+    if (displayInitializeCount == 0) {
+        m_AT91_Display_CurrentRotation = AT91_LCD_Rotation::rotateNormal_0;
 
-    if (!AT91_Display_SetPinConfiguration(true)) {
-        return TinyCLR_Result::SharingViolation;
+        if (!AT91_Display_SetPinConfiguration(true)) {
+            return TinyCLR_Result::SharingViolation;
+        }
     }
+
+    displayInitializeCount++;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Display_Release(const TinyCLR_Display_Controller* self) {
-    AT91_Display_Uninitialize();
+    if (displayInitializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    AT91_Display_SetPinConfiguration(false);
+    displayInitializeCount--;
 
-    m_AT91_DisplayEnable = false;
+    if (displayInitializeCount == 0) {
+        AT91_Display_Uninitialize();
 
-    if (m_AT91_Display_VituralRam != nullptr) {
-        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+        AT91_Display_SetPinConfiguration(false);
 
-        memoryProvider->Free(memoryProvider, m_AT91_Display_VituralRam);
+        m_AT91_DisplayEnable = false;
 
-        m_AT91_Display_VituralRam = nullptr;
+        if (m_AT91_Display_VituralRam != nullptr) {
+            auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+            memoryProvider->Free(memoryProvider, m_AT91_Display_VituralRam);
+
+            m_AT91_Display_VituralRam = nullptr;
+        }
     }
 
     return TinyCLR_Result::Success;
@@ -1487,5 +1499,6 @@ void AT91_Display_Reset() {
         AT91_Display_Release(&displayControllers[0]);
 
     m_AT91_DisplayEnable = false;
+    displayInitializeCount = 0;
 }
 #endif // INCLUDE_DISPLAY

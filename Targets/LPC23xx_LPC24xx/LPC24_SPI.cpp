@@ -281,7 +281,10 @@ struct SpiState {
     bool isOpened;
 
     TinyCLR_Spi_Mode spiMode;
+
     bool tableInitialized = false;
+
+    uint16_t initializeCount;
 };
 
 static SpiState spiStates[TOTAL_SPI_CONTROLLERS];
@@ -682,44 +685,46 @@ TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
 
     auto controllerIndex = state->controllerIndex;
 
-    if (self == nullptr)
-        return TinyCLR_Result::ArgumentNull;
+    if (state->initializeCount == 0) {
 
-    uint32_t clkPin, misoPin, mosiPin;
-    LPC24_Gpio_PinFunction clkMode, misoMode, mosiMode;
+        uint32_t clkPin, misoPin, mosiPin;
+        LPC24_Gpio_PinFunction clkMode, misoMode, mosiMode;
 
-    clkPin = spiClkPins[controllerIndex].number;
-    misoPin = spiMisoPins[controllerIndex].number;
-    mosiPin = spiMosiPins[controllerIndex].number;
+        clkPin = spiClkPins[controllerIndex].number;
+        misoPin = spiMisoPins[controllerIndex].number;
+        mosiPin = spiMosiPins[controllerIndex].number;
 
-    clkMode = spiClkPins[controllerIndex].pinFunction;
-    misoMode = spiMisoPins[controllerIndex].pinFunction;
-    mosiMode = spiMosiPins[controllerIndex].pinFunction;
+        clkMode = spiClkPins[controllerIndex].pinFunction;
+        misoMode = spiMisoPins[controllerIndex].pinFunction;
+        mosiMode = spiMosiPins[controllerIndex].pinFunction;
 
 
-    // Check each pin single time make sure once fail not effect to other pins
-    if (!LPC24_Gpio_OpenPin(clkPin))
-        return TinyCLR_Result::SharingViolation;
-    if (!LPC24_Gpio_OpenPin(misoPin))
-        return TinyCLR_Result::SharingViolation;
-    if (!LPC24_Gpio_OpenPin(mosiPin))
-        return TinyCLR_Result::SharingViolation;
+        // Check each pin single time make sure once fail not effect to other pins
+        if (!LPC24_Gpio_OpenPin(clkPin))
+            return TinyCLR_Result::SharingViolation;
+        if (!LPC24_Gpio_OpenPin(misoPin))
+            return TinyCLR_Result::SharingViolation;
+        if (!LPC24_Gpio_OpenPin(mosiPin))
+            return TinyCLR_Result::SharingViolation;
 
-    switch (controllerIndex) {
-    case 0:
-        LPC24XX::SYSCON().PCONP |= PCONP_PCSSP0;
-        break;
+        switch (controllerIndex) {
+        case 0:
+            LPC24XX::SYSCON().PCONP |= PCONP_PCSSP0;
+            break;
 
-    case 1:
-        LPC24XX::SYSCON().PCONP |= PCONP_PCSSP1;
-        break;
+        case 1:
+            LPC24XX::SYSCON().PCONP |= PCONP_PCSSP1;
+            break;
+        }
+
+        LPC24_Gpio_ConfigurePin(clkPin, LPC24_Gpio_Direction::Input, clkMode, LPC24_Gpio_PinMode::Inactive);
+        LPC24_Gpio_ConfigurePin(misoPin, LPC24_Gpio_Direction::Input, misoMode, LPC24_Gpio_PinMode::Inactive);
+        LPC24_Gpio_ConfigurePin(mosiPin, LPC24_Gpio_Direction::Input, mosiMode, LPC24_Gpio_PinMode::Inactive);
+
+        state->isOpened = true;
     }
 
-    LPC24_Gpio_ConfigurePin(clkPin, LPC24_Gpio_Direction::Input, clkMode, LPC24_Gpio_PinMode::Inactive);
-    LPC24_Gpio_ConfigurePin(misoPin, LPC24_Gpio_Direction::Input, misoMode, LPC24_Gpio_PinMode::Inactive);
-    LPC24_Gpio_ConfigurePin(mosiPin, LPC24_Gpio_Direction::Input, mosiMode, LPC24_Gpio_PinMode::Inactive);
-
-    state->isOpened = true;
+    state->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -730,39 +735,45 @@ TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Controller* self) {
 
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    switch (controllerIndex) {
-    case 0:
-        LPC24XX::SYSCON().PCONP &= ~PCONP_PCSSP0;
-        break;
+    state->initializeCount--;
 
-    case 1:
-        LPC24XX::SYSCON().PCONP &= ~PCONP_PCSSP1;
-        break;
+    if (state->initializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    }
+        switch (controllerIndex) {
+        case 0:
+            LPC24XX::SYSCON().PCONP &= ~PCONP_PCSSP0;
+            break;
 
-    if (state->isOpened == true) {
-        int32_t clkPin = spiClkPins[controllerIndex].number;
-        int32_t misoPin = spiMisoPins[controllerIndex].number;
-        int32_t mosiPin = spiMosiPins[controllerIndex].number;
+        case 1:
+            LPC24XX::SYSCON().PCONP &= ~PCONP_PCSSP1;
+            break;
 
-        LPC24_Gpio_ClosePin(clkPin);
-        LPC24_Gpio_ClosePin(misoPin);
-        LPC24_Gpio_ClosePin(mosiPin);
-
-        if (state->chipSelectLine != PIN_NONE) {
-            LPC24_Gpio_ClosePin(state->chipSelectLine);
-
-            state->chipSelectLine = PIN_NONE;
         }
+
+        if (state->isOpened == true) {
+            int32_t clkPin = spiClkPins[controllerIndex].number;
+            int32_t misoPin = spiMisoPins[controllerIndex].number;
+            int32_t mosiPin = spiMosiPins[controllerIndex].number;
+
+            LPC24_Gpio_ClosePin(clkPin);
+            LPC24_Gpio_ClosePin(misoPin);
+            LPC24_Gpio_ClosePin(mosiPin);
+
+            if (state->chipSelectLine != PIN_NONE) {
+                LPC24_Gpio_ClosePin(state->chipSelectLine);
+
+                state->chipSelectLine = PIN_NONE;
+            }
+        }
+
+        state->clockFrequency = 0;
+        state->dataBitLength = 0;
+
+        state->isOpened = false;
     }
-
-    state->clockFrequency = 0;
-    state->dataBitLength = 0;
-
-    state->isOpened = false;
 
     return TinyCLR_Result::Success;
 }
@@ -808,5 +819,6 @@ void LPC24_Spi_Reset() {
 
         spiStates[i].isOpened = false;
         spiStates[i].tableInitialized = false;
+        spiStates[i].initializeCount = 0;
     }
 }

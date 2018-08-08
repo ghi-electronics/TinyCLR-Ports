@@ -2664,6 +2664,8 @@ struct SdCardState {
     TinyCLR_Storage_Descriptor descriptor;
 
     bool isOpened = false;
+
+    uint16_t initializeCount;
 };
 
 static const STM32F7_Gpio_Pin sdCardData0Pins[] = STM32F7_SD_DATA0_PINS;
@@ -2712,98 +2714,109 @@ void STM32F7_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
 TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
-    if (state->isOpened) return TinyCLR_Result::SharingViolation;
+    if (state->initializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    auto controllerIndex = state->controllerIndex;
+        auto d0 = sdCardData0Pins[controllerIndex];
+        auto d1 = sdCardData1Pins[controllerIndex];
+        auto d2 = sdCardData2Pins[controllerIndex];
+        auto d3 = sdCardData3Pins[controllerIndex];
+        auto clk = sdCardClkPins[controllerIndex];
+        auto cmd = sdCardCmdPins[controllerIndex];
 
-    auto d0 = sdCardData0Pins[controllerIndex];
-    auto d1 = sdCardData1Pins[controllerIndex];
-    auto d2 = sdCardData2Pins[controllerIndex];
-    auto d3 = sdCardData3Pins[controllerIndex];
-    auto clk = sdCardClkPins[controllerIndex];
-    auto cmd = sdCardCmdPins[controllerIndex];
+        if (!STM32F7_GpioInternal_OpenPin(d0.number)
+            || !STM32F7_GpioInternal_OpenPin(d1.number)
+            || !STM32F7_GpioInternal_OpenPin(d2.number)
+            || !STM32F7_GpioInternal_OpenPin(d3.number)
+            || !STM32F7_GpioInternal_OpenPin(clk.number)
+            || !STM32F7_GpioInternal_OpenPin(cmd.number)
+            )
+            return TinyCLR_Result::SharingViolation;
 
-    if (!STM32F7_GpioInternal_OpenPin(d0.number)
-        || !STM32F7_GpioInternal_OpenPin(d1.number)
-        || !STM32F7_GpioInternal_OpenPin(d2.number)
-        || !STM32F7_GpioInternal_OpenPin(d3.number)
-        || !STM32F7_GpioInternal_OpenPin(clk.number)
-        || !STM32F7_GpioInternal_OpenPin(cmd.number)
-        )
-        return TinyCLR_Result::SharingViolation;
+        STM32F7_GpioInternal_ConfigurePin(d0.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, d0.alternateFunction);
+        STM32F7_GpioInternal_ConfigurePin(d1.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, d1.alternateFunction);
+        STM32F7_GpioInternal_ConfigurePin(d2.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, d2.alternateFunction);
+        STM32F7_GpioInternal_ConfigurePin(d3.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, d3.alternateFunction);
+        STM32F7_GpioInternal_ConfigurePin(clk.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::None, clk.alternateFunction);
+        STM32F7_GpioInternal_ConfigurePin(cmd.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, cmd.alternateFunction);
 
-    STM32F7_GpioInternal_ConfigurePin(d0.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, d0.alternateFunction);
-    STM32F7_GpioInternal_ConfigurePin(d1.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, d1.alternateFunction);
-    STM32F7_GpioInternal_ConfigurePin(d2.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, d2.alternateFunction);
-    STM32F7_GpioInternal_ConfigurePin(d3.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, d3.alternateFunction);
-    STM32F7_GpioInternal_ConfigurePin(clk.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::None, clk.alternateFunction);
-    STM32F7_GpioInternal_ConfigurePin(cmd.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, cmd.alternateFunction);
+        RCC->APB2ENR |= (1 << 11);
 
-    RCC->APB2ENR |= (1 << 11);
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+        state->regionAddresses = (uint64_t*)memoryProvider->Allocate(memoryProvider, sizeof(uint64_t));
+        state->regionSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
 
-    state->regionAddresses = (uint64_t*)memoryProvider->Allocate(memoryProvider, sizeof(uint64_t));
-    state->regionSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
+        state->descriptor.CanReadDirect = true;
+        state->descriptor.CanWriteDirect = true;
+        state->descriptor.CanExecuteDirect = false;
+        state->descriptor.EraseBeforeWrite = false;
+        state->descriptor.Removable = true;
+        state->descriptor.RegionsRepeat = true;
 
-    state->descriptor.CanReadDirect = true;
-    state->descriptor.CanWriteDirect = true;
-    state->descriptor.CanExecuteDirect = false;
-    state->descriptor.EraseBeforeWrite = false;
-    state->descriptor.Removable = true;
-    state->descriptor.RegionsRepeat = true;
+        state->descriptor.RegionAddresses = reinterpret_cast<const uint64_t*>(state->regionAddresses);
+        state->descriptor.RegionSizes = reinterpret_cast<const size_t*>(state->regionSizes);
 
-    state->descriptor.RegionAddresses = reinterpret_cast<const uint64_t*>(state->regionAddresses);
-    state->descriptor.RegionSizes = reinterpret_cast<const size_t*>(state->regionSizes);
+        SD_DeInit();
 
-    SD_DeInit();
+        auto trycount = 3;
 
-    auto trycount = 3;
+    tryinit:
+        if (SD_Init() == SD_OK) {
+            state->isOpened = true;
+            state->initializeCount++;
 
-tryinit:
-    if (SD_Init() == SD_OK) {
-        state->isOpened = true;
-
-        return TinyCLR_Result::Success;
+            return TinyCLR_Result::Success;
+        }
+        else {
+            if (trycount-- > 0)
+                goto tryinit;
+        }
+        return TinyCLR_Result::InvalidOperation;
     }
-    else {
-        if (trycount-- > 0)
-            goto tryinit;
-    }
-    return TinyCLR_Result::InvalidOperation;
+
+    state->initializeCount++;
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F7_SdCard_Release(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    auto d0 = sdCardData0Pins[controllerIndex];
-    auto d1 = sdCardData1Pins[controllerIndex];
-    auto d2 = sdCardData2Pins[controllerIndex];
-    auto d3 = sdCardData3Pins[controllerIndex];
-    auto clk = sdCardClkPins[controllerIndex];
-    auto cmd = sdCardCmdPins[controllerIndex];
+    state->initializeCount--;
 
-    SD_DeInit();
+    if (state->initializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    RCC->APB2ENR &= ~(1 << 11);
+        auto d0 = sdCardData0Pins[controllerIndex];
+        auto d1 = sdCardData1Pins[controllerIndex];
+        auto d2 = sdCardData2Pins[controllerIndex];
+        auto d3 = sdCardData3Pins[controllerIndex];
+        auto clk = sdCardClkPins[controllerIndex];
+        auto cmd = sdCardCmdPins[controllerIndex];
 
-    if (state->isOpened) {
-        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+        SD_DeInit();
 
-        memoryProvider->Free(memoryProvider, state->regionSizes);
-        memoryProvider->Free(memoryProvider, state->regionAddresses);
+        RCC->APB2ENR &= ~(1 << 11);
+
+        if (state->isOpened) {
+            auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+            memoryProvider->Free(memoryProvider, state->regionSizes);
+            memoryProvider->Free(memoryProvider, state->regionAddresses);
+        }
+
+        STM32F7_GpioInternal_ClosePin(d0.number);
+        STM32F7_GpioInternal_ClosePin(d1.number);
+        STM32F7_GpioInternal_ClosePin(d2.number);
+        STM32F7_GpioInternal_ClosePin(d3.number);
+        STM32F7_GpioInternal_ClosePin(clk.number);
+        STM32F7_GpioInternal_ClosePin(cmd.number);
+
+        state->isOpened = false;
     }
-
-    STM32F7_GpioInternal_ClosePin(d0.number);
-    STM32F7_GpioInternal_ClosePin(d1.number);
-    STM32F7_GpioInternal_ClosePin(d2.number);
-    STM32F7_GpioInternal_ClosePin(d3.number);
-    STM32F7_GpioInternal_ClosePin(clk.number);
-    STM32F7_GpioInternal_ClosePin(cmd.number);
-
-    state->isOpened = false;
 
     return TinyCLR_Result::Success;
 }
@@ -2919,6 +2932,7 @@ TinyCLR_Result STM32F7_SdCard_Reset() {
     for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
         STM32F7_SdCard_Close(&sdCardControllers[i]);
         STM32F7_SdCard_Release(&sdCardControllers[i]);
+        sdCardStates[i].initializeCount = 0;
     }
 
     return TinyCLR_Result::Success;

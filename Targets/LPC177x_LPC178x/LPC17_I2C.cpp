@@ -77,6 +77,8 @@ struct I2cState {
     I2cTransaction   *currentI2cTransactionAction;
     I2cTransaction   readI2cTransactionAction;
     I2cTransaction   writeI2cTransactionAction;
+
+    uint16_t initializeCount;
 };
 static I2cState i2cStates[TOTAL_I2C_CONTROLLERS];
 
@@ -344,37 +346,41 @@ TinyCLR_Result LPC17_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
         return TinyCLR_Result::ArgumentNull;
 
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
-    auto controllerIndex = state->controllerIndex;
+    if (state->initializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(controllerIndex == 0 ? LPC17xx_I2C::c_I2C0_Base : ((controllerIndex == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
+        LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(controllerIndex == 0 ? LPC17xx_I2C::c_I2C0_Base : ((controllerIndex == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
 
-    switch (controllerIndex) {
-    case 0:
-        LPC17_Interrupt_Activate(I2C0_IRQn, (uint32_t*)&LPC17_I2c_InterruptHandler0, 0);
-        break;
+        switch (controllerIndex) {
+        case 0:
+            LPC17_Interrupt_Activate(I2C0_IRQn, (uint32_t*)&LPC17_I2c_InterruptHandler0, 0);
+            break;
 
-    case 1:
-        LPC17_Interrupt_Activate(I2C1_IRQn, (uint32_t*)&LPC17_I2c_InterruptHandler1, 0);
-        break;
+        case 1:
+            LPC17_Interrupt_Activate(I2C1_IRQn, (uint32_t*)&LPC17_I2c_InterruptHandler1, 0);
+            break;
 
-    case 2:
-        LPC17_Interrupt_Activate(I2C2_IRQn, (uint32_t*)&LPC17_I2c_InterruptHandler2, 0);
-        break;
+        case 2:
+            LPC17_Interrupt_Activate(I2C2_IRQn, (uint32_t*)&LPC17_I2c_InterruptHandler2, 0);
+            break;
+        }
+
+        if (!LPC17_Gpio_OpenPin(i2cSdaPins[controllerIndex].number) || !LPC17_Gpio_OpenPin(i2cSclPins[controllerIndex].number))
+            return TinyCLR_Result::SharingViolation;
+
+        LPC17_Gpio_ConfigurePin(i2cSdaPins[controllerIndex].number, LPC17_Gpio_Direction::Input, i2cSdaPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::OpenDrain);
+        LPC17_Gpio_ConfigurePin(i2cSclPins[controllerIndex].number, LPC17_Gpio_Direction::Input, i2cSclPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::OpenDrain);
+
+        // enable the I2c module
+        I2C.I2CONSET = LPC17xx_I2C::I2EN;
+
+        // set the slave address
+        I2C.I2ADR = 0x7E;
+
+        state->i2cConfiguration.isOpened = true;
     }
 
-    if (!LPC17_Gpio_OpenPin(i2cSdaPins[controllerIndex].number) || !LPC17_Gpio_OpenPin(i2cSclPins[controllerIndex].number))
-        return TinyCLR_Result::SharingViolation;
-
-    LPC17_Gpio_ConfigurePin(i2cSdaPins[controllerIndex].number, LPC17_Gpio_Direction::Input, i2cSdaPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::OpenDrain);
-    LPC17_Gpio_ConfigurePin(i2cSclPins[controllerIndex].number, LPC17_Gpio_Direction::Input, i2cSclPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::OpenDrain);
-
-    // enable the I2c module
-    I2C.I2CONSET = LPC17xx_I2C::I2EN;
-
-    // set the slave address
-    I2C.I2ADR = 0x7E;
-
-    state->i2cConfiguration.isOpened = true;
+    state->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -384,20 +390,27 @@ TinyCLR_Result LPC17_I2c_Release(const TinyCLR_I2c_Controller* self) {
         return TinyCLR_Result::ArgumentNull;
 
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
-    auto controllerIndex = state->controllerIndex;
 
-    LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(controllerIndex == 0 ? LPC17xx_I2C::c_I2C0_Base : ((controllerIndex == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    LPC17_Interrupt_Deactivate(controllerIndex == 0 ? I2C0_IRQn : (controllerIndex == 1 ? I2C1_IRQn : I2C2_IRQn));
+    state->initializeCount--;
 
-    I2C.I2CONCLR = (LPC17xx_I2C::AA | LPC17xx_I2C::SI | LPC17xx_I2C::STO | LPC17xx_I2C::STA | LPC17xx_I2C::I2EN);
+    if (state->initializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    if (state->i2cConfiguration.isOpened) {
-        LPC17_Gpio_ClosePin(i2cSdaPins[controllerIndex].number);
-        LPC17_Gpio_ClosePin(i2cSclPins[controllerIndex].number);
+        LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(controllerIndex == 0 ? LPC17xx_I2C::c_I2C0_Base : ((controllerIndex == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
+
+        LPC17_Interrupt_Deactivate(controllerIndex == 0 ? I2C0_IRQn : (controllerIndex == 1 ? I2C1_IRQn : I2C2_IRQn));
+
+        I2C.I2CONCLR = (LPC17xx_I2C::AA | LPC17xx_I2C::SI | LPC17xx_I2C::STO | LPC17xx_I2C::STA | LPC17xx_I2C::I2EN);
+
+        if (state->i2cConfiguration.isOpened) {
+            LPC17_Gpio_ClosePin(i2cSdaPins[controllerIndex].number);
+            LPC17_Gpio_ClosePin(i2cSclPins[controllerIndex].number);
+        }
+
+        state->i2cConfiguration.isOpened = false;
     }
-
-    state->i2cConfiguration.isOpened = false;
 
     return TinyCLR_Result::Success;
 }
@@ -419,6 +432,7 @@ void LPC17_I2c_Reset() {
         state->writeI2cTransactionAction.bytesTransferred = 0;
 
         state->i2cConfiguration.isOpened = false;
+        state->initializeCount = 0;
     }
 }
 

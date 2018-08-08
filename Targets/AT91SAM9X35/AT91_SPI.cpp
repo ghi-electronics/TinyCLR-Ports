@@ -39,7 +39,10 @@ struct SpiState {
     bool isOpened;
 
     TinyCLR_Spi_Mode spiMode;
+
     bool tableInitialized = false;
+
+    uint16_t initializeCount;
 };
 
 static SpiState spiStates[TOTAL_SPI_CONTROLLERS];
@@ -361,41 +364,46 @@ TinyCLR_Result AT91_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
 
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->initializeCount == 0) {
 
-    clkPin = spiClkPins[controllerIndex].number;
-    misoPin = spiMisoPins[controllerIndex].number;
-    mosiPin = spiMosiPins[controllerIndex].number;
+        auto controllerIndex = state->controllerIndex;
 
-    clkMode = spiClkPins[controllerIndex].peripheralSelection;
-    misoMode = spiMisoPins[controllerIndex].peripheralSelection;
-    mosiMode = spiMosiPins[controllerIndex].peripheralSelection;
+        clkPin = spiClkPins[controllerIndex].number;
+        misoPin = spiMisoPins[controllerIndex].number;
+        mosiPin = spiMosiPins[controllerIndex].number;
 
-    AT91_PMC &pmc = AT91::PMC();
+        clkMode = spiClkPins[controllerIndex].peripheralSelection;
+        misoMode = spiMisoPins[controllerIndex].peripheralSelection;
+        mosiMode = spiMosiPins[controllerIndex].peripheralSelection;
 
-    // Check each pin single time make sure once fail not effect to other pins
-    if (!AT91_Gpio_OpenPin(clkPin))
-        return TinyCLR_Result::SharingViolation;
-    if (!AT91_Gpio_OpenPin(misoPin))
-        return TinyCLR_Result::SharingViolation;
-    if (!AT91_Gpio_OpenPin(mosiPin))
-        return TinyCLR_Result::SharingViolation;
+        AT91_PMC &pmc = AT91::PMC();
 
-    switch (controllerIndex) {
-    case 0:
-        pmc.EnablePeriphClock(AT91C_ID_SPI0);
-        break;
+        // Check each pin single time make sure once fail not effect to other pins
+        if (!AT91_Gpio_OpenPin(clkPin))
+            return TinyCLR_Result::SharingViolation;
+        if (!AT91_Gpio_OpenPin(misoPin))
+            return TinyCLR_Result::SharingViolation;
+        if (!AT91_Gpio_OpenPin(mosiPin))
+            return TinyCLR_Result::SharingViolation;
 
-    case 1:
-        pmc.EnablePeriphClock(AT91C_ID_SPI1);
-        break;
+        switch (controllerIndex) {
+        case 0:
+            pmc.EnablePeriphClock(AT91C_ID_SPI0);
+            break;
+
+        case 1:
+            pmc.EnablePeriphClock(AT91C_ID_SPI1);
+            break;
+        }
+
+        AT91_Gpio_ConfigurePin(clkPin, AT91_Gpio_Direction::Input, clkMode, AT91_Gpio_ResistorMode::Inactive);
+        AT91_Gpio_ConfigurePin(misoPin, AT91_Gpio_Direction::Input, misoMode, AT91_Gpio_ResistorMode::Inactive);
+        AT91_Gpio_ConfigurePin(mosiPin, AT91_Gpio_Direction::Input, mosiMode, AT91_Gpio_ResistorMode::Inactive);
+
+        state->isOpened = true;
     }
 
-    AT91_Gpio_ConfigurePin(clkPin, AT91_Gpio_Direction::Input, clkMode, AT91_Gpio_ResistorMode::Inactive);
-    AT91_Gpio_ConfigurePin(misoPin, AT91_Gpio_Direction::Input, misoMode, AT91_Gpio_ResistorMode::Inactive);
-    AT91_Gpio_ConfigurePin(mosiPin, AT91_Gpio_Direction::Input, mosiMode, AT91_Gpio_ResistorMode::Inactive);
-
-    state->isOpened = true;
+    state->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -408,49 +416,55 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Controller* self) {
 
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    AT91_SPI &spi = AT91::SPI(controllerIndex);
-    // off SPI module
-    spi.SPI_CR |= AT91_SPI::SPI_CR_DISABLE_SPI;
+    state->initializeCount--;
 
-    switch (controllerIndex) {
-    case 0:
-        pmc.DisablePeriphClock(AT91C_ID_SPI0);
-        break;
+    if (state->initializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    case 1:
-        pmc.DisablePeriphClock(AT91C_ID_SPI1);
-        break;
+        AT91_SPI &spi = AT91::SPI(controllerIndex);
+        // off SPI module
+        spi.SPI_CR |= AT91_SPI::SPI_CR_DISABLE_SPI;
 
-    }
+        switch (controllerIndex) {
+        case 0:
+            pmc.DisablePeriphClock(AT91C_ID_SPI0);
+            break;
 
-    if (state->isOpened) {
-        uint32_t clkPin, misoPin, mosiPin;
+        case 1:
+            pmc.DisablePeriphClock(AT91C_ID_SPI1);
+            break;
 
-        clkPin = spiClkPins[controllerIndex].number;
-        misoPin = spiMisoPins[controllerIndex].number;
-        mosiPin = spiMosiPins[controllerIndex].number;
-
-        AT91_Gpio_ClosePin(clkPin);
-        AT91_Gpio_ClosePin(misoPin);
-        AT91_Gpio_ClosePin(mosiPin);
-
-        if (state->chipSelectLine != PIN_NONE) {
-            // Release the pin, set pin un-reserved
-            AT91_Gpio_ClosePin(state->chipSelectLine);
-
-            // Keep chip select is inactive by internal pull up
-            AT91_Gpio_ConfigurePin(state->chipSelectLine, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::PullUp);
-
-            state->chipSelectLine = PIN_NONE;
         }
+
+        if (state->isOpened) {
+            uint32_t clkPin, misoPin, mosiPin;
+
+            clkPin = spiClkPins[controllerIndex].number;
+            misoPin = spiMisoPins[controllerIndex].number;
+            mosiPin = spiMosiPins[controllerIndex].number;
+
+            AT91_Gpio_ClosePin(clkPin);
+            AT91_Gpio_ClosePin(misoPin);
+            AT91_Gpio_ClosePin(mosiPin);
+
+            if (state->chipSelectLine != PIN_NONE) {
+                // Release the pin, set pin un-reserved
+                AT91_Gpio_ClosePin(state->chipSelectLine);
+
+                // Keep chip select is inactive by internal pull up
+                AT91_Gpio_ConfigurePin(state->chipSelectLine, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::PullUp);
+
+                state->chipSelectLine = PIN_NONE;
+            }
+        }
+
+        state->clockFrequency = 0;
+        state->dataBitLength = 0;
+
+        state->isOpened = false;
     }
-
-    state->clockFrequency = 0;
-    state->dataBitLength = 0;
-
-    state->isOpened = false;
 
     return TinyCLR_Result::Success;
 }
@@ -485,5 +499,6 @@ void AT91_Spi_Reset() {
 
         spiStates[i].isOpened = false;
         spiStates[i].tableInitialized = false;
+        spiStates[i].initializeCount = 0;
     }
 }

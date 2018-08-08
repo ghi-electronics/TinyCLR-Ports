@@ -41,7 +41,10 @@ struct UartState {
     TinyCLR_Uart_DataReceivedHandler    dataReceivedEventHandler;
 
     const TinyCLR_Uart_Controller*        controller;
+
     bool tableInitialized = false;
+
+    uint16_t initializeCount;
 };
 
 #define SET_BITS(Var,Shift,Mask,fieldsMask) {Var = setFieldValue(Var,Shift,Mask,fieldsMask);}
@@ -369,46 +372,50 @@ void LPC24_Uart_InterruptHandler(void *param) {
 TinyCLR_Result LPC24_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->initializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    if (controllerIndex >= TOTAL_UART_CONTROLLERS)
-        return TinyCLR_Result::ArgumentInvalid;
+        if (controllerIndex >= TOTAL_UART_CONTROLLERS)
+            return TinyCLR_Result::ArgumentInvalid;
 
-    DISABLE_INTERRUPTS_SCOPED(irq);
+        DISABLE_INTERRUPTS_SCOPED(irq);
 
-    int32_t txPin = LPC24_Uart_GetTxPin(controllerIndex);
-    int32_t rxPin = LPC24_Uart_GetRxPin(controllerIndex);
+        int32_t txPin = LPC24_Uart_GetTxPin(controllerIndex);
+        int32_t rxPin = LPC24_Uart_GetRxPin(controllerIndex);
 
-    if (state->isOpened || !LPC24_Gpio_OpenPin(txPin) || !LPC24_Gpio_OpenPin(rxPin))
-        return TinyCLR_Result::SharingViolation;
+        if (state->isOpened || !LPC24_Gpio_OpenPin(txPin) || !LPC24_Gpio_OpenPin(rxPin))
+            return TinyCLR_Result::SharingViolation;
 
-    state->txBufferCount = 0;
-    state->txBufferIn = 0;
-    state->txBufferOut = 0;
+        state->txBufferCount = 0;
+        state->txBufferIn = 0;
+        state->txBufferOut = 0;
 
-    state->rxBufferCount = 0;
-    state->rxBufferIn = 0;
-    state->rxBufferOut = 0;
+        state->rxBufferCount = 0;
+        state->rxBufferIn = 0;
+        state->rxBufferOut = 0;
 
-    state->controller = self;
+        state->controller = self;
 
-    switch (controllerIndex) {
-    case 0:
-        LPC24XX::SYSCON().PCONP |= PCONP_PCUART0;
-        break;
+        switch (controllerIndex) {
+        case 0:
+            LPC24XX::SYSCON().PCONP |= PCONP_PCUART0;
+            break;
 
-    case 1:
-        LPC24XX::SYSCON().PCONP |= PCONP_PCUART1;
-        break;
+        case 1:
+            LPC24XX::SYSCON().PCONP |= PCONP_PCUART1;
+            break;
 
-    case 2:
-        LPC24XX::SYSCON().PCONP |= PCONP_PCUART2;
-        break;
+        case 2:
+            LPC24XX::SYSCON().PCONP |= PCONP_PCUART2;
+            break;
 
-    case 3:
-        LPC24XX::SYSCON().PCONP |= PCONP_PCUART3;
-        break;
+        case 3:
+            LPC24XX::SYSCON().PCONP |= PCONP_PCUART3;
+            break;
+        }
     }
+
+    state->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -613,65 +620,71 @@ TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Controller* self) {
 
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    LPC24XX_USART& USARTC = LPC24XX::UART(controllerIndex);
+    state->initializeCount--;
 
-    LPC24_Interrupt_Disable(LPC24XX_USART::getIntNo(controllerIndex));
+    if (state->initializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    if (state->isOpened) {
-        if (state->handshakeEnable) {
-            USARTC.UART_MCR &= ~((1 << 6) | (1 << 7));
+        LPC24XX_USART& USARTC = LPC24XX::UART(controllerIndex);
+
+        LPC24_Interrupt_Disable(LPC24XX_USART::getIntNo(controllerIndex));
+
+        if (state->isOpened) {
+            if (state->handshakeEnable) {
+                USARTC.UART_MCR &= ~((1 << 6) | (1 << 7));
+            }
+
+            // CWS: Disable interrupts
+            USARTC.UART_LCR = 0; // prepare to Init UART
+            USARTC.SEL2.IER.UART_IER &= ~(LPC24XX_USART::UART_IER_INTR_ALL_SET);         // Disable all UART interrupt
+
+            LPC24_Uart_PinConfiguration(controllerIndex, false);
         }
 
-        // CWS: Disable interrupts
-        USARTC.UART_LCR = 0; // prepare to Init UART
-        USARTC.SEL2.IER.UART_IER &= ~(LPC24XX_USART::UART_IER_INTR_ALL_SET);         // Disable all UART interrupt
+        state->txBufferCount = 0;
+        state->txBufferIn = 0;
+        state->txBufferOut = 0;
 
-        LPC24_Uart_PinConfiguration(controllerIndex, false);
-    }
+        state->rxBufferCount = 0;
+        state->rxBufferIn = 0;
+        state->rxBufferOut = 0;
 
-    state->txBufferCount = 0;
-    state->txBufferIn = 0;
-    state->txBufferOut = 0;
+        state->isOpened = false;
+        state->handshakeEnable = false;
 
-    state->rxBufferCount = 0;
-    state->rxBufferIn = 0;
-    state->rxBufferOut = 0;
+        switch (controllerIndex) {
+        case 0:
+            LPC24XX::SYSCON().PCONP &= ~PCONP_PCUART0;
+            break;
 
-    state->isOpened = false;
-    state->handshakeEnable = false;
+        case 1:
+            LPC24XX::SYSCON().PCONP &= ~PCONP_PCUART1;
+            break;
 
-    switch (controllerIndex) {
-    case 0:
-        LPC24XX::SYSCON().PCONP &= ~PCONP_PCUART0;
-        break;
+        case 2:
+            LPC24XX::SYSCON().PCONP &= ~PCONP_PCUART2;
+            break;
 
-    case 1:
-        LPC24XX::SYSCON().PCONP &= ~PCONP_PCUART1;
-        break;
-
-    case 2:
-        LPC24XX::SYSCON().PCONP &= ~PCONP_PCUART2;
-        break;
-
-    case 3:
-        LPC24XX::SYSCON().PCONP &= ~PCONP_PCUART3;
-        break;
-    }
-    if (apiManager != nullptr) {
-        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
-
-        if (state->txBufferSize != 0) {
-            memoryProvider->Free(memoryProvider, state->TxBuffer);
-
-            state->txBufferSize = 0;
+        case 3:
+            LPC24XX::SYSCON().PCONP &= ~PCONP_PCUART3;
+            break;
         }
+        if (apiManager != nullptr) {
+            auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-        if (state->rxBufferSize != 0) {
-            memoryProvider->Free(memoryProvider, state->RxBuffer);
+            if (state->txBufferSize != 0) {
+                memoryProvider->Free(memoryProvider, state->TxBuffer);
 
-            state->rxBufferSize = 0;
+                state->txBufferSize = 0;
+            }
+
+            if (state->rxBufferSize != 0) {
+                memoryProvider->Free(memoryProvider, state->RxBuffer);
+
+                state->rxBufferSize = 0;
+            }
         }
     }
 
@@ -873,6 +886,7 @@ void LPC24_Uart_Reset() {
 
         uartStates[i].isOpened = false;
         uartStates[i].tableInitialized = false;
+        uartStates[i].initializeCount = 0;
     }
 }
 

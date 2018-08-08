@@ -322,6 +322,8 @@ struct CanState {
     STM32F7_Can_Filter canDataFilter;
 
     bool isOpened;
+
+    uint16_t initializeCount;
 };
 
 static const STM32F7_Gpio_Pin canTxPins[] = STM32F7_CAN_TX_PINS;
@@ -1230,28 +1232,32 @@ TinyCLR_Result STM32F7_Can_Acquire(const TinyCLR_Can_Controller* self) {
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    int32_t controllerIndex = state->controllerIndex;
+    if (state->initializeCount == 0) {
+        int32_t controllerIndex = state->controllerIndex;
 
-    if (!STM32F7_GpioInternal_OpenPin(canTxPins[controllerIndex].number))
-        return TinyCLR_Result::SharingViolation;
+        if (!STM32F7_GpioInternal_OpenPin(canTxPins[controllerIndex].number))
+            return TinyCLR_Result::SharingViolation;
 
-    if (!STM32F7_GpioInternal_OpenPin(canRxPins[controllerIndex].number))
-        return TinyCLR_Result::SharingViolation;
+        if (!STM32F7_GpioInternal_OpenPin(canRxPins[controllerIndex].number))
+            return TinyCLR_Result::SharingViolation;
 
-    // set pin as analog
-    STM32F7_GpioInternal_ConfigurePin(canTxPins[controllerIndex].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, canTxPins[controllerIndex].alternateFunction);
-    STM32F7_GpioInternal_ConfigurePin(canRxPins[controllerIndex].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, canRxPins[controllerIndex].alternateFunction);
+        // set pin as analog
+        STM32F7_GpioInternal_ConfigurePin(canTxPins[controllerIndex].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, canTxPins[controllerIndex].alternateFunction);
+        STM32F7_GpioInternal_ConfigurePin(canRxPins[controllerIndex].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, canRxPins[controllerIndex].alternateFunction);
 
-    state->can_rx_count = 0;
-    state->can_rx_in = 0;
-    state->can_rx_out = 0;
-    state->baudrate = 0;
-    state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
-    state->provider = self;
+        state->can_rx_count = 0;
+        state->can_rx_in = 0;
+        state->can_rx_out = 0;
+        state->baudrate = 0;
+        state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
+        state->provider = self;
 
-    state->canRxMessagesFifo = nullptr;
+        state->canRxMessagesFifo = nullptr;
 
-    state->isOpened = true;
+        state->isOpened = true;
+    }
+
+    state->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -1262,24 +1268,30 @@ TinyCLR_Result STM32F7_Can_Release(const TinyCLR_Can_Controller* self) {
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    int32_t controllerIndex = state->controllerIndex;
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+    state->initializeCount--;
 
-    RCC->APB1ENR &= ((controllerIndex == 0) ? ~RCC_APB1ENR_CAN1EN : ~RCC_APB1ENR_CAN2EN);
+    if (state->initializeCount == 0) {
+        int32_t controllerIndex = state->controllerIndex;
 
-    if (state->canRxMessagesFifo != nullptr) {
-        memoryProvider->Free(memoryProvider, state->canRxMessagesFifo);
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-        state->canRxMessagesFifo = nullptr;
+        RCC->APB1ENR &= ((controllerIndex == 0) ? ~RCC_APB1ENR_CAN1EN : ~RCC_APB1ENR_CAN2EN);
+
+        if (state->canRxMessagesFifo != nullptr) {
+            memoryProvider->Free(memoryProvider, state->canRxMessagesFifo);
+
+            state->canRxMessagesFifo = nullptr;
+        }
+
+        if (state->isOpened) {
+            STM32F7_GpioInternal_ClosePin(canTxPins[controllerIndex].number);
+            STM32F7_GpioInternal_ClosePin(canRxPins[controllerIndex].number);
+        }
+
+        state->isOpened = false;
     }
-
-    if (state->isOpened) {
-        STM32F7_GpioInternal_ClosePin(canTxPins[controllerIndex].number);
-        STM32F7_GpioInternal_ClosePin(canRxPins[controllerIndex].number);
-    }
-
-    state->isOpened = false;
 
     return TinyCLR_Result::Success;
 }
@@ -1612,6 +1624,7 @@ void STM32F7_Can_Reset() {
         STM32F7_Can_Release(&canControllers[i]);
 
         canStates[i].isOpened = false;
+        canStates[i].initializeCount = 0;
     }
 }
 

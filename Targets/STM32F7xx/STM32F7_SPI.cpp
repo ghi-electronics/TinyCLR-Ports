@@ -48,6 +48,8 @@ struct SpiState {
     bool isOpened;
 
     TinyCLR_Spi_Mode spiMode;
+
+    uint16_t initializeCount;
 };
 
 static SpiState spiStates[TOTAL_SPI_CONTROLLERS];
@@ -357,73 +359,79 @@ TinyCLR_Result STM32F7_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
 
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->initializeCount == 0) {
 
-    if (controllerIndex >= TOTAL_SPI_CONTROLLERS)
-        return TinyCLR_Result::InvalidOperation;
+        auto controllerIndex = state->controllerIndex;
 
-    auto& sclk = spiClkPins[controllerIndex];
-    auto& miso = spiMisoPins[controllerIndex];
-    auto& mosi = spiMosiPins[controllerIndex];
+        if (controllerIndex >= TOTAL_SPI_CONTROLLERS)
+            return TinyCLR_Result::InvalidOperation;
 
-    state->chipSelectLine = PIN_NONE;
-    state->dataBitLength = 0;
-    state->spiMode = TinyCLR_Spi_Mode::Mode0;
-    state->clockFrequency = 0;
+        auto& sclk = spiClkPins[controllerIndex];
+        auto& miso = spiMisoPins[controllerIndex];
+        auto& mosi = spiMosiPins[controllerIndex];
 
-    // Check each pin single time make sure once fail not effect to other pins
-    if (!STM32F7_GpioInternal_OpenPin(sclk.number) || !STM32F7_GpioInternal_OpenPin(miso.number) || !STM32F7_GpioInternal_OpenPin(mosi.number)) {
-        return TinyCLR_Result::SharingViolation;
-    }
+        state->chipSelectLine = PIN_NONE;
+        state->dataBitLength = 0;
+        state->spiMode = TinyCLR_Spi_Mode::Mode0;
+        state->clockFrequency = 0;
 
-    switch (controllerIndex) {
+        // Check each pin single time make sure once fail not effect to other pins
+        if (!STM32F7_GpioInternal_OpenPin(sclk.number) || !STM32F7_GpioInternal_OpenPin(miso.number) || !STM32F7_GpioInternal_OpenPin(mosi.number)) {
+            return TinyCLR_Result::SharingViolation;
+        }
+
+        switch (controllerIndex) {
 #ifdef SPI1
-    case 0:
-        RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
-        break; // enable SPI1 clock
+        case 0:
+            RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
+            break; // enable SPI1 clock
 
 #ifdef SPI2
-    case 1:
-        RCC->APB1ENR |= RCC_APB1ENR_SPI2EN;
-        break; // enable SPI2 clock
+        case 1:
+            RCC->APB1ENR |= RCC_APB1ENR_SPI2EN;
+            break; // enable SPI2 clock
 
 #ifdef SPI3
-    case 2:
-        RCC->APB1ENR |= RCC_APB1ENR_SPI3EN;
-        break; // enable SPI3 clock
+        case 2:
+            RCC->APB1ENR |= RCC_APB1ENR_SPI3EN;
+            break; // enable SPI3 clock
 
 #ifdef SPI4
-    case 3:
-        RCC->APB2ENR |= RCC_APB2ENR_SPI4EN;
-        break; // enable SPI4 clock
+        case 3:
+            RCC->APB2ENR |= RCC_APB2ENR_SPI4EN;
+            break; // enable SPI4 clock
 
 #ifdef SPI5
-    case 4:
-        RCC->APB2ENR |= RCC_APB2ENR_SPI5EN;
-        break; // enable SPI5 clock
+        case 4:
+            RCC->APB2ENR |= RCC_APB2ENR_SPI5EN;
+            break; // enable SPI5 clock
 
 #ifdef SPI6
-    case 5:
-        RCC->APB2ENR |= RCC_APB2ENR_SPI6EN;
-        break; // enable SPI6 clock
+        case 5:
+            RCC->APB2ENR |= RCC_APB2ENR_SPI6EN;
+            break; // enable SPI6 clock
 #endif
 #endif
 #endif
 #endif
 #endif
 #endif
+        }
+
+        ptr_SPI_TypeDef spi = spiPortRegs[controllerIndex];
+
+
+        spi->CR1 = SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_MSTR | SPI_CR1_SPE;
+
+        STM32F7_GpioInternal_ConfigurePin(sclk.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, sclk.alternateFunction);
+        STM32F7_GpioInternal_ConfigurePin(miso.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, miso.alternateFunction);
+        STM32F7_GpioInternal_ConfigurePin(mosi.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, mosi.alternateFunction);
+
+        state->isOpened = true;
     }
 
-    ptr_SPI_TypeDef spi = spiPortRegs[controllerIndex];
+    state->initializeCount++;
 
-
-    spi->CR1 = SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_MSTR | SPI_CR1_SPE;
-
-    STM32F7_GpioInternal_ConfigurePin(sclk.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, sclk.alternateFunction);
-    STM32F7_GpioInternal_ConfigurePin(miso.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, miso.alternateFunction);
-    STM32F7_GpioInternal_ConfigurePin(mosi.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, mosi.alternateFunction);
-
-    state->isOpened = true;
     return TinyCLR_Result::Success;
 }
 
@@ -433,63 +441,69 @@ TinyCLR_Result STM32F7_Spi_Release(const TinyCLR_Spi_Controller* self) {
 
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    switch (controllerIndex) {
+    state->initializeCount--;
+
+    if (state->initializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
+
+        switch (controllerIndex) {
 #ifdef SPI1
-    case 0:
-        RCC->APB2ENR &= ~RCC_APB2ENR_SPI1EN;
-        break; // disable SPI1 clock
+        case 0:
+            RCC->APB2ENR &= ~RCC_APB2ENR_SPI1EN;
+            break; // disable SPI1 clock
 
 #ifdef SPI2
-    case 1:
-        RCC->APB1ENR &= ~RCC_APB1ENR_SPI2EN;
-        break; // disable SPI2 clock
+        case 1:
+            RCC->APB1ENR &= ~RCC_APB1ENR_SPI2EN;
+            break; // disable SPI2 clock
 
 #ifdef SPI3
-    case 2:
-        RCC->APB1ENR &= ~RCC_APB1ENR_SPI3EN;
-        break; // disable SPI3 clock
+        case 2:
+            RCC->APB1ENR &= ~RCC_APB1ENR_SPI3EN;
+            break; // disable SPI3 clock
 
 #ifdef SPI4
-    case 3:
-        RCC->APB2ENR &= ~RCC_APB2ENR_SPI4EN;
-        break; // disable SPI4 clock
+        case 3:
+            RCC->APB2ENR &= ~RCC_APB2ENR_SPI4EN;
+            break; // disable SPI4 clock
 
 #ifdef SPI5
-    case 4:
-        RCC->APB2ENR &= ~RCC_APB2ENR_SPI5EN;
-        break; // disable SPI5 clock
+        case 4:
+            RCC->APB2ENR &= ~RCC_APB2ENR_SPI5EN;
+            break; // disable SPI5 clock
 
 #ifdef SPI6
-    case 5:
-        RCC->APB2ENR &= ~RCC_APB2ENR_SPI6EN;
-        break; // disable SPI6 clock
+        case 5:
+            RCC->APB2ENR &= ~RCC_APB2ENR_SPI6EN;
+            break; // disable SPI6 clock
 #endif
 #endif
 #endif
 #endif
 #endif
 #endif
-    }
-
-    if (state->isOpened) {
-        auto& sclk = spiClkPins[controllerIndex];
-        auto& miso = spiMisoPins[controllerIndex];
-        auto& mosi = spiMosiPins[controllerIndex];
-
-        STM32F7_GpioInternal_ClosePin(sclk.number);
-        STM32F7_GpioInternal_ClosePin(miso.number);
-        STM32F7_GpioInternal_ClosePin(mosi.number);
-
-        if (state->chipSelectLine != PIN_NONE) {
-            STM32F7_GpioInternal_ClosePin(state->chipSelectLine);
-
-            state->chipSelectLine = PIN_NONE;
         }
-    }
 
-    state->isOpened = false;
+        if (state->isOpened) {
+            auto& sclk = spiClkPins[controllerIndex];
+            auto& miso = spiMisoPins[controllerIndex];
+            auto& mosi = spiMosiPins[controllerIndex];
+
+            STM32F7_GpioInternal_ClosePin(sclk.number);
+            STM32F7_GpioInternal_ClosePin(miso.number);
+            STM32F7_GpioInternal_ClosePin(mosi.number);
+
+            if (state->chipSelectLine != PIN_NONE) {
+                STM32F7_GpioInternal_ClosePin(state->chipSelectLine);
+
+                state->chipSelectLine = PIN_NONE;
+            }
+        }
+
+        state->isOpened = false;
+    }
 
     return TinyCLR_Result::Success;
 }
@@ -530,5 +544,6 @@ void STM32F7_Spi_Reset() {
         STM32F7_Spi_Release(&spiControllers[i]);
 
         spiStates[i].isOpened = false;
+        spiStates[i].initializeCount = 0;
     }
 }

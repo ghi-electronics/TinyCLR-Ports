@@ -339,6 +339,8 @@ bool m_STM32F7_DisplayHorizontalSyncPolarity = false;
 bool m_STM32F7_DisplayVerticalSyncPolarity = false;
 bool m_STM32F7_DisplayEnable = false;
 
+uint32_t displayInitializeCount = 0;
+
 uint16_t* m_STM32F7_Display_VituralRam = nullptr;
 size_t m_STM32F7_DisplayBufferSize = 0;
 
@@ -1023,28 +1025,38 @@ void STM32F7_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenH
 }
 
 TinyCLR_Result STM32F7_Display_Acquire(const TinyCLR_Display_Controller* self) {
-    m_STM32F7_Display_CurrentRotation = STM32F7xx_LCD_Rotation::rotateNormal_0;
+    if (displayInitializeCount == 0) {
+        m_STM32F7_Display_CurrentRotation = STM32F7xx_LCD_Rotation::rotateNormal_0;
 
-    if (!STM32F7_Display_SetPinConfiguration(true)) {
-        return TinyCLR_Result::SharingViolation;
+        if (!STM32F7_Display_SetPinConfiguration(true)) {
+            return TinyCLR_Result::SharingViolation;
+        }
     }
+
+    displayInitializeCount++;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F7_Display_Release(const TinyCLR_Display_Controller* self) {
-    STM32F7_Display_Uninitialize();
+    if (displayInitializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    STM32F7_Display_SetPinConfiguration(false);
+    displayInitializeCount--;
 
-    m_STM32F7_DisplayEnable = false;
+    if (displayInitializeCount == 0) {
+        STM32F7_Display_Uninitialize();
 
-    if (m_STM32F7_Display_VituralRam != nullptr) {
-        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+        STM32F7_Display_SetPinConfiguration(false);
 
-        memoryProvider->Free(memoryProvider, m_STM32F7_Display_VituralRam);
+        m_STM32F7_DisplayEnable = false;
 
-        m_STM32F7_Display_VituralRam = nullptr;
+        if (m_STM32F7_Display_VituralRam != nullptr) {
+            auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+            memoryProvider->Free(memoryProvider, m_STM32F7_Display_VituralRam);
+
+            m_STM32F7_Display_VituralRam = nullptr;
+        }
     }
 
     return TinyCLR_Result::Success;
@@ -1254,5 +1266,6 @@ void STM32F7_Display_Reset() {
         STM32F7_Display_Release(&displayControllers[0]);
 
     m_STM32F7_DisplayEnable = false;
+    displayInitializeCount = 0;
 }
 #endif

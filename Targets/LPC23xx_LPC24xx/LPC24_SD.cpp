@@ -2147,6 +2147,8 @@ struct SdCardState {
     TinyCLR_Storage_Descriptor descriptor;
 
     bool isOpened = false;
+
+    uint16_t initializeCount;
 };
 
 static const LPC24_Gpio_Pin sdCardData0Pins[] = LPC24_SD_DATA0_PINS;
@@ -2195,52 +2197,54 @@ void LPC24_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
 TinyCLR_Result LPC24_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
-    if (state->isOpened) return TinyCLR_Result::SharingViolation;
+    if (state->initializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    auto controllerIndex = state->controllerIndex;
+        auto d0 = sdCardData0Pins[controllerIndex];
+        auto d1 = sdCardData1Pins[controllerIndex];
+        auto d2 = sdCardData2Pins[controllerIndex];
+        auto d3 = sdCardData3Pins[controllerIndex];
+        auto clk = sdCardClkPins[controllerIndex];
+        auto cmd = sdCardCmdPins[controllerIndex];
 
-    auto d0 = sdCardData0Pins[controllerIndex];
-    auto d1 = sdCardData1Pins[controllerIndex];
-    auto d2 = sdCardData2Pins[controllerIndex];
-    auto d3 = sdCardData3Pins[controllerIndex];
-    auto clk = sdCardClkPins[controllerIndex];
-    auto cmd = sdCardCmdPins[controllerIndex];
+        if (!LPC24_Gpio_OpenPin(d0.number)
+            || !LPC24_Gpio_OpenPin(d1.number)
+            || !LPC24_Gpio_OpenPin(d2.number)
+            || !LPC24_Gpio_OpenPin(d3.number)
+            || !LPC24_Gpio_OpenPin(clk.number)
+            || !LPC24_Gpio_OpenPin(cmd.number)
+            )
+            return TinyCLR_Result::SharingViolation;
 
-    if (!LPC24_Gpio_OpenPin(d0.number)
-        || !LPC24_Gpio_OpenPin(d1.number)
-        || !LPC24_Gpio_OpenPin(d2.number)
-        || !LPC24_Gpio_OpenPin(d3.number)
-        || !LPC24_Gpio_OpenPin(clk.number)
-        || !LPC24_Gpio_OpenPin(cmd.number)
-        )
-        return TinyCLR_Result::SharingViolation;
+        LPC24_Gpio_ConfigurePin(d0.number, LPC24_Gpio_Direction::Input, d0.pinFunction, LPC24_Gpio_PinMode::PullUp);
+        LPC24_Gpio_ConfigurePin(d1.number, LPC24_Gpio_Direction::Input, d1.pinFunction, LPC24_Gpio_PinMode::PullUp);
+        LPC24_Gpio_ConfigurePin(d2.number, LPC24_Gpio_Direction::Input, d2.pinFunction, LPC24_Gpio_PinMode::PullUp);
+        LPC24_Gpio_ConfigurePin(d3.number, LPC24_Gpio_Direction::Input, d3.pinFunction, LPC24_Gpio_PinMode::PullUp);
+        LPC24_Gpio_ConfigurePin(clk.number, LPC24_Gpio_Direction::Input, clk.pinFunction, LPC24_Gpio_PinMode::Inactive);
+        LPC24_Gpio_ConfigurePin(cmd.number, LPC24_Gpio_Direction::Input, cmd.pinFunction, LPC24_Gpio_PinMode::PullUp);
 
-    LPC24_Gpio_ConfigurePin(d0.number, LPC24_Gpio_Direction::Input, d0.pinFunction, LPC24_Gpio_PinMode::PullUp);
-    LPC24_Gpio_ConfigurePin(d1.number, LPC24_Gpio_Direction::Input, d1.pinFunction, LPC24_Gpio_PinMode::PullUp);
-    LPC24_Gpio_ConfigurePin(d2.number, LPC24_Gpio_Direction::Input, d2.pinFunction, LPC24_Gpio_PinMode::PullUp);
-    LPC24_Gpio_ConfigurePin(d3.number, LPC24_Gpio_Direction::Input, d3.pinFunction, LPC24_Gpio_PinMode::PullUp);
-    LPC24_Gpio_ConfigurePin(clk.number, LPC24_Gpio_Direction::Input, clk.pinFunction, LPC24_Gpio_PinMode::Inactive);
-    LPC24_Gpio_ConfigurePin(cmd.number, LPC24_Gpio_Direction::Input, cmd.pinFunction, LPC24_Gpio_PinMode::PullUp);
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+        state->regionAddresses = (uint64_t*)memoryProvider->Allocate(memoryProvider, sizeof(uint64_t));
+        state->regionSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
 
-    state->regionAddresses = (uint64_t*)memoryProvider->Allocate(memoryProvider, sizeof(uint64_t));
-    state->regionSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
+        state->descriptor.CanReadDirect = true;
+        state->descriptor.CanWriteDirect = true;
+        state->descriptor.CanExecuteDirect = false;
+        state->descriptor.EraseBeforeWrite = false;
+        state->descriptor.Removable = true;
+        state->descriptor.RegionsRepeat = true;
 
-    state->descriptor.CanReadDirect = true;
-    state->descriptor.CanWriteDirect = true;
-    state->descriptor.CanExecuteDirect = false;
-    state->descriptor.EraseBeforeWrite = false;
-    state->descriptor.Removable = true;
-    state->descriptor.RegionsRepeat = true;
+        state->descriptor.RegionAddresses = reinterpret_cast<const uint64_t*>(state->regionAddresses);
+        state->descriptor.RegionSizes = reinterpret_cast<const size_t*>(state->regionSizes);
 
-    state->descriptor.RegionAddresses = reinterpret_cast<const uint64_t*>(state->regionAddresses);
-    state->descriptor.RegionSizes = reinterpret_cast<const size_t*>(state->regionSizes);
+        if (!MCI_And_Card_initialize())
+            return TinyCLR_Result::InvalidOperation;
 
-    if (!MCI_And_Card_initialize())
-        return TinyCLR_Result::InvalidOperation;
+        state->isOpened = true;
+    }
 
-    state->isOpened = true;
+    state->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -2248,36 +2252,42 @@ TinyCLR_Result LPC24_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
 TinyCLR_Result LPC24_SdCard_Release(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    auto d0 = sdCardData0Pins[controllerIndex];
-    auto d1 = sdCardData1Pins[controllerIndex];
-    auto d2 = sdCardData2Pins[controllerIndex];
-    auto d3 = sdCardData3Pins[controllerIndex];
-    auto clk = sdCardClkPins[controllerIndex];
-    auto cmd = sdCardCmdPins[controllerIndex];
+    state->initializeCount--;
 
-    LPC24XX::SYSCON().PCONP &= ~(1 << 28); /* Disable clock to the Mci block */
+    if (state->initializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    LPC24XX::SYSCON().PCONP &= ~(1 << 29); /* Disable clock to the Dma block */
+        auto d0 = sdCardData0Pins[controllerIndex];
+        auto d1 = sdCardData1Pins[controllerIndex];
+        auto d2 = sdCardData2Pins[controllerIndex];
+        auto d3 = sdCardData3Pins[controllerIndex];
+        auto clk = sdCardClkPins[controllerIndex];
+        auto cmd = sdCardCmdPins[controllerIndex];
 
-    LPC24_Interrupt_Deactivate(LPC24XX_VIC::c_IRQ_INDEX_SD); /* Disable Interrupt */
+        LPC24XX::SYSCON().PCONP &= ~(1 << 28); /* Disable clock to the Mci block */
 
-    if (state->isOpened) {
-        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+        LPC24XX::SYSCON().PCONP &= ~(1 << 29); /* Disable clock to the Dma block */
 
-        memoryProvider->Free(memoryProvider, state->regionSizes);
-        memoryProvider->Free(memoryProvider, state->regionAddresses);
+        LPC24_Interrupt_Deactivate(LPC24XX_VIC::c_IRQ_INDEX_SD); /* Disable Interrupt */
+
+        if (state->isOpened) {
+            auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+            memoryProvider->Free(memoryProvider, state->regionSizes);
+            memoryProvider->Free(memoryProvider, state->regionAddresses);
+        }
+
+        LPC24_Gpio_ClosePin(d0.number);
+        LPC24_Gpio_ClosePin(d1.number);
+        LPC24_Gpio_ClosePin(d2.number);
+        LPC24_Gpio_ClosePin(d3.number);
+        LPC24_Gpio_ClosePin(clk.number);
+        LPC24_Gpio_ClosePin(cmd.number);
+
+        state->isOpened = false;
     }
-
-    LPC24_Gpio_ClosePin(d0.number);
-    LPC24_Gpio_ClosePin(d1.number);
-    LPC24_Gpio_ClosePin(d2.number);
-    LPC24_Gpio_ClosePin(d3.number);
-    LPC24_Gpio_ClosePin(clk.number);
-    LPC24_Gpio_ClosePin(cmd.number);
-
-    state->isOpened = false;
 
     return TinyCLR_Result::Success;
 }
@@ -2381,6 +2391,7 @@ TinyCLR_Result LPC24_SdCard_Reset() {
     for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
         LPC24_SdCard_Close(&sdCardControllers[i]);
         LPC24_SdCard_Release(&sdCardControllers[i]);
+        sdCardStates[i].initializeCount = 0;
     }
 
     return TinyCLR_Result::Success;

@@ -210,7 +210,10 @@ struct UartState {
     TinyCLR_Uart_DataReceivedHandler    dataReceivedEventHandler;
 
     const TinyCLR_Uart_Controller*        controller;
+
     bool tableInitialized;
+
+    uint16_t initializeCount;
 };
 
 #define SET_BITS(Var,Shift,Mask,fieldsMask) {Var = setFieldValue(Var,Shift,Mask,fieldsMask);}
@@ -558,43 +561,47 @@ void UART4_IntHandler(void *param) {
 TinyCLR_Result LPC17_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->initializeCount == 0) {
+        auto controllerIndex = state->controllerIndex;
 
-    if (controllerIndex >= TOTAL_UART_CONTROLLERS)
-        return TinyCLR_Result::ArgumentInvalid;
+        if (controllerIndex >= TOTAL_UART_CONTROLLERS)
+            return TinyCLR_Result::ArgumentInvalid;
 
-    DISABLE_INTERRUPTS_SCOPED(irq);
+        DISABLE_INTERRUPTS_SCOPED(irq);
 
-    int32_t txPin = LPC17_Uart_GetTxPin(controllerIndex);
-    int32_t rxPin = LPC17_Uart_GetRxPin(controllerIndex);
+        int32_t txPin = LPC17_Uart_GetTxPin(controllerIndex);
+        int32_t rxPin = LPC17_Uart_GetRxPin(controllerIndex);
 
-    if (state->isOpened || !LPC17_Gpio_OpenPin(txPin) || !LPC17_Gpio_OpenPin(rxPin))
-        return TinyCLR_Result::SharingViolation;
+        if (state->isOpened || !LPC17_Gpio_OpenPin(txPin) || !LPC17_Gpio_OpenPin(rxPin))
+            return TinyCLR_Result::SharingViolation;
 
-    state->txBufferCount = 0;
-    state->txBufferIn = 0;
-    state->txBufferOut = 0;
+        state->txBufferCount = 0;
+        state->txBufferIn = 0;
+        state->txBufferOut = 0;
 
-    state->rxBufferCount = 0;
-    state->rxBufferIn = 0;
-    state->rxBufferOut = 0;
+        state->rxBufferCount = 0;
+        state->rxBufferIn = 0;
+        state->rxBufferOut = 0;
 
-    state->controller = self;
+        state->controller = self;
 
-    // Enable power config
-    switch (controllerIndex) {
+        // Enable power config
+        switch (controllerIndex) {
 
-    case 0: LPC_SC->PCONP |= PCONP_PCUART0; break;
+        case 0: LPC_SC->PCONP |= PCONP_PCUART0; break;
 
-    case 1: LPC_SC->PCONP |= PCONP_PCUART1; break;
+        case 1: LPC_SC->PCONP |= PCONP_PCUART1; break;
 
-    case 2: LPC_SC->PCONP |= PCONP_PCUART2; break;
+        case 2: LPC_SC->PCONP |= PCONP_PCUART2; break;
 
-    case 3: LPC_SC->PCONP |= PCONP_PCUART3; break;
+        case 3: LPC_SC->PCONP |= PCONP_PCUART3; break;
 
-    case 4: LPC_SC->PCONP |= PCONP_PCUART4; break;
+        case 4: LPC_SC->PCONP |= PCONP_PCUART4; break;
 
+        }
     }
+
+    state->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -785,63 +792,70 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Controller* self) {
 
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    LPC17xx_USART& USARTC = LPC17xx_USART::UART(controllerIndex);
+    state->initializeCount--;
 
-    if (state->isOpened == true) {
-        USARTC.SEL2.IER.UART_IER &= ~(LPC17xx_USART::UART_IER_INTR_ALL_SET);         // Disable all UART interrupt
-                // CWS: Disable interrupts
-        USARTC.SEL3.FCR.UART_FCR = 0;
-        USARTC.UART_LCR = 0; // prepare to Init UART
+    if (state->initializeCount == 0) {
 
-        if (state->handshakeEnable) {
-            USARTC.UART_MCR &= ~((1 << 6) | (1 << 7));
-            USARTC.SEL2.IER.UART_IER &= ~((1 << 7) | (1 << 3));
-        }
+        auto controllerIndex = state->controllerIndex;
 
-        state->txBufferCount = 0;
-        state->txBufferIn = 0;
-        state->txBufferOut = 0;
+        LPC17xx_USART& USARTC = LPC17xx_USART::UART(controllerIndex);
 
-        state->rxBufferCount = 0;
-        state->rxBufferIn = 0;
-        state->rxBufferOut = 0;
-        if (apiManager != nullptr) {
-            auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+        if (state->isOpened == true) {
+            USARTC.SEL2.IER.UART_IER &= ~(LPC17xx_USART::UART_IER_INTR_ALL_SET);         // Disable all UART interrupt
+                    // CWS: Disable interrupts
+            USARTC.SEL3.FCR.UART_FCR = 0;
+            USARTC.UART_LCR = 0; // prepare to Init UART
 
-            if (state->txBufferSize != 0) {
-                memoryProvider->Free(memoryProvider, state->TxBuffer);
-
-                state->txBufferSize = 0;
+            if (state->handshakeEnable) {
+                USARTC.UART_MCR &= ~((1 << 6) | (1 << 7));
+                USARTC.SEL2.IER.UART_IER &= ~((1 << 7) | (1 << 3));
             }
 
-            if (state->rxBufferSize != 0) {
-                memoryProvider->Free(memoryProvider, state->RxBuffer);
+            state->txBufferCount = 0;
+            state->txBufferIn = 0;
+            state->txBufferOut = 0;
 
-                state->rxBufferSize = 0;
+            state->rxBufferCount = 0;
+            state->rxBufferIn = 0;
+            state->rxBufferOut = 0;
+            if (apiManager != nullptr) {
+                auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+                if (state->txBufferSize != 0) {
+                    memoryProvider->Free(memoryProvider, state->TxBuffer);
+
+                    state->txBufferSize = 0;
+                }
+
+                if (state->rxBufferSize != 0) {
+                    memoryProvider->Free(memoryProvider, state->RxBuffer);
+
+                    state->rxBufferSize = 0;
+                }
             }
+
+            LPC17_Uart_PinConfiguration(controllerIndex, false);
         }
 
-        LPC17_Uart_PinConfiguration(controllerIndex, false);
+        // Disable to save power
+        switch (controllerIndex) {
+
+        case 0: LPC_SC->PCONP &= ~PCONP_PCUART0; break;
+
+        case 1: LPC_SC->PCONP &= ~PCONP_PCUART1; break;
+
+        case 2: LPC_SC->PCONP &= ~PCONP_PCUART2; break;
+
+        case 3: LPC_SC->PCONP &= ~PCONP_PCUART3; break;
+
+        case 4: LPC_SC->PCONP &= ~PCONP_PCUART4; break;
+        }
+
+        state->isOpened = false;
+        state->handshakeEnable = false;
     }
-
-    // Disable to save power
-    switch (controllerIndex) {
-
-    case 0: LPC_SC->PCONP &= ~PCONP_PCUART0; break;
-
-    case 1: LPC_SC->PCONP &= ~PCONP_PCUART1; break;
-
-    case 2: LPC_SC->PCONP &= ~PCONP_PCUART2; break;
-
-    case 3: LPC_SC->PCONP &= ~PCONP_PCUART3; break;
-
-    case 4: LPC_SC->PCONP &= ~PCONP_PCUART4; break;
-    }
-
-    state->isOpened = false;
-    state->handshakeEnable = false;
 
     return TinyCLR_Result::Success;
 }
@@ -1046,6 +1060,7 @@ void LPC17_Uart_Reset() {
 
         uartStates[i].isOpened = false;
         uartStates[i].tableInitialized = false;
+        uartStates[i].initializeCount = 0;
     }
 }
 
