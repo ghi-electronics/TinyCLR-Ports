@@ -2764,6 +2764,7 @@ TinyCLR_Result STM32F7_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
     tryinit:
         if (SD_Init() == SD_OK) {
             state->isOpened = true;
+            state->intializeCount++;
 
             return TinyCLR_Result::Success;
         }
