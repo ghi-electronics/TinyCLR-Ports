@@ -52,7 +52,6 @@ struct UartState {
 
     USART_TypeDef_Ptr portReg;
 
-    bool isOpened;
     bool handshaking;
 
     TinyCLR_Uart_ErrorReceivedHandler errorEventHandler;
@@ -381,7 +380,7 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         if (controllerIndex >= TOTAL_UART_CONTROLLERS)
             return TinyCLR_Result::ArgumentInvalid;
 
-        if (state->isOpened || !STM32F4_GpioInternal_OpenPin(uartRxPins[controllerIndex].number) || !STM32F4_GpioInternal_OpenPin(uartTxPins[controllerIndex].number))
+        if (!STM32F4_GpioInternal_OpenPin(uartRxPins[controllerIndex].number) || !STM32F4_GpioInternal_OpenPin(uartTxPins[controllerIndex].number))
             return TinyCLR_Result::SharingViolation;
 
         state->txBufferCount = 0;
@@ -566,8 +565,6 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
 #endif
     }
 
-    state->isOpened = true;
-
     if (state->txBufferSize == 0) {
         if (STM32F4_Uart_SetWriteBufferSize(self, uartTxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
             return TinyCLR_Result::OutOfMemory;
@@ -693,17 +690,13 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Controller* self) {
             }
         }
 
-        if (state->isOpened) {
-            STM32F4_GpioInternal_ClosePin(uartRxPins[controllerIndex].number);
-            STM32F4_GpioInternal_ClosePin(uartTxPins[controllerIndex].number);
+        STM32F4_GpioInternal_ClosePin(uartRxPins[controllerIndex].number);
+        STM32F4_GpioInternal_ClosePin(uartTxPins[controllerIndex].number);
 
-            if (state->handshaking) {
-                STM32F4_GpioInternal_ClosePin(uartCtsPins[controllerIndex].number);
-                STM32F4_GpioInternal_ClosePin(uartRtsPins[controllerIndex].number);
-            }
+        if (state->handshaking) {
+            STM32F4_GpioInternal_ClosePin(uartCtsPins[controllerIndex].number);
+            STM32F4_GpioInternal_ClosePin(uartRtsPins[controllerIndex].number);
         }
-
-        state->isOpened = false;
     }
 
     return TinyCLR_Result::Success;
@@ -716,7 +709,6 @@ void STM32F4_Uart_Reset() {
 
         STM32F4_Uart_Release(&uartControllers[i]);
 
-        uartStates[i].isOpened = false;
         uartStates[i].tableInitialized = false;
         uartStates[i].initializeCount = 0;
     }
@@ -762,7 +754,7 @@ bool STM32F4_Uart_TxHandshakeEnabledState(int controllerIndex) {
 TinyCLR_Result STM32F4_Uart_Flush(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    if (state->isOpened) {
+    if (state->initializeCount) {
         while (state->txBufferCount > 0) {
             STM32F4_Time_Delay(nullptr, 1);
         }
@@ -779,7 +771,7 @@ TinyCLR_Result STM32F4_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* b
 
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    if (state->isOpened == false) {
+    if (state->initializeCount == 0) {
         return TinyCLR_Result::NotAvailable;
     }
 
@@ -809,7 +801,7 @@ TinyCLR_Result STM32F4_Uart_Write(const TinyCLR_Uart_Controller* self, const uin
 
     int32_t controllerIndex = state->controllerIndex;
 
-    if (state->isOpened == false) {
+    if (state->initializeCount == 0) {
         return TinyCLR_Result::NotAvailable;
     }
 

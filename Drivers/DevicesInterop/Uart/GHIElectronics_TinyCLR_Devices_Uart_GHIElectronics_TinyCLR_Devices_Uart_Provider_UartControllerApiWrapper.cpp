@@ -154,19 +154,17 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCL
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::SetActiveSettings___VOID__I4__I4__GHIElectronicsTinyCLRDevicesUartUartParity__GHIElectronicsTinyCLRDevicesUartUartStopBitCount__GHIElectronicsTinyCLRDevicesUartUartHandshake(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Uart_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
-    TinyCLR_Interop_ClrValue arg0, arg1, arg2, arg3, arg4;
+    TinyCLR_Interop_ClrValue args[5];
 
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg0);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 1, arg1);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 2, arg2);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 3, arg3);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 4, arg4);
+    for (auto i = 0; i < sizeof(args) / sizeof(TinyCLR_Interop_ClrValue); i++) {
+        md.InteropManager->GetArgument(md.InteropManager, md.Stack, i, args[i]);
+    }
 
-    auto baudRate = arg0.Data.Numeric->I4;
-    auto dataBits = arg1.Data.Numeric->I4;
-    auto parity = static_cast<TinyCLR_Uart_Parity>(arg2.Data.Numeric->I4);
-    auto stopBits = static_cast<TinyCLR_Uart_StopBitCount>(arg3.Data.Numeric->I4);
-    auto handshaking = static_cast<TinyCLR_Uart_Handshake>(arg4.Data.Numeric->I4);
+    auto baudRate = args[0].Data.Numeric->I4;
+    auto dataBits = args[1].Data.Numeric->I4;
+    auto parity = static_cast<TinyCLR_Uart_Parity>(args[2].Data.Numeric->I4);
+    auto stopBits = static_cast<TinyCLR_Uart_StopBitCount>(args[3].Data.Numeric->I4);
+    auto handshaking = static_cast<TinyCLR_Uart_Handshake>(args[4].Data.Numeric->I4);
 
     return api->SetActiveSettings(api, baudRate, dataBits, parity, stopBits, handshaking);
 }
@@ -180,15 +178,15 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCL
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::Read___I4__SZARRAY_U1__I4__I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Uart_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
-    TinyCLR_Interop_ClrValue arg0, arg1, arg2;
+    TinyCLR_Interop_ClrValue args[3];
 
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg0);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 1, arg1);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 2, arg2);
+    for (auto i = 0; i < sizeof(args) / sizeof(TinyCLR_Interop_ClrValue); i++) {
+        md.InteropManager->GetArgument(md.InteropManager, md.Stack, i, args[i]);
+    };
 
-    auto buffer = reinterpret_cast<uint8_t*>(arg0.Data.SzArray.Data);
-    auto offset = arg1.Data.Numeric->I4;
-    auto count = static_cast<size_t>(arg2.Data.Numeric->I4);
+    auto buffer = reinterpret_cast<uint8_t*>(args[0].Data.SzArray.Data);
+    auto offset = args[1].Data.Numeric->I4;
+    auto count = static_cast<size_t>(args[2].Data.Numeric->I4);
 
     auto result = api->Read(api, buffer + offset, count);
 
@@ -204,15 +202,15 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCL
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::Write___I4__SZARRAY_U1__I4__I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Uart_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
-    TinyCLR_Interop_ClrValue arg0, arg1, arg2;
+    TinyCLR_Interop_ClrValue args[3];
 
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg0);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 1, arg1);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 2, arg2);
+    for (auto i = 0; i < sizeof(args) / sizeof(TinyCLR_Interop_ClrValue); i++) {
+        md.InteropManager->GetArgument(md.InteropManager, md.Stack, i, args[i]);
+    };
 
-    auto buffer = reinterpret_cast<uint8_t*>(arg0.Data.SzArray.Data);
-    auto offset = arg1.Data.Numeric->I4;
-    auto count = static_cast<size_t>(arg2.Data.Numeric->I4);
+    auto buffer = reinterpret_cast<uint8_t*>(args[0].Data.SzArray.Data);
+    auto offset = args[1].Data.Numeric->I4;
+    auto count = static_cast<size_t>(args[2].Data.Numeric->I4);
 
     auto result = api->Write(api, reinterpret_cast<const uint8_t*>(buffer + offset), count);
 
