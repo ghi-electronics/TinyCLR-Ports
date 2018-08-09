@@ -35,7 +35,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_TinyCLR_Dev
     static const size_t FIELD___pinNumber___I4 = 2;
     static const size_t FIELD___pin___GHIElectronicsTinyCLRDevicesGpioGHIElectronicsTinyCLRDevicesGpioGpioPin = 3;
     static const size_t FIELD___DisableInterrupts__BackingField___BOOLEAN = 4;
-    static const size_t FIELD___GeneratecarrierFrequency__BackingField___BOOLEAN = 5;
+    static const size_t FIELD___GenerateCarrierFrequency__BackingField___BOOLEAN = 5;
     static const size_t FIELD___CarrierFrequency__BackingField___I8 = 6;
 
     static TinyCLR_Result Write___VOID__SZARRAY_I8__I4__I4(const TinyCLR_Interop_MethodData md);
