@@ -865,7 +865,7 @@ acquire_success:
 TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Controller* self) {
     auto usClientState = reinterpret_cast<UsClientState*>(self->ApiInfo->State);
 
-    if (usClientState->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
+    if (usClientState->initializeCount == 0) return TinyCLR_Result::Success;
 
     usClientState->initializeCount--;
 
