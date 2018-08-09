@@ -29,8 +29,8 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
     nullptr,
     nullptr,
     nullptr,
-    Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_TinyCLR_Devices_Signals_SignalCapture::Read___I4__BYREF_BOOLEAN__SZARRAY_I8__I4__I4,
-    Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_TinyCLR_Devices_Signals_SignalCapture::Read___I4__BOOLEAN__SZARRAY_I8__I4__I4,
+    Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_TinyCLR_Devices_Signals_SignalCapture::Read___I4__BYREF_GHIElectronicsTinyCLRDevicesGpioGHIElectronicsTinyCLRDevicesGpioGpioPinValue__SZARRAY_I8__I4__I4,
+    Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_TinyCLR_Devices_Signals_SignalCapture::Read___I4__GHIElectronicsTinyCLRDevicesGpioGHIElectronicsTinyCLRDevicesGpioGpioPinValue__SZARRAY_I8__I4__I4,
     nullptr,
     nullptr,
     nullptr,
@@ -47,6 +47,6 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
 
 const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices_Signals = {
     "GHIElectronics.TinyCLR.Devices.Signals",
-    0x0AC306EA,
+    0x27A7FA14,
     methods
 };

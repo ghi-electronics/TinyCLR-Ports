@@ -26,8 +26,8 @@ struct Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_TinyCLR_Dev
     static const size_t FIELD___DisableInterrupts__BackingField___BOOLEAN = 4;
     static const size_t FIELD___Timeout__BackingField___mscorlibSystemTimeSpan = 5;
 
-    static TinyCLR_Result Read___I4__BYREF_BOOLEAN__SZARRAY_I8__I4__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result Read___I4__BOOLEAN__SZARRAY_I8__I4__I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result Read___I4__BYREF_GHIElectronicsTinyCLRDevicesGpioGHIElectronicsTinyCLRDevicesGpioGpioPinValue__SZARRAY_I8__I4__I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result Read___I4__GHIElectronicsTinyCLRDevicesGpioGHIElectronicsTinyCLRDevicesGpioGpioPinValue__SZARRAY_I8__I4__I4(const TinyCLR_Interop_MethodData md);
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_TinyCLR_Devices_Signals_SignalGenerator {
