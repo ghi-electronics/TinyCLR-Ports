@@ -46,6 +46,10 @@ void OnSoftReset(const TinyCLR_Api_Manager* apiManager) {
     TARGET(_I2c_AddApi)(apiManager);
 #endif
 
+#ifdef INCLUDE_POWER
+    TARGET(_Power_AddApi)(apiManager);
+#endif
+
 #ifdef INCLUDE_PWM
     TARGET(_Pwm_AddApi)(apiManager);
 #endif

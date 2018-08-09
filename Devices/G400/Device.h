@@ -68,6 +68,8 @@
 #define AT91_I2C_SCL_PINS { { PIN(A,31), PS(A) } }
 #define AT91_I2C_SDA_PINS { { PIN(A,30), PS(A) } }
 
+#define INCLUDE_POWER
+
 #define INCLUDE_PWM
 #define MAX_PWM_PER_CONTROLLER 1
 #define TOTAL_PWM_CONTROLLERS 4

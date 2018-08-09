@@ -77,6 +77,8 @@
 #define LPC17_I2C_SCL_PINS { { PIN(0, 28), PF(1) } }
 #define LPC17_I2C_SDA_PINS { { PIN(0, 27), PF(1) } }
 
+#define INCLUDE_POWER
+
 #define INCLUDE_PWM
 #define TOTAL_PWM_CONTROLLERS 2
 #define MAX_PWM_PER_CONTROLLER 6

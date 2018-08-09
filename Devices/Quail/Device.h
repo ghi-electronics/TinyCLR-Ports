@@ -70,6 +70,8 @@
 #define STM32F4_I2C_SCL_PINS { { PIN(B, 6), AF(4) } }
 #define STM32F4_I2C_SDA_PINS { { PIN(B, 7), AF(4) } }
 
+#define INCLUDE_POWER
+
 #define INCLUDE_PWM
 #define TOTAL_PWM_CONTROLLERS 14
 #define STM32F4_PWM_PINS {/*          0                          1                        2                        3                       */\
