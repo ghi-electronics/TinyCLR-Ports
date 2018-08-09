@@ -414,8 +414,7 @@ TinyCLR_Result STM32F7_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self
         treg->CCER &= ~invBit;
     }
 
-    if (duration != (uint32_t)(state->dutyCycle[channel] * state->period))
-        treg->EGR = TIM_EGR_UG; // enforce register update - update immidiately any changes
+    treg->EGR = TIM_EGR_UG; // enforce register update - update immidiately any changes
 
     state->invert[channel] = polarity;
     state->dutyCycle[channel] = dutyCycle;
@@ -426,11 +425,6 @@ TinyCLR_Result STM32F7_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self
 
 TinyCLR_Result STM32F7_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Controller* self, double& frequency) {
     auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
-
-    // If current frequency is same with desired frequency, no need to re-calculate
-    if (state->theoryFreq == frequency) {
-        return TinyCLR_Result::Success;
-    }
 
     // If detected a different, save desired frequency
     state->theoryFreq = frequency;
