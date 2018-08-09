@@ -847,13 +847,15 @@ TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Controller* sel
 
             usClientState->initialized = true;
 
-            return TinyCLR_Result::Success;
+            goto acquire_success;
 
         }
 
     acquire_error:
         return TinyCLR_Result::ArgumentNull;
     }
+
+acquire_success:
 
     usClientState->initializeCount++;
 
