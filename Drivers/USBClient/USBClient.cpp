@@ -847,13 +847,15 @@ TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Controller* sel
 
             usClientState->initialized = true;
 
-            return TinyCLR_Result::Success;
+            goto acquire_success;
 
         }
 
     acquire_error:
         return TinyCLR_Result::ArgumentNull;
     }
+
+acquire_success:
 
     usClientState->initializeCount++;
 
@@ -863,7 +865,7 @@ TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Controller* sel
 TinyCLR_Result TinyCLR_UsbClient_Release(const TinyCLR_UsbClient_Controller* self) {
     auto usClientState = reinterpret_cast<UsClientState*>(self->ApiInfo->State);
 
-    if (usClientState->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
+    if (usClientState->initializeCount == 0) return TinyCLR_Result::Success;
 
     usClientState->initializeCount--;
 
