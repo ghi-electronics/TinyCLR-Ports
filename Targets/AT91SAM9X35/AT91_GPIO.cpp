@@ -164,9 +164,9 @@ void AT91_Gpio_InterruptHandler(void* param) {
                 if (executeIsr)
                     interruptState->handler(interruptState->controller, interruptState->pin, edge);
             }
-        }
 
-        interruptsActive ^= bitMask;
+            interruptsActive ^= bitMask;
+        }
     }
 }
 
