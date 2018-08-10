@@ -384,6 +384,8 @@ TinyCLR_Gpio_PinDriveMode STM32F7_Gpio_GetDriveMode(const TinyCLR_Gpio_Controlle
 }
 
 TinyCLR_Result STM32F7_Gpio_SetDriveMode(const TinyCLR_Gpio_Controller* self, uint32_t pin, TinyCLR_Gpio_PinDriveMode driveMode) {
+    volatile TinyCLR_Result result = TinyCLR_Result::Success;
+
     switch (driveMode) {
     case TinyCLR_Gpio_PinDriveMode::Output:
     case TinyCLR_Gpio_PinDriveMode::Input:
@@ -404,12 +406,13 @@ TinyCLR_Result STM32F7_Gpio_SetDriveMode(const TinyCLR_Gpio_Controller* self, ui
         break;
 
     default:
-        return TinyCLR_Result::NotSupported;
+        result = TinyCLR_Result::NotSupported;
+        break;
     }
 
     pinDriveMode[pin] = driveMode;
 
-    return TinyCLR_Result::Success;
+    return result;
 }
 
 uint64_t STM32F7_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Controller* self, uint32_t pin) {
