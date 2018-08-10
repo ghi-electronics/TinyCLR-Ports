@@ -22,6 +22,11 @@
 
 #ifdef INCLUDE_CAN
 
+#if defined(__GNUC__)
+// GCC ARM linker does not link to some variable below if optimize mode.
+#pragma GCC optimize 0
+#endif
+
 static const uint32_t canDefaultBuffersSize[] = AT91_CAN_BUFFER_DEFAULT_SIZE;
 
 #define CAN_TRANSFER_TIMEOUT 0xFFFFFF
