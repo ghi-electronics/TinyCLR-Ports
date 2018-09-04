@@ -104,18 +104,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCL
 
     switch (driveMode) {
     case TinyCLR_Gpio_PinDriveMode::Output:
-        TinyCLR_Gpio_PinValue pinValue;
-
-        if (api->GetDriveMode(api, pin) == TinyCLR_Gpio_PinDriveMode::Input || api->GetDriveMode(api, pin) == TinyCLR_Gpio_PinDriveMode::InputPullUp || api->GetDriveMode(api, pin) == TinyCLR_Gpio_PinDriveMode::InputPullDown) {
-            keepPinState = true;
-
-            api->Read(api, pin, pinValue);
-        }
-
         result = api->SetDriveMode(api, pin, TinyCLR_Gpio_PinDriveMode::Output);
-
-        if (result == TinyCLR_Result::Success && keepPinState == true)
-            result = api->Write(api, pin, pinValue);
         break;
 
     case TinyCLR_Gpio_PinDriveMode::Input:
@@ -135,7 +124,6 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCL
     }
 
     return result;
-
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::Read___GHIElectronicsTinyCLRDevicesGpioGpioPinValue__I4(const TinyCLR_Interop_MethodData md) {
