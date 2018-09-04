@@ -125,6 +125,7 @@ static bool pinReserved[TOTAL_GPIO_PINS] __attribute__((section(".bss2.pinReserv
 static int64_t gpioDebounceInTicks[TOTAL_GPIO_PINS] __attribute__((section(".bss2.gpioDebounceInTicks")));
 static GpioInterruptState gpioInterruptState[TOTAL_GPIO_INTERRUPT_PINS] __attribute__((section(".bss2.gpioInterruptState")));
 static TinyCLR_Gpio_PinDriveMode pinDriveMode[TOTAL_GPIO_PINS] __attribute__((section(".bss2.pinDriveMode")));
+static TinyCLR_Gpio_PinValue previousOutputValue[TOTAL_GPIO_PINS] __attribute__((section(".bss2.previousOutputValue")));;
 
 static TinyCLR_Gpio_Controller gpioControllers[TOTAL_GPIO_CONTROLLERS];
 static TinyCLR_Api_Info gpioApi[TOTAL_GPIO_CONTROLLERS];
@@ -409,6 +410,7 @@ TinyCLR_Result LPC24_Gpio_Write(const TinyCLR_Gpio_Controller* self, uint32_t pi
 
     LPC24_Gpio_WritePin(pin, value == TinyCLR_Gpio_PinValue::High ? true : false);
 
+    previousOutputValue[pin] = value;
     return TinyCLR_Result::Success;
 }
 
@@ -461,6 +463,8 @@ TinyCLR_Result LPC24_Gpio_SetDriveMode(const TinyCLR_Gpio_Controller* self, uint
     switch (driveMode) {
     case TinyCLR_Gpio_PinDriveMode::Output:
         LPC24_Gpio_ConfigurePin(pin, LPC24_Gpio_Direction::Output, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::Inactive);
+
+        LPC24_Gpio_Write(self, pin, previousOutputValue[pin]);
         break;
 
     case TinyCLR_Gpio_PinDriveMode::Input:
@@ -508,6 +512,8 @@ void LPC24_Gpio_Reset() {
             auto& p = gpioPins[pin];
 
             pinReserved[pin] = false;
+            previousOutputValue[pin] = TinyCLR_Gpio_PinValue::Low;
+
             LPC24_Gpio_SetDebounceTimeout(&gpioControllers[c], pin, DEBOUNCE_DEFAULT_TICKS);
 
             if (p.apply) {
