@@ -53,6 +53,7 @@ static bool pinReserved[TOTAL_GPIO_PINS];
 static int64_t gpioDebounceInTicks[TOTAL_GPIO_PINS];
 static GpioInterruptState gpioInterruptState[TOTAL_GPIO_INTERRUPT_PINS];
 static TinyCLR_Gpio_PinDriveMode pinDriveMode[TOTAL_GPIO_PINS];
+static TinyCLR_Gpio_PinValue pinWasOutputValue[TOTAL_GPIO_PINS];
 
 static TinyCLR_Gpio_Controller gpioControllers[TOTAL_GPIO_CONTROLLERS];
 static TinyCLR_Api_Info gpioApi[TOTAL_GPIO_CONTROLLERS];
@@ -352,6 +353,8 @@ TinyCLR_Result STM32F4_Gpio_Read(const TinyCLR_Gpio_Controller* self, uint32_t p
 TinyCLR_Result STM32F4_Gpio_Write(const TinyCLR_Gpio_Controller* self, uint32_t pin, TinyCLR_Gpio_PinValue value) {
     STM32F4_GpioInternal_WritePin(pin, value == TinyCLR_Gpio_PinValue::High ? true : false);
 
+    pinWasOutputValue[pin] = value;
+
     return TinyCLR_Result::Success;
 }
 
@@ -386,6 +389,10 @@ TinyCLR_Result STM32F4_Gpio_SetDriveMode(const TinyCLR_Gpio_Controller* self, ui
     case TinyCLR_Gpio_PinDriveMode::Output:
     case TinyCLR_Gpio_PinDriveMode::Input:
         STM32F4_GpioInternal_ConfigurePin(pin, driveMode == TinyCLR_Gpio_PinDriveMode::Output ? STM32F4_Gpio_PortMode::GeneralPurposeOutput : STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
+
+        if (driveMode == TinyCLR_Gpio_PinDriveMode::Output) {
+            STM32F4_Gpio_Write(self, pin, pinWasOutputValue[pin]);
+        }
         break;
 
     case TinyCLR_Gpio_PinDriveMode::InputPullUp:
@@ -429,6 +436,8 @@ void STM32F4_Gpio_Reset() {
         auto& p = gpioPins[i];
 
         pinReserved[i] = 0;
+        pinWasOutputValue[i] = TinyCLR_Gpio_PinValue::Low;
+
         STM32F4_Gpio_SetDebounceTimeout(nullptr, i, DEBOUNCE_DEFAULT_TICKS);
         STM32F4_Gpio_DisableInterrupt(i);
 
