@@ -253,6 +253,8 @@ struct PwmState {
 
     double                      frequency;
     double                      dutyCycle[MAX_PWM_PER_CONTROLLER];
+
+    uint16_t initializeCount;
 };
 void LPC24_Pwm_AddApi(const TinyCLR_Api_Manager* apiManager);
 void LPC24_Pwm_Reset();

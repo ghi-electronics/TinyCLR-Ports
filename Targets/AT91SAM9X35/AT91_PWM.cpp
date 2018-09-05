@@ -438,34 +438,41 @@ TinyCLR_Result AT91_Pwm_Acquire(const TinyCLR_Pwm_Controller* self) {
 
     auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->initializeCount == 0) {
+        AT91_Pwm_ResetController(state->controllerIndex);
 
-    AT91_Pwm_ResetController(controllerIndex);
+        AT91_PMC &pmc = AT91::PMC();
+        pmc.EnablePeriphClock(AT91C_ID_PWM);
 
-    AT91_PMC &pmc = AT91::PMC();
-    pmc.EnablePeriphClock(AT91C_ID_PWM);
+        if (PWM_MODE_REGISTER != PWM_MODE_REGISTER & 0x100) // Checks if clock has been set
+            PWM_MODE_REGISTER = (1 << 16);
+    }
 
-    if (PWM_MODE_REGISTER != PWM_MODE_REGISTER & 0x100) // Checks if clock has been set
-        PWM_MODE_REGISTER = (1 << 16);
+    state->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Pwm_Release(const TinyCLR_Pwm_Controller* self) {
-    if (self == nullptr) return TinyCLR_Result::ArgumentNull;
+    if (self == nullptr)
+        return TinyCLR_Result::ArgumentNull;
 
     auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    AT91_Pwm_ResetController(controllerIndex);
+    state->initializeCount--;
+
+    if (state->initializeCount == 0)
+        AT91_Pwm_ResetController(state->controllerIndex);
 
     return TinyCLR_Result::Success;
 }
 
 void AT91_Pwm_Reset() {
-    for (auto c = 0; c < TOTAL_PWM_CONTROLLERS; c++) {
-        AT91_Pwm_ResetController(c);
+    for (auto controllerIndex = 0; controllerIndex < TOTAL_PWM_CONTROLLERS; controllerIndex++) {
+        AT91_Pwm_ResetController(controllerIndex);
+        pwmStates[controllerIndex].initializeCount = 0;
     }
 }
 

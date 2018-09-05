@@ -412,23 +412,31 @@ TinyCLR_Result LPC17_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Controller* self,
 }
 
 TinyCLR_Result LPC17_Pwm_Acquire(const TinyCLR_Pwm_Controller* self) {
-    if (self == nullptr) return TinyCLR_Result::ArgumentNull;
+    if (self == nullptr)
+        return TinyCLR_Result::ArgumentNull;
 
     auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
-    auto controllerIndex = state->controllerIndex;
 
-    LPC17_Pwm_ResetController(controllerIndex);
+    if (state->initializeCount == 0)
+        LPC17_Pwm_ResetController(state->controllerIndex);
+
+    state->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC17_Pwm_Release(const TinyCLR_Pwm_Controller* self) {
-    if (self == nullptr) return TinyCLR_Result::ArgumentNull;
+    if (self == nullptr)
+        return TinyCLR_Result::ArgumentNull;
 
     auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
-    auto controllerIndex = state->controllerIndex;
 
-    LPC17_Pwm_ResetController(controllerIndex);
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
+
+    state->initializeCount--;
+
+    if (state->initializeCount == 0)
+        LPC17_Pwm_ResetController(state->controllerIndex);
 
     return TinyCLR_Result::Success;
 }
@@ -436,6 +444,7 @@ TinyCLR_Result LPC17_Pwm_Release(const TinyCLR_Pwm_Controller* self) {
 void LPC17_Pwm_Reset() {
     for (auto controllerIndex = 0; controllerIndex < TOTAL_PWM_CONTROLLERS; controllerIndex++) {
         LPC17_Pwm_ResetController(controllerIndex);
+        pwmStates[controllerIndex].initializeCount = 0;
     }
 }
 void LPC17_Pwm_ResetController(int32_t controllerIndex) {

@@ -532,6 +532,8 @@ struct PwmState {
 
     double                          frequency;
     double                          dutyCycle[MAX_PWM_PER_CONTROLLER];
+
+    uint16_t initializeCount;
 };
 void AT91_Pwm_AddApi(const TinyCLR_Api_Manager* apiManager);
 void AT91_Pwm_Reset();
