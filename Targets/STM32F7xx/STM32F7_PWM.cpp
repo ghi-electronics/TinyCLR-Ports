@@ -62,6 +62,7 @@ struct PwmState {
     uint32_t            presc;
     uint32_t            timer;
 
+    uint16_t initializeCount;
 };
 
 void STM32F7_Pwm_ResetController(int32_t controllerIndex);
@@ -447,9 +448,10 @@ TinyCLR_Result STM32F7_Pwm_Acquire(const TinyCLR_Pwm_Controller* self) {
 
     auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->initializeCount == 0)
+        STM32F7_Pwm_ResetController(state->controllerIndex);
 
-    STM32F7_Pwm_ResetController(controllerIndex);
+    state->initializeCount++;
 
     return TinyCLR_Result::Success;
 }
@@ -460,9 +462,12 @@ TinyCLR_Result STM32F7_Pwm_Release(const TinyCLR_Pwm_Controller* self) {
 
     auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
-    STM32F7_Pwm_ResetController(controllerIndex);
+    state->initializeCount--;
+
+    if (state->initializeCount == 0)
+        STM32F7_Pwm_ResetController(state->controllerIndex);
 
     return TinyCLR_Result::Success;
 }
@@ -485,6 +490,7 @@ void STM32F7_Pwm_Reset() {
 
     for (auto controllerIndex = 0u; controllerIndex < TOTAL_PWM_CONTROLLERS; controllerIndex++) {
         STM32F7_Pwm_ResetController(controllerIndex);
+        pwmStates[controllerIndex].initializeCount = 0;
     }
 }
 
