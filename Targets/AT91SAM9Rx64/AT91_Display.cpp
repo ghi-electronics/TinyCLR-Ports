@@ -916,7 +916,8 @@ void AT91_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height, 
         }
         else {
             for (yTo = yOffset; yTo < (yOffset + height); yTo++) {
-                AT91_Display_MemCopy((void*)(to + yTo * screenWidth + xOffset), (void*)(from + yTo * screenWidth + xOffset), (width * 2));
+                AT91_Display_MemCopy((void*)(to + yTo * screenWidth + xOffset), (void*)(from), (width * 2)); 
+                from += width;
             }
         }
 

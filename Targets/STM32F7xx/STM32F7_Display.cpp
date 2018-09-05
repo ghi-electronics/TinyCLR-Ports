@@ -924,7 +924,8 @@ void STM32F7_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t heigh
         }
         else {
             for (yTo = yOffset; yTo < (yOffset + height); yTo++) {
-                STM32F7_Display_MemCopy((void*)(to + yTo * screenWidth + xOffset), (void*)(from + yTo * screenWidth + xOffset), (width * 2));
+                STM32F7_Display_MemCopy((void*)(to + yTo * screenWidth + xOffset), (void*)(from), (width * 2)); 
+                from += width;
             }
         }
 
