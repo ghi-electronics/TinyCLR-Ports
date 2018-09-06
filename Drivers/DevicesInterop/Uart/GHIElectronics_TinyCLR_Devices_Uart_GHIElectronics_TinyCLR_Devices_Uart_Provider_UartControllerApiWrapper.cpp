@@ -8,7 +8,7 @@ void TinyCLR_Uart_DataReceivedIsr(const TinyCLR_Uart_Controller* self, size_t co
     int32_t controllerIndex = *(reinterpret_cast<int32_t*>(self->ApiInfo->State));
 
     if (interopProvider != nullptr)
-        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Uart.DataReceived", self->ApiInfo->Name, controllerIndex, (uint64_t)count, 0, 0);
+        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Uart.DataReceived", self->ApiInfo->Name, (uint64_t)count, 0, 0, 0);
 }
 
 void TinyCLR_Uart_ErrorReceivedIsr(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_Error error) {
@@ -18,7 +18,7 @@ void TinyCLR_Uart_ErrorReceivedIsr(const TinyCLR_Uart_Controller* self, TinyCLR_
     int32_t controllerIndex = *(reinterpret_cast<int32_t*>(self->ApiInfo->State));
 
     if (interopProvider != nullptr)
-        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Uart.ErrorReceived", self->ApiInfo->Name, controllerIndex, (uint64_t)error, 0, 0);
+        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Uart.ErrorReceived", self->ApiInfo->Name, (uint64_t)error, 0, 0, 0);
 }
 
 void TinyCLR_Uart_ClearToSendIsr(const TinyCLR_Uart_Controller* self, bool state) {
@@ -28,7 +28,7 @@ void TinyCLR_Uart_ClearToSendIsr(const TinyCLR_Uart_Controller* self, bool state
     int32_t controllerIndex = *(reinterpret_cast<int32_t*>(self->ApiInfo->State));
 
     if (interopProvider != nullptr)
-        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Uart.ClearToSendChanged", self->ApiInfo->Name, controllerIndex, (uint64_t)state, 0, 0);
+        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Uart.ClearToSendChanged", self->ApiInfo->Name, (uint64_t)state, 0, 0, 0);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::get_WriteBufferSize___I4(const TinyCLR_Interop_MethodData md) {

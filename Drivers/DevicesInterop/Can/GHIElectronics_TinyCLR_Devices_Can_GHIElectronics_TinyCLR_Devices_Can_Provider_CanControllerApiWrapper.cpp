@@ -8,7 +8,7 @@ static void TinyCLR_Can_ErrorReceivedIsr(const TinyCLR_Can_Controller* self, Tin
     auto controllerIndex = *(reinterpret_cast<int32_t*>(self->ApiInfo->State));
 
     if (interopManager != nullptr)
-        interopManager->RaiseEvent(interopManager, "GHIElectronics.TinyCLR.NativeEventNames.Can.ErrorReceived", self->ApiInfo->Name, controllerIndex, (uint64_t)error, 0, 0);
+        interopManager->RaiseEvent(interopManager, "GHIElectronics.TinyCLR.NativeEventNames.Can.ErrorReceived", self->ApiInfo->Name, (uint64_t)error, 0, 0, 0);
 }
 
 static void TinyCLR_Can_MessageReceivedIsr(const TinyCLR_Can_Controller* self, size_t count) {
@@ -19,7 +19,7 @@ static void TinyCLR_Can_MessageReceivedIsr(const TinyCLR_Can_Controller* self, s
     auto controllerIndex = *(reinterpret_cast<int32_t*>(self->ApiInfo->State));
 
     if (interopManager != nullptr)
-        interopManager->RaiseEvent(interopManager, "GHIElectronics.TinyCLR.NativeEventNames.Can.MessageReceived", self->ApiInfo->Name, controllerIndex, (uint64_t)count, 0, 0);
+        interopManager->RaiseEvent(interopManager, "GHIElectronics.TinyCLR.NativeEventNames.Can.MessageReceived", self->ApiInfo->Name, (uint64_t)count, 0, 0, 0);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_WriteBufferSize___I4(const TinyCLR_Interop_MethodData md) {
