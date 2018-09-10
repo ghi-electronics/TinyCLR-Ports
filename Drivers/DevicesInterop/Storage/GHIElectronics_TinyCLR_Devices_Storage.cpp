@@ -58,10 +58,11 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
     nullptr,
     nullptr,
     nullptr,
+    nullptr,
 };
 
 const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices_Storage = {
     "GHIElectronics.TinyCLR.Devices.Storage",
-    0x560F89D1,
+    0x280C88C3,
     methods
 };

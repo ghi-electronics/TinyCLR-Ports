@@ -69,7 +69,7 @@ void LPC24_Deployment_EnsureTableInitialized() {
         deploymentStates[i].controllerIndex = i;
         deploymentStates[i].regionCount = LPC24_DEPLOYMENT_SECTOR_NUM;
 
-        deploymentStates[i].tableInitialized = true;        
+        deploymentStates[i].tableInitialized = true;
     }
 }
 
@@ -111,7 +111,8 @@ TinyCLR_Result LPC24_Deployment_Open(const TinyCLR_Storage_Controller* self) {
     state->storageDescriptor.CanExecuteDirect = true;
     state->storageDescriptor.EraseBeforeWrite = true;
     state->storageDescriptor.Removable = false;
-    state->storageDescriptor.RegionsRepeat = true;
+    state->storageDescriptor.RegionsContiguous = false;
+    state->storageDescriptor.RegionsEqualSized = false;
 
     size_t regionCount;
 
@@ -130,6 +131,8 @@ TinyCLR_Result LPC24_Deployment_Open(const TinyCLR_Storage_Controller* self) {
     state->deploymentConfiguration.RegionCount = state->storageDescriptor.RegionCount;
     state->deploymentConfiguration.RegionAddresses = state->storageDescriptor.RegionAddresses;
     state->deploymentConfiguration.RegionSizes = state->storageDescriptor.RegionSizes;
+    state->deploymentConfiguration.RegionsContiguous = false;
+    state->deploymentConfiguration.RegionsEqualSized = false;
 
     state->isOpened = true;
 
