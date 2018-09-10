@@ -28,6 +28,7 @@ void LPC17_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager) {
         rtcControllers[i].ApiInfo = &rtcApi[i];
         rtcControllers[i].Acquire = &LPC17_Rtc_Acquire;
         rtcControllers[i].Release = &LPC17_Rtc_Release;
+        rtcControllers[i].IsValid = &LPC17_Rtc_IsValid;
         rtcControllers[i].GetTime = &LPC17_Rtc_GetTime;
         rtcControllers[i].SetTime = &LPC17_Rtc_SetTime;
 
@@ -56,6 +57,12 @@ TinyCLR_Result LPC17_Rtc_Acquire(const TinyCLR_Rtc_Controller* self) {
 }
 
 TinyCLR_Result LPC17_Rtc_Release(const TinyCLR_Rtc_Controller* self) {
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result LPC17_Rtc_IsValid(const TinyCLR_Rtc_Controller* self, bool& value) {
+    value = true;
+
     return TinyCLR_Result::Success;
 }
 

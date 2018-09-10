@@ -8,6 +8,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices
 
     static TinyCLR_Result GetTime___GHIElectronicsTinyCLRDevicesRtcRtcDateTime(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result SetTime___VOID__GHIElectronicsTinyCLRDevicesRtcRtcDateTime(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result get_IsValid___BOOLEAN(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Acquire___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Release___VOID(const TinyCLR_Interop_MethodData md);
 };

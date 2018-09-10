@@ -226,6 +226,7 @@ LPC17_Gpio_Pin LPC17_Pwm_GetPins(int32_t controllerIndex, int32_t channel);
 void LPC17_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager);
 TinyCLR_Result LPC17_Rtc_Acquire(const TinyCLR_Rtc_Controller* self);
 TinyCLR_Result LPC17_Rtc_Release(const TinyCLR_Rtc_Controller* self);
+TinyCLR_Result LPC17_Rtc_IsValid(const TinyCLR_Rtc_Controller* self, bool& value);
 TinyCLR_Result LPC17_Rtc_GetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value);
 TinyCLR_Result LPC17_Rtc_SetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value);
 

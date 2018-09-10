@@ -54,6 +54,7 @@ void AT91_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager) {
         rtcControllers[i].ApiInfo = &rtcApi[i];
         rtcControllers[i].Acquire = &AT91_Rtc_Acquire;
         rtcControllers[i].Release = &AT91_Rtc_Release;
+        rtcControllers[i].IsValid = &AT91_Rtc_IsValid;
         rtcControllers[i].GetTime = &AT91_Rtc_GetTime;
         rtcControllers[i].SetTime = &AT91_Rtc_SetTime;
 
@@ -111,6 +112,12 @@ TinyCLR_Result AT91_Rtc_Acquire(const TinyCLR_Rtc_Controller* self) {
 }
 
 TinyCLR_Result AT91_Rtc_Release(const TinyCLR_Rtc_Controller* self) {
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result AT91_Rtc_IsValid(const TinyCLR_Rtc_Controller* self, bool& value) {
+    value = true;
+
     return TinyCLR_Result::Success;
 }
 

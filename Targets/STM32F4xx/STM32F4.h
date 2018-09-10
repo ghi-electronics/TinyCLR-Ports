@@ -210,6 +210,7 @@ void STM32F4_Pwm_Reset();
 void STM32F4_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager);
 TinyCLR_Result STM32F4_Rtc_Acquire(const TinyCLR_Rtc_Controller* self);
 TinyCLR_Result STM32F4_Rtc_Release(const TinyCLR_Rtc_Controller* self);
+TinyCLR_Result STM32F4_Rtc_IsValid(const TinyCLR_Rtc_Controller* self, bool& value);
 TinyCLR_Result STM32F4_Rtc_GetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value);
 TinyCLR_Result STM32F4_Rtc_SetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value);
 

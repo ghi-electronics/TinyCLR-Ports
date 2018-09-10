@@ -90,6 +90,16 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR
     return api->SetTime(api, now);
 }
 
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerApiWrapper::get_IsValid___BOOLEAN(const TinyCLR_Interop_MethodData md) {
+    auto api = reinterpret_cast<const TinyCLR_Rtc_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
+
+    TinyCLR_Interop_ClrValue ret;
+
+    md.InteropManager->GetReturn(md.InteropManager, md.Stack, ret);
+
+    return api->IsValid(api, ret.Data.Numeric->Boolean);
+}
+
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Rtc_GHIElectronics_TinyCLR_Devices_Rtc_Provider_RtcControllerApiWrapper::Acquire___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Rtc_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 

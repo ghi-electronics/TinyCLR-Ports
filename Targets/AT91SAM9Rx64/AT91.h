@@ -557,6 +557,7 @@ uint32_t AT91_Pwm_GetChannelCount(const TinyCLR_Pwm_Controller* self);
 void AT91_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager);
 TinyCLR_Result AT91_Rtc_Acquire(const TinyCLR_Rtc_Controller* self);
 TinyCLR_Result AT91_Rtc_Release(const TinyCLR_Rtc_Controller* self);
+TinyCLR_Result AT91_Rtc_IsValid(const TinyCLR_Rtc_Controller* self, bool& value);
 TinyCLR_Result AT91_Rtc_GetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value);
 TinyCLR_Result AT91_Rtc_SetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value);
 

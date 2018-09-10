@@ -89,6 +89,7 @@ void STM32F7_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager) {
         rtcControllers[i].ApiInfo = &rtcApi[i];
         rtcControllers[i].Acquire = &STM32F7_Rtc_Acquire;
         rtcControllers[i].Release = &STM32F7_Rtc_Release;
+        rtcControllers[i].IsValid = &STM32F7_Rtc_IsValid;
         rtcControllers[i].GetTime = &STM32F7_Rtc_GetTime;
         rtcControllers[i].SetTime = &STM32F7_Rtc_SetTime;
 
@@ -239,6 +240,12 @@ TinyCLR_Result STM32F7_Rtc_Acquire(const TinyCLR_Rtc_Controller* self) {
 }
 
 TinyCLR_Result STM32F7_Rtc_Release(const TinyCLR_Rtc_Controller* self) {
+    return TinyCLR_Result::Success;
+}
+
+TinyCLR_Result STM32F7_Rtc_IsValid(const TinyCLR_Rtc_Controller* self, bool& value) {
+    value = true;
+
     return TinyCLR_Result::Success;
 }
 
