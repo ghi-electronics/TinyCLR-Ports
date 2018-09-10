@@ -77,7 +77,7 @@ void STM32F7_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_Sle
     uint32_t tmpreg = 0;
     switch (level) {
 
-    case TinyCLR_Power_SleepLevel::Hibernate: // stop
+    case TinyCLR_Power_SleepLevel::Level4: // stop
         /* Select the regulator state in Stop mode ---------------------------------*/
         tmpreg = PWR->CR1;
         /* Clear PDDS and LPDS bits */
@@ -97,7 +97,7 @@ void STM32F7_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_Sle
 
         return;
 
-    case TinyCLR_Power_SleepLevel::Off: // standby
+    case TinyCLR_Power_SleepLevel::Level2: // standby
         /* Select Standby mode */
         PWR->CR1 |= PWR_CR1_PDDS;
 

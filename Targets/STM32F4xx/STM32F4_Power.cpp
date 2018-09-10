@@ -72,11 +72,11 @@ void STM32F4_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
 
 void STM32F4_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level) {
     switch (level) {
-    case TinyCLR_Power_SleepLevel::Hibernate:
+    case TinyCLR_Power_SleepLevel::Level2:
         //TODO
         return;
 
-    case TinyCLR_Power_SleepLevel::Off:
+    case TinyCLR_Power_SleepLevel::Level4:
         // TODO
         return;
 
