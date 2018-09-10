@@ -13,7 +13,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices
     static TinyCLR_Result WriteRead___VOID__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4__BOOLEAN(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Acquire___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Release___VOID(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result SetActiveSettings___VOID__I4__BOOLEAN__I4__I4__GHIElectronicsTinyCLRDevicesSpiSpiMode(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result SetActiveSettings___VOID__I4__GHIElectronicsTinyCLRDevicesSpiSpiChipSelectType__I4__I4__GHIElectronicsTinyCLRDevicesSpiSpiMode(const TinyCLR_Interop_MethodData md);
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_Provider_SpiControllerSoftwareProvider {
@@ -29,7 +29,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings {
-    static const size_t FIELD___UseControllerChipSelect__BackingField___BOOLEAN = 1;
+    static const size_t FIELD___ChipSelectType__BackingField___GHIElectronicsTinyCLRDevicesSpiSpiChipSelectType = 1;
     static const size_t FIELD___ChipSelectLine__BackingField___I4 = 2;
     static const size_t FIELD___ClockFrequency__BackingField___I4 = 3;
     static const size_t FIELD___DataBitLength__BackingField___I4 = 4;

@@ -18,7 +18,7 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
     nullptr,
     Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_Provider_SpiControllerApiWrapper::Acquire___VOID,
     Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_Provider_SpiControllerApiWrapper::Release___VOID,
-    Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_Provider_SpiControllerApiWrapper::SetActiveSettings___VOID__I4__BOOLEAN__I4__I4__GHIElectronicsTinyCLRDevicesSpiSpiMode,
+    Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_Provider_SpiControllerApiWrapper::SetActiveSettings___VOID__I4__GHIElectronicsTinyCLRDevicesSpiSpiChipSelectType__I4__I4__GHIElectronicsTinyCLRDevicesSpiSpiMode,
     nullptr,
     nullptr,
     nullptr,
@@ -68,6 +68,6 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
 
 const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices_Spi = {
     "GHIElectronics.TinyCLR.Devices.Spi",
-    0x8870BE6A,
+    0xE4A651C1,
     methods
 };

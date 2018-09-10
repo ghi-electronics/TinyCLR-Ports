@@ -108,10 +108,10 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR
     }
 
     auto chipSelectLine = args[0].Data.Numeric->I4;
-    auto useControllerChipSelect = args[1].Data.Numeric->Boolean;
+    auto chipSelectType = static_cast<TinyCLR_Spi_ChipSelectType>(args[1].Data.Numeric->I4);
     auto clockFrequency = args[2].Data.Numeric->I4;
     auto dataBitLength = args[3].Data.Numeric->I4;
     auto mode = static_cast<TinyCLR_Spi_Mode>(args[4].Data.Numeric->I4);
 
-    return  api->SetActiveSettings(api, chipSelectLine, useControllerChipSelect, clockFrequency, dataBitLength, mode);
+    return api->SetActiveSettings(api, chipSelectLine, chipSelectType, clockFrequency, dataBitLength, mode);
 }
