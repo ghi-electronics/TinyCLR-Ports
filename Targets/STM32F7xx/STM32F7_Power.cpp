@@ -73,7 +73,7 @@ void STM32F7_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
     apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::PowerController, powerApi[0].Name);
 }
 
-void STM32F7_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level, TinyCLR_Power_SleepWakeSource wakeSource) {
+TinyCLR_Result STM32F7_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level, TinyCLR_Power_SleepWakeSource wakeSource) {
     uint32_t tmpreg = 0;
     switch (level) {
 
@@ -95,7 +95,7 @@ void STM32F7_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_Sle
         /* Request Wait For Interrupt */
         __WFI();
 
-        return;
+        return TinyCLR_Result::Success;
 
     case TinyCLR_Power_SleepLevel::Level2: // standby
         /* Select Standby mode */
@@ -107,7 +107,7 @@ void STM32F7_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_Sle
         /* Request Wait For Interrupt */
         __WFI();
 
-        return;
+        return TinyCLR_Result::Success;
 
     default: // sleep
         CLEAR_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPDEEP_Msk));
@@ -115,11 +115,11 @@ void STM32F7_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_Sle
         /* Request Wait For Interrupt */
         __WFI();
 
-        return;
+        return TinyCLR_Result::Success;
     }
 }
 
-void STM32F7_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {
+TinyCLR_Result STM32F7_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {
 #if defined BOOTLOADER_HOLD_VALUE && defined BOOTLOADER_HOLD_ADDRESS && BOOTLOADER_HOLD_ADDRESS > 0
     if (!runCoreAfter)
         *((uint32_t*)BOOTLOADER_HOLD_ADDRESS) = BOOTLOADER_HOLD_VALUE;
@@ -129,6 +129,8 @@ void STM32F7_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter
         | (1 << SCB_AIRCR_SYSRESETREQ_Pos); // reset request
 
     while (1); // wait for reset
+
+    TinyCLR_Result::InvalidOperation;
 }
 
 TinyCLR_Result STM32F7_Power_Initialize(const TinyCLR_Power_Controller* self) {

@@ -400,8 +400,8 @@ void LPC17_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_t 
 void LPC17_Power_AddApi(const TinyCLR_Api_Manager* apiManager);
 const TinyCLR_Api_Info* LPC17_Power_GetRequiredApi();
 void LPC17_Power_SetHandlers(void(*stop)(), void(*restart)());
-void LPC17_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level, TinyCLR_Power_SleepWakeSource wakeSource);
-void LPC17_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter);
+TinyCLR_Result LPC17_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level, TinyCLR_Power_SleepWakeSource wakeSource);
+TinyCLR_Result LPC17_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter);
 TinyCLR_Result LPC17_Power_Initialize(const TinyCLR_Power_Controller* self);
 TinyCLR_Result LPC17_Power_Uninitialize(const TinyCLR_Power_Controller* self);
 

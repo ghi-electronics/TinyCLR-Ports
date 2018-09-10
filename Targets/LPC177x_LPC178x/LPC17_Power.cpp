@@ -83,14 +83,14 @@ void LPC17_Power_SetHandlers(void(*stop)(), void(*restart)()) {
     PowerRestartHandler = restart;
 }
 
-void LPC17_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level, TinyCLR_Power_SleepWakeSource wakeSource) {
+TinyCLR_Result LPC17_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level, TinyCLR_Power_SleepWakeSource wakeSource) {
     switch (level) {
 
     case TinyCLR_Power_SleepLevel::Level2: // stop
         if (PowerStopHandler != 0)
             PowerStopHandler();
 
-        return;
+        return TinyCLR_Result::Success;
 
     case TinyCLR_Power_SleepLevel::Level4: // standby
         // stop peripherals if needed
@@ -98,17 +98,18 @@ void LPC17_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_Sleep
             PowerStopHandler();
 
         __WFI(); // soft power off, never returns
-        return;
+
+        return TinyCLR_Result::Success;
 
     default: // sleep
         LPC_SC->PCON &= ~(LPC_SC_PCON_PM0_Msk | LPC_SC_PCON_PM1_Msk); // clear PM0 and PM1 to 0 => sleep
         __WFI(); // sleep and wait for interrupt
 
-        return;
+        return TinyCLR_Result::Success;
     }
 }
 
-void LPC17_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {
+TinyCLR_Result LPC17_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {
 #if defined RAM_BOOTLOADER_HOLD_VALUE && defined RAM_BOOTLOADER_HOLD_ADDRESS && RAM_BOOTLOADER_HOLD_ADDRESS > 0
     if (!runCoreAfter)
         *((uint32_t*)RAM_BOOTLOADER_HOLD_ADDRESS) = RAM_BOOTLOADER_HOLD_VALUE;
@@ -121,6 +122,8 @@ void LPC17_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) 
         | (1 << SCB_AIRCR_SYSRESETREQ_Pos); // reset request
 
     while (1); // wait for reset
+
+    return TinyCLR_Result::InvalidOperation;
 }
 
 TinyCLR_Result LPC17_Power_Initialize(const TinyCLR_Power_Controller* self) {

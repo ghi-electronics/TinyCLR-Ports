@@ -79,30 +79,30 @@ void LPC24_Power_SetHandlers(void(*stop)(), void(*restart)()) {
     PowerRestartHandler = restart;
 }
 
-void LPC24_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level, TinyCLR_Power_SleepWakeSource wakeSource) {
+TinyCLR_Result LPC24_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level, TinyCLR_Power_SleepWakeSource wakeSource) {
     switch (level) {
 
     case TinyCLR_Power_SleepLevel::Level2: // stop
         if (PowerStopHandler != 0)
             PowerStopHandler();
 
-        return;
+        return TinyCLR_Result::Success;
 
     case TinyCLR_Power_SleepLevel::Level4: // standby
         // stop peripherals if needed
         if (PowerStopHandler != 0)
             PowerStopHandler();
 
-        return;
+        return TinyCLR_Result::Success;
 
     default: // sleep
         PCON |= 1;
 
-        return;
+        return TinyCLR_Result::Success;
     }
 }
 
-void LPC24_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {
+TinyCLR_Result LPC24_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {
 #if defined RAM_BOOTLOADER_HOLD_VALUE && defined RAM_BOOTLOADER_HOLD_ADDRESS && RAM_BOOTLOADER_HOLD_ADDRESS > 0
     if (!runCoreAfter) {
         //See section 1.9 of UM10211.pdf. A write-back buffer holds the last written value. Two writes guarantee it'll appear after a reset.
@@ -125,6 +125,8 @@ void LPC24_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) 
     WTDG.WDFEED = LPC24XX_WATCHDOG::WDFEED_reload_2;
 
     while (1); // wait for reset
+
+    return TinyCLR_Result::InvalidOperation;
 }
 
 TinyCLR_Result LPC24_Power_Initialize(const TinyCLR_Power_Controller* self) {

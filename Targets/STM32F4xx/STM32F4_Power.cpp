@@ -70,25 +70,25 @@ void STM32F4_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
     apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::PowerController, powerApi[0].Name);
 }
 
-void STM32F4_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level, TinyCLR_Power_SleepWakeSource wakeSource) {
+TinyCLR_Result STM32F4_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level, TinyCLR_Power_SleepWakeSource wakeSource) {
     switch (level) {
     case TinyCLR_Power_SleepLevel::Level2:
         //TODO
-        return;
+        return TinyCLR_Result::NotImplemented;
 
     case TinyCLR_Power_SleepLevel::Level4:
         // TODO
-        return;
+        return TinyCLR_Result::NotImplemented;
 
     default:
         PWR->CR |= PWR_CR_CWUF;
 
         __WFI(); // sleep and wait for interrupt
-        return;
+        return TinyCLR_Result::Success;
     }
 }
 
-void STM32F4_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {
+TinyCLR_Result STM32F4_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {
 #if defined BOOTLOADER_HOLD_VALUE && defined BOOTLOADER_HOLD_ADDRESS && BOOTLOADER_HOLD_ADDRESS > 0
     if (!runCoreAfter)
         *((uint32_t*)BOOTLOADER_HOLD_ADDRESS) = BOOTLOADER_HOLD_VALUE;
@@ -98,6 +98,8 @@ void STM32F4_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter
         | (1 << SCB_AIRCR_SYSRESETREQ_Pos); // reset request
 
     while (1); // wait for reset
+
+    TinyCLR_Result::InvalidOperation;
 }
 
 TinyCLR_Result STM32F4_Power_Initialize(const TinyCLR_Power_Controller* self) {
