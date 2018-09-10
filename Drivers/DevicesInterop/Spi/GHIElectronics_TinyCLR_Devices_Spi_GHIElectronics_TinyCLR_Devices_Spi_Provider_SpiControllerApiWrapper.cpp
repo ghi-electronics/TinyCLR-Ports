@@ -98,7 +98,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR
     return  api->Release(api);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_Provider_SpiControllerApiWrapper::SetActiveSettings___VOID__I4__BOOLEAN__I4__I4__GHIElectronicsTinyCLRDevicesSpiSpiMode(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_Provider_SpiControllerApiWrapper::SetActiveSettings___VOID__I4__GHIElectronicsTinyCLRDevicesSpiSpiChipSelectType__I4__I4__GHIElectronicsTinyCLRDevicesSpiSpiMode(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Spi_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue args[5];
