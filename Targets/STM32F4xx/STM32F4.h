@@ -66,7 +66,7 @@ const TinyCLR_Api_Info* STM32F4_Power_GetRequiredApi();
 TinyCLR_Result STM32F4_Power_Initialize(const TinyCLR_Power_Controller* self);
 TinyCLR_Result STM32F4_Power_Uninitialize(const TinyCLR_Power_Controller* self);
 void STM32F4_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter);
-void STM32F4_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level);
+void STM32F4_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level, TinyCLR_Power_SleepWakeSource wakeSource);
 
 ////////////////////////////////////////////////////////////////////////////////
 //Time

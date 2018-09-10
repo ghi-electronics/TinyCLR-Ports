@@ -73,7 +73,7 @@ void STM32F7_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
     apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::PowerController, powerApi[0].Name);
 }
 
-void STM32F7_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level) {
+void STM32F7_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level, TinyCLR_Power_SleepWakeSource wakeSource) {
     uint32_t tmpreg = 0;
     switch (level) {
 
