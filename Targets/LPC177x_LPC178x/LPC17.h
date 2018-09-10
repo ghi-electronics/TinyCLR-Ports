@@ -260,7 +260,7 @@ bool LPC17_Spi_Transaction_Stop(int32_t controllerIndex);
 bool LPC17_Spi_Transaction_nWrite8_nRead8(int32_t controllerIndex);
 TinyCLR_Result LPC17_Spi_Acquire(const TinyCLR_Spi_Controller* self);
 TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Controller* self);
-TinyCLR_Result LPC17_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, uint32_t chipSelectLine, bool useControllerChipSelect, uint32_t clockFrequency, uint32_t dataBitLength, TinyCLR_Spi_Mode mode);
+TinyCLR_Result LPC17_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, uint32_t chipSelectLine, TinyCLR_Spi_ChipSelectType chipSelectType, uint32_t clockFrequency, uint32_t dataBitLength, TinyCLR_Spi_Mode mode);
 TinyCLR_Result LPC17_Spi_Read(const TinyCLR_Spi_Controller* self, uint8_t* buffer, size_t& length);
 TinyCLR_Result LPC17_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8_t* buffer, size_t& length);
 TinyCLR_Result LPC17_Spi_WriteRead(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter);
