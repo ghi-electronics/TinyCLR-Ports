@@ -350,7 +350,8 @@ TinyCLR_Result LPC24_Deployment_Open(const TinyCLR_Storage_Controller* self) {
     state->storageDescriptor.CanExecuteDirect = true;
     state->storageDescriptor.EraseBeforeWrite = true;
     state->storageDescriptor.Removable = false;
-    state->storageDescriptor.RegionsRepeat = true;
+    state->storageDescriptor.RegionsContiguous = false;
+    state->storageDescriptor.RegionsEqualSized = false;
 
     for (auto i = 0; i < DEPLOYMENT_SECTOR_NUM; i++) {
         state->regionAddresses[i] = flashAddresses[DEPLOYMENT_SECTOR_START + i];
