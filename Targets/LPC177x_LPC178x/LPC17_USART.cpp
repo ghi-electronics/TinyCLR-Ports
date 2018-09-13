@@ -439,7 +439,7 @@ void LPC17_Uart_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error)
     auto state = &uartStates[controllerIndex];
 
     if (state->errorEventHandler != nullptr)
-        state->errorEventHandler(state->controller, error);
+        state->errorEventHandler(state->controller, error, LPC17_Time_GetCurrentProcessorTime());
 }
 
 void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t IIR_Value, bool canPostEvent) {
@@ -474,26 +474,25 @@ void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
                         if (canPostEvent) {
                             if (state->rxBufferCount > state->lastEventRxBufferCount) {
                                 // if driver hold event long enough that more than 1 byte
-                                state->dataReceivedEventHandler(state->controller, state->rxBufferCount - state->lastEventRxBufferCount);
+                                state->dataReceivedEventHandler(state->controller, state->rxBufferCount - state->lastEventRxBufferCount, LPC17_Time_GetCurrentProcessorTime());
                             }
                             else {
                                 // if user use poll to read data and rxBufferCount <= lastEventRxBufferCount, driver send at least 1 byte comming
-                                state->dataReceivedEventHandler(state->controller, 1);
+                                state->dataReceivedEventHandler(state->controller, 1, LPC17_Time_GetCurrentProcessorTime());
                             }
 
                             state->lastEventRxBufferCount = state->rxBufferCount;
-                        }
-                }
+                        }                }
 
                 LSR_Value = USARTC.UART_LSR;
 
                 if (LSR_Value & 0x04) {
                     if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveParity);
                 }
-                else if ((LSR_Value & 0x08) || (LSR_Value & 0x80)) {
+                else if ((LSR_Value & 0x08) || (LSR_Value & 0x80)) {                    
                     if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
                 }
-                else if (LSR_Value & 0x02) {
+                else if (LSR_Value & 0x02) {                    
                     if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
                 }
             } while (LSR_Value & LPC17xx_USART::UART_LSR_RFDR);
@@ -548,16 +547,16 @@ void UART_IntHandler(int controllerIndex) {
         volatile bool dump = USARTC.UART_MSR; // Clr status register
     }
 
-    if (LSR_Value & 0x04) {
+    if (LSR_Value & 0x04) {        
         if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveParity);
     }
-    else if ((LSR_Value & 0x08) || (LSR_Value & 0x80)) {
+    else if ((LSR_Value & 0x08) || (LSR_Value & 0x80)) {        
         if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
     }
-    else if (LSR_Value & 0x02) {
+    else if (LSR_Value & 0x02) {        
         if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
     }
-
+    
     LPC17_Uart_ReceiveData(controllerIndex, LSR_Value, IIR_Value, canPostEvent);
 
     LPC17_Uart_TransmitData(controllerIndex, LSR_Value, IIR_Value);

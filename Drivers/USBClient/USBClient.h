@@ -203,6 +203,7 @@ bool TinyCLR_UsbClient_Uninitialize(UsClientState* usClientState);
 bool TinyCLR_UsbClient_StartOutput(UsClientState* usClientState, int32_t endpoint);
 bool TinyCLR_UsbClient_RxEnable(UsClientState* usClientState, int32_t endpoint);
 void TinyCLR_UsbClient_Delay(uint64_t microseconds);
+uint64_t TinyCLR_UsbClient_Now();
 TinyCLR_Result TinyCLR_UsbClient_GetControllerCount(const TinyCLR_UsbClient_Controller* self, int32_t& count);
 
 void TinyCLR_UsbClient_InitializeConfiguration(UsClientState *usClientState);

@@ -269,7 +269,7 @@ void LPC24_Uart_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error)
     auto state = &uartStates[controllerIndex];
 
     if (state->errorEventHandler != nullptr)
-        state->errorEventHandler(state->controller, error);
+        state->errorEventHandler(state->controller, error, LPC24_Time_GetCurrentProcessorTime());
 }
 
 void LPC24_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t IIR_Value, bool canPostEvent) {
@@ -305,11 +305,11 @@ void LPC24_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
                         if (canPostEvent) {
                             if (state->rxBufferCount > state->lastEventRxBufferCount) {
                                 // if driver hold event long enough that more than 1 byte
-                                state->dataReceivedEventHandler(state->controller, state->rxBufferCount - state->lastEventRxBufferCount);
+                                state->dataReceivedEventHandler(state->controller, state->rxBufferCount - state->lastEventRxBufferCount, LPC24_Time_GetCurrentProcessorTime());
                             }
                             else {
                                 // if user use poll to read data and rxBufferCount <= lastEventRxBufferCount, driver send at least 1 byte comming
-                                state->dataReceivedEventHandler(state->controller, 1);
+                                state->dataReceivedEventHandler(state->controller, 1, LPC24_Time_GetCurrentProcessorTime());
                             }
 
                             state->lastEventRxBufferCount = state->rxBufferCount;

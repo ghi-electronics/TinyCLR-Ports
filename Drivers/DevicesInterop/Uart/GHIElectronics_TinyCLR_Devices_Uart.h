@@ -4,14 +4,17 @@
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCLR_Devices_Uart_ClearToSendChangedEventArgs {
     static const size_t FIELD___State__BackingField___BOOLEAN = 1;
+    static const size_t FIELD___Timestamp__BackingField___mscorlibSystemDateTime = 2;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCLR_Devices_Uart_DataReceivedEventArgs {
     static const size_t FIELD___Count__BackingField___I4 = 1;
+    static const size_t FIELD___Timestamp__BackingField___mscorlibSystemDateTime = 2;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCLR_Devices_Uart_ErrorReceivedEventArgs {
     static const size_t FIELD___Error__BackingField___GHIElectronicsTinyCLRDevicesUartUartError = 1;
+    static const size_t FIELD___Timestamp__BackingField___mscorlibSystemDateTime = 2;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper {

@@ -274,7 +274,7 @@ void STM32F4_Uart_InterruptHandler(int8_t controllerIndex) {
             if (state->rxBufferCount == state->rxBufferSize) {
                 if ((state->errorEvent & (1 << (uint8_t)TinyCLR_Uart_Error::BufferFull)) == 0) {
                     state->errorEvent |= (1 << (uint8_t)TinyCLR_Uart_Error::BufferFull);
-                    if (canPostEvent) state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferFull);
+                    if (canPostEvent) state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferFull, STM32F4_Time_GetCurrentProcessorTime());
                 }
             }
             else
@@ -283,7 +283,7 @@ void STM32F4_Uart_InterruptHandler(int8_t controllerIndex) {
             if (sr & USART_SR_ORE) {
                 if ((state->errorEvent & (1 << (uint8_t)TinyCLR_Uart_Error::Overrun)) == 0) {
                     state->errorEvent |= (1 << (uint8_t)TinyCLR_Uart_Error::Overrun);
-                    if (canPostEvent) state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Overrun);
+                    if (canPostEvent) state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Overrun, STM32F4_Time_GetCurrentProcessorTime());
                 }
             }
             else
@@ -292,7 +292,7 @@ void STM32F4_Uart_InterruptHandler(int8_t controllerIndex) {
             if (sr & USART_SR_FE) {
                 if ((state->errorEvent & (1 << (uint8_t)TinyCLR_Uart_Error::Frame)) == 0) {
                     state->errorEvent |= (1 << (uint8_t)TinyCLR_Uart_Error::Frame);
-                    if (canPostEvent) state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Frame);
+                    if (canPostEvent) state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Frame, STM32F4_Time_GetCurrentProcessorTime());
                 }
             }
             else
@@ -301,7 +301,7 @@ void STM32F4_Uart_InterruptHandler(int8_t controllerIndex) {
             if (sr & USART_SR_PE) {
                 if ((state->errorEvent & (1 << (uint8_t)TinyCLR_Uart_Error::ReceiveParity)) == 0) {
                     state->errorEvent |= (1 << (uint8_t)TinyCLR_Uart_Error::ReceiveParity);
-                    if (canPostEvent) state->errorEventHandler(state->controller, TinyCLR_Uart_Error::ReceiveParity);
+                    if (canPostEvent) state->errorEventHandler(state->controller, TinyCLR_Uart_Error::ReceiveParity, STM32F4_Time_GetCurrentProcessorTime());
                 }
             }
             else
@@ -321,11 +321,11 @@ void STM32F4_Uart_InterruptHandler(int8_t controllerIndex) {
                 if (canPostEvent) {
                     if (state->rxBufferCount > state->lastEventRxBufferCount) {
                         // if driver hold event long enough that more than 1 byte
-                        state->dataReceivedEventHandler(state->controller, state->rxBufferCount - state->lastEventRxBufferCount);
+                        state->dataReceivedEventHandler(state->controller, state->rxBufferCount - state->lastEventRxBufferCount, STM32F4_Time_GetCurrentProcessorTime());
                     }
                     else {
                         // if user use poll to read data and rxBufferCount <= lastEventRxBufferCount, driver send at least 1 byte comming
-                        state->dataReceivedEventHandler(state->controller, 1);
+                        state->dataReceivedEventHandler(state->controller, 1, STM32F4_Time_GetCurrentProcessorTime());
                     }
 
                     state->lastEventRxBufferCount = state->rxBufferCount;
@@ -833,7 +833,7 @@ TinyCLR_Result STM32F4_Uart_Write(const TinyCLR_Uart_Controller* self, const uin
 
     if (state->txBufferCount == state->txBufferSize) {
         if (state->errorEventHandler != nullptr)
-            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferFull);
+            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferFull, STM32F4_Time_GetCurrentProcessorTime());
 
         return TinyCLR_Result::Success;
     }

@@ -1,34 +1,34 @@
 #include "GHIElectronics_TinyCLR_Devices_Uart.h"
 #include "../GHIElectronics_TinyCLR_InteropUtil.h"
 
-void TinyCLR_Uart_DataReceivedIsr(const TinyCLR_Uart_Controller* self, size_t count) {
+void TinyCLR_Uart_DataReceivedIsr(const TinyCLR_Uart_Controller* self, size_t count, uint64_t timestamp) {
     extern const TinyCLR_Api_Manager* apiManager;
     auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::InteropManager));
 
     int32_t controllerIndex = *(reinterpret_cast<int32_t*>(self->ApiInfo->State));
 
     if (interopProvider != nullptr)
-        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Uart.DataReceived", self->ApiInfo->Name, (uint64_t)count, 0, 0, 0);
+        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Uart.DataReceived", self->ApiInfo->Name, (uint64_t)count, 0, 0, 0, timestamp);
 }
 
-void TinyCLR_Uart_ErrorReceivedIsr(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_Error error) {
+void TinyCLR_Uart_ErrorReceivedIsr(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_Error error, uint64_t timestamp) {
     extern const TinyCLR_Api_Manager* apiManager;
     auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::InteropManager));
 
     int32_t controllerIndex = *(reinterpret_cast<int32_t*>(self->ApiInfo->State));
 
     if (interopProvider != nullptr)
-        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Uart.ErrorReceived", self->ApiInfo->Name, (uint64_t)error, 0, 0, 0);
+        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Uart.ErrorReceived", self->ApiInfo->Name, (uint64_t)error, 0, 0, 0, timestamp);
 }
 
-void TinyCLR_Uart_ClearToSendIsr(const TinyCLR_Uart_Controller* self, bool state) {
+void TinyCLR_Uart_ClearToSendIsr(const TinyCLR_Uart_Controller* self, bool state, uint64_t timestamp) {
     extern const TinyCLR_Api_Manager* apiManager;
     auto interopProvider = reinterpret_cast<const TinyCLR_Interop_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::InteropManager));
 
     int32_t controllerIndex = *(reinterpret_cast<int32_t*>(self->ApiInfo->State));
 
     if (interopProvider != nullptr)
-        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Uart.ClearToSendChanged", self->ApiInfo->Name, (uint64_t)state, 0, 0, 0);
+        interopProvider->RaiseEvent(interopProvider, "GHIElectronics.TinyCLR.NativeEventNames.Uart.ClearToSendChanged", self->ApiInfo->Name, (uint64_t)state, 0, 0, 0, timestamp);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::get_WriteBufferSize___I4(const TinyCLR_Interop_MethodData md) {
