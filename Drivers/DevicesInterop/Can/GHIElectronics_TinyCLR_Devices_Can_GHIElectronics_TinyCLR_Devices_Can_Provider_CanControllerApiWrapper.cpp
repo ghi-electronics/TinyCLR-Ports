@@ -1,17 +1,17 @@
 #include "GHIElectronics_TinyCLR_Devices_Can.h"
 #include "../GHIElectronics_TinyCLR_InteropUtil.h"
 
-static void TinyCLR_Can_ErrorReceivedIsr(const TinyCLR_Can_Controller* self, TinyCLR_Can_Error error) {
+static void TinyCLR_Can_ErrorReceivedIsr(const TinyCLR_Can_Controller* self, TinyCLR_Can_Error error, uint64_t timestamp) {
     extern const TinyCLR_Api_Manager* apiManager;
     auto interopManager = reinterpret_cast<const TinyCLR_Interop_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::InteropManager));
 
     auto controllerIndex = *(reinterpret_cast<int32_t*>(self->ApiInfo->State));
 
     if (interopManager != nullptr)
-        interopManager->RaiseEvent(interopManager, "GHIElectronics.TinyCLR.NativeEventNames.Can.ErrorReceived", self->ApiInfo->Name, (uint64_t)error, 0, 0, 0);
+        interopManager->RaiseEvent(interopManager, "GHIElectronics.TinyCLR.NativeEventNames.Can.ErrorReceived", self->ApiInfo->Name, (uint64_t)error, 0, 0, 0, timestamp);
 }
 
-static void TinyCLR_Can_MessageReceivedIsr(const TinyCLR_Can_Controller* self, size_t count) {
+static void TinyCLR_Can_MessageReceivedIsr(const TinyCLR_Can_Controller* self, size_t count, uint64_t timestamp) {
     extern const TinyCLR_Api_Manager* apiManager;
 
     auto interopManager = reinterpret_cast<const TinyCLR_Interop_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::InteropManager));
@@ -19,7 +19,7 @@ static void TinyCLR_Can_MessageReceivedIsr(const TinyCLR_Can_Controller* self, s
     auto controllerIndex = *(reinterpret_cast<int32_t*>(self->ApiInfo->State));
 
     if (interopManager != nullptr)
-        interopManager->RaiseEvent(interopManager, "GHIElectronics.TinyCLR.NativeEventNames.Can.MessageReceived", self->ApiInfo->Name, (uint64_t)count, 0, 0, 0);
+        interopManager->RaiseEvent(interopManager, "GHIElectronics.TinyCLR.NativeEventNames.Can.MessageReceived", self->ApiInfo->Name, (uint64_t)count, 0, 0, 0, timestamp);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_WriteBufferSize___I4(const TinyCLR_Interop_MethodData md) {
