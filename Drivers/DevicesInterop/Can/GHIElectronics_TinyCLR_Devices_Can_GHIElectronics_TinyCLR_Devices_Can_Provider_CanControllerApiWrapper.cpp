@@ -282,7 +282,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR
         md.InteropManager->GetField(md.InteropManager, msgObj, Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_CanMessage::FIELD___Length__BackingField___I4, fldLen);
         md.InteropManager->GetField(md.InteropManager, msgObj, Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_CanMessage::FIELD___IsRemoteTransmissionRequest__BackingField___BOOLEAN, fldRtr);
         md.InteropManager->GetField(md.InteropManager, msgObj, Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_CanMessage::FIELD___IsExtendedId__BackingField___BOOLEAN, fldEid);
-        md.InteropManager->GetField(md.InteropManager, msgObj, Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_CanMessage::FIELD___TimeStamp__BackingField___mscorlibSystemDateTime, fldts);
+        md.InteropManager->GetField(md.InteropManager, msgObj, Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_CanMessage::FIELD___Timestamp__BackingField___mscorlibSystemDateTime, fldts);
 
         data = reinterpret_cast<uint8_t*>(fldData.Data.SzArray.Data);
 
