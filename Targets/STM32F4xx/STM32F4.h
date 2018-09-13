@@ -76,6 +76,7 @@ const TinyCLR_Api_Info* STM32F4_Time_GetRequiredApi();
 TinyCLR_Result STM32F4_Time_Initialize(const TinyCLR_NativeTime_Controller* self);
 TinyCLR_Result STM32F4_Time_Uninitialize(const TinyCLR_NativeTime_Controller* self);
 uint64_t STM32F4_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self);
+uint64_t STM32F4_Time_GetCurrentProcessorTime();
 uint64_t STM32F4_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Controller* self, uint64_t ticks);
 uint64_t STM32F4_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Controller* self, uint64_t time);
 TinyCLR_Result STM32F4_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* self, TinyCLR_NativeTime_Callback callback);

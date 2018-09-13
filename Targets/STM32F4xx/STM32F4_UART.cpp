@@ -254,7 +254,7 @@ void STM32F4_Uart_IrqRx(int controllerIndex, uint16_t sr) {
 
     if (state->rxBufferCount == state->rxBufferSize) {
         if (state->errorEventHandler != nullptr)
-            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferFull);
+            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferFull, STM32F4_Time_GetCurrentProcessorTime());
 
         return;
     }
@@ -267,17 +267,17 @@ void STM32F4_Uart_IrqRx(int controllerIndex, uint16_t sr) {
         state->rxBufferIn = 0;
 
     if (state->dataReceivedEventHandler != nullptr)
-        state->dataReceivedEventHandler(state->controller, 1);
+        state->dataReceivedEventHandler(state->controller, 1, STM32F4_Time_GetCurrentProcessorTime());
 
     if (state->errorEventHandler != nullptr) {
         if (sr & USART_SR_ORE)
-            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Overrun);
+            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Overrun, STM32F4_Time_GetCurrentProcessorTime());
 
         if (sr & USART_SR_FE)
-            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Frame);
+            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Frame, STM32F4_Time_GetCurrentProcessorTime());
 
         if (sr & USART_SR_PE)
-            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::ReceiveParity);
+            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::ReceiveParity, STM32F4_Time_GetCurrentProcessorTime());
     }
 }
 
@@ -809,7 +809,7 @@ TinyCLR_Result STM32F4_Uart_Write(const TinyCLR_Uart_Controller* self, const uin
 
     if (state->txBufferCount == state->txBufferSize) {
         if (state->errorEventHandler != nullptr)
-            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferFull);
+            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferFull, STM32F4_Time_GetCurrentProcessorTime());
 
         return TinyCLR_Result::Success;
     }
