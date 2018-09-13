@@ -4,6 +4,7 @@
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_PresenceChangedEventArgs {
     static const size_t FIELD___Present__BackingField___BOOLEAN = 1;
+    static const size_t FIELD___Timestamp__BackingField___mscorlibSystemDateTime = 2;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper {

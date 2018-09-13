@@ -28,10 +28,12 @@ struct Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_ErrorReceivedEventArgs {
     static const size_t FIELD___Error__BackingField___GHIElectronicsTinyCLRDevicesCanCanError = 1;
+    static const size_t FIELD___Timestamp__BackingField___mscorlibSystemDateTime = 2;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_MessageReceivedEventArgs {
     static const size_t FIELD___Count__BackingField___I4 = 1;
+    static const size_t FIELD___Timestamp__BackingField___mscorlibSystemDateTime = 2;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper {

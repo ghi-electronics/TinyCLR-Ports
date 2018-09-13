@@ -15,6 +15,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Device
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_GpioPinValueChangedEventArgs {
     static const size_t FIELD___Edge__BackingField___GHIElectronicsTinyCLRDevicesGpioGpioPinEdge = 1;
+    static const size_t FIELD___Timestamp__BackingField___mscorlibSystemDateTime = 2;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper {

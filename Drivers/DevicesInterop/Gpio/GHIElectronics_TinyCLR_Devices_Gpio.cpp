@@ -46,6 +46,7 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
     nullptr,
     nullptr,
     nullptr,
+    nullptr,
     Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::get_PinCount___I4,
     Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::OpenPin___VOID__I4,
     Interop_GHIElectronics_TinyCLR_Devices_Gpio_GHIElectronics_TinyCLR_Devices_Gpio_Provider_GpioControllerApiWrapper::ClosePin___VOID__I4,
@@ -70,6 +71,6 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
 
 const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices_Gpio = {
     "GHIElectronics.TinyCLR.Devices.Gpio",
-    0xE845C447,
+    0x25584CBD,
     methods
 };
