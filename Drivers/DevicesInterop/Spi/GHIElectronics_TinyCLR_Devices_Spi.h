@@ -10,10 +10,10 @@ struct Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices
     static TinyCLR_Result get_MinClockFrequency___I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_MaxClockFrequency___I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_SupportedDataBitLengths___SZARRAY_I4(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result SetActiveSettings___VOID__GHIElectronicsTinyCLRDevicesSpiSpiConnectionSettings(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result WriteRead___VOID__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4__BOOLEAN(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Acquire___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Release___VOID(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result SetActiveSettings___VOID__I4__GHIElectronicsTinyCLRDevicesSpiSpiChipSelectType__I4__I4__GHIElectronicsTinyCLRDevicesSpiSpiMode(const TinyCLR_Interop_MethodData md);
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_Provider_SpiControllerSoftwareProvider {

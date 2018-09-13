@@ -63,14 +63,16 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR
     return api->Release(api);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR_Devices_I2c_Provider_I2cControllerApiWrapper::SetActiveSettings___VOID__I4__GHIElectronicsTinyCLRDevicesI2cI2cAddressFormat__GHIElectronicsTinyCLRDevicesI2cI2cBusSpeed(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR_Devices_I2c_Provider_I2cControllerApiWrapper::SetActiveSettings___VOID__GHIElectronicsTinyCLRDevicesI2cI2cConnectionSettings(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_I2c_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
+    TinyCLR_Interop_ClrValue obj;
     TinyCLR_Interop_ClrValue args[3];
 
-    for (auto i = 0; i < sizeof(args) / sizeof(TinyCLR_Interop_ClrValue); i++) {
-        md.InteropManager->GetArgument(md.InteropManager, md.Stack, i, args[i]);
-    }
+    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, obj);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR_Devices_I2c_I2cConnectionSettings::FIELD___SlaveAddress__BackingField___I4, args[0]);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR_Devices_I2c_I2cConnectionSettings::FIELD___AddressFormat__BackingField___GHIElectronicsTinyCLRDevicesI2cI2cAddressFormat, args[1]);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR_Devices_I2c_I2cConnectionSettings::FIELD___BusSpeed__BackingField___GHIElectronicsTinyCLRDevicesI2cI2cBusSpeed, args[2]);
 
     auto slaveAddress = args[0].Data.Numeric->I4;
     auto addressFormat = static_cast<TinyCLR_I2c_AddressFormat>(args[1].Data.Numeric->I4);

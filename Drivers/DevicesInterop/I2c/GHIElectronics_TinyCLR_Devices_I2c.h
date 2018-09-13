@@ -28,10 +28,10 @@ struct Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR_Devices
     static const size_t FIELD___impl___I = 1;
     static const size_t FIELD___Api__BackingField___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeApi = 2;
 
+    static TinyCLR_Result SetActiveSettings___VOID__GHIElectronicsTinyCLRDevicesI2cI2cConnectionSettings(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result WriteRead___GHIElectronicsTinyCLRDevicesI2cI2cTransferStatus__SZARRAY_U1__I4__I4__SZARRAY_U1__I4__I4__BOOLEAN__BOOLEAN__BYREF_I4__BYREF_I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Acquire___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Release___VOID(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result SetActiveSettings___VOID__I4__GHIElectronicsTinyCLRDevicesI2cI2cAddressFormat__GHIElectronicsTinyCLRDevicesI2cI2cBusSpeed(const TinyCLR_Interop_MethodData md);
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR_Devices_I2c_Provider_I2cControllerSoftwareProvider {

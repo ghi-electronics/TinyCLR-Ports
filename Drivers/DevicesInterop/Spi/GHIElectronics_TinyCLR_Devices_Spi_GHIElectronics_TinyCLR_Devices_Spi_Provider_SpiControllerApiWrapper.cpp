@@ -98,14 +98,18 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR
     return  api->Release(api);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_Provider_SpiControllerApiWrapper::SetActiveSettings___VOID__I4__GHIElectronicsTinyCLRDevicesSpiSpiChipSelectType__I4__I4__GHIElectronicsTinyCLRDevicesSpiSpiMode(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_Provider_SpiControllerApiWrapper::SetActiveSettings___VOID__GHIElectronicsTinyCLRDevicesSpiSpiConnectionSettings(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Spi_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
+    TinyCLR_Interop_ClrValue obj;
     TinyCLR_Interop_ClrValue args[5];
 
-    for (auto i = 0; i < sizeof(args) / sizeof(TinyCLR_Interop_ClrValue); i++) {
-        md.InteropManager->GetArgument(md.InteropManager, md.Stack, i, args[i]);
-    }
+    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, obj);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings::FIELD___ChipSelectLine__BackingField___I4, args[0]);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings::FIELD___ChipSelectType__BackingField___GHIElectronicsTinyCLRDevicesSpiSpiChipSelectType, args[1]);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings::FIELD___ClockFrequency__BackingField___I4, args[2]);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings::FIELD___DataBitLength__BackingField___I4, args[3]);
+    md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings::FIELD___Mode__BackingField___GHIElectronicsTinyCLRDevicesSpiSpiMode, args[4]);
 
     auto chipSelectLine = args[0].Data.Numeric->I4;
     auto chipSelectType = static_cast<TinyCLR_Spi_ChipSelectType>(args[1].Data.Numeric->I4);
