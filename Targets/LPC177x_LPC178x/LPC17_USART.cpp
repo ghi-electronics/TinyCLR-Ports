@@ -426,7 +426,7 @@ void UART_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error) {
     auto state = &uartStates[controllerIndex];
 
     if (state->errorEventHandler != nullptr)
-        state->errorEventHandler(state->controller, error);
+        state->errorEventHandler(state->controller, error, LPC17_Time_GetCurrentProcessorTime());
 }
 
 void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t IIR_Value) {
@@ -459,7 +459,7 @@ void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
                         state->rxBufferIn = 0;
 
                     if (state->dataReceivedEventHandler != nullptr)
-                        state->dataReceivedEventHandler(state->controller, 1);
+                        state->dataReceivedEventHandler(state->controller, 1, LPC17_Time_GetCurrentProcessorTime());
                 }
 
                 LSR_Value = USARTC.UART_LSR;
