@@ -161,7 +161,7 @@ void AT91_Gpio_InterruptHandler(void* param) {
                 }
 
                 if (executeIsr)
-                    interruptState->handler(interruptState->controller, interruptState->pin, edge);
+                    interruptState->handler(interruptState->controller, interruptState->pin, edge, AT91_Time_GetCurrentProcessorTime());
             }
 
             interruptsActive ^= bitMask;
