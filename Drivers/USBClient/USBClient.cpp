@@ -37,7 +37,7 @@ void TinyCLR_UsbClient_SetEvent(UsClientState *usClientState, uint32_t event) {
     usClientState->event |= event;
 
     if (old_event != usClientState->event) {
-        TinyCLR_UsbClient_SetDataReceived(nullptr);
+        TinyCLR_UsbClient_SetDataReceived(nullptr, 0);
     }
 }
 
@@ -517,7 +517,7 @@ uint8_t TinyCLR_UsbClient_HandleConfigurationRequests(UsClientState* usClientSta
 
                 size_t responsePayloadLength = 0;
 
-                if (TinyCLR_UsbClient_SetGetDescriptor(&usbClientControllers[controllerIndex], Setup, responsePayload, responsePayloadLength) == TinyCLR_Result::Success) {
+                if (TinyCLR_UsbClient_SetGetDescriptor(&usbClientControllers[controllerIndex], Setup, responsePayload, responsePayloadLength, TinyCLR_UsbClient_Now()) == TinyCLR_Result::Success) {
                     memcpy(usClientState->controlEndpointBuffer, reinterpret_cast<uint8_t*>(const_cast<uint8_t*>(responsePayload)), responsePayloadLength);
                     usClientState->residualData = usClientState->controlEndpointBuffer;
                     usClientState->residualCount = __min(usClientState->expected, responsePayloadLength);
@@ -533,7 +533,7 @@ uint8_t TinyCLR_UsbClient_HandleConfigurationRequests(UsClientState* usClientSta
 
             size_t responsePayloadLength = 0;
 
-            if (TinyCLR_UsbClient_ProcessVendorClassRequest(&usbClientControllers[controllerIndex], Setup, responsePayload, responsePayloadLength) == TinyCLR_Result::Success) {
+            if (TinyCLR_UsbClient_ProcessVendorClassRequest(&usbClientControllers[controllerIndex], Setup, responsePayload, responsePayloadLength, TinyCLR_UsbClient_Now()) == TinyCLR_Result::Success) {
                 memcpy(usClientState->controlEndpointBuffer, reinterpret_cast<uint8_t*>(const_cast<uint8_t*>(responsePayload)), responsePayloadLength);
 
                 usClientState->residualData = usClientState->controlEndpointBuffer;
