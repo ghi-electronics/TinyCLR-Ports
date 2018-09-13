@@ -448,6 +448,7 @@ uint64_t LPC24_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Controller
 uint64_t LPC24_Time_MillisecondsToTicks(const TinyCLR_NativeTime_Controller* self, uint64_t ticks);
 uint64_t LPC24_Time_MicrosecondsToTicks(const TinyCLR_NativeTime_Controller* self, uint64_t microseconds);
 uint64_t LPC24_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self);
+uint64_t LPC24_Time_GetCurrentProcessorTime();
 TinyCLR_Result LPC24_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Controller* self, uint64_t processorTicks);
 TinyCLR_Result LPC24_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* self, TinyCLR_NativeTime_Callback callback);
 void LPC24_Time_Delay(const TinyCLR_NativeTime_Controller* self, uint64_t microseconds);

@@ -293,6 +293,10 @@ uint64_t AT91_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Controller*
     return AT91_Time_MicrosecondsToTicks(self, time / 10);
 }
 
+uint64_t AT91_Time_GetCurrentProcessorTime() {
+    return AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr));
+}
+
 uint64_t AT91_Time_MillisecondsToTicks(const TinyCLR_NativeTime_Controller* self, uint64_t ticks) {
     ticks *= (SLOW_CLOCKS_PER_SECOND / SLOW_CLOCKS_MILLISECOND_GCD);
     ticks /= (1000 / SLOW_CLOCKS_MILLISECOND_GCD);
