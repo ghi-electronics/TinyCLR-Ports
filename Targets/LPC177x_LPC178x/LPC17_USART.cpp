@@ -184,6 +184,8 @@ struct LPC17xx_USART {
     }
 };
 
+#define USART_EVENT_POST_DEBOUNCE_TICKS (5 * 10000) // 5ms between each events
+
 static const uint32_t uartTxDefaultBuffersSize[] = LPC17_UART_DEFAULT_TX_BUFFER_SIZE;
 static const uint32_t uartRxDefaultBuffersSize[] = LPC17_UART_DEFAULT_RX_BUFFER_SIZE;
 
@@ -214,6 +216,10 @@ struct UartState {
     bool tableInitialized;
 
     uint16_t initializeCount;
+
+    uint32_t errorEvent;
+    uint64_t lastEventTime;
+    size_t lastEventRxBufferCount;
 };
 
 #define SET_BITS(Var,Shift,Mask,fieldsMask) {Var = setFieldValue(Var,Shift,Mask,fieldsMask);}
@@ -369,6 +375,15 @@ TinyCLR_Result LPC17_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* self
     return TinyCLR_Result::Success;
 }
 
+bool LPC17_Uart_CanPostEvent(int8_t controllerIndex) {
+    auto state = reinterpret_cast<UartState*>(&uartStates[controllerIndex]);
+    bool canPost = (LPC17_Time_GetTimeForProcessorTicks(nullptr, LPC17_Time_GetCurrentProcessorTicks(nullptr)) - state->lastEventTime) > USART_EVENT_POST_DEBOUNCE_TICKS;
+
+    if (canPost) // only update new time if system accepts to post event!
+        state->lastEventTime = LPC17_Time_GetTimeForProcessorTicks(nullptr, LPC17_Time_GetCurrentProcessorTicks(nullptr));
+
+    return canPost;
+}
 
 void LPC17_Uart_PinConfiguration(int controllerIndex, bool enable) {
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -401,9 +416,7 @@ void LPC17_Uart_PinConfiguration(int controllerIndex, bool enable) {
 
             LPC17_Gpio_ConfigurePin(ctsPin, LPC17_Gpio_Direction::Input, ctsPinMode, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
             LPC17_Gpio_ConfigurePin(rtsPin, LPC17_Gpio_Direction::Input, rtsPinMode, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-
         }
-
     }
     else {
 
@@ -422,14 +435,14 @@ void LPC17_Uart_PinConfiguration(int controllerIndex, bool enable) {
     }
 }
 
-void UART_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error) {
+void LPC17_Uart_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error) {
     auto state = &uartStates[controllerIndex];
 
     if (state->errorEventHandler != nullptr)
         state->errorEventHandler(state->controller, error);
 }
 
-void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t IIR_Value) {
+void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t IIR_Value, bool canPostEvent) {
     INTERRUPT_STARTED_SCOPED(isr);
 
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -437,7 +450,6 @@ void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
     LPC17xx_USART& USARTC = LPC17xx_USART::UART(controllerIndex);
 
     auto state = &uartStates[controllerIndex];
-
     // Read data from Rx FIFO
     if (USARTC.SEL2.IER.UART_IER & (LPC17xx_USART::UART_IER_RDAIE)) {
         if ((LSR_Value & LPC17xx_USART::UART_LSR_RFDR) || (IIR_Value == LPC17xx_USART::UART_IIR_IID_Irpt_RDA) || (IIR_Value == LPC17xx_USART::UART_IIR_IID_Irpt_TOUT)) {
@@ -446,7 +458,7 @@ void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
 
                 if (0 == (LSR_Value & (LPC17xx_USART::UART_LSR_PEI | LPC17xx_USART::UART_LSR_OEI | LPC17xx_USART::UART_LSR_FEI))) {
                     if (state->rxBufferCount == state->rxBufferSize) {
-                        UART_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferFull);
+                        if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferFull);
 
                         continue;
                     }
@@ -459,19 +471,30 @@ void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
                         state->rxBufferIn = 0;
 
                     if (state->dataReceivedEventHandler != nullptr)
-                        state->dataReceivedEventHandler(state->controller, 1);
+                        if (canPostEvent) {
+                            if (state->rxBufferCount > state->lastEventRxBufferCount) {
+                                // if driver hold event long enough that more than 1 byte
+                                state->dataReceivedEventHandler(state->controller, state->rxBufferCount - state->lastEventRxBufferCount);
+                            }
+                            else {
+                                // if user use poll to read data and rxBufferCount <= lastEventRxBufferCount, driver send at least 1 byte comming
+                                state->dataReceivedEventHandler(state->controller, 1);
+                            }
+
+                            state->lastEventRxBufferCount = state->rxBufferCount;
+                        }
                 }
 
                 LSR_Value = USARTC.UART_LSR;
 
                 if (LSR_Value & 0x04) {
-                    UART_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveParity);
+                    if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveParity);
                 }
                 else if ((LSR_Value & 0x08) || (LSR_Value & 0x80)) {
-                    UART_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
+                    if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
                 }
                 else if (LSR_Value & 0x02) {
-                    UART_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
+                    if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
                 }
             } while (LSR_Value & LPC17xx_USART::UART_LSR_RFDR);
         }
@@ -519,22 +542,23 @@ void UART_IntHandler(int controllerIndex) {
     volatile uint32_t IIR_Value = USARTC.SEL3.IIR.UART_IIR & LPC17xx_USART::UART_IIR_IID_mask;
 
     auto state = &uartStates[controllerIndex];
+    auto canPostEvent = LPC17_Uart_CanPostEvent(controllerIndex);
 
     if (state->handshakeEnable) {
         volatile bool dump = USARTC.UART_MSR; // Clr status register
     }
 
     if (LSR_Value & 0x04) {
-        UART_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveParity);
+        if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveParity);
     }
     else if ((LSR_Value & 0x08) || (LSR_Value & 0x80)) {
-        UART_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
+        if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
     }
     else if (LSR_Value & 0x02) {
-        UART_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
+        if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
     }
 
-    LPC17_Uart_ReceiveData(controllerIndex, LSR_Value, IIR_Value);
+    LPC17_Uart_ReceiveData(controllerIndex, LSR_Value, IIR_Value, canPostEvent);
 
     LPC17_Uart_TransmitData(controllerIndex, LSR_Value, IIR_Value);
 }
@@ -584,6 +608,9 @@ TinyCLR_Result LPC17_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->rxBufferOut = 0;
 
         state->controller = self;
+
+        state->lastEventRxBufferCount = 0;
+        state->lastEventTime = LPC17_Time_GetTimeForProcessorTicks(nullptr, LPC17_Time_GetCurrentProcessorTicks(nullptr));
 
         // Enable power config
         switch (controllerIndex) {
@@ -916,9 +943,6 @@ TinyCLR_Result LPC17_Uart_Flush(const TinyCLR_Uart_Controller* self) {
 }
 
 TinyCLR_Result LPC17_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* buffer, size_t& length) {
-
-    size_t i = 0;;
-
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
@@ -929,7 +953,9 @@ TinyCLR_Result LPC17_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* buf
         return TinyCLR_Result::NotAvailable;
     }
 
-    length = std::min(state->rxBufferCount, length);
+    length = std::min(self->GetBytesToRead(self), length);
+
+    size_t i = 0;
 
     while (i < length) {
         buffer[i] = state->RxBuffer[state->rxBufferOut];
@@ -962,7 +988,7 @@ TinyCLR_Result LPC17_Uart_Write(const TinyCLR_Uart_Controller* self, const uint8
     }
 
     if (state->txBufferCount == state->txBufferSize) {
-        UART_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferFull);
+        LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferFull);
 
         return TinyCLR_Result::Busy;
     }
@@ -1038,7 +1064,7 @@ size_t LPC17_Uart_GetBytesToWrite(const TinyCLR_Uart_Controller* self) {
 TinyCLR_Result LPC17_Uart_ClearReadBuffer(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    state->rxBufferCount = state->rxBufferIn = state->rxBufferOut = 0;
+    state->rxBufferCount = state->rxBufferIn = state->rxBufferOut = state->lastEventRxBufferCount = 0;
 
     return TinyCLR_Result::Success;
 }

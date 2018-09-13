@@ -16,6 +16,7 @@
 #include <algorithm>
 #include "LPC24.h"
 
+#define USART_EVENT_POST_DEBOUNCE_TICKS (5 * 10000) // 5ms between each events
 static const uint32_t uartTxDefaultBuffersSize[] = LPC24_UART_DEFAULT_TX_BUFFER_SIZE;
 static const uint32_t uartRxDefaultBuffersSize[] = LPC24_UART_DEFAULT_RX_BUFFER_SIZE;
 
@@ -45,6 +46,10 @@ struct UartState {
     bool tableInitialized = false;
 
     uint16_t initializeCount;
+
+    uint32_t errorEvent;
+    uint64_t lastEventTime;
+    size_t lastEventRxBufferCount;
 };
 
 #define SET_BITS(Var,Shift,Mask,fieldsMask) {Var = setFieldValue(Var,Shift,Mask,fieldsMask);}
@@ -200,6 +205,15 @@ TinyCLR_Result LPC24_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* self
     return TinyCLR_Result::Success;
 }
 
+bool LPC24_Uart_CanPostEvent(int8_t controllerIndex) {
+    auto state = reinterpret_cast<UartState*>(&uartStates[controllerIndex]);
+    bool canPost = (LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr)) - state->lastEventTime) > USART_EVENT_POST_DEBOUNCE_TICKS;
+
+    if (canPost) // only update new time if system accepts to post event!
+        state->lastEventTime = LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr));
+
+    return canPost;
+}
 
 void LPC24_Uart_PinConfiguration(int controllerIndex, bool enable) {
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -258,7 +272,7 @@ void LPC24_Uart_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error)
         state->errorEventHandler(state->controller, error);
 }
 
-void LPC24_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t IIR_Value) {
+void LPC24_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t IIR_Value, bool canPostEvent) {
     INTERRUPT_STARTED_SCOPED(isr);
 
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -275,7 +289,7 @@ void LPC24_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
 
                 if (0 == (LSR_Value & (LPC24XX_USART::UART_LSR_PEI | LPC24XX_USART::UART_LSR_OEI | LPC24XX_USART::UART_LSR_FEI))) {
                     if (state->rxBufferCount == state->rxBufferSize) {
-                        LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferFull);
+                        if (canPostEvent) LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferFull);
 
                         continue;
                     }
@@ -288,19 +302,30 @@ void LPC24_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
                         state->rxBufferIn = 0;
 
                     if (state->dataReceivedEventHandler != nullptr)
-                        state->dataReceivedEventHandler(state->controller, 1);
+                        if (canPostEvent) {
+                            if (state->rxBufferCount > state->lastEventRxBufferCount) {
+                                // if driver hold event long enough that more than 1 byte
+                                state->dataReceivedEventHandler(state->controller, state->rxBufferCount - state->lastEventRxBufferCount);
+                            }
+                            else {
+                                // if user use poll to read data and rxBufferCount <= lastEventRxBufferCount, driver send at least 1 byte comming
+                                state->dataReceivedEventHandler(state->controller, 1);
+                            }
+
+                            state->lastEventRxBufferCount = state->rxBufferCount;
+                        }
                 }
 
                 LSR_Value = USARTC.UART_LSR;
 
                 if (LSR_Value & 0x04) {
-                    LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveParity);
+                    if (canPostEvent) LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveParity);
                 }
                 else if ((LSR_Value & 0x08) || (LSR_Value & 0x80)) {
-                    LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
+                    if (canPostEvent) LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
                 }
                 else if (LSR_Value & 0x02) {
-                    LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
+                    if (canPostEvent) LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
                 }
             } while (LSR_Value & LPC24XX_USART::UART_LSR_RFDR);
         }
@@ -349,21 +374,22 @@ void LPC24_Uart_InterruptHandler(void *param) {
     volatile uint32_t IIR_Value = USARTC.SEL3.IIR.UART_IIR & LPC24XX_USART::UART_IIR_IID_mask;
 
     auto state = &uartStates[controllerIndex];
+    auto canPostEvent = LPC24_Uart_CanPostEvent(controllerIndex);
     if (state->handshakeEnable) {
         volatile bool dump = USARTC.UART_MSR; // Clr status register
     }
 
     if (LSR_Value & 0x04) {
-        LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveParity);
+        if (canPostEvent) LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveParity);
     }
     else if ((LSR_Value & 0x08) || (LSR_Value & 0x80)) {
-        LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
+        if (canPostEvent) LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
     }
     else if (LSR_Value & 0x02) {
-        LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
+        if (canPostEvent) LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
     }
 
-    LPC24_Uart_ReceiveData(controllerIndex, LSR_Value, IIR_Value);
+    LPC24_Uart_ReceiveData(controllerIndex, LSR_Value, IIR_Value, canPostEvent);
 
     LPC24_Uart_TransmitData(controllerIndex, LSR_Value, IIR_Value);
 }
@@ -395,6 +421,9 @@ TinyCLR_Result LPC24_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->rxBufferOut = 0;
 
         state->controller = self;
+
+        state->lastEventRxBufferCount = 0;
+        state->lastEventTime = LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr));
 
         switch (controllerIndex) {
         case 0:
@@ -741,13 +770,9 @@ TinyCLR_Result LPC24_Uart_Flush(const TinyCLR_Uart_Controller* self) {
 }
 
 TinyCLR_Result LPC24_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* buffer, size_t& length) {
-    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
-
-    auto controllerIndex = state->controllerIndex;
-
-    size_t i = 0;
-
     DISABLE_INTERRUPTS_SCOPED(irq);
+
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     if (state->isOpened == false || state->rxBufferSize == 0) {
         length = 0;
@@ -755,7 +780,9 @@ TinyCLR_Result LPC24_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* buf
         return TinyCLR_Result::NotAvailable;
     }
 
-    length = std::min(state->rxBufferCount, length);
+    length = std::min(self->GetBytesToRead(self), length);
+
+    size_t i = 0;
 
     while (i < length) {
         buffer[i] = state->RxBuffer[state->rxBufferOut];
@@ -864,7 +891,7 @@ size_t LPC24_Uart_GetBytesToWrite(const TinyCLR_Uart_Controller* self) {
 TinyCLR_Result LPC24_Uart_ClearReadBuffer(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    state->rxBufferCount = state->rxBufferIn = state->rxBufferOut = 0;
+    state->rxBufferCount = state->rxBufferIn = state->rxBufferOut = state->lastEventRxBufferCount = 0;
 
     return TinyCLR_Result::Success;
 }
