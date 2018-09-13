@@ -282,7 +282,7 @@ void AT91_Uart_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error) 
     auto state = &uartStates[controllerIndex];
 
     if (state->errorEventHandler != nullptr)
-        state->errorEventHandler(state->controller, error);
+        state->errorEventHandler(state->controller, error, AT91_Time_GetCurrentProcessorTime());
 }
 
 void AT91_Uart_ReceiveData(int32_t controllerIndex, uint32_t sr) {
@@ -306,7 +306,7 @@ void AT91_Uart_ReceiveData(int32_t controllerIndex, uint32_t sr) {
         state->rxBufferIn = 0;
 
     if (state->dataReceivedEventHandler != nullptr)
-        state->dataReceivedEventHandler(state->controller, 1);
+        state->dataReceivedEventHandler(state->controller, 1, AT91_Time_GetCurrentProcessorTime());
 
     if (sr & AT91_USART::US_OVRE)
         AT91_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);

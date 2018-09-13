@@ -954,6 +954,10 @@ void TinyCLR_UsbClient_Delay(uint64_t microseconds) {
     AT91_Time_Delay(nullptr, microseconds);
 }
 
+uint64_t TinyCLR_UsbClient_Now() {
+    return AT91_Time_GetCurrentProcessorTime();
+}
+
 void TinyCLR_UsbClient_InitializeConfiguration(UsClientState *usClientState) {
     AT91_UsbDevice_InitializeConfiguration(usClientState);
 }

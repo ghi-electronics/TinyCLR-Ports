@@ -990,25 +990,25 @@ bool CAN_ErrorHandler(uint8_t controllerIndex) {
 
     if (CAN_GetITStatus(CANx, CAN_IT_FF0)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_FF0);
-        state->errorEventHandler(state->provider, TinyCLR_Can_Error::BufferFull);
+        state->errorEventHandler(state->provider, TinyCLR_Can_Error::BufferFull, STM32F7_Time_GetCurrentProcessorTime());
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_FOV0)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_FOV0);
-        state->errorEventHandler(state->provider, TinyCLR_Can_Error::Overrun);
+        state->errorEventHandler(state->provider, TinyCLR_Can_Error::Overrun, STM32F7_Time_GetCurrentProcessorTime());
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_BOF)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_BOF);
-        state->errorEventHandler(state->provider, TinyCLR_Can_Error::BusOff);
+        state->errorEventHandler(state->provider, TinyCLR_Can_Error::BusOff, STM32F7_Time_GetCurrentProcessorTime());
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_EPV)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_EPV);
-        state->errorEventHandler(state->provider, TinyCLR_Can_Error::Passive);
+        state->errorEventHandler(state->provider, TinyCLR_Can_Error::Passive, STM32F7_Time_GetCurrentProcessorTime());
 
         return true;
     }
@@ -1018,13 +1018,13 @@ bool CAN_ErrorHandler(uint8_t controllerIndex) {
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_ERR)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_ERR);
-        state->errorEventHandler(state->provider, TinyCLR_Can_Error::Passive);
+        state->errorEventHandler(state->provider, TinyCLR_Can_Error::Passive, STM32F7_Time_GetCurrentProcessorTime());
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_EWG)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_EWG);
-        state->errorEventHandler(state->provider, TinyCLR_Can_Error::Passive);
+        state->errorEventHandler(state->provider, TinyCLR_Can_Error::Passive, STM32F7_Time_GetCurrentProcessorTime());
     }
 
 
@@ -1114,9 +1114,6 @@ TinyCLR_Result STM32F7_Can_SetWriteBufferSize(const TinyCLR_Can_Controller* self
     return size == 1 ? TinyCLR_Result::Success : TinyCLR_Result::NotSupported;
 }
 
-uint32_t STM32_Can_GetLocalTime() {
-    return STM32F7_Time_GetTimeForProcessorTicks(nullptr, STM32F7_Time_GetCurrentProcessorTicks(nullptr));
-}
 void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -1180,7 +1177,7 @@ void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
 
     STM32F7_Can_Message *can_msg = &state->canRxMessagesFifo[state->can_rx_in];
 
-    uint64_t t = STM32_Can_GetLocalTime();
+    uint64_t t = STM32F7_Time_GetCurrentProcessorTime();
 
     can_msg->TimeStampL = t & 0xFFFFFFFF;
 
@@ -1205,7 +1202,7 @@ void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
         state->can_rx_in = 0;
     }
 
-    state->messageReceivedEventHandler(state->provider, state->can_rx_count);
+    state->messageReceivedEventHandler(state->provider, state->can_rx_count, t);
 
     return;
 }

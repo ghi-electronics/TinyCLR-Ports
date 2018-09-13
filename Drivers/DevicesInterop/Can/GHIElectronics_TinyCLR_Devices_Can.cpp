@@ -108,6 +108,8 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
     nullptr,
     nullptr,
     nullptr,
+    nullptr,
+    nullptr,
     Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_WriteBufferSize___I4,
     Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::set_WriteBufferSize___VOID__I4,
     Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::get_ReadBufferSize___I4,
@@ -138,6 +140,6 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
 
 const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices_Can = {
     "GHIElectronics.TinyCLR.Devices.Can",
-    0xFC0CCE79,
+    0x1D600CD4,
     methods
 };

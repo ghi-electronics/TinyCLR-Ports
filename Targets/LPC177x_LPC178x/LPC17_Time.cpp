@@ -100,6 +100,10 @@ uint64_t LPC17_Time_GetTimeForProcessorTicks(const TinyCLR_NativeTime_Controller
     return ticks;
 }
 
+uint64_t LPC17_Time_GetCurrentProcessorTime() {
+    return LPC17_Time_GetTimeForProcessorTicks(nullptr, LPC17_Time_GetCurrentProcessorTicks(nullptr));
+}
+
 uint64_t LPC17_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Controller* self, uint64_t time) {
     time /= 10;
 

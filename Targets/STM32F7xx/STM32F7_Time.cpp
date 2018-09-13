@@ -109,6 +109,10 @@ uint64_t STM32F7_Time_GetProcessorTicksForTime(const TinyCLR_NativeTime_Controll
 #endif
 }
 
+uint64_t STM32F7_Time_GetCurrentProcessorTime() {
+    return STM32F7_Time_GetTimeForProcessorTicks(nullptr, STM32F7_Time_GetCurrentProcessorTicks(nullptr));
+}
+
 uint64_t STM32F7_Time_GetCurrentProcessorTicks(const TinyCLR_NativeTime_Controller* self) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 

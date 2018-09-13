@@ -1236,10 +1236,6 @@ void AT91_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
     }
 }
 
-uint32_t AT91_Can_GetLocalTime() {
-    return AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr));
-}
-
 bool CAN_RxInitialize(int8_t controllerIndex) {
     auto state = &canStates[controllerIndex];
 
@@ -1302,14 +1298,14 @@ void CopyMessageFromMailBoxToBuffer(uint8_t controllerIndex, uint32_t dwMsr) {
     }
 
     if (state->can_rx_count > (state->can_rxBufferSize - 3)) {
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull);
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, AT91_Time_GetCurrentProcessorTime());
     }
 
     // initialize destination pointer
     AT91_Can_Message *can_msg = &state->canRxMessagesFifo[state->can_rx_in];
 
     // timestamp
-    uint64_t t = AT91_Can_GetLocalTime();
+    uint64_t t = AT91_Time_GetCurrentProcessorTime();
 
     can_msg->timeStampL = t & 0xFFFFFFFF;
     can_msg->timeStampH = t >> 32;
@@ -1333,7 +1329,7 @@ void CopyMessageFromMailBoxToBuffer(uint8_t controllerIndex, uint32_t dwMsr) {
         state->can_rx_in = 0;
     }
 
-    state->messageReceivedEventHandler(state->controller, state->can_rx_count);
+    state->messageReceivedEventHandler(state->controller, state->can_rx_count, t);
 }
 
 void CAN_ProccessMailbox(uint8_t controllerIndex) {
@@ -1391,11 +1387,11 @@ void CAN_ErrorHandler(sCand *pCand, uint32_t dwErrS, int32_t controllerIndex) {
 
     if (dwErrS & CAN_SR_BOFF) // BusOff is higher priority
     {
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BusOff);
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BusOff, AT91_Time_GetCurrentProcessorTime());
 
     }
     else if (dwErrS & CAN_SR_ERRP) {
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive);
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, AT91_Time_GetCurrentProcessorTime());
     }
 }
 
@@ -1450,7 +1446,7 @@ void AT91_Can_RxInterruptHandler(void *param) {
     }
     /* Timer overflow */
     if (dwSr & CAN_SR_TOVF) {
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Overrun);
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Overrun, AT91_Time_GetCurrentProcessorTime());
     }
 }
 

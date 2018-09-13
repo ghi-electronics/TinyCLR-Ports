@@ -900,6 +900,10 @@ void TinyCLR_UsbClient_Delay(uint64_t microseconds) {
     LPC17_Time_Delay(nullptr, microseconds);
 }
 
+uint64_t TinyCLR_UsbClient_Now() {
+    return LPC17_Time_GetCurrentProcessorTime();
+}
+
 void TinyCLR_UsbClient_InitializeConfiguration(UsClientState *usClientState) {
     LPC17_UsbDevice_InitializeConfiguration(usClientState);
 }
