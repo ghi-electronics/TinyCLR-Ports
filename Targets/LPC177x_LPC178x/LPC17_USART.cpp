@@ -441,7 +441,7 @@ void LPC17_Uart_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error)
         state->errorEventHandler(state->controller, error, LPC17_Time_GetCurrentProcessorTime());
 }
 
-void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t IIR_Value, bool canPostEvent) {
+void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t IIR_Value) {
     INTERRUPT_STARTED_SCOPED(isr);
 
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -449,17 +449,21 @@ void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
     LPC17xx_USART& USARTC = LPC17xx_USART::UART(controllerIndex);
 
     auto state = &uartStates[controllerIndex];
+    bool error = (LSR_Value & (LPC17xx_USART::UART_LSR_PEI | LPC17xx_USART::UART_LSR_OEI | LPC17xx_USART::UART_LSR_FEI));
+
     // Read data from Rx FIFO
-    if (USARTC.SEL2.IER.UART_IER & (LPC17xx_USART::UART_IER_RDAIE)) {
-        if ((LSR_Value & LPC17xx_USART::UART_LSR_RFDR) || (IIR_Value == LPC17xx_USART::UART_IIR_IID_Irpt_RDA) || (IIR_Value == LPC17xx_USART::UART_IIR_IID_Irpt_TOUT)) {
+    if ((USARTC.SEL2.IER.UART_IER & (LPC17xx_USART::UART_IER_RDAIE)) || error) {
+        if ((LSR_Value & LPC17xx_USART::UART_LSR_RFDR) || (IIR_Value == LPC17xx_USART::UART_IIR_IID_Irpt_RDA) || (IIR_Value == LPC17xx_USART::UART_IIR_IID_Irpt_TOUT) || (error)) {
             do {
                 uint8_t rxdata = (uint8_t)USARTC.SEL1.RBR.UART_RBR;
 
-                if (0 == (LSR_Value & (LPC17xx_USART::UART_LSR_PEI | LPC17xx_USART::UART_LSR_OEI | LPC17xx_USART::UART_LSR_FEI))) {
+                auto canPostEvent = LPC17_Uart_CanPostEvent(controllerIndex);
+
+                if (!error) {
                     if (state->rxBufferCount == state->rxBufferSize) {
                         if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferFull);
 
-                        continue;
+                        goto clear_status;
                     }
 
                     state->RxBuffer[state->rxBufferIn++] = rxdata;
@@ -484,6 +488,7 @@ void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
                         }
                 }
 
+            clear_status:
                 LSR_Value = USARTC.UART_LSR;
 
                 if (LSR_Value & 0x04) {
@@ -495,7 +500,10 @@ void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
                 else if (LSR_Value & 0x02) {
                     if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
                 }
-            } while (LSR_Value & LPC17xx_USART::UART_LSR_RFDR);
+
+                error = (LSR_Value & (LPC17xx_USART::UART_LSR_PEI | LPC17xx_USART::UART_LSR_OEI | LPC17xx_USART::UART_LSR_FEI));
+
+            } while ((LSR_Value & LPC17xx_USART::UART_LSR_RFDR) || error);
         }
     }
 }
@@ -541,23 +549,14 @@ void LPC17_UART_IntHandler(int controllerIndex) {
     volatile uint32_t IIR_Value = USARTC.SEL3.IIR.UART_IIR & LPC17xx_USART::UART_IIR_IID_mask;
 
     auto state = &uartStates[controllerIndex];
-    auto canPostEvent = LPC17_Uart_CanPostEvent(controllerIndex);
+
 
     if (state->handshakeEnable) {
         volatile bool dump = USARTC.UART_MSR; // Clr status register
     }
 
-    if (LSR_Value & 0x04) {
-        if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveParity);
-    }
-    else if ((LSR_Value & 0x08) || (LSR_Value & 0x80)) {
-        if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
-    }
-    else if (LSR_Value & 0x02) {
-        if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
-    }
 
-    LPC17_Uart_ReceiveData(controllerIndex, LSR_Value, IIR_Value, canPostEvent);
+    LPC17_Uart_ReceiveData(controllerIndex, LSR_Value, IIR_Value);
 
     LPC17_Uart_TransmitData(controllerIndex, LSR_Value, IIR_Value);
 }
@@ -825,41 +824,41 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Controller* self) {
         auto controllerIndex = state->controllerIndex;
 
         LPC17xx_USART& USARTC = LPC17xx_USART::UART(controllerIndex);
-        
-            USARTC.SEL2.IER.UART_IER &= ~(LPC17xx_USART::UART_IER_INTR_ALL_SET);         // Disable all UART interrupt
-                    // CWS: Disable interrupts
-            USARTC.SEL3.FCR.UART_FCR = 0;
-            USARTC.UART_LCR = 0; // prepare to Init UART
 
-            if (state->handshakeEnable) {
-                USARTC.UART_MCR &= ~((1 << 6) | (1 << 7));
-                USARTC.SEL2.IER.UART_IER &= ~((1 << 7) | (1 << 3));
+        USARTC.SEL2.IER.UART_IER &= ~(LPC17xx_USART::UART_IER_INTR_ALL_SET);         // Disable all UART interrupt
+                // CWS: Disable interrupts
+        USARTC.SEL3.FCR.UART_FCR = 0;
+        USARTC.UART_LCR = 0; // prepare to Init UART
+
+        if (state->handshakeEnable) {
+            USARTC.UART_MCR &= ~((1 << 6) | (1 << 7));
+            USARTC.SEL2.IER.UART_IER &= ~((1 << 7) | (1 << 3));
+        }
+
+        state->txBufferCount = 0;
+        state->txBufferIn = 0;
+        state->txBufferOut = 0;
+
+        state->rxBufferCount = 0;
+        state->rxBufferIn = 0;
+        state->rxBufferOut = 0;
+        if (apiManager != nullptr) {
+            auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+            if (state->txBufferSize != 0) {
+                memoryProvider->Free(memoryProvider, state->TxBuffer);
+
+                state->txBufferSize = 0;
             }
 
-            state->txBufferCount = 0;
-            state->txBufferIn = 0;
-            state->txBufferOut = 0;
+            if (state->rxBufferSize != 0) {
+                memoryProvider->Free(memoryProvider, state->RxBuffer);
 
-            state->rxBufferCount = 0;
-            state->rxBufferIn = 0;
-            state->rxBufferOut = 0;
-            if (apiManager != nullptr) {
-                auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
-
-                if (state->txBufferSize != 0) {
-                    memoryProvider->Free(memoryProvider, state->TxBuffer);
-
-                    state->txBufferSize = 0;
-                }
-
-                if (state->rxBufferSize != 0) {
-                    memoryProvider->Free(memoryProvider, state->RxBuffer);
-
-                    state->rxBufferSize = 0;
-                }
+                state->rxBufferSize = 0;
             }
+        }
 
-            LPC17_Uart_PinConfiguration(controllerIndex, false);
+        LPC17_Uart_PinConfiguration(controllerIndex, false);
 
         // Disable to save power
         switch (controllerIndex) {
@@ -1079,7 +1078,7 @@ void LPC17_Uart_Reset() {
         LPC17_Uart_Release(&uartControllers[i]);
 
         uartStates[i].initializeCount = 0;
-        uartStates[i].tableInitialized = false;        
+        uartStates[i].tableInitialized = false;
     }
 }
 
