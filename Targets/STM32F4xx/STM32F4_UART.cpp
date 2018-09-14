@@ -264,7 +264,7 @@ void STM32F4_Uart_InterruptHandler(int8_t controllerIndex) {
     auto state = reinterpret_cast<UartState*>(&uartStates[controllerIndex]);
     auto sr = (uint16_t)(state->portReg->SR);
     auto canPostEvent = STM32F4_Uart_CanPostEvent(controllerIndex);
-    auto error = (state->rxBufferCount == state->rxBufferSize) || (sr & USART_SR_ORE) || (sr & USART_SR_FE) || (sr & USART_SR_PE);
+    bool error = (state->rxBufferCount == state->rxBufferSize) || (sr & USART_SR_ORE) || (sr & USART_SR_FE) || (sr & USART_SR_PE);
 
     if (sr & USART_SR_RXNE || sr & USART_SR_ORE || sr & USART_SR_FE || sr & USART_SR_PE) {
         uint8_t data = (uint8_t)(state->portReg->DR); // read RX data
