@@ -448,9 +448,8 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Controller* self) {
 
     state->clockFrequency = 0;
     state->dataBitLength = 0;
-}
 
-return TinyCLR_Result::Success;
+    return TinyCLR_Result::Success;
 }
 
 uint32_t AT91_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self) {
