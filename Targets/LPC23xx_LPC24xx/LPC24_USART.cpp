@@ -675,8 +675,7 @@ TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Controller* self) {
         state->rxBufferCount = 0;
         state->rxBufferIn = 0;
         state->rxBufferOut = 0;
-
-        state->isOpened = false;
+        
         state->handshakeEnable = false;
 
         switch (controllerIndex) {
