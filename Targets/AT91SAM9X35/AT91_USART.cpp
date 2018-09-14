@@ -35,7 +35,7 @@ struct UartState {
     size_t rxBufferIn;
     size_t rxBufferOut;
     size_t rxBufferSize;
-    
+
     bool handshakeEnable;
 
     TinyCLR_Uart_ErrorReceivedHandler errorEventHandler;
@@ -322,8 +322,14 @@ void AT91_Uart_ReceiveData(int32_t controllerIndex, uint32_t sr, bool canPostEve
         if (canPostEvent) AT91_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferFull);
     }
 
-    if (error)
+    if (error) {
+        // if error detected, clear status or reset CR.
+        usart.US_CR = (AT91_USART::US_RSTRX | AT91_USART::US_RSTTX | AT91_USART::US_RXDIS | AT91_USART::US_TXDIS | AT91_USART::US_RSTSTA);
+
+        usart.US_CR = AT91_USART::US_RXEN;
+        usart.US_CR = AT91_USART::US_TXEN;
         return;
+    }
 
     if (sr & AT91_USART::US_RXRDY) {
         state->RxBuffer[state->rxBufferIn++] = rxdata;
@@ -610,7 +616,7 @@ TinyCLR_Result AT91_Uart_Release(const TinyCLR_Uart_Controller* self) {
 
         AT91_Interrupt_Disable(uartId);
 
-            AT91_Uart_PinConfiguration(controllerIndex, false);
+        AT91_Uart_PinConfiguration(controllerIndex, false);
 
         pmc.DisablePeriphClock(uartId);
 
@@ -825,7 +831,7 @@ void AT91_Uart_Reset() {
         AT91_Uart_Release(&uartControllers[i]);
 
         uartStates[i].initializeCount = 0;
-        uartStates[i].tableInitialized = false;        
+        uartStates[i].tableInitialized = false;
     }
 }
 
