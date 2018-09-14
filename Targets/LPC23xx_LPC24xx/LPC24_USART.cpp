@@ -16,7 +16,7 @@
 #include <algorithm>
 #include "LPC24.h"
 
-#define USART_EVENT_POST_DEBOUNCE_TICKS (5 * 10000) // 5ms between each events
+#define USART_EVENT_POST_DEBOUNCE_TICKS (10 * 10000) // 10ms between each events
 static const uint32_t uartTxDefaultBuffersSize[] = LPC24_UART_DEFAULT_TX_BUFFER_SIZE;
 static const uint32_t uartRxDefaultBuffersSize[] = LPC24_UART_DEFAULT_RX_BUFFER_SIZE;
 
