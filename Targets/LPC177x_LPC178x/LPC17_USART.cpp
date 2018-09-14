@@ -530,7 +530,7 @@ void LPC17_Uart_TransmitData(int controllerIndex, uint32_t LSR_Value, uint32_t I
     }
 }
 
-void UART_IntHandler(int controllerIndex) {
+void LPC17_UART_IntHandler(int controllerIndex) {
     INTERRUPT_STARTED_SCOPED(isr);
 
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -562,23 +562,23 @@ void UART_IntHandler(int controllerIndex) {
     LPC17_Uart_TransmitData(controllerIndex, LSR_Value, IIR_Value);
 }
 //--//
-void UART0_IntHandler(void *param) {
-    UART_IntHandler(0);
+void LPC17_UART0_IntHandler(void *param) {
+    LPC17_UART_IntHandler(0);
 }
 
-void UART1_IntHandler(void *param) {
-    UART_IntHandler(1);
+void LPC17_UART1_IntHandler(void *param) {
+    LPC17_UART_IntHandler(1);
 }
 
-void UART2_IntHandler(void *param) {
-    UART_IntHandler(2);
+void LPC17_UART2_IntHandler(void *param) {
+    LPC17_UART_IntHandler(2);
 }
 
-void UART3_IntHandler(void *param) {
-    UART_IntHandler(3);
+void LPC17_UART3_IntHandler(void *param) {
+    LPC17_UART_IntHandler(3);
 }
-void UART4_IntHandler(void *param) {
-    UART_IntHandler(4);
+void LPC17_UART4_IntHandler(void *param) {
+    LPC17_UART_IntHandler(4);
 }
 
 TinyCLR_Result LPC17_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
@@ -747,27 +747,27 @@ TinyCLR_Result LPC17_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self,
 
     switch (controllerIndex) {
     case 0:
-        LPC17_Interrupt_Activate(UART0_IRQn, (uint32_t*)&UART0_IntHandler, 0);
+        LPC17_Interrupt_Activate(UART0_IRQn, (uint32_t*)&LPC17_UART0_IntHandler, 0);
 
         break;
 
     case 1:
-        LPC17_Interrupt_Activate(UART1_IRQn, (uint32_t*)&UART1_IntHandler, 0);
+        LPC17_Interrupt_Activate(UART1_IRQn, (uint32_t*)&LPC17_UART1_IntHandler, 0);
 
         break;
 
     case 2:
-        LPC17_Interrupt_Activate(UART2_IRQn, (uint32_t*)&UART2_IntHandler, 0);
+        LPC17_Interrupt_Activate(UART2_IRQn, (uint32_t*)&LPC17_UART2_IntHandler, 0);
 
         break;
 
     case 3:
-        LPC17_Interrupt_Activate(UART3_IRQn, (uint32_t*)&UART3_IntHandler, 0);
+        LPC17_Interrupt_Activate(UART3_IRQn, (uint32_t*)&LPC17_UART3_IntHandler, 0);
 
         break;
 
     case 4:
-        LPC17_Interrupt_Activate(UART4_IRQn, (uint32_t*)&UART4_IntHandler, 0);
+        LPC17_Interrupt_Activate(UART4_IRQn, (uint32_t*)&LPC17_UART4_IntHandler, 0);
 
         break;
 
