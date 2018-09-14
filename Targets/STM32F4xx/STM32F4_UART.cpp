@@ -61,8 +61,6 @@ struct UartState {
     const TinyCLR_Uart_Controller* controller;
     bool tableInitialized;
     uint16_t initializeCount;
-
-    uint32_t errorEvent;
     uint64_t lastEventTime;
     size_t lastEventRxBufferCount;
 };
@@ -266,50 +264,33 @@ void STM32F4_Uart_InterruptHandler(int8_t controllerIndex) {
     auto state = reinterpret_cast<UartState*>(&uartStates[controllerIndex]);
     auto sr = (uint16_t)(state->portReg->SR);
     auto canPostEvent = STM32F4_Uart_CanPostEvent(controllerIndex);
+    auto error = (state->rxBufferCount == state->rxBufferSize) || (sr & USART_SR_ORE) || (sr & USART_SR_FE) || (sr & USART_SR_PE);
 
     if (sr & USART_SR_RXNE || sr & USART_SR_ORE || sr & USART_SR_FE || sr & USART_SR_PE) {
         uint8_t data = (uint8_t)(state->portReg->DR); // read RX data
 
-        if (state->errorEventHandler != nullptr) {
+        if (state->errorEventHandler != nullptr && canPostEvent) {
             if (state->rxBufferCount == state->rxBufferSize) {
-                if ((state->errorEvent & (1 << (uint8_t)TinyCLR_Uart_Error::BufferFull)) == 0) {
-                    state->errorEvent |= (1 << (uint8_t)TinyCLR_Uart_Error::BufferFull);
-                    if (canPostEvent) state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferFull, STM32F4_Time_GetCurrentProcessorTime());
-                }
+                state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferFull, STM32F4_Time_GetCurrentProcessorTime());
             }
-            else
-                state->errorEvent &= ~(1 << (uint8_t)TinyCLR_Uart_Error::BufferFull);
 
             if (sr & USART_SR_ORE) {
-                if ((state->errorEvent & (1 << (uint8_t)TinyCLR_Uart_Error::Overrun)) == 0) {
-                    state->errorEvent |= (1 << (uint8_t)TinyCLR_Uart_Error::Overrun);
-                    if (canPostEvent) state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Overrun, STM32F4_Time_GetCurrentProcessorTime());
-                }
+                state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Overrun, STM32F4_Time_GetCurrentProcessorTime());
             }
-            else
-                state->errorEvent &= ~(1 << (uint8_t)TinyCLR_Uart_Error::Overrun);
 
             if (sr & USART_SR_FE) {
-                if ((state->errorEvent & (1 << (uint8_t)TinyCLR_Uart_Error::Frame)) == 0) {
-                    state->errorEvent |= (1 << (uint8_t)TinyCLR_Uart_Error::Frame);
-                    if (canPostEvent) state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Frame, STM32F4_Time_GetCurrentProcessorTime());
-                }
+                state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Frame, STM32F4_Time_GetCurrentProcessorTime());
             }
-            else
-                state->errorEvent &= ~(1 << (uint8_t)TinyCLR_Uart_Error::Frame);
 
             if (sr & USART_SR_PE) {
-                if ((state->errorEvent & (1 << (uint8_t)TinyCLR_Uart_Error::ReceiveParity)) == 0) {
-                    state->errorEvent |= (1 << (uint8_t)TinyCLR_Uart_Error::ReceiveParity);
-                    if (canPostEvent) state->errorEventHandler(state->controller, TinyCLR_Uart_Error::ReceiveParity, STM32F4_Time_GetCurrentProcessorTime());
-                }
+                state->errorEventHandler(state->controller, TinyCLR_Uart_Error::ReceiveParity, STM32F4_Time_GetCurrentProcessorTime());
             }
-            else
-                state->errorEvent &= ~(1 << (uint8_t)TinyCLR_Uart_Error::ReceiveParity);
-
         }
 
-        if (!state->errorEvent && (sr & USART_SR_RXNE)) {
+        if (error)
+            return;
+
+        if (sr & USART_SR_RXNE) {
             state->RxBuffer[state->rxBufferIn++] = data;
 
             state->rxBufferCount++;
@@ -891,9 +872,6 @@ TinyCLR_Result STM32F4_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Control
 
 size_t STM32F4_Uart_GetBytesToRead(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
-
-    if (state->rxBufferCount < state->rxBufferSize)
-        state->errorEvent &= ~(1 << (uint8_t)TinyCLR_Uart_Error::BufferFull);
 
     return state->rxBufferCount;
 }
