@@ -67,7 +67,7 @@ SECTIONS
         * (.ARM.extab*)
     }
 
-    ER_HEAP_BEGIN 0x20006c00 : ALIGN(0x08)
+    ER_HEAP_BEGIN 0x20006d00 : ALIGN(0x08)
     {
         * (SectionForHeapBegin)
     }>IRAM
