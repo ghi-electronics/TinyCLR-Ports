@@ -278,8 +278,6 @@ struct SpiState {
     int32_t dataBitLength;
     int32_t clockFrequency;
 
-    bool isOpened;
-
     TinyCLR_Spi_Mode spiMode;
 
     bool tableInitialized = false;
@@ -720,8 +718,6 @@ TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
         LPC24_Gpio_ConfigurePin(clkPin, LPC24_Gpio_Direction::Input, clkMode, LPC24_Gpio_PinMode::Inactive);
         LPC24_Gpio_ConfigurePin(misoPin, LPC24_Gpio_Direction::Input, misoMode, LPC24_Gpio_PinMode::Inactive);
         LPC24_Gpio_ConfigurePin(mosiPin, LPC24_Gpio_Direction::Input, mosiMode, LPC24_Gpio_PinMode::Inactive);
-
-        state->isOpened = true;
     }
 
     state->initializeCount++;
@@ -753,26 +749,22 @@ TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Controller* self) {
 
         }
 
-        if (state->isOpened == true) {
-            int32_t clkPin = spiClkPins[controllerIndex].number;
-            int32_t misoPin = spiMisoPins[controllerIndex].number;
-            int32_t mosiPin = spiMosiPins[controllerIndex].number;
+        int32_t clkPin = spiClkPins[controllerIndex].number;
+        int32_t misoPin = spiMisoPins[controllerIndex].number;
+        int32_t mosiPin = spiMosiPins[controllerIndex].number;
 
-            LPC24_Gpio_ClosePin(clkPin);
-            LPC24_Gpio_ClosePin(misoPin);
-            LPC24_Gpio_ClosePin(mosiPin);
+        LPC24_Gpio_ClosePin(clkPin);
+        LPC24_Gpio_ClosePin(misoPin);
+        LPC24_Gpio_ClosePin(mosiPin);
 
-            if (state->chipSelectLine != PIN_NONE) {
-                LPC24_Gpio_ClosePin(state->chipSelectLine);
+        if (state->chipSelectLine != PIN_NONE) {
+            LPC24_Gpio_ClosePin(state->chipSelectLine);
 
-                state->chipSelectLine = PIN_NONE;
-            }
+            state->chipSelectLine = PIN_NONE;
         }
 
         state->clockFrequency = 0;
         state->dataBitLength = 0;
-
-        state->isOpened = false;
     }
 
     return TinyCLR_Result::Success;
@@ -817,7 +809,6 @@ void LPC24_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         LPC24_Spi_Release(&spiControllers[i]);
 
-        spiStates[i].isOpened = false;
         spiStates[i].tableInitialized = false;
         spiStates[i].initializeCount = 0;
     }

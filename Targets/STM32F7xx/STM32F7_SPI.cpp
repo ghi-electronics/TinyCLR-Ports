@@ -45,8 +45,6 @@ struct SpiState {
     int32_t dataBitLength;
     int32_t clockFrequency;
 
-    bool isOpened;
-
     TinyCLR_Spi_Mode spiMode;
 
     uint16_t initializeCount;
@@ -426,8 +424,6 @@ TinyCLR_Result STM32F7_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
         STM32F7_GpioInternal_ConfigurePin(sclk.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, sclk.alternateFunction);
         STM32F7_GpioInternal_ConfigurePin(miso.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, miso.alternateFunction);
         STM32F7_GpioInternal_ConfigurePin(mosi.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, mosi.alternateFunction);
-
-        state->isOpened = true;
     }
 
     state->initializeCount++;
@@ -486,23 +482,19 @@ TinyCLR_Result STM32F7_Spi_Release(const TinyCLR_Spi_Controller* self) {
 #endif
         }
 
-        if (state->isOpened) {
-            auto& sclk = spiClkPins[controllerIndex];
-            auto& miso = spiMisoPins[controllerIndex];
-            auto& mosi = spiMosiPins[controllerIndex];
+        auto& sclk = spiClkPins[controllerIndex];
+        auto& miso = spiMisoPins[controllerIndex];
+        auto& mosi = spiMosiPins[controllerIndex];
 
-            STM32F7_GpioInternal_ClosePin(sclk.number);
-            STM32F7_GpioInternal_ClosePin(miso.number);
-            STM32F7_GpioInternal_ClosePin(mosi.number);
+        STM32F7_GpioInternal_ClosePin(sclk.number);
+        STM32F7_GpioInternal_ClosePin(miso.number);
+        STM32F7_GpioInternal_ClosePin(mosi.number);
 
-            if (state->chipSelectLine != PIN_NONE) {
-                STM32F7_GpioInternal_ClosePin(state->chipSelectLine);
+        if (state->chipSelectLine != PIN_NONE) {
+            STM32F7_GpioInternal_ClosePin(state->chipSelectLine);
 
-                state->chipSelectLine = PIN_NONE;
-            }
+            state->chipSelectLine = PIN_NONE;
         }
-
-        state->isOpened = false;
     }
 
     return TinyCLR_Result::Success;
@@ -543,7 +535,6 @@ void STM32F7_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         STM32F7_Spi_Release(&spiControllers[i]);
 
-        spiStates[i].isOpened = false;
         spiStates[i].initializeCount = 0;
     }
 }
