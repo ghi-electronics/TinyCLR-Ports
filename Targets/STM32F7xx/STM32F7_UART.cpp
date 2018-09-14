@@ -266,7 +266,7 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
     auto state = reinterpret_cast<UartState*>(&uartStates[controllerIndex]);
     auto sr = (uint16_t)(state->portReg->ISR);
     auto canPostEvent = STM32F7_Uart_CanPostEvent(controllerIndex);
-    auto error = (state->rxBufferCount == state->rxBufferSize) || (sr & USART_ISR_ORE) || (sr & USART_ISR_FE) || (sr & USART_ISR_PE);
+    bool error = (state->rxBufferCount == state->rxBufferSize) || (sr & USART_ISR_ORE) || (sr & USART_ISR_FE) || (sr & USART_ISR_PE);
 
     if (sr & USART_ISR_RXNE || sr & USART_ISR_ORE || sr & USART_ISR_FE || sr & USART_ISR_PE) {
         uint8_t data = (uint8_t)(state->portReg->RDR); // read RX data
