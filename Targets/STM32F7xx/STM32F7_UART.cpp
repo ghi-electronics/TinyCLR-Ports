@@ -17,6 +17,7 @@
 #include <algorithm>
 #include "STM32F7.h"
 
+#define USART_EVENT_POST_DEBOUNCE_TICKS (10 * 10000) // 10ms between each events
 // StopBits
 #define USART_STOP_BITS_NONE          0
 #define USART_STOP_BITS_ONE           1
@@ -52,7 +53,6 @@ struct UartState {
 
     USART_TypeDef_Ptr portReg;
 
-    bool isOpened;
     bool handshaking;
 
     TinyCLR_Uart_ErrorReceivedHandler errorEventHandler;
@@ -63,6 +63,9 @@ struct UartState {
     bool tableInitialized;
 
     uint16_t initializeCount;
+
+    uint64_t lastEventTime;
+    size_t lastEventRxBufferCount;
 };
 
 static const STM32F7_Gpio_Pin uartTxPins[] = STM32F7_UART_TX_PINS;
@@ -247,125 +250,130 @@ TinyCLR_Result STM32F7_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* se
     return TinyCLR_Result::Success;
 }
 
-void STM32F7_Uart_IrqRx(int controllerIndex, uint16_t sr) {
+bool STM32F7_Uart_CanPostEvent(int8_t controllerIndex) {
+    auto state = reinterpret_cast<UartState*>(&uartStates[controllerIndex]);
+    bool canPost = (STM32F7_Time_GetTimeForProcessorTicks(nullptr, STM32F7_Time_GetCurrentProcessorTicks(nullptr)) - state->lastEventTime) > USART_EVENT_POST_DEBOUNCE_TICKS;
+
+    if (canPost) // only update new time if system accepts to post event!
+        state->lastEventTime = STM32F7_Time_GetTimeForProcessorTicks(nullptr, STM32F7_Time_GetCurrentProcessorTicks(nullptr));
+
+    return canPost;
+}
+
+void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     auto state = reinterpret_cast<UartState*>(&uartStates[controllerIndex]);
+    auto sr = (uint16_t)(state->portReg->ISR);
+    auto canPostEvent = STM32F7_Uart_CanPostEvent(controllerIndex);
+    bool error = (state->rxBufferCount == state->rxBufferSize) || (sr & USART_ISR_ORE) || (sr & USART_ISR_FE) || (sr & USART_ISR_PE);
 
-    uint8_t data = (uint8_t)(state->portReg->RDR); // read RX data
+    if (sr & USART_ISR_RXNE || sr & USART_ISR_ORE || sr & USART_ISR_FE || sr & USART_ISR_PE) {
+        uint8_t data = (uint8_t)(state->portReg->RDR); // read RX data
 
-    if (state->rxBufferCount == state->rxBufferSize) {
-        if (state->errorEventHandler != nullptr)
-            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferFull, STM32F7_Time_GetCurrentProcessorTime());
+        if (state->errorEventHandler != nullptr && canPostEvent) {
+            if (state->rxBufferCount == state->rxBufferSize) {
+                state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferFull, STM32F7_Time_GetCurrentProcessorTime());
+            }
 
-        return;
-    }
+            if (sr & USART_ISR_ORE) {
+                state->portReg->ICR |= USART_ISR_ORE;
+                state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Overrun, STM32F7_Time_GetCurrentProcessorTime());
+            }
 
-    state->RxBuffer[state->rxBufferIn++] = data;
+            if (sr & USART_ISR_FE) {
+                state->portReg->ICR |= USART_ISR_FE;
+                state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Frame, STM32F7_Time_GetCurrentProcessorTime());
+            }
 
-    state->rxBufferCount++;
-
-    if (state->rxBufferIn == state->rxBufferSize)
-        state->rxBufferIn = 0;
-
-    if (state->dataReceivedEventHandler != nullptr)
-        state->dataReceivedEventHandler(state->controller, 1, STM32F7_Time_GetCurrentProcessorTime());
-
-    if (state->errorEventHandler != nullptr) {
-        if (sr & USART_ISR_ORE)
-            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Overrun, STM32F7_Time_GetCurrentProcessorTime());
-
-        if (sr & USART_ISR_FE)
-            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Frame, STM32F7_Time_GetCurrentProcessorTime());
-
-        if (sr & USART_ISR_PE)
-            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::ReceiveParity, STM32F7_Time_GetCurrentProcessorTime());
-    }
-}
-
-void STM32F7_Uart_IrqTx(int controllerIndex) {
-    DISABLE_INTERRUPTS_SCOPED(irq);
-
-    auto state = reinterpret_cast<UartState*>(&uartStates[controllerIndex]);
-
-    if (STM32F7_Uart_TxHandshakeEnabledState(controllerIndex)) {
-        if (state->txBufferCount > 0) {
-            uint8_t data = state->TxBuffer[state->txBufferOut++];
-
-            state->txBufferCount--;
-
-            if (state->txBufferOut == state->txBufferSize)
-                state->txBufferOut = 0;
-
-            state->portReg->TDR = data; // write TX data
-
+            if (sr & USART_ISR_PE) {
+                state->portReg->ICR |= USART_ISR_PE;
+                state->errorEventHandler(state->controller, TinyCLR_Uart_Error::ReceiveParity, STM32F7_Time_GetCurrentProcessorTime());
+            }
         }
-        else {
-            STM32F7_Uart_TxBufferEmptyInterruptEnable(controllerIndex, false); // Disable interrupt when no more data to send.
+
+        if (error)
+            return;
+
+        if (sr & USART_ISR_RXNE) {
+            state->RxBuffer[state->rxBufferIn++] = data;
+
+            state->rxBufferCount++;
+
+            if (state->rxBufferIn == state->rxBufferSize)
+                state->rxBufferIn = 0;
+
+            if (state->dataReceivedEventHandler != nullptr) {
+                if (canPostEvent) {
+                    if (state->rxBufferCount > state->lastEventRxBufferCount) {
+                        // if driver hold event long enough that more than 1 byte
+                        state->dataReceivedEventHandler(state->controller, state->rxBufferCount - state->lastEventRxBufferCount, STM32F7_Time_GetCurrentProcessorTime());
+                    }
+                    else {
+                        // if user use poll to read data and rxBufferCount <= lastEventRxBufferCount, driver send at least 1 byte comming
+                        state->dataReceivedEventHandler(state->controller, 1, STM32F7_Time_GetCurrentProcessorTime());
+                    }
+
+                    state->lastEventRxBufferCount = state->rxBufferCount;
+                }
+            }
         }
     }
-}
 
-void STM32F7_Uart_InterruptHandler(int8_t controllerIndex, uint16_t sr) {
-    if (sr & USART_ISR_RXNE)
-        STM32F7_Uart_IrqRx(controllerIndex, sr);
+    if (sr & USART_ISR_TXE) {
+        if (STM32F7_Uart_TxHandshakeEnabledState(controllerIndex)) {
+            if (state->txBufferCount > 0) {
+                uint8_t data = state->TxBuffer[state->txBufferOut++];
 
-    if (sr & USART_ISR_TXE)
-        STM32F7_Uart_IrqTx(controllerIndex);
+                state->txBufferCount--;
+
+                if (state->txBufferOut == state->txBufferSize)
+                    state->txBufferOut = 0;
+
+                state->portReg->TDR = data; // write TX data
+
+            }
+            else {
+                STM32F7_Uart_TxBufferEmptyInterruptEnable(controllerIndex, false); // Disable interrupt when no more data to send.
+            }
+        }
+    }
 }
 
 void STM32F7_Uart_Interrupt0(void* param) {
-    uint16_t sr = USART1->ISR;
-
-    STM32F7_Uart_InterruptHandler(0, sr);
+    STM32F7_Uart_InterruptHandler(0);
 }
 
 void STM32F7_Uart_Interrupt1(void* param) {
-    uint16_t sr = USART2->ISR;
-
-    STM32F7_Uart_InterruptHandler(1, sr);
+    STM32F7_Uart_InterruptHandler(1);
 }
 
 void STM32F7_Uart_Interrupt2(void* param) {
-    uint16_t sr = USART3->ISR;
-
-    STM32F7_Uart_InterruptHandler(2, sr);
+    STM32F7_Uart_InterruptHandler(2);
 }
 
 void STM32F7_Uart_Interrupt3(void* param) {
-    uint16_t sr = UART4->ISR;
-
-    STM32F7_Uart_InterruptHandler(3, sr);
+    STM32F7_Uart_InterruptHandler(3);
 }
 
 void STM32F7_Uart_Interrupt4(void* param) {
-    uint16_t sr = UART5->ISR;
-
-    STM32F7_Uart_InterruptHandler(4, sr);
+    STM32F7_Uart_InterruptHandler(4);
 }
 
 void STM32F7_Uart_Interrupt5(void* param) {
-    uint16_t sr = USART6->ISR;
-
-    STM32F7_Uart_InterruptHandler(5, sr);
+    STM32F7_Uart_InterruptHandler(5);
 }
 #ifdef UART7
 void STM32F7_Uart_Interrupt6(void* param) {
-    uint16_t sr = UART7->ISR;
-
-    STM32F7_Uart_InterruptHandler(6, sr);
+    STM32F7_Uart_InterruptHandler(6);
 }
 #ifdef UART8
 void STM32F7_Uart_Interrupt7(void* param) {
-    uint16_t sr = UART8->ISR;
-
-    STM32F7_Uart_InterruptHandler(7, sr);
+    STM32F7_Uart_InterruptHandler(7);
 }
 #ifdef UART9
 void STM32F7_Uart_Interrupt8(void* param) {
-    uint16_t sr = UART9->ISR;
-
-    STM32F7_Uart_InterruptHandler(8, sr);
+    STM32F7_Uart_InterruptHandler(8);
 }
 #endif
 #endif
@@ -380,9 +388,8 @@ TinyCLR_Result STM32F7_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         if (controllerIndex >= TOTAL_UART_CONTROLLERS)
             return TinyCLR_Result::ArgumentInvalid;
 
-        DISABLE_INTERRUPTS_SCOPED(irq);
 
-        if (state->isOpened || !STM32F7_GpioInternal_OpenPin(uartRxPins[controllerIndex].number) || !STM32F7_GpioInternal_OpenPin(uartTxPins[controllerIndex].number))
+        if (!STM32F7_GpioInternal_OpenPin(uartRxPins[controllerIndex].number) || !STM32F7_GpioInternal_OpenPin(uartTxPins[controllerIndex].number))
             return TinyCLR_Result::SharingViolation;
 
         state->txBufferCount = 0;
@@ -397,6 +404,8 @@ TinyCLR_Result STM32F7_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->controller = self;
 
         state->handshaking = false;
+        state->lastEventRxBufferCount = 0;
+        state->lastEventTime = STM32F7_Time_GetTimeForProcessorTicks(nullptr, STM32F7_Time_GetCurrentProcessorTicks(nullptr));
     }
 
     state->initializeCount++;
@@ -563,8 +572,6 @@ TinyCLR_Result STM32F7_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
 #endif
     }
 
-    state->isOpened = true;
-
     if (state->txBufferSize == 0) {
         if (STM32F7_Uart_SetWriteBufferSize(self, uartTxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
             return TinyCLR_Result::OutOfMemory;
@@ -686,17 +693,13 @@ TinyCLR_Result STM32F7_Uart_Release(const TinyCLR_Uart_Controller* self) {
             }
         }
 
-        if (state->isOpened) {
-            STM32F7_GpioInternal_ClosePin(uartRxPins[controllerIndex].number);
-            STM32F7_GpioInternal_ClosePin(uartTxPins[controllerIndex].number);
+        STM32F7_GpioInternal_ClosePin(uartRxPins[controllerIndex].number);
+        STM32F7_GpioInternal_ClosePin(uartTxPins[controllerIndex].number);
 
-            if (state->handshaking) {
-                STM32F7_GpioInternal_ClosePin(uartCtsPins[controllerIndex].number);
-                STM32F7_GpioInternal_ClosePin(uartRtsPins[controllerIndex].number);
-            }
+        if (state->handshaking) {
+            STM32F7_GpioInternal_ClosePin(uartCtsPins[controllerIndex].number);
+            STM32F7_GpioInternal_ClosePin(uartRtsPins[controllerIndex].number);
         }
-
-        state->isOpened = false;
     }
 
     return TinyCLR_Result::Success;
@@ -709,7 +712,6 @@ void STM32F7_Uart_Reset() {
 
         STM32F7_Uart_Release(&uartControllers[i]);
 
-        uartStates[i].isOpened = false;
         uartStates[i].tableInitialized = false;
         uartStates[i].initializeCount = 0;
     }
@@ -755,7 +757,7 @@ bool STM32F7_Uart_TxHandshakeEnabledState(int controllerIndex) {
 TinyCLR_Result STM32F7_Uart_Flush(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    if (state->isOpened) {
+    if (state->initializeCount) {
         while (state->txBufferCount > 0) {
             STM32F7_Time_Delay(nullptr, 1);
         }
@@ -765,18 +767,17 @@ TinyCLR_Result STM32F7_Uart_Flush(const TinyCLR_Uart_Controller* self) {
 }
 
 TinyCLR_Result STM32F7_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* buffer, size_t& length) {
-
-    size_t i = 0;;
-
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    if (state->isOpened == false) {
+    if (state->initializeCount == 0) {
         return TinyCLR_Result::NotAvailable;
     }
 
-    length = std::min(state->rxBufferCount, length);
+    length = std::min(self->GetBytesToRead(self), length);
+
+    size_t i = 0;
 
     while (i < length) {
         buffer[i++] = state->RxBuffer[state->rxBufferOut];
@@ -802,7 +803,7 @@ TinyCLR_Result STM32F7_Uart_Write(const TinyCLR_Uart_Controller* self, const uin
 
     int32_t controllerIndex = state->controllerIndex;
 
-    if (state->isOpened == false) {
+    if (state->initializeCount == 0) {
         return TinyCLR_Result::NotAvailable;
     }
 
@@ -881,7 +882,7 @@ size_t STM32F7_Uart_GetBytesToWrite(const TinyCLR_Uart_Controller* self) {
 TinyCLR_Result STM32F7_Uart_ClearReadBuffer(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    state->rxBufferCount = state->rxBufferIn = state->rxBufferOut = 0;
+    state->rxBufferCount = state->rxBufferIn = state->rxBufferOut = state->lastEventRxBufferCount = 0;
 
     return TinyCLR_Result::Success;
 }
