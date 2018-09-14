@@ -205,7 +205,6 @@ struct UartState {
     size_t                              rxBufferOut;
     size_t                              rxBufferSize;
 
-    bool                                isOpened;
     bool                                handshakeEnable;
 
     TinyCLR_Uart_ErrorReceivedHandler   errorEventHandler;
@@ -482,17 +481,18 @@ void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
                             }
 
                             state->lastEventRxBufferCount = state->rxBufferCount;
-                        }                }
+                        }
+                }
 
                 LSR_Value = USARTC.UART_LSR;
 
                 if (LSR_Value & 0x04) {
                     if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveParity);
                 }
-                else if ((LSR_Value & 0x08) || (LSR_Value & 0x80)) {                    
+                else if ((LSR_Value & 0x08) || (LSR_Value & 0x80)) {
                     if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
                 }
-                else if (LSR_Value & 0x02) {                    
+                else if (LSR_Value & 0x02) {
                     if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
                 }
             } while (LSR_Value & LPC17xx_USART::UART_LSR_RFDR);
@@ -547,16 +547,16 @@ void LPC17_UART_IntHandler(int controllerIndex) {
         volatile bool dump = USARTC.UART_MSR; // Clr status register
     }
 
-    if (LSR_Value & 0x04) {        
+    if (LSR_Value & 0x04) {
         if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveParity);
     }
-    else if ((LSR_Value & 0x08) || (LSR_Value & 0x80)) {        
+    else if ((LSR_Value & 0x08) || (LSR_Value & 0x80)) {
         if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
     }
-    else if (LSR_Value & 0x02) {        
+    else if (LSR_Value & 0x02) {
         if (canPostEvent) LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
     }
-    
+
     LPC17_Uart_ReceiveData(controllerIndex, LSR_Value, IIR_Value, canPostEvent);
 
     LPC17_Uart_TransmitData(controllerIndex, LSR_Value, IIR_Value);
@@ -595,7 +595,7 @@ TinyCLR_Result LPC17_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         int32_t txPin = LPC17_Uart_GetTxPin(controllerIndex);
         int32_t rxPin = LPC17_Uart_GetRxPin(controllerIndex);
 
-        if (state->isOpened || !LPC17_Gpio_OpenPin(txPin) || !LPC17_Gpio_OpenPin(rxPin))
+        if (!LPC17_Gpio_OpenPin(txPin) || !LPC17_Gpio_OpenPin(rxPin))
             return TinyCLR_Result::SharingViolation;
 
         state->txBufferCount = 0;
@@ -805,8 +805,6 @@ TinyCLR_Result LPC17_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self,
 
     LPC17_Uart_PinConfiguration(controllerIndex, true);
 
-    state->isOpened = true;
-
     return TinyCLR_Result::Success;
 }
 
@@ -827,8 +825,7 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Controller* self) {
         auto controllerIndex = state->controllerIndex;
 
         LPC17xx_USART& USARTC = LPC17xx_USART::UART(controllerIndex);
-
-        if (state->isOpened == true) {
+        
             USARTC.SEL2.IER.UART_IER &= ~(LPC17xx_USART::UART_IER_INTR_ALL_SET);         // Disable all UART interrupt
                     // CWS: Disable interrupts
             USARTC.SEL3.FCR.UART_FCR = 0;
@@ -863,7 +860,6 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Controller* self) {
             }
 
             LPC17_Uart_PinConfiguration(controllerIndex, false);
-        }
 
         // Disable to save power
         switch (controllerIndex) {
@@ -879,7 +875,6 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Controller* self) {
         case 4: LPC_SC->PCONP &= ~PCONP_PCUART4; break;
         }
 
-        state->isOpened = false;
         state->handshakeEnable = false;
     }
 
@@ -928,7 +923,7 @@ TinyCLR_Result LPC17_Uart_Flush(const TinyCLR_Uart_Controller* self) {
 
     auto controllerIndex = state->controllerIndex;
 
-    if (state->isOpened == false)
+    if (state->initializeCount == 0)
         return TinyCLR_Result::NotAvailable;
 
     // Make sute interrupt is enable
@@ -946,7 +941,7 @@ TinyCLR_Result LPC17_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* buf
 
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    if (state->isOpened == false || state->rxBufferSize == 0) {
+    if (state->initializeCount == 0 || state->rxBufferSize == 0) {
         length = 0;
 
         return TinyCLR_Result::NotAvailable;
@@ -980,7 +975,7 @@ TinyCLR_Result LPC17_Uart_Write(const TinyCLR_Uart_Controller* self, const uint8
 
     auto controllerIndex = state->controllerIndex;
 
-    if (state->isOpened == false || state->txBufferSize == 0) {
+    if (state->initializeCount == 0 || state->txBufferSize == 0) {
         length = 0;
 
         return TinyCLR_Result::NotAvailable;
@@ -1083,9 +1078,8 @@ void LPC17_Uart_Reset() {
 
         LPC17_Uart_Release(&uartControllers[i]);
 
-        uartStates[i].isOpened = false;
-        uartStates[i].tableInitialized = false;
         uartStates[i].initializeCount = 0;
+        uartStates[i].tableInitialized = false;        
     }
 }
 

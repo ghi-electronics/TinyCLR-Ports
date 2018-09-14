@@ -35,7 +35,6 @@ struct UartState {
     size_t                              rxBufferOut;
     size_t                              rxBufferSize;
 
-    bool                                isOpened;
     bool                                handshakeEnable;
 
     TinyCLR_Uart_ErrorReceivedHandler   errorEventHandler;
@@ -409,7 +408,7 @@ TinyCLR_Result LPC24_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         int32_t txPin = LPC24_Uart_GetTxPin(controllerIndex);
         int32_t rxPin = LPC24_Uart_GetRxPin(controllerIndex);
 
-        if (state->isOpened || !LPC24_Gpio_OpenPin(txPin) || !LPC24_Gpio_OpenPin(rxPin))
+        if (!LPC24_Gpio_OpenPin(txPin) || !LPC24_Gpio_OpenPin(rxPin))
             return TinyCLR_Result::SharingViolation;
 
         state->txBufferCount = 0;
@@ -639,7 +638,6 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self,
 
     LPC24_Uart_PinConfiguration(controllerIndex, true);
 
-    state->isOpened = true;
 
     return TinyCLR_Result::Success;
 }
@@ -660,17 +658,15 @@ TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Controller* self) {
 
         LPC24_Interrupt_Disable(LPC24XX_USART::getIntNo(controllerIndex));
 
-        if (state->isOpened) {
-            if (state->handshakeEnable) {
-                USARTC.UART_MCR &= ~((1 << 6) | (1 << 7));
-            }
-
-            // CWS: Disable interrupts
-            USARTC.UART_LCR = 0; // prepare to Init UART
-            USARTC.SEL2.IER.UART_IER &= ~(LPC24XX_USART::UART_IER_INTR_ALL_SET);         // Disable all UART interrupt
-
-            LPC24_Uart_PinConfiguration(controllerIndex, false);
+        if (state->handshakeEnable) {
+            USARTC.UART_MCR &= ~((1 << 6) | (1 << 7));
         }
+
+        // CWS: Disable interrupts
+        USARTC.UART_LCR = 0; // prepare to Init UART
+        USARTC.SEL2.IER.UART_IER &= ~(LPC24XX_USART::UART_IER_INTR_ALL_SET);         // Disable all UART interrupt
+
+        LPC24_Uart_PinConfiguration(controllerIndex, false);
 
         state->txBufferCount = 0;
         state->txBufferIn = 0;
@@ -756,7 +752,7 @@ TinyCLR_Result LPC24_Uart_Flush(const TinyCLR_Uart_Controller* self) {
 
     auto controllerIndex = state->controllerIndex;
 
-    if (state->isOpened == false)
+    if (state->initializeCount == 0)
         return TinyCLR_Result::NotAvailable;
 
     // Make sute interrupt is enable
@@ -774,7 +770,7 @@ TinyCLR_Result LPC24_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* buf
 
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    if (state->isOpened == false || state->rxBufferSize == 0) {
+    if (state->initializeCount == 0 || state->rxBufferSize == 0) {
         length = 0;
 
         return TinyCLR_Result::NotAvailable;
@@ -808,7 +804,7 @@ TinyCLR_Result LPC24_Uart_Write(const TinyCLR_Uart_Controller* self, const uint8
 
     auto controllerIndex = state->controllerIndex;
 
-    if (state->isOpened == false || state->txBufferSize == 0) {
+    if (state->initializeCount == 0 || state->txBufferSize == 0) {
         length = 0;
 
         return TinyCLR_Result::NotAvailable;
@@ -911,9 +907,8 @@ void LPC24_Uart_Reset() {
 
         LPC24_Uart_Release(&uartControllers[i]);
 
-        uartStates[i].isOpened = false;
-        uartStates[i].tableInitialized = false;
         uartStates[i].initializeCount = 0;
+        uartStates[i].tableInitialized = false;        
     }
 }
 
