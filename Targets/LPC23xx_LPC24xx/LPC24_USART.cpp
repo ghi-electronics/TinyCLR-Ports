@@ -271,7 +271,7 @@ void LPC24_Uart_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error)
         state->errorEventHandler(state->controller, error, LPC24_Time_GetCurrentProcessorTime());
 }
 
-void LPC24_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t IIR_Value, bool canPostEvent) {
+void LPC24_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t IIR_Value) {
     INTERRUPT_STARTED_SCOPED(isr);
 
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -279,18 +279,21 @@ void LPC24_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
     LPC24XX_USART& USARTC = LPC24XX::UART(controllerIndex);
 
     auto state = &uartStates[controllerIndex];
+    bool error = (LSR_Value & (LPC24XX_USART::UART_LSR_PEI | LPC24XX_USART::UART_LSR_OEI | LPC24XX_USART::UART_LSR_FEI));
 
     // Read data from Rx FIFO
-    if (USARTC.SEL2.IER.UART_IER & (LPC24XX_USART::UART_IER_RDAIE)) {
-        if ((LSR_Value & LPC24XX_USART::UART_LSR_RFDR) || (IIR_Value == LPC24XX_USART::UART_IIR_IID_Irpt_RDA) || (IIR_Value == LPC24XX_USART::UART_IIR_IID_Irpt_TOUT)) {
+    if ((USARTC.SEL2.IER.UART_IER & (LPC24XX_USART::UART_IER_RDAIE)) || error) {
+        if ((LSR_Value & LPC24XX_USART::UART_LSR_RFDR) || (IIR_Value == LPC24XX_USART::UART_IIR_IID_Irpt_RDA) || (IIR_Value == LPC24XX_USART::UART_IIR_IID_Irpt_TOUT) || (error)) {
             do {
                 uint8_t rxdata = (uint8_t)USARTC.SEL1.RBR.UART_RBR;
 
-                if (0 == (LSR_Value & (LPC24XX_USART::UART_LSR_PEI | LPC24XX_USART::UART_LSR_OEI | LPC24XX_USART::UART_LSR_FEI))) {
+                auto canPostEvent = LPC24_Uart_CanPostEvent(controllerIndex);
+
+                if (!error) {
                     if (state->rxBufferCount == state->rxBufferSize) {
                         if (canPostEvent) LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferFull);
 
-                        continue;
+                        goto clear_status;
                     }
 
                     state->RxBuffer[state->rxBufferIn++] = rxdata;
@@ -315,6 +318,7 @@ void LPC24_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
                         }
                 }
 
+            clear_status:
                 LSR_Value = USARTC.UART_LSR;
 
                 if (LSR_Value & 0x04) {
@@ -326,7 +330,10 @@ void LPC24_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
                 else if (LSR_Value & 0x02) {
                     if (canPostEvent) LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
                 }
-            } while (LSR_Value & LPC24XX_USART::UART_LSR_RFDR);
+
+                error = (LSR_Value & (LPC24XX_USART::UART_LSR_PEI | LPC24XX_USART::UART_LSR_OEI | LPC24XX_USART::UART_LSR_FEI));
+
+            } while ((LSR_Value & LPC24XX_USART::UART_LSR_RFDR) || error);
         }
     }
 }
@@ -373,22 +380,14 @@ void LPC24_Uart_InterruptHandler(void *param) {
     volatile uint32_t IIR_Value = USARTC.SEL3.IIR.UART_IIR & LPC24XX_USART::UART_IIR_IID_mask;
 
     auto state = &uartStates[controllerIndex];
-    auto canPostEvent = LPC24_Uart_CanPostEvent(controllerIndex);
+
+
     if (state->handshakeEnable) {
         volatile bool dump = USARTC.UART_MSR; // Clr status register
     }
 
-    if (LSR_Value & 0x04) {
-        if (canPostEvent) LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveParity);
-    }
-    else if ((LSR_Value & 0x08) || (LSR_Value & 0x80)) {
-        if (canPostEvent) LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
-    }
-    else if (LSR_Value & 0x02) {
-        if (canPostEvent) LPC24_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
-    }
 
-    LPC24_Uart_ReceiveData(controllerIndex, LSR_Value, IIR_Value, canPostEvent);
+    LPC24_Uart_ReceiveData(controllerIndex, LSR_Value, IIR_Value);
 
     LPC24_Uart_TransmitData(controllerIndex, LSR_Value, IIR_Value);
 }
@@ -675,7 +674,7 @@ TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Controller* self) {
         state->rxBufferCount = 0;
         state->rxBufferIn = 0;
         state->rxBufferOut = 0;
-        
+
         state->handshakeEnable = false;
 
         switch (controllerIndex) {
@@ -907,7 +906,7 @@ void LPC24_Uart_Reset() {
         LPC24_Uart_Release(&uartControllers[i]);
 
         uartStates[i].initializeCount = 0;
-        uartStates[i].tableInitialized = false;        
+        uartStates[i].tableInitialized = false;
     }
 }
 
