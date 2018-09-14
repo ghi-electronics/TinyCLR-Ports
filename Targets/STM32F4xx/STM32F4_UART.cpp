@@ -17,7 +17,7 @@
 #include <algorithm>
 #include "STM32F4.h"
 
-#define USART_EVENT_POST_DEBOUNCE_TICKS (5 * 10000) // 5ms between each events
+#define USART_EVENT_POST_DEBOUNCE_TICKS (10 * 10000) // 10ms between each events
 // StopBits
 #define USART_STOP_BITS_NONE          0
 #define USART_STOP_BITS_ONE           1
