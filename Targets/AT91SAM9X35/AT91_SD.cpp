@@ -2356,8 +2356,6 @@ struct SdCardState {
 
     TinyCLR_Storage_Descriptor descriptor;
 
-    bool isOpened = false;
-
     uint16_t initializeCount;
 };
 
@@ -2480,8 +2478,6 @@ TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
 
         state->descriptor.RegionAddresses = reinterpret_cast<const uint64_t*>(state->regionAddresses);
         state->descriptor.RegionSizes = reinterpret_cast<const size_t*>(state->regionSizes);
-
-        state->isOpened = true;
     }
 
     state->initializeCount++;
@@ -2513,13 +2509,11 @@ TinyCLR_Result AT91_SdCard_Release(const TinyCLR_Storage_Controller* self) {
 
         AT91_Interrupt_Deactivate(AT91C_ID_HSMCI0); /* Disable Interrupt */
 
-        if (state->isOpened) {
-            auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-            memoryProvider->Free(memoryProvider, state->pBuffer);
-            memoryProvider->Free(memoryProvider, state->regionSizes);
-            memoryProvider->Free(memoryProvider, state->regionAddresses);
-        }
+        memoryProvider->Free(memoryProvider, state->pBuffer);
+        memoryProvider->Free(memoryProvider, state->regionSizes);
+        memoryProvider->Free(memoryProvider, state->regionAddresses);
 
         AT91_Gpio_ClosePin(d0.number);
         AT91_Gpio_ClosePin(d1.number);
@@ -2527,8 +2521,6 @@ TinyCLR_Result AT91_SdCard_Release(const TinyCLR_Storage_Controller* self) {
         AT91_Gpio_ClosePin(d3.number);
         AT91_Gpio_ClosePin(clk.number);
         AT91_Gpio_ClosePin(cmd.number);
-
-        state->isOpened = false;
     }
 
     return TinyCLR_Result::Success;

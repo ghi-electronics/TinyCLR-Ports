@@ -2146,8 +2146,6 @@ struct SdCardState {
 
     TinyCLR_Storage_Descriptor descriptor;
 
-    bool isOpened = false;
-
     uint16_t initializeCount;
 };
 
@@ -2241,8 +2239,6 @@ TinyCLR_Result LPC24_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
 
         if (!MCI_And_Card_initialize())
             return TinyCLR_Result::InvalidOperation;
-
-        state->isOpened = true;
     }
 
     state->initializeCount++;
@@ -2273,12 +2269,10 @@ TinyCLR_Result LPC24_SdCard_Release(const TinyCLR_Storage_Controller* self) {
 
         LPC24_Interrupt_Deactivate(LPC24XX_VIC::c_IRQ_INDEX_SD); /* Disable Interrupt */
 
-        if (state->isOpened) {
-            auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+        auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-            memoryProvider->Free(memoryProvider, state->regionSizes);
-            memoryProvider->Free(memoryProvider, state->regionAddresses);
-        }
+        memoryProvider->Free(memoryProvider, state->regionSizes);
+        memoryProvider->Free(memoryProvider, state->regionAddresses);
 
         LPC24_Gpio_ClosePin(d0.number);
         LPC24_Gpio_ClosePin(d1.number);
@@ -2286,8 +2280,6 @@ TinyCLR_Result LPC24_SdCard_Release(const TinyCLR_Storage_Controller* self) {
         LPC24_Gpio_ClosePin(d3.number);
         LPC24_Gpio_ClosePin(clk.number);
         LPC24_Gpio_ClosePin(cmd.number);
-
-        state->isOpened = false;
     }
 
     return TinyCLR_Result::Success;

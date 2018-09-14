@@ -36,8 +36,6 @@ struct SpiState {
     int32_t dataBitLength;
     int32_t clockFrequency;
 
-    bool isOpened;
-
     TinyCLR_Spi_Mode spiMode;
 
     bool tableInitialized = false;
@@ -399,8 +397,6 @@ TinyCLR_Result AT91_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
         AT91_Gpio_ConfigurePin(clkPin, AT91_Gpio_Direction::Input, clkMode, AT91_Gpio_ResistorMode::Inactive);
         AT91_Gpio_ConfigurePin(misoPin, AT91_Gpio_Direction::Input, misoMode, AT91_Gpio_ResistorMode::Inactive);
         AT91_Gpio_ConfigurePin(mosiPin, AT91_Gpio_Direction::Input, mosiMode, AT91_Gpio_ResistorMode::Inactive);
-
-        state->isOpened = true;
     }
 
     state->initializeCount++;
@@ -438,32 +434,28 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Controller* self) {
 
         }
 
-        if (state->isOpened) {
-            uint32_t clkPin, misoPin, mosiPin;
+        uint32_t clkPin, misoPin, mosiPin;
 
-            clkPin = spiClkPins[controllerIndex].number;
-            misoPin = spiMisoPins[controllerIndex].number;
-            mosiPin = spiMosiPins[controllerIndex].number;
+        clkPin = spiClkPins[controllerIndex].number;
+        misoPin = spiMisoPins[controllerIndex].number;
+        mosiPin = spiMosiPins[controllerIndex].number;
 
-            AT91_Gpio_ClosePin(clkPin);
-            AT91_Gpio_ClosePin(misoPin);
-            AT91_Gpio_ClosePin(mosiPin);
+        AT91_Gpio_ClosePin(clkPin);
+        AT91_Gpio_ClosePin(misoPin);
+        AT91_Gpio_ClosePin(mosiPin);
 
-            if (state->chipSelectLine != PIN_NONE) {
-                // Release the pin, set pin un-reserved
-                AT91_Gpio_ClosePin(state->chipSelectLine);
+        if (state->chipSelectLine != PIN_NONE) {
+            // Release the pin, set pin un-reserved
+            AT91_Gpio_ClosePin(state->chipSelectLine);
 
-                // Keep chip select is inactive by internal pull up
-                AT91_Gpio_ConfigurePin(state->chipSelectLine, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::PullUp);
+            // Keep chip select is inactive by internal pull up
+            AT91_Gpio_ConfigurePin(state->chipSelectLine, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::PullUp);
 
-                state->chipSelectLine = PIN_NONE;
-            }
+            state->chipSelectLine = PIN_NONE;
         }
 
         state->clockFrequency = 0;
         state->dataBitLength = 0;
-
-        state->isOpened = false;
     }
 
     return TinyCLR_Result::Success;
@@ -497,7 +489,6 @@ void AT91_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         AT91_Spi_Release(&spiControllers[i]);
 
-        spiStates[i].isOpened = false;
         spiStates[i].tableInitialized = false;
         spiStates[i].initializeCount = 0;
     }

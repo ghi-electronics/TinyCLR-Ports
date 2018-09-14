@@ -321,8 +321,6 @@ struct CanState {
 
     STM32F4_Can_Filter canDataFilter;
 
-    bool isOpened;
-
     uint16_t initializeCount;
 };
 
@@ -1249,8 +1247,6 @@ TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Controller* self) {
         state->provider = self;
 
         state->canRxMessagesFifo = nullptr;
-
-        state->isOpened = true;
     }
 
     state->initializeCount++;
@@ -1281,12 +1277,8 @@ TinyCLR_Result STM32F4_Can_Release(const TinyCLR_Can_Controller* self) {
             state->canRxMessagesFifo = nullptr;
         }
 
-        if (state->isOpened) {
-            STM32F4_GpioInternal_ClosePin(canTxPins[controllerIndex].number);
-            STM32F4_GpioInternal_ClosePin(canRxPins[controllerIndex].number);
-        }
-
-        state->isOpened = false;
+        STM32F4_GpioInternal_ClosePin(canTxPins[controllerIndex].number);
+        STM32F4_GpioInternal_ClosePin(canRxPins[controllerIndex].number);
     }
 
     return TinyCLR_Result::Success;
@@ -1619,7 +1611,6 @@ void STM32F4_Can_Reset() {
 
         STM32F4_Can_Release(&canControllers[i]);
 
-        canStates[i].isOpened = false;
         canStates[i].initializeCount = 0;
     }
 }

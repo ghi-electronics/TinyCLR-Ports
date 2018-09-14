@@ -2023,8 +2023,6 @@ struct CanState {
 
     LPC17_Can_Filter canDataFilter;
 
-    bool isOpened;
-
     uint16_t initializeCount;
 };
 
@@ -2321,7 +2319,7 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
     LPC17_Can_Message *can_msg = &state->canRxMessagesFifo[state->can_rx_in];
 
     // timestamp
-    uint64_t t =LPC17_Time_GetCurrentProcessorTime();
+    uint64_t t = LPC17_Time_GetCurrentProcessorTime();
 
     can_msg->timeStampL = t & 0xFFFFFFFF;
     can_msg->timeStampH = t >> 32;
@@ -2455,8 +2453,6 @@ TinyCLR_Result LPC17_Can_Acquire(const TinyCLR_Can_Controller* self) {
             LPC_SC->PCONP |= (1 << 14);    // Enable clock to the peripheral
 
         CAN_SetACCF(ACCF_BYPASS);
-
-        state->isOpened = true;
     }
 
     state->initializeCount++;
@@ -2489,12 +2485,8 @@ TinyCLR_Result LPC17_Can_Release(const TinyCLR_Can_Controller* self) {
         CAN_DisableExplicitFilters(controllerIndex);
         CAN_DisableGroupFilters(controllerIndex);
 
-        if (state->isOpened) {
-            LPC17_Gpio_ClosePin(canTxPins[controllerIndex].number);
-            LPC17_Gpio_ClosePin(canRxPins[controllerIndex].number);
-        }
-
-        state->isOpened = false;
+        LPC17_Gpio_ClosePin(canTxPins[controllerIndex].number);
+        LPC17_Gpio_ClosePin(canRxPins[controllerIndex].number);
     }
 
     return TinyCLR_Result::Success;
@@ -2828,7 +2820,6 @@ void LPC17_Can_Reset() {
 
         LPC17_Can_Release(&canControllers[i]);
 
-        canStates[i].isOpened = false;
         canStates[i].initializeCount = 0;
     }
 }

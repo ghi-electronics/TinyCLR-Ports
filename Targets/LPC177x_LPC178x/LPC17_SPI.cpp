@@ -428,7 +428,6 @@ struct SpiState {
 
     TinyCLR_Spi_Mode spiMode;
 
-    bool isOpened;
     bool tableInitialized = false;
     uint16_t initializeCount;
 };
@@ -873,8 +872,6 @@ TinyCLR_Result LPC17_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
         LPC17_Gpio_ConfigurePin(clkPin, LPC17_Gpio_Direction::Input, clkMode, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
         LPC17_Gpio_ConfigurePin(misoPin, LPC17_Gpio_Direction::Input, misoMode, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
         LPC17_Gpio_ConfigurePin(mosiPin, LPC17_Gpio_Direction::Input, mosiMode, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-
-        state->isOpened = true;
     }
 
     state->initializeCount++;
@@ -912,27 +909,24 @@ TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Controller* self) {
         state->clockFrequency = 0;
         state->dataBitLength = 0;
 
-        if (state->isOpened) {
-            int32_t clkPin = spiClkPins[controllerIndex].number;
-            int32_t misoPin = spiMisoPins[controllerIndex].number;
-            int32_t mosiPin = spiMosiPins[controllerIndex].number;
 
-            LPC17_Gpio_ClosePin(clkPin);
-            LPC17_Gpio_ClosePin(misoPin);
-            LPC17_Gpio_ClosePin(mosiPin);
+        int32_t clkPin = spiClkPins[controllerIndex].number;
+        int32_t misoPin = spiMisoPins[controllerIndex].number;
+        int32_t mosiPin = spiMosiPins[controllerIndex].number;
 
-            if (state->chipSelectLine != PIN_NONE) {
-                // Release the pin, set pin un-reserved
-                LPC17_Gpio_ClosePin(state->chipSelectLine);
+        LPC17_Gpio_ClosePin(clkPin);
+        LPC17_Gpio_ClosePin(misoPin);
+        LPC17_Gpio_ClosePin(mosiPin);
 
-                // Keep chip select is inactive by internal pull up
-                LPC17_Gpio_ConfigurePin(state->chipSelectLine, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        if (state->chipSelectLine != PIN_NONE) {
+            // Release the pin, set pin un-reserved
+            LPC17_Gpio_ClosePin(state->chipSelectLine);
 
-                state->chipSelectLine = PIN_NONE;
-            }
+            // Keep chip select is inactive by internal pull up
+            LPC17_Gpio_ConfigurePin(state->chipSelectLine, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+
+            state->chipSelectLine = PIN_NONE;
         }
-
-        state->isOpened = false;
     }
 
     return TinyCLR_Result::Success;
@@ -982,7 +976,6 @@ void LPC17_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         LPC17_Spi_Release(&spiControllers[i]);
 
-        spiStates[i].isOpened = false;
         spiStates[i].tableInitialized = false;
         spiStates[i].initializeCount = 0;
     }

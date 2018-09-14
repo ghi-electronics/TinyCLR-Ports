@@ -18,12 +18,9 @@
 #define I2C_TRANSACTION_TIMEOUT 2000 // 2 seconds
 
 struct I2cConfiguration {
-
     int32_t                  address;
     uint8_t                  clockRate;     // primary clock factor to generate the i2c clock
     uint8_t                  clockRate2;   // additional clock factors, if more than one is needed for the clock (optional)
-
-    bool                     isOpened;
 };
 
 struct I2cTransaction {
@@ -326,8 +323,6 @@ TinyCLR_Result LPC24_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
 
         // set the slave address
         I2C.I2ADR = 0x7E;
-
-        state->i2cConfiguration.isOpened = true;
     }
 
     state->initializeCount++;
@@ -353,12 +348,8 @@ TinyCLR_Result LPC24_I2c_Release(const TinyCLR_I2c_Controller* self) {
 
         I2C.I2CONCLR = (LPC24XX_I2C::AA | LPC24XX_I2C::SI | LPC24XX_I2C::STO | LPC24XX_I2C::STA | LPC24XX_I2C::I2EN);
 
-        if (state->i2cConfiguration.isOpened) {
-            LPC24_Gpio_ClosePin(i2cSclPins[controllerIndex].number);
-            LPC24_Gpio_ClosePin(i2cSdaPins[controllerIndex].number);
-        }
-
-        state->i2cConfiguration.isOpened = false;
+        LPC24_Gpio_ClosePin(i2cSclPins[controllerIndex].number);
+        LPC24_Gpio_ClosePin(i2cSdaPins[controllerIndex].number);
     }
 
     return TinyCLR_Result::Success;
@@ -380,7 +371,6 @@ void LPC24_I2c_Reset() {
         state->writeI2cTransactionAction.bytesToTransfer = 0;
         state->writeI2cTransactionAction.bytesTransferred = 0;
 
-        state->i2cConfiguration.isOpened = false;
         state->initializeCount = 0;
     }
 }

@@ -1050,8 +1050,6 @@ struct CanState {
 
     AT91_Can_Filter canDataFilter;
 
-    bool isOpened;
-
     uint16_t initializeCount;
 };
 
@@ -1487,7 +1485,6 @@ TinyCLR_Result AT91_Can_Acquire(const TinyCLR_Can_Controller* self) {
 
         CAN_DisableIt(state->cand.pHw, 0xFFFFFFFF);
 
-        state->isOpened = true;
         state->controllerIndex = controllerIndex;
     }
 
@@ -1516,10 +1513,10 @@ TinyCLR_Result AT91_Can_Release(const TinyCLR_Can_Controller* self) {
         AT91_PMC &pmc = AT91::PMC();
         pmc.DisablePeriphClock((controllerIndex == 0) ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
 
-        if (state->isOpened) {
-            AT91_Gpio_ClosePin(canTxPins[controllerIndex].number);
-            AT91_Gpio_ClosePin(canRxPins[controllerIndex].number);
-        }
+
+        AT91_Gpio_ClosePin(canTxPins[controllerIndex].number);
+        AT91_Gpio_ClosePin(canRxPins[controllerIndex].number);
+
 
         if (state->canRxMessagesFifo != nullptr) {
             memoryProvider->Free(memoryProvider, state->canRxMessagesFifo);
@@ -1530,7 +1527,6 @@ TinyCLR_Result AT91_Can_Release(const TinyCLR_Can_Controller* self) {
         CAN_DisableExplicitFilters(controllerIndex);
         CAN_DisableGroupFilters(controllerIndex);
 
-        state->isOpened = false;
     }
 
     return TinyCLR_Result::Success;
@@ -1911,7 +1907,6 @@ void AT91_Can_Reset() {
 
         AT91_Can_Release(&canControllers[i]);
 
-        canStates[i].isOpened = false;
         canStates[i].initializeCount = 0;
     }
 
