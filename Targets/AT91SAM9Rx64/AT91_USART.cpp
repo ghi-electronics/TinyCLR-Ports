@@ -300,12 +300,13 @@ void AT91_Uart_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error) 
         state->errorEventHandler(state->controller, error, AT91_Time_GetCurrentProcessorTime());
 }
 
-void AT91_Uart_ReceiveData(int32_t controllerIndex, uint32_t sr, bool canPostEvent) {
+void AT91_Uart_ReceiveData(int32_t controllerIndex, uint32_t sr) {
     AT91_USART &usart = AT91::USART(controllerIndex);
 
     uint8_t rxdata = usart.US_RHR;
 
     auto state = &uartStates[controllerIndex];
+    auto canPostEvent = AT91_Uart_CanPostEvent(controllerIndex);
     bool error = (state->rxBufferCount == state->rxBufferSize) || (sr & AT91_USART::US_OVRE) || (sr & AT91_USART::US_FRAME) || (sr & AT91_USART::US_PARE);
 
     if (sr & AT91_USART::US_OVRE)
@@ -387,10 +388,8 @@ void AT91_Uart_InterruptHandler(void *param) {
 
     uint32_t sr = usart.US_CSR;
 
-    auto canPostEvent = AT91_Uart_CanPostEvent(controllerIndex);
-
     if (sr & AT91_USART::US_RXRDY || sr & AT91_USART::US_OVRE || sr & AT91_USART::US_FRAME || sr & AT91_USART::US_PARE) {
-        AT91_Uart_ReceiveData(controllerIndex, sr, canPostEvent);
+        AT91_Uart_ReceiveData(controllerIndex, sr);
     }
 
     if (sr & AT91_USART::US_TXRDY) {
