@@ -416,8 +416,8 @@ TinyCLR_Result AT91_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
         if (!AT91_Gpio_OpenPin(i2cSdaPins[controllerIndex].number) || !AT91_Gpio_OpenPin(i2cSclPins[controllerIndex].number))
             return TinyCLR_Result::SharingViolation;
 
-        AT91_Gpio_ConfigurePin(i2cSdaPins[controllerIndex].number, AT91_Gpio_Direction::Input, i2cSdaPins[controllerIndex].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
         AT91_Gpio_ConfigurePin(i2cSclPins[controllerIndex].number, AT91_Gpio_Direction::Input, i2cSclPins[controllerIndex].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+        AT91_Gpio_ConfigurePin(i2cSdaPins[controllerIndex].number, AT91_Gpio_Direction::Input, i2cSdaPins[controllerIndex].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);        
 
         pmc.EnablePeriphClock(controllerIndex == 0 ? AT91C_ID_TWI0 : AT91C_ID_TWI1);
         I2C.TWI_MMR = 0x7e << AT91_I2C::TWI_MMR_DADR_SHIFT;
