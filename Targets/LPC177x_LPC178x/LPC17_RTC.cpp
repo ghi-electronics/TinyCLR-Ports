@@ -61,7 +61,12 @@ TinyCLR_Result LPC17_Rtc_Release(const TinyCLR_Rtc_Controller* self) {
 }
 
 TinyCLR_Result LPC17_Rtc_IsValid(const TinyCLR_Rtc_Controller* self, bool& value) {
-    value = true;
+    TinyCLR_Rtc_DateTime rtcNow;
+
+    value = (LPC17_Rtc_GetTime(self, rtcNow) == TinyCLR_Result::Success);
+
+    if (rtcNow.Second >= 60 || rtcNow.Minute >= 60 || rtcNow.Hour >= 24 || rtcNow.DayOfMonth >= 32 || rtcNow.Month >= 13 || rtcNow.Year <= 1979 || rtcNow.DayOfWeek == 0)
+        value = false;
 
     return TinyCLR_Result::Success;
 }
