@@ -267,7 +267,7 @@ void LPC17_Adc_AddApi(const TinyCLR_Api_Manager* apiManager) {
         adcApi[i].Version = 0;
         adcApi[i].Implementation = &adcControllers[i];
         adcApi[i].State = &adcStates[i];
-        
+
         apiManager->Add(apiManager, &adcApi[i]);
     }
 
@@ -303,8 +303,8 @@ TinyCLR_Result LPC17_Adc_OpenChannel(const TinyCLR_Adc_Controller* self, uint32_
 
     AD0CR |= (1 << channel) | // Selects this channel in the register to initialize
         ((5 - 1) << 8) | // Divide the clock (60 MHz) by 5 (60 / (4 + 1) = 12) <-- must be < 12.5
-        (1 << 16) | // Burst Mode set
-        (1 << 21); // Set convertion operation to opperational
+        (1 << AD0CR_BURST_BIT) | // Burst Mode set
+        (1 << AD0CR_PDN_BIT); // Set convertion operation to opperational
 
     state->isOpen[channel] = true;
 
@@ -314,8 +314,10 @@ TinyCLR_Result LPC17_Adc_OpenChannel(const TinyCLR_Adc_Controller* self, uint32_
 TinyCLR_Result LPC17_Adc_CloseChannel(const TinyCLR_Adc_Controller* self, uint32_t channel) {
     auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
-    if (state->isOpen[channel])
+    if (state->isOpen[channel]) {
+        AD0CR &= ~((1 << AD0CR_BURST_BIT) | (1 << AD0CR_PDN_BIT) | (0x7 << 24));
         LPC17_Gpio_ClosePin(adcPins[channel].number);
+    }
 
     state->isOpen[channel] = false;
 

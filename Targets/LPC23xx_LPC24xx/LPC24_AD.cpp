@@ -121,6 +121,7 @@ TinyCLR_Result LPC24_Adc_CloseChannel(const TinyCLR_Adc_Controller* self, uint32
     auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
     if (state->isOpen & (1 << channel)) {
+        AD0CR &= ~((1 << 16) | (1 << 21) | (0x7 << 24));
         LPC24_Gpio_ClosePin(LPC24_Adc_GetPin(channel));
 
     }
