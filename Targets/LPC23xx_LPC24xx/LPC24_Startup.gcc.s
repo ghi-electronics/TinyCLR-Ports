@@ -82,16 +82,16 @@ STACK_MODE_IRQ      =     2048
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-    .section SectionForStackBottom,       "a", %progbits
+    .section SectionForStackBottom,       "w", %progbits
 StackBottom:
     .word   0
-    .section SectionForStackTop,          "a", %progbits
+    .section SectionForStackTop,          "w", %progbits
 StackTop:
     .word   0
-    .section SectionForHeapBegin,         "a", %progbits
+    .section SectionForHeapBegin,         "aw", %progbits
 HeapBegin:
     .word   0
-    .section SectionForHeapEnd,           "a", %progbits
+    .section SectionForHeapEnd,           "aw", %progbits
 HeapEnd:
     .word   0
 
