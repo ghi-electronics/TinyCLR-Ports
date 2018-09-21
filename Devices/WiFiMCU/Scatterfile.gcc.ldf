@@ -41,7 +41,7 @@ SECTIONS
         * (VectorTable)
     }>IRAM
     
-    ER_RAM_RW 0x20000200 : ALIGN(0x08)
+    ER_RAM_RW 0x20000200 :
     {
         * (rwdata)
         * (.data*)
@@ -67,7 +67,7 @@ SECTIONS
         * (.ARM.extab*)
     }    
     
-    ER_HEAP_BEGIN 0x20006500 : ALIGN(0x08)
+    ER_HEAP_BEGIN 0x20006500 :
     {
         * (SectionForHeapBegin)
     }>IRAM

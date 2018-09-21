@@ -55,11 +55,11 @@ __initial_sp:
 StackTop:
       .word 0
 
-    .section SectionForHeapBegin, "w", %nobits
+    .section SectionForHeapBegin, "aw", %nobits
 HeapBegin:
      .word 0
 
-    .section SectionForHeapEnd, "w", %nobits
+    .section SectionForHeapEnd, "aw", %nobits
 HeapEnd:
     .word 0
 
