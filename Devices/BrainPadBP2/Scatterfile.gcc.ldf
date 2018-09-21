@@ -2,11 +2,11 @@ ENTRY(EntryPoint)
 MEMORY
 {    
     IRAM : ORIGIN = 0x20000000, LENGTH = 0x00018000
-    LR_FLASH : ORIGIN = 0x08008400, LENGTH = 0x00037C00    
+    LR_FLASH : ORIGIN = 0x08008000, LENGTH = 0x00037C00    
 }
 SECTIONS
 {
-    ER_FLASH 0x08008400 :
+    ER_FLASH 0x08008000 :
     {
         * (i.EntryPoint)
         * (SectionForBootstrapOperations)
