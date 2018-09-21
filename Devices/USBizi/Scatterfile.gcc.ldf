@@ -68,12 +68,12 @@ SECTIONS
         * (.ARM.extab*)
     }
 
-    .bss2 0x7FE00000 : ALIGN(0x8)
+    .bss2 0x7FE00000 :
     {
         KEEP(* (.bss2.*))
     }>ERAM
 
-    ER_HEAP_BEGIN 0x40006800 : ALIGN(0x8)
+    ER_HEAP_BEGIN 0x40006800 :
     {
         * (SectionForHeapBegin)
     }>IRAM
@@ -83,7 +83,7 @@ SECTIONS
         * (SectionForHeapEnd)
     }>IRAM
     
-    ER_RLP_BEGIN 0x4000FC00 : ALIGN(0x8)
+    ER_RLP_BEGIN 0x4000FC00 :
     {
         * (SectionForRlpBegin)
     }>IRAM
@@ -93,12 +93,12 @@ SECTIONS
         * (SectionForRlpEnd)
     }>IRAM
 
-    ER_STACK_BOTTOM 0x7FD00000 : ALIGN(0x8)
+    ER_STACK_BOTTOM 0x7FD00000 :
     {
         * (SectionForStackBottom)
     }>URAM
 
-    ER_STACK_TOP 0x7FD04000 - 0x8: ALIGN(0x8)
+    ER_STACK_TOP 0x7FD04000 - 0x8:
     {
         * (SectionForStackTop +LAST)
     }>URAM

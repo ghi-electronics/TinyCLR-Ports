@@ -42,7 +42,7 @@ SECTIONS
         * (VectorTable)
     }>IRAM
 
-    ER_RAM_RW 0xA0020000 : ALIGN(0x8)
+    ER_RAM_RW 0xA0020000 :
     {
         * (rwdata)
         * (.data*)
@@ -57,7 +57,7 @@ SECTIONS
         * (COMMON)
     }>ERAM
 
-    ER_RAM_RO 0x20000000 : ALIGN(0x8)
+    ER_RAM_RO 0x20000000 :
     {
         * (SectionForCodeReadOnlyRAM)
     }>SRAM AT>LR_FLASH
@@ -77,7 +77,7 @@ SECTIONS
         * (SectionForHeapEnd)
     }>ERAM
     
-    ER_RLP_BEGIN 0xA0F00000 : ALIGN(0x8)
+    ER_RLP_BEGIN 0xA0F00000 :
     {
         * (SectionForRlpBegin)
     }>IRAM
