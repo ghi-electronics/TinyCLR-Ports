@@ -173,7 +173,8 @@ struct UsClientState {
     uint8_t* fifoPacketIn;
     uint8_t* fifoPacketOut;
     uint8_t* fifoPacketCount;
-    uint8_t maxFifoPacketCount;
+    uint8_t* maxFifoPacketCount;
+    uint8_t maxFifoPacketCountDefault;
 
     uint8_t* controlEndpointBuffer;
 
