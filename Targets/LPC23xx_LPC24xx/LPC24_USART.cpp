@@ -36,6 +36,7 @@ struct UartState {
     size_t                              rxBufferSize;
 
     bool                                handshaking;
+    bool                                enable;
 
     TinyCLR_Uart_ErrorReceivedHandler   errorEventHandler;
     TinyCLR_Uart_DataReceivedHandler    dataReceivedEventHandler;
@@ -425,6 +426,8 @@ TinyCLR_Result LPC24_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->rxBufferOut = 0;
 
         state->controller = self;
+        state->handshaking = false;
+        state->enable = false;
 
         state->lastEventRxBufferCount = 0;
         state->lastEventTime = LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr));
@@ -749,10 +752,10 @@ void LPC24_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable) {
 
 bool LPC24_Uart_CanSend(int controllerIndex) {
     auto state = &uartStates[controllerIndex];
-    bool value; 
-    
+    bool value;
+
     LPC24_Uart_GetClearToSendState(state->controller, value);
-    
+
     return value;
 }
 
@@ -956,9 +959,15 @@ void LPC24_Uart_Reset() {
 }
 
 TinyCLR_Result LPC24_Uart_Enable(const TinyCLR_Uart_Controller* self) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+    state->enable = true;
+
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Uart_Disable(const TinyCLR_Uart_Controller* self) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+    state->enable = false;
+
     return TinyCLR_Result::Success;
 }

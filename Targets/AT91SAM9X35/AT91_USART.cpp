@@ -37,6 +37,7 @@ struct UartState {
     size_t rxBufferSize;
 
     bool handshaking;
+    bool enable;
 
     TinyCLR_Uart_ErrorReceivedHandler errorEventHandler;
     TinyCLR_Uart_DataReceivedHandler dataReceivedEventHandler;
@@ -454,6 +455,8 @@ TinyCLR_Result AT91_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->rxBufferOut = 0;
 
         state->controller = self;
+        state->handshaking = false;
+        state->enable = false;
 
         state->lastEventRxBufferCount = 0;
         state->lastEventTime = AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr));
@@ -637,6 +640,7 @@ TinyCLR_Result AT91_Uart_Release(const TinyCLR_Uart_Controller* self) {
         state->rxBufferOut = 0;
 
         state->handshaking = false;
+        state->enable = false;
 
         AT91_PMC &pmc = AT91::PMC();
 
@@ -696,10 +700,10 @@ void AT91_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable) {
 
 bool AT91_Uart_CanSend(int controllerIndex) {
     auto state = &uartStates[controllerIndex];
-    bool value; 
-    
+    bool value;
+
     AT91_Uart_GetClearToSendState(state->controller, value);
-    
+
     return value;
 }
 
@@ -908,9 +912,15 @@ void AT91_Uart_Reset() {
 }
 
 TinyCLR_Result AT91_Uart_Enable(const TinyCLR_Uart_Controller* self) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+    state->enable = true;
+
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Uart_Disable(const TinyCLR_Uart_Controller* self) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+    state->enable = false;
+
     return TinyCLR_Result::Success;
 }

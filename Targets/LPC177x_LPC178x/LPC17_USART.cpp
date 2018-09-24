@@ -206,6 +206,7 @@ struct UartState {
     size_t                              rxBufferSize;
 
     bool                                handshaking;
+    bool                                enable;
 
     TinyCLR_Uart_ErrorReceivedHandler   errorEventHandler;
     TinyCLR_Uart_DataReceivedHandler    dataReceivedEventHandler;
@@ -612,6 +613,8 @@ TinyCLR_Result LPC17_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->rxBufferOut = 0;
 
         state->controller = self;
+        state->handshaking = false;
+        state->enable = false;
 
         state->lastEventRxBufferCount = 0;
         state->lastEventTime = LPC17_Time_GetTimeForProcessorTicks(nullptr, LPC17_Time_GetCurrentProcessorTicks(nullptr));
@@ -1128,10 +1131,16 @@ void LPC17_Uart_Reset() {
 }
 
 TinyCLR_Result LPC17_Uart_Enable(const TinyCLR_Uart_Controller* self) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+    state->enable = true;
+
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC17_Uart_Disable(const TinyCLR_Uart_Controller* self) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+    state->enable = false;
+
     return TinyCLR_Result::Success;
 }
 
