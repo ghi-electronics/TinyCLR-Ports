@@ -694,7 +694,7 @@ void AT91_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable) {
     }
 }
 
-bool AT91_Uart_TxHandshakeEnabledState(int controllerIndex) {
+bool AT91_Uart_CanSend(int controllerIndex) {
     auto state = &uartStates[controllerIndex];
     bool value; 
     

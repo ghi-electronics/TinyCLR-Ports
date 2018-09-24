@@ -28,7 +28,7 @@
 #define STM32F7_UART_DATA_BIT_LENGTH_8    8
 #define STM32F7_UART_DATA_BIT_LENGTH_9    9
 
-bool STM32F7_Uart_TxHandshakeEnabledState(int controllerIndex);
+bool STM32F7_Uart_CanSend(int controllerIndex);
 void STM32F7_Uart_TxBufferEmptyInterruptEnable(int controllerIndex, bool enable);
 void STM32F7_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable);
 void STM32F7_Uart_Reset();
@@ -322,7 +322,7 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
     }
 
     if (sr & USART_ISR_TXE) {
-        if (STM32F7_Uart_TxHandshakeEnabledState(controllerIndex)) {
+        if (STM32F7_Uart_CanSend(controllerIndex)) {
             if (state->txBufferCount > 0) {
                 uint8_t data = state->TxBuffer[state->txBufferOut++];
 
@@ -752,7 +752,7 @@ void STM32F7_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable) 
     }
 }
 
-bool STM32F7_Uart_TxHandshakeEnabledState(int controllerIndex) {
+bool STM32F7_Uart_CanSend(int controllerIndex) {
     auto state = &uartStates[controllerIndex];
     bool value;
 

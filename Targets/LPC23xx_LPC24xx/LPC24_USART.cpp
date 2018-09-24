@@ -350,7 +350,7 @@ void LPC24_Uart_TransmitData(int controllerIndex, uint32_t LSR_Value, uint32_t I
     // Send data
     if ((LSR_Value & LPC24XX_USART::UART_LSR_TE) || (IIR_Value == LPC24XX_USART::UART_IIR_IID_Irpt_THRE)) {
         // Check if CTS is high
-        if (LPC24_Uart_TxHandshakeEnabledState(controllerIndex)) {
+        if (LPC24_Uart_CanSend(controllerIndex)) {
             if (state->txBufferCount > 0) {
                 uint8_t txdata = state->TxBuffer[state->txBufferOut++];
 
@@ -747,7 +747,7 @@ void LPC24_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable) {
     }
 }
 
-bool LPC24_Uart_TxHandshakeEnabledState(int controllerIndex) {
+bool LPC24_Uart_CanSend(int controllerIndex) {
     auto state = &uartStates[controllerIndex];
     bool value; 
     
