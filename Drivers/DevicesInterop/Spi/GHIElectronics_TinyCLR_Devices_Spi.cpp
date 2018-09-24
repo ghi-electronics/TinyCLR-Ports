@@ -63,10 +63,16 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
     nullptr,
     nullptr,
     nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
 };
 
 const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices_Spi = {
     "GHIElectronics.TinyCLR.Devices.Spi",
-    0x7755789D,
+    0xCCB6FED8,
     methods
 };

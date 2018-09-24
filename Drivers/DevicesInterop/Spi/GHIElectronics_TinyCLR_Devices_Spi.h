@@ -34,11 +34,13 @@ struct Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices
     static const size_t FIELD___ClockFrequency__BackingField___I4 = 3;
     static const size_t FIELD___DataBitLength__BackingField___I4 = 4;
     static const size_t FIELD___Mode__BackingField___GHIElectronicsTinyCLRDevicesSpiSpiMode = 5;
+    static const size_t FIELD___ChipSelectSetupTime__BackingField___mscorlibSystemTimeSpan = 6;
+    static const size_t FIELD___ChipSelectHoldTime__BackingField___mscorlibSystemTimeSpan = 7;
+    static const size_t FIELD___ChipSelectActiveState__BackingField___BOOLEAN = 8;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiController {
-    static const size_t FIELD___active___GHIElectronicsTinyCLRDevicesSpiSpiDevice = 1;
-    static const size_t FIELD___Provider__BackingField___GHIElectronicsTinyCLRDevicesSpiProviderISpiControllerProvider = 2;
+    static const size_t FIELD___Provider__BackingField___GHIElectronicsTinyCLRDevicesSpiProviderISpiControllerProvider = 1;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiDevice {

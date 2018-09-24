@@ -267,7 +267,7 @@ TinyCLR_Result AT91_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8_t*
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, uint32_t chipSelectLine, TinyCLR_Spi_ChipSelectType chipSelectType, uint32_t clockFrequency, uint32_t dataBitLength, TinyCLR_Spi_Mode mode) {
+TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, uint32_t chipSelectLine, TinyCLR_Spi_ChipSelectType chipSelectType, uint32_t chipSelectSetupTime, uint32_t chipSelectHoldTime, bool chipSelectActiveState, uint32_t clockFrequency, uint32_t dataBitLength, TinyCLR_Spi_Mode mode) {
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;

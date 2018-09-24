@@ -244,7 +244,7 @@ TinyCLR_Result STM32F7_SdCard_Reset();
 void STM32F7_Spi_AddApi(const TinyCLR_Api_Manager* apiManager);
 TinyCLR_Result STM32F7_Spi_Acquire(const TinyCLR_Spi_Controller* self);
 TinyCLR_Result STM32F7_Spi_Release(const TinyCLR_Spi_Controller* self);
-TinyCLR_Result STM32F7_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, uint32_t chipSelectLine, TinyCLR_Spi_ChipSelectType chipSelectType, uint32_t clockFrequency, uint32_t dataBitLength, TinyCLR_Spi_Mode mode);
+TinyCLR_Result STM32F7_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, uint32_t chipSelectLine, TinyCLR_Spi_ChipSelectType chipSelectType, uint32_t chipSelectSetupTime, uint32_t chipSelectHoldTime, bool chipSelectActiveState, uint32_t clockFrequency, uint32_t dataBitLength, TinyCLR_Spi_Mode mode);
 TinyCLR_Result STM32F7_Spi_Read(const TinyCLR_Spi_Controller* self, uint8_t* buffer, size_t& length);
 TinyCLR_Result STM32F7_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8_t* buffer, size_t& length);
 TinyCLR_Result STM32F7_Spi_WriteRead(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter);

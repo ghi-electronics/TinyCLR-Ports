@@ -9,8 +9,7 @@ struct Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR_Devices
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR_Devices_I2c_I2cController {
-    static const size_t FIELD___active___GHIElectronicsTinyCLRDevicesI2cI2cDevice = 1;
-    static const size_t FIELD___Provider__BackingField___GHIElectronicsTinyCLRDevicesI2cProviderII2cControllerProvider = 2;
+    static const size_t FIELD___Provider__BackingField___GHIElectronicsTinyCLRDevicesI2cProviderII2cControllerProvider = 1;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR_Devices_I2c_I2cDevice {
