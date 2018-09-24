@@ -1315,7 +1315,7 @@ TinyCLR_Result STM32F4_Can_SoftReset(const TinyCLR_Can_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, const uint8_t* data, size_t length) {
+TinyCLR_Result STM32F4_Can_WriteMessage(const TinyCLR_Can_Controller* self, const TinyCLR_Can_Message* messages, size_t& length) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     int32_t controllerIndex = state->controllerIndex;
@@ -1367,7 +1367,7 @@ TinyCLR_Result STM32F4_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_ReadMessage(const TinyCLR_Can_Controller* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint8_t* data, size_t& length, uint64_t& timestamp) {
+TinyCLR_Result STM32F4_Can_ReadMessage(const TinyCLR_Can_Controller* self, TinyCLR_Can_Message* messages, size_t& length) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     STM32F4_Can_Message *can_msg;
@@ -1399,7 +1399,7 @@ TinyCLR_Result STM32F4_Can_ReadMessage(const TinyCLR_Can_Controller* self, uint3
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F4_Can_SetBitTiming(const TinyCLR_Can_Controller* self, uint32_t propagation, uint32_t phase1, uint32_t phase2, uint32_t baudratePrescaler, uint32_t synchronizationJumpWidth, bool useMultiBitSampling) {
+TinyCLR_Result STM32F4_Can_SetBitTiming(const TinyCLR_Can_Controller* self, const TinyCLR_Can_BitTiming* timing) {
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);

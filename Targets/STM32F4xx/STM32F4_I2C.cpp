@@ -329,7 +329,7 @@ TinyCLR_Result STM32F4_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const u
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result STM32F4_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, uint32_t slaveAddress, TinyCLR_I2c_AddressFormat addressFormat, TinyCLR_I2c_BusSpeed busSpeed) {
+TinyCLR_Result STM32F4_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, const TinyCLR_I2c_Settings* settings) {
     uint32_t rateKhz;
     uint32_t ccr;
 

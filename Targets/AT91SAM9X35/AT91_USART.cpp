@@ -475,7 +475,7 @@ TinyCLR_Result AT91_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self, uint32_t baudRate, uint32_t dataBits, TinyCLR_Uart_Parity parity, TinyCLR_Uart_StopBitCount stopBits, TinyCLR_Uart_Handshake handshaking) {
+TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self, const TinyCLR_Uart_Settings* settings) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 

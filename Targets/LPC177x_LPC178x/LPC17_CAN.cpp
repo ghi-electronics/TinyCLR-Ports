@@ -2524,7 +2524,7 @@ TinyCLR_Result LPC17_Can_SoftReset(const TinyCLR_Can_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32_t arbitrationId, bool isExtendedId, bool isRemoteTransmissionRequest, const uint8_t* data, size_t length) {
+TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Controller* self, const TinyCLR_Can_Message* messages, size_t& length) {
 
     uint32_t *data32 = (uint32_t*)data;
 
@@ -2583,7 +2583,7 @@ TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Controller* self, uint32
     return TinyCLR_Result::Busy;
 }
 
-TinyCLR_Result LPC17_Can_ReadMessage(const TinyCLR_Can_Controller* self, uint32_t& arbitrationId, bool& isExtendedId, bool& isRemoteTransmissionRequest, uint8_t* data, size_t& length, uint64_t& timestamp) {
+TinyCLR_Result LPC17_Can_ReadMessage(const TinyCLR_Can_Controller* self, TinyCLR_Can_Message* messages, size_t& length) {
     LPC17_Can_Message *can_msg;
 
     uint32_t *data32 = (uint32_t*)data;
@@ -2617,7 +2617,7 @@ TinyCLR_Result LPC17_Can_ReadMessage(const TinyCLR_Can_Controller* self, uint32_
 
 }
 
-TinyCLR_Result LPC17_Can_SetBitTiming(const TinyCLR_Can_Controller* self, uint32_t propagation, uint32_t phase1, uint32_t phase2, uint32_t baudratePrescaler, uint32_t synchronizationJumpWidth, bool useMultiBitSampling) {
+TinyCLR_Result LPC17_Can_SetBitTiming(const TinyCLR_Can_Controller* self, const TinyCLR_Can_BitTiming* timing) {
 
     LPC17xx_SYSCON &SYSCON = *(LPC17xx_SYSCON *)(size_t)(LPC17xx_SYSCON::c_SYSCON_Base);
 

@@ -395,7 +395,7 @@ TinyCLR_Result STM32F7_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const u
     return timeout > 0 ? TinyCLR_Result::Success : TinyCLR_Result::TimedOut;
 }
 
-TinyCLR_Result STM32F7_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, uint32_t slaveAddress, TinyCLR_I2c_AddressFormat addressFormat, TinyCLR_I2c_BusSpeed busSpeed) {
+TinyCLR_Result STM32F7_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, const TinyCLR_I2c_Settings* settings) {
     uint32_t rateKhz;
     uint32_t ccr;
 
@@ -451,7 +451,7 @@ TinyCLR_Result STM32F7_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
             return TinyCLR_Result::SharingViolation;
 
         STM32F7_GpioInternal_ConfigurePin(scl.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::OpenDrain, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::PullUp, scl.alternateFunction);
-        STM32F7_GpioInternal_ConfigurePin(sda.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::OpenDrain, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::PullUp, sda.alternateFunction);        
+        STM32F7_GpioInternal_ConfigurePin(sda.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::OpenDrain, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::PullUp, sda.alternateFunction);
 
         switch (controllerIndex) {
         case 0:
