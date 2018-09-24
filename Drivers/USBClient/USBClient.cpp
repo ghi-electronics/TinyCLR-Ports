@@ -749,6 +749,14 @@ void TinyCLR_UsbClient_EnsureTableInitialized() {
         usbClientControllers[i].SetDataReceivedHandler = &TinyCLR_UsbClient_SetDataReceivedHandler;
         usbClientControllers[i].SetVendorClassRequestHandler = &TinyCLR_UsbClient_SetVendorClassRequestHandler;
         usbClientControllers[i].SetDeviceDescriptor = &TinyCLR_UsbClient_SetDeviceDescriptor;
+        usbClientControllers[i].GetBytesToWrite = &TinyCLR_UsbClient_GetBytesToWrite;
+        usbClientControllers[i].GetBytesToRead = &TinyCLR_UsbClient_GetBytesToRead;
+        usbClientControllers[i].ClearWriteBuffer = &TinyCLR_UsbClient_ClearWriteBuffer;
+        usbClientControllers[i].ClearReadBuffer = &TinyCLR_UsbClient_ClearReadBuffer;
+        usbClientControllers[i].GetWriteBufferSize = &TinyCLR_UsbClient_GetWriteBufferSize;
+        usbClientControllers[i].GetReadBufferSize = &TinyCLR_UsbClient_GetReadBufferSize;
+        usbClientControllers[i].SetWriteBufferSize = &TinyCLR_UsbClient_SetWriteBufferSize;
+        usbClientControllers[i].SetReadBufferSize = &TinyCLR_UsbClient_SetReadBufferSize;
 
         usbClientApi[i].Author = "GHI Electronics, LLC";
         usbClientApi[i].Name = usbClientApiNames[i];
