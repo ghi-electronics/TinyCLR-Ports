@@ -306,6 +306,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::SetBitTiming___VOID__GHIElectronicsTinyCLRDevicesCanCanBitTiming(const TinyCLR_Interop_MethodData md) {
     TinyCLR_Interop_ClrValue arg, arg1, arg2, arg3, arg4, arg5, arg6;
+    TinyCLR_Can_BitTiming timing;
 
     md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg);
 
@@ -318,15 +319,14 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR
 
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
-    int32_t propagation = arg1.Data.Numeric->I4;
-    int32_t phase1 = arg2.Data.Numeric->I4;
-    int32_t phase2 = arg3.Data.Numeric->I4;
+    timing.Propagation = arg1.Data.Numeric->I4;
+    timing.Phase1 = arg2.Data.Numeric->I4;
+    timing.Phase2 = arg3.Data.Numeric->I4;
+    timing.BaudratePrescaler = arg4.Data.Numeric->I4;
+    timing.SynchronizationJumpWidth = arg5.Data.Numeric->I4;
+    timing.UseMultiBitSampling = arg6.Data.Numeric->Boolean;
 
-    int32_t brp = arg4.Data.Numeric->I4;
-    int32_t synchronizationJumpWidth = arg5.Data.Numeric->I4;
-    int32_t useMultiBitSampling = arg6.Data.Numeric->Boolean;
-
-    return  api->SetBitTiming(api, propagation, phase1, phase2, brp, synchronizationJumpWidth, useMultiBitSampling);
+    return api->SetBitTiming(api, &timing);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::SetExplicitFilters___VOID__SZARRAY_I4(const TinyCLR_Interop_MethodData md) {

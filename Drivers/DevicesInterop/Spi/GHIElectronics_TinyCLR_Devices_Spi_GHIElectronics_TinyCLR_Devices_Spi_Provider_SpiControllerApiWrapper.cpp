@@ -103,6 +103,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR
 
     TinyCLR_Interop_ClrValue obj;
     TinyCLR_Interop_ClrValue args[8];
+    TinyCLR_Spi_Settings settings;
 
     md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, obj);
     md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings::FIELD___ChipSelectLine__BackingField___I4, args[0]);
@@ -114,14 +115,14 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR
     md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings::FIELD___ChipSelectHoldTime__BackingField___mscorlibSystemTimeSpan, args[6]);
     md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings::FIELD___ChipSelectActiveState__BackingField___BOOLEAN, args[7]);
 
-    auto chipSelectLine = args[0].Data.Numeric->I4;
-    auto chipSelectType = static_cast<TinyCLR_Spi_ChipSelectType>(args[1].Data.Numeric->I4);
-    auto clockFrequency = args[2].Data.Numeric->I4;
-    auto dataBitLength = args[3].Data.Numeric->I4;
-    auto mode = static_cast<TinyCLR_Spi_Mode>(args[4].Data.Numeric->I4);
-    auto setupTime = args[5].Data.Numeric->U8;
-    auto holdTime = args[6].Data.Numeric->U8;
-    auto activeState = args[7].Data.Numeric->Boolean;
+    settings.ChipSelectLine = args[0].Data.Numeric->I4;
+    settings.ChipSelectType = static_cast<TinyCLR_Spi_ChipSelectType>(args[1].Data.Numeric->I4);
+    settings.ClockFrequency = args[2].Data.Numeric->I4;
+    settings.DataBitLength = args[3].Data.Numeric->I4;
+    settings.Mode = static_cast<TinyCLR_Spi_Mode>(args[4].Data.Numeric->I4);
+    settings.ChipSelectSetupTime = args[5].Data.Numeric->U8;
+    settings.ChipSelectHoldTime = args[6].Data.Numeric->U8;
+    settings.ChipSelectActiveState = args[7].Data.Numeric->Boolean;
 
-    return api->SetActiveSettings(api, chipSelectLine, chipSelectType, setupTime, holdTime, activeState, clockFrequency, dataBitLength, mode);
+    return api->SetActiveSettings(api, &settings);
 }
