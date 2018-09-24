@@ -192,7 +192,7 @@ TinyCLR_Result LPC24_Deployment_GetDescriptor(const TinyCLR_Storage_Controller* 
 
     descriptor = &state->storageDescriptor;
 
-    return descriptor->RegionCount > 0 ? TinyCLR_Result::Success : TinyCLR_Result::NotImplemented;
+    return descriptor->RegionCount > 0 ? TinyCLR_Result::Success : TinyCLR_Result::NotAvailable;
 }
 
 const TinyCLR_Startup_DeploymentConfiguration* LPC24_Deployment_GetDeploymentConfiguration() {
