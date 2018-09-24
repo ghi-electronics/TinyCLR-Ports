@@ -815,7 +815,7 @@ void AT91_UsbDevice_InitializeConfiguration(UsClientState *usClientState) {
     if (usClientState != nullptr) {
         usClientState->controllerIndex = controller;
 
-        usClientState->maxFifoPacketCount = AT91_USB_PACKET_FIFO_COUNT;
+        usClientState->maxFifoPacketCountDefault = AT91_USB_PACKET_FIFO_COUNT;
         usClientState->totalEndpointsCount = AT91_USB_ENDPOINT_COUNT;
         usClientState->totalPipesCount = AT91_USB_PIPE_COUNT;
 

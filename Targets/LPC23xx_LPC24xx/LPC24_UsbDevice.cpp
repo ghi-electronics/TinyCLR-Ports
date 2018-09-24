@@ -180,7 +180,7 @@ void LPC24_UsbDevice_InitializeConfiguration(UsClientState *usClientState) {
     if (usClientState != nullptr) {
         usClientState->controllerIndex = controllerIndex;
 
-        usClientState->maxFifoPacketCount = LPC24_USB_PACKET_FIFO_COUNT;
+        usClientState->maxFifoPacketCountDefault = LPC24_USB_PACKET_FIFO_COUNT;
         usClientState->totalEndpointsCount = LPC24_USB_ENDPOINT_COUNT;
         usClientState->totalPipesCount = LPC24_USB_PIPE_COUNT;
 

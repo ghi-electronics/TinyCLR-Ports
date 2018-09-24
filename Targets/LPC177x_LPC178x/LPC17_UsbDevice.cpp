@@ -211,7 +211,7 @@ void LPC17_UsbDevice_InitializeConfiguration(UsClientState *usClientState) {
     if (usClientState != nullptr) {
         usClientState->controllerIndex = controllerIndex;
 
-        usClientState->maxFifoPacketCount = LPC17_USB_PACKET_FIFO_COUNT;
+        usClientState->maxFifoPacketCountDefault = LPC17_USB_PACKET_FIFO_COUNT;
         usClientState->totalEndpointsCount = LPC17_USB_ENDPOINT_COUNT;
         usClientState->totalPipesCount = LPC17_USB_PIPE_COUNT;
 
