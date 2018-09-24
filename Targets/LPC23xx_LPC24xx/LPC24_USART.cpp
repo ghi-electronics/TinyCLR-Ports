@@ -488,7 +488,12 @@ void LPC24_Uart_SetClock(int32_t controllerIndex, int32_t pclkSel) {
 
     }
 }
-TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self, uint32_t baudRate, uint32_t dataBits, TinyCLR_Uart_Parity parity, TinyCLR_Uart_StopBitCount stopBits, TinyCLR_Uart_Handshake handshaking) {
+TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self, const TinyCLR_Uart_Settings* settings) {
+    uint32_t baudRate = settings->BaudRate;
+    uint32_t dataBits = settings->DataBits;
+    TinyCLR_Uart_Parity parity = settings->Parity;
+    TinyCLR_Uart_StopBitCount stopBits = settings->StopBits;
+    TinyCLR_Uart_Handshake handshaking = settings->Handshaking;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 

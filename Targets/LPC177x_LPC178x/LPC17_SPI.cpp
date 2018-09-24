@@ -534,7 +534,7 @@ bool LPC17_Spi_Transaction_nWrite8_nRead8(int32_t controllerIndex) {
     uint8_t* Write8 = state->writeBuffer;
     int32_t WriteCount = state->writeLength;
     uint8_t* Read8 = state->readBuffer;
-    int32_t ReadCount = state->readLength;    
+    int32_t ReadCount = state->readLength;
     int32_t ReadTotal = 0;
 
     if (ReadCount) {
@@ -728,7 +728,15 @@ TinyCLR_Result LPC17_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8_t
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, uint32_t chipSelectLine, TinyCLR_Spi_ChipSelectType chipSelectType, uint32_t chipSelectSetupTime, uint32_t chipSelectHoldTime, bool chipSelectActiveState, uint32_t clockFrequency, uint32_t dataBitLength, TinyCLR_Spi_Mode mode) {
+TinyCLR_Result LPC17_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, const TinyCLR_Spi_Settings* settings) {
+    uint32_t chipSelectLine = settings->ChipSelectLine;
+    TinyCLR_Spi_ChipSelectType chipSelectType = settings->ChipSelectType;
+    uint32_t chipSelectSetupTime = settings->ChipSelectSetupTime;
+    uint32_t chipSelectHoldTime = settings->ChipSelectHoldTime;
+    bool chipSelectActiveState = settings->ChipSelectActiveState;
+    uint32_t clockFrequency = settings->ClockFrequency;
+    uint32_t dataBitLength = settings->DataBitLength;
+    TinyCLR_Spi_Mode mode = settings->Mode;
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;

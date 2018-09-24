@@ -342,7 +342,10 @@ TinyCLR_Result AT91_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint
 #define MIN_CLK_RATE    (AT91_SYSTEM_PERIPHERAL_CLOCK_HZ/1000)/(128 *255+CLOCK_RATE_CONSTANT)
 #define MAX_CLK_RATE    400   //kHz
 
-TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, uint32_t slaveAddress, TinyCLR_I2c_AddressFormat addressFormat, TinyCLR_I2c_BusSpeed busSpeed) {
+TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, const TinyCLR_I2c_Settings* settings) {
+    uint32_t slaveAddress = settings->SlaveAddress;
+    TinyCLR_I2c_AddressFormat addressFormat = settings->AddressFormat;
+    TinyCLR_I2c_BusSpeed busSpeed = settings->BusSpeed;
     uint32_t rateKhz;
     uint8_t clockRate, clockRate2;
 
