@@ -36,7 +36,7 @@ struct UartState {
     size_t rxBufferOut;
     size_t rxBufferSize;
 
-    bool handshakeEnable;
+    bool handshaking;
 
     TinyCLR_Uart_ErrorReceivedHandler errorEventHandler;
     TinyCLR_Uart_DataReceivedHandler dataReceivedEventHandler;
@@ -271,7 +271,7 @@ TinyCLR_Result AT91_Uart_PinConfiguration(int controllerIndex, bool enable) {
         // Connect pin to UART
         AT91_Gpio_ConfigurePin(rxPin, AT91_Gpio_Direction::Input, rxPinMode, AT91_Gpio_ResistorMode::Inactive);
 
-        if (state->handshakeEnable) {
+        if (state->handshaking) {
             if (ctsPin == PIN_NONE || rtsPin == PIN_NONE)
                 return TinyCLR_Result::NotSupported;
 
@@ -285,7 +285,7 @@ TinyCLR_Result AT91_Uart_PinConfiguration(int controllerIndex, bool enable) {
         // Connect pin to UART
         AT91_Gpio_ConfigurePin(rxPin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::Inactive);
 
-        if (state->handshakeEnable) {
+        if (state->handshaking) {
             AT91_Gpio_ConfigurePin(ctsPin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::Inactive);
             AT91_Gpio_ConfigurePin(rtsPin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::Inactive);
         }
@@ -358,7 +358,7 @@ void AT91_Uart_ReceiveData(int32_t controllerIndex, uint32_t sr) {
     }
 
     // Control rts by software - enable / disable when internal buffer reach 3/4
-    if (state->handshakeEnable && (state->rxBufferCount >= ((state->rxBufferSize * 3) / 4))) {
+    if (state->handshaking && (state->rxBufferCount >= ((state->rxBufferSize * 3) / 4))) {
         usart.US_CR |= AT91_USART::US_RTSDIS;// Write rts to 1
     }
 }
@@ -405,7 +405,7 @@ void AT91_Uart_InterruptHandler(void *param) {
 
     auto state = &uartStates[controllerIndex];
 
-    if (state->handshakeEnable && (sr & AT91_USART::US_CTSIC)) {
+    if (state->handshaking && (sr & AT91_USART::US_CTSIC)) {
         bool ctsActive;
 
         AT91_Uart_GetClearToSendState(state->controller, ctsActive);
@@ -574,7 +574,7 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self, 
     case TinyCLR_Uart_Handshake::RequestToSend:
         usart.US_IER = AT91_USART::US_CTSIC;
 
-        state->handshakeEnable = true;
+        state->handshaking = true;
         break;
 
     case TinyCLR_Uart_Handshake::XOnXOff:
@@ -636,7 +636,7 @@ TinyCLR_Result AT91_Uart_Release(const TinyCLR_Uart_Controller* self) {
         state->rxBufferIn = 0;
         state->rxBufferOut = 0;
 
-        state->handshakeEnable = false;
+        state->handshaking = false;
 
         AT91_PMC &pmc = AT91::PMC();
 
@@ -696,10 +696,10 @@ void AT91_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable) {
 
 bool AT91_Uart_TxHandshakeEnabledState(int controllerIndex) {
     auto state = &uartStates[controllerIndex];
-    bool value;
-
+    bool value; 
+    
     AT91_Uart_GetClearToSendState(state->controller, value);
-
+    
     return value;
 }
 
@@ -748,7 +748,7 @@ TinyCLR_Result AT91_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* buff
             state->rxBufferOut = 0;
 
         // Control rts by software - enable / disable when internal buffer reach 3/4
-        if (state->handshakeEnable && (state->rxBufferCount < ((state->rxBufferSize * 3) / 4))) {
+        if (state->handshaking && (state->rxBufferCount < ((state->rxBufferSize * 3) / 4))) {
             AT91_USART &usart = AT91::USART(controllerIndex);
             usart.US_CR |= AT91_USART::US_RTSEN;// Write rts to 0
         }
@@ -824,7 +824,7 @@ TinyCLR_Result AT91_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* self
 
     value = true;
 
-    if (state->handshakeEnable) {
+    if (state->handshaking) {
         auto controllerIndex = state->controllerIndex;
 
         // Reading the pin state to protect values from register for inteterupt which is higher priority (some bits are clear once read)
@@ -849,7 +849,7 @@ TinyCLR_Result AT91_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Controller
 
     value = false;
 
-    if (state->handshakeEnable) {
+    if (state->handshaking) {
         auto controllerIndex = state->controllerIndex;
 
         // Reading the pin state to protect values from register for inteterupt which is higher priority (some bits are clear once read)

@@ -35,7 +35,7 @@ struct UartState {
     size_t                              rxBufferOut;
     size_t                              rxBufferSize;
 
-    bool                                handshakeEnable;
+    bool                                handshaking;
 
     TinyCLR_Uart_ErrorReceivedHandler   errorEventHandler;
     TinyCLR_Uart_DataReceivedHandler    dataReceivedEventHandler;
@@ -240,7 +240,7 @@ void LPC24_Uart_PinConfiguration(int controllerIndex, bool enable) {
 
         LPC24_Uart_RxBufferFullInterruptEnable(controllerIndex, true);
 
-        if (state->handshakeEnable) {
+        if (state->handshaking) {
             if (!LPC24_Gpio_OpenPin(ctsPin) || !LPC24_Gpio_OpenPin(rtsPin))
                 return;
             LPC24_Gpio_ConfigurePin(ctsPin, LPC24_Gpio_Direction::Input, ctsPinMode, LPC24_Gpio_PinMode::Inactive);
@@ -258,7 +258,7 @@ void LPC24_Uart_PinConfiguration(int controllerIndex, bool enable) {
         // TODO Add config for uart pin protected state
         LPC24_Gpio_ClosePin(rxPin);
 
-        if (state->handshakeEnable) {
+        if (state->handshaking) {
             LPC24_Gpio_ClosePin(ctsPin);
             LPC24_Gpio_ClosePin(rtsPin);
         }
@@ -386,7 +386,7 @@ void LPC24_Uart_InterruptHandler(void *param) {
 
     LPC24_Uart_TransmitData(controllerIndex, LSR_Value, IIR_Value);
 
-    if (state->handshakeEnable) {
+    if (state->handshaking) {
         volatile bool dump = USARTC.UART_MSR; // Clear cts bit
 
         bool ctsActive;
@@ -597,7 +597,7 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self,
     switch (handshaking) {
     case TinyCLR_Uart_Handshake::RequestToSend:
         USARTC.UART_MCR |= (1 << 6) | (1 << 7);
-        state->handshakeEnable = true;
+        state->handshaking = true;
         break;
 
     case TinyCLR_Uart_Handshake::XOnXOff:
@@ -663,7 +663,7 @@ TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Controller* self) {
 
         LPC24_Interrupt_Disable(LPC24XX_USART::getIntNo(controllerIndex));
 
-        if (state->handshakeEnable) {
+        if (state->handshaking) {
             USARTC.UART_MCR &= ~((1 << 6) | (1 << 7));
         }
 
@@ -681,7 +681,7 @@ TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Controller* self) {
         state->rxBufferIn = 0;
         state->rxBufferOut = 0;
 
-        state->handshakeEnable = false;
+        state->handshaking = false;
 
         switch (controllerIndex) {
         case 0:
@@ -749,10 +749,10 @@ void LPC24_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable) {
 
 bool LPC24_Uart_TxHandshakeEnabledState(int controllerIndex) {
     auto state = &uartStates[controllerIndex];
-    bool value;
-
+    bool value; 
+    
     LPC24_Uart_GetClearToSendState(state->controller, value);
-
+    
     return value;
 }
 
@@ -870,7 +870,7 @@ TinyCLR_Result LPC24_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* sel
 
     value = true;
 
-    if (state->handshakeEnable) {
+    if (state->handshaking) {
         auto controllerIndex = state->controllerIndex;
         auto ctsPin = LPC24_Uart_GetCtsPin(controllerIndex);
 
@@ -896,7 +896,7 @@ TinyCLR_Result LPC24_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Controlle
 
     value = false;
 
-    if (state->handshakeEnable) {
+    if (state->handshaking) {
         auto controllerIndex = state->controllerIndex;
         auto rtsPin = LPC24_Uart_GetRtsPin(controllerIndex);
 

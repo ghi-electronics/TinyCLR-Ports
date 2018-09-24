@@ -205,7 +205,7 @@ struct UartState {
     size_t                              rxBufferOut;
     size_t                              rxBufferSize;
 
-    bool                                handshakeEnable;
+    bool                                handshaking;
 
     TinyCLR_Uart_ErrorReceivedHandler   errorEventHandler;
     TinyCLR_Uart_DataReceivedHandler    dataReceivedEventHandler;
@@ -410,7 +410,7 @@ void LPC17_Uart_PinConfiguration(int controllerIndex, bool enable) {
 
         LPC17_Uart_RxBufferFullInterruptEnable(controllerIndex, true);
 
-        if (state->handshakeEnable) {
+        if (state->handshaking) {
             if (!LPC17_Gpio_OpenPin(ctsPin) || !LPC17_Gpio_OpenPin(rtsPin))
                 return;
 
@@ -428,7 +428,7 @@ void LPC17_Uart_PinConfiguration(int controllerIndex, bool enable) {
         // TODO Add config for uart pin protected state
         LPC17_Gpio_ClosePin(rxPin);
 
-        if (state->handshakeEnable) {
+        if (state->handshaking) {
             LPC17_Gpio_ClosePin(ctsPin);
             LPC17_Gpio_ClosePin(rtsPin);
         }
@@ -555,7 +555,7 @@ void LPC17_UART_IntHandler(int controllerIndex) {
 
     LPC17_Uart_TransmitData(controllerIndex, LSR_Value, IIR_Value);
 
-    if (state->handshakeEnable) {
+    if (state->handshaking) {
         volatile bool dump = USARTC.UART_MSR; // Clear cts bit
 
         bool ctsActive;
@@ -736,7 +736,7 @@ TinyCLR_Result LPC17_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self,
     case TinyCLR_Uart_Handshake::RequestToSend:
         USARTC.UART_MCR |= (1 << 6) | (1 << 7);  // Enable CTS - RTS
         USARTC.SEL2.IER.UART_IER |= (1 << 7) | (1 << 3);    // Enable Interrupt CTS
-        state->handshakeEnable = true;
+        state->handshaking = true;
         break;
 
     case TinyCLR_Uart_Handshake::XOnXOff:
@@ -836,7 +836,7 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Controller* self) {
         USARTC.SEL3.FCR.UART_FCR = 0;
         USARTC.UART_LCR = 0; // prepare to Init UART
 
-        if (state->handshakeEnable) {
+        if (state->handshaking) {
             USARTC.UART_MCR &= ~((1 << 6) | (1 << 7));
             USARTC.SEL2.IER.UART_IER &= ~((1 << 7) | (1 << 3));
         }
@@ -880,7 +880,7 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Controller* self) {
         case 4: LPC_SC->PCONP &= ~PCONP_PCUART4; break;
         }
 
-        state->handshakeEnable = false;
+        state->handshaking = false;
     }
 
     return TinyCLR_Result::Success;
@@ -1042,7 +1042,7 @@ TinyCLR_Result LPC17_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* sel
 
     value = true;
 
-    if (state->handshakeEnable) {
+    if (state->handshaking) {
         auto controllerIndex = state->controllerIndex;
         auto ctsPin = LPC17_Uart_GetCtsPin(controllerIndex);
 
@@ -1068,7 +1068,7 @@ TinyCLR_Result LPC17_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Controlle
 
     value = false;
 
-    if (state->handshakeEnable) {
+    if (state->handshaking) {
         auto controllerIndex = state->controllerIndex;
         auto rtsPin = LPC17_Uart_GetRtsPin(controllerIndex);
 
