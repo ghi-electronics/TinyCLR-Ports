@@ -71,10 +71,11 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
     nullptr,
     nullptr,
     nullptr,
+    nullptr,
 };
 
 const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices_I2c = {
     "GHIElectronics.TinyCLR.Devices.I2c",
-    0x4B789D33,
+    0x4A8B72B0,
     methods
 };
