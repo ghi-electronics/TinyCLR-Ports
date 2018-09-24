@@ -322,6 +322,8 @@ struct CanState {
     STM32F4_Can_Filter canDataFilter;
 
     uint16_t initializeCount;
+
+    bool enable;
 };
 
 static const STM32F4_Gpio_Pin canTxPins[] = STM32F4_CAN_TX_PINS;
@@ -1245,6 +1247,7 @@ TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Controller* self) {
         state->baudrate = 0;
         state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
         state->provider = self;
+        state->enable = false;
 
         state->canRxMessagesFifo = nullptr;
     }
@@ -1616,18 +1619,30 @@ void STM32F4_Can_Reset() {
 }
 
 TinyCLR_Result STM32F4_Can_Enable(const TinyCLR_Can_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    state->enable = true;
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Can_Disable(const TinyCLR_Can_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    state->enable = false;
+
+    return TinyCLR_Result::Success;
 }
 
 bool STM32F4_Can_CanWriteMessage(const TinyCLR_Can_Controller* self) {
-    return true;
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    bool canWrite;
+
+    STM32F4_Can_IsWritingAllowed(self, canWrite);
+    return (state->enable && canWrite);
 }
 
 bool STM32F4_Can_CanReadMessage(const TinyCLR_Can_Controller* self) {
-    return true;
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+
+    return (state->enable);
 }
 #endif // INCLUDE_CAN
