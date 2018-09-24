@@ -37,7 +37,7 @@ SECTIONS
         LONG(0xE12FFF1E); 
     }>LR_FLASH
 
-    ER_RAM_RO 0x20100000 :
+    ER_RAM_RO 0x20100000 : ALIGN(0x08)
     {        
         *(VectorsTrampolines)
         *(SectionForCodeReadOnlyRAM)       
