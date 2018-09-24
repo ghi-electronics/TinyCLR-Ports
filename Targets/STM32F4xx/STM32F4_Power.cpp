@@ -72,13 +72,16 @@ void STM32F4_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
 
 TinyCLR_Result STM32F4_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level, TinyCLR_Power_SleepWakeSource wakeSource) {
     switch (level) {
+    case TinyCLR_Power_SleepLevel::Level1:
     case TinyCLR_Power_SleepLevel::Level2:
+    case TinyCLR_Power_SleepLevel::Level3:
+    case TinyCLR_Power_SleepLevel::Level4:
         //TODO
         return TinyCLR_Result::NotSupported;
 
-    case TinyCLR_Power_SleepLevel::Level4:
-        // TODO
-        return TinyCLR_Result::NotSupported;
+    case TinyCLR_Power_SleepLevel::Level0:
+        if (wakeSource != TinyCLR_Power_SleepWakeSource::Gpio && wakeSource != TinyCLR_Power_SleepWakeSource::SystemTimer)
+            return TinyCLR_Result::NotSupported;
 
     default:
         PWR->CR |= PWR_CR_CWUF;

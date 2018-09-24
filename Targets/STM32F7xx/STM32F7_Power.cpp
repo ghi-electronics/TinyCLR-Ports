@@ -74,42 +74,19 @@ void STM32F7_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
 }
 
 TinyCLR_Result STM32F7_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level, TinyCLR_Power_SleepWakeSource wakeSource) {
-    uint32_t tmpreg = 0;
     switch (level) {
+    case TinyCLR_Power_SleepLevel::Level1:
+    case TinyCLR_Power_SleepLevel::Level2:
+    case TinyCLR_Power_SleepLevel::Level3:
+    case TinyCLR_Power_SleepLevel::Level4:
+        //TODO
+        return TinyCLR_Result::NotSupported;
 
-    case TinyCLR_Power_SleepLevel::Level4: // stop
-        /* Select the regulator state in Stop mode ---------------------------------*/
-        tmpreg = PWR->CR1;
-        /* Clear PDDS and LPDS bits */
-        tmpreg &= (uint32_t)~(PWR_CR1_PDDS | PWR_CR1_LPDS);
+    case TinyCLR_Power_SleepLevel::Level0:
+        if (wakeSource != TinyCLR_Power_SleepWakeSource::Gpio && wakeSource != TinyCLR_Power_SleepWakeSource::SystemTimer)
+            return TinyCLR_Result::NotSupported;
 
-        /* Set LPDS, MRLVDS and LPLVDS bits according to PWR_LOWPOWERREGULATOR_ON value */
-        tmpreg |= PWR_LOWPOWERREGULATOR_ON;
-
-        /* Store the new value */
-        PWR->CR1 = tmpreg;
-
-        /* Set SLEEPDEEP bit of Cortex System Control Register */
-        SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
-
-        /* Request Wait For Interrupt */
-        __WFI();
-
-        return TinyCLR_Result::Success;
-
-    case TinyCLR_Power_SleepLevel::Level2: // standby
-        /* Select Standby mode */
-        PWR->CR1 |= PWR_CR1_PDDS;
-
-        /* Set SLEEPDEEP bit of Cortex System Control Register */
-        SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
-
-        /* Request Wait For Interrupt */
-        __WFI();
-
-        return TinyCLR_Result::Success;
-
-    default: // sleep
+    default:
         CLEAR_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPDEEP_Msk));
 
         /* Request Wait For Interrupt */
