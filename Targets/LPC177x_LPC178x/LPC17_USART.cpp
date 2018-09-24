@@ -209,6 +209,7 @@ struct UartState {
 
     TinyCLR_Uart_ErrorReceivedHandler   errorEventHandler;
     TinyCLR_Uart_DataReceivedHandler    dataReceivedEventHandler;
+    TinyCLR_Uart_ClearToSendChangedHandler cleartosendEventHandler;
 
     const TinyCLR_Uart_Controller*        controller;
 
@@ -550,15 +551,20 @@ void LPC17_UART_IntHandler(int controllerIndex) {
 
     auto state = &uartStates[controllerIndex];
 
-
-    if (state->handshakeEnable) {
-        volatile bool dump = USARTC.UART_MSR; // Clr status register
-    }
-
-
     LPC17_Uart_ReceiveData(controllerIndex, LSR_Value, IIR_Value);
 
     LPC17_Uart_TransmitData(controllerIndex, LSR_Value, IIR_Value);
+
+    if (state->handshakeEnable) {
+        volatile bool dump = USARTC.UART_MSR; // Clear cts bit
+
+        bool ctsActive;
+
+        LPC17_Uart_GetClearToSendState(state->controller, ctsActive);
+
+        if (canPostEvent && state->cleartosendEventHandler != nullptr)
+            state->cleartosendEventHandler(state->controller, ctsActive, LPC17_Time_GetCurrentProcessorTime());
+    }
 }
 //--//
 void LPC17_UART0_IntHandler(void *param) {
@@ -913,7 +919,12 @@ void LPC17_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable) {
 }
 
 bool LPC17_Uart_TxHandshakeEnabledState(int controllerIndex) {
-    return true; // If this handshake input is not being used, it is assumed to be good
+    auto state = &uartStates[controllerIndex];
+    bool value;
+
+    LPC17_Uart_GetClearToSendState(state->controller, value);
+
+    return value;
 }
 
 TinyCLR_Result LPC17_Uart_Flush(const TinyCLR_Uart_Controller* self) {
@@ -1026,20 +1037,54 @@ TinyCLR_Result LPC17_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Controller* 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* self, bool& state) {
-    return TinyCLR_Result::NotImplemented;
+TinyCLR_Result LPC17_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* self, bool& value) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+
+    value = true;
+
+    if (state->handshakeEnable) {
+        auto controllerIndex = state->controllerIndex;
+        auto ctsPin = LPC17_Uart_GetCtsPin(controllerIndex);
+
+        // Reading the pin state to protect values from register for inteterupt which is higher priority (some bits are clear once read)
+        TinyCLR_Gpio_PinValue pinState;
+        LPC17_Gpio_Read(nullptr, ctsPin, pinState);
+
+        value = (pinState == TinyCLR_Gpio_PinValue::High) ? false : true;
+    }
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC17_Uart_SetClearToSendChangedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ClearToSendChangedHandler handler) {
-    return TinyCLR_Result::NotImplemented;
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+    state->cleartosendEventHandler = handler;
+
+    return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool& state) {
-    return TinyCLR_Result::NotImplemented;
+TinyCLR_Result LPC17_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool& value) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+
+    value = false;
+
+    if (state->handshakeEnable) {
+        auto controllerIndex = state->controllerIndex;
+        auto rtsPin = LPC17_Uart_GetRtsPin(controllerIndex);
+
+        // Reading the pin state to protect values from register for inteterupt which is higher priority (some bits are clear once read)
+        TinyCLR_Gpio_PinValue pinState;
+        LPC17_Gpio_Read(nullptr, rtsPin, pinState);
+
+        value = (pinState == TinyCLR_Gpio_PinValue::High) ? true : false;
+    }
+
+    return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool state) {
-    return TinyCLR_Result::NotImplemented;
+TinyCLR_Result LPC17_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool value) {
+    // Enable by hardware, no support by software.
+    return TinyCLR_Result::NotSupported;
 }
 
 size_t LPC17_Uart_GetBytesToRead(const TinyCLR_Uart_Controller* self) {

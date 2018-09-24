@@ -40,8 +40,10 @@ struct UartState {
 
     TinyCLR_Uart_ErrorReceivedHandler errorEventHandler;
     TinyCLR_Uart_DataReceivedHandler dataReceivedEventHandler;
+    TinyCLR_Uart_ClearToSendChangedHandler cleartosendEventHandler;
 
     const TinyCLR_Uart_Controller* controller;
+
     bool tableInitialized = false;
 
     uint16_t initializeCount;
@@ -354,6 +356,11 @@ void AT91_Uart_ReceiveData(int32_t controllerIndex, uint32_t sr) {
             }
         }
     }
+
+    // Control rts by software - enable / disable when internal buffer reach 3/4
+    if (state->handshakeEnable && (state->rxBufferCount >= ((state->rxBufferSize * 3) / 4))) {
+        usart.US_CR |= AT91_USART::US_RTSDIS;// Write rts to 1
+    }
 }
 
 void AT91_Uart_TransmitData(int32_t controllerIndex) {
@@ -394,6 +401,17 @@ void AT91_Uart_InterruptHandler(void *param) {
 
     if (sr & AT91_USART::US_TXRDY) {
         AT91_Uart_TransmitData(controllerIndex);
+    }
+
+    auto state = &uartStates[controllerIndex];
+
+    if (state->handshakeEnable && (sr & AT91_USART::US_CTSIC)) {
+        bool ctsActive;
+
+        AT91_Uart_GetClearToSendState(state->controller, ctsActive);
+
+        if (canPostEvent && state->cleartosendEventHandler != nullptr)
+            state->cleartosendEventHandler(state->controller, ctsActive, AT91_Time_GetCurrentProcessorTime());
     }
 
 }
@@ -552,6 +570,18 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self, 
         return TinyCLR_Result::NotSupported;
     }
 
+    switch (handshaking) {
+    case TinyCLR_Uart_Handshake::RequestToSend:
+        usart.US_IER = AT91_USART::US_CTSIC;
+
+        state->handshakeEnable = true;
+        break;
+
+    case TinyCLR_Uart_Handshake::XOnXOff:
+    case TinyCLR_Uart_Handshake::RequestToSendXOnXOff:
+        return TinyCLR_Result::NotSupported;
+    }
+
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     if (state->txBufferSize == 0) {
@@ -577,6 +607,7 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self, 
             return TinyCLR_Result::OutOfMemory;
         }
     }
+
     usart.US_MR = USMR;
 
     usart.US_CR = AT91_USART::US_RXEN;
@@ -664,7 +695,12 @@ void AT91_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable) {
 }
 
 bool AT91_Uart_TxHandshakeEnabledState(int controllerIndex) {
-    return true; // If this handshake input is not being used, it is assumed to be good
+    auto state = &uartStates[controllerIndex];
+    bool value;
+
+    AT91_Uart_GetClearToSendState(state->controller, value);
+
+    return value;
 }
 
 TinyCLR_Result AT91_Uart_Flush(const TinyCLR_Uart_Controller* self) {
@@ -689,6 +725,7 @@ TinyCLR_Result AT91_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* buff
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
 
     if (state->initializeCount == 0 || state->rxBufferSize == 0) {
         length = 0;
@@ -709,6 +746,12 @@ TinyCLR_Result AT91_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* buff
 
         if (state->rxBufferOut == state->rxBufferSize)
             state->rxBufferOut = 0;
+
+        // Control rts by software - enable / disable when internal buffer reach 3/4
+        if (state->handshakeEnable && (state->rxBufferCount < ((state->rxBufferSize * 3) / 4))) {
+            AT91_USART &usart = AT91::USART(controllerIndex);
+            usart.US_CR |= AT91_USART::US_RTSEN;// Write rts to 0
+        }
     }
 
     return TinyCLR_Result::Success;
@@ -776,20 +819,52 @@ TinyCLR_Result AT91_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Controller* s
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* self, bool& state) {
-    return TinyCLR_Result::NotImplemented;
+TinyCLR_Result AT91_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* self, bool& value) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+
+    value = true;
+
+    if (state->handshakeEnable) {
+        auto controllerIndex = state->controllerIndex;
+
+        // Reading the pin state to protect values from register for inteterupt which is higher priority (some bits are clear once read)
+        TinyCLR_Gpio_PinValue pinState;
+        AT91_Gpio_Read(nullptr, uartCtsPins[controllerIndex].number, pinState);
+
+        value = (pinState == TinyCLR_Gpio_PinValue::High) ? false : true;
+    }
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Uart_SetClearToSendChangedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ClearToSendChangedHandler handler) {
-    return TinyCLR_Result::NotImplemented;
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+    state->cleartosendEventHandler = handler;
+
+    return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool& state) {
-    return TinyCLR_Result::NotImplemented;
+TinyCLR_Result AT91_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool& value) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+
+    value = false;
+
+    if (state->handshakeEnable) {
+        auto controllerIndex = state->controllerIndex;
+
+        // Reading the pin state to protect values from register for inteterupt which is higher priority (some bits are clear once read)
+        TinyCLR_Gpio_PinValue pinState;
+        AT91_Gpio_Read(nullptr, uartRtsPins[controllerIndex].number, pinState);
+
+        value = (pinState == TinyCLR_Gpio_PinValue::High) ? true : false;
+    }
+
+    return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool state) {
-    return TinyCLR_Result::NotImplemented;
+TinyCLR_Result AT91_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool value) {
+    // Enable by hardware, no support by software.
+    return TinyCLR_Result::NotSupported;
 }
 
 size_t AT91_Uart_GetBytesToRead(const TinyCLR_Uart_Controller* self) {
