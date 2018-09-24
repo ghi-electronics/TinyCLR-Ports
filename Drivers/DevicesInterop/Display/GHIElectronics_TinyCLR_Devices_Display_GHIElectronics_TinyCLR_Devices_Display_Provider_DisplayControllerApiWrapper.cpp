@@ -1,5 +1,7 @@
 #include "GHIElectronics_TinyCLR_Devices_Display.h"
 #include "../GHIElectronics_TinyCLR_InteropUtil.h"
+#include "../Spi/GHIElectronics_TinyCLR_Devices_Spi.h"
+#include "../I2c/GHIElectronics_TinyCLR_Devices_I2c.h"
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::Enable___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Display_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
@@ -139,28 +141,30 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_Tin
     return api->Release(api);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::SetParallelConfiguration___VOID__I4__I4__GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat__BOOLEAN__BOOLEAN__BOOLEAN__I4__BOOLEAN__I4__I4__I4__BOOLEAN__I4__I4__I4(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::SetConfiguration___VOID__GHIElectronicsTinyCLRDevicesDisplayParallelDisplayControllerSettings(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Display_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Display_ParallelConfiguration config;
 
     TinyCLR_Interop_ClrValue arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14;
+    TinyCLR_Interop_ClrValue cfg;
 
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg0);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 1, arg1);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 2, arg2);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 3, arg3);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 4, arg4);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 5, arg5);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 6, arg6);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 7, arg7);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 8, arg8);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 9, arg9);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 10, arg10);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 11, arg11);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 12, arg12);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 13, arg13);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 14, arg14);
+    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, cfg);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_DisplayControllerSettings::FIELD___Width__BackingField___I4, arg0);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_DisplayControllerSettings::FIELD___Height__BackingField___I4, arg1);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_DisplayControllerSettings::FIELD___DataFormat__BackingField___GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat, arg2);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_ParallelDisplayControllerSettings::FIELD___DataEnableIsFixed__BackingField___BOOLEAN, arg3);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_ParallelDisplayControllerSettings::FIELD___DataEnablePolarity__BackingField___BOOLEAN, arg4);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_ParallelDisplayControllerSettings::FIELD___PixelPolarity__BackingField___BOOLEAN, arg5);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_ParallelDisplayControllerSettings::FIELD___PixelClockRate__BackingField___I4, arg6);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_ParallelDisplayControllerSettings::FIELD___HorizontalSyncPolarity__BackingField___BOOLEAN, arg7);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_ParallelDisplayControllerSettings::FIELD___HorizontalSyncPulseWidth__BackingField___I4, arg8);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_ParallelDisplayControllerSettings::FIELD___HorizontalFrontPorch__BackingField___I4, arg9);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_ParallelDisplayControllerSettings::FIELD___HorizontalBackPorch__BackingField___I4, arg10);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_ParallelDisplayControllerSettings::FIELD___VerticalSyncPolarity__BackingField___BOOLEAN, arg11);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_ParallelDisplayControllerSettings::FIELD___VerticalSyncPulseWidth__BackingField___I4, arg12);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_ParallelDisplayControllerSettings::FIELD___VerticalFrontPorch__BackingField___I4, arg13);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_ParallelDisplayControllerSettings::FIELD___VerticalBackPorch__BackingField___I4, arg14);
 
     uint32_t width = arg0.Data.Numeric->U4;
     uint32_t height = arg1.Data.Numeric->U4;
@@ -183,24 +187,82 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_Tin
     return api->SetConfiguration(api, type, width, height, &config);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::SetSpiConfiguration___VOID__I4__I4__GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat__STRING(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::SetConfiguration___VOID__GHIElectronicsTinyCLRDevicesDisplaySpiDisplayControllerSettings(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Display_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
-    TinyCLR_Interop_ClrValue arg0, arg1, arg2, arg3;
-
     TinyCLR_Display_SpiConfiguration config;
+    TinyCLR_Spi_Settings settings;
 
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg0);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 1, arg1);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 2, arg2);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 3, arg3);
+    TinyCLR_Interop_ClrValue arg0, arg1, arg2, arg3, arg4;
+    TinyCLR_Interop_ClrValue cfg;
+
+    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, cfg);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_DisplayControllerSettings::FIELD___Width__BackingField___I4, arg0);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_DisplayControllerSettings::FIELD___Height__BackingField___I4, arg1);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_DisplayControllerSettings::FIELD___DataFormat__BackingField___GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat, arg2);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_SpiDisplayControllerSettings::FIELD___ApiName__BackingField___STRING, arg3);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_SpiDisplayControllerSettings::FIELD___Settings__BackingField___GHIElectronicsTinyCLRDevicesSpiGHIElectronicsTinyCLRDevicesSpiSpiConnectionSettings, arg4);
+
+    TinyCLR_Interop_ClrValue modeFld, clockFrequencyFld, dataBitLengthFld, chipSelectTypeFld, chipSelectLineFld, chipSelectSetupTimeFld, chipSelectHoldTimeFld, chipSelectActiveStateFld;
+    md.InteropManager->GetField(md.InteropManager, arg4.Object, Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings::FIELD___Mode__BackingField___GHIElectronicsTinyCLRDevicesSpiSpiMode, modeFld);
+    md.InteropManager->GetField(md.InteropManager, arg4.Object, Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings::FIELD___ClockFrequency__BackingField___I4, clockFrequencyFld);
+    md.InteropManager->GetField(md.InteropManager, arg4.Object, Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings::FIELD___DataBitLength__BackingField___I4, dataBitLengthFld);
+    md.InteropManager->GetField(md.InteropManager, arg4.Object, Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings::FIELD___ChipSelectType__BackingField___GHIElectronicsTinyCLRDevicesSpiSpiChipSelectType, chipSelectTypeFld);
+    md.InteropManager->GetField(md.InteropManager, arg4.Object, Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings::FIELD___ChipSelectLine__BackingField___I4, chipSelectLineFld);
+    md.InteropManager->GetField(md.InteropManager, arg4.Object, Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings::FIELD___ChipSelectSetupTime__BackingField___mscorlibSystemTimeSpan, chipSelectSetupTimeFld);
+    md.InteropManager->GetField(md.InteropManager, arg4.Object, Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings::FIELD___ChipSelectHoldTime__BackingField___mscorlibSystemTimeSpan, chipSelectHoldTimeFld);
+    md.InteropManager->GetField(md.InteropManager, arg4.Object, Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings::FIELD___ChipSelectActiveState__BackingField___BOOLEAN, chipSelectActiveStateFld);
 
     uint32_t width = arg0.Data.Numeric->U4;
     uint32_t height = arg1.Data.Numeric->U4;
     auto type = static_cast<TinyCLR_Display_DataFormat>(arg2.Data.Numeric->U4);
 
+    settings.Mode = static_cast<TinyCLR_Spi_Mode>(modeFld.Data.Numeric->I4);
+    settings.ClockFrequency = clockFrequencyFld.Data.Numeric->I4;
+    settings.DataBitLength = dataBitLengthFld.Data.Numeric->I4;
+    settings.ChipSelectType = static_cast<TinyCLR_Spi_ChipSelectType>(chipSelectTypeFld.Data.Numeric->I4);
+    settings.ChipSelectLine = chipSelectLineFld.Data.Numeric->I4;
+    settings.ChipSelectSetupTime = chipSelectSetupTimeFld.Data.Numeric->I8;
+    settings.ChipSelectHoldTime = chipSelectHoldTimeFld.Data.Numeric->I8;
+    settings.ChipSelectActiveState = chipSelectActiveStateFld.Data.Numeric->Boolean;
+
     config.ApiName = arg3.Data.String.Data;
+    config.Settings = &settings;
 
     return api->SetConfiguration(api, type, width, height, &config);
+}
 
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_Provider_DisplayControllerApiWrapper::SetConfiguration___VOID__GHIElectronicsTinyCLRDevicesDisplayI2cDisplayControllerSettings(const TinyCLR_Interop_MethodData md) {
+    auto api = reinterpret_cast<const TinyCLR_Display_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
+
+    TinyCLR_Display_I2cConfiguration config;
+    TinyCLR_I2c_Settings settings;
+
+    TinyCLR_Interop_ClrValue arg0, arg1, arg2, arg3, arg4;
+    TinyCLR_Interop_ClrValue cfg;
+
+    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, cfg);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_DisplayControllerSettings::FIELD___Width__BackingField___I4, arg0);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_DisplayControllerSettings::FIELD___Height__BackingField___I4, arg1);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_DisplayControllerSettings::FIELD___DataFormat__BackingField___GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat, arg2);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_I2cDisplayControllerSettings::FIELD___ApiName__BackingField___STRING, arg3);
+    md.InteropManager->GetField(md.InteropManager, cfg.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_I2cDisplayControllerSettings::FIELD___Settings__BackingField___GHIElectronicsTinyCLRDevicesI2cGHIElectronicsTinyCLRDevicesI2cI2cConnectionSettings, arg4);
+
+    TinyCLR_Interop_ClrValue slaveAddressFld, addressFormatFld, busSpeedFld;
+    md.InteropManager->GetField(md.InteropManager, arg4.Object, Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR_Devices_I2c_I2cConnectionSettings::FIELD___SlaveAddress__BackingField___I4, slaveAddressFld);
+    md.InteropManager->GetField(md.InteropManager, arg4.Object, Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR_Devices_I2c_I2cConnectionSettings::FIELD___AddressFormat__BackingField___GHIElectronicsTinyCLRDevicesI2cI2cAddressFormat, addressFormatFld);
+    md.InteropManager->GetField(md.InteropManager, arg4.Object, Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR_Devices_I2c_I2cConnectionSettings::FIELD___BusSpeed__BackingField___GHIElectronicsTinyCLRDevicesI2cI2cBusSpeed, busSpeedFld);
+
+    uint32_t width = arg0.Data.Numeric->U4;
+    uint32_t height = arg1.Data.Numeric->U4;
+    auto type = static_cast<TinyCLR_Display_DataFormat>(arg2.Data.Numeric->U4);
+
+    settings.SlaveAddress = slaveAddressFld.Data.Numeric->I4;
+    settings.AddressFormat = static_cast<TinyCLR_I2c_AddressFormat>(addressFormatFld.Data.Numeric->I4);
+    settings.BusSpeed = static_cast<TinyCLR_I2c_BusSpeed>(busSpeedFld.Data.Numeric->I4);
+
+    config.ApiName = arg3.Data.String.Data;
+    config.Settings = &settings;
+
+    return api->SetConfiguration(api, type, width, height, &config);
 }
