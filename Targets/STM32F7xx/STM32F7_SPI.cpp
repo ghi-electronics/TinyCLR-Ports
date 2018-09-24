@@ -45,6 +45,12 @@ struct SpiState {
     int32_t dataBitLength;
     int32_t clockFrequency;
 
+    uint32_t chipSelectSetupTime;
+    uint32_t chipSelectHoldTime;
+    TinyCLR_Spi_ChipSelectType chipSelectType;
+
+    bool chipSelectActiveState;
+
     TinyCLR_Spi_Mode spiMode;
 
     uint16_t initializeCount;
@@ -121,9 +127,13 @@ void STM32F7_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
 bool STM32F7_Spi_Transaction_Start(int32_t controllerIndex) {
     auto state = &spiStates[controllerIndex];
 
-    STM32F7_GpioInternal_WritePin(state->chipSelectLine, false);
+    STM32F7_GpioInternal_WritePin(state->chipSelectLine, state->chipSelectActiveState);
 
-    STM32F7_Time_Delay(nullptr, ((1000000 / (state->clockFrequency / 1000)) / 1000));
+    if (state->chipSelectSetupTime > 0) {
+        auto currentTicks = STM32F7_Time_GetCurrentProcessorTime();
+
+        while (STM32F7_Time_GetCurrentProcessorTime() - currentTicks < state->chipSelectSetupTime);
+    }
 
     return true;
 }
@@ -135,9 +145,13 @@ bool STM32F7_Spi_Transaction_Stop(int32_t controllerIndex) {
 
     while (spi->SR & SPI_SR_BSY); // wait for completion
 
-    STM32F7_Time_Delay(nullptr, ((1000000 / (state->clockFrequency / 1000)) / 1000));
+    if (state->chipSelectHoldTime > 0) {
+        auto currentTicks = STM32F7_Time_GetCurrentProcessorTime();
 
-    STM32F7_GpioInternal_WritePin(state->chipSelectLine, true);
+        while (STM32F7_Time_GetCurrentProcessorTime() - currentTicks < state->chipSelectHoldTime);
+    }
+
+    STM32F7_GpioInternal_WritePin(state->chipSelectLine, !state->chipSelectActiveState);
 
     return true;
 }
@@ -276,17 +290,25 @@ TinyCLR_Result STM32F7_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self,
 
     auto controllerIndex = state->controllerIndex;
 
-    if (state->chipSelectLine == chipSelectLine
-        && state->dataBitLength == dataBitLength
-        && state->spiMode == mode
-        && state->clockFrequency == clockFrequency) {
+    if (state->chipSelectLine == chipSelectLine &&
+        state->chipSelectType == chipSelectType &&
+        state->chipSelectSetupTime == chipSelectSetupTime &&
+        state->chipSelectHoldTime == chipSelectHoldTime &&
+        state->chipSelectActiveState == chipSelectActiveState &&
+        state->clockFrequency == clockFrequency &&
+        state->dataBitLength == dataBitLength &&
+        state->spiMode == mode) {
         return TinyCLR_Result::Success;
     }
 
     state->chipSelectLine = chipSelectLine;
+    state->chipSelectType = chipSelectType;
+    state->chipSelectSetupTime = chipSelectSetupTime;
+    state->chipSelectHoldTime = chipSelectHoldTime;
+    state->chipSelectActiveState = chipSelectActiveState;
+    state->clockFrequency = clockFrequency;
     state->dataBitLength = dataBitLength;
     state->spiMode = mode;
-    state->clockFrequency = clockFrequency;
 
     ptr_SPI_TypeDef spi = spiPortRegs[controllerIndex];
 
@@ -345,7 +367,7 @@ TinyCLR_Result STM32F7_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self,
         // CS setup
         STM32F7_GpioInternal_ConfigurePin(state->chipSelectLine, STM32F7_Gpio_PortMode::GeneralPurposeOutput, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, STM32F7_Gpio_AlternateFunction::AF0);
 
-        STM32F7_GpioInternal_WritePin(state->chipSelectLine, true);
+        STM32F7_GpioInternal_WritePin(state->chipSelectLine, !state->chipSelectActiveState);
     }
 
     return TinyCLR_Result::Success;

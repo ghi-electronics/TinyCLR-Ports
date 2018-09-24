@@ -563,6 +563,8 @@ void LPC17_UART_IntHandler(int controllerIndex) {
 
         LPC17_Uart_GetClearToSendState(state->controller, ctsActive);
 
+        auto canPostEvent = LPC17_Uart_CanPostEvent(controllerIndex);
+
         if (canPostEvent && state->cleartosendEventHandler != nullptr)
             state->cleartosendEventHandler(state->controller, ctsActive, LPC17_Time_GetCurrentProcessorTime());
     }

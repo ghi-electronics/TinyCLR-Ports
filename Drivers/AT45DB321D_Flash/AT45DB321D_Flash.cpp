@@ -90,7 +90,7 @@ TinyCLR_Result AT45DB321D_Flash_Read(uint32_t address, size_t length, uint8_t* b
 
     g_AT45DB321D_Flash_SpiProvider->Acquire(g_AT45DB321D_Flash_SpiProvider);
 
-    g_AT45DB321D_Flash_SpiProvider->SetActiveSettings(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_SpiChipSelectLine, TinyCLR_Spi_ChipSelectType::Gpio,  AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    g_AT45DB321D_Flash_SpiProvider->SetActiveSettings(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_SpiChipSelectLine, TinyCLR_Spi_ChipSelectType::Gpio, 0, 0, false, AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     while (block > 0) {
         uint32_t pageNumber = (address % AT45DB321D_FLASH_PAGE_SIZE) | ((address / AT45DB321D_FLASH_PAGE_SIZE) << 10);
@@ -213,7 +213,7 @@ TinyCLR_Result AT45DB321D_Flash_Write(uint32_t address, size_t length, const uin
 
     g_AT45DB321D_Flash_SpiProvider->Acquire(g_AT45DB321D_Flash_SpiProvider);
 
-    g_AT45DB321D_Flash_SpiProvider->SetActiveSettings(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_SpiChipSelectLine, TinyCLR_Spi_ChipSelectType::Gpio,  AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    g_AT45DB321D_Flash_SpiProvider->SetActiveSettings(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_SpiChipSelectLine, TinyCLR_Spi_ChipSelectType::Gpio, 0, 0, false, AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     if (pageOffset) {
         memset(g_AT45DB321D_Flash_BufferRW, 0xFF, AT45DB321D_FLASH_PAGE_SIZE);
@@ -315,7 +315,7 @@ TinyCLR_Result AT45DB321D_Flash_EraseBlock(uint32_t sector) {
 
     g_AT45DB321D_Flash_SpiProvider->Acquire(g_AT45DB321D_Flash_SpiProvider);
 
-    g_AT45DB321D_Flash_SpiProvider->SetActiveSettings(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_SpiChipSelectLine, TinyCLR_Spi_ChipSelectType::Gpio,  AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    g_AT45DB321D_Flash_SpiProvider->SetActiveSettings(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_SpiChipSelectLine, TinyCLR_Spi_ChipSelectType::Gpio, 0, 0, false, AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     g_AT45DB321D_Flash_DataWriteBuffer[0] = AT45DB321D_FLASH_COMMAND_BLOCK_ERASE;
     g_AT45DB321D_Flash_DataWriteBuffer[1] = (blockNumber << 3u) >> 6u;
@@ -356,7 +356,7 @@ TinyCLR_Result AT45DB321D_Flash_Acquire(const TinyCLR_Spi_Controller* spiProvide
 
     g_AT45DB321D_Flash_SpiProvider->Acquire(g_AT45DB321D_Flash_SpiProvider);
 
-    g_AT45DB321D_Flash_SpiProvider->SetActiveSettings(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_SpiChipSelectLine, TinyCLR_Spi_ChipSelectType::Gpio,  AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    g_AT45DB321D_Flash_SpiProvider->SetActiveSettings(g_AT45DB321D_Flash_SpiProvider, g_AT45DB321D_Flash_SpiChipSelectLine, TinyCLR_Spi_ChipSelectType::Gpio, 0, 0, false, AT45DB321D_SPI_CLOCK_HZ, 8, TinyCLR_Spi_Mode::Mode0);
 
     g_AT45DB321D_Flash_DataWriteBuffer[0] = AT45DB321D_FLASH_COMMAND_READID;
     g_AT45DB321D_Flash_DataWriteBuffer[1] = 0x00;

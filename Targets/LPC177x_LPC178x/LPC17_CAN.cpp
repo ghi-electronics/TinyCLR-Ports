@@ -2843,9 +2843,17 @@ TinyCLR_Result LPC17_Can_Disable(const TinyCLR_Can_Controller* self) {
 
 bool LPC17_Can_CanWriteMessage(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
-    bool canWrite;
+    bool canWrite = false;
+    
+    auto controllerIndex = state->controllerIndex;
 
-    LPC17_Can_IsWritingAllowed(self, canWrite);
+    uint32_t status = controllerIndex == 0 ? C1SR : C2SR;
+
+    if ((status & 0x00000004) &&
+        (status & 0x00000400) &&
+        (status & 0x00040000)) {
+        canWrite = true;
+    }
     return (state->enable && canWrite);
 }
 

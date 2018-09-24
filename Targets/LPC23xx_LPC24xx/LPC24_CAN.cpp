@@ -2772,26 +2772,6 @@ TinyCLR_Result LPC24_Can_ClearReadBuffer(const TinyCLR_Can_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC24_Can_IsWritingAllowed(const TinyCLR_Can_Controller* self, bool& allowed) {
-
-    uint32_t status = 0;
-
-    allowed = false;
-
-    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
-    auto controllerIndex = state->controllerIndex;
-
-    status = controllerIndex == 0 ? C1SR : C2SR;
-
-    if ((status & 0x00000004) &&
-        (status & 0x00000400) &&
-        (status & 0x00040000)) {
-        allowed = true;
-    }
-
-    return TinyCLR_Result::Success;
-}
-
 size_t LPC24_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
     auto controllerIndex = state->controllerIndex;
@@ -2869,9 +2849,17 @@ TinyCLR_Result LPC24_Can_Disable(const TinyCLR_Can_Controller* self) {
 
 bool LPC24_Can_CanWriteMessage(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
-    bool canWrite;
+    bool canWrite = false;
+    
+    auto controllerIndex = state->controllerIndex;
 
-    LPC24_Can_IsWritingAllowed(self, canWrite);
+    uint32_t status = controllerIndex == 0 ? C1SR : C2SR;
+
+    if ((status & 0x00000004) &&
+        (status & 0x00000400) &&
+        (status & 0x00040000)) {
+        canWrite = true;
+    }
     return (state->enable && canWrite);
 }
 
