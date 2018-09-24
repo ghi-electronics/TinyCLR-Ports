@@ -272,15 +272,18 @@ struct SpiState {
 
     size_t readLength;
     size_t writeLength;
-    size_t readOffset;
 
     int32_t chipSelectLine;
     int32_t dataBitLength;
     int32_t clockFrequency;
 
-    TinyCLR_Spi_Mode spiMode;
+    uint32_t chipSelectSetupTime;
+    uint32_t chipSelectHoldTime;
+    TinyCLR_Spi_ChipSelectType chipSelectType;
 
-    bool tableInitialized = false;
+    bool chipSelectActiveState;
+
+    TinyCLR_Spi_Mode spiMode;
 
     uint16_t initializeCount;
 };
@@ -346,7 +349,13 @@ void LPC24_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
 bool LPC24_Spi_Transaction_Start(int32_t controllerIndex) {
     auto state = &spiStates[controllerIndex];
 
-    LPC24_Gpio_Write(nullptr, state->chipSelectLine, TinyCLR_Gpio_PinValue::Low);
+    LPC17_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::Low : TinyCLR_Gpio_PinValue::High);
+
+    if (state->chipSelectSetupTime > 0) {
+        auto currentTicks = LPC24_Time_GetCurrentProcessorTime();
+
+        while (LPC24_Time_GetCurrentProcessorTime() - currentTicks < state->chipSelectSetupTime);
+    }
 
     return true;
 }
@@ -354,7 +363,13 @@ bool LPC24_Spi_Transaction_Start(int32_t controllerIndex) {
 bool LPC24_Spi_Transaction_Stop(int32_t controllerIndex) {
     auto state = &spiStates[controllerIndex];
 
-    LPC24_Gpio_Write(nullptr, state->chipSelectLine, TinyCLR_Gpio_PinValue::High);
+    if (state->chipSelectHoldTime > 0) {
+        auto currentTicks = LPC24_Time_GetCurrentProcessorTime();
+
+        while (LPC24_Time_GetCurrentProcessorTime() - currentTicks < state->chipSelectHoldTime);
+    }
+
+    LPC17_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
 
     return true;
 }
@@ -564,14 +579,22 @@ TinyCLR_Result LPC24_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, u
     if (controllerIndex >= TOTAL_SPI_CONTROLLERS)
         return TinyCLR_Result::InvalidOperation;
 
-    if (state->chipSelectLine == chipSelectLine
-        && state->dataBitLength == dataBitLength
-        && state->spiMode == mode
-        && state->clockFrequency == clockFrequency) {
+    if (state->chipSelectLine == chipSelectLine &&
+        state->chipSelectType == chipSelectType &&
+        state->chipSelectSetupTime == chipSelectSetupTime &&
+        state->chipSelectHoldTime == chipSelectHoldTime &&
+        state->chipSelectActiveState == chipSelectActiveState &&
+        state->clockFrequency == clockFrequency &&
+        state->dataBitLength == dataBitLength &&
+        state->spiMode == mode) {
         return TinyCLR_Result::Success;
     }
 
     state->chipSelectLine = chipSelectLine;
+    state->chipSelectType = chipSelectType;
+    state->chipSelectSetupTime = chipSelectSetupTime;
+    state->chipSelectHoldTime = chipSelectHoldTime;
+    state->chipSelectActiveState = chipSelectActiveState;
     state->clockFrequency = clockFrequency;
     state->dataBitLength = dataBitLength;
     state->spiMode = mode;
@@ -668,7 +691,7 @@ TinyCLR_Result LPC24_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, u
 
     if (state->chipSelectLine != PIN_NONE) {
         if (LPC24_Gpio_OpenPin(state->chipSelectLine)) {
-            LPC24_Gpio_EnableOutputPin(state->chipSelectLine, true);
+            LPC24_Gpio_EnableOutputPin(state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
         }
         else {
             return TinyCLR_Result::SharingViolation;
