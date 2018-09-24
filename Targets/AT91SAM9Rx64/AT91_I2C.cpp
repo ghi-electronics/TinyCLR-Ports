@@ -343,6 +343,9 @@ TinyCLR_Result AT91_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint
 #define MAX_CLK_RATE    400   //kHz
 
 TinyCLR_Result AT91_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, const TinyCLR_I2c_Settings* settings) {
+    uint32_t slaveAddress = settings->SlaveAddress;
+    TinyCLR_I2c_AddressFormat addressFormat = settings->AddressFormat;
+    TinyCLR_I2c_BusSpeed busSpeed = settings->BusSpeed;
     uint32_t rateKhz;
     uint8_t clockRate, clockRate2;
 
@@ -417,7 +420,7 @@ TinyCLR_Result AT91_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
             return TinyCLR_Result::SharingViolation;
 
         AT91_Gpio_ConfigurePin(i2cSclPins[controllerIndex].number, AT91_Gpio_Direction::Input, i2cSclPins[controllerIndex].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-        AT91_Gpio_ConfigurePin(i2cSdaPins[controllerIndex].number, AT91_Gpio_Direction::Input, i2cSdaPins[controllerIndex].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);        
+        AT91_Gpio_ConfigurePin(i2cSdaPins[controllerIndex].number, AT91_Gpio_Direction::Input, i2cSdaPins[controllerIndex].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
 
         pmc.EnablePeriphClock(controllerIndex == 0 ? AT91C_ID_TWI0 : AT91C_ID_TWI1);
         I2C.TWI_MMR = 0x7e << AT91_I2C::TWI_MMR_DADR_SHIFT;

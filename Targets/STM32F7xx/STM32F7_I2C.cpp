@@ -396,6 +396,9 @@ TinyCLR_Result STM32F7_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const u
 }
 
 TinyCLR_Result STM32F7_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, const TinyCLR_I2c_Settings* settings) {
+    uint32_t slaveAddress = settings->SlaveAddress;
+    TinyCLR_I2c_AddressFormat addressFormat = settings->AddressFormat;
+    TinyCLR_I2c_BusSpeed busSpeed = settings->BusSpeed;
     uint32_t rateKhz;
     uint32_t ccr;
 

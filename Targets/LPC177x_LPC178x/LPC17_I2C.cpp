@@ -312,6 +312,9 @@ TinyCLR_Result LPC17_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uin
 }
 
 TinyCLR_Result LPC17_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, const TinyCLR_I2c_Settings* settings) {
+    uint32_t slaveAddress = settings->SlaveAddress;
+    TinyCLR_I2c_AddressFormat addressFormat = settings->AddressFormat;
+    TinyCLR_I2c_BusSpeed busSpeed = settings->BusSpeed;
     uint32_t rateKhz;
 
     if (self == nullptr)
@@ -366,7 +369,7 @@ TinyCLR_Result LPC17_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
             return TinyCLR_Result::SharingViolation;
 
         LPC17_Gpio_ConfigurePin(i2cSclPins[controllerIndex].number, LPC17_Gpio_Direction::Input, i2cSclPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::OpenDrain);
-        LPC17_Gpio_ConfigurePin(i2cSdaPins[controllerIndex].number, LPC17_Gpio_Direction::Input, i2cSdaPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::OpenDrain);        
+        LPC17_Gpio_ConfigurePin(i2cSdaPins[controllerIndex].number, LPC17_Gpio_Direction::Input, i2cSdaPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::OpenDrain);
 
         // enable the I2c module
         I2C.I2CONSET = LPC17xx_I2C::I2EN;
