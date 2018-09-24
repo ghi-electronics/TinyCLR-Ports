@@ -81,21 +81,18 @@ void LPC24_Power_SetHandlers(void(*stop)(), void(*restart)()) {
 
 TinyCLR_Result LPC24_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level, TinyCLR_Power_SleepWakeSource wakeSource) {
     switch (level) {
+    case TinyCLR_Power_SleepLevel::Level1:
+    case TinyCLR_Power_SleepLevel::Level2:
+    case TinyCLR_Power_SleepLevel::Level3:
+    case TinyCLR_Power_SleepLevel::Level4:
+        //TODO
+        return TinyCLR_Result::NotSupported;
 
-    case TinyCLR_Power_SleepLevel::Level2: // stop
-        if (PowerStopHandler != 0)
-            PowerStopHandler();
+    case TinyCLR_Power_SleepLevel::Level0:
+        if (wakeSource != TinyCLR_Power_SleepWakeSource::Gpio && wakeSource != TinyCLR_Power_SleepWakeSource::SystemTimer)
+            return TinyCLR_Result::NotSupported;
 
-        return TinyCLR_Result::Success;
-
-    case TinyCLR_Power_SleepLevel::Level4: // standby
-        // stop peripherals if needed
-        if (PowerStopHandler != 0)
-            PowerStopHandler();
-
-        return TinyCLR_Result::Success;
-
-    default: // sleep
+    default:
         PCON |= 1;
 
         return TinyCLR_Result::Success;
