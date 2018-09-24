@@ -853,7 +853,7 @@ AT91_Gpio_PeripheralSelection AT91_Uart_GetTxAlternateFunction(int32_t controlle
 AT91_Gpio_PeripheralSelection AT91_Uart_GetRxAlternateFunction(int32_t controller);
 AT91_Gpio_PeripheralSelection AT91_Uart_GetRtsAlternateFunction(int32_t controller);
 AT91_Gpio_PeripheralSelection AT91_Uart_GetCtsAlternateFunction(int32_t controller);
-bool AT91_Uart_TxHandshakeEnabledState(int controller);
+bool AT91_Uart_CanSend(int controller);
 void AT91_Uart_TxBufferEmptyInterruptEnable(int controller, bool enable);
 void AT91_Uart_RxBufferFullInterruptEnable(int controller, bool enable);
 

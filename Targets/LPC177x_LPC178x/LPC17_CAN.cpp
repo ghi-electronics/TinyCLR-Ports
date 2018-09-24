@@ -2024,6 +2024,8 @@ struct CanState {
     LPC17_Can_Filter canDataFilter;
 
     uint16_t initializeCount;
+
+    bool enable;
 };
 
 static const LPC17_Gpio_Pin canTxPins[] = LPC17_CAN_TX_PINS;
@@ -2440,6 +2442,7 @@ TinyCLR_Result LPC17_Can_Acquire(const TinyCLR_Can_Controller* self) {
         state->baudrate = 0;
         state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
         state->provider = self;
+        state->enable = false;
 
         state->canDataFilter.matchFiltersSize = 0;
         state->canDataFilter.groupFiltersSize = 0;
@@ -2825,33 +2828,30 @@ void LPC17_Can_Reset() {
 }
 
 TinyCLR_Result LPC17_Can_Enable(const TinyCLR_Can_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    state->enable = true;
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC17_Can_Disable(const TinyCLR_Can_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    state->enable = false;
+
+    return TinyCLR_Result::Success;
 }
 
 bool LPC17_Can_CanWriteMessage(const TinyCLR_Can_Controller* self) {
-    uint32_t status = 0;
-
-    bool allowed = false;
-
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
-    auto controllerIndex = state->controllerIndex;
+    bool canWrite;
 
-    status = controllerIndex == 0 ? C1SR : C2SR;
-
-    if ((status & 0x00000004) &&
-        (status & 0x00000400) &&
-        (status & 0x00040000)) {
-        allowed = true;
-    }
-
-    return allowed;
+    LPC17_Can_IsWritingAllowed(self, canWrite);
+    return (state->enable && canWrite);
 }
 
 bool LPC17_Can_CanReadMessage(const TinyCLR_Can_Controller* self) {
-    return true;
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+
+    return (state->enable);
 }
 #endif // INCLUDE_CAN

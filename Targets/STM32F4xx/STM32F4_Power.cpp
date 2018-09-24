@@ -74,11 +74,11 @@ TinyCLR_Result STM32F4_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR
     switch (level) {
     case TinyCLR_Power_SleepLevel::Level2:
         //TODO
-        return TinyCLR_Result::NotImplemented;
+        return TinyCLR_Result::NotSupported;
 
     case TinyCLR_Power_SleepLevel::Level4:
         // TODO
-        return TinyCLR_Result::NotImplemented;
+        return TinyCLR_Result::NotSupported;
 
     default:
         PWR->CR |= PWR_CR_CWUF;

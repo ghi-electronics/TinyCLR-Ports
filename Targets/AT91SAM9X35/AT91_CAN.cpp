@@ -1051,6 +1051,8 @@ struct CanState {
     AT91_Can_Filter canDataFilter;
 
     uint16_t initializeCount;
+
+    bool enable;
 };
 
 static const AT91_Gpio_Pin canTxPins[] = AT91_CAN_TX_PINS;
@@ -1473,6 +1475,7 @@ TinyCLR_Result AT91_Can_Acquire(const TinyCLR_Can_Controller* self) {
         state->baudrate = 0;
         state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
         state->controller = self;
+        state->enable = false;
 
         state->canDataFilter.matchFiltersSize = 0;
         state->canDataFilter.groupFiltersSize = 0;
@@ -1913,19 +1916,31 @@ void AT91_Can_Reset() {
 }
 
 TinyCLR_Result AT91_Can_Enable(const TinyCLR_Can_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    state->enable = true;
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Can_Disable(const TinyCLR_Can_Controller* self) {
-    return TinyCLR_Result::NotImplemented;
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    state->enable = false;
+
+    return TinyCLR_Result::Success;
 }
 
 bool AT91_Can_CanWriteMessage(const TinyCLR_Can_Controller* self) {
-    return true;
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    bool canWrite;
+
+    AT91_Can_IsWritingAllowed(self, canWrite);
+    return (state->enable && canWrite);
 }
 
 bool AT91_Can_CanReadMessage(const TinyCLR_Can_Controller* self) {
-    return true;
+    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+
+    return (state->enable);
 }
 
 #endif // INCLUDE_CAN

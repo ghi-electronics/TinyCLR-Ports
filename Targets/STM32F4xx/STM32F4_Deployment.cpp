@@ -317,7 +317,7 @@ TinyCLR_Result STM32F4_Flash_GetDescriptor(const TinyCLR_Storage_Controller* sel
 
     storageDescriptor = &state->storageDescriptor;
 
-    return storageDescriptor->RegionCount > 0 ? TinyCLR_Result::Success : TinyCLR_Result::NotImplemented;
+    return storageDescriptor->RegionCount > 0 ? TinyCLR_Result::Success : TinyCLR_Result::NotAvailable;
 }
 
 const TinyCLR_Startup_DeploymentConfiguration* STM32F4_Flash_GetDeploymentConfiguration() {

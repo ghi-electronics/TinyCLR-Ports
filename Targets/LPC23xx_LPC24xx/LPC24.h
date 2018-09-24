@@ -331,7 +331,7 @@ LPC24_Gpio_PinFunction LPC24_Uart_GetTxAlternateFunction(int32_t controller);
 LPC24_Gpio_PinFunction LPC24_Uart_GetRxAlternateFunction(int32_t controller);
 LPC24_Gpio_PinFunction LPC24_Uart_GetRtsAlternateFunction(int32_t controller);
 LPC24_Gpio_PinFunction LPC24_Uart_GetCtsAlternateFunction(int32_t controller);
-bool LPC24_Uart_TxHandshakeEnabledState(int controller);
+bool LPC24_Uart_CanSend(int controller);
 void LPC24_Uart_TxBufferEmptyInterruptEnable(int controller, bool enable);
 void LPC24_Uart_RxBufferFullInterruptEnable(int controller, bool enable);
 

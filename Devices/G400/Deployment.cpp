@@ -202,7 +202,7 @@ TinyCLR_Result AT91_Deployment_GetDescriptor(const TinyCLR_Storage_Controller* s
 
     descriptor = &state->storageDescriptor;
 
-    return descriptor->RegionCount > 0 ? TinyCLR_Result::Success : TinyCLR_Result::NotImplemented;
+    return descriptor->RegionCount > 0 ? TinyCLR_Result::Success : TinyCLR_Result::NotAvailable;
 }
 
 const TinyCLR_Startup_DeploymentConfiguration* AT91_Deployment_GetDeploymentConfiguration() {

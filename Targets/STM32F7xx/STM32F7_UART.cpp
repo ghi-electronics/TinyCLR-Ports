@@ -28,7 +28,7 @@
 #define STM32F7_UART_DATA_BIT_LENGTH_8    8
 #define STM32F7_UART_DATA_BIT_LENGTH_9    9
 
-bool STM32F7_Uart_TxHandshakeEnabledState(int controllerIndex);
+bool STM32F7_Uart_CanSend(int controllerIndex);
 void STM32F7_Uart_TxBufferEmptyInterruptEnable(int controllerIndex, bool enable);
 void STM32F7_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable);
 void STM32F7_Uart_Reset();
@@ -54,9 +54,11 @@ struct UartState {
     USART_TypeDef_Ptr portReg;
 
     bool handshaking;
+    bool enable;
 
     TinyCLR_Uart_ErrorReceivedHandler errorEventHandler;
     TinyCLR_Uart_DataReceivedHandler dataReceivedEventHandler;
+    TinyCLR_Uart_ClearToSendChangedHandler cleartosendEventHandler;
 
     const TinyCLR_Uart_Controller* controller;
 
@@ -321,7 +323,7 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
     }
 
     if (sr & USART_ISR_TXE) {
-        if (STM32F7_Uart_TxHandshakeEnabledState(controllerIndex)) {
+        if (STM32F7_Uart_CanSend(controllerIndex)) {
             if (state->txBufferCount > 0) {
                 uint8_t data = state->TxBuffer[state->txBufferOut++];
 
@@ -337,6 +339,16 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
                 STM32F7_Uart_TxBufferEmptyInterruptEnable(controllerIndex, false); // Disable interrupt when no more data to send.
             }
         }
+    }
+
+    if (state->handshaking && (sr & USART_ISR_CTSIF)) {
+        auto ctsActive = (sr & USART_ISR_CTS) ? true : false;
+
+        // Clear CTS interrupt
+        state->portReg->ICR |= USART_ISR_CTSIF;
+
+        if (canPostEvent && state->cleartosendEventHandler != nullptr)
+            state->cleartosendEventHandler(state->controller, ctsActive, STM32F7_Time_GetCurrentProcessorTime());
     }
 }
 
@@ -404,6 +416,8 @@ TinyCLR_Result STM32F7_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->controller = self;
 
         state->handshaking = false;
+        state->enable = false;
+
         state->lastEventRxBufferCount = 0;
         state->lastEventTime = STM32F7_Time_GetTimeForProcessorTicks(nullptr, STM32F7_Time_GetCurrentProcessorTicks(nullptr));
     }
@@ -697,6 +711,8 @@ TinyCLR_Result STM32F7_Uart_Release(const TinyCLR_Uart_Controller* self) {
         STM32F7_GpioInternal_ClosePin(uartTxPins[controllerIndex].number);
 
         if (state->handshaking) {
+            state->portReg->CR3 &= ~(USART_CR3_CTSE | USART_CR3_RTSE);
+
             STM32F7_GpioInternal_ClosePin(uartCtsPins[controllerIndex].number);
             STM32F7_GpioInternal_ClosePin(uartRtsPins[controllerIndex].number);
         }
@@ -739,19 +755,13 @@ void STM32F7_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable) 
     }
 }
 
-bool STM32F7_Uart_TxHandshakeEnabledState(int controllerIndex) {
+bool STM32F7_Uart_CanSend(int controllerIndex) {
     auto state = &uartStates[controllerIndex];
+    bool value;
 
-    // The state of the CTS input only matters if Flow Control is enabled
-    if (state->portReg->CR3 & USART_CR3_CTSE) {
-        TinyCLR_Gpio_PinValue value;
+    STM32F7_Uart_GetClearToSendState(state->controller, value);
 
-        STM32F7_Gpio_Read(nullptr, uartCtsPins[controllerIndex].number, value);
-
-        return !(value == TinyCLR_Gpio_PinValue::High);
-    }
-
-    return true; // If this handshake input is not being used, it is assumed to be good
+    return value;
 }
 
 TinyCLR_Result STM32F7_Uart_Flush(const TinyCLR_Uart_Controller* self) {
@@ -851,20 +861,52 @@ TinyCLR_Result STM32F7_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Controller
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* self, bool& state) {
-    return TinyCLR_Result::NotImplemented;
+TinyCLR_Result STM32F7_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* self, bool& value) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+
+    value = true;
+
+    if (state->handshaking) {
+        auto controllerIndex = state->controllerIndex;
+
+        // Reading the pin state to protect values from register for inteterupt which is higher priority (some bits are clear once read)
+        TinyCLR_Gpio_PinValue pinState;
+        STM32F7_Gpio_Read(nullptr, uartCtsPins[controllerIndex].number, pinState);
+
+        value = (pinState == TinyCLR_Gpio_PinValue::High) ? false : true;
+    }
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F7_Uart_SetClearToSendChangedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ClearToSendChangedHandler handler) {
-    return TinyCLR_Result::NotImplemented;
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+    state->cleartosendEventHandler = handler;
+
+    return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool& state) {
-    return TinyCLR_Result::NotImplemented;
+TinyCLR_Result STM32F7_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool& value) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+
+    value = false;
+
+    if (state->handshaking) {
+        auto controllerIndex = state->controllerIndex;
+
+        // Reading the pin state to protect values from register for inteterupt which is higher priority (some bits are clear once read)
+        TinyCLR_Gpio_PinValue pinState;
+        STM32F7_Gpio_Read(nullptr, uartRtsPins[controllerIndex].number, pinState);
+
+        value = (pinState == TinyCLR_Gpio_PinValue::High) ? true : false;
+    }
+
+    return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result STM32F7_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool state) {
-    return TinyCLR_Result::NotImplemented;
+TinyCLR_Result STM32F7_Uart_SetIsRequestToSendEnabled(const TinyCLR_Uart_Controller* self, bool value) {
+    // Enable by hardware, no support by software.
+    return TinyCLR_Result::NotSupported;
 }
 
 size_t STM32F7_Uart_GetBytesToRead(const TinyCLR_Uart_Controller* self) {
@@ -896,9 +938,15 @@ TinyCLR_Result STM32F7_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self
 }
 
 TinyCLR_Result STM32F7_Uart_Enable(const TinyCLR_Uart_Controller* self) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+    state->enable = true;
+
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F7_Uart_Disable(const TinyCLR_Uart_Controller* self) {
+    auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
+    state->enable = false;
+
     return TinyCLR_Result::Success;
 }
