@@ -52,11 +52,10 @@ void STM32F4_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager);
 const TinyCLR_Api_Info* STM32F4_Interrupt_GetRequiredApi();
 TinyCLR_Result STM32F4_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
 TinyCLR_Result STM32F4_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self);
-bool STM32F4_Interrupt_Enable(bool force);
-bool STM32F4_Interrupt_Disable(bool force);
+void STM32F4_Interrupt_Enable();
+void STM32F4_Interrupt_Disable();
 void STM32F4_Interrupt_WaitForInterrupt();
 bool STM32F4_Interrupt_IsDisabled();
-void STM32F4_Interrupt_Restore();
 
 ////////////////////////////////////////////////////////////////////////////////
 //Power
