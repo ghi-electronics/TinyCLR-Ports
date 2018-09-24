@@ -265,7 +265,7 @@ void STM32F4_UsbDevice_InitializeConfiguration(UsClientState *usClientState) {
     if (usClientState != nullptr) {
         usClientState->controllerIndex = controller;
 
-        usClientState->maxFifoPacketCount = STM32F4_USB_PACKET_FIFO_COUNT;
+        usClientState->maxFifoPacketCountDefault = STM32F4_USB_PACKET_FIFO_COUNT;
         usClientState->totalEndpointsCount = STM32F4_USB_ENDPOINT_COUNT;
         usClientState->totalPipesCount = STM32F4_USB_PIPE_COUNT;
 

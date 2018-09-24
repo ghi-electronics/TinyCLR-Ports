@@ -173,7 +173,8 @@ struct UsClientState {
     uint8_t* fifoPacketIn;
     uint8_t* fifoPacketOut;
     uint8_t* fifoPacketCount;
-    uint8_t maxFifoPacketCount;
+    uint8_t* maxFifoPacketCount;
+    uint8_t maxFifoPacketCountDefault;
 
     uint8_t* controlEndpointBuffer;
 
@@ -197,6 +198,14 @@ TinyCLR_Result TinyCLR_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_
 TinyCLR_Result TinyCLR_UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Controller* self, const TinyCLR_UsbClient_DeviceDescriptor* descriptor);
 TinyCLR_Result TinyCLR_UsbClient_SetVendorClassRequestHandler(const TinyCLR_UsbClient_Controller* self, TinyCLR_UsbClient_RequestHandler handler);
 const uint8_t* TinyCLR_UsbClient_FindRecord(UsClientState* usClientState, uint8_t marker, TinyCLR_UsbClient_SetupPacket * iValue);
+size_t TinyCLR_UsbClient_GetBytesToWrite(const TinyCLR_UsbClient_Controller* self, uint32_t pipe);
+size_t TinyCLR_UsbClient_GetBytesToRead(const TinyCLR_UsbClient_Controller* self, uint32_t pipe);
+TinyCLR_Result TinyCLR_UsbClient_ClearWriteBuffer(const TinyCLR_UsbClient_Controller* self, uint32_t pipe);
+TinyCLR_Result TinyCLR_UsbClient_ClearReadBuffer(const TinyCLR_UsbClient_Controller* self, uint32_t pipe);
+size_t TinyCLR_UsbClient_GetWriteBufferSize(const TinyCLR_UsbClient_Controller* self, uint32_t pipe);
+size_t TinyCLR_UsbClient_GetReadBufferSize(const TinyCLR_UsbClient_Controller* self, uint32_t pipe);
+TinyCLR_Result TinyCLR_UsbClient_SetWriteBufferSize(const TinyCLR_UsbClient_Controller* self, uint32_t pipe, size_t size);
+TinyCLR_Result TinyCLR_UsbClient_SetReadBufferSize(const TinyCLR_UsbClient_Controller* self, uint32_t pipe, size_t size);
 
 bool TinyCLR_UsbClient_Initialize(UsClientState* usClientState);
 bool TinyCLR_UsbClient_Uninitialize(UsClientState* usClientState);
