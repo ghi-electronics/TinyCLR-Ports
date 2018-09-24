@@ -178,6 +178,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR
 
     TinyCLR_Interop_ClrValue managedValueMessages, managedValueOffset, managedValueCount, ret;
     TinyCLR_Interop_ClrValue fldData, fldarbID, fldLen, fldRtr, fldEid;
+    TinyCLR_Can_Message message;
 
     md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, managedValueMessages);
     md.InteropManager->GetArgument(md.InteropManager, md.Stack, 1, managedValueOffset);
@@ -209,13 +210,17 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR
         md.InteropManager->GetField(md.InteropManager, msgObj, Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_CanMessage::FIELD___IsExtendedId__BackingField___BOOLEAN, fldEid);
 
         data = reinterpret_cast<uint8_t*>(fldData.Data.SzArray.Data);
-        arbID = fldarbID.Data.Numeric->I4;
-        length = fldLen.Data.Numeric->I4 & 0xFF;
 
-        remoteTransmissionRequest = (fldRtr.Data.Numeric->I4 != 0) ? true : false;
-        extendedId = (fldEid.Data.Numeric->I4 != 0) ? true : false;
+        message.ArbitrationId = fldarbID.Data.Numeric->I4;
+        message.Length = fldLen.Data.Numeric->I4 & 0xFF;
 
-        if (api->WriteMessage(api, arbID, extendedId, remoteTransmissionRequest, data, length) != TinyCLR_Result::Success)
+        message.IsRemoteTransmissionRequest = (fldRtr.Data.Numeric->I4 != 0) ? true : false;
+        message.IsExtendedId = (fldEid.Data.Numeric->I4 != 0) ? true : false;
+
+        for (auto j = 0; j < message.Length; j++)
+            message.Data[j] = data[j];
+
+        if (api->WriteMessage(api, &message, 1) != TinyCLR_Result::Success)
             break;
 
         msgArray++;
@@ -246,6 +251,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR
 
     TinyCLR_Interop_ClrValue managedValueMessages, managedValueOffset, managedValueCount, ret;
     TinyCLR_Interop_ClrValue fldData, fldarbID, fldLen, fldRtr, fldEid, fldts;
+    TinyCLR_Can_Message message;
 
     md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, managedValueMessages);
     md.InteropManager->GetArgument(md.InteropManager, md.Stack, 1, managedValueOffset);
@@ -286,14 +292,17 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR
 
         data = reinterpret_cast<uint8_t*>(fldData.Data.SzArray.Data);
 
-        if (api->ReadMessage(api, arbID, extendedId, remoteTransmissionRequest, data, length, ts) != TinyCLR_Result::Success)
+        if (api->ReadMessage(api, &message, 1) != TinyCLR_Result::Success)
             break;
 
-        fldarbID.Data.Numeric->I4 = arbID;
-        fldLen.Data.Numeric->I4 = length & 0xF;
-        fldRtr.Data.Numeric->I4 = (remoteTransmissionRequest != false) ? 1 : 0;
-        fldEid.Data.Numeric->I4 = (extendedId != false) ? 1 : 0;
-        fldts.Data.Numeric->I8 = ts;
+        for (auto j = 0; j < message.Length; j++)
+            data[j] = message.Data[j];
+
+        fldarbID.Data.Numeric->I4 = message.ArbitrationId;
+        fldLen.Data.Numeric->I4 = message.Length;
+        fldRtr.Data.Numeric->Boolean = message.IsRemoteTransmissionRequest;
+        fldEid.Data.Numeric->Boolean = message.IsExtendedId;
+        fldts.Data.Numeric->I8 = message.Timestamp;
 
         read++;
         msgArray++;
