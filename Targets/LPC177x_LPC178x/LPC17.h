@@ -282,7 +282,7 @@ LPC17_Gpio_PinFunction LPC17_Uart_GetTxAlternateFunction(int32_t controllerIndex
 LPC17_Gpio_PinFunction LPC17_Uart_GetRxAlternateFunction(int32_t controllerIndex);
 LPC17_Gpio_PinFunction LPC17_Uart_GetRtsAlternateFunction(int32_t controllerIndex);
 LPC17_Gpio_PinFunction LPC17_Uart_GetCtsAlternateFunction(int32_t controllerIndex);
-bool LPC17_Uart_TxHandshakeEnabledState(int controllerIndex);
+bool LPC17_Uart_CanSend(int controllerIndex);
 void LPC17_Uart_TxBufferEmptyInterruptEnable(int controllerIndex, bool enable);
 void LPC17_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable);
 

@@ -394,6 +394,8 @@ void LPC24_Uart_InterruptHandler(void *param) {
 
         LPC24_Uart_GetClearToSendState(state->controller, ctsActive);
 
+        auto canPostEvent = LPC24_Uart_CanPostEvent(controllerIndex);
+
         if (canPostEvent && state->cleartosendEventHandler != nullptr)
             state->cleartosendEventHandler(state->controller, ctsActive, LPC24_Time_GetCurrentProcessorTime());
     }

@@ -411,6 +411,8 @@ void AT91_Uart_InterruptHandler(void *param) {
 
         AT91_Uart_GetClearToSendState(state->controller, ctsActive);
 
+        auto canPostEvent = AT91_Uart_CanPostEvent(controllerIndex);
+
         if (canPostEvent && state->cleartosendEventHandler != nullptr)
             state->cleartosendEventHandler(state->controller, ctsActive, AT91_Time_GetCurrentProcessorTime());
     }

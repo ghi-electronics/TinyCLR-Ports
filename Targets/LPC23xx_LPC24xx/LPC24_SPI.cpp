@@ -283,6 +283,8 @@ struct SpiState {
 
     bool chipSelectActiveState;
 
+    bool tableInitialized;
+
     TinyCLR_Spi_Mode spiMode;
 
     uint16_t initializeCount;
@@ -349,7 +351,7 @@ void LPC24_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
 bool LPC24_Spi_Transaction_Start(int32_t controllerIndex) {
     auto state = &spiStates[controllerIndex];
 
-    LPC17_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::Low : TinyCLR_Gpio_PinValue::High);
+    LPC24_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::Low : TinyCLR_Gpio_PinValue::High);
 
     if (state->chipSelectSetupTime > 0) {
         auto currentTicks = LPC24_Time_GetCurrentProcessorTime();
@@ -369,7 +371,7 @@ bool LPC24_Spi_Transaction_Stop(int32_t controllerIndex) {
         while (LPC24_Time_GetCurrentProcessorTime() - currentTicks < state->chipSelectHoldTime);
     }
 
-    LPC17_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+    LPC24_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
 
     return true;
 }
@@ -384,11 +386,10 @@ bool LPC24_Spi_Transaction_nWrite8_nRead8(int32_t controllerIndex) {
     int32_t WriteCount = state->writeLength;
     uint8_t* Read8 = state->readBuffer;
     int32_t ReadCount = state->readLength;
-    int32_t ReadStartOffset = state->readOffset;
     int32_t ReadTotal = 0;
 
     if (ReadCount) {
-        ReadTotal = ReadCount + ReadStartOffset; // we need to read as many bytes as the buffer is long, plus the offset at which we start
+        ReadTotal = ReadCount; // we need to read as many bytes as the buffer is long, plus the offset at which we start
     }
 
     // nothing to read, just write to make it faster
@@ -691,7 +692,7 @@ TinyCLR_Result LPC24_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, u
 
     if (state->chipSelectLine != PIN_NONE) {
         if (LPC24_Gpio_OpenPin(state->chipSelectLine)) {
-            LPC24_Gpio_EnableOutputPin(state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+            LPC24_Gpio_EnableOutputPin(state->chipSelectLine, !state->chipSelectActiveState);
         }
         else {
             return TinyCLR_Result::SharingViolation;

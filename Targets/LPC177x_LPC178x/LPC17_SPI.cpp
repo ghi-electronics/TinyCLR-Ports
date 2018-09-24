@@ -433,6 +433,8 @@ struct SpiState {
 
     TinyCLR_Spi_Mode spiMode;
 
+    bool tableInitialized;
+
     uint16_t initializeCount;
 };
 
@@ -532,12 +534,11 @@ bool LPC17_Spi_Transaction_nWrite8_nRead8(int32_t controllerIndex) {
     uint8_t* Write8 = state->writeBuffer;
     int32_t WriteCount = state->writeLength;
     uint8_t* Read8 = state->readBuffer;
-    int32_t ReadCount = state->readLength;
-    int32_t ReadStartOffset = state->readOffset;
+    int32_t ReadCount = state->readLength;    
     int32_t ReadTotal = 0;
 
     if (ReadCount) {
-        ReadTotal = ReadCount + ReadStartOffset; // we need to read as many bytes as the buffer is long, plus the offset at which we start
+        ReadTotal = ReadCount; // we need to read as many bytes as the buffer is long, plus the offset at which we start
     }
 
     // nothing to read, just write to make it faster
@@ -840,7 +841,7 @@ TinyCLR_Result LPC17_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, u
 
     if (state->chipSelectLine != PIN_NONE) {
         if (LPC17_Gpio_OpenPin(state->chipSelectLine)) {
-            LPC17_Gpio_EnableOutputPin(state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+            LPC17_Gpio_EnableOutputPin(state->chipSelectLine, !state->chipSelectActiveState);
         }
         else {
             return TinyCLR_Result::SharingViolation;
