@@ -220,7 +220,8 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR
         for (auto j = 0; j < message.Length; j++)
             message.Data[j] = data[j];
 
-        if (api->WriteMessage(api, &message, 1) != TinyCLR_Result::Success)
+        size_t len = 1;
+        if (api->WriteMessage(api, &message, len) != TinyCLR_Result::Success || len != 1)
             break;
 
         msgArray++;
@@ -292,7 +293,8 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR
 
         data = reinterpret_cast<uint8_t*>(fldData.Data.SzArray.Data);
 
-        if (api->ReadMessage(api, &message, 1) != TinyCLR_Result::Success)
+        size_t len = 1;
+        if (api->ReadMessage(api, &message, len) != TinyCLR_Result::Success || len != 1)
             break;
 
         for (auto j = 0; j < message.Length; j++)
