@@ -843,7 +843,7 @@ bool AT91_UsbDevice_Initialize(UsClientState *usClientState) {
     AT91_UsbDevice_PmcEnableUsbClock();
 
     // Enable the interrupt for  UDP
-    AT91_Interrupt_Activate(AT91C_ID_UDPHS, (uint32_t*)&AT91_UsbDevice_InterruptHandler, (void*)usClientState);
+    AT91_InterruptInternal_Activate(AT91C_ID_UDPHS, (uint32_t*)&AT91_UsbDevice_InterruptHandler, (void*)usClientState);
 
     pUdp->UDPHS_IEN |= AT91C_UDPHS_EPT_INT_0;
     pEp->UDPHS_EPTCFG |= 0x00000043; //configuration info for control ep
@@ -880,7 +880,7 @@ bool AT91_UsbDevice_Uninitialize(UsClientState *usClientState) {
     AT91_UsbDevice_PmcDisableUTMIBIAS();
     AT91_UsbDevice_PmcDisableUsbClock();
 
-    AT91_Interrupt_Deactivate(AT91C_ID_UDPHS);
+    AT91_InterruptInternal_Deactivate(AT91C_ID_UDPHS);
 
     if (usClientState != nullptr) {
         AT91_UsbDevice_ProtectPins(usClientState, false);

@@ -120,7 +120,7 @@ bool At91TimerDriver::Initialize(uint32_t timer, bool freeRunning, uint32_t clkS
     //--//
 
     if (ISR) {
-        if (!AT91_Interrupt_Activate(AT91C_ID_TC0_TC1, (uint32_t*)&ISR_TIMER, (void*)timer))
+        if (!AT91_InterruptInternal_Activate(AT91C_ID_TC0_TC1, (uint32_t*)&ISR_TIMER, (void*)timer))
             return false;
     }
 

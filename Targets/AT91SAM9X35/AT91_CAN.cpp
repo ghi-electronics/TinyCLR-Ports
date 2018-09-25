@@ -1739,7 +1739,7 @@ TinyCLR_Result AT91_Can_SetBitTiming(const TinyCLR_Can_Controller* self, const T
     /* Enable the interrupts for error cases */
     CAN_EnableIt(state->cand.pHw, CAN_ERRS);
 
-    AT91_Interrupt_Activate(controllerIndex == 0 ? AT91C_ID_CAN0 : AT91C_ID_CAN1, (uint32_t*)&AT91_Can_RxInterruptHandler, (void*)&state->controllerIndex);
+    AT91_InterruptInternal_Activate(controllerIndex == 0 ? AT91C_ID_CAN0 : AT91C_ID_CAN1, (uint32_t*)&AT91_Can_RxInterruptHandler, (void*)&state->controllerIndex);
 
     CAND_Activate(&state->cand);
 
