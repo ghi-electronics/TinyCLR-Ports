@@ -141,11 +141,10 @@ void LPC24_Interrupt_EnsureTableInitialized() {
         interruptControllers[i].ApiInfo = &interruptApi[i];
         interruptControllers[i].Initialize = &LPC24_Interrupt_Initialize;
         interruptControllers[i].Uninitialize = &LPC24_Interrupt_Uninitialize;
-        interruptControllers[i].Enable = &LPC24_Interrupt_GlobalEnabled;
-        interruptControllers[i].Disable = &LPC24_Interrupt_GlobalDisabled;
-        interruptControllers[i].WaitForInterrupt = &LPC24_Interrupt_GlobalWaitForInterrupt;
-        interruptControllers[i].IsDisabled = &LPC24_Interrupt_GlobalIsDisabled;
-        interruptControllers[i].Restore = &LPC24_Interrupt_GlobalRestore;
+        interruptControllers[i].Enable = &LPC24_Interrupt_Enable;
+        interruptControllers[i].Disable = &LPC24_Interrupt_Disable;
+        interruptControllers[i].WaitForInterrupt = &LPC24_Interrupt_WaitForInterrupt;
+        interruptControllers[i].IsDisabled = &LPC24_Interrupt_IsDisabled;
 
         interruptApi[i].Author = "GHI Electronics, LLC";
         interruptApi[i].Name = interruptApiNames[i];
@@ -200,7 +199,7 @@ TinyCLR_Result LPC24_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* 
     return TinyCLR_Result::Success;
 }
 
-bool LPC24_Interrupt_Activate(uint32_t Irq_Index, uint32_t *ISR, void* ISR_Param) {
+bool LPC24_InterruptInternal_Activate(uint32_t Irq_Index, uint32_t *ISR, void* ISR_Param) {
     // figure out the interrupt
     LPC24_Interrupt_Vectors* IsrVector = LPC24_Interrupt_IrqToVector(Irq_Index);
 
@@ -229,7 +228,7 @@ bool LPC24_Interrupt_Activate(uint32_t Irq_Index, uint32_t *ISR, void* ISR_Param
 
 }
 
-bool LPC24_Interrupt_Deactivate(uint32_t Irq_Index) {
+bool LPC24_InterruptInternal_Deactivate(uint32_t Irq_Index) {
     // figure out the interrupt
     LPC24_Interrupt_Vectors* IsrVector = LPC24_Interrupt_IrqToVector(Irq_Index);
 
@@ -249,131 +248,58 @@ bool LPC24_Interrupt_Deactivate(uint32_t Irq_Index) {
     return true;
 }
 
-bool LPC24_Interrupt_Enable(uint32_t Irq_Index) {
-    LPC24_Interrupt_Vectors* IsrVector = LPC24_Interrupt_IrqToVector(Irq_Index);
+LPC24_InterruptStarted_RaiiHelper::LPC24_InterruptStarted_RaiiHelper() { LPC24_Interrupt_Started(); };
+LPC24_InterruptStarted_RaiiHelper::~LPC24_InterruptStarted_RaiiHelper() { LPC24_Interrupt_Ended(); };
 
-    if (!IsrVector)
-        return false;
+LPC24_DisableInterrupts_RaiiHelper::LPC24_DisableInterrupts_RaiiHelper() {
+    state = IRQ_LOCK_Disable_asm();
+}
+LPC24_DisableInterrupts_RaiiHelper::~LPC24_DisableInterrupts_RaiiHelper() {
+    uint32_t Cp = state;
 
-    LPC24XX_VIC& VIC = LPC24XX::VIC();
-
-    DISABLE_INTERRUPTS_SCOPED(irq);
-
-    bool WasEnabled = VIC.IsInterruptEnabled(Irq_Index);
-
-    VIC.INTENABLE = 1 << IsrVector->Index;
-
-    return WasEnabled;
+    if ((Cp & DISABLED_MASK) == 0) {
+        state = IRQ_LOCK_Release_asm();
+    }
 }
 
-bool LPC24_Interrupt_Disable(uint32_t Irq_Index) {
-    LPC24_Interrupt_Vectors* IsrVector = LPC24_Interrupt_IrqToVector(Irq_Index);
-
-    if (!IsrVector)
-        return 0;
-
-    LPC24XX_VIC& VIC = LPC24XX::VIC();
-
-    DISABLE_INTERRUPTS_SCOPED(irq);
-
-    bool WasEnabled = VIC.IsInterruptEnabled(Irq_Index);
-
-    VIC.INTENCLR = 1 << IsrVector->Index;
-
-    return WasEnabled;
+bool LPC24_DisableInterrupts_RaiiHelper::IsDisabled() {
+    return (state & DISABLED_MASK) == DISABLED_MASK;
 }
 
-bool LPC24_Interrupt_EnableState(uint32_t Irq_Index) {
-    LPC24XX_VIC& VIC = LPC24XX::VIC();
-
-    return VIC.IsInterruptEnabled(Irq_Index);
-}
-
-bool LPC24_Interrupt_InterruptState(uint32_t Irq_Index) {
-    LPC24XX_VIC& VIC = LPC24XX::VIC();
-
-    return VIC.GetInterruptState(Irq_Index);
-}
-
-LPC24_SmartPtr_Interrupt::LPC24_SmartPtr_Interrupt() { LPC24_Interrupt_Started(); };
-LPC24_SmartPtr_Interrupt::~LPC24_SmartPtr_Interrupt() { LPC24_Interrupt_Ended(); };
-
-LPC24_SmartPtr_IRQ::LPC24_SmartPtr_IRQ() { Disable(); }
-LPC24_SmartPtr_IRQ::~LPC24_SmartPtr_IRQ() { Restore(); }
-
-bool LPC24_SmartPtr_IRQ::IsDisabled() {
-    return (m_state & DISABLED_MASK) == DISABLED_MASK;
-}
-
-void LPC24_SmartPtr_IRQ::Acquire() {
-    uint32_t Cp = m_state;
+void LPC24_DisableInterrupts_RaiiHelper::Acquire() {
+    uint32_t Cp = state;
 
     if ((Cp & DISABLED_MASK) == DISABLED_MASK) {
-        Disable();
+        state = IRQ_LOCK_Disable_asm();
     }
 }
 
-void LPC24_SmartPtr_IRQ::Release() {
-    uint32_t Cp = m_state;
+void LPC24_DisableInterrupts_RaiiHelper::Release() {
+    uint32_t Cp = state;
 
     if ((Cp & DISABLED_MASK) == 0) {
-        m_state = IRQ_LOCK_Release_asm();
-    }
-}
-
-void LPC24_SmartPtr_IRQ::Probe() {
-    uint32_t Cp = m_state;
-
-    if ((Cp & DISABLED_MASK) == 0) {
-        IRQ_LOCK_Probe_asm();
-    }
-}
-
-uint32_t LPC24_SmartPtr_IRQ::GetState() {
-    return IRQ_LOCK_GetState_asm();
-}
-
-void LPC24_SmartPtr_IRQ::Disable() {
-    m_state = IRQ_LOCK_Disable_asm();
-}
-
-void LPC24_SmartPtr_IRQ::Restore() {
-    uint32_t Cp = m_state;
-
-    if ((Cp & DISABLED_MASK) == 0) {
-        IRQ_LOCK_Restore_asm();
+        state = IRQ_LOCK_Release_asm();
     }
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //Global Interrupt - Use in System Cote
 //////////////////////////////////////////////////////////////////////////////
+bool wasDisable = false;
 
-bool LPC24_Interrupt_GlobalIsDisabled() {
-    return (IRQ_LOCK_GetState_asm() & DISABLED_MASK);
+bool LPC24_Interrupt_IsDisabled() {
+    return ((IRQ_LOCK_GetState_asm() & DISABLED_MASK) == 0);
 }
 
-bool LPC24_Interrupt_GlobalEnabled(bool force) {
-    if (!force) {
-        return (IRQ_LOCK_Release_asm() & DISABLED_MASK == 0);
-    }
-
-    return  (IRQ_LOCK_ForceEnabled_asm() & DISABLED_MASK == 0);
+void LPC24_Interrupt_Enable() {
+    IRQ_LOCK_Release_asm();
 }
 
-void LPC24_Interrupt_GlobalRestore() {
-    IRQ_LOCK_Restore_asm();
+void LPC24_Interrupt_Disable() {
+    wasDisable = ((IRQ_LOCK_Disable_asm() & DISABLED_MASK) == DISABLED_MASK);
 }
 
-bool LPC24_Interrupt_GlobalDisabled(bool force) {
-    if (!force) {
-        return ((IRQ_LOCK_Disable_asm() & DISABLED_MASK) == DISABLED_MASK);
-    }
-
-    return ((IRQ_LOCK_ForceDisabled_asm() & DISABLED_MASK) == DISABLED_MASK);
-}
-
-void LPC24_Interrupt_GlobalWaitForInterrupt() {
+void LPC24_Interrupt_WaitForInterrupt() {
     IRQ_LOCK_Probe_asm();
 }
 

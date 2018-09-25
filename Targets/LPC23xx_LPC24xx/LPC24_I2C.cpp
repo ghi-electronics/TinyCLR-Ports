@@ -319,7 +319,7 @@ TinyCLR_Result LPC24_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
         LPC24_Gpio_ConfigurePin(i2cSclPins[controllerIndex].number, LPC24_Gpio_Direction::Input, i2cSclPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
         LPC24_Gpio_ConfigurePin(i2cSdaPins[controllerIndex].number, LPC24_Gpio_Direction::Input, i2cSdaPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
-        LPC24_Interrupt_Activate(controllerIndex == 0 ? LPC24XX_VIC::c_IRQ_INDEX_I2C0 : (controllerIndex == 1 ? LPC24XX_VIC::c_IRQ_INDEX_I2C1 : LPC24XX_VIC::c_IRQ_INDEX_I2C2), (uint32_t*)&LPC24_I2c_InterruptHandler, (uint32_t*)&state->controllerIndex);
+        LPC24_InterruptInternal_Activate(controllerIndex == 0 ? LPC24XX_VIC::c_IRQ_INDEX_I2C0 : (controllerIndex == 1 ? LPC24XX_VIC::c_IRQ_INDEX_I2C1 : LPC24XX_VIC::c_IRQ_INDEX_I2C2), (uint32_t*)&LPC24_I2c_InterruptHandler, (uint32_t*)&state->controllerIndex);
 
         // enable the I2c module
         I2C.I2CONSET = LPC24XX_I2C::I2EN;
@@ -347,7 +347,7 @@ TinyCLR_Result LPC24_I2c_Release(const TinyCLR_I2c_Controller* self) {
 
         LPC24XX_I2C& I2C = LPC24XX::I2C(controllerIndex);
 
-        LPC24_Interrupt_Deactivate(controllerIndex == 0 ? LPC24XX_VIC::c_IRQ_INDEX_I2C0 : (controllerIndex == 1 ? LPC24XX_VIC::c_IRQ_INDEX_I2C1 : LPC24XX_VIC::c_IRQ_INDEX_I2C2));
+        LPC24_InterruptInternal_Deactivate(controllerIndex == 0 ? LPC24XX_VIC::c_IRQ_INDEX_I2C0 : (controllerIndex == 1 ? LPC24XX_VIC::c_IRQ_INDEX_I2C1 : LPC24XX_VIC::c_IRQ_INDEX_I2C2));
 
         I2C.I2CONCLR = (LPC24XX_I2C::AA | LPC24XX_I2C::SI | LPC24XX_I2C::STO | LPC24XX_I2C::STA | LPC24XX_I2C::I2EN);
 

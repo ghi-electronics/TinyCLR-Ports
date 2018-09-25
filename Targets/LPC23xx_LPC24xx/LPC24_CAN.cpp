@@ -2686,7 +2686,7 @@ TinyCLR_Result LPC24_Can_SetBitTiming(const TinyCLR_Can_Controller* self, const 
 
     }
 
-    LPC24_Interrupt_Activate(LPC24XX_VIC::c_IRQ_INDEX_CAN, (uint32_t*)&LPC24_Can_RxInterruptHandler, 0);
+    LPC24_InterruptInternal_Activate(LPC24XX_VIC::c_IRQ_INDEX_CAN, (uint32_t*)&LPC24_Can_RxInterruptHandler, 0);
 
     return TinyCLR_Result::Success;
 }

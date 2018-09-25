@@ -199,7 +199,7 @@ bool LPC24_UsbDevice_Initialize(UsClientState *usClientState) {
 
     int32_t controllerIndex = usClientState->controllerIndex;
 
-    LPC24_Interrupt_Activate(USB_IRQn, (uint32_t*)&LPC24_UsbDevice_InterruptHandler, 0);
+    LPC24_InterruptInternal_Activate(USB_IRQn, (uint32_t*)&LPC24_UsbDevice_InterruptHandler, 0);
 
     for (int32_t i = 0; i < LPC24_USB_ENDPOINT_COUNT; i++)
         EndpointInit[i].word = 0;       // All useable endpoints initialize to unused
@@ -239,7 +239,7 @@ bool LPC24_UsbDevice_Initialize(UsClientState *usClientState) {
 bool LPC24_UsbDevice_Uninitialize(UsClientState *usClientState) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    LPC24_Interrupt_Deactivate(USB_IRQn);
+    LPC24_InterruptInternal_Deactivate(USB_IRQn);
 
     if (usClientState != nullptr) {
         LPC24_UsbDevice_ProtectPins(usClientState->controllerIndex, false);
