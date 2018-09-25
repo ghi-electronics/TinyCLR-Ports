@@ -13,6 +13,11 @@ struct Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Dev
     static const size_t FIELD___DataFormat__BackingField___GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat = 3;
 };
 
+struct Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_I2cDisplayControllerSettings {
+    static const size_t FIELD___ApiName__BackingField___STRING = 4;
+    static const size_t FIELD___Settings__BackingField___GHIElectronicsTinyCLRDevicesI2cGHIElectronicsTinyCLRDevicesI2cI2cConnectionSettings = 5;
+};
+
 struct Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_ParallelDisplayControllerSettings {
     static const size_t FIELD___DataEnableIsFixed__BackingField___BOOLEAN = 4;
     static const size_t FIELD___DataEnablePolarity__BackingField___BOOLEAN = 5;
@@ -41,12 +46,14 @@ struct Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Dev
     static TinyCLR_Result get_SupportedDataFormats___SZARRAY_GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Acquire___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Release___VOID(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result SetParallelConfiguration___VOID__I4__I4__GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat__BOOLEAN__BOOLEAN__BOOLEAN__I4__BOOLEAN__I4__I4__I4__BOOLEAN__I4__I4__I4(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result SetSpiConfiguration___VOID__I4__I4__GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat__STRING(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result SetConfiguration___VOID__GHIElectronicsTinyCLRDevicesDisplayParallelDisplayControllerSettings(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result SetConfiguration___VOID__GHIElectronicsTinyCLRDevicesDisplaySpiDisplayControllerSettings(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result SetConfiguration___VOID__GHIElectronicsTinyCLRDevicesDisplayI2cDisplayControllerSettings(const TinyCLR_Interop_MethodData md);
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_SpiDisplayControllerSettings {
-    static const size_t FIELD___SpiApiName__BackingField___STRING = 4;
+    static const size_t FIELD___ApiName__BackingField___STRING = 4;
+    static const size_t FIELD___Settings__BackingField___GHIElectronicsTinyCLRDevicesSpiGHIElectronicsTinyCLRDevicesSpiSpiConnectionSettings = 5;
 };
 
 extern const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices_Display;

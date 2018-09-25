@@ -22,6 +22,7 @@
 
 const TinyCLR_Spi_Controller* s25fl032FlashSpiProvider;
 static uint32_t s25fl032FlashSpiChipSelectLine;
+static TinyCLR_Spi_Settings s25fl032FlashSpiSettings;
 
 static uint8_t s25fl032FlashDataReadBuffer[S25FL032_FLASH_SECTOR_SIZE + 4];
 static uint8_t s25fl032FlashDataWriteBuffer[S25FL032_FLASH_SECTOR_SIZE + 4];
@@ -72,7 +73,7 @@ TinyCLR_Result S25FL032_Flash_Read(uint32_t address, size_t length, uint8_t* buf
 
     s25fl032FlashSpiProvider->Acquire(s25fl032FlashSpiProvider);
 
-    s25fl032FlashSpiProvider->SetActiveSettings(s25fl032FlashSpiProvider, s25fl032FlashSpiChipSelectLine, TinyCLR_Spi_ChipSelectType::Gpio ,SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    s25fl032FlashSpiProvider->SetActiveSettings(s25fl032FlashSpiProvider, &s25fl032FlashSpiSettings);
 
     while (S25FL032_Flash_WriteInProgress() == true);
 
@@ -182,7 +183,7 @@ TinyCLR_Result S25FL032_Flash_Write(uint32_t address, size_t length, const uint8
 
     s25fl032FlashSpiProvider->Acquire(s25fl032FlashSpiProvider);
 
-    s25fl032FlashSpiProvider->SetActiveSettings(s25fl032FlashSpiProvider, s25fl032FlashSpiChipSelectLine, TinyCLR_Spi_ChipSelectType::Gpio ,SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    s25fl032FlashSpiProvider->SetActiveSettings(s25fl032FlashSpiProvider, &s25fl032FlashSpiSettings);
 
     TinyCLR_Result result = S25FL032_Flash_PageProgram(address, length, buffer);
 
@@ -222,7 +223,7 @@ TinyCLR_Result S25FL032_Flash_EraseBlock(uint32_t sector) {
 
     s25fl032FlashSpiProvider->Acquire(s25fl032FlashSpiProvider);
 
-    s25fl032FlashSpiProvider->SetActiveSettings(s25fl032FlashSpiProvider, s25fl032FlashSpiChipSelectLine, TinyCLR_Spi_ChipSelectType::Gpio ,SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    s25fl032FlashSpiProvider->SetActiveSettings(s25fl032FlashSpiProvider, &s25fl032FlashSpiSettings);
 
     while (S25FL032_Flash_WriteEnable() == false);
 
@@ -261,7 +262,16 @@ TinyCLR_Result S25FL032_Flash_Acquire(const TinyCLR_Spi_Controller* spiProvider,
 
     s25fl032FlashSpiProvider->Acquire(s25fl032FlashSpiProvider);
 
-    s25fl032FlashSpiProvider->SetActiveSettings(s25fl032FlashSpiProvider, s25fl032FlashSpiChipSelectLine, TinyCLR_Spi_ChipSelectType::Gpio ,SPI_CLOCK_RATE_HZ, 8, TinyCLR_Spi_Mode::Mode0);
+    s25fl032FlashSpiSettings.Mode = TinyCLR_Spi_Mode::Mode0;
+    s25fl032FlashSpiSettings.ClockFrequency = SPI_CLOCK_RATE_HZ;
+    s25fl032FlashSpiSettings.DataBitLength = 8;
+    s25fl032FlashSpiSettings.ChipSelectType = TinyCLR_Spi_ChipSelectType::Gpio;
+    s25fl032FlashSpiSettings.ChipSelectLine = s25fl032FlashSpiChipSelectLine;
+    s25fl032FlashSpiSettings.ChipSelectSetupTime = 0;
+    s25fl032FlashSpiSettings.ChipSelectHoldTime = 0;
+    s25fl032FlashSpiSettings.ChipSelectActiveState = false;
+
+    s25fl032FlashSpiProvider->SetActiveSettings(s25fl032FlashSpiProvider, &s25fl032FlashSpiSettings);
 
     s25fl032FlashSpiProvider->WriteRead(s25fl032FlashSpiProvider, s25fl032FlashDataWriteBuffer, writeLength, s25fl032FlashDataReadBuffer, readLength, false);
 

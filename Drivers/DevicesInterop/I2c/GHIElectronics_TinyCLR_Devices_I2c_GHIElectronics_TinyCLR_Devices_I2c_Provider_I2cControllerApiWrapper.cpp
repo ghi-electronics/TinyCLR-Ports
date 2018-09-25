@@ -68,15 +68,16 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR
 
     TinyCLR_Interop_ClrValue obj;
     TinyCLR_Interop_ClrValue args[3];
+    TinyCLR_I2c_Settings settings;
 
     md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, obj);
     md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR_Devices_I2c_I2cConnectionSettings::FIELD___SlaveAddress__BackingField___I4, args[0]);
     md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR_Devices_I2c_I2cConnectionSettings::FIELD___AddressFormat__BackingField___GHIElectronicsTinyCLRDevicesI2cI2cAddressFormat, args[1]);
     md.InteropManager->GetField(md.InteropManager, obj.Object, Interop_GHIElectronics_TinyCLR_Devices_I2c_GHIElectronics_TinyCLR_Devices_I2c_I2cConnectionSettings::FIELD___BusSpeed__BackingField___GHIElectronicsTinyCLRDevicesI2cI2cBusSpeed, args[2]);
 
-    auto slaveAddress = args[0].Data.Numeric->I4;
-    auto addressFormat = static_cast<TinyCLR_I2c_AddressFormat>(args[1].Data.Numeric->I4);
-    auto busSpeed = static_cast<TinyCLR_I2c_BusSpeed>(args[2].Data.Numeric->I4);
+    settings.SlaveAddress = args[0].Data.Numeric->I4;
+    settings.AddressFormat = static_cast<TinyCLR_I2c_AddressFormat>(args[1].Data.Numeric->I4);
+    settings.BusSpeed = static_cast<TinyCLR_I2c_BusSpeed>(args[2].Data.Numeric->I4);
 
-    return api->SetActiveSettings(api, slaveAddress, addressFormat, busSpeed);
+    return api->SetActiveSettings(api, &settings);
 }
