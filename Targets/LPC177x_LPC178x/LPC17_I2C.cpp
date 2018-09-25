@@ -353,15 +353,15 @@ TinyCLR_Result LPC17_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
 
         switch (controllerIndex) {
         case 0:
-            LPC17_Interrupt_Activate(I2C0_IRQn, (uint32_t*)&LPC17_I2c_InterruptHandler0, 0);
+            LPC17_InterruptInternal_Activate(I2C0_IRQn, (uint32_t*)&LPC17_I2c_InterruptHandler0, 0);
             break;
 
         case 1:
-            LPC17_Interrupt_Activate(I2C1_IRQn, (uint32_t*)&LPC17_I2c_InterruptHandler1, 0);
+            LPC17_InterruptInternal_Activate(I2C1_IRQn, (uint32_t*)&LPC17_I2c_InterruptHandler1, 0);
             break;
 
         case 2:
-            LPC17_Interrupt_Activate(I2C2_IRQn, (uint32_t*)&LPC17_I2c_InterruptHandler2, 0);
+            LPC17_InterruptInternal_Activate(I2C2_IRQn, (uint32_t*)&LPC17_I2c_InterruptHandler2, 0);
             break;
         }
 
@@ -398,7 +398,7 @@ TinyCLR_Result LPC17_I2c_Release(const TinyCLR_I2c_Controller* self) {
 
         LPC17xx_I2C& I2C = *(LPC17xx_I2C*)(size_t)(controllerIndex == 0 ? LPC17xx_I2C::c_I2C0_Base : ((controllerIndex == 1 ? LPC17xx_I2C::c_I2C1_Base : LPC17xx_I2C::c_I2C2_Base)));
 
-        LPC17_Interrupt_Deactivate(controllerIndex == 0 ? I2C0_IRQn : (controllerIndex == 1 ? I2C1_IRQn : I2C2_IRQn));
+        LPC17_InterruptInternal_Deactivate(controllerIndex == 0 ? I2C0_IRQn : (controllerIndex == 1 ? I2C1_IRQn : I2C2_IRQn));
 
         I2C.I2CONCLR = (LPC17xx_I2C::AA | LPC17xx_I2C::SI | LPC17xx_I2C::STO | LPC17xx_I2C::STA | LPC17xx_I2C::I2EN);
 
