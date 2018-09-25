@@ -285,8 +285,6 @@ void LPC24_DisableInterrupts_RaiiHelper::Release() {
 //////////////////////////////////////////////////////////////////////////////
 //Global Interrupt - Use in System Cote
 //////////////////////////////////////////////////////////////////////////////
-bool wasDisable = false;
-
 bool LPC24_Interrupt_IsDisabled() {
     return ((IRQ_LOCK_GetState_asm() & DISABLED_MASK) == 0);
 }
@@ -296,7 +294,7 @@ void LPC24_Interrupt_Enable() {
 }
 
 void LPC24_Interrupt_Disable() {
-    wasDisable = ((IRQ_LOCK_Disable_asm() & DISABLED_MASK) == DISABLED_MASK);
+    IRQ_LOCK_Disable_asm();
 }
 
 void LPC24_Interrupt_WaitForInterrupt() {
