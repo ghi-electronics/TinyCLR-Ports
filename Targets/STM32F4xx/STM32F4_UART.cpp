@@ -185,9 +185,7 @@ void STM32F4_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
 size_t STM32F4_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    int32_t controllerIndex = state->controllerIndex;
-
-    return state->rxBufferSize == 0 ? uartRxDefaultBuffersSize[controllerIndex] : state->rxBufferSize;
+    return state->rxBufferSize;
 }
 
 TinyCLR_Result STM32F4_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
@@ -198,19 +196,19 @@ TinyCLR_Result STM32F4_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* sel
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
 
-    if (state->rxBufferSize) {
+    if (state->RxBuffer) {
         memoryProvider->Free(memoryProvider, state->RxBuffer);
     }
 
-    state->rxBufferSize = size;
+    state->rxBufferSize = 0;
 
     state->RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
 
     if (state->RxBuffer == nullptr) {
-        state->rxBufferSize = 0;
-
         return TinyCLR_Result::OutOfMemory;
     }
+
+    state->rxBufferSize = size;
 
     return TinyCLR_Result::Success;
 }
@@ -218,9 +216,7 @@ TinyCLR_Result STM32F4_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* sel
 size_t STM32F4_Uart_GetWriteBufferSize(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    int32_t controllerIndex = state->controllerIndex;
-
-    return state->txBufferSize == 0 ? uartTxDefaultBuffersSize[controllerIndex] : state->txBufferSize;
+    return state->txBufferSize;
 }
 
 TinyCLR_Result STM32F4_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
@@ -231,19 +227,19 @@ TinyCLR_Result STM32F4_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* se
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
 
-    if (state->txBufferSize) {
+    if (state->TxBuffer) {
         memoryProvider->Free(memoryProvider, state->TxBuffer);
     }
 
-    state->txBufferSize = size;
+    state->txBufferSize = 0;
 
     state->TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
 
     if (state->TxBuffer == nullptr) {
-        state->txBufferSize = 0;
-
         return TinyCLR_Result::OutOfMemory;
     }
+
+    state->txBufferSize = size;
 
     return TinyCLR_Result::Success;
 }
@@ -413,6 +409,15 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
 
         state->lastEventRxBufferCount = 0;
         state->lastEventTime = STM32F4_Time_GetCurrentProcessorTime();
+
+        state->TxBuffer = nullptr;
+        state->RxBuffer = nullptr;
+
+        if (STM32F4_Uart_SetWriteBufferSize(self, uartTxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success || STM32F4_Uart_SetReadBufferSize(self, uartRxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
+            return TinyCLR_Result::OutOfMemory;
+
+        if (STM32F4_Uart_SetReadBufferSize(self, uartRxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
+            return TinyCLR_Result::OutOfMemory;
     }
 
     state->initializeCount++;
@@ -588,16 +593,6 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
 #endif
     }
 
-    if (state->txBufferSize == 0) {
-        if (STM32F4_Uart_SetWriteBufferSize(self, uartTxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
-            return TinyCLR_Result::OutOfMemory;
-    }
-
-    if (state->rxBufferSize == 0) {
-        if (STM32F4_Uart_SetReadBufferSize(self, uartRxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
-            return TinyCLR_Result::OutOfMemory;
-    }
-
     STM32F4_Uart_TxBufferEmptyInterruptEnable(controllerIndex, true);
     STM32F4_Uart_RxBufferFullInterruptEnable(controllerIndex, true);
 
@@ -700,17 +695,9 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Controller* self) {
         if (apiManager != nullptr) {
             auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-            if (state->txBufferSize != 0) {
-                memoryProvider->Free(memoryProvider, state->TxBuffer);
+            memoryProvider->Free(memoryProvider, state->TxBuffer);
+            memoryProvider->Free(memoryProvider, state->RxBuffer);
 
-                state->txBufferSize = 0;
-            }
-
-            if (state->rxBufferSize != 0) {
-                memoryProvider->Free(memoryProvider, state->RxBuffer);
-
-                state->rxBufferSize = 0;
-            }
         }
 
         STM32F4_GpioInternal_ClosePin(uartRxPins[controllerIndex].number);
@@ -727,9 +714,6 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Controller* self) {
 
 void STM32F4_Uart_Reset() {
     for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
-        uartStates[i].txBufferSize = 0;
-        uartStates[i].rxBufferSize = 0;
-
         STM32F4_Uart_Release(&uartControllers[i]);
 
         uartStates[i].tableInitialized = false;
