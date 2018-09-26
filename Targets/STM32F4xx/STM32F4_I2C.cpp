@@ -366,9 +366,6 @@ TinyCLR_Result STM32F4_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self,
 }
 
 TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
-    if (self == nullptr)
-        return TinyCLR_Result::ArgumentNull;
-
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
     if (state->initializeCount == 0) {
