@@ -90,7 +90,7 @@ int main() {
 
     TARGET(_Startup_GetHeap)(heapStart, heapLength);
     TinyCLR_Startup_AddHeapRegion(heapStart, heapLength);
-    TinyCLR_Startup_SetMemoryProfile(DEVICE_MEMORY_PROFILE_FACTOR);
+    TinyCLR_Startup_SetMemoryProfile(MemoryProfileFactor);
 
     const TinyCLR_Api_Info *debuggerApi, *deploymentApi;
     const void* debuggerConfiguration;
