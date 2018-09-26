@@ -462,16 +462,6 @@ void STM32F4_I2c_Reset() {
 
         auto state = &i2cStates[i];
 
-        state->i2cConfiguration.address = 0;
-        state->i2cConfiguration.clockRate = 0;
-        state->i2cConfiguration.clockRate2 = 0;
-
-        state->readI2cTransactionAction.bytesToTransfer = 0;
-        state->readI2cTransactionAction.bytesTransferred = 0;
-
-        state->writeI2cTransactionAction.bytesToTransfer = 0;
-        state->writeI2cTransactionAction.bytesTransferred = 0;
-
         state->initializeCount = 0;
     }
 }
