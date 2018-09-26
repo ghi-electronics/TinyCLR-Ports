@@ -197,7 +197,7 @@ void LPC24_Gpio_InterruptHandler(void* param) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    bool executeIsr = true;
+    bool executeIsr = false;
 
     for (auto port = 0; port <= 2; port += 2) { // Only port 0 and port 2 support interrupts
         auto status_mask_register = 1 << port;
@@ -220,11 +220,10 @@ void LPC24_Gpio_InterruptHandler(void* param) {
             if (interruptState->handler && ((expectedEdgeInterger & currentEdgeInterger) || (expectedEdgeInterger == 0))) {
                 if (interruptState->debounce) {
                     if ((LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr)) - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {
-                        interruptState->lastDebounceTicks = LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr));
-                    }
-                    else {
                         executeIsr = false;
                     }
+
+                    interruptState->lastDebounceTicks = LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr));
                 }
 
                 if (executeIsr)
