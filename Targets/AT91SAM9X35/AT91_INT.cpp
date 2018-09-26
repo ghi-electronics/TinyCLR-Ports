@@ -100,11 +100,10 @@ void AT91_Interrupt_EnsureTableInitialized() {
         interruptControllers[i].ApiInfo = &interruptApi[i];
         interruptControllers[i].Initialize = &AT91_Interrupt_Initialize;
         interruptControllers[i].Uninitialize = &AT91_Interrupt_Uninitialize;
-        interruptControllers[i].Enable = &AT91_Interrupt_GlobalEnabled;
-        interruptControllers[i].Disable = &AT91_Interrupt_GlobalDisabled;
-        interruptControllers[i].WaitForInterrupt = &AT91_Interrupt_GlobalWaitForInterrupt;
-        interruptControllers[i].IsDisabled = &AT91_Interrupt_GlobalIsDisabled;
-        interruptControllers[i].Restore = &AT91_Interrupt_GlobalRestore;
+        interruptControllers[i].Enable = &AT91_Interrupt_Enable;
+        interruptControllers[i].Disable = &AT91_Interrupt_Disable;
+        interruptControllers[i].WaitForInterrupt = &AT91_Interrupt_WaitForInterrupt;
+        interruptControllers[i].IsDisabled = &AT91_Interrupt_IsDisabled;
 
         interruptApi[i].Author = "GHI Electronics, LLC";
         interruptApi[i].Name = interruptApiNames[i];
@@ -201,7 +200,7 @@ TinyCLR_Result AT91_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* s
     return TinyCLR_Result::Success;
 }
 
-bool AT91_Interrupt_Activate(uint32_t Irq_Index, uint32_t *ISR, void* ISR_Param) {
+bool AT91_InterruptInternal_Activate(uint32_t Irq_Index, uint32_t *ISR, void* ISR_Param) {
     // figure out the interrupt
     AT91_Interrupt_Vectors* IsrVector = AT91_Interrupt_IrqToVector(Irq_Index);
 
@@ -228,7 +227,7 @@ bool AT91_Interrupt_Activate(uint32_t Irq_Index, uint32_t *ISR, void* ISR_Param)
 
 }
 
-bool AT91_Interrupt_Deactivate(uint32_t Irq_Index) {
+bool AT91_InterruptInternal_Deactivate(uint32_t Irq_Index) {
     // figure out the interrupt
     AT91_Interrupt_Vectors* IsrVector = 0; //IRQToIRQVector( Irq_Index );
 
@@ -251,141 +250,56 @@ bool AT91_Interrupt_Deactivate(uint32_t Irq_Index) {
     return true;
 }
 
-bool AT91_Interrupt_Enable(uint32_t Irq_Index) {
-    if (Irq_Index >= c_VECTORING_GUARD)
-        return false;
+AT91_InterruptStarted_RaiiHelper::AT91_InterruptStarted_RaiiHelper() { AT91_Interrupt_Started(); };
+AT91_InterruptStarted_RaiiHelper::~AT91_InterruptStarted_RaiiHelper() { AT91_Interrupt_Ended(); };
 
-    AT91_AIC &aic = AT91::AIC();
+AT91_DisableInterrupts_RaiiHelper::AT91_DisableInterrupts_RaiiHelper() {
+    state = IRQ_LOCK_Disable_asm();
+}
+AT91_DisableInterrupts_RaiiHelper::~AT91_DisableInterrupts_RaiiHelper() {
+    uint32_t Cp = state;
 
-    DISABLE_INTERRUPTS_SCOPED(irq);
-
-    bool WasEnabled = ((aic.AIC_IMR & (1 << Irq_Index)) != 0) ? true : false;
-
-    aic.AIC_IECR = (1 << Irq_Index);
-
-    return WasEnabled;
+    if ((Cp & DISABLED_MASK) == 0) {
+        state = IRQ_LOCK_Release_asm();
+    }
 }
 
-bool AT91_Interrupt_Disable(uint32_t Irq_Index) {
-    if (Irq_Index >= c_VECTORING_GUARD)
-        return false;
-
-    AT91_AIC &aic = AT91::AIC();
-
-    DISABLE_INTERRUPTS_SCOPED(irq);
-
-    bool WasEnabled = ((aic.AIC_IMR & (1 << Irq_Index)) != 0) ? true : false;
-
-    aic.AIC_IDCR = (1 << Irq_Index);
-
-    return WasEnabled;
+bool AT91_DisableInterrupts_RaiiHelper::IsDisabled() {
+    return (state & DISABLED_MASK) == DISABLED_MASK;
 }
 
-bool AT91_Interrupt_EnableState(uint32_t Irq_Index) {
-    bool IsEnabled;
-
-    if (Irq_Index >= c_VECTORING_GUARD)
-        return false;
-
-    AT91_AIC &aic = AT91::AIC();
-
-    IsEnabled = ((aic.AIC_IMR & (1 << Irq_Index)) != 0) ? true : false;
-
-    return IsEnabled;
-}
-
-bool AT91_Interrupt_InterruptState(uint32_t Irq_Index) {
-    bool IsPending;
-
-    if (Irq_Index >= c_VECTORING_GUARD)
-        return false;
-
-    AT91_AIC &aic = AT91::AIC();
-
-    IsPending = ((aic.AIC_IPR & (1 << Irq_Index)) != 0) ? true : false;
-
-    return IsPending;
-}
-
-AT91_SmartPtr_Interrupt::AT91_SmartPtr_Interrupt() { AT91_Interrupt_Started(); };
-AT91_SmartPtr_Interrupt::~AT91_SmartPtr_Interrupt() { AT91_Interrupt_Ended(); };
-
-AT91_SmartPtr_IRQ::AT91_SmartPtr_IRQ() { Disable(); }
-AT91_SmartPtr_IRQ::~AT91_SmartPtr_IRQ() { Restore(); }
-
-bool AT91_SmartPtr_IRQ::IsDisabled() {
-    return (m_state & DISABLED_MASK) == DISABLED_MASK;
-}
-
-void AT91_SmartPtr_IRQ::Acquire() {
-    uint32_t Cp = m_state;
+void AT91_DisableInterrupts_RaiiHelper::Acquire() {
+    uint32_t Cp = state;
 
     if ((Cp & DISABLED_MASK) == DISABLED_MASK) {
-        Disable();
+        state = IRQ_LOCK_Disable_asm();
     }
 }
 
-void AT91_SmartPtr_IRQ::Release() {
-    uint32_t Cp = m_state;
+void AT91_DisableInterrupts_RaiiHelper::Release() {
+    uint32_t Cp = state;
 
     if ((Cp & DISABLED_MASK) == 0) {
-        m_state = IRQ_LOCK_Release_asm();
-    }
-}
-
-void AT91_SmartPtr_IRQ::Probe() {
-    uint32_t Cp = m_state;
-
-    if ((Cp & DISABLED_MASK) == 0) {
-        IRQ_LOCK_Probe_asm();
-    }
-}
-
-uint32_t AT91_SmartPtr_IRQ::GetState() {
-    return IRQ_LOCK_GetState_asm();
-}
-
-void AT91_SmartPtr_IRQ::Disable() {
-    m_state = IRQ_LOCK_Disable_asm();
-}
-
-void AT91_SmartPtr_IRQ::Restore() {
-    uint32_t Cp = m_state;
-
-    if ((Cp & DISABLED_MASK) == 0) {
-        IRQ_LOCK_Restore_asm();
+        state = IRQ_LOCK_Release_asm();
     }
 }
 
 //////////////////////////////////////////////////////////////////////////////
 //Global Interrupt - Use in System Cote
 //////////////////////////////////////////////////////////////////////////////
-
-bool AT91_Interrupt_GlobalIsDisabled() {
-    return (IRQ_LOCK_GetState_asm() & DISABLED_MASK);
+bool AT91_Interrupt_IsDisabled() {
+    return ((IRQ_LOCK_GetState_asm() & DISABLED_MASK) == 0);
 }
 
-bool AT91_Interrupt_GlobalEnabled(bool force) {
-    if (!force) {
-        return (IRQ_LOCK_Release_asm() & DISABLED_MASK == 0);
-    }
-
-    return  (IRQ_LOCK_ForceEnabled_asm() & DISABLED_MASK == 0);
+void AT91_Interrupt_Enable() {
+    IRQ_LOCK_Release_asm();
 }
 
-void AT91_Interrupt_GlobalRestore() {
-    IRQ_LOCK_Restore_asm();
+void AT91_Interrupt_Disable() {
+    IRQ_LOCK_Disable_asm();
 }
 
-bool AT91_Interrupt_GlobalDisabled(bool force) {
-    if (!force) {
-        return ((IRQ_LOCK_Disable_asm() & DISABLED_MASK) == DISABLED_MASK);
-    }
-
-    return ((IRQ_LOCK_ForceDisabled_asm() & DISABLED_MASK) == DISABLED_MASK);
-}
-
-void AT91_Interrupt_GlobalWaitForInterrupt() {
+void AT91_Interrupt_WaitForInterrupt() {
     IRQ_LOCK_Probe_asm();
 }
 

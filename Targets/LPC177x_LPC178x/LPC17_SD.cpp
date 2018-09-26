@@ -342,7 +342,7 @@ void DMA_Init(void) {
 
     while (!(GPDMA_CONFIG & 0x01));
 
-    LPC17_Interrupt_Activate(DMA_IRQn, (uint32_t*)&DMAHandler, (void*)0);
+    LPC17_InterruptInternal_Activate(DMA_IRQn, (uint32_t*)&DMAHandler, (void*)0);
 }
 
 /******************************************************************************
@@ -1015,7 +1015,7 @@ void MCI_Init(void) {
 
     LPC17_Time_Delay(nullptr, 2000); // delay 2ms
 
-    LPC17_Interrupt_Activate(MCI_IRQn, (uint32_t*)&MCI_IRQHandler, (void*)0);
+    LPC17_InterruptInternal_Activate(MCI_IRQn, (uint32_t*)&MCI_IRQHandler, (void*)0);
 }
 
 /******************************************************************************
@@ -2269,7 +2269,7 @@ TinyCLR_Result LPC17_SdCard_Release(const TinyCLR_Storage_Controller* self) {
 
         LPC_SC->PCONP &= ~(1 << 29); /* Disable clock to the Dma block */
 
-        LPC17_Interrupt_Deactivate(DMA_IRQn); /* Disable Interrupt */
+        LPC17_InterruptInternal_Deactivate(DMA_IRQn); /* Disable Interrupt */
 
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 

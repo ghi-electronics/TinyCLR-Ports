@@ -378,55 +378,42 @@ bool LPC24_Deployment_IsSupportsXIP(const TinyCLR_Storage_Controller* self);
 uint32_t LPC24_Flash_GetPartId();
 
 // Interrupt
-class LPC24_SmartPtr_IRQ {
-
-    uint32_t m_state;
-
-    void Disable();
-    void Restore();
+class LPC24_DisableInterrupts_RaiiHelper {
+    uint32_t state;
 
 public:
-    LPC24_SmartPtr_IRQ();
-    ~LPC24_SmartPtr_IRQ();
+    LPC24_DisableInterrupts_RaiiHelper();
+    ~LPC24_DisableInterrupts_RaiiHelper();
 
     bool IsDisabled();
     void Acquire();
     void Release();
-    void Probe();
-
-    static uint32_t GetState();
 };
 
-class LPC24_SmartPtr_Interrupt {
+class LPC24_InterruptStarted_RaiiHelper {
 public:
-    LPC24_SmartPtr_Interrupt();
-    ~LPC24_SmartPtr_Interrupt();
+    LPC24_InterruptStarted_RaiiHelper();
+    ~LPC24_InterruptStarted_RaiiHelper();
 };
 
-#define DISABLE_INTERRUPTS_SCOPED(name) LPC24_SmartPtr_IRQ name
-#define INTERRUPT_STARTED_SCOPED(name) LPC24_SmartPtr_Interrupt name
+#define DISABLE_INTERRUPTS_SCOPED(name) LPC24_DisableInterrupts_RaiiHelper name
+#define INTERRUPT_STARTED_SCOPED(name) LPC24_InterruptStarted_RaiiHelper name
+
+bool LPC24_InterruptInternal_Activate(uint32_t index, uint32_t* isr, void* isrParam);
+bool LPC24_InterruptInternal_Deactivate(uint32_t index);
 
 void LPC24_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager);
 const TinyCLR_Api_Info* LPC24_Interrupt_GetRequiredApi();
 TinyCLR_Result LPC24_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
 TinyCLR_Result LPC24_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self);
-bool LPC24_Interrupt_Activate(uint32_t Irq_Index, uint32_t *handler, void* ISR_Param);
-bool LPC24_Interrupt_Deactivate(uint32_t Irq_Index);
-bool LPC24_Interrupt_Enable(uint32_t Irq_Index);
-bool LPC24_Interrupt_Disable(uint32_t Irq_Index);
-bool LPC24_Interrupt_EnableState(uint32_t Irq_Index);
-bool LPC24_Interrupt_InterruptState(uint32_t Irq_Index);
-
-
-bool LPC24_Interrupt_GlobalIsDisabled();
-bool LPC24_Interrupt_GlobalEnabled(bool force);
-bool LPC24_Interrupt_GlobalDisabled(bool force);
-
-void LPC24_Interrupt_GlobalRestore();
-void LPC24_Interrupt_GlobalWaitForInterrupt();
+void LPC24_Interrupt_Enable();
+void LPC24_Interrupt_Disable();
+void LPC24_Interrupt_WaitForInterrupt();
+bool LPC24_Interrupt_IsDisabled();
 
 extern TinyCLR_Interrupt_StartStopHandler LPC24_Interrupt_Started;
 extern TinyCLR_Interrupt_StartStopHandler LPC24_Interrupt_Ended;
+
 
 // I2C
 void LPC24_I2c_AddApi(const TinyCLR_Api_Manager* apiManager);

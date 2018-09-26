@@ -2680,7 +2680,7 @@ TinyCLR_Result LPC17_Can_SetBitTiming(const TinyCLR_Can_Controller* self, const 
         C2IER = 0x01 | (1 << 3) | (1 << 5) | (1 << 7);        // Enable receive interrupts
     }
 
-    LPC17_Interrupt_Activate(CAN_IRQn, (uint32_t*)&LPC17_Can_RxInterruptHandler, 0);
+    LPC17_InterruptInternal_Activate(CAN_IRQn, (uint32_t*)&LPC17_Can_RxInterruptHandler, 0);
 
     return TinyCLR_Result::Success;
 }

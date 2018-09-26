@@ -449,7 +449,7 @@ TinyCLR_Result AT91_I2c_Release(const TinyCLR_I2c_Controller* self) {
 
         I2C.TWI_CR = AT91_I2C::TWI_CR_SWRST;
 
-        AT91_Interrupt_Disable(controllerIndex == 0 ? AT91C_ID_TWI0 : (controllerIndex == 1 ? AT91C_ID_TWI1 : AT91C_ID_TWI2));
+        AT91_InterruptInternal_Deactivate(controllerIndex == 0 ? AT91C_ID_TWI0 : (controllerIndex == 1 ? AT91C_ID_TWI1 : AT91C_ID_TWI2));
 
         AT91_PMC &pmc = AT91::PMC();
         pmc.DisablePeriphClock(controllerIndex == 0 ? AT91C_ID_TWI0 : (controllerIndex == 1 ? AT91C_ID_TWI1 : AT91C_ID_TWI2));

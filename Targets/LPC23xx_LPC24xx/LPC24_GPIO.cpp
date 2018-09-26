@@ -262,13 +262,13 @@ TinyCLR_Result LPC24_Gpio_SetPinChangedHandler(const TinyCLR_Gpio_Controller* se
         SET_PIN_INTERRUPT_RISING_EDGE(GET_PORT(pin), GET_PIN(pin));
         SET_PIN_INTERRUPT_FALLING_EDGE(GET_PORT(pin), GET_PIN(pin));
 
-        LPC24_Interrupt_Activate(LPC24XX_VIC::c_IRQ_INDEX_EINT3, (uint32_t*)&LPC24_Gpio_InterruptHandler, 0);
+        LPC24_InterruptInternal_Activate(LPC24XX_VIC::c_IRQ_INDEX_EINT3, (uint32_t*)&LPC24_Gpio_InterruptHandler, 0);
     }
     else {
         DISABLE_PIN_INTERRUPT_RISING_EDGE(GET_PORT(pin), GET_PIN(pin));
         DISABLE_PIN_INTERRUPT_FALLING_EDGE(GET_PORT(pin), GET_PIN(pin));
 
-        LPC24_Interrupt_Disable(LPC24XX_VIC::c_IRQ_INDEX_EINT3);
+        LPC24_InterruptInternal_Deactivate(LPC24XX_VIC::c_IRQ_INDEX_EINT3);
     }
 
     return TinyCLR_Result::Success;

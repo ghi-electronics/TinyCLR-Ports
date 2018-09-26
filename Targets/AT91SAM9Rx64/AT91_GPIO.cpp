@@ -504,10 +504,10 @@ void AT91_Gpio_Reset() {
         }
     }
 
-    AT91_Interrupt_Activate(AT91C_ID_PIOA, (uint32_t*)&AT91_Gpio_InterruptHandler, nullptr);
-    AT91_Interrupt_Activate(AT91C_ID_PIOB, (uint32_t*)&AT91_Gpio_InterruptHandler, nullptr);
-    AT91_Interrupt_Activate(AT91C_ID_PIOC, (uint32_t*)&AT91_Gpio_InterruptHandler, nullptr);
-    AT91_Interrupt_Activate(AT91C_ID_PIOD, (uint32_t*)&AT91_Gpio_InterruptHandler, nullptr);
+    AT91_InterruptInternal_Activate(AT91C_ID_PIOA, (uint32_t*)&AT91_Gpio_InterruptHandler, nullptr);
+    AT91_InterruptInternal_Activate(AT91C_ID_PIOB, (uint32_t*)&AT91_Gpio_InterruptHandler, nullptr);
+    AT91_InterruptInternal_Activate(AT91C_ID_PIOC, (uint32_t*)&AT91_Gpio_InterruptHandler, nullptr);
+    AT91_InterruptInternal_Activate(AT91C_ID_PIOD, (uint32_t*)&AT91_Gpio_InterruptHandler, nullptr);
 
     gpioStates[0].tableInitialized = false;
 }

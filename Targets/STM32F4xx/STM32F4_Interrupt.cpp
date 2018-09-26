@@ -48,7 +48,6 @@ void STM32F4_Interrupt_EnsureTableInitialized() {
         interruptControllers[i].Disable = &STM32F4_Interrupt_Disable;
         interruptControllers[i].WaitForInterrupt = &STM32F4_Interrupt_WaitForInterrupt;
         interruptControllers[i].IsDisabled = &STM32F4_Interrupt_IsDisabled;
-        interruptControllers[i].Restore = &STM32F4_Interrupt_Restore;
 
         interruptApi[i].Author = "GHI Electronics, LLC";
         interruptApi[i].Name = interruptApiNames[i];
@@ -185,18 +184,12 @@ bool STM32F4_Interrupt_IsDisabled() {
     return (__get_PRIMASK() & DISABLED_MASK) == DISABLED_MASK;
 }
 
-bool STM32F4_Interrupt_Enable(bool force) {
+void STM32F4_Interrupt_Enable() {
     __enable_irq();
-
-    return true;
 }
 
-bool STM32F4_Interrupt_Disable(bool force) {
-    bool wasDisable = STM32F4_Interrupt_IsDisabled();
-
+void STM32F4_Interrupt_Disable() {
     __disable_irq();
-
-    return wasDisable;
 }
 
 
@@ -210,8 +203,4 @@ void STM32F4_Interrupt_WaitForInterrupt() {
 
     // restore irq state
     __set_PRIMASK(state);
-}
-
-void STM32F4_Interrupt_Restore() {
-    __enable_irq();
 }

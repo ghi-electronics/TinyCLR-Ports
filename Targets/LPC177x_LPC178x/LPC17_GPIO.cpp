@@ -221,11 +221,10 @@ TinyCLR_Result LPC17_Gpio_SetPinChangedHandler(const TinyCLR_Gpio_Controller* se
         *GPIO_Port_X_Interrupt_RisingEdgeRegister |= pinMask;
         *GPIO_Port_X_Interrupt_FallingEdgeRegister |= pinMask;
 
-        LPC17_Interrupt_Activate(GPIO_IRQn, (uint32_t*)&LPC17_Gpio_InterruptHandler, 0);
-        LPC17_Interrupt_Enable(GPIO_IRQn);
+        LPC17_InterruptInternal_Activate(GPIO_IRQn, (uint32_t*)&LPC17_Gpio_InterruptHandler, 0);        
     }
     else {
-        LPC17_Interrupt_Disable(GPIO_IRQn);
+        LPC17_InterruptInternal_Deactivate(GPIO_IRQn);
     }
 
     return TinyCLR_Result::Success;

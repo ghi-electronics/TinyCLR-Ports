@@ -326,49 +326,41 @@ TinyCLR_Result LPC17_Deployment_Open(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result LPC17_Deployment_Close(const TinyCLR_Storage_Controller* self);
 
 // Interrupt
-class LPC17_SmartPtr_IRQ {
-    uint32_t m_state;
-
-    void Disable();
-    void Restore();
+////////////////////////////////////////////////////////////////////////////////
+//Interrupt Internal
+////////////////////////////////////////////////////////////////////////////////
+class LPC17_DisableInterrupts_RaiiHelper {
+    uint32_t state;
 
 public:
-    LPC17_SmartPtr_IRQ();
-    ~LPC17_SmartPtr_IRQ();
+    LPC17_DisableInterrupts_RaiiHelper();
+    ~LPC17_DisableInterrupts_RaiiHelper();
 
     bool IsDisabled();
     void Acquire();
     void Release();
-    void Probe();
-
-    static bool GetState();
 };
 
-class LPC17_SmartPtr_Interrupt {
+class LPC17_InterruptStarted_RaiiHelper {
 public:
-    LPC17_SmartPtr_Interrupt();
-    ~LPC17_SmartPtr_Interrupt();
+    LPC17_InterruptStarted_RaiiHelper();
+    ~LPC17_InterruptStarted_RaiiHelper();
 };
 
-#define DISABLE_INTERRUPTS_SCOPED(name) LPC17_SmartPtr_IRQ name
-#define INTERRUPT_STARTED_SCOPED(name) LPC17_SmartPtr_Interrupt name
+#define DISABLE_INTERRUPTS_SCOPED(name) LPC17_DisableInterrupts_RaiiHelper name
+#define INTERRUPT_STARTED_SCOPED(name) LPC17_InterruptStarted_RaiiHelper name
+
+bool LPC17_InterruptInternal_Activate(uint32_t index, uint32_t* isr, void* isrParam);
+bool LPC17_InterruptInternal_Deactivate(uint32_t index);
 
 void LPC17_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager);
 const TinyCLR_Api_Info* LPC17_Interrupt_GetRequiredApi();
 TinyCLR_Result LPC17_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
 TinyCLR_Result LPC17_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self);
-bool LPC17_Interrupt_Activate(uint32_t Irq_Index, uint32_t *handler, void* ISR_Param);
-bool LPC17_Interrupt_Deactivate(uint32_t Irq_Index);
-bool LPC17_Interrupt_Enable(uint32_t Irq_Index);
-bool LPC17_Interrupt_Disable(uint32_t Irq_Index);
-bool LPC17_Interrupt_EnableState(uint32_t Irq_Index);
-bool LPC17_Interrupt_InterruptState(uint32_t Irq_Index);
-
-bool LPC17_Interrupt_GlobalEnabled(bool force);
-bool LPC17_Interrupt_GlobalDisabled(bool force);
-void LPC17_Interrupt_GlobalRestore();
-bool LPC17_Interrupt_GlobalIsDisabled();
-void LPC17_Interrupt_GlobalWaitForInterrupt();
+void LPC17_Interrupt_Enable();
+void LPC17_Interrupt_Disable();
+void LPC17_Interrupt_WaitForInterrupt();
+bool LPC17_Interrupt_IsDisabled();
 
 extern TinyCLR_Interrupt_StartStopHandler LPC17_Interrupt_Started;
 extern TinyCLR_Interrupt_StartStopHandler LPC17_Interrupt_Ended;

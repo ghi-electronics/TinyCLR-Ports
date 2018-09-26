@@ -43,11 +43,10 @@ void LPC17_Interrupt_EnsureTableInitialized() {
         interruptControllers[i].ApiInfo = &interruptApi[i];
         interruptControllers[i].Initialize = &LPC17_Interrupt_Initialize;
         interruptControllers[i].Uninitialize = &LPC17_Interrupt_Uninitialize;
-        interruptControllers[i].Enable = &LPC17_Interrupt_GlobalEnabled;
-        interruptControllers[i].Disable = &LPC17_Interrupt_GlobalDisabled;
-        interruptControllers[i].WaitForInterrupt = &LPC17_Interrupt_GlobalWaitForInterrupt;
-        interruptControllers[i].IsDisabled = &LPC17_Interrupt_GlobalIsDisabled;
-        interruptControllers[i].Restore = &LPC17_Interrupt_GlobalRestore;
+        interruptControllers[i].Enable = &LPC17_Interrupt_Enable;
+        interruptControllers[i].Disable = &LPC17_Interrupt_Disable;
+        interruptControllers[i].WaitForInterrupt = &LPC17_Interrupt_WaitForInterrupt;
+        interruptControllers[i].IsDisabled = &LPC17_Interrupt_IsDisabled;
 
         interruptApi[i].Author = "GHI Electronics, LLC";
         interruptApi[i].Name = interruptApiNames[i];
@@ -97,6 +96,8 @@ TinyCLR_Result LPC17_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* se
     // force point to SysTick_Handler because GNU does not link to the function automatically
     irq_vectors[15] = (uint32_t)&SysTick_Handler;
 
+    __DMB(); // ensure table is written
+
     SCB->AIRCR = (0x5FA << SCB_AIRCR_VECTKEY_Pos) // unlock key
         | (7 << SCB_AIRCR_PRIGROUP_Pos);   // no priority group bits
     SCB->VTOR = (uint32_t)&__Vectors; // vector table base
@@ -114,105 +115,63 @@ TinyCLR_Result LPC17_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* 
     return TinyCLR_Result::Success;
 }
 
-bool LPC17_Interrupt_Activate(uint32_t Irq_Index, uint32_t *ISR, void* ISR_Param) {
-    int id = (int)Irq_Index;
+bool LPC17_InterruptInternal_Activate(uint32_t index, uint32_t *isr, void* isrParam) {
+    int id = (int)index;
 
     uint32_t *irq_vectors = (uint32_t*)&__Vectors;
 
-    irq_vectors[id + 16] = (uint32_t)ISR; // exception = irq + 16
+    irq_vectors[id + 16] = (uint32_t)isr; // exception = irq + 16
+
+    __DMB(); // ensure table is written
+
     NVIC->ICPR[id >> 5] = 1 << (id & 0x1F); // clear pending bit
     NVIC->ISER[id >> 5] = 1 << (id & 0x1F); // set enable bit
 
     return true;
 }
 
-bool LPC17_Interrupt_Deactivate(uint32_t Irq_Index) {
-    int id = (int)Irq_Index;
+bool LPC17_InterruptInternal_Deactivate(uint32_t index) {
+    int id = (int)index;
 
     NVIC->ICER[id >> 5] = 1 << (id & 0x1F); // clear enable bit */
 
     return true;
 }
+LPC17_InterruptStarted_RaiiHelper::LPC17_InterruptStarted_RaiiHelper() { LPC17_Interrupt_Started(); };
+LPC17_InterruptStarted_RaiiHelper::~LPC17_InterruptStarted_RaiiHelper() { LPC17_Interrupt_Ended(); };
 
-LPC17_SmartPtr_Interrupt::LPC17_SmartPtr_Interrupt() { LPC17_Interrupt_Started(); };
-LPC17_SmartPtr_Interrupt::~LPC17_SmartPtr_Interrupt() { LPC17_Interrupt_Ended(); };
+LPC17_DisableInterrupts_RaiiHelper::LPC17_DisableInterrupts_RaiiHelper() {
+    state = __get_PRIMASK();
 
-LPC17_SmartPtr_IRQ::LPC17_SmartPtr_IRQ() { Disable(); }
-LPC17_SmartPtr_IRQ::~LPC17_SmartPtr_IRQ() { Restore(); }
-
-bool LPC17_Interrupt_Enable(uint32_t Irq_Index) {
-    int id = (int)Irq_Index;
-    uint32_t ier = NVIC->ISER[id >> 5]; // old state
-    NVIC->ISER[id >> 5] = 1 << (id & 0x1F); // set enable bit
-
-    return (ier >> (id & 0x1F)) & 1; // old enable bit
+    __disable_irq();
 }
-
-bool LPC17_Interrupt_Disable(uint32_t Irq_Index) {
-    int id = (int)Irq_Index;
-    uint32_t ier = NVIC->ISER[id >> 5]; // old state
-
-    NVIC->ICER[id >> 5] = 1 << (id & 0x1F); // clear enable bit
-
-    return (ier >> (id & 0x1F)) & 1; // old enable bit
-}
-
-bool LPC17_Interrupt_EnableState(uint32_t Irq_Index) {
-    int id = (int)Irq_Index;
-    // return enabled bit
-    return (NVIC->ISER[id >> 5] >> (id & 0x1F)) & 1;
-}
-
-bool LPC17_Interrupt_InterruptState(uint32_t Irq_Index) {
-    int id = (int)Irq_Index;
-    // return pending bit
-    return (NVIC->ISPR[id >> 5] >> (id & 0x1F)) & 1;
-}
-
-bool LPC17_SmartPtr_IRQ::IsDisabled() {
-    return (m_state & DISABLED_MASK) == DISABLED_MASK;
-}
-
-void LPC17_SmartPtr_IRQ::Acquire() {
-    uint32_t Cp = m_state;
-
-    if ((Cp & DISABLED_MASK) == DISABLED_MASK)
-        Disable();
-}
-
-void LPC17_SmartPtr_IRQ::Release() {
-    uint32_t Cp = m_state;
+LPC17_DisableInterrupts_RaiiHelper::~LPC17_DisableInterrupts_RaiiHelper() {
+    uint32_t Cp = state;
 
     if ((Cp & DISABLED_MASK) == 0) {
-        m_state = __get_PRIMASK();
         __enable_irq();
     }
 }
 
-void LPC17_SmartPtr_IRQ::Probe() {
-    uint32_t Cp = m_state;
+bool LPC17_DisableInterrupts_RaiiHelper::IsDisabled() {
+    return (state & DISABLED_MASK) == DISABLED_MASK;
+}
 
-    if ((Cp & DISABLED_MASK) == 0) {
-        LPC17_Interrupt_GlobalWaitForInterrupt();
+void LPC17_DisableInterrupts_RaiiHelper::Acquire() {
+    uint32_t Cp = state;
+
+    if ((Cp & DISABLED_MASK) == DISABLED_MASK) {
+        state = __get_PRIMASK();
+
+        __disable_irq();
     }
 }
 
-bool LPC17_SmartPtr_IRQ::GetState() {
-    register uint32_t Cp = __get_PRIMASK();
-
-    return (0 == (Cp & 1));
-}
-
-void LPC17_SmartPtr_IRQ::Disable() {
-    m_state = __get_PRIMASK();
-
-    __disable_irq();
-}
-
-void LPC17_SmartPtr_IRQ::Restore() {
-    uint32_t Cp = m_state;
+void LPC17_DisableInterrupts_RaiiHelper::Release() {
+    uint32_t Cp = state;
 
     if ((Cp & DISABLED_MASK) == 0) {
+        state = __get_PRIMASK();
         __enable_irq();
     }
 }
@@ -220,25 +179,20 @@ void LPC17_SmartPtr_IRQ::Restore() {
 //////////////////////////////////////////////////////////////////////////////
 //Global Interrupt - Use in System Cote
 //////////////////////////////////////////////////////////////////////////////
-bool LPC17_Interrupt_GlobalIsDisabled() {
+bool LPC17_Interrupt_IsDisabled() {
     return (__get_PRIMASK() & DISABLED_MASK) == DISABLED_MASK;
 }
 
-bool LPC17_Interrupt_GlobalEnabled(bool force) {
+void LPC17_Interrupt_Enable() {
     __enable_irq();
-
-    return true;
 }
 
-bool LPC17_Interrupt_GlobalDisabled(bool force) {
-    bool wasDisable = LPC17_Interrupt_GlobalIsDisabled();
-
+void LPC17_Interrupt_Disable() {
     __disable_irq();
-
-    return wasDisable;
 }
 
-void LPC17_Interrupt_GlobalWaitForInterrupt() {
+
+void LPC17_Interrupt_WaitForInterrupt() {
     register uint32_t state = __get_PRIMASK();
 
     __enable_irq();
@@ -248,8 +202,4 @@ void LPC17_Interrupt_GlobalWaitForInterrupt() {
 
     // restore irq state
     __set_PRIMASK(state);
-}
-
-void LPC17_Interrupt_GlobalRestore() {
-    __enable_irq();
 }

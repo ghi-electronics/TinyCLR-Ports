@@ -648,8 +648,7 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self,
     }
 
 
-    LPC24_Interrupt_Activate(LPC24XX_USART::getIntNo(controllerIndex), (uint32_t*)&LPC24_Uart_InterruptHandler, (void*)&state->controllerIndex);
-    LPC24_Interrupt_Enable(LPC24XX_USART::getIntNo(controllerIndex));
+    LPC24_InterruptInternal_Activate(LPC24XX_USART::getIntNo(controllerIndex), (uint32_t*)&LPC24_Uart_InterruptHandler, (void*)&state->controllerIndex);    
 
     LPC24_Uart_PinConfiguration(controllerIndex, true);
 
@@ -671,7 +670,7 @@ TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Controller* self) {
 
         LPC24XX_USART& USARTC = LPC24XX::UART(controllerIndex);
 
-        LPC24_Interrupt_Disable(LPC24XX_USART::getIntNo(controllerIndex));
+        LPC24_InterruptInternal_Deactivate(LPC24XX_USART::getIntNo(controllerIndex));
 
         if (state->handshaking) {
             USARTC.UART_MCR &= ~((1 << 6) | (1 << 7));

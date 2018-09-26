@@ -762,27 +762,27 @@ TinyCLR_Result LPC17_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self,
 
     switch (controllerIndex) {
     case 0:
-        LPC17_Interrupt_Activate(UART0_IRQn, (uint32_t*)&LPC17_UART0_IntHandler, 0);
+        LPC17_InterruptInternal_Activate(UART0_IRQn, (uint32_t*)&LPC17_UART0_IntHandler, 0);
 
         break;
 
     case 1:
-        LPC17_Interrupt_Activate(UART1_IRQn, (uint32_t*)&LPC17_UART1_IntHandler, 0);
+        LPC17_InterruptInternal_Activate(UART1_IRQn, (uint32_t*)&LPC17_UART1_IntHandler, 0);
 
         break;
 
     case 2:
-        LPC17_Interrupt_Activate(UART2_IRQn, (uint32_t*)&LPC17_UART2_IntHandler, 0);
+        LPC17_InterruptInternal_Activate(UART2_IRQn, (uint32_t*)&LPC17_UART2_IntHandler, 0);
 
         break;
 
     case 3:
-        LPC17_Interrupt_Activate(UART3_IRQn, (uint32_t*)&LPC17_UART3_IntHandler, 0);
+        LPC17_InterruptInternal_Activate(UART3_IRQn, (uint32_t*)&LPC17_UART3_IntHandler, 0);
 
         break;
 
     case 4:
-        LPC17_Interrupt_Activate(UART4_IRQn, (uint32_t*)&LPC17_UART4_IntHandler, 0);
+        LPC17_InterruptInternal_Activate(UART4_IRQn, (uint32_t*)&LPC17_UART4_IntHandler, 0);
 
         break;
 

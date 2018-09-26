@@ -1111,59 +1111,42 @@ public:
     }
 };
 
-class AT91_SmartPtr_IRQ {
-    uint32_t m_state;
-
-    void Disable();
-    void Restore();
+class AT91_DisableInterrupts_RaiiHelper {
+    uint32_t state;
 
 public:
-    AT91_SmartPtr_IRQ();
-    ~AT91_SmartPtr_IRQ();
+    AT91_DisableInterrupts_RaiiHelper();
+    ~AT91_DisableInterrupts_RaiiHelper();
 
     bool IsDisabled();
     void Acquire();
     void Release();
-    void Probe();
-
-    static uint32_t GetState();
-
 };
 
-class AT91_SmartPtr_Interrupt {
+class AT91_InterruptStarted_RaiiHelper {
 public:
-    AT91_SmartPtr_Interrupt();
-    ~AT91_SmartPtr_Interrupt();
+    AT91_InterruptStarted_RaiiHelper();
+    ~AT91_InterruptStarted_RaiiHelper();
 };
 
-#define DISABLE_INTERRUPTS_SCOPED(name) AT91_SmartPtr_IRQ name
-#define INTERRUPT_STARTED_SCOPED(name) AT91_SmartPtr_Interrupt name
+#define DISABLE_INTERRUPTS_SCOPED(name) AT91_DisableInterrupts_RaiiHelper name
+#define INTERRUPT_STARTED_SCOPED(name) AT91_InterruptStarted_RaiiHelper name
+
+bool AT91_InterruptInternal_Activate(uint32_t index, uint32_t* isr, void* isrParam);
+bool AT91_InterruptInternal_Deactivate(uint32_t index);
 
 void AT91_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager);
 const TinyCLR_Api_Info* AT91_Interrupt_GetRequiredApi();
 TinyCLR_Result AT91_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd);
 TinyCLR_Result AT91_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self);
-bool AT91_Interrupt_Activate(uint32_t Irq_Index, uint32_t *handler, void* ISR_Param);
-bool AT91_Interrupt_Deactivate(uint32_t Irq_Index);
-bool AT91_Interrupt_Enable(uint32_t Irq_Index);
-bool AT91_Interrupt_Disable(uint32_t Irq_Index);
-bool AT91_Interrupt_EnableState(uint32_t Irq_Index);
-bool AT91_Interrupt_InterruptState(uint32_t Irq_Index);
-
-
-bool AT91_Interrupt_GlobalIsDisabled();
-bool AT91_Interrupt_GlobalEnabled(bool force);
-bool AT91_Interrupt_GlobalDisabled(bool force);
-
-void AT91_Interrupt_GlobalRestore();
-void AT91_Interrupt_GlobalWaitForInterrupt();
+void AT91_Interrupt_Enable();
+void AT91_Interrupt_Disable();
+void AT91_Interrupt_WaitForInterrupt();
+bool AT91_Interrupt_IsDisabled();
 
 void AT91_Interrupt_ForceInterrupt(uint32_t Irq_Index);
-
 extern TinyCLR_Interrupt_StartStopHandler AT91_Interrupt_Started;
 extern TinyCLR_Interrupt_StartStopHandler AT91_Interrupt_Ended;
-
-// I2C
 
 //////////////////////////////////////////////////////////////////////////////
 // AT91_I2C
