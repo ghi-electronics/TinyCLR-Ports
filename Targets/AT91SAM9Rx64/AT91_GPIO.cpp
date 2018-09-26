@@ -140,9 +140,9 @@ void AT91_Gpio_InterruptHandler(void* param) {
                 bitIndex++;
             }
 
-            bool executeIsr = true;
+            bool executeIsr = false;
 
-            GpioInterruptState* interruptState = &gpioInterruptState[bitIndex + port * 32];;
+            GpioInterruptState* interruptState = &gpioInterruptState[bitIndex + port * 32];
 
             AT91_Gpio_Read(interruptState->controller, interruptState->pin, interruptState->currentValue); // read value as soon as possible
 
@@ -153,11 +153,10 @@ void AT91_Gpio_InterruptHandler(void* param) {
             if (interruptState->handler && ((expectedEdgeInterger & currentEdgeInterger) || (expectedEdgeInterger == 0))) {
                 if (interruptState->debounce) {
                     if ((AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr)) - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {
-                        interruptState->lastDebounceTicks = AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr));
+                        executeIsr = true;
                     }
-                    else {
-                        executeIsr = false;
-                    }
+
+                    interruptState->lastDebounceTicks = AT91_Time_GetTimeForProcessorTicks(nullptr, AT91_Time_GetCurrentProcessorTicks(nullptr));
                 }
 
                 if (executeIsr)

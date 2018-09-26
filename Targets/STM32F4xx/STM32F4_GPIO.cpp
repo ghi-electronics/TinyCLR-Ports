@@ -127,7 +127,7 @@ void STM32F4_Gpio_ISR(int num)  // 0 <= num <= 15
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    bool executeIsr = true;
+    bool executeIsr = false;
 
     GpioInterruptState* interruptState = &gpioInterruptState[num];
 
@@ -144,11 +144,10 @@ void STM32F4_Gpio_ISR(int num)  // 0 <= num <= 15
     if (interruptState->handler && ((expectedEdgeInterger & currentEdgeInterger) || (expectedEdgeInterger == 0))) {
         if (interruptState->debounce) {   // debounce enabled
             if ((STM32F4_Time_GetTimeForProcessorTicks(nullptr, STM32F4_Time_GetCurrentProcessorTicks(nullptr)) - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {
-                interruptState->lastDebounceTicks = STM32F4_Time_GetTimeForProcessorTicks(nullptr, STM32F4_Time_GetCurrentProcessorTicks(nullptr));
+                executeIsr = true;
             }
-            else {
-                executeIsr = false;
-            }
+
+            interruptState->lastDebounceTicks = STM32F4_Time_GetTimeForProcessorTicks(nullptr, STM32F4_Time_GetCurrentProcessorTicks(nullptr));
         }
 
         if (executeIsr)

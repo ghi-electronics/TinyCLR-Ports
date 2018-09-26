@@ -148,7 +148,7 @@ void LPC17_Gpio_InterruptHandler(void* param) {
 
     uint32_t* GPIO_INT_Overall_IO_Status_Register = GPIO_INT_Overall_IO_Status;
 
-    bool executeIsr = true;
+    bool executeIsr = false;
 
     for (auto port = 0; port <= 2; port += 2) { // Only port 0 and port 2 support interrupts
         auto status_mask_register = 1 << port;
@@ -174,12 +174,11 @@ void LPC17_Gpio_InterruptHandler(void* param) {
 
             if (interruptState->handler && ((expectedEdgeInterger & currentEdgeInterger) || (expectedEdgeInterger == 0))) {
                 if (interruptState->debounce) {
-                    if ((LPC17_Time_GetTimeForProcessorTicks(nullptr, LPC17_Time_GetCurrentProcessorTicks(nullptr)) - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {
-                        interruptState->lastDebounceTicks = LPC17_Time_GetTimeForProcessorTicks(nullptr, LPC17_Time_GetCurrentProcessorTicks(nullptr));
+                    if ((LPC17_Time_GetTimeForProcessorTicks(nullptr, LPC17_Time_GetCurrentProcessorTicks(nullptr)) - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {                        
+                        executeIsr = true;
                     }
-                    else {
-                        executeIsr = false;
-                    }
+
+                    interruptState->lastDebounceTicks = LPC17_Time_GetTimeForProcessorTicks(nullptr, LPC17_Time_GetCurrentProcessorTicks(nullptr));
                 }
 
                 if (executeIsr)
