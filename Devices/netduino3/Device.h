@@ -22,7 +22,6 @@
 #define DEVICE_NAME "netduino3"
 #define DEVICE_MANUFACTURER "Wilderness Labs"
 #define DEVICE_VERSION ((0ULL << 48) | (10ULL << 32) | (0ULL << 16) | (0ULL << 0))
-#define DEVICE_MEMORY_PROFILE_FACTOR 7
 
 #define USB_DEBUGGER_VENDOR_ID 0x1B9F
 #define USB_DEBUGGER_PRODUCT_ID 0x5000
