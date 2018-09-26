@@ -1,3 +1,4 @@
 TargetName:STM32F4xx
 ImageGenParameters:0x884DED08 0x3671259A 0x08008000 0x00038000
 OptimizeLevel:-Os
+MemoryProfileFactor:5
