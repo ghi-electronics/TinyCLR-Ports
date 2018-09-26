@@ -74,8 +74,6 @@ static const STM32F4_Gpio_Pin uartRtsPins[] = STM32F4_UART_RTS_PINS;
 static const uint32_t uartRxDefaultBuffersSize[] = STM32F4_UART_DEFAULT_RX_BUFFER_SIZE;
 static const uint32_t uartTxDefaultBuffersSize[] = STM32F4_UART_DEFAULT_TX_BUFFER_SIZE;
 
-static USART_TypeDef_Ptr uartPortRegs[TOTAL_UART_CONTROLLERS];
-
 static UartState uartStates[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Uart_Controller uartControllers[TOTAL_UART_CONTROLLERS];
 static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
@@ -150,19 +148,19 @@ void STM32F4_Uart_EnsureTableInitialized() {
         uartStates[i].tableInitialized = true;
     }
 
-    if (TOTAL_UART_CONTROLLERS > 0) uartPortRegs[0] = USART1;
-    if (TOTAL_UART_CONTROLLERS > 1) uartPortRegs[1] = USART2;
+    if (TOTAL_UART_CONTROLLERS > 0) uartStates[0].portReg = USART1;
+    if (TOTAL_UART_CONTROLLERS > 1) uartStates[1].portReg = USART2;
 #if !defined(STM32F401xE) && !defined(STM32F411xE)
-    if (TOTAL_UART_CONTROLLERS > 2) uartPortRegs[2] = USART3;
-    if (TOTAL_UART_CONTROLLERS > 3) uartPortRegs[3] = UART4;
-    if (TOTAL_UART_CONTROLLERS > 4) uartPortRegs[4] = UART5;
-    if (TOTAL_UART_CONTROLLERS > 5) uartPortRegs[5] = USART6;
+    if (TOTAL_UART_CONTROLLERS > 2) uartStates[2].portReg = USART3;
+    if (TOTAL_UART_CONTROLLERS > 3) uartStates[3].portReg = UART4;
+    if (TOTAL_UART_CONTROLLERS > 4) uartStates[4].portReg = UART5;
+    if (TOTAL_UART_CONTROLLERS > 5) uartStates[5].portReg = USART6;
 #ifdef UART7
-    if (TOTAL_UART_CONTROLLERS > 6) uartPortRegs[6] = UART7;
+    if (TOTAL_UART_CONTROLLERS > 6) uartStates[6].portReg = UART7;
 #ifdef UART8
-    if (TOTAL_UART_CONTROLLERS > 7) uartPortRegs[7] = UART8;
+    if (TOTAL_UART_CONTROLLERS > 7) uartStates[7].portReg = UART8;
 #ifdef UART9
-    if (TOTAL_UART_CONTROLLERS > 8) uartPortRegs[8] = UART9;
+    if (TOTAL_UART_CONTROLLERS > 8) uartStates[8].portReg = UART9;
 #endif
 #endif
 #endif
@@ -252,10 +250,10 @@ TinyCLR_Result STM32F4_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* se
 
 bool STM32F4_Uart_CanPostEvent(int8_t controllerIndex) {
     auto state = reinterpret_cast<UartState*>(&uartStates[controllerIndex]);
-    bool canPost = (STM32F4_Time_GetTimeForProcessorTicks(nullptr, STM32F4_Time_GetCurrentProcessorTicks(nullptr)) - state->lastEventTime) > USART_EVENT_POST_DEBOUNCE_TICKS;
+    bool canPost = (STM32F4_Time_GetCurrentProcessorTime() - state->lastEventTime) > USART_EVENT_POST_DEBOUNCE_TICKS;
 
     if (canPost) // only update new time if system accepts to post event!
-        state->lastEventTime = STM32F4_Time_GetTimeForProcessorTicks(nullptr, STM32F4_Time_GetCurrentProcessorTicks(nullptr));
+        state->lastEventTime = STM32F4_Time_GetCurrentProcessorTime();
 
     return canPost;
 }
@@ -409,13 +407,12 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->rxBufferIn = 0;
         state->rxBufferOut = 0;
 
-        state->portReg = uartPortRegs[controllerIndex];
         state->controller = self;
         state->handshaking = false;
         state->enable = false;
 
         state->lastEventRxBufferCount = 0;
-        state->lastEventTime = STM32F4_Time_GetTimeForProcessorTicks(nullptr, STM32F4_Time_GetCurrentProcessorTicks(nullptr));
+        state->lastEventTime = STM32F4_Time_GetCurrentProcessorTime();
     }
 
     state->initializeCount++;
