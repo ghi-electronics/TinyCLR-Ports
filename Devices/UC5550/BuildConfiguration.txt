@@ -1,3 +1,4 @@
 TargetName:STM32F7xx
 ImageGenParameters:0xF344BDCA 0x30FD8A12 0x08008000 0x000B8000
 OptimizeLevel:-Ofast
+MemoryProfileFactor:9
