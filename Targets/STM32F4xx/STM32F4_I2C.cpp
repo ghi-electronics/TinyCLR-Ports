@@ -93,16 +93,17 @@ void STM32F4_I2c_AddApi(const TinyCLR_Api_Manager* apiManager) {
         apiManager->Add(apiManager, &i2cApi[i]);
     }
 
-    if (TOTAL_I2C_CONTROLLERS > 0)
+#if TOTAL_I2C_CONTROLLERS > 0
         i2cPorts[0] = I2C1;
 
-    if (TOTAL_I2C_CONTROLLERS > 1)
+#if TOTAL_I2C_CONTROLLERS > 1
         i2cPorts[1] = I2C2;
 
-    if (TOTAL_I2C_CONTROLLERS > 2)
+#if TOTAL_I2C_CONTROLLERS > 2
         i2cPorts[2] = I2C3;
-
-
+#endif
+#endif
+#endif
 }
 
 void STM32F4_I2C_ER_Interrupt(int32_t controllerIndex) {// Error Interrupt Handler
