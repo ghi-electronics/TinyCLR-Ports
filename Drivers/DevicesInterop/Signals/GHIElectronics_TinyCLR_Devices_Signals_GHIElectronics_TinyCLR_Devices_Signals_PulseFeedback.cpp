@@ -43,7 +43,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
     timeout = time->ConvertSystemTimeToNativeTime(time, timeout);
 
     if (disableInterrupts)
-        interrupt->Disable(true);
+        interrupt->Disable();
 
     if (feedbackMode == PulseFeedbackMode::DrainDuration) {
         int64_t endTime = 0, start = 0, now = 0;
@@ -136,7 +136,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
     }
 
     if (disableInterrupts)
-        interrupt->Enable(true);
+        interrupt->Enable();
 
     ret.Data.Numeric->I8 = time->ConvertNativeTimeToSystemTime(time, ret.Data.Numeric->I8);
 
