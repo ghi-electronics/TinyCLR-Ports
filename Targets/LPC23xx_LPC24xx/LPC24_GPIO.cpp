@@ -220,7 +220,7 @@ void LPC24_Gpio_InterruptHandler(void* param) {
             if (interruptState->handler && ((expectedEdgeInterger & currentEdgeInterger) || (expectedEdgeInterger == 0))) {
                 if (interruptState->debounce) {
                     if ((LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr)) - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {
-                        executeIsr = false;
+                        executeIsr = true;
                     }
 
                     interruptState->lastDebounceTicks = LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr));
