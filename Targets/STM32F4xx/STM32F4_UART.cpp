@@ -714,10 +714,10 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Controller* self) {
 
 void STM32F4_Uart_Reset() {
     for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
-        STM32F4_Uart_Release(&uartControllers[i]);
-
         uartStates[i].tableInitialized = false;
         uartStates[i].initializeCount = 0;
+
+        STM32F4_Uart_Release(&uartControllers[i]);
     }
 }
 
