@@ -749,6 +749,7 @@ void TinyCLR_UsbClient_EnsureTableInitialized() {
         usbClientControllers[i].SetDataReceivedHandler = &TinyCLR_UsbClient_SetDataReceivedHandler;
         usbClientControllers[i].SetVendorClassRequestHandler = &TinyCLR_UsbClient_SetVendorClassRequestHandler;
         usbClientControllers[i].SetDeviceDescriptor = &TinyCLR_UsbClient_SetDeviceDescriptor;
+#ifndef OPTIMIZE_SIZE
         usbClientControllers[i].GetBytesToWrite = &TinyCLR_UsbClient_GetBytesToWrite;
         usbClientControllers[i].GetBytesToRead = &TinyCLR_UsbClient_GetBytesToRead;
         usbClientControllers[i].ClearWriteBuffer = &TinyCLR_UsbClient_ClearWriteBuffer;
@@ -757,6 +758,7 @@ void TinyCLR_UsbClient_EnsureTableInitialized() {
         usbClientControllers[i].GetReadBufferSize = &TinyCLR_UsbClient_GetReadBufferSize;
         usbClientControllers[i].SetWriteBufferSize = &TinyCLR_UsbClient_SetWriteBufferSize;
         usbClientControllers[i].SetReadBufferSize = &TinyCLR_UsbClient_SetReadBufferSize;
+#endif
 
         usbClientApi[i].Author = "GHI Electronics, LLC";
         usbClientApi[i].Name = usbClientApiNames[i];
@@ -1312,6 +1314,8 @@ TinyCLR_Result TinyCLR_UsbClient_SetWriteBufferSize(const TinyCLR_UsbClient_Cont
             TinyCLR_UsbClient_ClearEndpoints(usClientState, endpoint);
         }
     }
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result TinyCLR_UsbClient_SetReadBufferSize(const TinyCLR_UsbClient_Controller* self, uint32_t pipe, size_t size) {
@@ -1338,6 +1342,8 @@ TinyCLR_Result TinyCLR_UsbClient_SetReadBufferSize(const TinyCLR_UsbClient_Contr
             TinyCLR_UsbClient_ClearEndpoints(usClientState, endpoint);
         }
     }
+
+    return TinyCLR_Result::Success;
 }
 
 void TinyCLR_UsbClient_Reset(int32_t controllerIndex) {
