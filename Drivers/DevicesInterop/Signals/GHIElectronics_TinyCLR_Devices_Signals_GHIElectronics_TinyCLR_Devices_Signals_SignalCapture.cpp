@@ -34,7 +34,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
         return TinyCLR_Result::OutOfMemory;
 
     if (disableInterrupts)
-        interrupt->Disable(true);
+        interrupt->Disable();
 
     gpio->Read(gpio, pin, currentState);
 
@@ -60,7 +60,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
     }
 
     if (disableInterrupts)
-        interrupt->Enable(true);
+        interrupt->Enable();
 
     ret.Data.Numeric->I4 = count;
 
@@ -111,7 +111,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
     auto endTime = currentTime + time->ConvertSystemTimeToNativeTime(time, timeout);
 
     if (disableInterrupts)
-        interrupt->Disable(true);
+        interrupt->Disable();
 
     do {
         currentTime = time->GetNativeTime(time);
@@ -134,7 +134,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
     }
 
     if (disableInterrupts)
-        interrupt->Enable(true);
+        interrupt->Enable();
 
     ret.Data.Numeric->I4 = count;
 

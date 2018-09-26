@@ -43,7 +43,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
     gpio->Write(gpio, pin, idleState);
 
     if (disableInterrupts)
-        interrupt->Disable(true);
+        interrupt->Disable();
 
     for (auto i = 0; i < len; i++) {
         next = next == TinyCLR_Gpio_PinValue::High ? TinyCLR_Gpio_PinValue::Low : TinyCLR_Gpio_PinValue::High;
@@ -56,7 +56,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
     gpio->Write(gpio, pin, idleState);
 
     if (disableInterrupts)
-        interrupt->Enable(true);
+        interrupt->Enable();
 
     memory->Free(memory, mem);
 
