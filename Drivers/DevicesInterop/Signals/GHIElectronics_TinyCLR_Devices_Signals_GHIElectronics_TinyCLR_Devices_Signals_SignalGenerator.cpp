@@ -16,10 +16,9 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
     md.InteropManager->GetField(md.InteropManager, self, Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_TinyCLR_Devices_Signals_SignalGenerator::FIELD___CarrierFrequency__BackingField___I8, freqFld);
 
     auto time = reinterpret_cast<const TinyCLR_NativeTime_Controller*>(md.ApiManager->FindDefault(md.ApiManager, TinyCLR_Api_Type::NativeTimeController));
-    auto memory = reinterpret_cast<const TinyCLR_Memory_Manager*>(md.ApiManager->FindDefault(md.ApiManager, TinyCLR_Api_Type::MemoryManager));
     auto interrupt = reinterpret_cast<const TinyCLR_Interrupt_Controller*>(md.ApiManager->FindDefault(md.ApiManager, TinyCLR_Api_Type::InterruptController));
 
-    auto arr = reinterpret_cast<uint64_t*>(arrArg.Data.SzArray.Data) + offsetArg.Data.Numeric->I4;
+    auto arr = reinterpret_cast<TinyCLR_Interop_ClrObjectReference*>(arrArg.Data.SzArray.Data) + offsetArg.Data.Numeric->I4;
     auto len = countArg.Data.Numeric->I4;
     auto gpio = reinterpret_cast<const TinyCLR_Gpio_Controller*>(apiFld.Data.Numeric->I);
     auto pin = static_cast<uint32_t>(pinFld.Data.Numeric->I4);
@@ -28,17 +27,14 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
     auto generateCarrierFrequency = generateFld.Data.Numeric->Boolean;
     auto carrierFrequency = freqFld.Data.Numeric->U8;
 
+    auto next = idleState;
+
     if (generateCarrierFrequency)
         return TinyCLR_Result::NotImplemented;
 
-    auto mem = reinterpret_cast<uint64_t*>(memory->Allocate(memory, len * sizeof(uint64_t)));
-    auto next = idleState;
-
-    if (mem == nullptr)
-        return TinyCLR_Result::OutOfMemory;
-
+    //Since TimeSpan and DateTime are stored inline, not as a proper object
     for (auto i = 0; i < len; i++)
-        mem[i] = time->ConvertSystemTimeToNativeTime(time, arr[i * 2 + 1]);
+        arr[i].b = time->ConvertSystemTimeToNativeTime(time, arr[i].b);
 
     gpio->Write(gpio, pin, idleState);
 
@@ -50,7 +46,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
 
         gpio->Write(gpio, pin, next);
 
-        time->Wait(time, mem[i]);
+        time->Wait(time, arr[i].b);
     }
 
     gpio->Write(gpio, pin, idleState);
@@ -58,7 +54,9 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
     if (disableInterrupts)
         interrupt->Enable();
 
-    memory->Free(memory, mem);
+    //Since TimeSpan and DateTime are stored inline, not as a proper object
+    for (auto i = 0; i < len; i++)
+        arr[i].b = time->ConvertNativeTimeToSystemTime(time, arr[i].b);
 
     return TinyCLR_Result::Success;
 }
