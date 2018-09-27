@@ -358,6 +358,9 @@ bool LPC24_Spi_Transaction_Start(int32_t controllerIndex) {
 
         while (LPC24_Time_GetCurrentProcessorTime() - currentTicks < state->chipSelectSetupTime);
     }
+    else {
+        LPC24_Time_Delay(nullptr, ((1000000 / (state->clockFrequency / 1000)) / 1000));
+    }
 
     return true;
 }
@@ -369,6 +372,9 @@ bool LPC24_Spi_Transaction_Stop(int32_t controllerIndex) {
         auto currentTicks = LPC24_Time_GetCurrentProcessorTime();
 
         while (LPC24_Time_GetCurrentProcessorTime() - currentTicks < state->chipSelectHoldTime);
+    }
+    else {
+        LPC24_Time_Delay(nullptr, ((1000000 / (state->clockFrequency / 1000)) / 1000));
     }
 
     LPC24_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
