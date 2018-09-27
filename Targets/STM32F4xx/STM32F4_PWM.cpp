@@ -444,9 +444,6 @@ TinyCLR_Result STM32F4_Pwm_SetDesiredFrequency(const TinyCLR_Pwm_Controller* sel
 }
 
 TinyCLR_Result STM32F4_Pwm_Acquire(const TinyCLR_Pwm_Controller* self) {
-    if (self == nullptr)
-        return TinyCLR_Result::ArgumentNull;
-
     auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
     if (state->initializeCount == 0)
@@ -458,9 +455,6 @@ TinyCLR_Result STM32F4_Pwm_Acquire(const TinyCLR_Pwm_Controller* self) {
 }
 
 TinyCLR_Result STM32F4_Pwm_Release(const TinyCLR_Pwm_Controller* self) {
-    if (self == nullptr)
-        return TinyCLR_Result::ArgumentNull;
-
     auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
     if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;

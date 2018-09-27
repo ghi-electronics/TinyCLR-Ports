@@ -113,6 +113,9 @@ bool AT91_Spi_Transaction_Start(int32_t controllerIndex) {
 
         while (AT91_Time_GetCurrentProcessorTime() - currentTicks < state->chipSelectSetupTime);
     }
+    else {
+        AT91_Time_Delay(nullptr, ((1000000 / (state->clockFrequency / 1000)) / 1000));
+    }
 
     return true;
 }
@@ -124,6 +127,9 @@ bool AT91_Spi_Transaction_Stop(int32_t controllerIndex) {
         auto currentTicks = AT91_Time_GetCurrentProcessorTime();
 
         while (AT91_Time_GetCurrentProcessorTime() - currentTicks < state->chipSelectHoldTime);
+    }
+    else {
+        AT91_Time_Delay(nullptr, ((1000000 / (state->clockFrequency / 1000)) / 1000));
     }
 
     AT91_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);

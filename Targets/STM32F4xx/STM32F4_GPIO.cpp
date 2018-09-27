@@ -33,7 +33,6 @@ static const STM32F4_Gpio_PinConfiguration gpioPins[] = STM32F4_GPIO_PINS;
 
 struct GpioInterruptState {
     uint8_t pin;
-    int64_t debounce;
     uint64_t  lastDebounceTicks;
 
     const TinyCLR_Gpio_Controller* controller;
@@ -141,15 +140,13 @@ void STM32F4_Gpio_ISR(int num)  // 0 <= num <= 15
     auto expectedEdgeInterger = static_cast<uint32_t>(interruptState->edge);
     auto currentEdgeInterger = static_cast<uint32_t>(edge);
 
-    if (interruptState->handler && ((expectedEdgeInterger & currentEdgeInterger) || (expectedEdgeInterger == 0))) {
-        if (interruptState->debounce) {   // debounce enabled
-            if ((STM32F4_Time_GetTimeForProcessorTicks(nullptr, STM32F4_Time_GetCurrentProcessorTicks(nullptr)) - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {
-                executeIsr = true;
-            }
-
-            interruptState->lastDebounceTicks = STM32F4_Time_GetTimeForProcessorTicks(nullptr, STM32F4_Time_GetCurrentProcessorTicks(nullptr));
+    if (interruptState->handler && ((expectedEdgeInterger & currentEdgeInterger) || (expectedEdgeInterger == 0))) {        
+        if ((STM32F4_Time_GetCurrentProcessorTime() - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {
+            executeIsr = true;
         }
 
+        interruptState->lastDebounceTicks = STM32F4_Time_GetCurrentProcessorTime();
+    
         if (executeIsr)
             interruptState->handler(interruptState->controller, interruptState->pin, edge, STM32F4_Time_GetCurrentProcessorTime());
     }
@@ -225,9 +222,8 @@ TinyCLR_Result STM32F4_Gpio_SetPinChangedHandler(const TinyCLR_Gpio_Controller* 
         }
         interruptState->controller = &gpioControllers[controllerIndex];
         interruptState->pin = (uint8_t)pin;
-        interruptState->debounce = STM32F4_Gpio_GetDebounceTimeout(self, pin);
         interruptState->handler = handler;
-        interruptState->lastDebounceTicks = STM32F4_Time_GetTimeForProcessorTicks(nullptr, STM32F4_Time_GetCurrentProcessorTicks(nullptr));
+        interruptState->lastDebounceTicks = STM32F4_Time_GetCurrentProcessorTime();
         interruptState->edge = edge;
 
         EXTI->RTSR &= ~bit;

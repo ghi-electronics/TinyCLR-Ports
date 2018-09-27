@@ -93,16 +93,17 @@ void STM32F4_I2c_AddApi(const TinyCLR_Api_Manager* apiManager) {
         apiManager->Add(apiManager, &i2cApi[i]);
     }
 
-    if (TOTAL_I2C_CONTROLLERS > 0)
+#if TOTAL_I2C_CONTROLLERS > 0
         i2cPorts[0] = I2C1;
 
-    if (TOTAL_I2C_CONTROLLERS > 1)
+#if TOTAL_I2C_CONTROLLERS > 1
         i2cPorts[1] = I2C2;
 
-    if (TOTAL_I2C_CONTROLLERS > 2)
+#if TOTAL_I2C_CONTROLLERS > 2
         i2cPorts[2] = I2C3;
-
-
+#endif
+#endif
+#endif
 }
 
 void STM32F4_I2C_ER_Interrupt(int32_t controllerIndex) {// Error Interrupt Handler
@@ -365,9 +366,6 @@ TinyCLR_Result STM32F4_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self,
 }
 
 TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
-    if (self == nullptr)
-        return TinyCLR_Result::ArgumentNull;
-
     auto state = reinterpret_cast<I2cState*>(self->ApiInfo->State);
 
     if (state->initializeCount == 0) {
@@ -460,16 +458,6 @@ void STM32F4_I2c_Reset() {
         STM32F4_I2c_Release(&i2cControllers[i]);
 
         auto state = &i2cStates[i];
-
-        state->i2cConfiguration.address = 0;
-        state->i2cConfiguration.clockRate = 0;
-        state->i2cConfiguration.clockRate2 = 0;
-
-        state->readI2cTransactionAction.bytesToTransfer = 0;
-        state->readI2cTransactionAction.bytesTransferred = 0;
-
-        state->writeI2cTransactionAction.bytesToTransfer = 0;
-        state->writeI2cTransactionAction.bytesTransferred = 0;
 
         state->initializeCount = 0;
     }
