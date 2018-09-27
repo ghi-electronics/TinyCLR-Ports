@@ -303,7 +303,7 @@ TinyCLR_Result STM32F4_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self,
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
-#if DEVICE_MEMORY_PROFILE_FACTOR > 5
+
     if (state->chipSelectLine == chipSelectLine &&
         state->chipSelectType == chipSelectType &&
         state->chipSelectSetupTime == chipSelectSetupTime &&
@@ -314,7 +314,7 @@ TinyCLR_Result STM32F4_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self,
         state->spiMode == mode) {
         return TinyCLR_Result::Success;
     }
-#endif //DEVICE_MEMORY_PROFILE_FACTOR
+
     state->chipSelectLine = chipSelectLine;
     state->chipSelectType = chipSelectType;
     state->chipSelectSetupTime = chipSelectSetupTime;
