@@ -749,7 +749,7 @@ void TinyCLR_UsbClient_EnsureTableInitialized() {
         usbClientControllers[i].SetDataReceivedHandler = &TinyCLR_UsbClient_SetDataReceivedHandler;
         usbClientControllers[i].SetVendorClassRequestHandler = &TinyCLR_UsbClient_SetVendorClassRequestHandler;
         usbClientControllers[i].SetDeviceDescriptor = &TinyCLR_UsbClient_SetDeviceDescriptor;
-#if MemoryProfileFactor > 5
+#if DEVICE_MEMORY_PROFILE_FACTOR > 5
         usbClientControllers[i].GetBytesToWrite = &TinyCLR_UsbClient_GetBytesToWrite;
         usbClientControllers[i].GetBytesToRead = &TinyCLR_UsbClient_GetBytesToRead;
         usbClientControllers[i].ClearWriteBuffer = &TinyCLR_UsbClient_ClearWriteBuffer;
