@@ -749,7 +749,6 @@ void TinyCLR_UsbClient_EnsureTableInitialized() {
         usbClientControllers[i].SetDataReceivedHandler = &TinyCLR_UsbClient_SetDataReceivedHandler;
         usbClientControllers[i].SetVendorClassRequestHandler = &TinyCLR_UsbClient_SetVendorClassRequestHandler;
         usbClientControllers[i].SetDeviceDescriptor = &TinyCLR_UsbClient_SetDeviceDescriptor;
-#if DEVICE_MEMORY_PROFILE_FACTOR > 5
         usbClientControllers[i].GetBytesToWrite = &TinyCLR_UsbClient_GetBytesToWrite;
         usbClientControllers[i].GetBytesToRead = &TinyCLR_UsbClient_GetBytesToRead;
         usbClientControllers[i].ClearWriteBuffer = &TinyCLR_UsbClient_ClearWriteBuffer;
@@ -758,7 +757,7 @@ void TinyCLR_UsbClient_EnsureTableInitialized() {
         usbClientControllers[i].GetReadBufferSize = &TinyCLR_UsbClient_GetReadBufferSize;
         usbClientControllers[i].SetWriteBufferSize = &TinyCLR_UsbClient_SetWriteBufferSize;
         usbClientControllers[i].SetReadBufferSize = &TinyCLR_UsbClient_SetReadBufferSize;
-#endif //DEVICE_MEMORY_PROFILE_FACTOR
+
         usbClientApi[i].Author = "GHI Electronics, LLC";
         usbClientApi[i].Name = usbClientApiNames[i];
         usbClientApi[i].Type = TinyCLR_Api_Type::UsbClientController;
@@ -1238,22 +1237,31 @@ TinyCLR_Result TinyCLR_UsbClient_SetGetDescriptorHandler(const TinyCLR_UsbClient
 }
 
 size_t TinyCLR_UsbClient_GetBytesToWrite(const TinyCLR_UsbClient_Controller* self, uint32_t pipe) {
+#if DEVICE_MEMORY_PROFILE_FACTOR > 5
     UsClientState * usClientState = reinterpret_cast<UsClientState*>(self->ApiInfo->State);
 
     int32_t endpoint = usClientState->pipes[pipe].TxEP;
 
     return usClientState->fifoPacketCount[endpoint];
+#else
+    return 0;
+#endif    
 }
 
 size_t TinyCLR_UsbClient_GetBytesToRead(const TinyCLR_UsbClient_Controller* self, uint32_t pipe) {
+#if DEVICE_MEMORY_PROFILE_FACTOR > 5
     UsClientState * usClientState = reinterpret_cast<UsClientState*>(self->ApiInfo->State);
 
     int32_t endpoint = usClientState->pipes[pipe].RxEP;
 
     return usClientState->fifoPacketCount[endpoint];
+#else
+    return 0;
+#endif  
 }
 
 TinyCLR_Result TinyCLR_UsbClient_ClearWriteBuffer(const TinyCLR_UsbClient_Controller* self, uint32_t pipe) {
+#if DEVICE_MEMORY_PROFILE_FACTOR > 5
     UsClientState * usClientState = reinterpret_cast<UsClientState*>(self->ApiInfo->State);
 
     int32_t endpoint = usClientState->pipes[pipe].TxEP;
@@ -1261,9 +1269,13 @@ TinyCLR_Result TinyCLR_UsbClient_ClearWriteBuffer(const TinyCLR_UsbClient_Contro
     TinyCLR_UsbClient_ClearEndpoints(usClientState, endpoint);
 
     return TinyCLR_Result::Success;
+#else
+    return TinyCLR_Result::NotSupported;
+#endif  
 }
 
 TinyCLR_Result TinyCLR_UsbClient_ClearReadBuffer(const TinyCLR_UsbClient_Controller* self, uint32_t pipe) {
+#if DEVICE_MEMORY_PROFILE_FACTOR > 5
     UsClientState * usClientState = reinterpret_cast<UsClientState*>(self->ApiInfo->State);
 
     int32_t endpoint = usClientState->pipes[pipe].RxEP;
@@ -1271,25 +1283,37 @@ TinyCLR_Result TinyCLR_UsbClient_ClearReadBuffer(const TinyCLR_UsbClient_Control
     TinyCLR_UsbClient_ClearEndpoints(usClientState, endpoint);
 
     return TinyCLR_Result::Success;
+#else
+    return TinyCLR_Result::NotSupported;
+#endif  
 }
 
 size_t TinyCLR_UsbClient_GetWriteBufferSize(const TinyCLR_UsbClient_Controller* self, uint32_t pipe) {
+#if DEVICE_MEMORY_PROFILE_FACTOR > 5
     UsClientState * usClientState = reinterpret_cast<UsClientState*>(self->ApiInfo->State);
 
     int32_t endpoint = usClientState->pipes[pipe].TxEP;
 
     return usClientState->maxFifoPacketCount[endpoint];
+#else
+    return 0;
+#endif  
 }
 
 size_t TinyCLR_UsbClient_GetReadBufferSize(const TinyCLR_UsbClient_Controller* self, uint32_t pipe) {
+#if DEVICE_MEMORY_PROFILE_FACTOR > 5
     UsClientState * usClientState = reinterpret_cast<UsClientState*>(self->ApiInfo->State);
 
     int32_t endpoint = usClientState->pipes[pipe].RxEP;
 
     return usClientState->maxFifoPacketCount[endpoint];
+#else
+    return 0;
+#endif  
 }
 
 TinyCLR_Result TinyCLR_UsbClient_SetWriteBufferSize(const TinyCLR_UsbClient_Controller* self, uint32_t pipe, size_t size) {
+#if DEVICE_MEMORY_PROFILE_FACTOR > 5
     UsClientState * usClientState = reinterpret_cast<UsClientState*>(self->ApiInfo->State);
 
     int32_t endpoint = usClientState->pipes[pipe].TxEP;
@@ -1315,9 +1339,13 @@ TinyCLR_Result TinyCLR_UsbClient_SetWriteBufferSize(const TinyCLR_UsbClient_Cont
     }
 
     return TinyCLR_Result::Success;
+#else
+    return TinyCLR_Result::NotSupported;
+#endif  
 }
 
 TinyCLR_Result TinyCLR_UsbClient_SetReadBufferSize(const TinyCLR_UsbClient_Controller* self, uint32_t pipe, size_t size) {
+#if DEVICE_MEMORY_PROFILE_FACTOR > 5
     UsClientState * usClientState = reinterpret_cast<UsClientState*>(self->ApiInfo->State);
 
     int32_t endpoint = usClientState->pipes[pipe].RxEP;
@@ -1343,6 +1371,9 @@ TinyCLR_Result TinyCLR_UsbClient_SetReadBufferSize(const TinyCLR_UsbClient_Contr
     }
 
     return TinyCLR_Result::Success;
+#else
+    return TinyCLR_Result::NotSupported;
+#endif  
 }
 
 void TinyCLR_UsbClient_Reset(int32_t controllerIndex) {
