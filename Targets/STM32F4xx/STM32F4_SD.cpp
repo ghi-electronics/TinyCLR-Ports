@@ -1749,38 +1749,37 @@ SD_Error SD_EnableWideBusOperation(uint32_t WideMode) {
     SD_Error errorstatus = SD_OK;
 
     /*!< MMC Card doesn't support this feature */
-#if MemoryProfileFactor > 5
+#if DEVICE_MEMORY_PROFILE_FACTOR > 5
     if (SDIO_MULTIMEDIA_CARD == CardType) {
         errorstatus = SD_UNSUPPORTED_FEATURE;
         return(errorstatus);
     }
     else
-#else //MemoryProfileFactor
-    if ((SDIO_STD_CAPACITY_SD_CARD_V1_1 == CardType) || (SDIO_STD_CAPACITY_SD_CARD_V2_0 == CardType) || (SDIO_HIGH_CAPACITY_SD_CARD == CardType)) {
-        if (SDIO_BusWide_4b == WideMode) {
-            errorstatus = SDEnWideBus(ENABLE);
+#endif
+        if ((SDIO_STD_CAPACITY_SD_CARD_V1_1 == CardType) || (SDIO_STD_CAPACITY_SD_CARD_V2_0 == CardType) || (SDIO_HIGH_CAPACITY_SD_CARD == CardType)) {
+            if (SDIO_BusWide_4b == WideMode) {
+                errorstatus = SDEnWideBus(ENABLE);
 
-            if (SD_OK == errorstatus) {
-                /*!< Configure the SDIO peripheral */
-                SDIO_Init(SDIO_TRANSFER_CLK_DIV, SDIO_ClockPowerSave_Disable, SDIO_ClockBypass_Disable, SDIO_ClockEdge_Rising, SDIO_BusWide_4b, SDIO_HardwareFlowControl_Disable);
+                if (SD_OK == errorstatus) {
+                    /*!< Configure the SDIO peripheral */
+                    SDIO_Init(SDIO_TRANSFER_CLK_DIV, SDIO_ClockPowerSave_Disable, SDIO_ClockBypass_Disable, SDIO_ClockEdge_Rising, SDIO_BusWide_4b, SDIO_HardwareFlowControl_Disable);
+                }
             }
-        }
-#if MemoryProfileFactor > 5
-        else if (SDIO_BusWide_8b == WideMode) {
-            errorstatus = SD_UNSUPPORTED_FEATURE;
-            return(errorstatus);
-        }
-        else {
-            errorstatus = SDEnWideBus(DISABLE);
+#if DEVICE_MEMORY_PROFILE_FACTOR > 5
+            else if (SDIO_BusWide_8b == WideMode) {
+                errorstatus = SD_UNSUPPORTED_FEATURE;
+                return(errorstatus);
+            }
+            else {
+                errorstatus = SDEnWideBus(DISABLE);
 
-            if (SD_OK == errorstatus) {
-                !< Configure the SDIO peripheral * /
+                if (SD_OK == errorstatus) {
+                    /*!< Configure the SDIO peripheral */
                     SDIO_Init(SDIO_TRANSFER_CLK_DIV, SDIO_ClockPowerSave_Disable, SDIO_ClockBypass_Disable, SDIO_ClockEdge_Rising, SDIO_BusWide_1b, SDIO_HardwareFlowControl_Disable);
+                }
             }
+#endif //DEVICE_MEMORY_PROFILE_FACTOR
         }
-#endif //MemoryProfileFactor
-#endif //MemoryProfileFactor
-    }
 
     return(errorstatus);
 }
