@@ -758,7 +758,7 @@ void TinyCLR_UsbClient_EnsureTableInitialized() {
         usbClientControllers[i].GetReadBufferSize = &TinyCLR_UsbClient_GetReadBufferSize;
         usbClientControllers[i].SetWriteBufferSize = &TinyCLR_UsbClient_SetWriteBufferSize;
         usbClientControllers[i].SetReadBufferSize = &TinyCLR_UsbClient_SetReadBufferSize;
-#endif //MemoryProfileFactor
+#endif //DEVICE_MEMORY_PROFILE_FACTOR
         usbClientApi[i].Author = "GHI Electronics, LLC";
         usbClientApi[i].Name = usbClientApiNames[i];
         usbClientApi[i].Type = TinyCLR_Api_Type::UsbClientController;
