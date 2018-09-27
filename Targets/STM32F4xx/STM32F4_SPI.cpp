@@ -314,7 +314,7 @@ TinyCLR_Result STM32F4_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self,
         state->spiMode == mode) {
         return TinyCLR_Result::Success;
     }
-#endif //MemoryProfileFactor
+#endif //DEVICE_MEMORY_PROFILE_FACTOR
     state->chipSelectLine = chipSelectLine;
     state->chipSelectType = chipSelectType;
     state->chipSelectSetupTime = chipSelectSetupTime;
