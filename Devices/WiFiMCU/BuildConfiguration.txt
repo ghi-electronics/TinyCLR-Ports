@@ -1,3 +1,2 @@
 TargetName:STM32F4xx
 OptimizeLevel:-Ofast
-MemoryProfileFactor:7

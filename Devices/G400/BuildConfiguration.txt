@@ -2,4 +2,3 @@ TargetName:AT91SAM9X35
 ImageGenParameters:0x6D2862F3 0x8B3642AE 0x00008400 0x00262800
 OptimizeLevel:-Ofast
 AdditionalDeviceDrivers:AT45DB321D_Flash
-MemoryProfileFactor:9
