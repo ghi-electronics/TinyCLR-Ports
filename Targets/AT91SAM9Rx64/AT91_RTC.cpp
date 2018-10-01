@@ -120,7 +120,7 @@ TinyCLR_Result AT91_Rtc_IsValid(const TinyCLR_Rtc_Controller* self, bool& value)
 
     value = (AT91_Rtc_GetTime(self, rtcNow) == TinyCLR_Result::Success);
 
-    if (rtcNow.Second >= 60 || rtcNow.Minute >= 60 || rtcNow.Hour >= 24 || rtcNow.DayOfMonth >= 32 || rtcNow.Month >= 13 || rtcNow.Year <= 1979 || rtcNow.DayOfWeek == 0)
+    if (rtcNow.Second >= 60 || rtcNow.Minute >= 60 || rtcNow.Hour >= 24 || rtcNow.DayOfMonth >= 32 || rtcNow.Month >= 13 || rtcNow.DayOfWeek >= 8)
         value = false;
 
     return TinyCLR_Result::Success;
@@ -132,14 +132,8 @@ TinyCLR_Result AT91_Rtc_GetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_
     uint32_t fullYear = 0;
     uint32_t hundredYear = 0;
 
-    if (RTC_VER > 0) {
-        value.Year = 1977;
-        value.Month = 1;
-        value.DayOfMonth = 1;
-        value.Hour = 1;
-        value.Minute = 1;
-        value.Second = 1;
-        value.Millisecond = 1;
+    if (RTC_VER > 0) { // Valid Entry Register, detect any incorrect value this register will be not 0.
+        return TinyCLR_Result::InvalidOperation;
     }
     else {
         if ((calenderRegister & 0x7F) == 0x19)
@@ -151,6 +145,7 @@ TinyCLR_Result AT91_Rtc_GetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_
         value.Year = (uint32_t)(fullYear + hundredYear);
         value.Month = (uint32_t)AT91_Rtc_BinaryCodedDecimalCombine((((calenderRegister & (0x1F << 16)) >> 16) >> 4), (((calenderRegister & (0x1F << 16)) >> 16) & 0xF));
         value.DayOfMonth = (uint32_t)AT91_Rtc_BinaryCodedDecimalCombine((((calenderRegister & (0x3F << 24)) >> 24) >> 4), (((calenderRegister & (0x3F << 24)) >> 24) & 0xF));
+        value.DayOfWeek = (uint32_t)AT91_Rtc_BinaryCodedDecimalCombine((((calenderRegister & (0x07 << 21)) >> 21) >> 4), (((calenderRegister & (0x07 << 21)) >> 21) & 0xF));
         value.Hour = AT91_Rtc_BinaryCodedDecimalCombine((((timeRegister & (0x3F << 16)) >> 16) >> 4), (((timeRegister & (0x3F << 16)) >> 16) & 0xF));
 
         if (((timeRegister & 0x400000) >> 22) == AT91_RTC_TIMR_PM)
@@ -174,14 +169,14 @@ TinyCLR_Result AT91_Rtc_SetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_
     uint32_t ones = 0;
     uint32_t timeout = 0;
 
-    if (RTC_VER > 0) {
+    if (RTC_VER > 0) { // Valid Entry Register, detect any incorrect value this register will be not 0.
         return TinyCLR_Result::InvalidOperation;
     }
 
     if ((value.Year < 1900) || (value.Year > 2099) ||
         (value.Month < 1) || (value.Month > 12) ||
         (value.DayOfMonth < 1) || (value.DayOfMonth > 31)) {
-        TinyCLR_Result::ArgumentInvalid;
+        return TinyCLR_Result::ArgumentInvalid;
     }
 
     RTC_CR = 0x2;
