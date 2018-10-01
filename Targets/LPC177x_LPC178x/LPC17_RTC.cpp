@@ -65,7 +65,7 @@ TinyCLR_Result LPC17_Rtc_IsValid(const TinyCLR_Rtc_Controller* self, bool& value
 
     value = (LPC17_Rtc_GetTime(self, rtcNow) == TinyCLR_Result::Success);
 
-    if (rtcNow.Second >= 60 || rtcNow.Minute >= 60 || rtcNow.Hour >= 24 || rtcNow.DayOfMonth >= 32 || rtcNow.Month >= 13 || rtcNow.Year <= 1979 || rtcNow.DayOfWeek == 0)
+    if (rtcNow.Second >= 60 || rtcNow.Minute >= 60 || rtcNow.Hour >= 24 || rtcNow.DayOfMonth >= 32 || rtcNow.Month >= 13 || rtcNow.DayOfWeek >= 8)
         value = false;
 
     return TinyCLR_Result::Success;
@@ -73,14 +73,13 @@ TinyCLR_Result LPC17_Rtc_IsValid(const TinyCLR_Rtc_Controller* self, bool& value
 
 TinyCLR_Result LPC17_Rtc_GetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value) {
     if (LPC_RTC->CCR != 1) {
-        TinyCLR_Result::InvalidOperation;
+        return TinyCLR_Result::InvalidOperation;
     }
 
     value.Hour = LPC_RTC->HOUR;
     value.Minute = LPC_RTC->MIN;
     value.Second = LPC_RTC->SEC;
     value.Millisecond = 0;
-
 
     value.Year = LPC_RTC->YEAR;
     value.Month = LPC_RTC->MONTH;
@@ -92,7 +91,7 @@ TinyCLR_Result LPC17_Rtc_GetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc
 
 TinyCLR_Result LPC17_Rtc_SetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value) {
     if (LPC_RTC->CCR != 1) {
-        TinyCLR_Result::InvalidOperation;
+        return TinyCLR_Result::InvalidOperation;
     }
 
     LPC_RTC->YEAR = value.Year;

@@ -229,6 +229,14 @@ TinyCLR_Result STM32F7_Rtc_Initialize() {
     return TinyCLR_Result::Success;
 }
 
+void STM32F7_Rtc_WriteBackupRegister() {
+    *(reinterpret_cast<uint32_t *>(RTC_BASE + 0x50)) = (uint32_t)0x32F2;
+}
+
+uint32_t STM32F7_Rtc_ReadBackupRegister() {
+    return *(reinterpret_cast<uint32_t *>(RTC_BASE + 0x50));
+}
+
 TinyCLR_Result STM32F7_Rtc_Acquire(const TinyCLR_Rtc_Controller* self) {
     if (STM32F7_Rtc_Configuration() != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
@@ -248,7 +256,7 @@ TinyCLR_Result STM32F7_Rtc_IsValid(const TinyCLR_Rtc_Controller* self, bool& val
 
     value = (STM32F7_Rtc_GetTime(self, rtcNow) == TinyCLR_Result::Success);
 
-    if (rtcNow.Second >= 60 || rtcNow.Minute >= 60 || rtcNow.Hour >= 24 || rtcNow.DayOfMonth >= 32 || rtcNow.Month >= 13 || rtcNow.Year <= 1979 || rtcNow.DayOfWeek == 0)
+    if (rtcNow.Second >= 60 || rtcNow.Minute >= 60 || rtcNow.Hour >= 24 || rtcNow.DayOfMonth >= 32 || rtcNow.Month >= 13 || rtcNow.DayOfWeek >= 8)
         value = false;
 
     return TinyCLR_Result::Success;
@@ -257,6 +265,10 @@ TinyCLR_Result STM32F7_Rtc_IsValid(const TinyCLR_Rtc_Controller* self, bool& val
 TinyCLR_Result STM32F7_Rtc_GetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value) {
     uint32_t  time;
     uint32_t  date;
+
+    if (STM32F7_Rtc_ReadBackupRegister() != 0x32F2) {
+        return TinyCLR_Result::InvalidOperation;
+    }
 
     /* Get the RTC_TR register */
     time = RTC->TR & RTC_TR_RESERVED_MASK;
@@ -312,6 +324,12 @@ TinyCLR_Result STM32F7_Rtc_SetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_R
 
     /* Enable the write protection for RTC registers */
     STM32F7_Rtc_SetWriteProtection(true);
+
+    STM32F7_Rtc_WriteBackupRegister();
+
+    if (STM32F7_Rtc_ReadBackupRegister() != 0x32F2) { // Ensure data is written
+        return TinyCLR_Result::InvalidOperation;
+    }
 
     return TinyCLR_Result::Success;
 }
