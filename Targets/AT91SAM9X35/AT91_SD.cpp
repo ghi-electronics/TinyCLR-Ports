@@ -2735,9 +2735,10 @@ TinyCLR_Result AT91_SdCard_IsPresent(const TinyCLR_Storage_Controller* self, boo
 
 TinyCLR_Result AT91_SdCard_Reset() {
     for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
-        AT91_SdCard_Close(&sdCardControllers[i]);
-        AT91_SdCard_Release(&sdCardControllers[i]);
         sdCardStates[i].initializeCount = 0;
+
+        AT91_SdCard_Close(&sdCardControllers[i]);
+        AT91_SdCard_Release(&sdCardControllers[i]);        
     }
 
     return TinyCLR_Result::Success;
