@@ -2924,9 +2924,10 @@ TinyCLR_Result STM32F7_SdCard_IsPresent(const TinyCLR_Storage_Controller* self, 
 
 TinyCLR_Result STM32F7_SdCard_Reset() {
     for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
-        STM32F7_SdCard_Close(&sdCardControllers[i]);
-        STM32F7_SdCard_Release(&sdCardControllers[i]);
         sdCardStates[i].initializeCount = 0;
+
+        STM32F7_SdCard_Close(&sdCardControllers[i]);
+        STM32F7_SdCard_Release(&sdCardControllers[i]);        
     }
 
     return TinyCLR_Result::Success;
