@@ -92,9 +92,8 @@ TinyCLR_Result LPC17_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_P
         //TODO
         return TinyCLR_Result::NotSupported;
 
-    case TinyCLR_Power_SleepLevel::Level0:
-        if (wakeSource != TinyCLR_Power_SleepWakeSource::Gpio && wakeSource != TinyCLR_Power_SleepWakeSource::SystemTimer)
-            return TinyCLR_Result::NotSupported;
+     case TinyCLR_Power_SleepLevel::Level0:
+        // TODO
 
     default:
         LPC_SC->PCON &= ~(LPC_SC_PCON_PM0_Msk | LPC_SC_PCON_PM1_Msk); // clear PM0 and PM1 to 0 => sleep
