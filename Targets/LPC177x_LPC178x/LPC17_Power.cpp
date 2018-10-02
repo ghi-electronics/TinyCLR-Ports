@@ -92,7 +92,7 @@ TinyCLR_Result LPC17_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_P
         //TODO
         return TinyCLR_Result::NotSupported;
 
-     case TinyCLR_Power_SleepLevel::Level0:
+    case TinyCLR_Power_SleepLevel::Level0:
         // TODO
 
     default:

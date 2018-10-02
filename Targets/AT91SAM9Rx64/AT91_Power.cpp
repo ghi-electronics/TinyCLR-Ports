@@ -91,7 +91,7 @@ TinyCLR_Result AT91_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Po
     case TinyCLR_Power_SleepLevel::Level0:
         // TODO
 
-    default:        
+    default:
         // ARM926EJ-S Wait For Interrupt
 #ifdef __GNUC__
         asm("MCR p15, 0, %0, c7, c0, 4" :: "r" (reg));
