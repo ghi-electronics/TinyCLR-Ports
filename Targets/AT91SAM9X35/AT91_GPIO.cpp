@@ -356,7 +356,7 @@ bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_P
 
 
 bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PeripheralSelection peripheralSelection, AT91_Gpio_ResistorMode resistorMode) {
-    return AT91_Gpio_ConfigurePin(pin, pinDir, peripheralSelection, resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Enable, AT91_Gpio_FilterSlowClock::Enable, AT91_Gpio_Schmitt::Disable, AT91_Gpio_DriveSpeed::Reserved);
+    return AT91_Gpio_ConfigurePin(pin, pinDir, peripheralSelection, resistorMode, AT91_Gpio_MultiDriver::Disable, AT91_Gpio_Filter::Enable, AT91_Gpio_FilterSlowClock::Disable, AT91_Gpio_Schmitt::Disable, AT91_Gpio_DriveSpeed::Reserved);
 }
 
 void AT91_Gpio_EnableOutputPin(int32_t pin, bool initialState) {
