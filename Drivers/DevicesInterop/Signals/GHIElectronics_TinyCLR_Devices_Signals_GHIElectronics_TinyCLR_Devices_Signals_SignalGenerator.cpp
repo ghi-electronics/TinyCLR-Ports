@@ -32,10 +32,6 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
     if (generateCarrierFrequency)
         return TinyCLR_Result::NotImplemented;
 
-    //Since TimeSpan and DateTime are stored inline, not as a proper object
-    for (auto i = 0; i < len; i++)
-        arr[i].b = time->ConvertSystemTimeToNativeTime(time, arr[i].b);
-
     gpio->Write(gpio, pin, idleState);
 
     if (disableInterrupts)
@@ -46,17 +42,13 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
 
         gpio->Write(gpio, pin, next);
 
-        time->Wait(time, arr[i].b);
+        time->Wait(time, time->ConvertSystemTimeToNativeTime(time, arr[i].b));
     }
 
     gpio->Write(gpio, pin, idleState);
 
     if (disableInterrupts)
         interrupt->Enable();
-
-    //Since TimeSpan and DateTime are stored inline, not as a proper object
-    for (auto i = 0; i < len; i++)
-        arr[i].b = time->ConvertNativeTimeToSystemTime(time, arr[i].b);
 
     return TinyCLR_Result::Success;
 }
