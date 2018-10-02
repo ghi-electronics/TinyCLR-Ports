@@ -78,6 +78,8 @@ void AT91_Power_SetHandlers(void(*stop)(), void(*restart)()) {
 }
 
 TinyCLR_Result AT91_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level, TinyCLR_Power_SleepWakeSource wakeSource) {
+    volatile uint32_t reg = 0;
+
     switch (level) {
     case TinyCLR_Power_SleepLevel::Level1:
     case TinyCLR_Power_SleepLevel::Level2:
@@ -87,12 +89,9 @@ TinyCLR_Result AT91_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Po
         return TinyCLR_Result::NotSupported;
 
     case TinyCLR_Power_SleepLevel::Level0:
-        if (wakeSource != TinyCLR_Power_SleepWakeSource::Gpio && wakeSource != TinyCLR_Power_SleepWakeSource::SystemTimer)
-            return TinyCLR_Result::NotSupported;
+        // TODO
 
     default:
-        uint32_t reg = 0;
-
         // ARM926EJ-S Wait For Interrupt
 #ifdef __GNUC__
         asm("MCR p15, 0, %0, c7, c0, 4" :: "r" (reg));

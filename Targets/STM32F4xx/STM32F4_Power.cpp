@@ -80,8 +80,7 @@ TinyCLR_Result STM32F4_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR
         return TinyCLR_Result::NotSupported;
 
     case TinyCLR_Power_SleepLevel::Level0:
-        if (wakeSource != TinyCLR_Power_SleepWakeSource::Gpio && wakeSource != TinyCLR_Power_SleepWakeSource::SystemTimer)
-            return TinyCLR_Result::NotSupported;
+        // TODO
 
     default:
         PWR->CR |= PWR_CR_CWUF;
