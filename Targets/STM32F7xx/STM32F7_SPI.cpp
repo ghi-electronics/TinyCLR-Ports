@@ -31,6 +31,7 @@ static const STM32F7_Gpio_Pin spiMisoPins[] = STM32F7_SPI_MISO_PINS;
 static const STM32F7_Gpio_Pin spiMosiPins[] = STM32F7_SPI_MOSI_PINS;
 
 static ptr_SPI_TypeDef spiPortRegs[TOTAL_SPI_CONTROLLERS];
+static ptr_SPI_TypeDef spiPortRegs[TOTAL_SPI_CONTROLLERS];
 
 struct SpiState {
     int32_t controllerIndex;
@@ -127,7 +128,9 @@ void STM32F7_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
 bool STM32F7_Spi_Transaction_Start(int32_t controllerIndex) {
     auto state = &spiStates[controllerIndex];
 
-    STM32F7_GpioInternal_WritePin(state->chipSelectLine, state->chipSelectActiveState);
+    if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
+        STM32F7_GpioInternal_WritePin(state->chipSelectLine, state->chipSelectActiveState);
+    }
 
     if (state->chipSelectSetupTime > 0) {
         auto currentTicks = STM32F7_Time_GetCurrentProcessorTime();
@@ -157,7 +160,9 @@ bool STM32F7_Spi_Transaction_Stop(int32_t controllerIndex) {
         STM32F7_Time_Delay(nullptr, ((1000000 / (state->clockFrequency / 1000)) / 1000));
     }
 
-    STM32F7_GpioInternal_WritePin(state->chipSelectLine, !state->chipSelectActiveState);
+    if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
+        STM32F7_GpioInternal_WritePin(state->chipSelectLine, !state->chipSelectActiveState);
+    }
 
     return true;
 }
@@ -377,11 +382,15 @@ TinyCLR_Result STM32F7_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self,
     }
     spi->CR1 |= cr1;
 
-    if (STM32F7_GpioInternal_OpenPin(state->chipSelectLine)) {
-        // CS setup
-        STM32F7_GpioInternal_ConfigurePin(state->chipSelectLine, STM32F7_Gpio_PortMode::GeneralPurposeOutput, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, STM32F7_Gpio_AlternateFunction::AF0);
+    if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
+        if (STM32F7_GpioInternal_OpenPin(state->chipSelectLine)) {
+            STM32F7_GpioInternal_ConfigurePin(state->chipSelectLine, STM32F7_Gpio_PortMode::GeneralPurposeOutput, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, STM32F7_Gpio_AlternateFunction::AF0);
 
-        STM32F7_GpioInternal_WritePin(state->chipSelectLine, !state->chipSelectActiveState);
+            STM32F7_GpioInternal_WritePin(state->chipSelectLine, !state->chipSelectActiveState);
+        }
+        else {
+            return TinyCLR_Result::SharingViolation;
+        }
     }
 
     return TinyCLR_Result::Success;
@@ -526,7 +535,7 @@ TinyCLR_Result STM32F7_Spi_Release(const TinyCLR_Spi_Controller* self) {
         STM32F7_GpioInternal_ClosePin(miso.number);
         STM32F7_GpioInternal_ClosePin(mosi.number);
 
-        if (state->chipSelectLine != PIN_NONE) {
+        if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
             STM32F7_GpioInternal_ClosePin(state->chipSelectLine);
 
             state->chipSelectLine = PIN_NONE;
