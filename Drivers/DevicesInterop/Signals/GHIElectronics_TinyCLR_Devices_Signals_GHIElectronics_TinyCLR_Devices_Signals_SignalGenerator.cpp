@@ -42,7 +42,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
 
         gpio->Write(gpio, pin, next);
 
-        time->Wait(time, time->ConvertSystemTimeToNativeTime(time, arr[i].b));
+        time->Wait(time, time->ConvertSystemTimeToNativeTime(time, arr[i].b)); //Since TimeSpan and DateTime are stored inline, not as a proper object
     }
 
     gpio->Write(gpio, pin, idleState);
