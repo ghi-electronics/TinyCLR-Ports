@@ -237,8 +237,7 @@ bool AT91_Uart_CanPostEvent(int8_t controllerIndex) {
     auto state = reinterpret_cast<UartState*>(&uartStates[controllerIndex]);
     bool canPost = (AT91_Time_GetCurrentProcessorTime() - state->lastEventTime) > USART_EVENT_POST_DEBOUNCE_TICKS;
 
-    if (canPost) // only update new time if system accepts to post event!
-        state->lastEventTime = AT91_Time_GetCurrentProcessorTime();
+    state->lastEventTime = AT91_Time_GetCurrentProcessorTime();
 
     return canPost;
 }
