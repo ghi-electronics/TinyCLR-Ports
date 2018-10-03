@@ -737,16 +737,12 @@ bool LPC24_Uart_CanSend(int controllerIndex) {
 TinyCLR_Result LPC24_Uart_Flush(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->initializeCount && !LPC24_Interrupt_IsDisabled()) {
+        LPC24_Uart_TxBufferEmptyInterruptEnable(state->controllerIndex, true);
 
-    if (state->initializeCount == 0)
-        return TinyCLR_Result::NotAvailable;
-
-    // Make sute interrupt is enable
-    LPC24_Uart_TxBufferEmptyInterruptEnable(controllerIndex, true);
-
-    while (state->txBufferCount > 0) {
-        LPC24_Time_Delay(nullptr, 1);
+        while (state->txBufferCount > 0) {
+            LPC24_Time_Delay(nullptr, 1);
+        }
     }
 
     return TinyCLR_Result::Success;

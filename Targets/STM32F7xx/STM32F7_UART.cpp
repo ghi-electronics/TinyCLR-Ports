@@ -754,7 +754,9 @@ bool STM32F7_Uart_CanSend(int controllerIndex) {
 TinyCLR_Result STM32F7_Uart_Flush(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    if (state->initializeCount) {
+    if (state->initializeCount && !STM32F7_Interrupt_IsDisabled()) {
+        STM32F7_Uart_TxBufferEmptyInterruptEnable(state->controllerIndex, true);
+
         while (state->txBufferCount > 0) {
             STM32F7_Time_Delay(nullptr, 1);
         }
