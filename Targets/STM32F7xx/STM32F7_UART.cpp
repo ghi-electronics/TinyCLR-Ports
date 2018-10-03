@@ -344,7 +344,7 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
     if (state->handshaking && (sr & USART_ISR_CTSIF)) {
         auto ctsActive = (sr & USART_ISR_CTS) ? true : false;
 
-        // Clear CTS interrupt
+        // STM32F7 write 1 to clear CTS interrupt
         state->portReg->ICR |= USART_ISR_CTSIF;
 
         if (canPostEvent && state->cleartosendEventHandler != nullptr)
@@ -520,7 +520,7 @@ TinyCLR_Result STM32F7_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
 
     switch (handshaking) {
     case TinyCLR_Uart_Handshake::RequestToSend:
-        ctrl_cr3 = USART_CR3_CTSE | USART_CR3_RTSE;
+        ctrl_cr3 = USART_CR3_CTSE | USART_CR3_RTSE | USART_CR3_CTSIE;
 
         state->handshaking = true;
         break;
