@@ -552,16 +552,18 @@ void LPC17_UART_IntHandler(int controllerIndex) {
     LPC17_Uart_TransmitData(controllerIndex, LSR_Value, IIR_Value);
 
     if (state->handshaking) {
-        volatile bool dump = USARTC.UART_MSR; // Clear cts bit
+        volatile uint32_t msr = USARTC.UART_MSR; // clear cts interrupt
 
-        bool ctsActive;
+        if (msr & 0x1) {  // detect cts changed bit
+            bool ctsActive;
 
-        LPC17_Uart_GetClearToSendState(state->controller, ctsActive);
+            LPC17_Uart_GetClearToSendState(state->controller, ctsActive);
 
-        auto canPostEvent = LPC17_Uart_CanPostEvent(controllerIndex);
+            auto canPostEvent = LPC17_Uart_CanPostEvent(controllerIndex);
 
-        if (canPostEvent && state->cleartosendEventHandler != nullptr)
-            state->cleartosendEventHandler(state->controller, ctsActive, LPC17_Time_GetCurrentProcessorTime());
+            if (canPostEvent && state->cleartosendEventHandler != nullptr)
+                state->cleartosendEventHandler(state->controller, ctsActive, LPC17_Time_GetCurrentProcessorTime());
+        }
     }
 }
 //--//
