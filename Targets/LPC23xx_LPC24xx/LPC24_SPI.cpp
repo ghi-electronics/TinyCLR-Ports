@@ -351,7 +351,9 @@ void LPC24_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
 bool LPC24_Spi_Transaction_Start(int32_t controllerIndex) {
     auto state = &spiStates[controllerIndex];
 
-    LPC24_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::Low : TinyCLR_Gpio_PinValue::High);
+    if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
+        LPC24_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::Low : TinyCLR_Gpio_PinValue::High);
+    }
 
     if (state->chipSelectSetupTime > 0) {
         auto currentTicks = LPC24_Time_GetCurrentProcessorTime();
@@ -377,7 +379,9 @@ bool LPC24_Spi_Transaction_Stop(int32_t controllerIndex) {
         LPC24_Time_Delay(nullptr, ((1000000 / (state->clockFrequency / 1000)) / 1000));
     }
 
-    LPC24_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+    if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
+        LPC24_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+    }
 
     return true;
 }
@@ -704,7 +708,7 @@ TinyCLR_Result LPC24_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, c
     SPI.SSPxCR0 &= ~(0xFF << 8);
     SPI.SSPxCR0 |= (SCR << 8);
 
-    if (state->chipSelectLine != PIN_NONE) {
+    if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
         if (LPC24_Gpio_OpenPin(state->chipSelectLine)) {
             LPC24_Gpio_EnableOutputPin(state->chipSelectLine, !state->chipSelectActiveState);
         }
@@ -795,7 +799,7 @@ TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Controller* self) {
         LPC24_Gpio_ClosePin(misoPin);
         LPC24_Gpio_ClosePin(mosiPin);
 
-        if (state->chipSelectLine != PIN_NONE) {
+        if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
             LPC24_Gpio_ClosePin(state->chipSelectLine);
 
             state->chipSelectLine = PIN_NONE;

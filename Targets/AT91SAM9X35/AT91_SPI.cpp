@@ -106,7 +106,9 @@ void AT91_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
 bool AT91_Spi_Transaction_Start(int32_t controllerIndex) {
     auto state = &spiStates[controllerIndex];
 
-    AT91_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::Low : TinyCLR_Gpio_PinValue::High);
+    if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
+        AT91_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::Low : TinyCLR_Gpio_PinValue::High);
+    }
 
     if (state->chipSelectSetupTime > 0) {
         auto currentTicks = AT91_Time_GetCurrentProcessorTime();
@@ -131,8 +133,9 @@ bool AT91_Spi_Transaction_Stop(int32_t controllerIndex) {
     else {
         AT91_Time_Delay(nullptr, ((1000000 / (state->clockFrequency / 1000)) / 1000));
     }
-
-    AT91_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+    if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
+        AT91_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+    }
 
     return true;
 }
@@ -379,7 +382,7 @@ TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, co
 
     spi.SPI_CR |= AT91_SPI::SPI_CR_ENABLE_SPI;
 
-    if (state->chipSelectLine != PIN_NONE) {
+    if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
         if (AT91_Gpio_OpenPin(state->chipSelectLine)) {
             AT91_Gpio_EnableOutputPin(state->chipSelectLine, !state->chipSelectActiveState);
         }
@@ -482,7 +485,7 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Controller* self) {
         AT91_Gpio_ClosePin(misoPin);
         AT91_Gpio_ClosePin(mosiPin);
 
-        if (state->chipSelectLine != PIN_NONE) {
+        if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
             // Release the pin, set pin un-reserved
             AT91_Gpio_ClosePin(state->chipSelectLine);
 
