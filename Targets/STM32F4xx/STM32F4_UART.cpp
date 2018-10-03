@@ -413,7 +413,7 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->TxBuffer = nullptr;
         state->RxBuffer = nullptr;
 
-        if (STM32F4_Uart_SetWriteBufferSize(self, uartTxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success || STM32F4_Uart_SetReadBufferSize(self, uartRxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
+        if (STM32F4_Uart_SetWriteBufferSize(self, uartTxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
             return TinyCLR_Result::OutOfMemory;
 
         if (STM32F4_Uart_SetReadBufferSize(self, uartRxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
