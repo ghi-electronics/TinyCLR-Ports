@@ -31,7 +31,6 @@ static const STM32F7_Gpio_Pin spiMisoPins[] = STM32F7_SPI_MISO_PINS;
 static const STM32F7_Gpio_Pin spiMosiPins[] = STM32F7_SPI_MOSI_PINS;
 
 static ptr_SPI_TypeDef spiPortRegs[TOTAL_SPI_CONTROLLERS];
-static ptr_SPI_TypeDef spiPortRegs[TOTAL_SPI_CONTROLLERS];
 
 struct SpiState {
     int32_t controllerIndex;
