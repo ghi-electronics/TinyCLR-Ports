@@ -395,21 +395,25 @@ void AT91_Uart_InterruptHandler(void *param) {
         AT91_Uart_ReceiveData(controllerIndex, sr);
     }
 
-    if (sr & AT91_USART::US_TXRDY) {
-        AT91_Uart_TransmitData(controllerIndex);
-    }
-
     auto state = &uartStates[controllerIndex];
 
-    if (state->handshaking && (sr & AT91_USART::US_CTSIC)) {
-        bool ctsActive;
+    if (state->handshaking) {
+        bool ctsActive = ((sr & AT91_USART::US_CTS) > 0) ? false : true;
 
-        AT91_Uart_GetClearToSendState(state->controller, ctsActive);
+        if (sr & AT91_USART::US_CTSIC) {
+            auto canPostEvent = AT91_Uart_CanPostEvent(controllerIndex);
 
-        auto canPostEvent = AT91_Uart_CanPostEvent(controllerIndex);
+            if (canPostEvent && state->cleartosendEventHandler != nullptr)
+                state->cleartosendEventHandler(state->controller, ctsActive, AT91_Time_GetCurrentProcessorTime());
+        }
 
-        if (canPostEvent && state->cleartosendEventHandler != nullptr)
-            state->cleartosendEventHandler(state->controller, ctsActive, AT91_Time_GetCurrentProcessorTime());
+        if (!ctsActive) {
+            return;
+        }
+    }
+
+    if (sr & AT91_USART::US_TXRDY) {
+        AT91_Uart_TransmitData(controllerIndex);
     }
 
 }
