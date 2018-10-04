@@ -395,21 +395,25 @@ void AT91_Uart_InterruptHandler(void *param) {
         AT91_Uart_ReceiveData(controllerIndex, sr);
     }
 
-    if (sr & AT91_USART::US_TXRDY) {
-        AT91_Uart_TransmitData(controllerIndex);
-    }
-
     auto state = &uartStates[controllerIndex];
 
-    if (state->handshaking && (sr & AT91_USART::US_CTSIC)) {
-        bool ctsActive;
+    if (state->handshaking) {
+        bool ctsActive = ((sr & AT91_USART::US_CTS) > 0) ? false : true;
 
-        AT91_Uart_GetClearToSendState(state->controller, ctsActive);
+        if (sr & AT91_USART::US_CTSIC) {
+            auto canPostEvent = AT91_Uart_CanPostEvent(controllerIndex);
 
-        auto canPostEvent = AT91_Uart_CanPostEvent(controllerIndex);
+            if (canPostEvent && state->cleartosendEventHandler != nullptr)
+                state->cleartosendEventHandler(state->controller, ctsActive, AT91_Time_GetCurrentProcessorTime());
+        }
 
-        if (canPostEvent && state->cleartosendEventHandler != nullptr)
-            state->cleartosendEventHandler(state->controller, ctsActive, AT91_Time_GetCurrentProcessorTime());
+        if (!ctsActive) {
+            return;
+        }
+    }
+
+    if (sr & AT91_USART::US_TXRDY) {
+        AT91_Uart_TransmitData(controllerIndex);
     }
 
 }
@@ -525,9 +529,6 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self, 
     state->controllerIndex = controllerIndex;
     AT91_InterruptInternal_Activate(uartId, (uint32_t*)&AT91_Uart_InterruptHandler, (void*)&state->controllerIndex);
 
-    if (AT91_Uart_PinConfiguration(controllerIndex, true) == TinyCLR_Result::NotSupported)
-        return TinyCLR_Result::NotSupported;
-
     // Enable Transmitter
     uint32_t USMR = (AT91_USART::US_USMODE_NORMAL);
 
@@ -586,8 +587,8 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self, 
 
     switch (handshaking) {
     case TinyCLR_Uart_Handshake::RequestToSend:
-        usart.US_IER = AT91_USART::US_CTSIC;
-
+        usart.US_IER = AT91_USART::US_CTSIC; // Enable cts interrupt
+        usart.US_CR = AT91_USART::US_RTSEN; // Write rts to 0
         state->handshaking = true;
         break;
 
@@ -601,7 +602,7 @@ TinyCLR_Result AT91_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self, 
     usart.US_CR = AT91_USART::US_RXEN;
     usart.US_CR = AT91_USART::US_TXEN;
 
-    return TinyCLR_Result::Success;
+    return AT91_Uart_PinConfiguration(controllerIndex, true);
 }
 
 TinyCLR_Result AT91_Uart_Release(const TinyCLR_Uart_Controller* self) {
@@ -828,7 +829,7 @@ TinyCLR_Result AT91_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Controller
     if (state->handshaking) {
         auto controllerIndex = state->controllerIndex;
 
-        // Reading the pin state to protect values from register for inteterupt which is higher priority (some bits are clear once read)
+        // Reading the pin state to protect values from register for interrupt which is higher priority (some bits are clear once read)
         TinyCLR_Gpio_PinValue pinState;
         AT91_Gpio_Read(nullptr, uartRtsPins[controllerIndex].number, pinState);
 
