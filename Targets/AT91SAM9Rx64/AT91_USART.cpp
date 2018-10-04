@@ -271,19 +271,20 @@ TinyCLR_Result AT91_Uart_PinConfiguration(int controllerIndex, bool enable) {
             if (ctsPin == PIN_NONE || rtsPin == PIN_NONE)
                 return TinyCLR_Result::NotSupported;
 
+            if (!AT91_Gpio_OpenPin(ctsPin) || !AT91_Gpio_OpenPin(rtsPin))
+                return TinyCLR_Result::SharingViolation;
+
             AT91_Gpio_ConfigurePin(ctsPin, AT91_Gpio_Direction::Input, ctsPinMode, AT91_Gpio_ResistorMode::Inactive);
             AT91_Gpio_ConfigurePin(rtsPin, AT91_Gpio_Direction::Input, rtsPinMode, AT91_Gpio_ResistorMode::Inactive);
         }
     }
     else {
-        // Connect pin to UART
-        AT91_Gpio_ConfigurePin(txPin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::Inactive);
-        // Connect pin to UART
-        AT91_Gpio_ConfigurePin(rxPin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::Inactive);
+        AT91_Gpio_ClosePin(txPin);
+        AT91_Gpio_ClosePin(rxPin);
 
         if (state->handshaking) {
-            AT91_Gpio_ConfigurePin(ctsPin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::Inactive);
-            AT91_Gpio_ConfigurePin(rtsPin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::Inactive);
+            AT91_Gpio_ClosePin(ctsPin);
+            AT91_Gpio_ClosePin(rtsPin);
         }
     }
 

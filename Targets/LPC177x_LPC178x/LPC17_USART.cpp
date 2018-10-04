@@ -381,7 +381,7 @@ bool LPC17_Uart_CanPostEvent(int8_t controllerIndex) {
     return canPost;
 }
 
-void LPC17_Uart_PinConfiguration(int controllerIndex, bool enable) {
+TinyCLR_Result LPC17_Uart_PinConfiguration(int controllerIndex, bool enable) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     auto state = &uartStates[controllerIndex];
@@ -407,8 +407,11 @@ void LPC17_Uart_PinConfiguration(int controllerIndex, bool enable) {
         LPC17_Uart_RxBufferFullInterruptEnable(controllerIndex, true);
 
         if (state->handshaking) {
+            if (ctsPin == PIN_NONE || rtsPin == PIN_NONE)
+                return TinyCLR_Result::NotSupported;
+
             if (!LPC17_Gpio_OpenPin(ctsPin) || !LPC17_Gpio_OpenPin(rtsPin))
-                return;
+                return TinyCLR_Result::SharingViolation;
 
             LPC17_Gpio_ConfigurePin(ctsPin, LPC17_Gpio_Direction::Input, ctsPinMode, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
             LPC17_Gpio_ConfigurePin(rtsPin, LPC17_Gpio_Direction::Input, rtsPinMode, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
@@ -429,6 +432,8 @@ void LPC17_Uart_PinConfiguration(int controllerIndex, bool enable) {
             LPC17_Gpio_ClosePin(rtsPin);
         }
     }
+
+    return TinyCLR_Result::Success;
 }
 
 void LPC17_Uart_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error) {

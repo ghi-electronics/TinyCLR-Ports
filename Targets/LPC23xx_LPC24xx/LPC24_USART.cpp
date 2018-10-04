@@ -211,7 +211,7 @@ bool LPC24_Uart_CanPostEvent(int8_t controllerIndex) {
     return canPost;
 }
 
-void LPC24_Uart_PinConfiguration(int controllerIndex, bool enable) {
+TinyCLR_Result LPC24_Uart_PinConfiguration(int controllerIndex, bool enable) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     auto state = &uartStates[controllerIndex];
@@ -237,8 +237,12 @@ void LPC24_Uart_PinConfiguration(int controllerIndex, bool enable) {
         LPC24_Uart_RxBufferFullInterruptEnable(controllerIndex, true);
 
         if (state->handshaking) {
+            if (ctsPin == PIN_NONE || rtsPin == PIN_NONE)
+                return TinyCLR_Result::NotSupported;
+
             if (!LPC24_Gpio_OpenPin(ctsPin) || !LPC24_Gpio_OpenPin(rtsPin))
-                return;
+                 return TinyCLR_Result::SharingViolation;
+
             LPC24_Gpio_ConfigurePin(ctsPin, LPC24_Gpio_Direction::Input, ctsPinMode, LPC24_Gpio_PinMode::Inactive);
             LPC24_Gpio_ConfigurePin(rtsPin, LPC24_Gpio_Direction::Input, rtsPinMode, LPC24_Gpio_PinMode::Inactive);
         }
@@ -259,6 +263,8 @@ void LPC24_Uart_PinConfiguration(int controllerIndex, bool enable) {
             LPC24_Gpio_ClosePin(rtsPin);
         }
     }
+
+    return TinyCLR_Result::Success;
 }
 
 void LPC24_Uart_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error) {
