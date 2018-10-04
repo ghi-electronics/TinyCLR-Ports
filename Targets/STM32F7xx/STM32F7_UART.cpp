@@ -335,13 +335,13 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
     }
 
     if (state->handshaking && (sr & USART_ISR_CTSIF)) {
-        auto ctsActive = (sr & USART_ISR_CTS) ? true : false;
+        auto ctsState = (sr & USART_ISR_CTS) ? true : false;
 
         // STM32F7 write 1 to clear CTS interrupt
         state->portReg->ICR |= USART_ISR_CTSIF;
 
         if (canPostEvent && state->cleartosendEventHandler != nullptr)
-            state->cleartosendEventHandler(state->controller, ctsActive, STM32F7_Time_GetCurrentProcessorTime());
+            state->cleartosendEventHandler(state->controller, ctsState, STM32F7_Time_GetCurrentProcessorTime());
     }
 }
 

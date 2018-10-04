@@ -555,14 +555,14 @@ void LPC17_UART_IntHandler(int controllerIndex) {
         volatile uint32_t msr = USARTC.UART_MSR; // clear cts interrupt
 
         if (msr & 0x1) {  // detect cts changed bit
-            bool ctsActive;
+            bool ctsState;
 
-            LPC17_Uart_GetClearToSendState(state->controller, ctsActive);
+            LPC17_Uart_GetClearToSendState(state->controller, ctsState);
 
             auto canPostEvent = LPC17_Uart_CanPostEvent(controllerIndex);
 
             if (canPostEvent && state->cleartosendEventHandler != nullptr)
-                state->cleartosendEventHandler(state->controller, ctsActive, LPC17_Time_GetCurrentProcessorTime());
+                state->cleartosendEventHandler(state->controller, ctsState, LPC17_Time_GetCurrentProcessorTime());
         }
     }
 }

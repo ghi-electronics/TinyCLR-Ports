@@ -398,16 +398,16 @@ void AT91_Uart_InterruptHandler(void *param) {
     auto state = &uartStates[controllerIndex];
 
     if (state->handshaking) {
-        bool ctsActive = ((sr & AT91_USART::US_CTS) > 0) ? false : true;
+        bool ctsState = ((sr & AT91_USART::US_CTS) > 0) ? false : true;
 
         if (sr & AT91_USART::US_CTSIC) {
             auto canPostEvent = AT91_Uart_CanPostEvent(controllerIndex);
 
             if (canPostEvent && state->cleartosendEventHandler != nullptr)
-                state->cleartosendEventHandler(state->controller, ctsActive, AT91_Time_GetCurrentProcessorTime());
+                state->cleartosendEventHandler(state->controller, ctsState, AT91_Time_GetCurrentProcessorTime());
         }
 
-        if (!ctsActive) {
+        if (!ctsState) {
             return;
         }
     }
