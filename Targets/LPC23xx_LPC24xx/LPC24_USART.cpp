@@ -143,9 +143,7 @@ void LPC24_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
 size_t LPC24_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
-
-    return state->rxBufferSize == 0 ? uartRxDefaultBuffersSize[controllerIndex] : state->rxBufferSize;
+    return state->rxBufferSize;
 }
 
 TinyCLR_Result LPC24_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
@@ -156,19 +154,19 @@ TinyCLR_Result LPC24_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self,
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
 
-    if (state->rxBufferSize) {
+    if (state->RxBuffer) {
         memoryProvider->Free(memoryProvider, state->RxBuffer);
     }
 
-    state->rxBufferSize = size;
+    state->rxBufferSize = 0;
 
     state->RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
 
     if (state->RxBuffer == nullptr) {
-        state->rxBufferSize = 0;
-
         return TinyCLR_Result::OutOfMemory;
     }
+
+    state->rxBufferSize = size;
 
     return TinyCLR_Result::Success;
 }
@@ -176,9 +174,7 @@ TinyCLR_Result LPC24_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self,
 size_t LPC24_Uart_GetWriteBufferSize(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
-
-    return state->txBufferSize == 0 ? uartTxDefaultBuffersSize[controllerIndex] : state->txBufferSize;
+    return state->txBufferSize;
 }
 
 TinyCLR_Result LPC24_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* self, size_t size) {
@@ -189,34 +185,33 @@ TinyCLR_Result LPC24_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* self
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
 
-    if (state->txBufferSize) {
+    if (state->TxBuffer) {
         memoryProvider->Free(memoryProvider, state->TxBuffer);
     }
 
-    state->txBufferSize = size;
+    state->txBufferSize = 0;
 
     state->TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
 
     if (state->TxBuffer == nullptr) {
-        state->txBufferSize = 0;
-
         return TinyCLR_Result::OutOfMemory;
     }
+
+    state->txBufferSize = size;
 
     return TinyCLR_Result::Success;
 }
 
 bool LPC24_Uart_CanPostEvent(int8_t controllerIndex) {
     auto state = reinterpret_cast<UartState*>(&uartStates[controllerIndex]);
-    bool canPost = (LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr)) - state->lastEventTime) > USART_EVENT_POST_DEBOUNCE_TICKS;
+    bool canPost = (LPC24_Time_GetCurrentProcessorTime() - state->lastEventTime) > USART_EVENT_POST_DEBOUNCE_TICKS;
 
-    if (canPost) // only update new time if system accepts to post event!
-        state->lastEventTime = LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr));
+    state->lastEventTime = LPC24_Time_GetCurrentProcessorTime();
 
     return canPost;
 }
 
-void LPC24_Uart_PinConfiguration(int controllerIndex, bool enable) {
+TinyCLR_Result LPC24_Uart_PinConfiguration(int controllerIndex, bool enable) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     auto state = &uartStates[controllerIndex];
@@ -242,8 +237,12 @@ void LPC24_Uart_PinConfiguration(int controllerIndex, bool enable) {
         LPC24_Uart_RxBufferFullInterruptEnable(controllerIndex, true);
 
         if (state->handshaking) {
+            if (ctsPin == PIN_NONE || rtsPin == PIN_NONE)
+                return TinyCLR_Result::NotSupported;
+
             if (!LPC24_Gpio_OpenPin(ctsPin) || !LPC24_Gpio_OpenPin(rtsPin))
-                return;
+                 return TinyCLR_Result::SharingViolation;
+
             LPC24_Gpio_ConfigurePin(ctsPin, LPC24_Gpio_Direction::Input, ctsPinMode, LPC24_Gpio_PinMode::Inactive);
             LPC24_Gpio_ConfigurePin(rtsPin, LPC24_Gpio_Direction::Input, rtsPinMode, LPC24_Gpio_PinMode::Inactive);
         }
@@ -264,6 +263,8 @@ void LPC24_Uart_PinConfiguration(int controllerIndex, bool enable) {
             LPC24_Gpio_ClosePin(rtsPin);
         }
     }
+
+    return TinyCLR_Result::Success;
 }
 
 void LPC24_Uart_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error) {
@@ -388,16 +389,18 @@ void LPC24_Uart_InterruptHandler(void *param) {
     LPC24_Uart_TransmitData(controllerIndex, LSR_Value, IIR_Value);
 
     if (state->handshaking) {
-        volatile bool dump = USARTC.UART_MSR; // Clear cts bit
+        volatile uint32_t msr = USARTC.UART_MSR; // clear cts interrupt
 
-        bool ctsActive;
+        if (msr & 0x1) {  // detect cts changed bit
+            bool ctsState;
 
-        LPC24_Uart_GetClearToSendState(state->controller, ctsActive);
+            LPC24_Uart_GetClearToSendState(state->controller, ctsState);
 
-        auto canPostEvent = LPC24_Uart_CanPostEvent(controllerIndex);
+            auto canPostEvent = LPC24_Uart_CanPostEvent(controllerIndex);
 
-        if (canPostEvent && state->cleartosendEventHandler != nullptr)
-            state->cleartosendEventHandler(state->controller, ctsActive, LPC24_Time_GetCurrentProcessorTime());
+            if (canPostEvent && state->cleartosendEventHandler != nullptr)
+                state->cleartosendEventHandler(state->controller, ctsState, LPC24_Time_GetCurrentProcessorTime());
+        }
     }
 }
 
@@ -432,7 +435,16 @@ TinyCLR_Result LPC24_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->enable = false;
 
         state->lastEventRxBufferCount = 0;
-        state->lastEventTime = LPC24_Time_GetTimeForProcessorTicks(nullptr, LPC24_Time_GetCurrentProcessorTicks(nullptr));
+        state->lastEventTime = LPC24_Time_GetCurrentProcessorTime();
+
+        state->TxBuffer = nullptr;
+        state->RxBuffer = nullptr;
+
+        if (LPC24_Uart_SetWriteBufferSize(self, uartTxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
+            return TinyCLR_Result::OutOfMemory;
+
+        if (LPC24_Uart_SetReadBufferSize(self, uartRxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
+            return TinyCLR_Result::OutOfMemory;
 
         switch (controllerIndex) {
         case 0:
@@ -621,34 +633,7 @@ TinyCLR_Result LPC24_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* self,
         LPC24XX_USART::UART_FCR_RFR |
         LPC24XX_USART::UART_FCR_FME;
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
-
-    if (state->txBufferSize == 0) {
-        state->txBufferSize = uartTxDefaultBuffersSize[controllerIndex];
-
-        state->TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, state->txBufferSize);
-
-        if (state->TxBuffer == nullptr) {
-            state->txBufferSize = 0;
-
-            return TinyCLR_Result::OutOfMemory;
-        }
-    }
-
-    if (state->rxBufferSize == 0) {
-        state->rxBufferSize = uartRxDefaultBuffersSize[controllerIndex];
-
-        state->RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, state->rxBufferSize);
-
-        if (state->RxBuffer == nullptr) {
-            state->rxBufferSize = 0;
-
-            return TinyCLR_Result::OutOfMemory;
-        }
-    }
-
-
-    LPC24_InterruptInternal_Activate(LPC24XX_USART::getIntNo(controllerIndex), (uint32_t*)&LPC24_Uart_InterruptHandler, (void*)&state->controllerIndex);    
+    LPC24_InterruptInternal_Activate(LPC24XX_USART::getIntNo(controllerIndex), (uint32_t*)&LPC24_Uart_InterruptHandler, (void*)&state->controllerIndex);
 
     LPC24_Uart_PinConfiguration(controllerIndex, true);
 
@@ -712,17 +697,8 @@ TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Controller* self) {
         if (apiManager != nullptr) {
             auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-            if (state->txBufferSize != 0) {
-                memoryProvider->Free(memoryProvider, state->TxBuffer);
-
-                state->txBufferSize = 0;
-            }
-
-            if (state->rxBufferSize != 0) {
-                memoryProvider->Free(memoryProvider, state->RxBuffer);
-
-                state->rxBufferSize = 0;
-            }
+            memoryProvider->Free(memoryProvider, state->TxBuffer);
+            memoryProvider->Free(memoryProvider, state->RxBuffer);
         }
     }
 
@@ -768,16 +744,12 @@ bool LPC24_Uart_CanSend(int controllerIndex) {
 TinyCLR_Result LPC24_Uart_Flush(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    auto controllerIndex = state->controllerIndex;
+    if (state->initializeCount && !LPC24_Interrupt_IsDisabled()) {
+        LPC24_Uart_TxBufferEmptyInterruptEnable(state->controllerIndex, true);
 
-    if (state->initializeCount == 0)
-        return TinyCLR_Result::NotAvailable;
-
-    // Make sute interrupt is enable
-    LPC24_Uart_TxBufferEmptyInterruptEnable(controllerIndex, true);
-
-    while (state->txBufferCount > 0) {
-        LPC24_Time_Delay(nullptr, 1);
+        while (state->txBufferCount > 0) {
+            LPC24_Time_Delay(nullptr, 1);
+        }
     }
 
     return TinyCLR_Result::Success;
@@ -954,12 +926,10 @@ TinyCLR_Result LPC24_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self) 
 
 void LPC24_Uart_Reset() {
     for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
-        uartStates[i].txBufferSize = 0;
-        uartStates[i].rxBufferSize = 0;
+        uartStates[i].initializeCount = 0;
 
         LPC24_Uart_Release(&uartControllers[i]);
 
-        uartStates[i].initializeCount = 0;
         uartStates[i].tableInitialized = false;
     }
 }

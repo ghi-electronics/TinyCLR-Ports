@@ -248,8 +248,7 @@ bool STM32F4_Uart_CanPostEvent(int8_t controllerIndex) {
     auto state = reinterpret_cast<UartState*>(&uartStates[controllerIndex]);
     bool canPost = (STM32F4_Time_GetCurrentProcessorTime() - state->lastEventTime) > USART_EVENT_POST_DEBOUNCE_TICKS;
 
-    if (canPost) // only update new time if system accepts to post event!
-        state->lastEventTime = STM32F4_Time_GetCurrentProcessorTime();
+    state->lastEventTime = STM32F4_Time_GetCurrentProcessorTime();
 
     return canPost;
 }
@@ -330,15 +329,15 @@ void STM32F4_Uart_InterruptHandler(int8_t controllerIndex) {
     }
 
     if (state->handshaking && (sr & USART_SR_CTS)) {
-        bool ctsActive;
+        bool ctsState;
 
-        STM32F4_Uart_GetClearToSendState(state->controller, ctsActive);
+        // STM32F4 write 0 to clear CTS interrupt
+        (state->portReg->SR) &= ~USART_SR_CTS;
 
-        // Clear CTS interrupt
-        (state->portReg->SR) |= USART_SR_CTS;
+        STM32F4_Uart_GetClearToSendState(state->controller, ctsState);
 
         if (canPostEvent && state->cleartosendEventHandler != nullptr)
-            state->cleartosendEventHandler(state->controller, ctsActive, STM32F4_Time_GetCurrentProcessorTime());
+            state->cleartosendEventHandler(state->controller, ctsState, STM32F4_Time_GetCurrentProcessorTime());
     }
 }
 
@@ -413,7 +412,7 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->TxBuffer = nullptr;
         state->RxBuffer = nullptr;
 
-        if (STM32F4_Uart_SetWriteBufferSize(self, uartTxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success || STM32F4_Uart_SetReadBufferSize(self, uartRxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
+        if (STM32F4_Uart_SetWriteBufferSize(self, uartTxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
             return TinyCLR_Result::OutOfMemory;
 
         if (STM32F4_Uart_SetReadBufferSize(self, uartRxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
@@ -520,7 +519,7 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
 
     switch (handshaking) {
     case TinyCLR_Uart_Handshake::RequestToSend:
-        ctrl_cr3 = USART_CR3_CTSE | USART_CR3_RTSE;
+        ctrl_cr3 = USART_CR3_CTSE | USART_CR3_RTSE | USART_CR3_CTSIE;
 
         state->handshaking = true;
         break;
@@ -755,7 +754,9 @@ bool STM32F4_Uart_CanSend(int controllerIndex) {
 TinyCLR_Result STM32F4_Uart_Flush(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    if (state->initializeCount) {
+    if (state->initializeCount && !STM32F4_Interrupt_IsDisabled()) {
+        STM32F4_Uart_TxBufferEmptyInterruptEnable(state->controllerIndex, true);
+
         while (state->txBufferCount > 0) {
             STM32F4_Time_Delay(nullptr, 1);
         }
