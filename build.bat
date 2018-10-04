@@ -93,7 +93,7 @@ SET AdditionalIncludes=%AdditionalIncludes% -I"%ScriptRoot%\Devices\%DeviceName%
 SET AdditionalIncludes=%AdditionalIncludes% -I"%ScriptRoot%\Core"
 
 SET AdditionalDefines=%AdditionalDefines% -DGCC
-SET AdditionalCompilerArguments=-mstructure-size-boundary=8 -fno-exceptions -ffunction-sections -fdata-sections -fshort-wchar -funsigned-char -mlong-calls
+SET AdditionalCompilerArguments=-mstructure-size-boundary=8 -fno-exceptions -ffunction-sections -fdata-sections -fshort-wchar -mlong-calls
 
 IF "%BuildConfiguration%" == "debug" (
     SET AdditionalDefines=%AdditionalDefines% -DDEBUG -D_DEBUG
@@ -166,7 +166,7 @@ IF "%DoBuild%" == "1" (
         POPD
     )
 
-    "%GccDirectory%\bin\arm-none-eabi-g++.exe" -mcpu=%MCpu% -mlittle-endian -nostartfiles %FloatCompileArguments% -Xlinker %AdditionalCompilerArguments% -L "%GccLibrary%" -Wl,-static,--gc-sections,--no-wchar-size-warning,-Map="%OutputDirectory%\%DeviceName% Firmware.map" -specs="%GccLibrary%\nano.specs" -T"%ScriptRoot%\Devices\%DeviceName%\Scatterfile.gcc.ldf" "%OutputDirectory%\*.obj" "%CoreLibraryFile%" -o "%OutputDirectory%\%DeviceName% Firmware.axf"
+    "%GccDirectory%\bin\arm-none-eabi-g++.exe" -mcpu=%MCpu% -mlittle-endian -nostartfiles %FloatCompileArguments% -Xlinker %AdditionalCompilerArguments% -L "%GccLibrary%" -Wl,--gc-sections,--no-wchar-size-warning,-Map="%OutputDirectory%\%DeviceName% Firmware.map" -specs="%GccLibrary%\nano.specs" -T"%ScriptRoot%\Devices\%DeviceName%\Scatterfile.gcc.ldf" "%OutputDirectory%\*.obj" "%CoreLibraryFile%" -o "%OutputDirectory%\%DeviceName% Firmware.axf"
 
     "%GccDirectory%\bin\arm-none-eabi-objcopy.exe" -S -j ER_FLASH -j ER_RAM_RO -j ER_RAM_RW -O binary "%OutputDirectory%\%DeviceName% Firmware.axf" "%OutputDirectory%\%DeviceName% Firmware.bin"
     "%GccDirectory%\bin\arm-none-eabi-objcopy.exe" -S -R ER_DAT -R ER_CONFIG -O ihex "%OutputDirectory%\%DeviceName% Firmware.axf" "%OutputDirectory%\%DeviceName% Firmware.hex"
