@@ -243,7 +243,7 @@ TinyCLR_Result S25FL032_Flash_EraseBlock(uint32_t sector) {
 
     s25fl032FlashSpiProvider->Release(s25fl032FlashSpiProvider);
 
-    TinyCLR_Result::Success;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result S25FL032_Flash_Acquire(const TinyCLR_Spi_Controller* spiProvider, uint32_t chipSelectLine) {

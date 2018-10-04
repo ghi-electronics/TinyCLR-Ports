@@ -263,7 +263,7 @@ TinyCLR_Result AT45DB321D_Flash_Write(uint32_t address, size_t length, const uin
 
     g_AT45DB321D_Flash_SpiProvider->Release(g_AT45DB321D_Flash_SpiProvider);
 
-    TinyCLR_Result::Success;
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT45DB321D_Flash_IsBlockErased(uint32_t sector, bool &erased) {
@@ -332,8 +332,11 @@ TinyCLR_Result AT45DB321D_Flash_EraseBlock(uint32_t sector) {
     int32_t timeout;
 
     for (timeout = 0; timeout < AT45DB321D_FLASH_ACCESS_TIMEOUT; timeout++) {
-        if (AT45DB321D_Flash_GetStatus() & 0x80)
+        if (AT45DB321D_Flash_GetStatus() & 0x80) {
+            g_AT45DB321D_Flash_SpiProvider->Release(g_AT45DB321D_Flash_SpiProvider);
+
             return TinyCLR_Result::Success;
+        }
 
         g_AT45DB321D_Flash_TimeProvider->Wait(g_AT45DB321D_Flash_TimeProvider, g_AT45DB321D_Flash_TimeProvider->ConvertSystemTimeToNativeTime(g_AT45DB321D_Flash_TimeProvider, 1000));
     }
@@ -386,8 +389,11 @@ TinyCLR_Result AT45DB321D_Flash_Acquire(const TinyCLR_Spi_Controller* spiProvide
         return TinyCLR_Result::InvalidOperation;
 
     for (timeout = 0; timeout < AT45DB321D_FLASH_ACCESS_TIMEOUT; timeout++) {
-        if (AT45DB321D_Flash_GetStatus() & 0x80)
-            return TinyCLR_Result::Success;;
+        if (AT45DB321D_Flash_GetStatus() & 0x80) {
+            g_AT45DB321D_Flash_SpiProvider->Release(g_AT45DB321D_Flash_SpiProvider);
+
+            return TinyCLR_Result::Success;
+        }
 
         g_AT45DB321D_Flash_TimeProvider->Wait(g_AT45DB321D_Flash_TimeProvider, g_AT45DB321D_Flash_TimeProvider->ConvertSystemTimeToNativeTime(g_AT45DB321D_Flash_TimeProvider, 1000));
     }
