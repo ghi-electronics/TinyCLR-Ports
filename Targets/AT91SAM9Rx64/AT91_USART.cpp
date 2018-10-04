@@ -625,7 +625,6 @@ TinyCLR_Result AT91_Uart_Release(const TinyCLR_Uart_Controller* self) {
         state->rxBufferIn = 0;
         state->rxBufferOut = 0;
 
-        state->handshaking = false;
         state->enable = false;
 
         AT91_PMC &pmc = AT91::PMC();
@@ -644,6 +643,8 @@ TinyCLR_Result AT91_Uart_Release(const TinyCLR_Uart_Controller* self) {
             memoryProvider->Free(memoryProvider, state->TxBuffer);
             memoryProvider->Free(memoryProvider, state->RxBuffer);
         }
+
+        state->handshaking = false;
     }
 
     return TinyCLR_Result::Success;
