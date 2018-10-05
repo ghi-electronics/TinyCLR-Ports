@@ -32,17 +32,20 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
 
     uint64_t carrierTicks = 0;
 
-    if (generateCarrierFrequency && (carrierFrequency > 0)) {
-        carrierTicks = (1000000 / 2 / carrierFrequency) * 10;
-
-        // avoids dividing by 0 for little values
-        if (carrierTicks == 0) carrierTicks = 1;
-    }
-
     gpio->Write(gpio, pin, idleState);
 
     if (disableInterrupts)
         interrupt->Disable();
+
+    if (generateCarrierFrequency && (carrierFrequency > 0)) {
+        carrierTicks = (1000000 / 2 / carrierFrequency) * 10;
+
+        if (carrierTicks == 0) {
+            error = TinyCLR_Result::ArgumentInvalid;
+
+            goto release_and_return;
+        }
+    }
 
     for (auto i = 0; i < len; i++) {
         auto delayTicks = arr[i].b;
@@ -57,8 +60,8 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
             time->Wait(time, time->ConvertSystemTimeToNativeTime(time, delayTicks)); //Since TimeSpan and DateTime are stored inline, not as a proper object
         }
         else {
-
             auto count = (delayTicks / carrierTicks);
+
             for (auto ii = 0; ii < count; ii += 2) {
                 gpio->Write(gpio, pin, TinyCLR_Gpio_PinValue::High);
                 time->Wait(time, time->ConvertSystemTimeToNativeTime(time, carrierTicks));
