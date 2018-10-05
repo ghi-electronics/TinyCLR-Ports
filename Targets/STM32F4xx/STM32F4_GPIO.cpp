@@ -140,13 +140,13 @@ void STM32F4_Gpio_ISR(int num)  // 0 <= num <= 15
     auto expectedEdgeInterger = static_cast<uint32_t>(interruptState->edge);
     auto currentEdgeInterger = static_cast<uint32_t>(edge);
 
-    if (interruptState->handler && ((expectedEdgeInterger & currentEdgeInterger) || (expectedEdgeInterger == 0))) {        
+    if (interruptState->handler && ((expectedEdgeInterger & currentEdgeInterger) || (expectedEdgeInterger == 0))) {
         if ((STM32F4_Time_GetCurrentProcessorTime() - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {
             executeIsr = true;
         }
 
         interruptState->lastDebounceTicks = STM32F4_Time_GetCurrentProcessorTime();
-    
+
         if (executeIsr)
             interruptState->handler(interruptState->controller, interruptState->pin, edge, STM32F4_Time_GetCurrentProcessorTime());
     }
