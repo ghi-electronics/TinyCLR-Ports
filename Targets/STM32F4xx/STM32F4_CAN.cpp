@@ -1234,7 +1234,7 @@ TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Controller* self) {
         uint32_t pins[] = { canTxPins[controllerIndex].number, canRxPins[controllerIndex].number };
 
         if (!STM32F4_GpioInternal_OpenMultiPins(pins, SIZEOF_ARRAY(pins)))
-            return TinyCLR_Result::SharingViolation;        
+            return TinyCLR_Result::SharingViolation;
 
         // set pin as analog
         STM32F4_GpioInternal_ConfigurePin(canTxPins[controllerIndex].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, canTxPins[controllerIndex].alternateFunction);
