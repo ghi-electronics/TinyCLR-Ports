@@ -103,12 +103,6 @@
 #define STM32F4_SD_PINS {  /* DATA 0                 DATA 1                 DATA 2                  DATA 3                  CLK                      CMD*/\
                           { { PIN(C, 8), AF(12) }, { PIN(C, 9), AF(12) }, { PIN(C, 10), AF(12) }, { PIN(C, 11), AF(12) }, { PIN(C, 12), AF(12) },  { PIN(D, 2), AF(12) } }\
                         }
-#define STM32F4_SD_DATA0_PINS { { PIN(C, 8), AF(12) } }
-#define STM32F4_SD_DATA1_PINS { { PIN(C, 9), AF(12) } }
-#define STM32F4_SD_DATA2_PINS { { PIN(C, 10), AF(12) } }
-#define STM32F4_SD_DATA3_PINS { { PIN(C, 11), AF(12) } }
-#define STM32F4_SD_CLK_PINS { { PIN(C, 12), AF(12) } }
-#define STM32F4_SD_CMD_PINS { { PIN(D, 2), AF(12) } }
 
 #define INCLUDE_SIGNALS
 
