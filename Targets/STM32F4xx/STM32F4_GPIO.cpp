@@ -279,6 +279,25 @@ bool STM32F4_GpioInternal_ClosePin(int32_t pin) {
     return STM32F4_GpioInternal_ConfigurePin(pin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
 }
 
+bool STM32F4_GpioInternal_OpenMultiPins(uint32_t* pins, size_t count) {
+    auto i = 0;
+
+    for (; i < count; i++) {
+        if (!STM32F4_GpioInternal_OpenPin(pins[i])) {
+            break;
+        }
+    }
+
+    if (i < count) {
+        for (auto ii = 0; ii < i; ii++) {
+            STM32F4_GpioInternal_ClosePin(pins[ii]);
+        }
+        return false;
+    }
+
+    return true;
+}
+
 bool STM32F4_GpioInternal_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode portMode, STM32F4_Gpio_OutputType outputType, STM32F4_Gpio_OutputSpeed outputSpeed, STM32F4_Gpio_PullDirection pullDirection, STM32F4_Gpio_AlternateFunction alternateFunction) {
     if (pin >= TOTAL_GPIO_PINS || pin == PIN_NONE)
         return false;
