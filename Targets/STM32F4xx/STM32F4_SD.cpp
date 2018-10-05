@@ -2616,6 +2616,13 @@ struct SdCardState {
     uint16_t initializeCount;
 };
 
+#define SDCARD_DATA0_PIN 0
+#define SDCARD_DATA1_PIN 1
+#define SDCARD_DATA2_PIN 2
+#define SDCARD_DATA3_PIN 3
+#define SDCARD_CLK_PIN 4
+#define SDCARD_CMD_PIN 5
+
 static const STM32F4_Gpio_Pin sdCardPins[][6] = STM32F4_SD_PINS;
 
 static SdCardState sdCardStates[TOTAL_SDCARD_CONTROLLERS];
@@ -2664,7 +2671,7 @@ TinyCLR_Result STM32F4_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
             return TinyCLR_Result::SharingViolation;
 
         for (auto i = 0; i < 6; i++) {
-            STM32F4_GpioInternal_ConfigurePin(sdCardPins[controllerIndex][i].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, sdCardPins[controllerIndex][i].number != sdCardPins[controllerIndex][4].number ? STM32F4_Gpio_PullDirection::PullUp : STM32F4_Gpio_PullDirection::None, sdCardPins[controllerIndex][i].alternateFunction);
+            STM32F4_GpioInternal_ConfigurePin(sdCardPins[controllerIndex][i].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, sdCardPins[controllerIndex][i].number != sdCardPins[controllerIndex][SDCARD_CLK_PIN].number ? STM32F4_Gpio_PullDirection::PullUp : STM32F4_Gpio_PullDirection::None, sdCardPins[controllerIndex][i].alternateFunction);
         }
 
         RCC->APB2ENR |= (1 << 11);
