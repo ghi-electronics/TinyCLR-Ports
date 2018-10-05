@@ -175,7 +175,6 @@ TinyCLR_Result STM32F4_Gpio_SetDebounceTimeout(const TinyCLR_Gpio_Controller* se
 TinyCLR_Result STM32F4_Gpio_SetPinChangedHandler(const TinyCLR_Gpio_Controller* self, uint32_t pin, TinyCLR_Gpio_PinChangeEdge edge, TinyCLR_Gpio_PinChangedHandler handler);
 uint32_t STM32F4_Gpio_GetPinCount(const TinyCLR_Gpio_Controller* self);
 void STM32F4_Gpio_Reset();
-bool STM32F4_GpioInternal_OpenMultiPins(uint32_t* pins, size_t count);
 
 ////////////////////////////////////////////////////////////////////////////////
 //I2C
@@ -403,6 +402,7 @@ struct STM32F4_Gpio_PinConfiguration {
 #define NO_INIT() INIT(Input, PushPull, VeryHigh, false, PullDown, AF0, false)
 
 bool STM32F4_GpioInternal_OpenPin(int32_t pin);
+bool STM32F4_GpioInternal_OpenMultiPins(const STM32F4_Gpio_Pin* pins, size_t count);
 bool STM32F4_GpioInternal_ClosePin(int32_t pin);
 bool STM32F4_GpioInternal_ReadPin(int32_t pin);
 void STM32F4_GpioInternal_WritePin(int32_t pin, bool value);
