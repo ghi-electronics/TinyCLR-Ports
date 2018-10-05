@@ -109,9 +109,10 @@
 
 #define INCLUDE_SPI
 #define TOTAL_SPI_CONTROLLERS 2
-#define STM32F4_SPI_SCLK_PINS { { PIN(B, 3), AF(5) }, { PIN(B, 10), AF(5) } }
-#define STM32F4_SPI_MISO_PINS { { PIN(B, 4), AF(5) }, { PIN(C,  2), AF(5) } }
-#define STM32F4_SPI_MOSI_PINS { { PIN(B, 5), AF(5) }, { PIN(C,  3), AF(5) } }
+#define STM32F4_SPI_PINS {/* MOSI                   MISO                  CLOCK*/\
+                          { { PIN(B, 5), AF(5) },  { PIN(B, 4), AF(5) }, { PIN(B, 3) , AF(5) } },\
+                          { { PIN(C, 3), AF(5) },  { PIN(C, 2), AF(5) }, { PIN(B, 10), AF(5) } }\
+                         }
 
 #define INCLUDE_STORAGE
 
