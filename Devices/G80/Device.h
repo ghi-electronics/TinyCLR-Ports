@@ -120,10 +120,14 @@
 #define TOTAL_UART_CONTROLLERS 4
 #define STM32F4_UART_DEFAULT_TX_BUFFER_SIZE  { 256, 256, 256, 256 }
 #define STM32F4_UART_DEFAULT_RX_BUFFER_SIZE  { 512, 512, 512, 512 }
-#define STM32F4_UART_TX_PINS  { { PIN(A,  9), AF(7)   }, { PIN(D, 5), AF(7) }, { PIN(D,  8), AF(7) }, { PIN(A, 0), AF(8)   } }
-#define STM32F4_UART_RX_PINS  { { PIN(A, 10), AF(7)   }, { PIN(D, 6), AF(7) }, { PIN(D,  9), AF(7) }, { PIN(A, 1), AF(8)   } }
-#define STM32F4_UART_CTS_PINS { { PIN_NONE  , AF_NONE }, { PIN(D, 3), AF(7) }, { PIN(D, 11), AF(7) }, { PIN_NONE , AF_NONE } }
-#define STM32F4_UART_RTS_PINS { { PIN_NONE  , AF_NONE }, { PIN(D, 4), AF(7) }, { PIN(D, 12), AF(7) }, { PIN_NONE , AF_NONE } }
+
+#define STM32F4_UART_PINS { /* TX                       RX                      RTS                      CTS*/\
+                            { { PIN(A,  9), AF(7)   }, { PIN(A, 10), AF(7)   }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, },\
+                            { { PIN(D,  5), AF(7)   }, { PIN(D,  6), AF(7)   }, { PIN(D,  4), AF(7)   }, { PIN(D,  3), AF(7)   }, },\
+                            { { PIN(D,  8), AF(7)   }, { PIN(D,  9), AF(7)   }, { PIN(D, 12), AF(7)   }, { PIN(D, 11), AF(7)   }, },\
+                            { { PIN(A,  0), AF(8)   }, { PIN(A,  1), AF(8)   }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, },\
+                          }
+
 
 #define INCLUDE_USBCLIENT
 #define STM32F4_TOTAL_USB_CONTROLLERS 1
