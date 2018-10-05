@@ -19,8 +19,7 @@
 void STM32F4_I2c_StartTransaction(int32_t controllerIndex);
 void STM32F4_I2c_StopTransaction(int32_t controllerIndex);
 
-static const STM32F4_Gpio_Pin i2cSclPins[] = STM32F4_I2C_SCL_PINS;
-static const STM32F4_Gpio_Pin i2cSdaPins[] = STM32F4_I2C_SDA_PINS;
+static const STM32F4_Gpio_Pin i2cPins[][2] = STM32F4_I2C_PINS;
 
 static I2C_TypeDef* i2cPorts[TOTAL_I2C_CONTROLLERS];
 
@@ -94,13 +93,13 @@ void STM32F4_I2c_AddApi(const TinyCLR_Api_Manager* apiManager) {
     }
 
 #if TOTAL_I2C_CONTROLLERS > 0
-        i2cPorts[0] = I2C1;
+    i2cPorts[0] = I2C1;
 
 #if TOTAL_I2C_CONTROLLERS > 1
-        i2cPorts[1] = I2C2;
+    i2cPorts[1] = I2C2;
 
 #if TOTAL_I2C_CONTROLLERS > 2
-        i2cPorts[2] = I2C3;
+    i2cPorts[2] = I2C3;
 #endif
 #endif
 #endif
@@ -373,14 +372,11 @@ TinyCLR_Result STM32F4_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
 
         auto& I2Cx = i2cPorts[controllerIndex];
 
-        auto& scl = i2cSclPins[controllerIndex];
-        auto& sda = i2cSdaPins[controllerIndex];
-
-        if (!STM32F4_GpioInternal_OpenPin(sda.number) || !STM32F4_GpioInternal_OpenPin(scl.number))
+        if (!STM32F4_GpioInternal_OpenMultiPins(i2cPins[controllerIndex], 2))
             return TinyCLR_Result::SharingViolation;
 
-        STM32F4_GpioInternal_ConfigurePin(scl.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::OpenDrain, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::PullUp, scl.alternateFunction);
-        STM32F4_GpioInternal_ConfigurePin(sda.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::OpenDrain, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::PullUp, sda.alternateFunction);
+        STM32F4_GpioInternal_ConfigurePin(i2cPins[controllerIndex][1].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::OpenDrain, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::PullUp, i2cPins[controllerIndex][1].alternateFunction);
+        STM32F4_GpioInternal_ConfigurePin(i2cPins[controllerIndex][0].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::OpenDrain, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::PullUp, i2cPins[controllerIndex][0].alternateFunction);
 
         RCC->APB1ENR |= (controllerIndex == 0 ? RCC_APB1ENR_I2C1EN : controllerIndex == 1 ? RCC_APB1ENR_I2C2EN : RCC_APB1ENR_I2C3EN);
 
@@ -443,11 +439,8 @@ TinyCLR_Result STM32F4_I2c_Release(const TinyCLR_I2c_Controller* self) {
 
         RCC->APB1ENR &= (controllerIndex == 0 ? ~RCC_APB1ENR_I2C1EN : controllerIndex == 1 ? ~RCC_APB1ENR_I2C2EN : ~RCC_APB1ENR_I2C3EN);
 
-        auto& scl = i2cSclPins[controllerIndex];
-        auto& sda = i2cSdaPins[controllerIndex];
-
-        STM32F4_GpioInternal_ClosePin(sda.number);
-        STM32F4_GpioInternal_ClosePin(scl.number);
+        STM32F4_GpioInternal_ClosePin(i2cPins[controllerIndex][0].number);
+        STM32F4_GpioInternal_ClosePin(i2cPins[controllerIndex][1].number);
     }
 
     return TinyCLR_Result::Success;
