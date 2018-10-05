@@ -62,7 +62,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
         else {
             auto count = (delayTicks / carrierTicks);
 
-            for (auto ii = 0; ii < count; ii += 2) {
+            for (auto ii = 0; ii < count; ii++) {
                 gpio->Write(gpio, pin, (ii % 2 == 0) ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
                 time->Wait(time, time->ConvertSystemTimeToNativeTime(time, carrierTicks));
             }
