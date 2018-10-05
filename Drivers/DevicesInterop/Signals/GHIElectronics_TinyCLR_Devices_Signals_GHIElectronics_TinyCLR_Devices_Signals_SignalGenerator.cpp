@@ -48,7 +48,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
     }
 
     for (auto i = 0; i < len; i++) {
-        auto delayTicks = arr[i].b;
+        auto delayTicks = arr[i].b; //Since TimeSpan and DateTime are stored inline, not as a proper object
 
         if (delayTicks <= carrierTicks) {
             error = TinyCLR_Result::ArgumentInvalid;
@@ -57,7 +57,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
         }
 
         if (!((next == idleState) && (generateCarrierFrequency && carrierFrequency))) {
-            time->Wait(time, time->ConvertSystemTimeToNativeTime(time, delayTicks)); //Since TimeSpan and DateTime are stored inline, not as a proper object
+            time->Wait(time, time->ConvertSystemTimeToNativeTime(time, delayTicks));
         }
         else {
             auto count = (delayTicks / carrierTicks);
