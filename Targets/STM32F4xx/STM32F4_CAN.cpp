@@ -326,8 +326,7 @@ struct CanState {
     bool enable;
 };
 
-static const STM32F4_Gpio_Pin canTxPins[] = STM32F4_CAN_TX_PINS;
-static const STM32F4_Gpio_Pin canRxPins[] = STM32F4_CAN_RX_PINS;
+static const STM32F4_Gpio_Pin canPins[][2] = STM32F4_CAN_PINS;
 static const uint32_t canDefaultBuffersSize[] = STM32F4_CAN_BUFFER_DEFAULT_SIZE;
 
 static CanState canStates[TOTAL_CAN_CONTROLLERS];
@@ -1231,14 +1230,12 @@ TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Controller* self) {
     if (state->initializeCount == 0) {
         int32_t controllerIndex = state->controllerIndex;
 
-        uint32_t pins[] = { canTxPins[controllerIndex].number, canRxPins[controllerIndex].number };
-
-        if (!STM32F4_GpioInternal_OpenMultiPins(pins, SIZEOF_ARRAY(pins)))
+        if (!STM32F4_GpioInternal_OpenMultiPins(canPins[controllerIndex], 2))
             return TinyCLR_Result::SharingViolation;
 
         // set pin as analog
-        STM32F4_GpioInternal_ConfigurePin(canTxPins[controllerIndex].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, canTxPins[controllerIndex].alternateFunction);
-        STM32F4_GpioInternal_ConfigurePin(canRxPins[controllerIndex].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, canRxPins[controllerIndex].alternateFunction);
+        STM32F4_GpioInternal_ConfigurePin(canPins[controllerIndex][0].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, canPins[controllerIndex][0].alternateFunction);
+        STM32F4_GpioInternal_ConfigurePin(canPins[controllerIndex][1].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, canPins[controllerIndex][1].alternateFunction);
 
         state->can_rx_count = 0;
         state->can_rx_in = 0;
@@ -1279,8 +1276,8 @@ TinyCLR_Result STM32F4_Can_Release(const TinyCLR_Can_Controller* self) {
             state->canRxMessagesFifo = nullptr;
         }
 
-        STM32F4_GpioInternal_ClosePin(canTxPins[controllerIndex].number);
-        STM32F4_GpioInternal_ClosePin(canRxPins[controllerIndex].number);
+        STM32F4_GpioInternal_ClosePin(canPins[controllerIndex][0].number);
+        STM32F4_GpioInternal_ClosePin(canPins[controllerIndex][1].number);
     }
 
     return TinyCLR_Result::Success;
