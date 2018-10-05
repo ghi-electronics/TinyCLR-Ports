@@ -26,6 +26,10 @@ typedef  SPI_TypeDef* ptr_SPI_TypeDef;
 #define DATA_BIT_LENGTH_16  16
 #define DATA_BIT_LENGTH_8   8
 
+#define SPI_MOSI_PIN 0
+#define SPI_MISO_PIN 1
+#define SPI_CLK_PIN  2
+
 static const STM32F4_Gpio_Pin spiPins[][3] = STM32F4_SPI_PINS;
 
 static ptr_SPI_TypeDef spiPortRegs[TOTAL_SPI_CONTROLLERS];
@@ -454,9 +458,9 @@ TinyCLR_Result STM32F4_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
 
         spi->CR1 = SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_MSTR | SPI_CR1_SPE;
 
-        STM32F4_GpioInternal_ConfigurePin(spiPins[controllerIndex][2].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, spiPins[controllerIndex][2].alternateFunction);
-        STM32F4_GpioInternal_ConfigurePin(spiPins[controllerIndex][1].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, spiPins[controllerIndex][1].alternateFunction);
-        STM32F4_GpioInternal_ConfigurePin(spiPins[controllerIndex][0].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, spiPins[controllerIndex][0].alternateFunction);
+        STM32F4_GpioInternal_ConfigurePin(spiPins[controllerIndex][SPI_CLK_PIN].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, spiPins[controllerIndex][SPI_CLK_PIN].alternateFunction);
+        STM32F4_GpioInternal_ConfigurePin(spiPins[controllerIndex][SPI_MISO_PIN].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, spiPins[controllerIndex][SPI_MISO_PIN].alternateFunction);
+        STM32F4_GpioInternal_ConfigurePin(spiPins[controllerIndex][SPI_MOSI_PIN].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, spiPins[controllerIndex][SPI_MOSI_PIN].alternateFunction);
     }
 
     state->initializeCount++;
@@ -512,9 +516,9 @@ TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Controller* self) {
 #endif
         }
 
-        STM32F4_GpioInternal_ClosePin(spiPins[controllerIndex][2].number);
-        STM32F4_GpioInternal_ClosePin(spiPins[controllerIndex][1].number);
-        STM32F4_GpioInternal_ClosePin(spiPins[controllerIndex][0].number);
+        STM32F4_GpioInternal_ClosePin(spiPins[controllerIndex][SPI_CLK_PIN].number);
+        STM32F4_GpioInternal_ClosePin(spiPins[controllerIndex][SPI_MISO_PIN].number);
+        STM32F4_GpioInternal_ClosePin(spiPins[controllerIndex][SPI_MOSI_PIN].number);
 
         if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
             STM32F4_GpioInternal_ClosePin(state->chipSelectLine);
