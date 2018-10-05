@@ -25,12 +25,19 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
     auto idleState = static_cast<TinyCLR_Gpio_PinValue>(idleFld.Data.Numeric->I4);
     auto disableInterrupts = disableFld.Data.Numeric->Boolean;
     auto generateCarrierFrequency = generateFld.Data.Numeric->Boolean;
-    auto carrierFrequency = freqFld.Data.Numeric->U8;
+    auto carrierFrequency = static_cast<uint32_t>(freqFld.Data.Numeric->U8);
 
     auto next = idleState;
+    auto error = TinyCLR_Result::Success;
 
-    if (generateCarrierFrequency)
-        return TinyCLR_Result::NotImplemented;
+    uint64_t carrierTicks = 0;
+
+    if (generateCarrierFrequency && (carrierFrequency > 0)) {
+        carrierTicks = (1000000 / 2 / carrierFrequency) * 10;
+
+        // avoids dividing by 0 for little values
+        if (carrierTicks == 0) carrierTicks = 1;
+    }
 
     gpio->Write(gpio, pin, idleState);
 
@@ -38,17 +45,39 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
         interrupt->Disable();
 
     for (auto i = 0; i < len; i++) {
+        auto delayTicks = arr[i].b;
+
+        if (delayTicks <= carrierTicks) {
+            error = TinyCLR_Result::ArgumentInvalid;
+
+            goto release_and_return;
+        }
+
+        if (!((next == idleState) && (generateCarrierFrequency && carrierFrequency))) {
+            time->Wait(time, time->ConvertSystemTimeToNativeTime(time, delayTicks)); //Since TimeSpan and DateTime are stored inline, not as a proper object
+        }
+        else {
+
+            auto count = (delayTicks / carrierTicks);
+            for (auto ii = 0; ii < count; ii += 2) {
+                gpio->Write(gpio, pin, TinyCLR_Gpio_PinValue::High);
+                time->Wait(time, time->ConvertSystemTimeToNativeTime(time, carrierTicks));
+
+                gpio->Write(gpio, pin, TinyCLR_Gpio_PinValue::Low);
+                time->Wait(time, time->ConvertSystemTimeToNativeTime(time, carrierTicks));
+            }
+        }
+
         next = next == TinyCLR_Gpio_PinValue::High ? TinyCLR_Gpio_PinValue::Low : TinyCLR_Gpio_PinValue::High;
 
         gpio->Write(gpio, pin, next);
-
-        time->Wait(time, time->ConvertSystemTimeToNativeTime(time, arr[i].b)); //Since TimeSpan and DateTime are stored inline, not as a proper object
     }
 
+release_and_return:
     gpio->Write(gpio, pin, idleState);
 
     if (disableInterrupts)
         interrupt->Enable();
 
-    return TinyCLR_Result::Success;
+    return error;
 }
