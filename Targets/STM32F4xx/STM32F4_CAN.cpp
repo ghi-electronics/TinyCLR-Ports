@@ -326,6 +326,9 @@ struct CanState {
     bool enable;
 };
 
+#define CAN_TX_PIN 0
+#define CAN_RX_PIN 1
+
 static const STM32F4_Gpio_Pin canPins[][2] = STM32F4_CAN_PINS;
 static const uint32_t canDefaultBuffersSize[] = STM32F4_CAN_BUFFER_DEFAULT_SIZE;
 
@@ -1234,8 +1237,8 @@ TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Controller* self) {
             return TinyCLR_Result::SharingViolation;
 
         // set pin as analog
-        STM32F4_GpioInternal_ConfigurePin(canPins[controllerIndex][0].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, canPins[controllerIndex][0].alternateFunction);
-        STM32F4_GpioInternal_ConfigurePin(canPins[controllerIndex][1].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, canPins[controllerIndex][1].alternateFunction);
+        STM32F4_GpioInternal_ConfigurePin(canPins[controllerIndex][CAN_TX_PIN].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, canPins[controllerIndex][CAN_TX_PIN].alternateFunction);
+        STM32F4_GpioInternal_ConfigurePin(canPins[controllerIndex][CAN_RX_PIN].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, STM32F4_Gpio_PullDirection::PullUp, canPins[controllerIndex][CAN_RX_PIN].alternateFunction);
 
         state->can_rx_count = 0;
         state->can_rx_in = 0;
@@ -1276,8 +1279,8 @@ TinyCLR_Result STM32F4_Can_Release(const TinyCLR_Can_Controller* self) {
             state->canRxMessagesFifo = nullptr;
         }
 
-        STM32F4_GpioInternal_ClosePin(canPins[controllerIndex][0].number);
-        STM32F4_GpioInternal_ClosePin(canPins[controllerIndex][1].number);
+        STM32F4_GpioInternal_ClosePin(canPins[controllerIndex][CAN_TX_PIN].number);
+        STM32F4_GpioInternal_ClosePin(canPins[controllerIndex][CAN_RX_PIN].number);
     }
 
     return TinyCLR_Result::Success;
