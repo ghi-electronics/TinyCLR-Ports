@@ -73,8 +73,9 @@
 
 #define INCLUDE_I2C
 #define TOTAL_I2C_CONTROLLERS 1
-#define STM32F4_I2C_SCL_PINS { { PIN(B, 6), AF(4) } }
-#define STM32F4_I2C_SDA_PINS { { PIN(B, 7), AF(4) } }
+#define STM32F4_I2C_PINS {/*   SDA                   SCL*/\
+                            { { PIN(B, 7), AF(4) }, { PIN(B, 6), AF(4) } }\
+                         }
 
 #define INCLUDE_POWER
 
