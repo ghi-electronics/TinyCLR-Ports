@@ -2742,11 +2742,15 @@ TinyCLR_Result LPC17_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, con
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     _lowerBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, count * sizeof(uint32_t));
+
+    if (!_lowerBoundFilters) {
+        return  TinyCLR_Result::OutOfMemory;
+    }
+
     _upperBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, count * sizeof(uint32_t));
 
-    if (!_lowerBoundFilters || !_upperBoundFilters) {
+    if (!_upperBoundFilters) {
         memoryProvider->Free(memoryProvider, _lowerBoundFilters);
-        memoryProvider->Free(memoryProvider, _upperBoundFilters);
 
         return  TinyCLR_Result::OutOfMemory;
     }
