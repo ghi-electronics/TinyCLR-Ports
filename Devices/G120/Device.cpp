@@ -44,9 +44,9 @@ int32_t LPC17_Startup_GetDeviceId() {
     if (lpc178_deviceId < 0) {
         TinyCLR_Gpio_PinValue value1, value2, value3;
 
-        LPC17_Gpio_EnableInputPin(G120E_DETECT1_PIN, TinyCLR_Gpio_PinDriveMode::InputPullUp);
-        LPC17_Gpio_EnableInputPin(G120E_DETECT2_PIN, TinyCLR_Gpio_PinDriveMode::InputPullUp);
-        LPC17_Gpio_EnableInputPin(G120E_DETECT3_PIN, TinyCLR_Gpio_PinDriveMode::InputPullUp);
+        LPC17_GpioInternal_EnableInputPin(G120E_DETECT1_PIN, TinyCLR_Gpio_PinDriveMode::InputPullUp);
+        LPC17_GpioInternal_EnableInputPin(G120E_DETECT2_PIN, TinyCLR_Gpio_PinDriveMode::InputPullUp);
+        LPC17_GpioInternal_EnableInputPin(G120E_DETECT3_PIN, TinyCLR_Gpio_PinDriveMode::InputPullUp);
 
         LPC17_Gpio_Read(provider, G120E_DETECT1_PIN, value1);
         LPC17_Gpio_Read(provider, G120E_DETECT2_PIN, value2);

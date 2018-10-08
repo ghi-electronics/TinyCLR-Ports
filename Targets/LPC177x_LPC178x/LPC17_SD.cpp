@@ -2207,21 +2207,21 @@ TinyCLR_Result LPC17_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
         auto clk = sdCardClkPins[controllerIndex];
         auto cmd = sdCardCmdPins[controllerIndex];
 
-        if (!LPC17_Gpio_OpenPin(d0.number)
-            || !LPC17_Gpio_OpenPin(d1.number)
-            || !LPC17_Gpio_OpenPin(d2.number)
-            || !LPC17_Gpio_OpenPin(d3.number)
-            || !LPC17_Gpio_OpenPin(clk.number)
-            || !LPC17_Gpio_OpenPin(cmd.number)
+        if (!LPC17_GpioInternal_OpenPin(d0.number)
+            || !LPC17_GpioInternal_OpenPin(d1.number)
+            || !LPC17_GpioInternal_OpenPin(d2.number)
+            || !LPC17_GpioInternal_OpenPin(d3.number)
+            || !LPC17_GpioInternal_OpenPin(clk.number)
+            || !LPC17_GpioInternal_OpenPin(cmd.number)
             )
             return TinyCLR_Result::SharingViolation;
 
-        LPC17_Gpio_ConfigurePin(d0.number, LPC17_Gpio_Direction::Input, d0.pinFunction, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-        LPC17_Gpio_ConfigurePin(d1.number, LPC17_Gpio_Direction::Input, d1.pinFunction, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-        LPC17_Gpio_ConfigurePin(d2.number, LPC17_Gpio_Direction::Input, d2.pinFunction, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-        LPC17_Gpio_ConfigurePin(d3.number, LPC17_Gpio_Direction::Input, d3.pinFunction, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-        LPC17_Gpio_ConfigurePin(clk.number, LPC17_Gpio_Direction::Input, clk.pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-        LPC17_Gpio_ConfigurePin(cmd.number, LPC17_Gpio_Direction::Input, cmd.pinFunction, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        LPC17_GpioInternal_ConfigurePin(d0.number, LPC17_Gpio_Direction::Input, d0.pinFunction, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        LPC17_GpioInternal_ConfigurePin(d1.number, LPC17_Gpio_Direction::Input, d1.pinFunction, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        LPC17_GpioInternal_ConfigurePin(d2.number, LPC17_Gpio_Direction::Input, d2.pinFunction, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        LPC17_GpioInternal_ConfigurePin(d3.number, LPC17_Gpio_Direction::Input, d3.pinFunction, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        LPC17_GpioInternal_ConfigurePin(clk.number, LPC17_Gpio_Direction::Input, clk.pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        LPC17_GpioInternal_ConfigurePin(cmd.number, LPC17_Gpio_Direction::Input, cmd.pinFunction, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
@@ -2278,12 +2278,12 @@ TinyCLR_Result LPC17_SdCard_Release(const TinyCLR_Storage_Controller* self) {
 
         state->descriptor.RegionAddresses = nullptr;
         state->descriptor.RegionSizes = nullptr;
-        LPC17_Gpio_ClosePin(d0.number);
-        LPC17_Gpio_ClosePin(d1.number);
-        LPC17_Gpio_ClosePin(d2.number);
-        LPC17_Gpio_ClosePin(d3.number);
-        LPC17_Gpio_ClosePin(clk.number);
-        LPC17_Gpio_ClosePin(cmd.number);
+        LPC17_GpioInternal_ClosePin(d0.number);
+        LPC17_GpioInternal_ClosePin(d1.number);
+        LPC17_GpioInternal_ClosePin(d2.number);
+        LPC17_GpioInternal_ClosePin(d3.number);
+        LPC17_GpioInternal_ClosePin(clk.number);
+        LPC17_GpioInternal_ClosePin(cmd.number);
     }
 
     return TinyCLR_Result::Success;

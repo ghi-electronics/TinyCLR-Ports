@@ -365,11 +365,11 @@ TinyCLR_Result LPC17_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
             break;
         }
 
-        if (!LPC17_Gpio_OpenPin(i2cSdaPins[controllerIndex].number) || !LPC17_Gpio_OpenPin(i2cSclPins[controllerIndex].number))
+        if (!LPC17_GpioInternal_OpenPin(i2cSdaPins[controllerIndex].number) || !LPC17_GpioInternal_OpenPin(i2cSclPins[controllerIndex].number))
             return TinyCLR_Result::SharingViolation;
 
-        LPC17_Gpio_ConfigurePin(i2cSclPins[controllerIndex].number, LPC17_Gpio_Direction::Input, i2cSclPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::OpenDrain);
-        LPC17_Gpio_ConfigurePin(i2cSdaPins[controllerIndex].number, LPC17_Gpio_Direction::Input, i2cSdaPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::OpenDrain);
+        LPC17_GpioInternal_ConfigurePin(i2cSclPins[controllerIndex].number, LPC17_Gpio_Direction::Input, i2cSclPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::OpenDrain);
+        LPC17_GpioInternal_ConfigurePin(i2cSdaPins[controllerIndex].number, LPC17_Gpio_Direction::Input, i2cSdaPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::OpenDrain);
 
         // enable the I2c module
         I2C.I2CONSET = LPC17xx_I2C::I2EN;
@@ -402,8 +402,8 @@ TinyCLR_Result LPC17_I2c_Release(const TinyCLR_I2c_Controller* self) {
 
         I2C.I2CONCLR = (LPC17xx_I2C::AA | LPC17xx_I2C::SI | LPC17xx_I2C::STO | LPC17xx_I2C::STA | LPC17xx_I2C::I2EN);
 
-        LPC17_Gpio_ClosePin(i2cSdaPins[controllerIndex].number);
-        LPC17_Gpio_ClosePin(i2cSclPins[controllerIndex].number);
+        LPC17_GpioInternal_ClosePin(i2cSdaPins[controllerIndex].number);
+        LPC17_GpioInternal_ClosePin(i2cSclPins[controllerIndex].number);
     }
 
     return TinyCLR_Result::Success;

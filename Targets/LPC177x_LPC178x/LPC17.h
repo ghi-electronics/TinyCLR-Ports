@@ -176,11 +176,11 @@ uint32_t LPC17_Gpio_GetPinCount(const TinyCLR_Gpio_Controller* self);
 TinyCLR_Result LPC17_Gpio_SetPinChangedHandler(const TinyCLR_Gpio_Controller* self, uint32_t pin, TinyCLR_Gpio_PinChangeEdge edge, TinyCLR_Gpio_PinChangedHandler handler);
 TinyCLR_Result LPC17_Gpio_ClosePin(const TinyCLR_Gpio_Controller* self, uint32_t pin);
 
-bool LPC17_Gpio_OpenPin(int32_t pin);
-bool LPC17_Gpio_ClosePin(int32_t pin);
-bool LPC17_Gpio_ConfigurePin(int32_t pin, LPC17_Gpio_Direction pinDir, LPC17_Gpio_PinFunction pinFunction, LPC17_Gpio_ResistorMode pullResistor, LPC17_Gpio_Hysteresis hysteresis, LPC17_Gpio_InputPolarity inputPolarity, LPC17_Gpio_SlewRate slewRate, LPC17_Gpio_OutputType outputType);
-void LPC17_Gpio_EnableOutputPin(int32_t pin, bool initialState);
-void LPC17_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
+bool LPC17_GpioInternal_OpenPin(int32_t pin);
+bool LPC17_GpioInternal_ClosePin(int32_t pin);
+bool LPC17_GpioInternal_ConfigurePin(int32_t pin, LPC17_Gpio_Direction pinDir, LPC17_Gpio_PinFunction pinFunction, LPC17_Gpio_ResistorMode pullResistor, LPC17_Gpio_Hysteresis hysteresis, LPC17_Gpio_InputPolarity inputPolarity, LPC17_Gpio_SlewRate slewRate, LPC17_Gpio_OutputType outputType);
+void LPC17_GpioInternal_EnableOutputPin(int32_t pin, bool initialState);
+void LPC17_GpioInternal_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
 
 struct PwmState {
     int32_t controllerIndex;

@@ -2426,15 +2426,15 @@ TinyCLR_Result LPC17_Can_Acquire(const TinyCLR_Can_Controller* self) {
     if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
-        if (!LPC17_Gpio_OpenPin(canTxPins[controllerIndex].number))
+        if (!LPC17_GpioInternal_OpenPin(canTxPins[controllerIndex].number))
             return TinyCLR_Result::SharingViolation;
 
-        if (!LPC17_Gpio_OpenPin(canRxPins[controllerIndex].number))
+        if (!LPC17_GpioInternal_OpenPin(canRxPins[controllerIndex].number))
             return TinyCLR_Result::SharingViolation;
 
         // set pin as analog
-        LPC17_Gpio_ConfigurePin(canTxPins[controllerIndex].number, LPC17_Gpio_Direction::Input, canTxPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-        LPC17_Gpio_ConfigurePin(canRxPins[controllerIndex].number, LPC17_Gpio_Direction::Input, canRxPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        LPC17_GpioInternal_ConfigurePin(canTxPins[controllerIndex].number, LPC17_Gpio_Direction::Input, canTxPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        LPC17_GpioInternal_ConfigurePin(canRxPins[controllerIndex].number, LPC17_Gpio_Direction::Input, canRxPins[controllerIndex].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
         state->can_rx_count = 0;
         state->can_rx_in = 0;
@@ -2488,8 +2488,8 @@ TinyCLR_Result LPC17_Can_Release(const TinyCLR_Can_Controller* self) {
         CAN_DisableExplicitFilters(controllerIndex);
         CAN_DisableGroupFilters(controllerIndex);
 
-        LPC17_Gpio_ClosePin(canTxPins[controllerIndex].number);
-        LPC17_Gpio_ClosePin(canRxPins[controllerIndex].number);
+        LPC17_GpioInternal_ClosePin(canTxPins[controllerIndex].number);
+        LPC17_GpioInternal_ClosePin(canRxPins[controllerIndex].number);
     }
 
     return TinyCLR_Result::Success;

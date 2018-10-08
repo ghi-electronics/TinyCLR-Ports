@@ -857,8 +857,8 @@ TinyCLR_Result LPC17_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, c
     SPI.SSPxCR0 |= (SCR << 8);
 
     if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
-        if (LPC17_Gpio_OpenPin(state->chipSelectLine)) {
-            LPC17_Gpio_EnableOutputPin(state->chipSelectLine, !state->chipSelectActiveState);
+        if (LPC17_GpioInternal_OpenPin(state->chipSelectLine)) {
+            LPC17_GpioInternal_EnableOutputPin(state->chipSelectLine, !state->chipSelectActiveState);
         }
         else {
             return TinyCLR_Result::SharingViolation;
@@ -888,13 +888,13 @@ TinyCLR_Result LPC17_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
         mosiMode = spiMosiPins[controllerIndex].pinFunction;
 
         // Check each pin single time make sure once fail not effect to other pins
-        if (!LPC17_Gpio_OpenPin(clkPin))
+        if (!LPC17_GpioInternal_OpenPin(clkPin))
             return TinyCLR_Result::SharingViolation;
 
-        if (!LPC17_Gpio_OpenPin(misoPin))
+        if (!LPC17_GpioInternal_OpenPin(misoPin))
             return TinyCLR_Result::SharingViolation;
 
-        if (!LPC17_Gpio_OpenPin(mosiPin))
+        if (!LPC17_GpioInternal_OpenPin(mosiPin))
             return TinyCLR_Result::SharingViolation;
 
         switch (controllerIndex) {
@@ -911,9 +911,9 @@ TinyCLR_Result LPC17_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
             break;
         }
 
-        LPC17_Gpio_ConfigurePin(clkPin, LPC17_Gpio_Direction::Input, clkMode, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-        LPC17_Gpio_ConfigurePin(misoPin, LPC17_Gpio_Direction::Input, misoMode, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-        LPC17_Gpio_ConfigurePin(mosiPin, LPC17_Gpio_Direction::Input, mosiMode, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        LPC17_GpioInternal_ConfigurePin(clkPin, LPC17_Gpio_Direction::Input, clkMode, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        LPC17_GpioInternal_ConfigurePin(misoPin, LPC17_Gpio_Direction::Input, misoMode, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        LPC17_GpioInternal_ConfigurePin(mosiPin, LPC17_Gpio_Direction::Input, mosiMode, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
     }
 
     state->initializeCount++;
@@ -956,16 +956,16 @@ TinyCLR_Result LPC17_Spi_Release(const TinyCLR_Spi_Controller* self) {
         int32_t misoPin = spiMisoPins[controllerIndex].number;
         int32_t mosiPin = spiMosiPins[controllerIndex].number;
 
-        LPC17_Gpio_ClosePin(clkPin);
-        LPC17_Gpio_ClosePin(misoPin);
-        LPC17_Gpio_ClosePin(mosiPin);
+        LPC17_GpioInternal_ClosePin(clkPin);
+        LPC17_GpioInternal_ClosePin(misoPin);
+        LPC17_GpioInternal_ClosePin(mosiPin);
 
         if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
             // Release the pin, set pin un-reserved
-            LPC17_Gpio_ClosePin(state->chipSelectLine);
+            LPC17_GpioInternal_ClosePin(state->chipSelectLine);
 
             // Keep chip select is inactive by internal pull up
-            LPC17_Gpio_ConfigurePin(state->chipSelectLine, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+            LPC17_GpioInternal_ConfigurePin(state->chipSelectLine, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
             state->chipSelectLine = PIN_NONE;
         }

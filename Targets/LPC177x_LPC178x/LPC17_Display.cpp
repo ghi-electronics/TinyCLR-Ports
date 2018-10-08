@@ -626,36 +626,36 @@ const LPC17_Gpio_Pin g_Display_EnablePin = LPC17_DISPLAY_ENABLE_PIN;
 bool  LPC17_Display_SetPinConfiguration(bool enable) {
     if (enable) {
         for (auto i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins); i++) {
-            if (!LPC17_Gpio_OpenPin(g_Display_ControllerPins[i].number)) {
+            if (!LPC17_GpioInternal_OpenPin(g_Display_ControllerPins[i].number)) {
                 return false;
             }
 
-            LPC17_Gpio_ConfigurePin(g_Display_ControllerPins[i].number, LPC17_Gpio_Direction::Input, g_Display_ControllerPins[i].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+            LPC17_GpioInternal_ConfigurePin(g_Display_ControllerPins[i].number, LPC17_Gpio_Direction::Input, g_Display_ControllerPins[i].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
         }
 
         if (g_Display_EnablePin.number != PIN_NONE) {
-            if (!LPC17_Gpio_OpenPin(g_Display_EnablePin.number)) {
+            if (!LPC17_GpioInternal_OpenPin(g_Display_EnablePin.number)) {
                 return false;
             }
         }
 
         if (g_Display_BacklightPin.number != PIN_NONE) {
-            if (!LPC17_Gpio_OpenPin(g_Display_BacklightPin.number)) {
+            if (!LPC17_GpioInternal_OpenPin(g_Display_BacklightPin.number)) {
                 return false;
 
             }
 
-            LPC17_Gpio_EnableOutputPin(g_Display_BacklightPin.number, true);
+            LPC17_GpioInternal_EnableOutputPin(g_Display_BacklightPin.number, true);
         }
     }
     else {
         for (int32_t i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins); i++) {
-            LPC17_Gpio_ClosePin(g_Display_ControllerPins[i].number);
+            LPC17_GpioInternal_ClosePin(g_Display_ControllerPins[i].number);
         }
 
-        LPC17_Gpio_ClosePin(g_Display_EnablePin.number);
+        LPC17_GpioInternal_ClosePin(g_Display_EnablePin.number);
 
-        LPC17_Gpio_ClosePin(g_Display_BacklightPin.number);
+        LPC17_GpioInternal_ClosePin(g_Display_BacklightPin.number);
     }
 
     return true;
@@ -948,9 +948,9 @@ TinyCLR_Result LPC17_Display_SetConfiguration(const TinyCLR_Display_Controller* 
 
         if (g_Display_EnablePin.number != PIN_NONE) {
             if (m_LPC17_DisplayOutputEnableIsFixed)
-                LPC17_Gpio_EnableOutputPin(g_Display_EnablePin.number, m_LPC17_DisplayOutputEnablePolarity);
+                LPC17_GpioInternal_EnableOutputPin(g_Display_EnablePin.number, m_LPC17_DisplayOutputEnablePolarity);
             else
-                LPC17_Gpio_ConfigurePin(g_Display_EnablePin.number, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+                LPC17_GpioInternal_ConfigurePin(g_Display_EnablePin.number, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
         }
     }
 
