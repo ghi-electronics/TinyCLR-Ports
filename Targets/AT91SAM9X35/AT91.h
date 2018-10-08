@@ -528,14 +528,14 @@ uint64_t AT91_Gpio_GetDebounceTimeout(const TinyCLR_Gpio_Controller* self, uint3
 uint32_t AT91_Gpio_GetPinCount(const TinyCLR_Gpio_Controller* self);
 TinyCLR_Result AT91_Gpio_SetPinChangedHandler(const TinyCLR_Gpio_Controller* self, uint32_t pin, TinyCLR_Gpio_PinChangeEdge edge, TinyCLR_Gpio_PinChangedHandler handler);
 TinyCLR_Result AT91_Gpio_ClosePin(const TinyCLR_Gpio_Controller* self, uint32_t pin);
-void AT91_Gpio_EnableOutputPin(int32_t pin, bool initialState);
-void AT91_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
-bool AT91_Gpio_OpenPin(int32_t pin);
-bool AT91_Gpio_ClosePin(int32_t pin);
-bool AT91_Gpio_ReadPin(int32_t pin);
-void AT91_Gpio_WritePin(int32_t pin, bool value);
-bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PeripheralSelection peripheralSelection, AT91_Gpio_ResistorMode resistorMode);
-bool AT91_Gpio_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PeripheralSelection peripheralSelection, AT91_Gpio_ResistorMode resistorMode, AT91_Gpio_MultiDriver multiDrive, AT91_Gpio_Filter filter, AT91_Gpio_FilterSlowClock filterSlowClock, AT91_Gpio_Schmitt schmitt, AT91_Gpio_DriveSpeed driveSpeed);
+void AT91_GpioInternal_EnableOutputPin(int32_t pin, bool initialState);
+void AT91_GpioInternal_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
+bool AT91_GpioInternal_OpenPin(int32_t pin);
+bool AT91_GpioInternal_ClosePin(int32_t pin);
+bool AT91_GpioInternal_ReadPin(int32_t pin);
+void AT91_GpioInternal_WritePin(int32_t pin, bool value);
+bool AT91_GpioInternal_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PeripheralSelection peripheralSelection, AT91_Gpio_ResistorMode resistorMode);
+bool AT91_GpioInternal_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PeripheralSelection peripheralSelection, AT91_Gpio_ResistorMode resistorMode, AT91_Gpio_MultiDriver multiDrive, AT91_Gpio_Filter filter, AT91_Gpio_FilterSlowClock filterSlowClock, AT91_Gpio_Schmitt schmitt, AT91_Gpio_DriveSpeed driveSpeed);
 
 // ADC
 void AT91_Adc_AddApi(const TinyCLR_Api_Manager* apiManager);

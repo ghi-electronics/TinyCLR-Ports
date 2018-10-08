@@ -1040,40 +1040,40 @@ void AT91_Display_Clear() {
 bool AT91_Display_SetPinConfiguration(bool enable) {
     if (enable) {
         for (uint32_t pin = 0; pin < SIZEOF_ARRAY(displayPins); pin++) {
-            if (!AT91_Gpio_OpenPin(displayPins[pin].number))
+            if (!AT91_GpioInternal_OpenPin(displayPins[pin].number))
                 return false;
 
-            AT91_Gpio_ConfigurePin(displayPins[pin].number, AT91_Gpio_Direction::Input, displayPins[pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+            AT91_GpioInternal_ConfigurePin(displayPins[pin].number, AT91_Gpio_Direction::Input, displayPins[pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
         }
 
         if (displayEnablePins.number != PIN_NONE) {
-            if (!AT91_Gpio_OpenPin(displayEnablePins.number))
+            if (!AT91_GpioInternal_OpenPin(displayEnablePins.number))
                 return false;
         }
 
         if (m_AT91_DisplayOutputEnableIsFixed) {
-            AT91_Gpio_EnableOutputPin(displayEnablePins.number, m_AT91_DisplayOutputEnablePolarity);
+            AT91_GpioInternal_EnableOutputPin(displayEnablePins.number, m_AT91_DisplayOutputEnablePolarity);
         }
         else {
-            AT91_Gpio_ConfigurePin(displayEnablePins.number, AT91_Gpio_Direction::Input, displayEnablePins.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+            AT91_GpioInternal_ConfigurePin(displayEnablePins.number, AT91_Gpio_Direction::Input, displayEnablePins.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
         }
 
         if (displayBacklightPins.number != PIN_NONE) {
-            if (!AT91_Gpio_OpenPin(displayBacklightPins.number))
+            if (!AT91_GpioInternal_OpenPin(displayBacklightPins.number))
                 return false;
 
-            AT91_Gpio_EnableOutputPin(displayBacklightPins.number, true);
+            AT91_GpioInternal_EnableOutputPin(displayBacklightPins.number, true);
         }
     }
     else {
 
         for (int32_t i = 0; i < SIZEOF_ARRAY(displayPins); i++) {
-            AT91_Gpio_ClosePin(displayPins[i].number);
+            AT91_GpioInternal_ClosePin(displayPins[i].number);
         }
 
-        AT91_Gpio_ClosePin(displayEnablePins.number);
+        AT91_GpioInternal_ClosePin(displayEnablePins.number);
 
-        AT91_Gpio_ClosePin(displayBacklightPins.number);
+        AT91_GpioInternal_ClosePin(displayBacklightPins.number);
     }
 
     return true;
@@ -1369,10 +1369,10 @@ TinyCLR_Result AT91_Display_SetConfiguration(const TinyCLR_Display_Controller* s
 
         if (displayEnablePins.number != PIN_NONE) {
             if (m_AT91_DisplayOutputEnableIsFixed) {
-                AT91_Gpio_EnableOutputPin(displayEnablePins.number, m_AT91_DisplayOutputEnablePolarity);
+                AT91_GpioInternal_EnableOutputPin(displayEnablePins.number, m_AT91_DisplayOutputEnablePolarity);
             }
             else {
-                AT91_Gpio_ConfigurePin(displayEnablePins.number, AT91_Gpio_Direction::Input, displayEnablePins.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+                AT91_GpioInternal_ConfigurePin(displayEnablePins.number, AT91_Gpio_Direction::Input, displayEnablePins.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
             }
         }
     }

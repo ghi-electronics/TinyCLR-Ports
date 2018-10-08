@@ -2421,21 +2421,21 @@ TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
         auto clk = sdCardClkPins[controllerIndex];
         auto cmd = sdCardCmdPins[controllerIndex];
 
-        if (!AT91_Gpio_OpenPin(d0.number)
-            || !AT91_Gpio_OpenPin(d1.number)
-            || !AT91_Gpio_OpenPin(d2.number)
-            || !AT91_Gpio_OpenPin(d3.number)
-            || !AT91_Gpio_OpenPin(clk.number)
-            || !AT91_Gpio_OpenPin(cmd.number)
+        if (!AT91_GpioInternal_OpenPin(d0.number)
+            || !AT91_GpioInternal_OpenPin(d1.number)
+            || !AT91_GpioInternal_OpenPin(d2.number)
+            || !AT91_GpioInternal_OpenPin(d3.number)
+            || !AT91_GpioInternal_OpenPin(clk.number)
+            || !AT91_GpioInternal_OpenPin(cmd.number)
             )
             return TinyCLR_Result::SharingViolation;
 
-        AT91_Gpio_ConfigurePin(d0.number, AT91_Gpio_Direction::Input, d0.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
-        AT91_Gpio_ConfigurePin(d1.number, AT91_Gpio_Direction::Input, d1.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
-        AT91_Gpio_ConfigurePin(d2.number, AT91_Gpio_Direction::Input, d2.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
-        AT91_Gpio_ConfigurePin(d3.number, AT91_Gpio_Direction::Input, d3.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
-        AT91_Gpio_ConfigurePin(clk.number, AT91_Gpio_Direction::Input, clk.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-        AT91_Gpio_ConfigurePin(cmd.number, AT91_Gpio_Direction::Input, cmd.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
+        AT91_GpioInternal_ConfigurePin(d0.number, AT91_Gpio_Direction::Input, d0.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
+        AT91_GpioInternal_ConfigurePin(d1.number, AT91_Gpio_Direction::Input, d1.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
+        AT91_GpioInternal_ConfigurePin(d2.number, AT91_Gpio_Direction::Input, d2.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
+        AT91_GpioInternal_ConfigurePin(d3.number, AT91_Gpio_Direction::Input, d3.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
+        AT91_GpioInternal_ConfigurePin(clk.number, AT91_Gpio_Direction::Input, clk.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+        AT91_GpioInternal_ConfigurePin(cmd.number, AT91_Gpio_Direction::Input, cmd.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
 
         AT91_PMC &pmc = AT91::PMC();
         pmc.EnablePeriphClock(AT91C_ID_HSMCI0);
@@ -2515,12 +2515,12 @@ TinyCLR_Result AT91_SdCard_Release(const TinyCLR_Storage_Controller* self) {
         memoryProvider->Free(memoryProvider, state->regionSizes);
         memoryProvider->Free(memoryProvider, state->regionAddresses);
 
-        AT91_Gpio_ClosePin(d0.number);
-        AT91_Gpio_ClosePin(d1.number);
-        AT91_Gpio_ClosePin(d2.number);
-        AT91_Gpio_ClosePin(d3.number);
-        AT91_Gpio_ClosePin(clk.number);
-        AT91_Gpio_ClosePin(cmd.number);
+        AT91_GpioInternal_ClosePin(d0.number);
+        AT91_GpioInternal_ClosePin(d1.number);
+        AT91_GpioInternal_ClosePin(d2.number);
+        AT91_GpioInternal_ClosePin(d3.number);
+        AT91_GpioInternal_ClosePin(clk.number);
+        AT91_GpioInternal_ClosePin(cmd.number);
     }
 
     return TinyCLR_Result::Success;

@@ -110,8 +110,8 @@ TinyCLR_Result AT91_Adc_OpenChannel(const TinyCLR_Adc_Controller *self, uint32_t
     if (AT91_Adc_GetPin(channel) == PIN_NONE)
         return TinyCLR_Result::ArgumentInvalid;
 
-    if (channel >= 0 && channel <= AT91_Adc_GetChannelCount(self) && AT91_Gpio_OpenPin(AT91_Adc_GetPin(channel))) {
-        AT91_Gpio_ConfigurePin(AT91_Adc_GetPin(channel), AT91_Gpio_Direction::Input, AT91_Adc_GetPeripheralSelection(channel), AT91_Gpio_ResistorMode::Inactive);
+    if (channel >= 0 && channel <= AT91_Adc_GetChannelCount(self) && AT91_GpioInternal_OpenPin(AT91_Adc_GetPin(channel))) {
+        AT91_GpioInternal_ConfigurePin(AT91_Adc_GetPin(channel), AT91_Gpio_Direction::Input, AT91_Adc_GetPeripheralSelection(channel), AT91_Gpio_ResistorMode::Inactive);
     }
     else {
         return TinyCLR_Result::SharingViolation;
@@ -130,7 +130,7 @@ TinyCLR_Result AT91_Adc_CloseChannel(const TinyCLR_Adc_Controller *self, uint32_
     auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
     if (state->isOpened[channel])
-        AT91_Gpio_ClosePin(AT91_Adc_GetPin(channel));
+        AT91_GpioInternal_ClosePin(AT91_Adc_GetPin(channel));
 
     state->isOpened[channel] = false;
 

@@ -263,28 +263,28 @@ TinyCLR_Result AT91_Uart_PinConfiguration(int controllerIndex, bool enable) {
 
     if (enable) {
         // Connect pin to UART
-        AT91_Gpio_ConfigurePin(txPin, AT91_Gpio_Direction::Input, txPinMode, AT91_Gpio_ResistorMode::Inactive);
+        AT91_GpioInternal_ConfigurePin(txPin, AT91_Gpio_Direction::Input, txPinMode, AT91_Gpio_ResistorMode::Inactive);
         // Connect pin to UART
-        AT91_Gpio_ConfigurePin(rxPin, AT91_Gpio_Direction::Input, rxPinMode, AT91_Gpio_ResistorMode::Inactive);
+        AT91_GpioInternal_ConfigurePin(rxPin, AT91_Gpio_Direction::Input, rxPinMode, AT91_Gpio_ResistorMode::Inactive);
 
         if (state->handshaking) {
             if (ctsPin == PIN_NONE || rtsPin == PIN_NONE)
                 return TinyCLR_Result::NotSupported;
 
-            if (!AT91_Gpio_OpenPin(ctsPin) || !AT91_Gpio_OpenPin(rtsPin))
+            if (!AT91_GpioInternal_OpenPin(ctsPin) || !AT91_GpioInternal_OpenPin(rtsPin))
                 return TinyCLR_Result::SharingViolation;
 
-            AT91_Gpio_ConfigurePin(ctsPin, AT91_Gpio_Direction::Input, ctsPinMode, AT91_Gpio_ResistorMode::Inactive);
-            AT91_Gpio_ConfigurePin(rtsPin, AT91_Gpio_Direction::Input, rtsPinMode, AT91_Gpio_ResistorMode::Inactive);
+            AT91_GpioInternal_ConfigurePin(ctsPin, AT91_Gpio_Direction::Input, ctsPinMode, AT91_Gpio_ResistorMode::Inactive);
+            AT91_GpioInternal_ConfigurePin(rtsPin, AT91_Gpio_Direction::Input, rtsPinMode, AT91_Gpio_ResistorMode::Inactive);
         }
     }
     else {
-        AT91_Gpio_ClosePin(txPin);
-        AT91_Gpio_ClosePin(rxPin);
+        AT91_GpioInternal_ClosePin(txPin);
+        AT91_GpioInternal_ClosePin(rxPin);
 
         if (state->handshaking) {
-            AT91_Gpio_ClosePin(ctsPin);
-            AT91_Gpio_ClosePin(rtsPin);
+            AT91_GpioInternal_ClosePin(ctsPin);
+            AT91_GpioInternal_ClosePin(rtsPin);
         }
     }
 
@@ -445,7 +445,7 @@ TinyCLR_Result AT91_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         int32_t txPin = AT91_Uart_GetTxPin(controllerIndex);
         int32_t rxPin = AT91_Uart_GetRxPin(controllerIndex);
 
-        if (!AT91_Gpio_OpenPin(txPin) || !AT91_Gpio_OpenPin(rxPin))
+        if (!AT91_GpioInternal_OpenPin(txPin) || !AT91_GpioInternal_OpenPin(rxPin))
             return TinyCLR_Result::SharingViolation;
 
         state->txBufferCount = 0;
