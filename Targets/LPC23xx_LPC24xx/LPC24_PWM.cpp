@@ -116,7 +116,7 @@ void LPC24_Pwm_AddApi(const TinyCLR_Api_Manager* apiManager) {
 TinyCLR_Result LPC24_Pwm_OpenChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel) {
     int32_t actualPin = LPC24_Pwm_GetGpioPinForChannel(self, channel);
 
-    if (!LPC24_Gpio_OpenPin(actualPin))
+    if (!LPC24_GpioInternal_OpenPin(actualPin))
         return TinyCLR_Result::SharingViolation;
 
     auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
@@ -155,7 +155,7 @@ TinyCLR_Result LPC24_Pwm_OpenChannel(const TinyCLR_Pwm_Controller* self, uint32_
 TinyCLR_Result LPC24_Pwm_CloseChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel) {
     int32_t actualPin = LPC24_Pwm_GetGpioPinForChannel(self, channel);
 
-    LPC24_Gpio_ClosePin(actualPin);
+    LPC24_GpioInternal_ClosePin(actualPin);
 
     auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
@@ -247,7 +247,7 @@ TinyCLR_Result LPC24_Pwm_EnableChannel(const TinyCLR_Pwm_Controller* self, uint3
     int32_t actualPin = LPC24_Pwm_GetGpioPinForChannel(self, channel);
 
     auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
-    LPC24_Gpio_ConfigurePin(actualPin, LPC24_Gpio_Direction::Input, state->gpioPin[channel].pinFunction, LPC24_Gpio_PinMode::Inactive);
+    LPC24_GpioInternal_ConfigurePin(actualPin, LPC24_Gpio_Direction::Input, state->gpioPin[channel].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
     return TinyCLR_Result::Success;
 }
@@ -255,7 +255,7 @@ TinyCLR_Result LPC24_Pwm_EnableChannel(const TinyCLR_Pwm_Controller* self, uint3
 TinyCLR_Result LPC24_Pwm_DisableChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel) {
     int32_t actualPin = LPC24_Pwm_GetGpioPinForChannel(self, channel);
 
-    LPC24_Gpio_ConfigurePin(actualPin, LPC24_Gpio_Direction::Output, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::Inactive);
+    LPC24_GpioInternal_ConfigurePin(actualPin, LPC24_Gpio_Direction::Output, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::Inactive);
 
     return TinyCLR_Result::Success;
 }
@@ -350,13 +350,13 @@ TinyCLR_Result LPC24_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self, 
         highTicks = periodTicks - highTicks;
 
     if (periodInNanoSeconds == 0 || durationInNanoSeconds == 0) {
-        LPC24_Gpio_EnableOutputPin(state->gpioPin[channel].number, false);
+        LPC24_GpioInternal_EnableOutputPin(state->gpioPin[channel].number, false);
         state->outputEnabled[channel] = true;
 
         return TinyCLR_Result::Success;
     }
     else if (durationInNanoSeconds >= periodInNanoSeconds) {
-        LPC24_Gpio_EnableOutputPin(state->gpioPin[channel].number, true);
+        LPC24_GpioInternal_EnableOutputPin(state->gpioPin[channel].number, true);
         state->outputEnabled[channel] = true;
 
         return TinyCLR_Result::Success;

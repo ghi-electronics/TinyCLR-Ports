@@ -2427,15 +2427,15 @@ TinyCLR_Result LPC24_Can_Acquire(const TinyCLR_Can_Controller* self) {
     if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
-        if (!LPC24_Gpio_OpenPin(canTxPins[controllerIndex].number))
+        if (!LPC24_GpioInternal_OpenPin(canTxPins[controllerIndex].number))
             return TinyCLR_Result::SharingViolation;
 
-        if (!LPC24_Gpio_OpenPin(canRxPins[controllerIndex].number))
+        if (!LPC24_GpioInternal_OpenPin(canRxPins[controllerIndex].number))
             return TinyCLR_Result::SharingViolation;
 
         // set pin as analog
-        LPC24_Gpio_ConfigurePin(canTxPins[controllerIndex].number, LPC24_Gpio_Direction::Input, canTxPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
-        LPC24_Gpio_ConfigurePin(canRxPins[controllerIndex].number, LPC24_Gpio_Direction::Input, canRxPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
+        LPC24_GpioInternal_ConfigurePin(canTxPins[controllerIndex].number, LPC24_Gpio_Direction::Input, canTxPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
+        LPC24_GpioInternal_ConfigurePin(canRxPins[controllerIndex].number, LPC24_Gpio_Direction::Input, canRxPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
         state->can_rx_count = 0;
         state->can_rx_in = 0;
@@ -2487,8 +2487,8 @@ TinyCLR_Result LPC24_Can_Release(const TinyCLR_Can_Controller* self) {
         CAN_DisableExplicitFilters(controllerIndex);
         CAN_DisableGroupFilters(controllerIndex);
 
-        LPC24_Gpio_ClosePin(canTxPins[controllerIndex].number);
-        LPC24_Gpio_ClosePin(canRxPins[controllerIndex].number);
+        LPC24_GpioInternal_ClosePin(canTxPins[controllerIndex].number);
+        LPC24_GpioInternal_ClosePin(canRxPins[controllerIndex].number);
     }
 
     return TinyCLR_Result::Success;

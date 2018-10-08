@@ -83,12 +83,12 @@ TinyCLR_Result LPC24_Dac_OpenChannel(const TinyCLR_Dac_Controller* self, uint32_
     if (channel >= LPC24_Dac_GetChannelCount(self))
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    if (!LPC24_Gpio_OpenPin(dacPins[channel].number))
+    if (!LPC24_GpioInternal_OpenPin(dacPins[channel].number))
         return TinyCLR_Result::SharingViolation;
 
     auto state = reinterpret_cast<DacState*>(self->ApiInfo->State);
 
-    LPC24_Gpio_ConfigurePin(dacPins[channel].number, LPC24_Gpio_Direction::Input, dacPins[channel].pinFunction, LPC24_Gpio_PinMode::Inactive);
+    LPC24_GpioInternal_ConfigurePin(dacPins[channel].number, LPC24_Gpio_Direction::Input, dacPins[channel].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
     DACR = (0 << 6); // This sets the initial starting voltage at 0
 
@@ -103,7 +103,7 @@ TinyCLR_Result LPC24_Dac_CloseChannel(const TinyCLR_Dac_Controller* self, uint32
 
     auto state = reinterpret_cast<DacState*>(self->ApiInfo->State);
     if (state->isOpened[channel])
-        LPC24_Gpio_ClosePin(dacPins[channel].number);
+        LPC24_GpioInternal_ClosePin(dacPins[channel].number);
 
     state->isOpened[channel] = false;
 

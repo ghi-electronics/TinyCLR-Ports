@@ -2205,21 +2205,21 @@ TinyCLR_Result LPC24_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
         auto clk = sdCardClkPins[controllerIndex];
         auto cmd = sdCardCmdPins[controllerIndex];
 
-        if (!LPC24_Gpio_OpenPin(d0.number)
-            || !LPC24_Gpio_OpenPin(d1.number)
-            || !LPC24_Gpio_OpenPin(d2.number)
-            || !LPC24_Gpio_OpenPin(d3.number)
-            || !LPC24_Gpio_OpenPin(clk.number)
-            || !LPC24_Gpio_OpenPin(cmd.number)
+        if (!LPC24_GpioInternal_OpenPin(d0.number)
+            || !LPC24_GpioInternal_OpenPin(d1.number)
+            || !LPC24_GpioInternal_OpenPin(d2.number)
+            || !LPC24_GpioInternal_OpenPin(d3.number)
+            || !LPC24_GpioInternal_OpenPin(clk.number)
+            || !LPC24_GpioInternal_OpenPin(cmd.number)
             )
             return TinyCLR_Result::SharingViolation;
 
-        LPC24_Gpio_ConfigurePin(d0.number, LPC24_Gpio_Direction::Input, d0.pinFunction, LPC24_Gpio_PinMode::PullUp);
-        LPC24_Gpio_ConfigurePin(d1.number, LPC24_Gpio_Direction::Input, d1.pinFunction, LPC24_Gpio_PinMode::PullUp);
-        LPC24_Gpio_ConfigurePin(d2.number, LPC24_Gpio_Direction::Input, d2.pinFunction, LPC24_Gpio_PinMode::PullUp);
-        LPC24_Gpio_ConfigurePin(d3.number, LPC24_Gpio_Direction::Input, d3.pinFunction, LPC24_Gpio_PinMode::PullUp);
-        LPC24_Gpio_ConfigurePin(clk.number, LPC24_Gpio_Direction::Input, clk.pinFunction, LPC24_Gpio_PinMode::Inactive);
-        LPC24_Gpio_ConfigurePin(cmd.number, LPC24_Gpio_Direction::Input, cmd.pinFunction, LPC24_Gpio_PinMode::PullUp);
+        LPC24_GpioInternal_ConfigurePin(d0.number, LPC24_Gpio_Direction::Input, d0.pinFunction, LPC24_Gpio_PinMode::PullUp);
+        LPC24_GpioInternal_ConfigurePin(d1.number, LPC24_Gpio_Direction::Input, d1.pinFunction, LPC24_Gpio_PinMode::PullUp);
+        LPC24_GpioInternal_ConfigurePin(d2.number, LPC24_Gpio_Direction::Input, d2.pinFunction, LPC24_Gpio_PinMode::PullUp);
+        LPC24_GpioInternal_ConfigurePin(d3.number, LPC24_Gpio_Direction::Input, d3.pinFunction, LPC24_Gpio_PinMode::PullUp);
+        LPC24_GpioInternal_ConfigurePin(clk.number, LPC24_Gpio_Direction::Input, clk.pinFunction, LPC24_Gpio_PinMode::Inactive);
+        LPC24_GpioInternal_ConfigurePin(cmd.number, LPC24_Gpio_Direction::Input, cmd.pinFunction, LPC24_Gpio_PinMode::PullUp);
 
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
@@ -2274,12 +2274,12 @@ TinyCLR_Result LPC24_SdCard_Release(const TinyCLR_Storage_Controller* self) {
         memoryProvider->Free(memoryProvider, state->regionSizes);
         memoryProvider->Free(memoryProvider, state->regionAddresses);
 
-        LPC24_Gpio_ClosePin(d0.number);
-        LPC24_Gpio_ClosePin(d1.number);
-        LPC24_Gpio_ClosePin(d2.number);
-        LPC24_Gpio_ClosePin(d3.number);
-        LPC24_Gpio_ClosePin(clk.number);
-        LPC24_Gpio_ClosePin(cmd.number);
+        LPC24_GpioInternal_ClosePin(d0.number);
+        LPC24_GpioInternal_ClosePin(d1.number);
+        LPC24_GpioInternal_ClosePin(d2.number);
+        LPC24_GpioInternal_ClosePin(d3.number);
+        LPC24_GpioInternal_ClosePin(clk.number);
+        LPC24_GpioInternal_ClosePin(cmd.number);
     }
 
     return TinyCLR_Result::Success;
