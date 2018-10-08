@@ -2679,7 +2679,18 @@ TinyCLR_Result STM32F4_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
         state->regionAddresses = (uint64_t*)memoryProvider->Allocate(memoryProvider, sizeof(uint64_t));
+
+        if (state->regionAddresses == nullptr) {
+            return TinyCLR_Result::OutOfMemory;
+        }
+
         state->regionSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
+
+        if (state->regionSizes == nullptr) {
+            memoryProvider->Free(memoryProvider, state->regionAddresses);
+
+            return TinyCLR_Result::OutOfMemory;
+        }
 
         state->descriptor.CanReadDirect = true;
         state->descriptor.CanWriteDirect = true;

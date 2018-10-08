@@ -2453,6 +2453,10 @@ TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
 
         state->pBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, AT91_SD_SECTOR_SIZE + 4);
 
+        if (state->pBuffer == nullptr) {
+            return TinyCLR_Result::OutOfMemory;
+        }
+
         uint32_t alignAddress = (uint32_t)state->pBuffer;
 
         while (alignAddress % 4 > 0) {
@@ -2462,7 +2466,21 @@ TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
         state->pBufferAligned = (uint8_t*)alignAddress;
 
         state->regionAddresses = (uint64_t*)memoryProvider->Allocate(memoryProvider, sizeof(uint64_t));
+
+        if (state->regionAddresses == nullptr) {
+            memoryProvider->Free(memoryProvider, state->pBuffer);
+            return TinyCLR_Result::OutOfMemory;
+        }
+
+
         state->regionSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
+
+        if (state->regionSizes == nullptr) {
+            memoryProvider->Free(memoryProvider, state->pBuffer);
+            memoryProvider->Free(memoryProvider, state->regionAddresses);
+
+            return TinyCLR_Result::OutOfMemory;
+        }
 
         state->descriptor.CanReadDirect = true;
         state->descriptor.CanWriteDirect = true;
