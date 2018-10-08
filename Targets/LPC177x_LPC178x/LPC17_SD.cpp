@@ -2151,12 +2151,14 @@ struct SdCardState {
     uint16_t initializeCount;
 };
 
-static const LPC17_Gpio_Pin sdCardData0Pins[] = LPC17_SD_DATA0_PINS;
-static const LPC17_Gpio_Pin sdCardData1Pins[] = LPC17_SD_DATA1_PINS;
-static const LPC17_Gpio_Pin sdCardData2Pins[] = LPC17_SD_DATA2_PINS;
-static const LPC17_Gpio_Pin sdCardData3Pins[] = LPC17_SD_DATA3_PINS;
-static const LPC17_Gpio_Pin sdCardClkPins[] = LPC17_SD_CLK_PINS;
-static const LPC17_Gpio_Pin sdCardCmdPins[] = LPC17_SD_CMD_PINS;
+#define SDCARD_DATA0_PIN 0
+#define SDCARD_DATA1_PIN 1
+#define SDCARD_DATA2_PIN 2
+#define SDCARD_DATA3_PIN 3
+#define SDCARD_CLK_PIN 4
+#define SDCARD_CMD_PIN 5
+
+static const LPC17_Gpio_Pin sdCardPins[][6] = LPC17_SD_PINS;
 
 static SdCardState sdCardStates[TOTAL_SDCARD_CONTROLLERS];
 
@@ -2200,21 +2202,16 @@ TinyCLR_Result LPC17_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
     if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
-        auto d0 = sdCardData0Pins[controllerIndex];
-        auto d1 = sdCardData1Pins[controllerIndex];
-        auto d2 = sdCardData2Pins[controllerIndex];
-        auto d3 = sdCardData3Pins[controllerIndex];
-        auto clk = sdCardClkPins[controllerIndex];
-        auto cmd = sdCardCmdPins[controllerIndex];
+        auto d0 = sdCardPins[controllerIndex][SDCARD_DATA0_PIN];
+        auto d1 = sdCardPins[controllerIndex][SDCARD_DATA1_PIN];
+        auto d2 = sdCardPins[controllerIndex][SDCARD_DATA2_PIN];
+        auto d3 = sdCardPins[controllerIndex][SDCARD_DATA3_PIN];
+        auto clk = sdCardPins[controllerIndex][SDCARD_CLK_PIN];
+        auto cmd = sdCardPins[controllerIndex][SDCARD_CMD_PIN];
 
-        if (!LPC17_GpioInternal_OpenPin(d0.number)
-            || !LPC17_GpioInternal_OpenPin(d1.number)
-            || !LPC17_GpioInternal_OpenPin(d2.number)
-            || !LPC17_GpioInternal_OpenPin(d3.number)
-            || !LPC17_GpioInternal_OpenPin(clk.number)
-            || !LPC17_GpioInternal_OpenPin(cmd.number)
-            )
+        if (!LPC17_GpioInternal_OpenMultiPins(sdCardPins[controllerIndex], 6))
             return TinyCLR_Result::SharingViolation;
+
 
         LPC17_GpioInternal_ConfigurePin(d0.number, LPC17_Gpio_Direction::Input, d0.pinFunction, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
         LPC17_GpioInternal_ConfigurePin(d1.number, LPC17_Gpio_Direction::Input, d1.pinFunction, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
@@ -2258,12 +2255,12 @@ TinyCLR_Result LPC17_SdCard_Release(const TinyCLR_Storage_Controller* self) {
     if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
-        auto d0 = sdCardData0Pins[controllerIndex];
-        auto d1 = sdCardData1Pins[controllerIndex];
-        auto d2 = sdCardData2Pins[controllerIndex];
-        auto d3 = sdCardData3Pins[controllerIndex];
-        auto clk = sdCardClkPins[controllerIndex];
-        auto cmd = sdCardCmdPins[controllerIndex];
+        auto d0 = sdCardPins[controllerIndex][SDCARD_DATA0_PIN];
+        auto d1 = sdCardPins[controllerIndex][SDCARD_DATA1_PIN];
+        auto d2 = sdCardPins[controllerIndex][SDCARD_DATA2_PIN];
+        auto d3 = sdCardPins[controllerIndex][SDCARD_DATA3_PIN];
+        auto clk = sdCardPins[controllerIndex][SDCARD_CLK_PIN];
+        auto cmd = sdCardPins[controllerIndex][SDCARD_CMD_PIN];
 
         LPC_SC->PCONP &= ~(1 << 28); /* Disable clock to the Mci block */
 
@@ -2390,7 +2387,7 @@ TinyCLR_Result LPC17_SdCard_Reset() {
         sdCardStates[i].initializeCount = 0;
 
         LPC17_SdCard_Close(&sdCardControllers[i]);
-        LPC17_SdCard_Release(&sdCardControllers[i]);        
+        LPC17_SdCard_Release(&sdCardControllers[i]);
     }
 
     return TinyCLR_Result::Success;

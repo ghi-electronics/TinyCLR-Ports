@@ -2359,12 +2359,14 @@ struct SdCardState {
     uint16_t initializeCount;
 };
 
-static const AT91_Gpio_Pin sdCardData0Pins[] = AT91_SD_DATA0_PINS;
-static const AT91_Gpio_Pin sdCardData1Pins[] = AT91_SD_DATA1_PINS;
-static const AT91_Gpio_Pin sdCardData2Pins[] = AT91_SD_DATA2_PINS;
-static const AT91_Gpio_Pin sdCardData3Pins[] = AT91_SD_DATA3_PINS;
-static const AT91_Gpio_Pin sdCardClkPins[] = AT91_SD_CLK_PINS;
-static const AT91_Gpio_Pin sdCardCmdPins[] = AT91_SD_CMD_PINS;
+#define SDCARD_DATA0_PIN 0
+#define SDCARD_DATA1_PIN 1
+#define SDCARD_DATA2_PIN 2
+#define SDCARD_DATA3_PIN 3
+#define SDCARD_CLK_PIN 4
+#define SDCARD_CMD_PIN 5
+
+static const AT91_Gpio_Pin sdCardPins[][6] = AT91_SD_PINS;
 
 static SdCardState sdCardStates[TOTAL_SDCARD_CONTROLLERS];
 
@@ -2414,20 +2416,14 @@ TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
 
         auto controllerIndex = state->controllerIndex;
 
-        auto d0 = sdCardData0Pins[controllerIndex];
-        auto d1 = sdCardData1Pins[controllerIndex];
-        auto d2 = sdCardData2Pins[controllerIndex];
-        auto d3 = sdCardData3Pins[controllerIndex];
-        auto clk = sdCardClkPins[controllerIndex];
-        auto cmd = sdCardCmdPins[controllerIndex];
+        auto d0 = sdCardPins[controllerIndex][SDCARD_DATA0_PIN];
+        auto d1 = sdCardPins[controllerIndex][SDCARD_DATA1_PIN];
+        auto d2 = sdCardPins[controllerIndex][SDCARD_DATA2_PIN];
+        auto d3 = sdCardPins[controllerIndex][SDCARD_DATA3_PIN];
+        auto clk = sdCardPins[controllerIndex][SDCARD_CLK_PIN];
+        auto cmd = sdCardPins[controllerIndex][SDCARD_CMD_PIN];
 
-        if (!AT91_GpioInternal_OpenPin(d0.number)
-            || !AT91_GpioInternal_OpenPin(d1.number)
-            || !AT91_GpioInternal_OpenPin(d2.number)
-            || !AT91_GpioInternal_OpenPin(d3.number)
-            || !AT91_GpioInternal_OpenPin(clk.number)
-            || !AT91_GpioInternal_OpenPin(cmd.number)
-            )
+        if (!AT91_GpioInternal_OpenMultiPins(sdCardPins[controllerIndex], 6))
             return TinyCLR_Result::SharingViolation;
 
         AT91_GpioInternal_ConfigurePin(d0.number, AT91_Gpio_Direction::Input, d0.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
@@ -2495,12 +2491,12 @@ TinyCLR_Result AT91_SdCard_Release(const TinyCLR_Storage_Controller* self) {
     if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
-        auto d0 = sdCardData0Pins[controllerIndex];
-        auto d1 = sdCardData1Pins[controllerIndex];
-        auto d2 = sdCardData2Pins[controllerIndex];
-        auto d3 = sdCardData3Pins[controllerIndex];
-        auto clk = sdCardClkPins[controllerIndex];
-        auto cmd = sdCardCmdPins[controllerIndex];
+        auto d0 = sdCardPins[controllerIndex][SDCARD_DATA0_PIN];
+        auto d1 = sdCardPins[controllerIndex][SDCARD_DATA1_PIN];
+        auto d2 = sdCardPins[controllerIndex][SDCARD_DATA2_PIN];
+        auto d3 = sdCardPins[controllerIndex][SDCARD_DATA3_PIN];
+        auto clk = sdCardPins[controllerIndex][SDCARD_CLK_PIN];
+        auto cmd = sdCardPins[controllerIndex][SDCARD_CMD_PIN];
 
         AT91_PMC &pmc = AT91::PMC();
 
@@ -2738,7 +2734,7 @@ TinyCLR_Result AT91_SdCard_Reset() {
         sdCardStates[i].initializeCount = 0;
 
         AT91_SdCard_Close(&sdCardControllers[i]);
-        AT91_SdCard_Release(&sdCardControllers[i]);        
+        AT91_SdCard_Release(&sdCardControllers[i]);
     }
 
     return TinyCLR_Result::Success;

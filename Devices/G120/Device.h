@@ -92,13 +92,9 @@
 #define INCLUDE_RTC
 
 #define INCLUDE_SD
-#define LPC17_SD_DATA0_PINS { { PIN(1, 6), PF(2) } }
-#define LPC17_SD_DATA1_PINS { { PIN(1, 7), PF(2) } }
-#define LPC17_SD_DATA2_PINS { { PIN(1, 11), PF(2) } }
-#define LPC17_SD_DATA3_PINS { { PIN(1, 12), PF(2) } }
-#define LPC17_SD_CLK_PINS { { PIN(1, 2), PF(2) } }
-#define LPC17_SD_CMD_PINS { { PIN(1, 3), PF(2) } }
-#define LPC17_SD_PWR_PINS  { { PIN(1, 5), PF(0) } }
+#define LPC17_SD_PINS {  /* DATA 0                  DATA 1                 DATA 2                  DATA 3                  CLK                   CMD*/\
+                       { { PIN(1, 6), PF(2) },    { PIN(1, 7), PF(2) },   { PIN(1, 11), PF(2) },  { PIN(1, 12), PF(2) } , { PIN(1, 2), PF(2) }, { PIN(1, 3), PF(2) } }\
+                      }
 
 #define INCLUDE_SIGNALS
 

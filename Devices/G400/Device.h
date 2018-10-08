@@ -82,12 +82,9 @@
 #define INCLUDE_RTC
 
 #define INCLUDE_SD
-#define AT91_SD_DATA0_PINS { { PIN(A, 15), PS(A) } }
-#define AT91_SD_DATA1_PINS { { PIN(A, 18), PS(A) } }
-#define AT91_SD_DATA2_PINS { { PIN(A, 19), PS(A) } }
-#define AT91_SD_DATA3_PINS { { PIN(A, 20), PS(A) } }
-#define AT91_SD_CLK_PINS { { PIN(A, 17), PS(A) } }
-#define AT91_SD_CMD_PINS { { PIN(A, 16), PS(A) } }
+#define AT91_SD_PINS {  /* DATA 0                  DATA 1                 DATA 2                  DATA 3                  CLK                    CMD*/\
+                      {  { PIN(A, 15), PS(A) },   { PIN(A, 18), PS(A) }, { PIN(A, 19), PS(A) },  { PIN(A, 20), PS(A) },  { PIN(A, 17), PS(A) }, { PIN(A, 16), PS(A) } }\
+                     }
 
 #define INCLUDE_SIGNALS
 
