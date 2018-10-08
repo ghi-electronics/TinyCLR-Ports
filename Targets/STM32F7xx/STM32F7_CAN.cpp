@@ -326,8 +326,10 @@ struct CanState {
     bool enable;
 };
 
-static const STM32F7_Gpio_Pin canTxPins[] = STM32F7_CAN_TX_PINS;
-static const STM32F7_Gpio_Pin canRxPins[] = STM32F7_CAN_RX_PINS;
+#define CAN_TX_PIN 0
+#define CAN_RX_PIN 1
+
+static const STM32F7_Gpio_Pin canPins[][2] = STM32F7_CAN_PINS;
 static const uint32_t canDefaultBuffersSize[] = STM32F7_CAN_BUFFER_DEFAULT_SIZE;
 
 static CanState canStates[TOTAL_CAN_CONTROLLERS];
@@ -1027,7 +1029,6 @@ bool CAN_ErrorHandler(uint8_t controllerIndex) {
         state->errorEventHandler(state->provider, TinyCLR_Can_Error::Passive, STM32F7_Time_GetCurrentProcessorTime());
     }
 
-
     return false;
 }
 
@@ -1232,15 +1233,12 @@ TinyCLR_Result STM32F7_Can_Acquire(const TinyCLR_Can_Controller* self) {
     if (state->initializeCount == 0) {
         int32_t controllerIndex = state->controllerIndex;
 
-        if (!STM32F7_GpioInternal_OpenPin(canTxPins[controllerIndex].number))
-            return TinyCLR_Result::SharingViolation;
-
-        if (!STM32F7_GpioInternal_OpenPin(canRxPins[controllerIndex].number))
+        if (!STM32F7_GpioInternal_OpenMultiPins(canPins[controllerIndex], 2))
             return TinyCLR_Result::SharingViolation;
 
         // set pin as analog
-        STM32F7_GpioInternal_ConfigurePin(canTxPins[controllerIndex].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, canTxPins[controllerIndex].alternateFunction);
-        STM32F7_GpioInternal_ConfigurePin(canRxPins[controllerIndex].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, canRxPins[controllerIndex].alternateFunction);
+        STM32F7_GpioInternal_ConfigurePin(canPins[controllerIndex][CAN_TX_PIN].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, canPins[controllerIndex][CAN_TX_PIN].alternateFunction);
+        STM32F7_GpioInternal_ConfigurePin(canPins[controllerIndex][CAN_RX_PIN].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, canPins[controllerIndex][CAN_RX_PIN].alternateFunction);
 
         state->can_rx_count = 0;
         state->can_rx_in = 0;
@@ -1281,8 +1279,8 @@ TinyCLR_Result STM32F7_Can_Release(const TinyCLR_Can_Controller* self) {
             state->canRxMessagesFifo = nullptr;
         }
 
-        STM32F7_GpioInternal_ClosePin(canTxPins[controllerIndex].number);
-        STM32F7_GpioInternal_ClosePin(canRxPins[controllerIndex].number);
+        STM32F7_GpioInternal_ClosePin(canPins[controllerIndex][CAN_TX_PIN].number);
+        STM32F7_GpioInternal_ClosePin(canPins[controllerIndex][CAN_RX_PIN].number);
     }
 
     return TinyCLR_Result::Success;
@@ -1417,7 +1415,6 @@ TinyCLR_Result STM32F7_Can_ReadMessage(const TinyCLR_Can_Controller* self, TinyC
     }
 
     return TinyCLR_Result::Success;
-
 }
 
 TinyCLR_Result STM32F7_Can_SetBitTiming(const TinyCLR_Can_Controller* self, const TinyCLR_Can_BitTiming* timing) {
@@ -1615,6 +1612,7 @@ size_t STM32F7_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     int32_t controllerIndex = state->controllerIndex;
+
     CAN_TypeDef* CANx = ((controllerIndex == 0) ? CAN1 : CAN2);
 
     return (size_t)((CANx->ESR & CAN_ESR_REC) >> 24);
