@@ -134,42 +134,12 @@ void AT91_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
     }
 }
 
-static const AT91_Gpio_Pin uartTxPins[] = AT91_UART_TX_PINS;
-static const AT91_Gpio_Pin uartRxPins[] = AT91_UART_RX_PINS;
-static const AT91_Gpio_Pin uartRtsPins[] = AT91_UART_RTS_PINS;
-static const AT91_Gpio_Pin uartCtsPins[] = AT91_UART_CTS_PINS;
+#define UART_TXD_PIN 0
+#define UART_RXD_PIN 1
+#define UART_RTS_PIN 2
+#define UART_CTS_PIN 3
 
-int32_t AT91_Uart_GetTxPin(int32_t controllerIndex) {
-    return uartTxPins[controllerIndex].number;
-}
-
-int32_t AT91_Uart_GetRxPin(int32_t controllerIndex) {
-    return uartRxPins[controllerIndex].number;
-}
-
-int32_t AT91_Uart_GetRtsPin(int32_t controllerIndex) {
-    return uartRtsPins[controllerIndex].number;
-}
-
-int32_t AT91_Uart_GetCtsPin(int32_t controllerIndex) {
-    return uartCtsPins[controllerIndex].number;
-}
-
-AT91_Gpio_PeripheralSelection AT91_Uart_GetTxAlternateFunction(int32_t controllerIndex) {
-    return uartTxPins[controllerIndex].peripheralSelection;
-}
-
-AT91_Gpio_PeripheralSelection AT91_Uart_GetRxAlternateFunction(int32_t controllerIndex) {
-    return uartRxPins[controllerIndex].peripheralSelection;
-}
-
-AT91_Gpio_PeripheralSelection AT91_Uart_GetRtsAlternateFunction(int32_t controllerIndex) {
-    return uartRtsPins[controllerIndex].peripheralSelection;
-}
-
-AT91_Gpio_PeripheralSelection AT91_Uart_GetCtsAlternateFunction(int32_t controllerIndex) {
-    return uartCtsPins[controllerIndex].peripheralSelection;
-}
+static const AT91_Gpio_Pin uartPins[][4] = AT91_UART_PINS;
 
 size_t AT91_Uart_GetReadBufferSize(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
@@ -247,44 +217,34 @@ TinyCLR_Result AT91_Uart_PinConfiguration(int controllerIndex, bool enable) {
 
     auto state = &uartStates[controllerIndex];
 
-    uint32_t txPin = AT91_Uart_GetTxPin(controllerIndex);
-    uint32_t rxPin = AT91_Uart_GetRxPin(controllerIndex);
-    uint32_t ctsPin = AT91_Uart_GetCtsPin(controllerIndex);
-    uint32_t rtsPin = AT91_Uart_GetRtsPin(controllerIndex);
-
-    AT91_Gpio_PeripheralSelection txPinMode = AT91_Uart_GetTxAlternateFunction(controllerIndex);
-    AT91_Gpio_PeripheralSelection rxPinMode = AT91_Uart_GetRxAlternateFunction(controllerIndex);
-    AT91_Gpio_PeripheralSelection ctsPinMode = AT91_Uart_GetCtsAlternateFunction(controllerIndex);
-    AT91_Gpio_PeripheralSelection rtsPinMode = AT91_Uart_GetRtsAlternateFunction(controllerIndex);
-
     AT91_Uart_TxBufferEmptyInterruptEnable(controllerIndex, enable);
 
     AT91_Uart_RxBufferFullInterruptEnable(controllerIndex, enable);
 
     if (enable) {
         // Connect pin to UART
-        AT91_GpioInternal_ConfigurePin(txPin, AT91_Gpio_Direction::Input, txPinMode, AT91_Gpio_ResistorMode::Inactive);
+        AT91_GpioInternal_ConfigurePin(uartPins[controllerIndex][UART_TXD_PIN].number, AT91_Gpio_Direction::Input, uartPins[controllerIndex][UART_TXD_PIN].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
         // Connect pin to UART
-        AT91_GpioInternal_ConfigurePin(rxPin, AT91_Gpio_Direction::Input, rxPinMode, AT91_Gpio_ResistorMode::Inactive);
+        AT91_GpioInternal_ConfigurePin(uartPins[controllerIndex][UART_RXD_PIN].number, AT91_Gpio_Direction::Input, uartPins[controllerIndex][UART_RXD_PIN].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
 
         if (state->handshaking) {
-            if (ctsPin == PIN_NONE || rtsPin == PIN_NONE)
+            if (uartPins[controllerIndex][UART_CTS_PIN].number == PIN_NONE || uartPins[controllerIndex][UART_RTS_PIN].number == PIN_NONE)
                 return TinyCLR_Result::NotSupported;
 
-            if (!AT91_GpioInternal_OpenPin(ctsPin) || !AT91_GpioInternal_OpenPin(rtsPin))
+            if (!AT91_GpioInternal_OpenMultiPins(&uartPins[controllerIndex][UART_RTS_PIN], 2))
                 return TinyCLR_Result::SharingViolation;
 
-            AT91_GpioInternal_ConfigurePin(ctsPin, AT91_Gpio_Direction::Input, ctsPinMode, AT91_Gpio_ResistorMode::Inactive);
-            AT91_GpioInternal_ConfigurePin(rtsPin, AT91_Gpio_Direction::Input, rtsPinMode, AT91_Gpio_ResistorMode::Inactive);
+            AT91_GpioInternal_ConfigurePin(uartPins[controllerIndex][UART_CTS_PIN].number, AT91_Gpio_Direction::Input, uartPins[controllerIndex][UART_CTS_PIN].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+            AT91_GpioInternal_ConfigurePin(uartPins[controllerIndex][UART_RTS_PIN].number, AT91_Gpio_Direction::Input, uartPins[controllerIndex][UART_RTS_PIN].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
         }
     }
     else {
-        AT91_GpioInternal_ClosePin(txPin);
-        AT91_GpioInternal_ClosePin(rxPin);
+        AT91_GpioInternal_ClosePin(uartPins[controllerIndex][UART_TXD_PIN].number);
+        AT91_GpioInternal_ClosePin(uartPins[controllerIndex][UART_RXD_PIN].number);
 
         if (state->handshaking) {
-            AT91_GpioInternal_ClosePin(ctsPin);
-            AT91_GpioInternal_ClosePin(rtsPin);
+            AT91_GpioInternal_ClosePin(uartPins[controllerIndex][UART_CTS_PIN].number);
+            AT91_GpioInternal_ClosePin(uartPins[controllerIndex][UART_RTS_PIN].number);
         }
     }
 
@@ -442,10 +402,7 @@ TinyCLR_Result AT91_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
     if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
-        int32_t txPin = AT91_Uart_GetTxPin(controllerIndex);
-        int32_t rxPin = AT91_Uart_GetRxPin(controllerIndex);
-
-        if (!AT91_GpioInternal_OpenPin(txPin) || !AT91_GpioInternal_OpenPin(rxPin))
+        if (!AT91_GpioInternal_OpenMultiPins(uartPins[controllerIndex], 2))
             return TinyCLR_Result::SharingViolation;
 
         state->txBufferCount = 0;
@@ -808,7 +765,7 @@ TinyCLR_Result AT91_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* self
 
         // Reading the pin state to protect values from register for inteterupt which is higher priority (some bits are clear once read)
         TinyCLR_Gpio_PinValue pinState;
-        AT91_Gpio_Read(nullptr, uartCtsPins[controllerIndex].number, pinState);
+        AT91_Gpio_Read(nullptr, uartPins[controllerIndex][UART_CTS_PIN].number, pinState);
 
         value = (pinState == TinyCLR_Gpio_PinValue::High) ? false : true;
     }
@@ -833,7 +790,7 @@ TinyCLR_Result AT91_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Controller
 
         // Reading the pin state to protect values from register for interrupt which is higher priority (some bits are clear once read)
         TinyCLR_Gpio_PinValue pinState;
-        AT91_Gpio_Read(nullptr, uartRtsPins[controllerIndex].number, pinState);
+        AT91_Gpio_Read(nullptr, uartPins[controllerIndex][UART_RTS_PIN].number, pinState);
 
         value = (pinState == TinyCLR_Gpio_PinValue::High) ? true : false;
     }

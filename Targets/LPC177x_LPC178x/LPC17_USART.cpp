@@ -410,8 +410,11 @@ TinyCLR_Result LPC17_Uart_PinConfiguration(int controllerIndex, bool enable) {
             if (ctsPin == PIN_NONE || rtsPin == PIN_NONE)
                 return TinyCLR_Result::NotSupported;
 
-            if (!LPC17_GpioInternal_OpenPin(ctsPin) || !LPC17_GpioInternal_OpenPin(rtsPin))
+            if (!LPC17_GpioInternal_OpenPin(ctsPin) || !LPC17_GpioInternal_OpenPin(rtsPin)) {
+                LPC17_Uart_PinConfiguration(controllerIndex, false); // Release all pins included tx, rx
+
                 return TinyCLR_Result::SharingViolation;
+            }
 
             LPC17_GpioInternal_ConfigurePin(ctsPin, LPC17_Gpio_Direction::Input, ctsPinMode, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
             LPC17_GpioInternal_ConfigurePin(rtsPin, LPC17_Gpio_Direction::Input, rtsPinMode, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
@@ -605,8 +608,14 @@ TinyCLR_Result LPC17_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         int32_t txPin = LPC17_Uart_GetTxPin(controllerIndex);
         int32_t rxPin = LPC17_Uart_GetRxPin(controllerIndex);
 
-        if (!LPC17_GpioInternal_OpenPin(txPin) || !LPC17_GpioInternal_OpenPin(rxPin))
+        if (!LPC17_GpioInternal_OpenPin(txPin))
             return TinyCLR_Result::SharingViolation;
+
+        if (!LPC17_GpioInternal_OpenPin(rxPin)) {
+            LPC17_GpioInternal_ClosePin(txPin); // Close tx if openning rx failed
+
+            return TinyCLR_Result::SharingViolation;
+        }
 
         state->txBufferCount = 0;
         state->txBufferIn = 0;

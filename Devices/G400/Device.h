@@ -103,10 +103,15 @@
 #define TOTAL_UART_CONTROLLERS 6
 #define AT91_UART_DEFAULT_TX_BUFFER_SIZE  { 16*1024, 16*1024, 16*1024, 16*1024, 16*1024, 16*1024 }
 #define AT91_UART_DEFAULT_RX_BUFFER_SIZE  { 16*1024, 16*1024, 16*1024, 16*1024, 16*1024, 16*1024 }
-#define AT91_UART_TX_PINS { { PIN(A, 9), PS(A) } , { PIN(A, 0), PS(A) }, { PIN(A, 5), PS(A) } , { PIN(A, 7), PS(A) } , { PIN(C, 8), PS(C) } , { PIN(C,16), PS(C) } }
-#define AT91_UART_RX_PINS { { PIN(A,10), PS(A) } , { PIN(A, 1), PS(A) }, { PIN(A, 6), PS(A) } , { PIN(A, 8), PS(A) } , { PIN(C, 9), PS(C) } , { PIN(C,17), PS(C) } }
-#define AT91_UART_RTS_PINS { { PIN_NONE , PS_NONE }, { PIN(A, 2), PS(A) }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } }
-#define AT91_UART_CTS_PINS { { PIN_NONE , PS_NONE }, { PIN(A, 3), PS(A) }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } }
+
+#define AT91_UART_PINS { /* TX                       RX                      RTS                      CTS*/\
+                        { { PIN(A, 9), PS(A) } , { PIN(A,10), PS(A) } , { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } },\
+                        { { PIN(A, 0), PS(A) } , { PIN(A, 1), PS(A) } , { PIN(A, 2), PS(A)   }, { PIN(A, 3), PS(A)   } },\
+                        { { PIN(A, 5), PS(A) } , { PIN(A, 6), PS(A) } , { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } },\
+                        { { PIN(A, 7), PS(A) } , { PIN(A, 8), PS(A) } , { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } },\
+                        { { PIN(C, 8), PS(C) } , { PIN(C, 9), PS(C) } , { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } },\
+                        { { PIN(C,16), PS(C) } , { PIN(C,17), PS(C) } , { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } }\
+                       }
 
 #define INCLUDE_USBCLIENT
 #define AT91_TOTAL_USB_CONTROLLERS 1

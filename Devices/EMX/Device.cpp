@@ -58,7 +58,7 @@ void LPC24_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const v
         configuration = (const void*)&LPC24_Startup_UsbDebuggerConfiguration;
     }
     else {
-        api = LPC24_Uart_GetRequiredApi();        
+        api = LPC24_Uart_GetRequiredApi();
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;
@@ -95,44 +95,6 @@ void LPC24_UsbDevice_PinConfiguration() {
     LPC24_GpioInternal_ConfigurePin(PIN(0, 31), LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction1, LPC24_Gpio_PinMode::Inactive); // D2+ pin. D2- has only USBD- function. no need to config
 
     OTGStCtrl |= 3;
-}
-
-// Uart
-static const LPC24_Gpio_Pin g_lpc24_uart_tx_pins[] = LPC24_UART_TX_PINS;
-static const LPC24_Gpio_Pin g_lpc24_uart_rx_pins[] = LPC24_UART_RX_PINS;
-static const LPC24_Gpio_Pin g_lpc24_uart_rts_pins[] = LPC24_UART_RTS_PINS;
-static const LPC24_Gpio_Pin g_lpc24_uart_cts_pins[] = LPC24_UART_CTS_PINS;
-
-int32_t LPC24_Uart_GetTxPin(int32_t portNum) {
-    return g_lpc24_uart_tx_pins[portNum].number;
-}
-
-int32_t LPC24_Uart_GetRxPin(int32_t portNum) {
-    return g_lpc24_uart_rx_pins[portNum].number;
-}
-
-int32_t LPC24_Uart_GetRtsPin(int32_t portNum) {
-    return g_lpc24_uart_rts_pins[portNum].number;
-}
-
-int32_t LPC24_Uart_GetCtsPin(int32_t portNum) {
-    return g_lpc24_uart_cts_pins[portNum].number;
-}
-
-LPC24_Gpio_PinFunction LPC24_Uart_GetTxAlternateFunction(int32_t portNum) {
-    return g_lpc24_uart_tx_pins[portNum].pinFunction;
-}
-
-LPC24_Gpio_PinFunction LPC24_Uart_GetRxAlternateFunction(int32_t portNum) {
-    return g_lpc24_uart_rx_pins[portNum].pinFunction;
-}
-
-LPC24_Gpio_PinFunction LPC24_Uart_GetRtsAlternateFunction(int32_t portNum) {
-    return g_lpc24_uart_rts_pins[portNum].pinFunction;
-}
-
-LPC24_Gpio_PinFunction LPC24_Uart_GetCtsAlternateFunction(int32_t portNum) {
-    return g_lpc24_uart_cts_pins[portNum].pinFunction;
 }
 
 // ADC

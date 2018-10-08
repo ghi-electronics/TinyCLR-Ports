@@ -100,10 +100,13 @@
 #define TOTAL_UART_CONTROLLERS 4
 #define LPC24_UART_DEFAULT_TX_BUFFER_SIZE { 16 * 1024, 16 * 1024, 16 * 1024, 16 * 1024 }
 #define LPC24_UART_DEFAULT_RX_BUFFER_SIZE { 16 * 1024, 16 * 1024, 16 * 1024, 16 * 1024 }
-#define LPC24_UART_TX_PINS              { { PIN(0, 2), PF(1) }, { PIN(2, 0) , PF(2) }, { PIN(4, 22), PF(2) }, { PIN(0, 25), PF(3) } }
-#define LPC24_UART_RX_PINS              { { PIN(0, 3), PF(1) }, { PIN(2, 1) , PF(2) }, { PIN(4, 23), PF(2) }, { PIN(0, 26), PF(3) } }
-#define LPC24_UART_RTS_PINS             { { PIN_NONE , PF_NONE }, { PIN(3, 30), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } }
-#define LPC24_UART_CTS_PINS             { { PIN_NONE , PF_NONE }, { PIN(3, 18), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } }
+
+#define LPC24_UART_PINS { /* TX                       RX                      RTS                      CTS*/\
+                         {  { PIN(0, 2), PF(1)  }, { PIN(0, 3), PF(1)  }, { PIN_NONE , PF_NONE  }, { PIN_NONE , PF_NONE  } },\
+                         {  { PIN(2, 0) , PF(2) }, { PIN(2, 1) , PF(2) }, { PIN(3, 30), PF(3)   }, { PIN(3, 18), PF(3)   } },\
+                         {  { PIN(4, 22), PF(2) }, { PIN(4, 23), PF(2) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
+                         {  { PIN(0, 25), PF(3) }, { PIN(0, 26), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } } \
+                        }
 
 #define INCLUDE_USBCLIENT
 #define LPC24_TOTAL_USB_CONTROLLERS 1
