@@ -55,9 +55,9 @@
 #define INCLUDE_CAN
 #define TOTAL_CAN_CONTROLLERS 2
 #define LPC24_CAN_BUFFER_DEFAULT_SIZE { 128, 128 }
-#define LPC24_CAN_PINS {/*         TX                     RX          */\
-                        { { PIN(0, 1), PF(1) },  { PIN(0, 0), PF(1) } },\
-                        { { PIN(0, 5), PF(2) },  { PIN(0, 4), PF(2) } }\
+#define LPC24_CAN_PINS {/*          TX                     RX          */       \
+                        /*CAN0*/{ { PIN(0, 1), PF(1) },  { PIN(0, 0), PF(1) } },\
+                        /*CAN0*/{ { PIN(0, 5), PF(2) },  { PIN(0, 4), PF(2) } } \
                        }
 
 #define INCLUDE_DAC
@@ -69,8 +69,8 @@
 
 #define INCLUDE_I2C
 #define TOTAL_I2C_CONTROLLERS 1
-#define LPC24_I2C_PINS {/*   SDA                   SCL*/\
-                        {  { PIN(0, 27), PF(1) }, { PIN(0, 28), PF(1) } }\
+#define LPC24_I2C_PINS {/*          SDA                    SCL*/                \
+                        /*I2C0*/{ { PIN(0, 27), PF(1) }, { PIN(0, 28), PF(1) } }\
                        }
 
 #define INCLUDE_POWER
@@ -87,9 +87,9 @@
 
 #define INCLUDE_SPI
 #define TOTAL_SPI_CONTROLLERS 2
-#define LPC24_SPI_PINS {/* MOSI                   MISO                   CLOCK*/\
-                        { { PIN(0, 18), PF(2) }, { PIN(0, 17), PF(2) }, { PIN(0, 15), PF(2) } },\
-                        { { PIN(0,  9), PF(2) }, { PIN(0,  8), PF(2) }, { PIN(0,  7), PF(2) } }\
+#define LPC24_SPI_PINS {/*          MOSI                   MISO                   CLOCK*/               \
+                        /*SPI0*/{ { PIN(0, 18), PF(2) }, { PIN(0, 17), PF(2) }, { PIN(0, 15), PF(2) } },\
+                        /*SPI1*/{ { PIN(0,  9), PF(2) }, { PIN(0,  8), PF(2) }, { PIN(0,  7), PF(2) } } \
                        }
 
 #define LPC24_TIME_DEFAULT_CONTROLLER_ID 0
@@ -100,17 +100,17 @@
 #define TOTAL_UART_CONTROLLERS 4
 #define LPC24_UART_DEFAULT_TX_BUFFER_SIZE { 16 * 1024, 16 * 1024, 16 * 1024, 16 * 1024 }
 #define LPC24_UART_DEFAULT_RX_BUFFER_SIZE { 16 * 1024, 16 * 1024, 16 * 1024, 16 * 1024 }
-#define LPC2478_UART_PINS { /* TX                       RX                      RTS                      CTS*/\
-                           {  { PIN(0, 2), PF(1)  }, { PIN(0, 3), PF(1)  }, { PIN_NONE , PF_NONE  }, { PIN_NONE , PF_NONE  } },\
-                           {  { PIN(2, 0) , PF(2) }, { PIN(2, 1) , PF(2) }, { PIN(3, 30), PF(3)   }, { PIN(3, 18), PF(3)   } },\
-                           {  { PIN(4, 22), PF(2) }, { PIN(4, 23), PF(2) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
-                           {  { PIN(0, 25), PF(3) }, { PIN(0, 26), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } } \
+#define LPC2478_UART_PINS { /*          TX                     RX                     RTS                      CTS*/                   \
+                           /*UART0*/{ { PIN(0, 2), PF(1)  }, { PIN(0, 3), PF(1)  }, { PIN_NONE , PF_NONE  }, { PIN_NONE , PF_NONE  } },\
+                           /*UART1*/{ { PIN(2, 0) , PF(2) }, { PIN(2, 1) , PF(2) }, { PIN(3, 30), PF(3)   }, { PIN(3, 18), PF(3)   } },\
+                           /*UART2*/{ { PIN(4, 22), PF(2) }, { PIN(4, 23), PF(2) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
+                           /*UART3*/{ { PIN(0, 25), PF(3) }, { PIN(0, 26), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } } \
                          }
-#define LPC2468_UART_PINS { /* TX                       RX                      RTS                      CTS*/\
-                           {  { PIN(0, 2), PF(1)  }, { PIN(0, 3), PF(1)  }, { PIN_NONE  , PF_NONE }, { PIN_NONE , PF_NONE  } },\
-                           {  { PIN(2, 0) , PF(2) }, { PIN(2, 1) , PF(2) }, { PIN(2, 7) , PF(2)   }, { PIN(2,  2), PF(2)   } },\
-                           {  { PIN(2,  8), PF(2) }, { PIN(2, 9) , PF(2) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
-                           {  { PIN(0, 25), PF(3) }, { PIN(0, 26), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } } \
+#define LPC2468_UART_PINS { /*          TX                     RX                     RTS                      CTS*/                   \
+                           /*UART0*/{ { PIN(0, 2), PF(1)  }, { PIN(0, 3), PF(1)  }, { PIN_NONE  , PF_NONE }, { PIN_NONE , PF_NONE  } },\
+                           /*UART1*/{ { PIN(2, 0) , PF(2) }, { PIN(2, 1) , PF(2) }, { PIN(2, 7) , PF(2)   }, { PIN(2,  2), PF(2)   } },\
+                           /*UART2*/{ { PIN(2,  8), PF(2) }, { PIN(2, 9) , PF(2) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
+                           /*UART3*/{ { PIN(0, 25), PF(3) }, { PIN(0, 26), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } } \
                          }
 
 #define INCLUDE_USBCLIENT

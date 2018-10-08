@@ -60,8 +60,8 @@
 
 #define INCLUDE_I2C
 #define TOTAL_I2C_CONTROLLERS 1
-#define AT91_I2C_PINS {/*   SDA                   SCL*/\
-                        {  { PIN(A,23), PS(A) }, { PIN(A,24), PS(A) } }\
+#define AT91_I2C_PINS {/*           SDA                   SCL*/               \
+                        /*I2C0*/{ { PIN(A,23), PS(A) }, { PIN(A,24), PS(A) } }\
                       }
 
 #define INCLUDE_POWER
@@ -80,8 +80,8 @@
 #define AT91_SPI_MISO_PINS { { PIN(A,25), PS(A) } }
 #define AT91_SPI_MOSI_PINS { { PIN(A,26), PS(A) } }
 #define AT91_SPI_SCLK_PINS { { PIN(A,27), PS(A) } }
-#define AT91_SPI_PINS {/*  MOSI                   MISO                   CLOCK*/\
-                        { { PIN(A,25), PS(A) },  { PIN(A,26), PS(A) },  { PIN(A, 27), PS(A) } }\
+#define AT91_SPI_PINS {/*           MOSI                   MISO                   CLOCK*/              \
+                       /*SPI0*/ { { PIN(A,25), PS(A) },  { PIN(A,26), PS(A) },  { PIN(A, 27), PS(A) } }\
                       }
 
 #define AT91_TIME_DEFAULT_CONTROLLER_ID 0
@@ -92,11 +92,11 @@
 #define TOTAL_UART_CONTROLLERS 4
 #define AT91_UART_DEFAULT_TX_BUFFER_SIZE  { 16*1024, 16*1024, 16*1024, 16*1024 }
 #define AT91_UART_DEFAULT_RX_BUFFER_SIZE  { 16*1024, 16*1024, 16*1024, 16*1024 }
-#define AT91_UART_PINS { /* TX                       RX                      RTS                      CTS*/\
-                        {  { PIN(A,22), PS(A) }, { PIN(A,21), PS(A) }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } },\
-                        {  { PIN(A, 6), PS(A) }, { PIN(A, 7), PS(A) }, { PIN(A, 9), PS(A)   }, { PIN(A, 10), PS(A)  } },\
-                        {  { PIN(A, 11), PS(A)}, { PIN(A, 12), PS(A)}, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } },\
-                        {  { PIN(A, 13), PS(A)}, { PIN(A, 14), PS(A)}, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } }\
+#define AT91_UART_PINS {/*            TX                     RX                   RTS                     CTS*/                  \
+                        /*UART0*/{  { PIN(A,22), PS(A) }, { PIN(A,21), PS(A) }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } },\
+                        /*UART1*/{  { PIN(A, 6), PS(A) }, { PIN(A, 7), PS(A) }, { PIN(A, 9), PS(A)   }, { PIN(A, 10), PS(A)  } },\
+                        /*UART2*/{  { PIN(A, 11), PS(A)}, { PIN(A, 12), PS(A)}, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } },\
+                        /*UART3*/{  { PIN(A, 13), PS(A)}, { PIN(A, 14), PS(A)}, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } } \
                        }
 
 #define INCLUDE_USBCLIENT

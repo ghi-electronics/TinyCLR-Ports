@@ -51,9 +51,9 @@
 #define INCLUDE_CAN
 #define TOTAL_CAN_CONTROLLERS 2
 #define LPC17_CAN_BUFFER_DEFAULT_SIZE { 128, 128 }
-#define LPC17_CAN_PINS {/*         TX                     RX          */\
-                        { { PIN(0, 1), PF(1) },  { PIN(0, 0), PF(1) } },\
-                        { { PIN(0, 5), PF(2) },  { PIN(0, 4), PF(2) } }\
+#define LPC17_CAN_PINS {/*          TX                     RX          */       \
+                        /*CAN0*/{ { PIN(0, 1), PF(1) },  { PIN(0, 0), PF(1) } },\
+                        /*CAN1*/{ { PIN(0, 5), PF(2) },  { PIN(0, 4), PF(2) } } \
                        }
 
 #define INCLUDE_DAC
@@ -77,8 +77,8 @@
 
 #define INCLUDE_I2C
 #define TOTAL_I2C_CONTROLLERS 1
-#define LPC17_I2C_PINS {/*   SDA                   SCL*/\
-                        {  { PIN(0, 27), PF(1) }, { PIN(0, 28), PF(1) } }\
+#define LPC17_I2C_PINS {/*          SDA                   SCL*/                 \
+                        /*I2C0*/{ { PIN(0, 27), PF(1) }, { PIN(0, 28), PF(1) } }\
                        }
 
 #define INCLUDE_POWER
@@ -92,18 +92,18 @@
 #define INCLUDE_RTC
 
 #define INCLUDE_SD
-#define LPC17_SD_PINS {  /* DATA 0                  DATA 1                 DATA 2                  DATA 3                  CLK                   CMD*/\
-                       { { PIN(1, 6), PF(2) },    { PIN(1, 7), PF(2) },   { PIN(1, 11), PF(2) },  { PIN(1, 12), PF(2) } , { PIN(1, 2), PF(2) }, { PIN(1, 3), PF(2) } }\
+#define LPC17_SD_PINS {/*             DATA 0                   DATA 1                  DATA 2                  DATA 3                  CLK                   CMD*/               \
+                       /*SDCARD0*/{ { PIN(1, 6), PF(2) },    { PIN(1, 7), PF(2) },   { PIN(1, 11), PF(2) },  { PIN(1, 12), PF(2) } , { PIN(1, 2), PF(2) }, { PIN(1, 3), PF(2) } }\
                       }
 
 #define INCLUDE_SIGNALS
 
 #define INCLUDE_SPI
 #define TOTAL_SPI_CONTROLLERS 3
-#define LPC17_SPI_PINS {/* MOSI                   MISO                   CLOCK*/\
-                        { { PIN(0, 18), PF(2) }, { PIN(0, 17), PF(2) }, { PIN(0, 15), PF(2) } },\
-                        { { PIN(0,  9), PF(2) }, { PIN(0,  8), PF(2) }, { PIN(0,  7), PF(2) } },\
-                        { { PIN(1,  1), PF(4) }, { PIN(1,  4), PF(4) }, { PIN(1,  0), PF(4) } }\
+#define LPC17_SPI_PINS {/*          MOSI                   MISO                   CLOCK*/               \
+                        /*SPI0*/{ { PIN(0, 18), PF(2) }, { PIN(0, 17), PF(2) }, { PIN(0, 15), PF(2) } },\
+                        /*SPI1*/{ { PIN(0,  9), PF(2) }, { PIN(0,  8), PF(2) }, { PIN(0,  7), PF(2) } },\
+                        /*SPI2*/{ { PIN(1,  1), PF(4) }, { PIN(1,  4), PF(4) }, { PIN(1,  0), PF(4) } } \
                        }
 
 #define INCLUDE_STORAGE
@@ -113,20 +113,20 @@
 #define LPC17_UART_DEFAULT_TX_BUFFER_SIZE  { 16 * 1024, 16 * 1024, 16 * 1024, 16 * 1024, 16 * 1024 }
 #define LPC17_UART_DEFAULT_RX_BUFFER_SIZE  { 16 * 1024, 16 * 1024, 16 * 1024, 16 * 1024, 16 * 1024 }
 
-#define LPC17_G120_UART_PINS { /* TX                       RX                      RTS                      CTS*/\
-                              {  { PIN(0,  2), PF(1)   }, { PIN(0,  3), PF(1) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
-                              {  { PIN(2,  0), PF(2)   }, { PIN(0, 16), PF(1) }, { PIN(0, 17), PF(1)   }, { PIN(0,  6), PF(4)   } },\
-                              {  { PIN(0, 10), PF(1)   }, { PIN(0, 11), PF(1) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
-                              {  { PIN(4, 29), PF(2)   }, { PIN(4, 28), PF(2) }, { PIN_NONE , PF_NONE  }, { PIN_NONE , PF_NONE  } },\
-                              {  { PIN(1, 29), PF(5)   }, { PIN(2,  9), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } }\
+#define LPC17_G120_UART_PINS {/*           TX                       RX                     RTS                      CTS*/                   \
+                              /*UART0*/{ { PIN(0,  2), PF(1)   }, { PIN(0,  3), PF(1) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
+                              /*UART1*/{ { PIN(2,  0), PF(2)   }, { PIN(0, 16), PF(1) }, { PIN(0, 17), PF(1)   }, { PIN(0,  6), PF(4)   } },\
+                              /*UART2*/{ { PIN(0, 10), PF(1)   }, { PIN(0, 11), PF(1) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
+                              /*UART3*/{ { PIN(4, 29), PF(2)   }, { PIN(4, 28), PF(2) }, { PIN_NONE , PF_NONE  }, { PIN_NONE , PF_NONE  } },\
+                              /*UART4*/{ { PIN(1, 29), PF(5)   }, { PIN(2,  9), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } } \
                              } 
 
-#define LPC17_G120E_UART_PINS { /* TX                       RX                      RTS                      CTS*/\
-                                {  { PIN(0,  2), PF(1) }, { PIN(0,  3), PF(1) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
-                                {  { PIN(2,  0), PF(2) }, { PIN(0, 16), PF(1) }, { PIN(0, 17), PF(1)   }, { PIN(0,  6), PF(4)   } },\
-                                {  { PIN(0, 10), PF(1) }, { PIN(0, 11), PF(1) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
-                                {  { PIN(0, 25), PF(3) }, { PIN(0, 26), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
-                                {  { PIN(1, 29), PF(5) }, { PIN(2,  9), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } }\
+#define LPC17_G120E_UART_PINS {/*           TX                     RX                     RTS                      CTS*/                   \
+                               /*UART0*/{ { PIN(0,  2), PF(1) }, { PIN(0,  3), PF(1) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
+                               /*UART1*/{ { PIN(2,  0), PF(2) }, { PIN(0, 16), PF(1) }, { PIN(0, 17), PF(1)   }, { PIN(0,  6), PF(4)   } },\
+                               /*UART2*/{ { PIN(0, 10), PF(1) }, { PIN(0, 11), PF(1) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
+                               /*UART3*/{ { PIN(0, 25), PF(3) }, { PIN(0, 26), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
+                               /*UART4*/{ { PIN(1, 29), PF(5) }, { PIN(2,  9), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } } \
                                }
 
 #define INCLUDE_USBCLIENT
