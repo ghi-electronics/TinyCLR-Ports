@@ -810,10 +810,10 @@ void AT91_UsbDevice_Reset() {
 }
 
 void AT91_UsbDevice_InitializeConfiguration(UsClientState *usClientState) {
-    int32_t controller = 0;
+    auto controllerIndex = 0;
 
     if (usClientState != nullptr) {
-        usClientState->controllerIndex = controller;
+        usClientState->controllerIndex = controllerIndex;
 
         usClientState->maxFifoPacketCountDefault = AT91_USB_PACKET_FIFO_COUNT;
         usClientState->totalEndpointsCount = AT91_USB_ENDPOINT_COUNT;
@@ -822,7 +822,7 @@ void AT91_UsbDevice_InitializeConfiguration(UsClientState *usClientState) {
         // Update endpoint size DeviceDescriptor Configuration if device value is different to default value
         usClientState->deviceDescriptor.MaxPacketSizeEp0 = TinyCLR_UsbClient_GetEndpointSize(0);
 
-        usbDeviceDrivers[controller].usClientState = usClientState;
+        usbDeviceDrivers[controllerIndex].usClientState = usClientState;
     }
 }
 
@@ -830,9 +830,9 @@ bool AT91_UsbDevice_Initialize(UsClientState *usClientState) {
     if (usClientState == nullptr)
         return false;
 
-    int32_t controller = usClientState->controllerIndex;
+    auto controllerIndex = usClientState->controllerIndex;
 
-    usbDeviceDrivers[controller].usClientState = usClientState;
+    usbDeviceDrivers[controllerIndex].usClientState = usClientState;
 
     struct AT91_UDPHS *pUdp = (struct AT91_UDPHS *) (AT91C_BASE_UDP);
     struct AT91_UDPHS_EPT *pEp = (struct AT91_UDPHS_EPT *) (AT91C_BASE_UDP + 0x100);
