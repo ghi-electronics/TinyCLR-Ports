@@ -55,8 +55,10 @@
 #define INCLUDE_CAN
 #define TOTAL_CAN_CONTROLLERS 2
 #define AT91_CAN_BUFFER_DEFAULT_SIZE { 128, 128 }
-#define AT91_CAN_TX_PINS { { PIN(A, 10), PS(B) }, { PIN(A, 6), PS(B) } }
-#define AT91_CAN_RX_PINS { { PIN(A,  9), PS(B) }, { PIN(A, 5), PS(B) } }
+#define AT91_CAN_PINS {/*         TX                     RX          */\
+                        { { PIN(A, 10), PS(B) }, { PIN(A,  9), PS(B) }, },\
+                        { { PIN(A, 6) , PS(B) }, { PIN(A, 5) , PS(B) }  }\
+                       }
 
 #define AT91_DEPLOYMENT_SECTOR_START 640
 #define AT91_DEPLOYMENT_SECTOR_END 1020

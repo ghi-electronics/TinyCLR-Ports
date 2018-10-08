@@ -298,6 +298,20 @@ bool LPC24_GpioInternal_ClosePin(int32_t pin) {
     return LPC24_GpioInternal_ConfigurePin(pin, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::Inactive);
 }
 
+bool LPC24_GpioInternal_OpenMultiPins(const LPC24_Gpio_Pin* pins, size_t count) {
+    for (auto i = 0; i < count; i++) {
+        if (!LPC24_GpioInternal_OpenPin(pins[i].number)) {
+            for (auto ii = 0; ii < i; ii++) {
+                LPC24_GpioInternal_ClosePin(pins[ii].number);
+
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 bool LPC24_Gpio_ReadPin(int32_t pin) {
     if (pin >= TOTAL_GPIO_PINS || pin < 0)
         return false;

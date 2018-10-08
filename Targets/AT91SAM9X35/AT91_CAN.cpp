@@ -1055,8 +1055,10 @@ struct CanState {
     bool enable;
 };
 
-static const AT91_Gpio_Pin canTxPins[] = AT91_CAN_TX_PINS;
-static const AT91_Gpio_Pin canRxPins[] = AT91_CAN_RX_PINS;
+#define CAN_TX_PIN 0
+#define CAN_RX_PIN 1
+
+static const AT91_Gpio_Pin canPins[][2] = AT91_CAN_PINS;
 
 static CanState canStates[TOTAL_CAN_CONTROLLERS];
 
@@ -1459,15 +1461,11 @@ TinyCLR_Result AT91_Can_Acquire(const TinyCLR_Can_Controller* self) {
     if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
-        if (!AT91_GpioInternal_OpenPin(canTxPins[controllerIndex].number))
+        if (!AT91_GpioInternal_OpenMultiPins(canPins[controllerIndex], 2))
             return TinyCLR_Result::SharingViolation;
 
-        if (!AT91_GpioInternal_OpenPin(canRxPins[controllerIndex].number))
-            return TinyCLR_Result::SharingViolation;
-
-
-        AT91_GpioInternal_ConfigurePin(canTxPins[controllerIndex].number, AT91_Gpio_Direction::Input, canTxPins[controllerIndex].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-        AT91_GpioInternal_ConfigurePin(canRxPins[controllerIndex].number, AT91_Gpio_Direction::Input, canRxPins[controllerIndex].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+        AT91_GpioInternal_ConfigurePin(canPins[controllerIndex][CAN_TX_PIN].number, AT91_Gpio_Direction::Input, canPins[controllerIndex][CAN_TX_PIN].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+        AT91_GpioInternal_ConfigurePin(canPins[controllerIndex][CAN_RX_PIN].number, AT91_Gpio_Direction::Input, canPins[controllerIndex][CAN_RX_PIN].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
 
         state->can_rx_count = 0;
         state->can_rx_in = 0;
@@ -1517,8 +1515,8 @@ TinyCLR_Result AT91_Can_Release(const TinyCLR_Can_Controller* self) {
         pmc.DisablePeriphClock((controllerIndex == 0) ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
 
 
-        AT91_GpioInternal_ClosePin(canTxPins[controllerIndex].number);
-        AT91_GpioInternal_ClosePin(canRxPins[controllerIndex].number);
+        AT91_GpioInternal_ClosePin(canPins[controllerIndex][CAN_TX_PIN].number);
+        AT91_GpioInternal_ClosePin(canPins[controllerIndex][CAN_RX_PIN].number);
 
 
         if (state->canRxMessagesFifo != nullptr) {

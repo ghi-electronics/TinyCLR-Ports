@@ -51,8 +51,10 @@
 #define INCLUDE_CAN
 #define TOTAL_CAN_CONTROLLERS 2
 #define LPC17_CAN_BUFFER_DEFAULT_SIZE { 128, 128 }
-#define LPC17_CAN_TX_PINS { { PIN(0, 1), PF(1) }, { PIN(0, 5), PF(2) } }
-#define LPC17_CAN_RX_PINS { { PIN(0, 0), PF(1) }, { PIN(0, 4), PF(2) } }
+#define LPC17_CAN_PINS {/*         TX                     RX          */\
+                        { { PIN(0, 1), PF(1) },  { PIN(0, 0), PF(1) } },\
+                        { { PIN(0, 5), PF(2) },  { PIN(0, 4), PF(2) } }\
+                       }
 
 #define INCLUDE_DAC
 #define LPC17_DAC_PINS { { PIN(0, 26), PF(2) } }

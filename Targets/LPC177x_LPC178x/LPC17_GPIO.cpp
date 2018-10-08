@@ -174,7 +174,7 @@ void LPC17_Gpio_InterruptHandler(void* param) {
 
             if (interruptState->handler && ((expectedEdgeInterger & currentEdgeInterger) || (expectedEdgeInterger == 0))) {
                 if (interruptState->debounce) {
-                    if ((LPC17_Time_GetTimeForProcessorTicks(nullptr, LPC17_Time_GetCurrentProcessorTicks(nullptr)) - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {                        
+                    if ((LPC17_Time_GetTimeForProcessorTicks(nullptr, LPC17_Time_GetCurrentProcessorTicks(nullptr)) - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {
                         executeIsr = true;
                     }
 
@@ -220,7 +220,7 @@ TinyCLR_Result LPC17_Gpio_SetPinChangedHandler(const TinyCLR_Gpio_Controller* se
         *GPIO_Port_X_Interrupt_RisingEdgeRegister |= pinMask;
         *GPIO_Port_X_Interrupt_FallingEdgeRegister |= pinMask;
 
-        LPC17_InterruptInternal_Activate(GPIO_IRQn, (uint32_t*)&LPC17_Gpio_InterruptHandler, 0);        
+        LPC17_InterruptInternal_Activate(GPIO_IRQn, (uint32_t*)&LPC17_Gpio_InterruptHandler, 0);
     }
     else {
         LPC17_InterruptInternal_Deactivate(GPIO_IRQn);
@@ -261,7 +261,6 @@ bool LPC17_GpioInternal_OpenMultiPins(const LPC17_Gpio_Pin* pins, size_t count) 
                 LPC17_GpioInternal_ClosePin(pins[ii].number);
 
                 return false;
-
             }
         }
     }

@@ -227,6 +227,20 @@ bool AT91_GpioInternal_ClosePin(int32_t pin) {
     return AT91_GpioInternal_ConfigurePin(pin, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::Inactive);
 }
 
+bool AT91_GpioInternal_OpenMultiPins(const AT91_Gpio_Pin* pins, size_t count) {
+    for (auto i = 0; i < count; i++) {
+        if (!AT91_GpioInternal_OpenPin(pins[i].number)) {
+            for (auto ii = 0; ii < i; ii++) {
+                AT91_GpioInternal_ClosePin(pins[ii].number);
+
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 bool AT91_GpioInternal_ReadPin(int32_t pin) {
     if (pin >= TOTAL_GPIO_PINS || pin < 0)
         return false;

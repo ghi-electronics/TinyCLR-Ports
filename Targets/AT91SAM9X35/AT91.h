@@ -536,6 +536,7 @@ bool AT91_GpioInternal_ReadPin(int32_t pin);
 void AT91_GpioInternal_WritePin(int32_t pin, bool value);
 bool AT91_GpioInternal_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PeripheralSelection peripheralSelection, AT91_Gpio_ResistorMode resistorMode);
 bool AT91_GpioInternal_ConfigurePin(int32_t pin, AT91_Gpio_Direction pinDir, AT91_Gpio_PeripheralSelection peripheralSelection, AT91_Gpio_ResistorMode resistorMode, AT91_Gpio_MultiDriver multiDrive, AT91_Gpio_Filter filter, AT91_Gpio_FilterSlowClock filterSlowClock, AT91_Gpio_Schmitt schmitt, AT91_Gpio_DriveSpeed driveSpeed);
+bool AT91_GpioInternal_OpenMultiPins(const AT91_Gpio_Pin* pins, size_t count);
 
 // ADC
 void AT91_Adc_AddApi(const TinyCLR_Api_Manager* apiManager);
