@@ -55,8 +55,10 @@
 #define INCLUDE_CAN
 #define TOTAL_CAN_CONTROLLERS 2
 #define STM32F4_CAN_BUFFER_DEFAULT_SIZE { 128 , 128 }
-#define STM32F4_CAN_TX_PINS { { PIN(B, 9), AF(9) }, { PIN(B, 6), AF(9) } }
-#define STM32F4_CAN_RX_PINS { { PIN(B, 8), AF(9) }, { PIN(B, 5), AF(9) } }
+#define STM32F4_CAN_PINS {/*         TX                     RX                    */\
+                          /*CAN0*/ { { PIN(B,  9), AF(9) }, { PIN(B,  8), AF(9) } },\
+                          /*CAN1*/ { { PIN(B,  6), AF(9) }, { PIN(B,  5), AF(9) } },\
+                         }
 
 #define INCLUDE_DAC
 
@@ -70,8 +72,9 @@
 
 #define INCLUDE_I2C
 #define TOTAL_I2C_CONTROLLERS 1
-#define STM32F4_I2C_SCL_PINS { { PIN(B, 6), AF(4) } }
-#define STM32F4_I2C_SDA_PINS { { PIN(B, 7), AF(4) } }
+#define STM32F4_I2C_PINS {/*   SDA                   SCL*/\
+                            { { PIN(B, 7), AF(4) }, { PIN(B, 6), AF(4) } }\
+                         }
 
 #define INCLUDE_POWER
 
@@ -97,20 +100,17 @@
 #define INCLUDE_RTC
 
 #define INCLUDE_SD
-#define STM32F4_SD_DATA0_PINS { { PIN(C, 8), AF(12) } }
-#define STM32F4_SD_DATA1_PINS { { PIN(C, 9), AF(12) } }
-#define STM32F4_SD_DATA2_PINS { { PIN(C, 10), AF(12) } }
-#define STM32F4_SD_DATA3_PINS { { PIN(C, 11), AF(12) } }
-#define STM32F4_SD_CLK_PINS { { PIN(C, 12), AF(12) } }
-#define STM32F4_SD_CMD_PINS { { PIN(D, 2), AF(12) } }
+#define STM32F4_SD_PINS {  /* DATA 0                 DATA 1                 DATA 2                  DATA 3                  CLK                      CMD*/\
+                          { { PIN(C, 8), AF(12) }, { PIN(C, 9), AF(12) }, { PIN(C, 10), AF(12) }, { PIN(C, 11), AF(12) }, { PIN(C, 12), AF(12) },  { PIN(D, 2), AF(12) } }\
+                        }
 
 #define INCLUDE_SIGNALS
 
 #define INCLUDE_SPI
 #define TOTAL_SPI_CONTROLLERS 1
-#define STM32F4_SPI_SCLK_PINS { { PIN(B, 3), AF(5) } }
-#define STM32F4_SPI_MISO_PINS { { PIN(B, 4), AF(5) } }
-#define STM32F4_SPI_MOSI_PINS { { PIN(B, 5), AF(5) } }
+#define STM32F4_SPI_PINS {/* MOSI                   MISO                  CLOCK*/\
+                          { { PIN(B, 5), AF(5) },  { PIN(B, 4), AF(5) }, { PIN(B, 3) , AF(5) } }\
+                         }
 
 #define INCLUDE_STORAGE
 
@@ -118,10 +118,14 @@
 #define TOTAL_UART_CONTROLLERS 6
 #define STM32F4_UART_DEFAULT_TX_BUFFER_SIZE  { 256, 256, 256, 256, 256, 256 }
 #define STM32F4_UART_DEFAULT_RX_BUFFER_SIZE  { 512, 512, 512, 512, 512, 512 }
-#define STM32F4_UART_TX_PINS  { { PIN(B,  6), AF(7)   }, { PIN(A, 2), AF(7) }, { PIN(B, 10), AF(7) } , { PIN_NONE  , AF_NONE } , { PIN_NONE  , AF_NONE } , { PIN(C, 6) , AF(8)   } }
-#define STM32F4_UART_RX_PINS  { { PIN(B,  7), AF(7)   }, { PIN(A, 3), AF(7) }, { PIN(B, 11), AF(7) } , { PIN_NONE  , AF_NONE } , { PIN_NONE  , AF_NONE } , { PIN(C, 7) , AF(8)   } }
-#define STM32F4_UART_CTS_PINS { { PIN_NONE  , AF_NONE }, { PIN(A, 0), AF(7) }, { PIN(B, 13), AF(7) } , { PIN_NONE  , AF_NONE } , { PIN_NONE  , AF_NONE } , { PIN_NONE  , AF_NONE } }
-#define STM32F4_UART_RTS_PINS { { PIN_NONE  , AF_NONE }, { PIN(A, 1), AF(7) }, { PIN(B, 14), AF(7) } , { PIN_NONE  , AF_NONE } , { PIN_NONE  , AF_NONE } , { PIN_NONE  , AF_NONE } }
+#define STM32F4_UART_PINS { /* TX                       RX                       RTS                      CTS*/\
+                            {  { PIN(B,  6), AF(7)   }, { PIN(B,  7), AF(7)   }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } },\
+                            {  { PIN(A, 2), AF(7)    }, { PIN(A, 3), AF(7)    }, { PIN(A, 1), AF(7)    }, { PIN(A, 0), AF(7)    } },\
+                            {  { PIN(B, 10), AF(7)   }, { PIN(B, 11), AF(7)   }, { PIN(B, 14), AF(7)   }, { PIN(B, 13), AF(7)   } },\
+                            {  { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } },\
+                            {  { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } },\
+                            {  { PIN(C, 6) , AF(8)   }, { PIN(C, 7) , AF(8)   }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } }\
+                           }
 
 #define INCLUDE_USBCLIENT
 #define STM32F4_TOTAL_USB_CONTROLLERS 1
@@ -131,7 +135,7 @@
 #define STM32F4_USB_ENDPOINT_COUNT 4
 #define STM32F4_USB_PIPE_COUNT 4
 
-#define STM32F4_USB_DM_PINS { { PIN(A, 11), AF(10) } }
-#define STM32F4_USB_DP_PINS { { PIN(A, 12), AF(10) } }
-#define STM32F4_USB_VB_PINS { { PIN(A,  9), AF(10) } }
-#define STM32F4_USB_ID_PINS { { PIN(A, 10), AF(10) } }
+#define STM32F4_USB_PINS {/*DM                      DP                      VB                      ID*/\
+                          { { PIN(A, 11), AF(10) }, { PIN(A, 12), AF(10) }, { PIN(A,  9), AF(10) }, { PIN(A, 10), AF(10) } }\
+                         }
+                        
