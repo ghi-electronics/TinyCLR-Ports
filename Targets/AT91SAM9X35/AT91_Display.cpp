@@ -796,7 +796,6 @@ void AT91_Display_SetBaseLayerDMA() {
 
 static const AT91_Gpio_Pin displayPins[][20] = AT91_DISPLAY_CONTROLLER_PINS;
 static const AT91_Gpio_Pin displayEnablePins = AT91_DISPLAY_ENABLE_PIN;
-static const AT91_Gpio_Pin displayBacklightPins = AT91_DISPLAY_BACKLIGHT_PIN;
 
 bool AT91_Display_Initialize() {
 
@@ -1061,14 +1060,7 @@ bool AT91_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
         }
         else {
             AT91_GpioInternal_ConfigurePin(displayEnablePins.number, AT91_Gpio_Direction::Input, displayEnablePins.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-        }
-
-        if (displayBacklightPins.number != PIN_NONE) {
-            if (!AT91_GpioInternal_OpenPin(displayBacklightPins.number))
-                return false;
-
-            AT91_GpioInternal_EnableOutputPin(displayBacklightPins.number, true);
-        }
+        }        
     }
     else {
 
@@ -1076,9 +1068,7 @@ bool AT91_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
             AT91_GpioInternal_ClosePin(displayPins[controllerIndex][i].number);
         }
 
-        AT91_GpioInternal_ClosePin(displayEnablePins.number);
-
-        AT91_GpioInternal_ClosePin(displayBacklightPins.number);
+        AT91_GpioInternal_ClosePin(displayEnablePins.number);        
     }
 
     return true;

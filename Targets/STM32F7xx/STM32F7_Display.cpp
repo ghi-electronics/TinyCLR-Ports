@@ -803,7 +803,6 @@ void STM32F7_Display_Clear() {
 }
 
 const STM32F7_Gpio_Pin g_Display_ControllerPins[][19] = STM32F7_DISPLAY_CONTROLLER_PINS;
-const STM32F7_Gpio_Pin g_Display_BacklightPin = STM32F7_DISPLAY_BACKLIGHT_PIN;
 const STM32F7_Gpio_Pin g_Display_EnablePin = STM32F7_DISPLAY_ENABLE_PIN;
 
 bool STM32F7_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
@@ -827,25 +826,13 @@ bool STM32F7_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
                 return false;
             }
         }
-
-        // Backlight pin
-        if (g_Display_BacklightPin.number != PIN_NONE) {
-            if (!STM32F7_GpioInternal_OpenPin(g_Display_BacklightPin.number)) {
-                return false;
-            }
-
-            STM32F7_GpioInternal_ConfigurePin(g_Display_BacklightPin.number, STM32F7_Gpio_PortMode::GeneralPurposeOutput, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::None, g_Display_BacklightPin.alternateFunction);
-            STM32F7_GpioInternal_WritePin(g_Display_BacklightPin.number, true);
-        }
     }
     else {
         for (int32_t i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins[controllerIndex]); i++) {
             STM32F7_GpioInternal_ClosePin(g_Display_ControllerPins[controllerIndex][i].number);
         }
 
-        STM32F7_GpioInternal_ClosePin(g_Display_EnablePin.number);
-
-        STM32F7_GpioInternal_ClosePin(g_Display_BacklightPin.number);
+        STM32F7_GpioInternal_ClosePin(g_Display_EnablePin.number);        
     }
 
     return true;

@@ -655,7 +655,6 @@ void LPC24_Display_Clear() {
 }
 
 const LPC24_Gpio_Pin g_Display_ControllerPins[] = LPC24_DISPLAY_CONTROLLER_PINS;
-const LPC24_Gpio_Pin g_Display_BacklightPin = LPC24_DISPLAY_BACKLIGHT_PIN;
 const LPC24_Gpio_Pin g_Display_EnablePin = LPC24_DISPLAY_ENABLE_PIN;
 
 bool  LPC24_Display_SetPinConfiguration(bool enable) {
@@ -678,25 +677,14 @@ bool  LPC24_Display_SetPinConfiguration(bool enable) {
 
                 return false;
             }
-        }
-
-        if (g_Display_BacklightPin.number != PIN_NONE) {
-            if (!LPC24_GpioInternal_OpenPin(g_Display_BacklightPin.number)) {
-                return false;
-
-            }
-
-            LPC24_GpioInternal_EnableOutputPin(g_Display_BacklightPin.number, true);
-        }
+        }        
     }
     else {
         for (int32_t i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins); i++) {
             LPC24_GpioInternal_ClosePin(g_Display_ControllerPins[controllerIndex][i].number);
         }
 
-        LPC24_GpioInternal_ClosePin(g_Display_EnablePin.number);
-
-        LPC24_GpioInternal_ClosePin(g_Display_BacklightPin.number);
+        LPC24_GpioInternal_ClosePin(g_Display_EnablePin.number);        
     }
 
     return true;
