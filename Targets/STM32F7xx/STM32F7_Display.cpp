@@ -829,7 +829,7 @@ bool STM32F7_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
         }
 
         // Backlight pin
-if (g_Display_BacklightPin.number != PIN_NONE) {
+        if (g_Display_BacklightPin.number != PIN_NONE) {
             if (!STM32F7_GpioInternal_OpenPin(g_Display_BacklightPin.number)) {
                 return false;
             }

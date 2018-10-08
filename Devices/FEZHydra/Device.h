@@ -107,9 +107,4 @@
 #define AT91_USB_ENDPOINT_COUNT 16
 #define AT91_USB_PIPE_COUNT 16
 
-#define INCLUDE_DISPLAY
-#define AT91_DISPLAY_CONTROL_PINS { { PIN(C,1), PS(A) }, { PIN(C,3), PS(A) }, { PIN(C,4), PS(A) }, { PIN(C,5), PS(A) }, { PIN(C,6), PS(A) }, { PIN(C,9), PS(B) }, { PIN(C,10), PS(B) }, { PIN(C,11), PS(B) }, { PIN(C,12), PS(B) }, { PIN(C,13), PS(B) }, { PIN(C,15), PS(B) }, { PIN(C,16), PS(B) }, { PIN(C,17), PS(B) }, { PIN(C,18), PS(B) }, { PIN(C,19), PS(B) }, { PIN(C,20), PS(B) }, { PIN(C,21), PS(B) }, { PIN(C,22), PS(B) }, { PIN(C,23), PS(B) }, { PIN(C,24), PS(B) }, { PIN(C,25), PS(B) }  }
-#define AT91_DISPLAY_ENABLE_PIN { PIN(C, 7), PS(A) }
-#define AT91_DISPLAY_BACKLIGHT_PIN { PIN_NONE, PS_NONE }
-
 #include <AT91.h>

@@ -740,7 +740,7 @@ AT91_LCD_Rotation m_AT91_Display_CurrentRotation = AT91_LCD_Rotation::rotateNorm
 
 bool AT91_Display_Initialize();
 bool AT91_Display_Uninitialize();
-bool AT91_Display_SetPinConfiguration(bool enable);
+bool AT91_Display_SetPinConfiguration(int32_t controllerIndex, bool enable);
 
 void AT91_Display_WriteFormattedChar(uint8_t c);
 void AT91_Display_WriteChar(uint8_t c, int32_t row, int32_t col);
@@ -794,7 +794,7 @@ void AT91_Display_SetBaseLayerDMA() {
     lcd->LCDC_BASECHER = 0x3;
 }
 
-static const AT91_Gpio_Pin displayPins[] = AT91_DISPLAY_CONTROLLER_PINS;
+static const AT91_Gpio_Pin displayPins[][20] = AT91_DISPLAY_CONTROLLER_PINS;
 static const AT91_Gpio_Pin displayEnablePins = AT91_DISPLAY_ENABLE_PIN;
 static const AT91_Gpio_Pin displayBacklightPins = AT91_DISPLAY_BACKLIGHT_PIN;
 
@@ -1037,18 +1037,23 @@ void AT91_Display_Clear() {
     memset((uint32_t*)m_AT91_Display_VituralRam, 0, m_AT91_DisplayBufferSize);
 }
 
-bool AT91_Display_SetPinConfiguration(bool enable) {
+bool AT91_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
     if (enable) {
-        for (uint32_t pin = 0; pin < SIZEOF_ARRAY(displayPins); pin++) {
-            if (!AT91_GpioInternal_OpenPin(displayPins[pin].number))
-                return false;
+        // Open multi lcd pins
+        if (!AT91_GpioInternal_OpenMultiPins(displayPins[controllerIndex], 20)) {
+            return false;
+        }
 
-            AT91_GpioInternal_ConfigurePin(displayPins[pin].number, AT91_Gpio_Direction::Input, displayPins[pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+        for (uint32_t pin = 0; pin < SIZEOF_ARRAY(displayPins); pin++) {
+            AT91_GpioInternal_ConfigurePin(displayPins[controllerIndex][pin].number, AT91_Gpio_Direction::Input, displayPins[controllerIndex][pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
         }
 
         if (displayEnablePins.number != PIN_NONE) {
-            if (!AT91_GpioInternal_OpenPin(displayEnablePins.number))
+            if (!AT91_GpioInternal_OpenPin(displayEnablePins.number)) {
+                AT91_Display_SetPinConfiguration(controllerIndex, false);
+
                 return false;
+            }
         }
 
         if (m_AT91_DisplayOutputEnableIsFixed) {
@@ -1067,8 +1072,8 @@ bool AT91_Display_SetPinConfiguration(bool enable) {
     }
     else {
 
-        for (int32_t i = 0; i < SIZEOF_ARRAY(displayPins); i++) {
-            AT91_GpioInternal_ClosePin(displayPins[i].number);
+        for (auto i = 0; i < SIZEOF_ARRAY(displayPins); i++) {
+            AT91_GpioInternal_ClosePin(displayPins[controllerIndex][i].number);
         }
 
         AT91_GpioInternal_ClosePin(displayEnablePins.number);
@@ -1078,6 +1083,7 @@ bool AT91_Display_SetPinConfiguration(bool enable) {
 
     return true;
 }
+
 uint32_t* AT91_Display_GetFrameBuffer() {
     return (uint32_t*)m_AT91_Display_VituralRam;
 }
@@ -1159,7 +1165,7 @@ void AT91_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height, 
         }
         else {
             for (yTo = yOffset; yTo < (yOffset + height); yTo++) {
-                AT91_Display_MemCopy((void*)(to + yTo * screenWidth + xOffset), (void*)(from), (width * 2)); 
+                AT91_Display_MemCopy((void*)(to + yTo * screenWidth + xOffset), (void*)(from), (width * 2));
                 from += width;
             }
         }
@@ -1264,7 +1270,9 @@ TinyCLR_Result AT91_Display_Acquire(const TinyCLR_Display_Controller* self) {
     if (displayInitializeCount == 0) {
         m_AT91_Display_CurrentRotation = AT91_LCD_Rotation::rotateNormal_0;
 
-        if (!AT91_Display_SetPinConfiguration(true)) {
+        auto controllerIndex = 0;
+
+        if (!AT91_Display_SetPinConfiguration(controllerIndex, true)) {
             return TinyCLR_Result::SharingViolation;
         }
     }
@@ -1282,7 +1290,9 @@ TinyCLR_Result AT91_Display_Release(const TinyCLR_Display_Controller* self) {
     if (displayInitializeCount == 0) {
         AT91_Display_Uninitialize();
 
-        AT91_Display_SetPinConfiguration(false);
+        auto controllerIndex = 0;
+
+        AT91_Display_SetPinConfiguration(controllerIndex, false);
 
         m_AT91_DisplayEnable = false;
 
