@@ -146,17 +146,6 @@ LPC17_Gpio_Pin LPC17_Pwm_GetPins(int32_t controller, int32_t channel) {
     }
 }
 
-// Uart
-// static const LPC17_Gpio_Pin g120UartTxPins[] = LPC17_G120_UART_TX_PINS;
-// static const LPC17_Gpio_Pin g120UartRxPins[] = LPC17_G120_UART_RX_PINS;
-// static const LPC17_Gpio_Pin g120UartRtsPins[] = LPC17_G120_UART_RTS_PINS;
-// static const LPC17_Gpio_Pin g120UartCtsPins[] = LPC17_G120_UART_CTS_PINS;
-
-// static const LPC17_Gpio_Pin g120eUartTxPins[] = LPC17_G120E_UART_TX_PINS;
-// static const LPC17_Gpio_Pin g120eUartRxPins[] = LPC17_G120E_UART_RX_PINS;
-// static const LPC17_Gpio_Pin g120eUartRtsPins[] = LPC17_G120E_UART_RTS_PINS;
-// static const LPC17_Gpio_Pin g120eUartCtsPins[] = LPC17_G120E_UART_CTS_PINS;
-
 #define UART_TXD_PIN 0
 #define UART_RXD_PIN 1
 #define UART_RTS_PIN 2
