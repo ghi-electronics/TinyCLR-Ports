@@ -80,6 +80,9 @@
 #define AT91_SPI_MISO_PINS { { PIN(A,25), PS(A) } }
 #define AT91_SPI_MOSI_PINS { { PIN(A,26), PS(A) } }
 #define AT91_SPI_SCLK_PINS { { PIN(A,27), PS(A) } }
+#define AT91_SPI_PINS {/*  MOSI                   MISO                   CLOCK*/\
+                        { { PIN(A,25), PS(A) },  { PIN(A,26), PS(A) },  { PIN(A, 27), PS(A) } }\
+                      }
 
 #define AT91_TIME_DEFAULT_CONTROLLER_ID 0
 
