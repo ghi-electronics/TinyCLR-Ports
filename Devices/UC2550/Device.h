@@ -76,7 +76,7 @@
 #define STM32F4_I2C_PINS {/*           SDA                     SCL*/                 \
                           /*I2C0*/  { { PIN_NONE, AF_NONE }, { PIN_NONE, AF_NONE } },\
                           /*I2C1*/  { { PIN(B, 9) , AF(9) }, { PIN(B, 10), AF(4) } },\
-                          /*I2C2*/  { { PIN(B, 8), AF(9)  }, { PIN(A, 8), AF(4)  }  
+                          /*I2C2*/  { { PIN(B, 8), AF(9)  }, { PIN(A, 8), AF(4)  } } \
                          }
 
 #define INCLUDE_POWER
