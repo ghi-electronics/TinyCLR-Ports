@@ -336,7 +336,7 @@ bool LPC17_GpioInternal_ConfigurePin(int32_t pin, LPC17_Gpio_Direction pinDir, L
     }
 }
 
-bool LPC17_Gpio_ReadPin(int32_t pin) {
+bool LPC17_GpioInternal_ReadPin(int32_t pin) {
     uint32_t* FIOPIN_Register = FIOPIN(pin);
 
     if ((*FIOPIN_Register & GET_PIN_MASK(pin)) != 0)
@@ -344,7 +344,7 @@ bool LPC17_Gpio_ReadPin(int32_t pin) {
 
     return false;
 }
-void LPC17_Gpio_WritePin(int32_t pin, bool value) {
+void LPC17_GpioInternal_WritePin(int32_t pin, bool value) {
     uint32_t* FIOSET_Register = FIOSET(pin);
     uint32_t* FIOCLR_Register = FIOCLR(pin);
 
@@ -358,7 +358,7 @@ void LPC17_Gpio_WritePin(int32_t pin, bool value) {
 
 void LPC17_GpioInternal_EnableOutputPin(int32_t pin, bool initialState) {
     LPC17_GpioInternal_ConfigurePin(pin, LPC17_Gpio_Direction::Output, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_WritePin(pin, initialState);
+    LPC17_GpioInternal_WritePin(pin, initialState);
 }
 
 void LPC17_GpioInternal_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode mode) {
@@ -381,7 +381,7 @@ TinyCLR_Result LPC17_Gpio_Read(const TinyCLR_Gpio_Controller* self, uint32_t pin
     if (pin >= TOTAL_GPIO_PINS || pin < 0)
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    if (LPC17_Gpio_ReadPin(pin))
+    if (LPC17_GpioInternal_ReadPin(pin))
         value = TinyCLR_Gpio_PinValue::High;
     else
         value = TinyCLR_Gpio_PinValue::Low;
@@ -394,9 +394,9 @@ TinyCLR_Result LPC17_Gpio_Write(const TinyCLR_Gpio_Controller* self, uint32_t pi
         return TinyCLR_Result::ArgumentOutOfRange;
 
     if (value == TinyCLR_Gpio_PinValue::High)
-        LPC17_Gpio_WritePin(pin, true);
+        LPC17_GpioInternal_WritePin(pin, true);
     else
-        LPC17_Gpio_WritePin(pin, false);
+        LPC17_GpioInternal_WritePin(pin, false);
 
     previousOutputValue[pin] = value;
     return TinyCLR_Result::Success;
@@ -507,7 +507,7 @@ void LPC17_Gpio_Reset() {
                 LPC17_GpioInternal_ConfigurePin(pin, p.direction, p.pinFunction, p.resistorMode, p.hysteresis, p.inputPolarity, p.slewRate, p.outputType);
 
                 if (p.direction == LPC17_Gpio_Direction::Output)
-                    LPC17_Gpio_WritePin(pin, p.outputDirection);
+                    LPC17_GpioInternal_WritePin(pin, p.outputDirection);
             }
         }
 

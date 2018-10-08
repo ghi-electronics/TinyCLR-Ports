@@ -173,8 +173,8 @@ void LPC24_GpioInternal_EnableOutputPin(int32_t pin, bool initialState);
 void LPC24_GpioInternal_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode resistor);
 bool LPC24_GpioInternal_OpenPin(int32_t pin);
 bool LPC24_GpioInternal_ClosePin(int32_t pin);
-bool LPC24_Gpio_ReadPin(int32_t pin);
-void LPC24_Gpio_WritePin(int32_t pin, bool value);
+bool LPC24_GpioInternal_ReadPin(int32_t pin);
+void LPC24_GpioInternal_WritePin(int32_t pin, bool value);
 bool LPC24_GpioInternal_ConfigurePin(int32_t pin, LPC24_Gpio_Direction pinDir, LPC24_Gpio_PinFunction alternateFunction, LPC24_Gpio_PinMode pullResistor);
 bool LPC24_GpioInternal_OpenMultiPins(const LPC24_Gpio_Pin* pins, size_t count);
 

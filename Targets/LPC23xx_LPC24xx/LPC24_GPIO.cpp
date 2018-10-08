@@ -312,14 +312,14 @@ bool LPC24_GpioInternal_OpenMultiPins(const LPC24_Gpio_Pin* pins, size_t count) 
     return true;
 }
 
-bool LPC24_Gpio_ReadPin(int32_t pin) {
+bool LPC24_GpioInternal_ReadPin(int32_t pin) {
     if (pin >= TOTAL_GPIO_PINS || pin < 0)
         return false;
 
     return GET_PIN_STATUS(GET_PORT(pin), GET_PIN(pin));
 }
 
-void LPC24_Gpio_WritePin(int32_t pin, bool value) {
+void LPC24_GpioInternal_WritePin(int32_t pin, bool value) {
     if (pin >= TOTAL_GPIO_PINS || pin < 0)
         return;
 
@@ -391,7 +391,7 @@ bool LPC24_GpioInternal_ConfigurePin(int32_t pin, LPC24_Gpio_Direction pinDir, L
 
 void LPC24_GpioInternal_EnableOutputPin(int32_t pin, bool initialState) {
     LPC24_GpioInternal_ConfigurePin(pin, LPC24_Gpio_Direction::Output, LPC24_Gpio_PinFunction::PinFunction0, LPC24_Gpio_PinMode::Inactive);
-    LPC24_Gpio_WritePin(pin, initialState);
+    LPC24_GpioInternal_WritePin(pin, initialState);
 }
 
 void LPC24_GpioInternal_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode mode) {
@@ -412,7 +412,7 @@ TinyCLR_Result LPC24_Gpio_Read(const TinyCLR_Gpio_Controller* self, uint32_t pin
     if (pin >= TOTAL_GPIO_PINS || pin < 0)
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    value = LPC24_Gpio_ReadPin(pin) ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low;
+    value = LPC24_GpioInternal_ReadPin(pin) ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low;
 
     return TinyCLR_Result::Success;
 }
@@ -421,7 +421,7 @@ TinyCLR_Result LPC24_Gpio_Write(const TinyCLR_Gpio_Controller* self, uint32_t pi
     if (pin >= TOTAL_GPIO_PINS || pin < 0)
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    LPC24_Gpio_WritePin(pin, value == TinyCLR_Gpio_PinValue::High ? true : false);
+    LPC24_GpioInternal_WritePin(pin, value == TinyCLR_Gpio_PinValue::High ? true : false);
 
     previousOutputValue[pin] = value;
     return TinyCLR_Result::Success;
@@ -533,7 +533,7 @@ void LPC24_Gpio_Reset() {
                 LPC24_GpioInternal_ConfigurePin(pin, p.pinDirection, p.pinFunction, p.pinMode);
 
                 if (p.pinDirection == LPC24_Gpio_Direction::Output)
-                    LPC24_Gpio_WritePin(pin, p.outputDirection);
+                    LPC24_GpioInternal_WritePin(pin, p.outputDirection);
             }
         }
 
