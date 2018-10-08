@@ -97,6 +97,46 @@ void LPC24_UsbDevice_PinConfiguration() {
     OTGStCtrl |= 3;
 }
 
+// Uart
+#define UART_TXD_PIN 0
+#define UART_RXD_PIN 1
+#define UART_RTS_PIN 2
+#define UART_CTS_PIN 3
+
+static const LPC24_Gpio_Pin uartPins[][4] = LPC24_UART_PINS;
+
+int32_t LPC24_Uart_GetTxPin(int32_t portNum) {
+    return uartPins[portNum][UART_TXD_PIN].number;
+}
+
+int32_t LPC24_Uart_GetRxPin(int32_t portNum) {
+    return uartPins[portNum][UART_RXD_PIN].number;
+}
+
+int32_t LPC24_Uart_GetRtsPin(int32_t portNum) {
+    return uartPins[portNum][UART_RTS_PIN].number;
+}
+
+int32_t LPC24_Uart_GetCtsPin(int32_t portNum) {
+    return uartPins[portNum][UART_CTS_PIN].number;
+}
+
+LPC24_Gpio_PinFunction LPC24_Uart_GetTxAlternateFunction(int32_t portNum) {
+    return uartPins[portNum][UART_TXD_PIN].pinFunction;
+}
+
+LPC24_Gpio_PinFunction LPC24_Uart_GetRxAlternateFunction(int32_t portNum) {
+    return uartPins[portNum][UART_RXD_PIN].pinFunction;
+}
+
+LPC24_Gpio_PinFunction LPC24_Uart_GetRtsAlternateFunction(int32_t portNum) {
+    return uartPins[portNum][UART_RTS_PIN].pinFunction;
+}
+
+LPC24_Gpio_PinFunction LPC24_Uart_GetCtsAlternateFunction(int32_t portNum) {
+    return uartPins[portNum][UART_CTS_PIN].pinFunction;
+}
+
 // ADC
 static const LPC24_Gpio_Pin adcPins[] = LPC24_ADC_PINS;
 

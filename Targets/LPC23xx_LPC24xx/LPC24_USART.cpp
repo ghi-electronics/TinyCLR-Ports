@@ -17,14 +17,6 @@
 #include "LPC24.h"
 
 #define USART_EVENT_POST_DEBOUNCE_TICKS (10 * 10000) // 10ms between each events
-
-#define UART_TXD_PIN 0
-#define UART_RXD_PIN 1
-#define UART_RTS_PIN 2
-#define UART_CTS_PIN 3
-
-static const LPC24_Gpio_Pin uartPins[][4] = LPC24_UART_PINS;
-
 static const uint32_t uartTxDefaultBuffersSize[] = LPC24_UART_DEFAULT_TX_BUFFER_SIZE;
 static const uint32_t uartRxDefaultBuffersSize[] = LPC24_UART_DEFAULT_RX_BUFFER_SIZE;
 
@@ -224,25 +216,43 @@ TinyCLR_Result LPC24_Uart_PinConfiguration(int controllerIndex, bool enable) {
 
     auto state = &uartStates[controllerIndex];
 
+    int32_t txPin = LPC24_Uart_GetTxPin(controllerIndex);
+    int32_t rxPin = LPC24_Uart_GetRxPin(controllerIndex);
+    int32_t ctsPin = LPC24_Uart_GetCtsPin(controllerIndex);
+    int32_t rtsPin = LPC24_Uart_GetRtsPin(controllerIndex);
+
+    LPC24_Gpio_PinFunction txPinMode = LPC24_Uart_GetTxAlternateFunction(controllerIndex);
+    LPC24_Gpio_PinFunction rxPinMode = LPC24_Uart_GetRxAlternateFunction(controllerIndex);
+    LPC24_Gpio_PinFunction ctsPinMode = LPC24_Uart_GetCtsAlternateFunction(controllerIndex);
+    LPC24_Gpio_PinFunction rtsPinMode = LPC24_Uart_GetRtsAlternateFunction(controllerIndex);
+
     if (enable) {
         // Connect pin to UART
-        LPC24_GpioInternal_ConfigurePin(uartPins[controllerIndex][UART_TXD_PIN].number, LPC24_Gpio_Direction::Input, uartPins[controllerIndex][UART_TXD_PIN].pinFunction, LPC24_Gpio_PinMode::Inactive);
+        LPC24_GpioInternal_ConfigurePin(txPin, LPC24_Gpio_Direction::Input, txPinMode, LPC24_Gpio_PinMode::Inactive);
         // Connect pin to UART
-        LPC24_GpioInternal_ConfigurePin(uartPins[controllerIndex][UART_RXD_PIN].number, LPC24_Gpio_Direction::Input, uartPins[controllerIndex][UART_RXD_PIN].pinFunction, LPC24_Gpio_PinMode::Inactive);
+        LPC24_GpioInternal_ConfigurePin(rxPin, LPC24_Gpio_Direction::Input, rxPinMode, LPC24_Gpio_PinMode::Inactive);
 
         LPC24_Uart_TxBufferEmptyInterruptEnable(controllerIndex, true);
 
         LPC24_Uart_RxBufferFullInterruptEnable(controllerIndex, true);
 
         if (state->handshaking) {
-            if (uartPins[controllerIndex][UART_CTS_PIN].number == PIN_NONE || uartPins[controllerIndex][UART_RTS_PIN].number == PIN_NONE)
+            if (ctsPin == PIN_NONE || rtsPin == PIN_NONE)
                 return TinyCLR_Result::NotSupported;
 
-            if (!LPC24_GpioInternal_OpenMultiPins(&uartPins[controllerIndex][UART_RTS_PIN], 2))
+            if (!LPC24_GpioInternal_OpenPin(ctsPin)) {
+                LPC24_Uart_PinConfiguration(controllerIndex, false);
                 return TinyCLR_Result::SharingViolation;
+            }
 
-            LPC24_GpioInternal_ConfigurePin(uartPins[controllerIndex][UART_CTS_PIN].number, LPC24_Gpio_Direction::Input, uartPins[controllerIndex][UART_CTS_PIN].pinFunction, LPC24_Gpio_PinMode::Inactive);
-            LPC24_GpioInternal_ConfigurePin(uartPins[controllerIndex][UART_RTS_PIN].number, LPC24_Gpio_Direction::Input, uartPins[controllerIndex][UART_RTS_PIN].pinFunction, LPC24_Gpio_PinMode::Inactive);
+            if (!LPC24_GpioInternal_OpenPin(rtsPin)) {
+                LPC24_Uart_PinConfiguration(controllerIndex, false);
+
+                return TinyCLR_Result::SharingViolation;
+            }
+
+            LPC24_GpioInternal_ConfigurePin(ctsPin, LPC24_Gpio_Direction::Input, ctsPinMode, LPC24_Gpio_PinMode::Inactive);
+            LPC24_GpioInternal_ConfigurePin(rtsPin, LPC24_Gpio_Direction::Input, rtsPinMode, LPC24_Gpio_PinMode::Inactive);
         }
 
     }
@@ -250,15 +260,15 @@ TinyCLR_Result LPC24_Uart_PinConfiguration(int controllerIndex, bool enable) {
 
         LPC24_Uart_TxBufferEmptyInterruptEnable(controllerIndex, false);
         // TODO Add config for uart pin protected state
-        LPC24_GpioInternal_ClosePin(uartPins[controllerIndex][UART_TXD_PIN].number);
+        LPC24_GpioInternal_ClosePin(txPin);
 
         LPC24_Uart_RxBufferFullInterruptEnable(controllerIndex, false);
         // TODO Add config for uart pin protected state
-        LPC24_GpioInternal_ClosePin(uartPins[controllerIndex][UART_RXD_PIN].number);
+        LPC24_GpioInternal_ClosePin(rxPin);
 
         if (state->handshaking) {
-            LPC24_GpioInternal_ClosePin(uartPins[controllerIndex][UART_CTS_PIN].number);
-            LPC24_GpioInternal_ClosePin(uartPins[controllerIndex][UART_RTS_PIN].number);
+            LPC24_GpioInternal_ClosePin(ctsPin);
+            LPC24_GpioInternal_ClosePin(rtsPin);
         }
     }
 
@@ -402,6 +412,7 @@ void LPC24_Uart_InterruptHandler(void *param) {
     }
 }
 
+
 TinyCLR_Result LPC24_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
@@ -413,8 +424,17 @@ TinyCLR_Result LPC24_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
 
         DISABLE_INTERRUPTS_SCOPED(irq);
 
-        if (!LPC24_GpioInternal_OpenMultiPins(uartPins[controllerIndex], 2))
+        int32_t txPin = LPC24_Uart_GetTxPin(controllerIndex);
+        int32_t rxPin = LPC24_Uart_GetRxPin(controllerIndex);
+
+        if (!LPC24_GpioInternal_OpenPin(txPin))
             return TinyCLR_Result::SharingViolation;
+
+        if (!LPC24_GpioInternal_OpenPin(rxPin)) {
+            LPC24_GpioInternal_ClosePin(txPin);
+
+            return TinyCLR_Result::SharingViolation;
+        }
 
         state->txBufferCount = 0;
         state->txBufferIn = 0;
@@ -847,10 +867,11 @@ TinyCLR_Result LPC24_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* sel
 
     if (state->handshaking) {
         auto controllerIndex = state->controllerIndex;
+        auto ctsPin = LPC24_Uart_GetCtsPin(controllerIndex);
 
         // Reading the pin state to protect values from register for inteterupt which is higher priority (some bits are clear once read)
         TinyCLR_Gpio_PinValue pinState;
-        LPC24_Gpio_Read(nullptr, uartPins[controllerIndex][UART_CTS_PIN].number, pinState);
+        LPC24_Gpio_Read(nullptr, ctsPin, pinState);
 
         value = (pinState == TinyCLR_Gpio_PinValue::High) ? false : true;
     }
@@ -872,10 +893,11 @@ TinyCLR_Result LPC24_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Controlle
 
     if (state->handshaking) {
         auto controllerIndex = state->controllerIndex;
+        auto rtsPin = LPC24_Uart_GetRtsPin(controllerIndex);
 
         // Reading the pin state to protect values from register for inteterupt which is higher priority (some bits are clear once read)
         TinyCLR_Gpio_PinValue pinState;
-        LPC24_Gpio_Read(nullptr, uartPins[controllerIndex][UART_RTS_PIN].number, pinState);
+        LPC24_Gpio_Read(nullptr, rtsPin, pinState);
 
         value = (pinState == TinyCLR_Gpio_PinValue::High) ? true : false;
     }
