@@ -24,8 +24,10 @@ struct I2cConfiguration {
 
 #define I2C_TRANSACTION_TIMEOUT 2000000
 
-static const AT91_Gpio_Pin i2cSclPins[] = AT91_I2C_SCL_PINS;
-static const AT91_Gpio_Pin i2cSdaPins[] = AT91_I2C_SDA_PINS;
+#define I2C_SDA_PIN 0
+#define I2C_SCL_PIN 1
+
+static const AT91_Gpio_Pin i2cPins[][2] = AT91_I2C_PINS;
 
 struct I2cState {
     int32_t controllerIndex;
@@ -416,11 +418,11 @@ TinyCLR_Result AT91_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
         AT91_I2C& I2C = AT91::I2C(controllerIndex);
         AT91_PMC &pmc = AT91::PMC();
 
-        if (!AT91_GpioInternal_OpenPin(i2cSdaPins[controllerIndex].number) || !AT91_GpioInternal_OpenPin(i2cSclPins[controllerIndex].number))
+        if (!AT91_GpioInternal_OpenMultiPins(i2cPins[controllerIndex], 2))
             return TinyCLR_Result::SharingViolation;
 
-        AT91_GpioInternal_ConfigurePin(i2cSclPins[controllerIndex].number, AT91_Gpio_Direction::Input, i2cSclPins[controllerIndex].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-        AT91_GpioInternal_ConfigurePin(i2cSdaPins[controllerIndex].number, AT91_Gpio_Direction::Input, i2cSdaPins[controllerIndex].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+        AT91_GpioInternal_ConfigurePin(i2cPins[controllerIndex][I2C_SCL_PIN].number, AT91_Gpio_Direction::Input, i2cPins[controllerIndex][I2C_SCL_PIN].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+        AT91_GpioInternal_ConfigurePin(i2cPins[controllerIndex][I2C_SDA_PIN].number, AT91_Gpio_Direction::Input, i2cPins[controllerIndex][I2C_SDA_PIN].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
 
         pmc.EnablePeriphClock(controllerIndex == 0 ? AT91C_ID_TWI0 : (controllerIndex == 1 ? AT91C_ID_TWI1 : AT91C_ID_TWI2));
         I2C.TWI_MMR = 0x7e << AT91_I2C::TWI_MMR_DADR_SHIFT;
@@ -460,15 +462,15 @@ TinyCLR_Result AT91_I2c_Release(const TinyCLR_I2c_Controller* self) {
         // disable all the interrupt
         I2C.TWI_IDR = AT91_I2C::TWI_IDR_NACK | AT91_I2C::TWI_IDR_RXRDY | AT91_I2C::TWI_IDR_TXCOMP | AT91_I2C::TWI_IDR_TXRDY;
 
-        AT91_GpioInternal_ClosePin(i2cSdaPins[controllerIndex].number);
-        AT91_GpioInternal_ClosePin(i2cSclPins[controllerIndex].number);
+        AT91_GpioInternal_ClosePin(i2cPins[controllerIndex][I2C_SDA_PIN].number);
+        AT91_GpioInternal_ClosePin(i2cPins[controllerIndex][I2C_SCL_PIN].number);
     }
 
     return TinyCLR_Result::Success;
 }
 
 void AT91_I2c_Reset() {
-    for (auto i = 0; i < SIZEOF_ARRAY(i2cSclPins); i++) {
+    for (auto i = 0; i < TOTAL_I2C_CONTROLLERS; i++) {
         AT91_I2c_Release(&i2cControllers[i]);
 
         auto state = &i2cStates[i];

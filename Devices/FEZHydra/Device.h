@@ -60,8 +60,9 @@
 
 #define INCLUDE_I2C
 #define TOTAL_I2C_CONTROLLERS 1
-#define AT91_I2C_SCL_PINS { { PIN(A,24), PS(A) } }
-#define AT91_I2C_SDA_PINS { { PIN(A,23), PS(A) } }
+#define AT91_I2C_PINS {/*   SDA                   SCL*/\
+                        {  { PIN(A,23), PS(A) }, { PIN(A,24), PS(A) } }\
+                      }
 
 #define INCLUDE_POWER
 
