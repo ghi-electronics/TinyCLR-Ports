@@ -619,24 +619,24 @@ void LPC17_Display_Clear() {
     memset((uint32_t*)m_LPC17_Display_VituralRam, 0, m_LPC17_DisplayBufferSize);
 }
 
-const LPC17_Gpio_Pin g_Display_ControllerPins[][19] = LPC17_DISPLAY_CONTROLLER_PINS;
-const LPC17_Gpio_Pin g_Display_EnablePin = LPC17_DISPLAY_ENABLE_PIN;
+const LPC17_Gpio_Pin displayPins[][19] = LPC17_DISPLAY_CONTROLLER_PINS;
+const LPC17_Gpio_Pin displayEnablePin = LPC17_DISPLAY_ENABLE_PIN;
 
 bool  LPC17_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
     if (enable) {
         // Open multi lcd pins
-        if (!LPC17_GpioInternal_OpenMultiPins(g_Display_ControllerPins[controllerIndex], 19)) {
+        if (!LPC17_GpioInternal_OpenMultiPins(displayPins[controllerIndex], 19)) {
             return false;
         }
 
         // Set configuration
-        for (auto i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins); i++) {
-            LPC17_GpioInternal_ConfigurePin(g_Display_ControllerPins[controllerIndex][i].number, LPC17_Gpio_Direction::Input, g_Display_ControllerPins[controllerIndex][i].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        for (auto i = 0; i < SIZEOF_ARRAY(displayPins); i++) {
+            LPC17_GpioInternal_ConfigurePin(displayPins[controllerIndex][i].number, LPC17_Gpio_Direction::Input, displayPins[controllerIndex][i].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
         }
 
         // Reserve Enable pin
-        if (g_Display_EnablePin.number != PIN_NONE) {
-            if (!LPC17_GpioInternal_OpenPin(g_Display_EnablePin.number)) {
+        if (displayEnablePin.number != PIN_NONE) {
+            if (!LPC17_GpioInternal_OpenPin(displayEnablePin.number)) {
                 LPC17_Display_SetPinConfiguration(controllerIndex, false);
 
                 return false;
@@ -644,11 +644,11 @@ bool  LPC17_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
         }        
     }
     else {
-        for (int32_t i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins); i++) {
-            LPC17_GpioInternal_ClosePin(g_Display_ControllerPins[controllerIndex][i].number);
+        for (int32_t i = 0; i < SIZEOF_ARRAY(displayPins); i++) {
+            LPC17_GpioInternal_ClosePin(displayPins[controllerIndex][i].number);
         }
 
-        LPC17_GpioInternal_ClosePin(g_Display_EnablePin.number);        
+        LPC17_GpioInternal_ClosePin(displayEnablePin.number);        
     }
 
     return true;
@@ -943,11 +943,11 @@ TinyCLR_Result LPC17_Display_SetConfiguration(const TinyCLR_Display_Controller* 
             return TinyCLR_Result::OutOfMemory;
         }
 
-        if (g_Display_EnablePin.number != PIN_NONE) {
+        if (displayEnablePin.number != PIN_NONE) {
             if (m_LPC17_DisplayOutputEnableIsFixed)
-                LPC17_GpioInternal_EnableOutputPin(g_Display_EnablePin.number, m_LPC17_DisplayOutputEnablePolarity);
+                LPC17_GpioInternal_EnableOutputPin(displayEnablePin.number, m_LPC17_DisplayOutputEnablePolarity);
             else
-                LPC17_GpioInternal_ConfigurePin(g_Display_EnablePin.number, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+                LPC17_GpioInternal_ConfigurePin(displayEnablePin.number, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction7, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
         }
     }
 
