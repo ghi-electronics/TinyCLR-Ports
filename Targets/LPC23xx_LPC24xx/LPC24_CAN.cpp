@@ -2029,8 +2029,10 @@ struct CanState {
     bool enable;
 };
 
-static const LPC24_Gpio_Pin canTxPins[] = LPC24_CAN_TX_PINS;
-static const LPC24_Gpio_Pin canRxPins[] = LPC24_CAN_RX_PINS;
+#define CAN_TX_PIN 0
+#define CAN_RX_PIN 1
+
+static const LPC24_Gpio_Pin canPins[][2] = LPC24_CAN_PINS;
 
 static CanState canStates[TOTAL_CAN_CONTROLLERS];
 
@@ -2427,15 +2429,12 @@ TinyCLR_Result LPC24_Can_Acquire(const TinyCLR_Can_Controller* self) {
     if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
-        if (!LPC24_Gpio_OpenPin(canTxPins[controllerIndex].number))
-            return TinyCLR_Result::SharingViolation;
-
-        if (!LPC24_Gpio_OpenPin(canRxPins[controllerIndex].number))
+        if (!LPC24_GpioInternal_OpenMultiPins(canPins[controllerIndex], 2))
             return TinyCLR_Result::SharingViolation;
 
         // set pin as analog
-        LPC24_Gpio_ConfigurePin(canTxPins[controllerIndex].number, LPC24_Gpio_Direction::Input, canTxPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
-        LPC24_Gpio_ConfigurePin(canRxPins[controllerIndex].number, LPC24_Gpio_Direction::Input, canRxPins[controllerIndex].pinFunction, LPC24_Gpio_PinMode::Inactive);
+        LPC24_GpioInternal_ConfigurePin(canPins[controllerIndex][CAN_TX_PIN].number, LPC24_Gpio_Direction::Input, canPins[controllerIndex][CAN_TX_PIN].pinFunction, LPC24_Gpio_PinMode::Inactive);
+        LPC24_GpioInternal_ConfigurePin(canPins[controllerIndex][CAN_RX_PIN].number, LPC24_Gpio_Direction::Input, canPins[controllerIndex][CAN_RX_PIN].pinFunction, LPC24_Gpio_PinMode::Inactive);
 
         state->can_rx_count = 0;
         state->can_rx_in = 0;
@@ -2487,8 +2486,8 @@ TinyCLR_Result LPC24_Can_Release(const TinyCLR_Can_Controller* self) {
         CAN_DisableExplicitFilters(controllerIndex);
         CAN_DisableGroupFilters(controllerIndex);
 
-        LPC24_Gpio_ClosePin(canTxPins[controllerIndex].number);
-        LPC24_Gpio_ClosePin(canRxPins[controllerIndex].number);
+        LPC24_GpioInternal_ClosePin(canPins[controllerIndex][CAN_TX_PIN].number);
+        LPC24_GpioInternal_ClosePin(canPins[controllerIndex][CAN_RX_PIN].number);
     }
 
     return TinyCLR_Result::Success;
@@ -2749,11 +2748,15 @@ TinyCLR_Result LPC24_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, con
     auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
     _lowerBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, count * sizeof(uint32_t));
+
+    if (!_lowerBoundFilters) {
+        return  TinyCLR_Result::OutOfMemory;
+    }
+
     _upperBoundFilters = (uint32_t*)memoryProvider->Allocate(memoryProvider, count * sizeof(uint32_t));
 
-    if (!_lowerBoundFilters || !_upperBoundFilters) {
+    if (!_upperBoundFilters) {
         memoryProvider->Free(memoryProvider, _lowerBoundFilters);
-        memoryProvider->Free(memoryProvider, _upperBoundFilters);
 
         return  TinyCLR_Result::OutOfMemory;
     }

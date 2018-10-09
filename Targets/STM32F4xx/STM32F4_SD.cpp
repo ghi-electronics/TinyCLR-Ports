@@ -2616,12 +2616,14 @@ struct SdCardState {
     uint16_t initializeCount;
 };
 
-static const STM32F4_Gpio_Pin sdCardData0Pins[] = STM32F4_SD_DATA0_PINS;
-static const STM32F4_Gpio_Pin sdCardData1Pins[] = STM32F4_SD_DATA1_PINS;
-static const STM32F4_Gpio_Pin sdCardData2Pins[] = STM32F4_SD_DATA2_PINS;
-static const STM32F4_Gpio_Pin sdCardData3Pins[] = STM32F4_SD_DATA3_PINS;
-static const STM32F4_Gpio_Pin sdCardClkPins[] = STM32F4_SD_CLK_PINS;
-static const STM32F4_Gpio_Pin sdCardCmdPins[] = STM32F4_SD_CMD_PINS;
+#define SDCARD_DATA0_PIN 0
+#define SDCARD_DATA1_PIN 1
+#define SDCARD_DATA2_PIN 2
+#define SDCARD_DATA3_PIN 3
+#define SDCARD_CLK_PIN 4
+#define SDCARD_CMD_PIN 5
+
+static const STM32F4_Gpio_Pin sdCardPins[][6] = STM32F4_SD_PINS;
 
 static SdCardState sdCardStates[TOTAL_SDCARD_CONTROLLERS];
 
@@ -2665,13 +2667,11 @@ TinyCLR_Result STM32F4_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
     if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
-        STM32F4_Gpio_Pin pins[] = { sdCardData0Pins[controllerIndex], sdCardData1Pins[controllerIndex],sdCardData2Pins[controllerIndex], sdCardData3Pins[controllerIndex], sdCardClkPins[controllerIndex], sdCardCmdPins[controllerIndex] };
+        if (!STM32F4_GpioInternal_OpenMultiPins(sdCardPins[controllerIndex], 6))
+            return TinyCLR_Result::SharingViolation;
 
-        for (auto i = 0; i < SIZEOF_ARRAY(pins); i++) {
-            if (STM32F4_GpioInternal_OpenPin(pins[i].number))
-                STM32F4_GpioInternal_ConfigurePin(pins[i].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, pins[i].number != sdCardClkPins[controllerIndex].number ? STM32F4_Gpio_PullDirection::PullUp : STM32F4_Gpio_PullDirection::None, pins[i].alternateFunction);
-            else
-                return TinyCLR_Result::SharingViolation;
+        for (auto i = 0; i < 6; i++) {
+            STM32F4_GpioInternal_ConfigurePin(sdCardPins[controllerIndex][i].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, sdCardPins[controllerIndex][i].number != sdCardPins[controllerIndex][SDCARD_CLK_PIN].number ? STM32F4_Gpio_PullDirection::PullUp : STM32F4_Gpio_PullDirection::None, sdCardPins[controllerIndex][i].alternateFunction);
         }
 
         RCC->APB2ENR |= (1 << 11);
@@ -2679,7 +2679,18 @@ TinyCLR_Result STM32F4_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
         state->regionAddresses = (uint64_t*)memoryProvider->Allocate(memoryProvider, sizeof(uint64_t));
+
+        if (state->regionAddresses == nullptr) {
+            return TinyCLR_Result::OutOfMemory;
+        }
+
         state->regionSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
+
+        if (state->regionSizes == nullptr) {
+            memoryProvider->Free(memoryProvider, state->regionAddresses);
+
+            return TinyCLR_Result::OutOfMemory;
+        }
 
         state->descriptor.CanReadDirect = true;
         state->descriptor.CanWriteDirect = true;
@@ -2733,10 +2744,8 @@ TinyCLR_Result STM32F4_SdCard_Release(const TinyCLR_Storage_Controller* self) {
         memoryProvider->Free(memoryProvider, state->regionSizes);
         memoryProvider->Free(memoryProvider, state->regionAddresses);
 
-        uint32_t pins[] = { sdCardData0Pins[controllerIndex].number, sdCardData1Pins[controllerIndex].number,sdCardData2Pins[controllerIndex].number, sdCardData3Pins[controllerIndex].number, sdCardClkPins[controllerIndex].number, sdCardCmdPins[controllerIndex].number };
-
-        for (auto i = 0; i < SIZEOF_ARRAY(pins); i++) {
-            STM32F4_GpioInternal_ClosePin(pins[i]);
+        for (auto i = 0; i < 6; i++) {
+            STM32F4_GpioInternal_ClosePin(sdCardPins[controllerIndex][i].number);
         }
     }
 
@@ -2856,7 +2865,7 @@ TinyCLR_Result STM32F4_SdCard_Reset() {
         sdCardStates[i].initializeCount = 0;
 
         STM32F4_SdCard_Close(&sdCardControllers[i]);
-        STM32F4_SdCard_Release(&sdCardControllers[i]);        
+        STM32F4_SdCard_Release(&sdCardControllers[i]);
     }
 
     return TinyCLR_Result::Success;

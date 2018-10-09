@@ -26,9 +26,11 @@ typedef  SPI_TypeDef* ptr_SPI_TypeDef;
 #define DATA_BIT_LENGTH_16  16
 #define DATA_BIT_LENGTH_8   8
 
-static const STM32F4_Gpio_Pin spiClkPins[] = STM32F4_SPI_SCLK_PINS;
-static const STM32F4_Gpio_Pin spiMisoPins[] = STM32F4_SPI_MISO_PINS;
-static const STM32F4_Gpio_Pin spiMosiPins[] = STM32F4_SPI_MOSI_PINS;
+#define SPI_MOSI_PIN 0
+#define SPI_MISO_PIN 1
+#define SPI_CLK_PIN  2
+
+static const STM32F4_Gpio_Pin spiPins[][3] = STM32F4_SPI_PINS;
 
 static ptr_SPI_TypeDef spiPortRegs[TOTAL_SPI_CONTROLLERS];
 
@@ -404,17 +406,13 @@ TinyCLR_Result STM32F4_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
         if (controllerIndex >= TOTAL_SPI_CONTROLLERS)
             return TinyCLR_Result::InvalidOperation;
 
-        auto& sclk = spiClkPins[controllerIndex];
-        auto& miso = spiMisoPins[controllerIndex];
-        auto& mosi = spiMosiPins[controllerIndex];
-
         state->chipSelectLine = PIN_NONE;
         state->dataBitLength = 0;
         state->spiMode = TinyCLR_Spi_Mode::Mode0;
         state->clockFrequency = 0;
 
         // Check each pin single time make sure once fail not effect to other pins
-        if (!STM32F4_GpioInternal_OpenPin(sclk.number) || !STM32F4_GpioInternal_OpenPin(miso.number) || !STM32F4_GpioInternal_OpenPin(mosi.number)) {
+        if (!STM32F4_GpioInternal_OpenMultiPins(spiPins[controllerIndex], 3)) {
             return TinyCLR_Result::SharingViolation;
         }
 
@@ -460,9 +458,9 @@ TinyCLR_Result STM32F4_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
 
         spi->CR1 = SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_MSTR | SPI_CR1_SPE;
 
-        STM32F4_GpioInternal_ConfigurePin(sclk.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, sclk.alternateFunction);
-        STM32F4_GpioInternal_ConfigurePin(miso.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, miso.alternateFunction);
-        STM32F4_GpioInternal_ConfigurePin(mosi.number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, mosi.alternateFunction);
+        STM32F4_GpioInternal_ConfigurePin(spiPins[controllerIndex][SPI_CLK_PIN].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, spiPins[controllerIndex][SPI_CLK_PIN].alternateFunction);
+        STM32F4_GpioInternal_ConfigurePin(spiPins[controllerIndex][SPI_MISO_PIN].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, spiPins[controllerIndex][SPI_MISO_PIN].alternateFunction);
+        STM32F4_GpioInternal_ConfigurePin(spiPins[controllerIndex][SPI_MOSI_PIN].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, spiPins[controllerIndex][SPI_MOSI_PIN].alternateFunction);
     }
 
     state->initializeCount++;
@@ -518,13 +516,9 @@ TinyCLR_Result STM32F4_Spi_Release(const TinyCLR_Spi_Controller* self) {
 #endif
         }
 
-        auto& sclk = spiClkPins[controllerIndex];
-        auto& miso = spiMisoPins[controllerIndex];
-        auto& mosi = spiMosiPins[controllerIndex];
-
-        STM32F4_GpioInternal_ClosePin(sclk.number);
-        STM32F4_GpioInternal_ClosePin(miso.number);
-        STM32F4_GpioInternal_ClosePin(mosi.number);
+        STM32F4_GpioInternal_ClosePin(spiPins[controllerIndex][SPI_CLK_PIN].number);
+        STM32F4_GpioInternal_ClosePin(spiPins[controllerIndex][SPI_MISO_PIN].number);
+        STM32F4_GpioInternal_ClosePin(spiPins[controllerIndex][SPI_MOSI_PIN].number);
 
         if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
             STM32F4_GpioInternal_ClosePin(state->chipSelectLine);

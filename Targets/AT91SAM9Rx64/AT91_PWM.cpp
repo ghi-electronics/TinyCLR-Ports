@@ -92,7 +92,7 @@ AT91_Gpio_Pin AT91_Pwm_GetPins(int32_t controllerIndex, int32_t channel) {
 bool AT91_Pwm_SetPinState(const TinyCLR_Pwm_Controller* self, uint32_t channel, bool state) {
     int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, channel);
 
-    AT91_Gpio_EnableOutputPin(actualPin, state);
+    AT91_GpioInternal_EnableOutputPin(actualPin, state);
 
     return true;
 }
@@ -100,7 +100,7 @@ bool AT91_Pwm_SetPinState(const TinyCLR_Pwm_Controller* self, uint32_t channel, 
 TinyCLR_Result AT91_Pwm_OpenChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel) {
     int32_t actualPin = AT91_Pwm_GetGpioPinForChannel(self, channel);
 
-    if (!AT91_Gpio_OpenPin(actualPin))
+    if (!AT91_GpioInternal_OpenPin(actualPin))
         return TinyCLR_Result::SharingViolation;
 
     auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
@@ -127,7 +127,7 @@ TinyCLR_Result AT91_Pwm_CloseChannel(const TinyCLR_Pwm_Controller* self, uint32_
     PWM_DISABLE_REGISTER |= (1 << controllerIndex);
     PWM_INTERUPT_DISABLE_REGISTER |= (1 << controllerIndex);
 
-    AT91_Gpio_ClosePin(actualPin);
+    AT91_GpioInternal_ClosePin(actualPin);
 
     state->isOpened[channel] = false;
 
@@ -330,7 +330,7 @@ TinyCLR_Result AT91_Pwm_EnableChannel(const TinyCLR_Pwm_Controller* self, uint32
 
     auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
-    AT91_Gpio_ConfigurePin(actualPin, AT91_Gpio_Direction::Input, state->gpioPin[channel].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+    AT91_GpioInternal_ConfigurePin(actualPin, AT91_Gpio_Direction::Input, state->gpioPin[channel].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
 
     return TinyCLR_Result::Success;
 }

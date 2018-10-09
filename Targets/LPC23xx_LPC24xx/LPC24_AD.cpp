@@ -97,12 +97,12 @@ TinyCLR_Result LPC24_Adc_OpenChannel(const TinyCLR_Adc_Controller* self, uint32_
     if (LPC24_Adc_GetPin(channel) == PIN_NONE)
         return TinyCLR_Result::ArgumentInvalid;
 
-    if (!LPC24_Gpio_OpenPin(LPC24_Adc_GetPin(channel)))
+    if (!LPC24_GpioInternal_OpenPin(LPC24_Adc_GetPin(channel)))
         return  TinyCLR_Result::SharingViolation;
 
     LPC24XX::SYSCON().PCONP |= PCONP_PCAD;
 
-    LPC24_Gpio_ConfigurePin(LPC24_Adc_GetPin(channel), LPC24_Gpio_Direction::Input, LPC24_Adc_GetPinFunction(channel), LPC24_Gpio_PinMode::Inactive);
+    LPC24_GpioInternal_ConfigurePin(LPC24_Adc_GetPin(channel), LPC24_Gpio_Direction::Input, LPC24_Adc_GetPinFunction(channel), LPC24_Gpio_PinMode::Inactive);
 
     AD0CR |= (1 << channel) |// sample one of the pins
         ((3 - 1) << 8) |//devide the clock by 14 60/14= 4.3 (must be <4.5)
@@ -122,7 +122,7 @@ TinyCLR_Result LPC24_Adc_CloseChannel(const TinyCLR_Adc_Controller* self, uint32
 
     if (state->isOpen & (1 << channel)) {
         AD0CR &= ~((1 << 16) | (1 << 21) | (0x7 << 24));
-        LPC24_Gpio_ClosePin(LPC24_Adc_GetPin(channel));
+        LPC24_GpioInternal_ClosePin(LPC24_Adc_GetPin(channel));
 
     }
 

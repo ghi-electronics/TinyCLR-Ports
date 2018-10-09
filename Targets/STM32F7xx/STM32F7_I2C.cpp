@@ -38,8 +38,10 @@
 void STM32F7_I2c_StartTransaction(int32_t controllerIndex);
 void STM32F7_I2c_StopTransaction(int32_t controllerIndex);
 
-static const STM32F7_Gpio_Pin i2cSclPins[] = STM32F7_I2C_SCL_PINS;
-static const STM32F7_Gpio_Pin i2cSdaPins[] = STM32F7_I2C_SDA_PINS;
+#define I2C_SDA_PIN 0
+#define I2C_SCL_PIN 1
+
+static const STM32F7_Gpio_Pin i2cPins[][2] = STM32F7_I2C_PINS;
 
 static I2C_TypeDef* i2cPorts[TOTAL_I2C_CONTROLLERS];
 
@@ -447,14 +449,12 @@ TinyCLR_Result STM32F7_I2c_Acquire(const TinyCLR_I2c_Controller* self) {
         auto controllerIndex = state->controllerIndex;
 
         auto& I2Cx = i2cPorts[controllerIndex];
-        auto& scl = i2cSclPins[controllerIndex];
-        auto& sda = i2cSdaPins[controllerIndex];
 
-        if (!STM32F7_GpioInternal_OpenPin(sda.number) || !STM32F7_GpioInternal_OpenPin(scl.number))
+        if (!STM32F7_GpioInternal_OpenMultiPins(i2cPins[controllerIndex], 2))
             return TinyCLR_Result::SharingViolation;
 
-        STM32F7_GpioInternal_ConfigurePin(scl.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::OpenDrain, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::PullUp, scl.alternateFunction);
-        STM32F7_GpioInternal_ConfigurePin(sda.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::OpenDrain, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::PullUp, sda.alternateFunction);
+        STM32F7_GpioInternal_ConfigurePin(i2cPins[controllerIndex][I2C_SCL_PIN].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::OpenDrain, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::PullUp, i2cPins[controllerIndex][I2C_SCL_PIN].alternateFunction);
+        STM32F7_GpioInternal_ConfigurePin(i2cPins[controllerIndex][I2C_SDA_PIN].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::OpenDrain, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::PullUp, i2cPins[controllerIndex][I2C_SDA_PIN].alternateFunction);
 
         switch (controllerIndex) {
         case 0:
@@ -516,11 +516,10 @@ TinyCLR_Result STM32F7_I2c_Release(const TinyCLR_I2c_Controller* self) {
             break;
         }
 
-        auto& scl = i2cSclPins[controllerIndex];
-        auto& sda = i2cSdaPins[controllerIndex];
 
-        STM32F7_GpioInternal_ClosePin(sda.number);
-        STM32F7_GpioInternal_ClosePin(scl.number);
+
+        STM32F7_GpioInternal_ClosePin(i2cPins[controllerIndex][I2C_SDA_PIN].number);
+        STM32F7_GpioInternal_ClosePin(i2cPins[controllerIndex][I2C_SCL_PIN].number);
     }
 
     return TinyCLR_Result::Success;

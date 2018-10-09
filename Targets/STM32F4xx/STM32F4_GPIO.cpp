@@ -140,13 +140,13 @@ void STM32F4_Gpio_ISR(int num)  // 0 <= num <= 15
     auto expectedEdgeInterger = static_cast<uint32_t>(interruptState->edge);
     auto currentEdgeInterger = static_cast<uint32_t>(edge);
 
-    if (interruptState->handler && ((expectedEdgeInterger & currentEdgeInterger) || (expectedEdgeInterger == 0))) {        
+    if (interruptState->handler && ((expectedEdgeInterger & currentEdgeInterger) || (expectedEdgeInterger == 0))) {
         if ((STM32F4_Time_GetCurrentProcessorTime() - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {
             executeIsr = true;
         }
 
         interruptState->lastDebounceTicks = STM32F4_Time_GetCurrentProcessorTime();
-    
+
         if (executeIsr)
             interruptState->handler(interruptState->controller, interruptState->pin, edge, STM32F4_Time_GetCurrentProcessorTime());
     }
@@ -277,6 +277,21 @@ bool STM32F4_GpioInternal_ClosePin(int32_t pin) {
 
     // reset to default state
     return STM32F4_GpioInternal_ConfigurePin(pin, STM32F4_Gpio_PortMode::Input, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::VeryHigh, STM32F4_Gpio_PullDirection::None, STM32F4_Gpio_AlternateFunction::AF0);
+}
+
+bool STM32F4_GpioInternal_OpenMultiPins(const STM32F4_Gpio_Pin* pins, size_t count) {
+    for (auto i = 0; i < count; i++) {
+        if (!STM32F4_GpioInternal_OpenPin(pins[i].number)) {
+            for (auto ii = 0; ii < i; ii++) {
+                STM32F4_GpioInternal_ClosePin(pins[ii].number);
+
+                return false;
+
+            }
+        }
+    }
+
+    return true;
 }
 
 bool STM32F4_GpioInternal_ConfigurePin(int32_t pin, STM32F4_Gpio_PortMode portMode, STM32F4_Gpio_OutputType outputType, STM32F4_Gpio_OutputSpeed outputSpeed, STM32F4_Gpio_PullDirection pullDirection, STM32F4_Gpio_AlternateFunction alternateFunction) {

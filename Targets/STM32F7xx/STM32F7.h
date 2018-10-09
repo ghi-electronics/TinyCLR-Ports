@@ -411,6 +411,7 @@ bool STM32F7_GpioInternal_ReadPin(int32_t pin);
 void STM32F7_GpioInternal_WritePin(int32_t pin, bool value);
 bool STM32F7_GpioInternal_ConfigurePin(int32_t pin, STM32F7_Gpio_PortMode portMode, STM32F7_Gpio_OutputType outputType, STM32F7_Gpio_OutputSpeed outputSpeed, STM32F7_Gpio_PullDirection pullDirection, STM32F7_Gpio_AlternateFunction alternateFunction);
 void STM32F7_Gpio_Reset();
+bool STM32F7_GpioInternal_OpenMultiPins(const STM32F7_Gpio_Pin* pins, size_t count);
 
 void STM32F7_Display_Reset();
 void STM32F7_Display_AddApi(const TinyCLR_Api_Manager* apiManager);

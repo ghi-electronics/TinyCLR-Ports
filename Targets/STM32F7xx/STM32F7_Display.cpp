@@ -350,7 +350,7 @@ STM32F7xx_LCD_Rotation m_STM32F7_Display_CurrentRotation = STM32F7xx_LCD_Rotatio
 
 bool STM32F7_Display_Initialize();
 bool STM32F7_Display_Uninitialize();
-bool STM32F7_Display_SetPinConfiguration(bool enable);
+bool STM32F7_Display_SetPinConfiguration(int32_t controllerIndex, bool enable);
 
 void STM32F7_Display_WriteFormattedChar(uint8_t c);
 void STM32F7_Display_WriteChar(uint8_t c, int32_t row, int32_t col);
@@ -802,26 +802,33 @@ void STM32F7_Display_Clear() {
     memset((uint32_t*)m_STM32F7_Display_VituralRam, 0, m_STM32F7_DisplayBufferSize);
 }
 
-const STM32F7_Gpio_Pin g_Display_ControllerPins[] = STM32F7_DISPLAY_CONTROLLER_PINS;
+const STM32F7_Gpio_Pin g_Display_ControllerPins[][19] = STM32F7_DISPLAY_CONTROLLER_PINS;
 const STM32F7_Gpio_Pin g_Display_BacklightPin = STM32F7_DISPLAY_BACKLIGHT_PIN;
 const STM32F7_Gpio_Pin g_Display_EnablePin = STM32F7_DISPLAY_ENABLE_PIN;
 
-bool STM32F7_Display_SetPinConfiguration(bool enable) {
+bool STM32F7_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
     if (enable) {
-        for (int32_t i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins); i++) {
-            if (!STM32F7_GpioInternal_OpenPin(g_Display_ControllerPins[i].number)) {
-                return false;
-            }
-
-            STM32F7_GpioInternal_ConfigurePin(g_Display_ControllerPins[i].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::None, g_Display_ControllerPins[i].alternateFunction);
+        // Open multi lcd pins
+        if (!STM32F7_GpioInternal_OpenMultiPins(g_Display_ControllerPins[controllerIndex], 19)) {
+            return false;
         }
 
+        // Set configuration
+        for (int32_t i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins[controllerIndex]); i++) {
+            STM32F7_GpioInternal_ConfigurePin(g_Display_ControllerPins[controllerIndex][i].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::None, g_Display_ControllerPins[controllerIndex][i].alternateFunction);
+        }
+
+        // Reserve Enable pin
         if (g_Display_EnablePin.number != PIN_NONE) {
             if (!STM32F7_GpioInternal_OpenPin(g_Display_EnablePin.number)) {
+                // Release all pins
+                STM32F7_Display_SetPinConfiguration(controllerIndex, false);
+
                 return false;
             }
         }
 
+        // Backlight pin
         if (g_Display_BacklightPin.number != PIN_NONE) {
             if (!STM32F7_GpioInternal_OpenPin(g_Display_BacklightPin.number)) {
                 return false;
@@ -832,8 +839,8 @@ bool STM32F7_Display_SetPinConfiguration(bool enable) {
         }
     }
     else {
-        for (int32_t i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins); i++) {
-            STM32F7_GpioInternal_ClosePin(g_Display_ControllerPins[i].number);
+        for (int32_t i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins[controllerIndex]); i++) {
+            STM32F7_GpioInternal_ClosePin(g_Display_ControllerPins[controllerIndex][i].number);
         }
 
         STM32F7_GpioInternal_ClosePin(g_Display_EnablePin.number);
@@ -924,7 +931,7 @@ void STM32F7_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t heigh
         }
         else {
             for (yTo = yOffset; yTo < (yOffset + height); yTo++) {
-                STM32F7_Display_MemCopy((void*)(to + yTo * screenWidth + xOffset), (void*)(from), (width * 2)); 
+                STM32F7_Display_MemCopy((void*)(to + yTo * screenWidth + xOffset), (void*)(from), (width * 2));
                 from += width;
             }
         }
@@ -1029,7 +1036,9 @@ TinyCLR_Result STM32F7_Display_Acquire(const TinyCLR_Display_Controller* self) {
     if (displayInitializeCount == 0) {
         m_STM32F7_Display_CurrentRotation = STM32F7xx_LCD_Rotation::rotateNormal_0;
 
-        if (!STM32F7_Display_SetPinConfiguration(true)) {
+        auto controllerIndex = 0;
+
+        if (!STM32F7_Display_SetPinConfiguration(controllerIndex, true)) {
             return TinyCLR_Result::SharingViolation;
         }
     }
@@ -1047,7 +1056,9 @@ TinyCLR_Result STM32F7_Display_Release(const TinyCLR_Display_Controller* self) {
     if (displayInitializeCount == 0) {
         STM32F7_Display_Uninitialize();
 
-        STM32F7_Display_SetPinConfiguration(false);
+        auto controllerIndex = 0;
+
+        STM32F7_Display_SetPinConfiguration(controllerIndex, false);
 
         m_STM32F7_DisplayEnable = false;
 

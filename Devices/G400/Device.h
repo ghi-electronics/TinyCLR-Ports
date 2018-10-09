@@ -55,8 +55,10 @@
 #define INCLUDE_CAN
 #define TOTAL_CAN_CONTROLLERS 2
 #define AT91_CAN_BUFFER_DEFAULT_SIZE { 128, 128 }
-#define AT91_CAN_TX_PINS { { PIN(A, 10), PS(B) }, { PIN(A, 6), PS(B) } }
-#define AT91_CAN_RX_PINS { { PIN(A,  9), PS(B) }, { PIN(A, 5), PS(B) } }
+#define AT91_CAN_PINS {/*        TX                     RX          */           \
+                       /*CAN0*/{ { PIN(A, 10), PS(B) }, { PIN(A,  9), PS(B) }, },\
+                       /*CAN1*/{ { PIN(A, 6) , PS(B) }, { PIN(A, 5) , PS(B) }  } \
+                       }
 
 #define AT91_DEPLOYMENT_SECTOR_START 640
 #define AT91_DEPLOYMENT_SECTOR_END 1020
@@ -66,8 +68,9 @@
 
 #define INCLUDE_I2C
 #define TOTAL_I2C_CONTROLLERS 1
-#define AT91_I2C_SCL_PINS { { PIN(A,31), PS(A) } }
-#define AT91_I2C_SDA_PINS { { PIN(A,30), PS(A) } }
+#define AT91_I2C_PINS {/*          SDA                   SCL*/                \
+                       /*I2C0*/{  { PIN(A,30), PS(A) }, { PIN(A,31), PS(A) } }\
+                      }
 
 #define INCLUDE_POWER
 
@@ -79,20 +82,18 @@
 #define INCLUDE_RTC
 
 #define INCLUDE_SD
-#define AT91_SD_DATA0_PINS { { PIN(A, 15), PS(A) } }
-#define AT91_SD_DATA1_PINS { { PIN(A, 18), PS(A) } }
-#define AT91_SD_DATA2_PINS { { PIN(A, 19), PS(A) } }
-#define AT91_SD_DATA3_PINS { { PIN(A, 20), PS(A) } }
-#define AT91_SD_CLK_PINS { { PIN(A, 17), PS(A) } }
-#define AT91_SD_CMD_PINS { { PIN(A, 16), PS(A) } }
+#define AT91_SD_PINS {/*            DATA 0                   DATA 1                 DATA 2                  DATA 3                  CLK                    CMD*/                 \
+                      /*SDCARD0*/{ { PIN(A, 15), PS(A) },   { PIN(A, 18), PS(A) }, { PIN(A, 19), PS(A) },  { PIN(A, 20), PS(A) },  { PIN(A, 17), PS(A) }, { PIN(A, 16), PS(A) } }\
+                     }
 
 #define INCLUDE_SIGNALS
 
 #define INCLUDE_SPI
 #define TOTAL_SPI_CONTROLLERS 2
-#define AT91_SPI_MISO_PINS { { PIN(A,11), PS(A) }, { PIN(A,21), PS(B) } }
-#define AT91_SPI_MOSI_PINS { { PIN(A,12), PS(A) }, { PIN(A,22), PS(B) } }
-#define AT91_SPI_SCLK_PINS { { PIN(A,13), PS(A) }, { PIN(A,23), PS(B) } }
+#define AT91_SPI_PINS {/*           MOSI                   MISO                   CLOCK*/              \
+                       /*SPI0*/{ { PIN(A,11), PS(A) },  { PIN(A,12), PS(A) },  { PIN(A,13), PS(A) } },\
+                       /*SPI1*/{ { PIN(A,21), PS(B) },  { PIN(A,22), PS(B) },  { PIN(A,23), PS(B) } } \
+                      }
 
 #define AT91_TIME_DEFAULT_CONTROLLER_ID 0
 
@@ -102,10 +103,15 @@
 #define TOTAL_UART_CONTROLLERS 6
 #define AT91_UART_DEFAULT_TX_BUFFER_SIZE  { 16*1024, 16*1024, 16*1024, 16*1024, 16*1024, 16*1024 }
 #define AT91_UART_DEFAULT_RX_BUFFER_SIZE  { 16*1024, 16*1024, 16*1024, 16*1024, 16*1024, 16*1024 }
-#define AT91_UART_TX_PINS { { PIN(A, 9), PS(A) } , { PIN(A, 0), PS(A) }, { PIN(A, 5), PS(A) } , { PIN(A, 7), PS(A) } , { PIN(C, 8), PS(C) } , { PIN(C,16), PS(C) } }
-#define AT91_UART_RX_PINS { { PIN(A,10), PS(A) } , { PIN(A, 1), PS(A) }, { PIN(A, 6), PS(A) } , { PIN(A, 8), PS(A) } , { PIN(C, 9), PS(C) } , { PIN(C,17), PS(C) } }
-#define AT91_UART_RTS_PINS { { PIN_NONE , PS_NONE }, { PIN(A, 2), PS(A) }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } }
-#define AT91_UART_CTS_PINS { { PIN_NONE , PS_NONE }, { PIN(A, 3), PS(A) }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } }
+
+#define AT91_UART_PINS {/*          TX                      RX                     RTS                     CTS*/                  \
+                        /*UART0*/{ { PIN(A, 9), PS(A) } , { PIN(A,10), PS(A) } , { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } },\
+                        /*UART1*/{ { PIN(A, 0), PS(A) } , { PIN(A, 1), PS(A) } , { PIN(A, 2), PS(A)   }, { PIN(A, 3), PS(A)   } },\
+                        /*UART2*/{ { PIN(A, 5), PS(A) } , { PIN(A, 6), PS(A) } , { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } },\
+                        /*UART3*/{ { PIN(A, 7), PS(A) } , { PIN(A, 8), PS(A) } , { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } },\
+                        /*UART4*/{ { PIN(C, 8), PS(C) } , { PIN(C, 9), PS(C) } , { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } },\
+                        /*UART5*/{ { PIN(C,16), PS(C) } , { PIN(C,17), PS(C) } , { PIN_NONE , PS_NONE }, { PIN_NONE , PS_NONE } } \
+                       }
 
 #define INCLUDE_USBCLIENT
 #define AT91_TOTAL_USB_CONTROLLERS 1
@@ -116,7 +122,7 @@
 #define AT91_USB_PIPE_COUNT 16
 
 #define INCLUDE_DISPLAY
-#define AT91_DISPLAY_CONTROLLER_PINS { { PIN(C,0), PS(A) }, { PIN(C,1), PS(A) }, { PIN(C,2), PS(A) }, { PIN(C,3), PS(A) }, { PIN(C,4), PS(A) }, { PIN(C,5), PS(A) }, { PIN(C,6), PS(A) }, { PIN(C,7), PS(A) }, { PIN(C,8), PS(A) }, { PIN(C,9), PS(A) }, { PIN(C,10), PS(A) }, { PIN(C,11), PS(A) }, { PIN(C,12), PS(A) }, { PIN(C,13), PS(A) }, { PIN(C,14), PS(A) }, { PIN(C,15), PS(A) }, { PIN(C,24), PS(A) }, { PIN(C,27), PS(A) }, { PIN(C,28), PS(A) }, { PIN(C,30), PS(A) } }
+#define AT91_DISPLAY_CONTROLLER_PINS { { { PIN(C,0), PS(A) }, { PIN(C,1), PS(A) }, { PIN(C,2), PS(A) }, { PIN(C,3), PS(A) }, { PIN(C,4), PS(A) }, { PIN(C,5), PS(A) }, { PIN(C,6), PS(A) }, { PIN(C,7), PS(A) }, { PIN(C,8), PS(A) }, { PIN(C,9), PS(A) }, { PIN(C,10), PS(A) }, { PIN(C,11), PS(A) }, { PIN(C,12), PS(A) }, { PIN(C,13), PS(A) }, { PIN(C,14), PS(A) }, { PIN(C,15), PS(A) }, { PIN(C,24), PS(A) }, { PIN(C,27), PS(A) }, { PIN(C,28), PS(A) }, { PIN(C,30), PS(A) } } }
 #define AT91_DISPLAY_BACKLIGHT_PIN { PIN_NONE, PS_NONE }
 #define AT91_DISPLAY_ENABLE_PIN { PIN(C, 29), PS(A) }
 

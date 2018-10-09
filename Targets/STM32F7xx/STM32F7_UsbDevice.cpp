@@ -237,10 +237,12 @@ typedef struct {
 
 } UsbDeviceController;
 
-static const STM32F7_Gpio_Pin usbDeviceDmPins[] = STM32F7_USB_DM_PINS;
-static const STM32F7_Gpio_Pin usbDeviceDpPins[] = STM32F7_USB_DP_PINS;
-static const STM32F7_Gpio_Pin usbDeviceVbusPins[] = STM32F7_USB_VB_PINS;
-static const STM32F7_Gpio_Pin usbDeviceIdPins[] = STM32F7_USB_ID_PINS;
+#define USB_DEVICE_DM_PIN 0
+#define USB_DEVICE_DP_PIN 1
+#define USB_DEVICE_VB_PIN 2
+#define USB_DEVICE_ID_PIN 3
+
+static const STM32F7_Gpio_Pin usbDevicePins[][4] = STM32F7_USB_PINS;
 
 void STM32F7_UsbDevice_ProtectPins(int32_t controller, bool On);
 void STM32F7_UsbDevice_Interrupt(void* param);
@@ -289,14 +291,10 @@ bool STM32F7_UsbDevice_Initialize(UsClientState* usClientState) {
 
     int32_t controller = usClientState->controllerIndex;
 
-    auto& dp = usbDeviceDpPins[controller];
-    auto& dm = usbDeviceDmPins[controller];
-    auto& id = usbDeviceIdPins[controller];
-
-    if (!STM32F7_GpioInternal_OpenPin(dp.number) || !STM32F7_GpioInternal_OpenPin(dm.number))
+    if (!STM32F7_GpioInternal_OpenMultiPins(usbDevicePins[controller], 2))
         return false;
 
-    if (STM32F7_USB_USE_ID_PIN(controller) && !STM32F7_GpioInternal_OpenPin(id.number))
+    if (STM32F7_USB_USE_ID_PIN(controller) && !STM32F7_GpioInternal_OpenPin(usbDevicePins[controller][USB_DEVICE_ID_PIN].number))
         return false;
 
     // Enable USB clock
@@ -363,7 +361,7 @@ void STM32F7_UsbDevice_ResetEvent(OTG_TypeDef* OTG, UsClientState* usClientState
     OTG->GRXFSIZ = USB_RXFIFO_SIZE; // Rx Fifo
     OTG->DIEPTXF0 = (USB_TX0FIFO_SIZE << 16) | USB_RXFIFO_SIZE; // Tx Fifo 0
     uint32_t addr = USB_RXFIFO_SIZE + USB_TX0FIFO_SIZE;
-    for (int32_t i = 0; i < usClientState->totalEndpointsCount; i++) {
+    for (auto i = 0; i < usClientState->totalEndpointsCount; i++) {
         OTG->DIEPTXF[i] = (USB_TXnFIFO_SIZE << 16) | addr; // Tx Fifo i
         addr += USB_TXnFIFO_SIZE;
         OTG->DIEP[i].INT = 0xFF; // clear endpoint interrupts
@@ -699,9 +697,9 @@ void STM32F7_UsbDevice_ProtectPins(int32_t controller, bool on) {
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto& dp = usbDeviceDpPins[controller];
-    auto& dm = usbDeviceDmPins[controller];
-    auto& id = usbDeviceIdPins[controller];
+    auto& dp = usbDevicePins[controller][USB_DEVICE_DP_PIN];
+    auto& dm = usbDevicePins[controller][USB_DEVICE_DM_PIN];
+    auto& id = usbDevicePins[controller][USB_DEVICE_ID_PIN];
 
     if (on) {
 

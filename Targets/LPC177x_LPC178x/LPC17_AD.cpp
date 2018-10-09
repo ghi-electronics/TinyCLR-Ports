@@ -292,14 +292,14 @@ TinyCLR_Result LPC17_Adc_OpenChannel(const TinyCLR_Adc_Controller* self, uint32_
     if (channel >= SIZEOF_ARRAY(adcPins))
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    if (!LPC17_Gpio_OpenPin(adcPins[channel].number))
+    if (!LPC17_GpioInternal_OpenPin(adcPins[channel].number))
         return  TinyCLR_Result::SharingViolation;
 
     auto state = reinterpret_cast<AdcState*>(self->ApiInfo->State);
 
     LPC_SC->PCONP |= PCONP_PCAD; // To enable power on ADC  Possibly add a check to see if power is enabled before setting and for the ability to check if any ADC are active in uninitialize
 
-    LPC17_Gpio_ConfigurePin(adcPins[channel].number, LPC17_Gpio_Direction::Input, adcPins[channel].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+    LPC17_GpioInternal_ConfigurePin(adcPins[channel].number, LPC17_Gpio_Direction::Input, adcPins[channel].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
     AD0CR |= (1 << channel) | // Selects this channel in the register to initialize
         ((5 - 1) << 8) | // Divide the clock (60 MHz) by 5 (60 / (4 + 1) = 12) <-- must be < 12.5
@@ -316,7 +316,7 @@ TinyCLR_Result LPC17_Adc_CloseChannel(const TinyCLR_Adc_Controller* self, uint32
 
     if (state->isOpen[channel]) {
         AD0CR &= ~((1 << AD0CR_BURST_BIT) | (1 << AD0CR_PDN_BIT) | (0x7 << 24));
-        LPC17_Gpio_ClosePin(adcPins[channel].number);
+        LPC17_GpioInternal_ClosePin(adcPins[channel].number);
     }
 
     state->isOpen[channel] = false;

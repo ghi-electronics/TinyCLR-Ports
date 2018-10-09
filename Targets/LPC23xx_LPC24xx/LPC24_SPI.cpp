@@ -260,9 +260,11 @@
 #define DATA_BIT_LENGTH_16  16
 #define DATA_BIT_LENGTH_8   8
 
-static const LPC24_Gpio_Pin spiMisoPins[] = LPC24_SPI_MISO_PINS;
-static const LPC24_Gpio_Pin spiMosiPins[] = LPC24_SPI_MOSI_PINS;
-static const LPC24_Gpio_Pin spiClkPins[] = LPC24_SPI_SCLK_PINS;
+#define SPI_MOSI_PIN 0
+#define SPI_MISO_PIN 1
+#define SPI_CLK_PIN  2
+
+static const LPC24_Gpio_Pin spiPins[][3] = LPC24_SPI_PINS;
 
 struct SpiState {
     int32_t controllerIndex;
@@ -709,8 +711,8 @@ TinyCLR_Result LPC24_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, c
     SPI.SSPxCR0 |= (SCR << 8);
 
     if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
-        if (LPC24_Gpio_OpenPin(state->chipSelectLine)) {
-            LPC24_Gpio_EnableOutputPin(state->chipSelectLine, !state->chipSelectActiveState);
+        if (LPC24_GpioInternal_OpenPin(state->chipSelectLine)) {
+            LPC24_GpioInternal_EnableOutputPin(state->chipSelectLine, !state->chipSelectActiveState);
         }
         else {
             return TinyCLR_Result::SharingViolation;
@@ -730,21 +732,17 @@ TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
         uint32_t clkPin, misoPin, mosiPin;
         LPC24_Gpio_PinFunction clkMode, misoMode, mosiMode;
 
-        clkPin = spiClkPins[controllerIndex].number;
-        misoPin = spiMisoPins[controllerIndex].number;
-        mosiPin = spiMosiPins[controllerIndex].number;
+        clkPin = spiPins[controllerIndex][SPI_CLK_PIN].number;
+        misoPin = spiPins[controllerIndex][SPI_MISO_PIN].number;
+        mosiPin = spiPins[controllerIndex][SPI_MOSI_PIN].number;
 
-        clkMode = spiClkPins[controllerIndex].pinFunction;
-        misoMode = spiMisoPins[controllerIndex].pinFunction;
-        mosiMode = spiMosiPins[controllerIndex].pinFunction;
+        clkMode = spiPins[controllerIndex][SPI_CLK_PIN].pinFunction;
+        misoMode = spiPins[controllerIndex][SPI_MISO_PIN].pinFunction;
+        mosiMode = spiPins[controllerIndex][SPI_MOSI_PIN].pinFunction;
 
 
         // Check each pin single time make sure once fail not effect to other pins
-        if (!LPC24_Gpio_OpenPin(clkPin))
-            return TinyCLR_Result::SharingViolation;
-        if (!LPC24_Gpio_OpenPin(misoPin))
-            return TinyCLR_Result::SharingViolation;
-        if (!LPC24_Gpio_OpenPin(mosiPin))
+        if (!LPC24_GpioInternal_OpenMultiPins(spiPins[controllerIndex], 3))
             return TinyCLR_Result::SharingViolation;
 
         switch (controllerIndex) {
@@ -757,9 +755,9 @@ TinyCLR_Result LPC24_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
             break;
         }
 
-        LPC24_Gpio_ConfigurePin(clkPin, LPC24_Gpio_Direction::Input, clkMode, LPC24_Gpio_PinMode::Inactive);
-        LPC24_Gpio_ConfigurePin(misoPin, LPC24_Gpio_Direction::Input, misoMode, LPC24_Gpio_PinMode::Inactive);
-        LPC24_Gpio_ConfigurePin(mosiPin, LPC24_Gpio_Direction::Input, mosiMode, LPC24_Gpio_PinMode::Inactive);
+        LPC24_GpioInternal_ConfigurePin(clkPin, LPC24_Gpio_Direction::Input, clkMode, LPC24_Gpio_PinMode::Inactive);
+        LPC24_GpioInternal_ConfigurePin(misoPin, LPC24_Gpio_Direction::Input, misoMode, LPC24_Gpio_PinMode::Inactive);
+        LPC24_GpioInternal_ConfigurePin(mosiPin, LPC24_Gpio_Direction::Input, mosiMode, LPC24_Gpio_PinMode::Inactive);
     }
 
     state->initializeCount++;
@@ -791,16 +789,16 @@ TinyCLR_Result LPC24_Spi_Release(const TinyCLR_Spi_Controller* self) {
 
         }
 
-        int32_t clkPin = spiClkPins[controllerIndex].number;
-        int32_t misoPin = spiMisoPins[controllerIndex].number;
-        int32_t mosiPin = spiMosiPins[controllerIndex].number;
+        int32_t clkPin = spiPins[controllerIndex][SPI_CLK_PIN].number;
+        int32_t misoPin = spiPins[controllerIndex][SPI_MISO_PIN].number;
+        int32_t mosiPin = spiPins[controllerIndex][SPI_MOSI_PIN].number;
 
-        LPC24_Gpio_ClosePin(clkPin);
-        LPC24_Gpio_ClosePin(misoPin);
-        LPC24_Gpio_ClosePin(mosiPin);
+        LPC24_GpioInternal_ClosePin(clkPin);
+        LPC24_GpioInternal_ClosePin(misoPin);
+        LPC24_GpioInternal_ClosePin(mosiPin);
 
         if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
-            LPC24_Gpio_ClosePin(state->chipSelectLine);
+            LPC24_GpioInternal_ClosePin(state->chipSelectLine);
 
             state->chipSelectLine = PIN_NONE;
         }

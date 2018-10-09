@@ -18,9 +18,11 @@
 #define DATA_BIT_LENGTH_16  16
 #define DATA_BIT_LENGTH_8   8
 
-static const AT91_Gpio_Pin spiMisoPins[] = AT91_SPI_MISO_PINS;
-static const AT91_Gpio_Pin spiMosiPins[] = AT91_SPI_MOSI_PINS;
-static const AT91_Gpio_Pin spiClkPins[] = AT91_SPI_SCLK_PINS;
+#define SPI_MOSI_PIN 0
+#define SPI_MISO_PIN 1
+#define SPI_CLK_PIN  2
+
+static const AT91_Gpio_Pin spiPins[][3] = AT91_SPI_PINS;
 
 struct SpiState {
     int32_t controllerIndex;
@@ -331,17 +333,17 @@ TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, co
     uint32_t clkPin, misoPin, mosiPin;
     AT91_Gpio_PeripheralSelection clkMode, misoMode, mosiMode;
 
-    clkPin = spiClkPins[controllerIndex].number;
-    misoPin = spiMisoPins[controllerIndex].number;
-    mosiPin = spiMosiPins[controllerIndex].number;
+    clkPin = spiPins[controllerIndex][SPI_CLK_PIN].number;
+    misoPin = spiPins[controllerIndex][SPI_MISO_PIN].number;
+    mosiPin = spiPins[controllerIndex][SPI_MOSI_PIN].number;
 
-    clkMode = spiClkPins[controllerIndex].peripheralSelection;
-    misoMode = spiMisoPins[controllerIndex].peripheralSelection;
-    mosiMode = spiMosiPins[controllerIndex].peripheralSelection;
+    clkMode = spiPins[controllerIndex][SPI_CLK_PIN].peripheralSelection;
+    misoMode = spiPins[controllerIndex][SPI_MISO_PIN].peripheralSelection;
+    mosiMode = spiPins[controllerIndex][SPI_MOSI_PIN].peripheralSelection;
 
-    AT91_Gpio_ConfigurePin(clkPin, AT91_Gpio_Direction::Input, clkMode, AT91_Gpio_ResistorMode::Inactive);
-    AT91_Gpio_ConfigurePin(misoPin, AT91_Gpio_Direction::Input, misoMode, AT91_Gpio_ResistorMode::Inactive);
-    AT91_Gpio_ConfigurePin(mosiPin, AT91_Gpio_Direction::Input, mosiMode, AT91_Gpio_ResistorMode::Inactive);
+    AT91_GpioInternal_ConfigurePin(clkPin, AT91_Gpio_Direction::Input, clkMode, AT91_Gpio_ResistorMode::Inactive);
+    AT91_GpioInternal_ConfigurePin(misoPin, AT91_Gpio_Direction::Input, misoMode, AT91_Gpio_ResistorMode::Inactive);
+    AT91_GpioInternal_ConfigurePin(mosiPin, AT91_Gpio_Direction::Input, mosiMode, AT91_Gpio_ResistorMode::Inactive);
 
     uint32_t CSR = 0;
 
@@ -383,8 +385,8 @@ TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, co
     spi.SPI_CR |= AT91_SPI::SPI_CR_ENABLE_SPI;
 
     if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
-        if (AT91_Gpio_OpenPin(state->chipSelectLine)) {
-            AT91_Gpio_EnableOutputPin(state->chipSelectLine, !state->chipSelectActiveState);
+        if (AT91_GpioInternal_OpenPin(state->chipSelectLine)) {
+            AT91_GpioInternal_EnableOutputPin(state->chipSelectLine, !state->chipSelectActiveState);
         }
         else {
             return TinyCLR_Result::SharingViolation;
@@ -407,22 +409,18 @@ TinyCLR_Result AT91_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
 
         auto controllerIndex = state->controllerIndex;
 
-        clkPin = spiClkPins[controllerIndex].number;
-        misoPin = spiMisoPins[controllerIndex].number;
-        mosiPin = spiMosiPins[controllerIndex].number;
+        clkPin = spiPins[controllerIndex][SPI_CLK_PIN].number;
+        misoPin = spiPins[controllerIndex][SPI_MISO_PIN].number;
+        mosiPin = spiPins[controllerIndex][SPI_MOSI_PIN].number;
 
-        clkMode = spiClkPins[controllerIndex].peripheralSelection;
-        misoMode = spiMisoPins[controllerIndex].peripheralSelection;
-        mosiMode = spiMosiPins[controllerIndex].peripheralSelection;
+        clkMode = spiPins[controllerIndex][SPI_CLK_PIN].peripheralSelection;
+        misoMode = spiPins[controllerIndex][SPI_MISO_PIN].peripheralSelection;
+        mosiMode = spiPins[controllerIndex][SPI_MOSI_PIN].peripheralSelection;
 
         AT91_PMC &pmc = AT91::PMC();
 
         // Check each pin single time make sure once fail not effect to other pins
-        if (!AT91_Gpio_OpenPin(clkPin))
-            return TinyCLR_Result::SharingViolation;
-        if (!AT91_Gpio_OpenPin(misoPin))
-            return TinyCLR_Result::SharingViolation;
-        if (!AT91_Gpio_OpenPin(mosiPin))
+        if (!AT91_GpioInternal_OpenMultiPins(spiPins[controllerIndex], 3))
             return TinyCLR_Result::SharingViolation;
 
         switch (controllerIndex) {
@@ -435,9 +433,9 @@ TinyCLR_Result AT91_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
             break;
         }
 
-        AT91_Gpio_ConfigurePin(clkPin, AT91_Gpio_Direction::Input, clkMode, AT91_Gpio_ResistorMode::Inactive);
-        AT91_Gpio_ConfigurePin(misoPin, AT91_Gpio_Direction::Input, misoMode, AT91_Gpio_ResistorMode::Inactive);
-        AT91_Gpio_ConfigurePin(mosiPin, AT91_Gpio_Direction::Input, mosiMode, AT91_Gpio_ResistorMode::Inactive);
+        AT91_GpioInternal_ConfigurePin(clkPin, AT91_Gpio_Direction::Input, clkMode, AT91_Gpio_ResistorMode::Inactive);
+        AT91_GpioInternal_ConfigurePin(misoPin, AT91_Gpio_Direction::Input, misoMode, AT91_Gpio_ResistorMode::Inactive);
+        AT91_GpioInternal_ConfigurePin(mosiPin, AT91_Gpio_Direction::Input, mosiMode, AT91_Gpio_ResistorMode::Inactive);
     }
 
     state->initializeCount++;
@@ -477,20 +475,20 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Controller* self) {
 
         uint32_t clkPin, misoPin, mosiPin;
 
-        clkPin = spiClkPins[controllerIndex].number;
-        misoPin = spiMisoPins[controllerIndex].number;
-        mosiPin = spiMosiPins[controllerIndex].number;
+        clkPin = spiPins[controllerIndex][SPI_CLK_PIN].number;
+        misoPin = spiPins[controllerIndex][SPI_MISO_PIN].number;
+        mosiPin = spiPins[controllerIndex][SPI_MOSI_PIN].number;
 
-        AT91_Gpio_ClosePin(clkPin);
-        AT91_Gpio_ClosePin(misoPin);
-        AT91_Gpio_ClosePin(mosiPin);
+        AT91_GpioInternal_ClosePin(clkPin);
+        AT91_GpioInternal_ClosePin(misoPin);
+        AT91_GpioInternal_ClosePin(mosiPin);
 
         if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
             // Release the pin, set pin un-reserved
-            AT91_Gpio_ClosePin(state->chipSelectLine);
+            AT91_GpioInternal_ClosePin(state->chipSelectLine);
 
             // Keep chip select is inactive by internal pull up
-            AT91_Gpio_ConfigurePin(state->chipSelectLine, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::PullUp);
+            AT91_GpioInternal_ConfigurePin(state->chipSelectLine, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::PullUp);
 
             state->chipSelectLine = PIN_NONE;
         }

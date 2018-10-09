@@ -70,10 +70,13 @@ struct UartState {
     size_t lastEventRxBufferCount;
 };
 
-static const STM32F7_Gpio_Pin uartTxPins[] = STM32F7_UART_TX_PINS;
-static const STM32F7_Gpio_Pin uartRxPins[] = STM32F7_UART_RX_PINS;
-static const STM32F7_Gpio_Pin uartCtsPins[] = STM32F7_UART_CTS_PINS;
-static const STM32F7_Gpio_Pin uartRtsPins[] = STM32F7_UART_RTS_PINS;
+#define UART_TXD_PIN 0
+#define UART_RXD_PIN 1
+#define UART_RTS_PIN 2
+#define UART_CTS_PIN 3
+
+static const STM32F7_Gpio_Pin uartPins[][4] = STM32F7_UART_PINS;
+
 static const uint32_t uartRxDefaultBuffersSize[] = STM32F7_UART_DEFAULT_RX_BUFFER_SIZE;
 static const uint32_t uartTxDefaultBuffersSize[] = STM32F7_UART_DEFAULT_TX_BUFFER_SIZE;
 
@@ -393,8 +396,7 @@ TinyCLR_Result STM32F7_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         if (controllerIndex >= TOTAL_UART_CONTROLLERS)
             return TinyCLR_Result::ArgumentInvalid;
 
-
-        if (!STM32F7_GpioInternal_OpenPin(uartRxPins[controllerIndex].number) || !STM32F7_GpioInternal_OpenPin(uartTxPins[controllerIndex].number))
+        if (!STM32F7_GpioInternal_OpenMultiPins(uartPins[controllerIndex], 2))
             return TinyCLR_Result::SharingViolation;
 
         state->txBufferCount = 0;
@@ -533,20 +535,15 @@ TinyCLR_Result STM32F7_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
 
     state->portReg->CR3 = ctrl_cr3;
 
-    auto& tx = uartTxPins[controllerIndex];
-    auto& rx = uartRxPins[controllerIndex];
-    auto& cts = uartCtsPins[controllerIndex];
-    auto& rts = uartRtsPins[controllerIndex];
-
-    STM32F7_GpioInternal_ConfigurePin(rx.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::PullUp, rx.alternateFunction);
-    STM32F7_GpioInternal_ConfigurePin(tx.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, tx.alternateFunction);
+    STM32F7_GpioInternal_ConfigurePin(uartPins[controllerIndex][UART_RXD_PIN].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::PullUp, uartPins[controllerIndex][UART_RXD_PIN].alternateFunction);
+    STM32F7_GpioInternal_ConfigurePin(uartPins[controllerIndex][UART_TXD_PIN].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, uartPins[controllerIndex][UART_TXD_PIN].alternateFunction);
 
     if (handshaking == TinyCLR_Uart_Handshake::RequestToSend) {
-        if (!STM32F7_GpioInternal_OpenPin(cts.number) || !STM32F7_GpioInternal_OpenPin(rts.number))
+        if (!STM32F7_GpioInternal_OpenMultiPins(&uartPins[controllerIndex][UART_RTS_PIN], 2))
             return TinyCLR_Result::SharingViolation;
 
-        STM32F7_GpioInternal_ConfigurePin(cts.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, cts.alternateFunction);
-        STM32F7_GpioInternal_ConfigurePin(rts.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, rts.alternateFunction);
+        STM32F7_GpioInternal_ConfigurePin(uartPins[controllerIndex][UART_CTS_PIN].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, uartPins[controllerIndex][UART_CTS_PIN].alternateFunction);
+        STM32F7_GpioInternal_ConfigurePin(uartPins[controllerIndex][UART_RTS_PIN].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, uartPins[controllerIndex][UART_RTS_PIN].alternateFunction);
     }
 
     switch (controllerIndex) {
@@ -597,7 +594,7 @@ TinyCLR_Result STM32F7_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
 
     state->portReg->CR1 |= USART_CR1_UE; // start uart
 
-    return ((cts.number == PIN_NONE || rts.number == PIN_NONE) && handshaking == TinyCLR_Uart_Handshake::RequestToSend) ? TinyCLR_Result::NotSupported : TinyCLR_Result::Success;
+    return ((uartPins[controllerIndex][UART_CTS_PIN].number == PIN_NONE || uartPins[controllerIndex][UART_RTS_PIN].number == PIN_NONE) && handshaking == TinyCLR_Uart_Handshake::RequestToSend) ? TinyCLR_Result::NotSupported : TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F7_Uart_Release(const TinyCLR_Uart_Controller* self) {
@@ -694,14 +691,14 @@ TinyCLR_Result STM32F7_Uart_Release(const TinyCLR_Uart_Controller* self) {
             memoryProvider->Free(memoryProvider, state->RxBuffer);
         }
 
-        STM32F7_GpioInternal_ClosePin(uartRxPins[controllerIndex].number);
-        STM32F7_GpioInternal_ClosePin(uartTxPins[controllerIndex].number);
+        STM32F7_GpioInternal_ClosePin(uartPins[controllerIndex][UART_RXD_PIN].number);
+        STM32F7_GpioInternal_ClosePin(uartPins[controllerIndex][UART_TXD_PIN].number);
 
         if (state->handshaking) {
             state->portReg->CR3 &= ~(USART_CR3_CTSE | USART_CR3_RTSE);
 
-            STM32F7_GpioInternal_ClosePin(uartCtsPins[controllerIndex].number);
-            STM32F7_GpioInternal_ClosePin(uartRtsPins[controllerIndex].number);
+            STM32F7_GpioInternal_ClosePin(uartPins[controllerIndex][UART_CTS_PIN].number);
+            STM32F7_GpioInternal_ClosePin(uartPins[controllerIndex][UART_RTS_PIN].number);
         }
     }
 
@@ -723,10 +720,10 @@ void STM32F7_Uart_TxBufferEmptyInterruptEnable(int controllerIndex, bool enable)
     auto state = &uartStates[controllerIndex];
 
     if (enable) {
-        state->portReg->CR1 |= USART_CR1_TXEIE;  // tx int enable
+        state->portReg->CR1 |= USART_CR1_TXEIE;  // tx enable
     }
     else {
-        state->portReg->CR1 &= ~USART_CR1_TXEIE; // tx int disable
+        state->portReg->CR1 &= ~USART_CR1_TXEIE; // tx disable
     }
 }
 
@@ -734,10 +731,10 @@ void STM32F7_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable) 
     auto state = &uartStates[controllerIndex];
 
     if (enable) {
-        state->portReg->CR1 |= USART_CR1_RXNEIE;  // rx int enable
+        state->portReg->CR1 |= USART_CR1_RXNEIE;  // rx enable
     }
     else {
-        state->portReg->CR1 &= ~USART_CR1_RXNEIE; // rx int disable
+        state->portReg->CR1 &= ~USART_CR1_RXNEIE; // rx disable
     }
 }
 
@@ -859,7 +856,7 @@ TinyCLR_Result STM32F7_Uart_GetClearToSendState(const TinyCLR_Uart_Controller* s
 
         // Reading the pin state to protect values from register for inteterupt which is higher priority (some bits are clear once read)
         TinyCLR_Gpio_PinValue pinState;
-        STM32F7_Gpio_Read(nullptr, uartCtsPins[controllerIndex].number, pinState);
+        STM32F7_Gpio_Read(nullptr, uartPins[controllerIndex][UART_CTS_PIN].number, pinState);
 
         value = (pinState == TinyCLR_Gpio_PinValue::High) ? false : true;
     }
@@ -884,7 +881,7 @@ TinyCLR_Result STM32F7_Uart_GetIsRequestToSendEnabled(const TinyCLR_Uart_Control
 
         // Reading the pin state to protect values from register for inteterupt which is higher priority (some bits are clear once read)
         TinyCLR_Gpio_PinValue pinState;
-        STM32F7_Gpio_Read(nullptr, uartRtsPins[controllerIndex].number, pinState);
+        STM32F7_Gpio_Read(nullptr, uartPins[controllerIndex][UART_RTS_PIN].number, pinState);
 
         value = (pinState == TinyCLR_Gpio_PinValue::High) ? true : false;
     }

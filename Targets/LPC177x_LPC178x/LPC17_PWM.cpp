@@ -109,7 +109,7 @@ void LPC17_Pwm_AddApi(const TinyCLR_Api_Manager* apiManager) {
 TinyCLR_Result LPC17_Pwm_OpenChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel) {
     int32_t actualPin = LPC17_Pwm_GetGpioPinForChannel(self, channel);
 
-    if (!LPC17_Gpio_OpenPin(actualPin))
+    if (!LPC17_GpioInternal_OpenPin(actualPin))
         return TinyCLR_Result::SharingViolation;
 
     auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
@@ -148,7 +148,7 @@ TinyCLR_Result LPC17_Pwm_OpenChannel(const TinyCLR_Pwm_Controller* self, uint32_
 TinyCLR_Result LPC17_Pwm_CloseChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel) {
     int32_t actualPin = LPC17_Pwm_GetGpioPinForChannel(self, channel);
 
-    LPC17_Gpio_ClosePin(actualPin);
+    LPC17_GpioInternal_ClosePin(actualPin);
 
     auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
@@ -241,7 +241,7 @@ TinyCLR_Result LPC17_Pwm_EnableChannel(const TinyCLR_Pwm_Controller* self, uint3
 
     auto state = reinterpret_cast<PwmState*>(self->ApiInfo->State);
 
-    LPC17_Gpio_ConfigurePin(actualPin, LPC17_Gpio_Direction::Input, state->gpioPin[channel].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+    LPC17_GpioInternal_ConfigurePin(actualPin, LPC17_Gpio_Direction::Input, state->gpioPin[channel].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
     return TinyCLR_Result::Success;
 }
@@ -249,7 +249,7 @@ TinyCLR_Result LPC17_Pwm_EnableChannel(const TinyCLR_Pwm_Controller* self, uint3
 TinyCLR_Result LPC17_Pwm_DisableChannel(const TinyCLR_Pwm_Controller* self, uint32_t channel) {
     int32_t actualPin = LPC17_Pwm_GetGpioPinForChannel(self, channel);
 
-    LPC17_Gpio_ConfigurePin(actualPin, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+    LPC17_GpioInternal_ConfigurePin(actualPin, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
     return TinyCLR_Result::Success;
 }
@@ -344,13 +344,13 @@ TinyCLR_Result LPC17_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self, 
         highTicks = periodTicks - highTicks;
 
     if (periodInNanoSeconds == 0 || durationInNanoSeconds == 0) {
-        LPC17_Gpio_EnableOutputPin(state->gpioPin[channel].number, false);
+        LPC17_GpioInternal_EnableOutputPin(state->gpioPin[channel].number, false);
         state->outputEnabled[channel] = true;
 
         return TinyCLR_Result::Success;
     }
     else if (durationInNanoSeconds >= periodInNanoSeconds) {
-        LPC17_Gpio_EnableOutputPin(state->gpioPin[channel].number, true);
+        LPC17_GpioInternal_EnableOutputPin(state->gpioPin[channel].number, true);
         state->outputEnabled[channel] = true;
 
         return TinyCLR_Result::Success;

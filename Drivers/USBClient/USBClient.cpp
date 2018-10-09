@@ -835,8 +835,42 @@ TinyCLR_Result TinyCLR_UsbClient_Acquire(const TinyCLR_UsbClient_Controller* sel
                 || usClientState->pipes == nullptr
                 || usClientState->controlEndpointBuffer == nullptr
                 || usClientState->maxEndpointsPacketSize == nullptr
-                || usClientState->endpointStatus == nullptr)
+                || usClientState->endpointStatus == nullptr) {
+                if (usClientState->queues != nullptr)
+                    memoryManager->Free(memoryManager, usClientState->queues);
+
+                if (usClientState->currentPacketOffset != nullptr)
+                    memoryManager->Free(memoryManager, usClientState->currentPacketOffset);
+
+                if (usClientState->isTxQueue != nullptr)
+                    memoryManager->Free(memoryManager, usClientState->isTxQueue);
+
+                if (usClientState->fifoPacketIn != nullptr)
+                    memoryManager->Free(memoryManager, usClientState->fifoPacketIn);
+
+                if (usClientState->fifoPacketOut != nullptr)
+                    memoryManager->Free(memoryManager, usClientState->fifoPacketOut);
+
+                if (usClientState->fifoPacketCount != nullptr)
+                    memoryManager->Free(memoryManager, usClientState->fifoPacketCount);
+
+                if (usClientState->maxFifoPacketCount != nullptr)
+                    memoryManager->Free(memoryManager, usClientState->maxFifoPacketCount);
+
+                if (usClientState->pipes != nullptr)
+                    memoryManager->Free(memoryManager, usClientState->pipes);
+
+                if (usClientState->controlEndpointBuffer != nullptr)
+                    memoryManager->Free(memoryManager, usClientState->controlEndpointBuffer);
+
+                if (usClientState->endpointStatus != nullptr)
+                    memoryManager->Free(memoryManager, usClientState->endpointStatus);
+
+                if (usClientState->maxEndpointsPacketSize != nullptr)
+                    memoryManager->Free(memoryManager, usClientState->maxEndpointsPacketSize);
+
                 goto acquire_error;
+            }
 
             // Reset buffer, make sure no random value in RAM after soft reset
             memset(reinterpret_cast<uint8_t*>(usClientState->queues), 0x00, usClientState->totalEndpointsCount * sizeof(uint32_t));
@@ -1245,7 +1279,7 @@ size_t TinyCLR_UsbClient_GetBytesToWrite(const TinyCLR_UsbClient_Controller* sel
     return usClientState->fifoPacketCount[endpoint];
 #else
     return 0;
-#endif    
+#endif
 }
 
 size_t TinyCLR_UsbClient_GetBytesToRead(const TinyCLR_UsbClient_Controller* self, uint32_t pipe) {
@@ -1257,7 +1291,7 @@ size_t TinyCLR_UsbClient_GetBytesToRead(const TinyCLR_UsbClient_Controller* self
     return usClientState->fifoPacketCount[endpoint];
 #else
     return 0;
-#endif  
+#endif
 }
 
 TinyCLR_Result TinyCLR_UsbClient_ClearWriteBuffer(const TinyCLR_UsbClient_Controller* self, uint32_t pipe) {
@@ -1271,7 +1305,7 @@ TinyCLR_Result TinyCLR_UsbClient_ClearWriteBuffer(const TinyCLR_UsbClient_Contro
     return TinyCLR_Result::Success;
 #else
     return TinyCLR_Result::NotSupported;
-#endif  
+#endif
 }
 
 TinyCLR_Result TinyCLR_UsbClient_ClearReadBuffer(const TinyCLR_UsbClient_Controller* self, uint32_t pipe) {
@@ -1285,7 +1319,7 @@ TinyCLR_Result TinyCLR_UsbClient_ClearReadBuffer(const TinyCLR_UsbClient_Control
     return TinyCLR_Result::Success;
 #else
     return TinyCLR_Result::NotSupported;
-#endif  
+#endif
 }
 
 size_t TinyCLR_UsbClient_GetWriteBufferSize(const TinyCLR_UsbClient_Controller* self, uint32_t pipe) {
@@ -1297,7 +1331,7 @@ size_t TinyCLR_UsbClient_GetWriteBufferSize(const TinyCLR_UsbClient_Controller* 
     return usClientState->maxFifoPacketCount[endpoint];
 #else
     return 0;
-#endif  
+#endif
 }
 
 size_t TinyCLR_UsbClient_GetReadBufferSize(const TinyCLR_UsbClient_Controller* self, uint32_t pipe) {
@@ -1309,7 +1343,7 @@ size_t TinyCLR_UsbClient_GetReadBufferSize(const TinyCLR_UsbClient_Controller* s
     return usClientState->maxFifoPacketCount[endpoint];
 #else
     return 0;
-#endif  
+#endif
 }
 
 TinyCLR_Result TinyCLR_UsbClient_SetWriteBufferSize(const TinyCLR_UsbClient_Controller* self, uint32_t pipe, size_t size) {
@@ -1341,7 +1375,7 @@ TinyCLR_Result TinyCLR_UsbClient_SetWriteBufferSize(const TinyCLR_UsbClient_Cont
     return TinyCLR_Result::Success;
 #else
     return TinyCLR_Result::NotSupported;
-#endif  
+#endif
 }
 
 TinyCLR_Result TinyCLR_UsbClient_SetReadBufferSize(const TinyCLR_UsbClient_Controller* self, uint32_t pipe, size_t size) {
@@ -1373,7 +1407,7 @@ TinyCLR_Result TinyCLR_UsbClient_SetReadBufferSize(const TinyCLR_UsbClient_Contr
     return TinyCLR_Result::Success;
 #else
     return TinyCLR_Result::NotSupported;
-#endif  
+#endif
 }
 
 void TinyCLR_UsbClient_Reset(int32_t controllerIndex) {

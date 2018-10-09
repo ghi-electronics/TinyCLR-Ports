@@ -174,7 +174,7 @@ void LPC17_Gpio_InterruptHandler(void* param) {
 
             if (interruptState->handler && ((expectedEdgeInterger & currentEdgeInterger) || (expectedEdgeInterger == 0))) {
                 if (interruptState->debounce) {
-                    if ((LPC17_Time_GetTimeForProcessorTicks(nullptr, LPC17_Time_GetCurrentProcessorTicks(nullptr)) - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {                        
+                    if ((LPC17_Time_GetTimeForProcessorTicks(nullptr, LPC17_Time_GetCurrentProcessorTicks(nullptr)) - interruptState->lastDebounceTicks) >= gpioDebounceInTicks[interruptState->pin]) {
                         executeIsr = true;
                     }
 
@@ -203,7 +203,7 @@ TinyCLR_Result LPC17_Gpio_SetPinChangedHandler(const TinyCLR_Gpio_Controller* se
     if (handler && ((port != 0) && (port != 2))) // If interrupt is called on a non interrupt capable pin return false
         return TinyCLR_Result::ArgumentInvalid;
 
-    LPC17_Gpio_EnableInputPin(pin, pinDriveMode[pin]);
+    LPC17_GpioInternal_EnableInputPin(pin, pinDriveMode[pin]);
 
     auto state = reinterpret_cast<GpioState*>(self->ApiInfo->State);
 
@@ -220,7 +220,7 @@ TinyCLR_Result LPC17_Gpio_SetPinChangedHandler(const TinyCLR_Gpio_Controller* se
         *GPIO_Port_X_Interrupt_RisingEdgeRegister |= pinMask;
         *GPIO_Port_X_Interrupt_FallingEdgeRegister |= pinMask;
 
-        LPC17_InterruptInternal_Activate(GPIO_IRQn, (uint32_t*)&LPC17_Gpio_InterruptHandler, 0);        
+        LPC17_InterruptInternal_Activate(GPIO_IRQn, (uint32_t*)&LPC17_Gpio_InterruptHandler, 0);
     }
     else {
         LPC17_InterruptInternal_Deactivate(GPIO_IRQn);
@@ -232,7 +232,7 @@ bool LPC17_Gpio_Disable_Interrupt(uint32_t pin) {
     return true;
 }
 
-bool LPC17_Gpio_OpenPin(int32_t pin) {
+bool LPC17_GpioInternal_OpenPin(int32_t pin) {
     if (pin >= TOTAL_GPIO_PINS || pin < 0)
         return false;
 
@@ -244,17 +244,31 @@ bool LPC17_Gpio_OpenPin(int32_t pin) {
     return true;
 }
 
-bool LPC17_Gpio_ClosePin(int32_t pin) {
+bool LPC17_GpioInternal_ClosePin(int32_t pin) {
     if (pin >= TOTAL_GPIO_PINS || pin < 0)
         return false;
 
     pinReserved[pin] = false;
 
     // reset to default interruptState
-    return LPC17_Gpio_ConfigurePin(pin, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+    return LPC17_GpioInternal_ConfigurePin(pin, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 }
 
-bool LPC17_Gpio_ConfigurePin(int32_t pin, LPC17_Gpio_Direction pinDir, LPC17_Gpio_PinFunction alternateFunction, LPC17_Gpio_ResistorMode pullResistor, LPC17_Gpio_Hysteresis hysteresis, LPC17_Gpio_InputPolarity inputPolarity, LPC17_Gpio_SlewRate slewRate, LPC17_Gpio_OutputType outputType) {
+bool LPC17_GpioInternal_OpenMultiPins(const LPC17_Gpio_Pin* pins, size_t count) {
+    for (auto i = 0; i < count; i++) {
+        if (!LPC17_GpioInternal_OpenPin(pins[i].number)) {
+            for (auto ii = 0; ii < i; ii++) {
+                LPC17_GpioInternal_ClosePin(pins[ii].number);
+
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+bool LPC17_GpioInternal_ConfigurePin(int32_t pin, LPC17_Gpio_Direction pinDir, LPC17_Gpio_PinFunction alternateFunction, LPC17_Gpio_ResistorMode pullResistor, LPC17_Gpio_Hysteresis hysteresis, LPC17_Gpio_InputPolarity inputPolarity, LPC17_Gpio_SlewRate slewRate, LPC17_Gpio_OutputType outputType) {
     uint32_t* FIODIR_Register = FIODIR(pin);
 
     switch (pinDir) {
@@ -322,7 +336,7 @@ bool LPC17_Gpio_ConfigurePin(int32_t pin, LPC17_Gpio_Direction pinDir, LPC17_Gpi
     }
 }
 
-bool LPC17_Gpio_ReadPin(int32_t pin) {
+bool LPC17_GpioInternal_ReadPin(int32_t pin) {
     uint32_t* FIOPIN_Register = FIOPIN(pin);
 
     if ((*FIOPIN_Register & GET_PIN_MASK(pin)) != 0)
@@ -330,7 +344,7 @@ bool LPC17_Gpio_ReadPin(int32_t pin) {
 
     return false;
 }
-void LPC17_Gpio_WritePin(int32_t pin, bool value) {
+void LPC17_GpioInternal_WritePin(int32_t pin, bool value) {
     uint32_t* FIOSET_Register = FIOSET(pin);
     uint32_t* FIOCLR_Register = FIOCLR(pin);
 
@@ -342,12 +356,12 @@ void LPC17_Gpio_WritePin(int32_t pin, bool value) {
     }
 }
 
-void LPC17_Gpio_EnableOutputPin(int32_t pin, bool initialState) {
-    LPC17_Gpio_ConfigurePin(pin, LPC17_Gpio_Direction::Output, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_WritePin(pin, initialState);
+void LPC17_GpioInternal_EnableOutputPin(int32_t pin, bool initialState) {
+    LPC17_GpioInternal_ConfigurePin(pin, LPC17_Gpio_Direction::Output, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+    LPC17_GpioInternal_WritePin(pin, initialState);
 }
 
-void LPC17_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode mode) {
+void LPC17_GpioInternal_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode mode) {
     LPC17_Gpio_ResistorMode resistorMode = LPC17_Gpio_ResistorMode::Inactive;
 
     switch (mode) {
@@ -360,14 +374,14 @@ void LPC17_Gpio_EnableInputPin(int32_t pin, TinyCLR_Gpio_PinDriveMode mode) {
         break;
     }
 
-    LPC17_Gpio_ConfigurePin(pin, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, resistorMode, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+    LPC17_GpioInternal_ConfigurePin(pin, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, resistorMode, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 }
 
 TinyCLR_Result LPC17_Gpio_Read(const TinyCLR_Gpio_Controller* self, uint32_t pin, TinyCLR_Gpio_PinValue& value) {
     if (pin >= TOTAL_GPIO_PINS || pin < 0)
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    if (LPC17_Gpio_ReadPin(pin))
+    if (LPC17_GpioInternal_ReadPin(pin))
         value = TinyCLR_Gpio_PinValue::High;
     else
         value = TinyCLR_Gpio_PinValue::Low;
@@ -380,9 +394,9 @@ TinyCLR_Result LPC17_Gpio_Write(const TinyCLR_Gpio_Controller* self, uint32_t pi
         return TinyCLR_Result::ArgumentOutOfRange;
 
     if (value == TinyCLR_Gpio_PinValue::High)
-        LPC17_Gpio_WritePin(pin, true);
+        LPC17_GpioInternal_WritePin(pin, true);
     else
-        LPC17_Gpio_WritePin(pin, false);
+        LPC17_GpioInternal_WritePin(pin, false);
 
     previousOutputValue[pin] = value;
     return TinyCLR_Result::Success;
@@ -392,7 +406,7 @@ TinyCLR_Result LPC17_Gpio_OpenPin(const TinyCLR_Gpio_Controller* self, uint32_t 
     if (pin >= TOTAL_GPIO_PINS || pin < 0)
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    if (!LPC17_Gpio_OpenPin(pin))
+    if (!LPC17_GpioInternal_OpenPin(pin))
         return TinyCLR_Result::SharingViolation;
 
     return TinyCLR_Result::Success;
@@ -402,7 +416,7 @@ TinyCLR_Result LPC17_Gpio_ClosePin(const TinyCLR_Gpio_Controller* self, uint32_t
     if (pin >= TOTAL_GPIO_PINS || pin < 0)
         return TinyCLR_Result::ArgumentOutOfRange;
 
-    LPC17_Gpio_ClosePin(pin);
+    LPC17_GpioInternal_ClosePin(pin);
 
     return TinyCLR_Result::Success;
 }
@@ -430,21 +444,21 @@ TinyCLR_Result LPC17_Gpio_SetDriveMode(const TinyCLR_Gpio_Controller* self, uint
 
     switch (driveMode) {
     case TinyCLR_Gpio_PinDriveMode::Output:
-        LPC17_Gpio_ConfigurePin(pin, LPC17_Gpio_Direction::Output, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        LPC17_GpioInternal_ConfigurePin(pin, LPC17_Gpio_Direction::Output, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
         LPC17_Gpio_Write(self, pin, previousOutputValue[pin]);
         break;
 
     case TinyCLR_Gpio_PinDriveMode::Input:
-        LPC17_Gpio_ConfigurePin(pin, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        LPC17_GpioInternal_ConfigurePin(pin, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
         break;
 
     case TinyCLR_Gpio_PinDriveMode::InputPullUp:
-        LPC17_Gpio_ConfigurePin(pin, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        LPC17_GpioInternal_ConfigurePin(pin, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::PullUp, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
         break;
 
     case TinyCLR_Gpio_PinDriveMode::InputPullDown:
-        LPC17_Gpio_ConfigurePin(pin, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::PullDown, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+        LPC17_GpioInternal_ConfigurePin(pin, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction0, LPC17_Gpio_ResistorMode::PullDown, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
         break;
 
     case TinyCLR_Gpio_PinDriveMode::OutputOpenDrain:
@@ -490,10 +504,10 @@ void LPC17_Gpio_Reset() {
             LPC17_Gpio_SetDebounceTimeout(&gpioControllers[c], pin, DEBOUNCE_DEFAULT_TICKS);
 
             if (p.apply) {
-                LPC17_Gpio_ConfigurePin(pin, p.direction, p.pinFunction, p.resistorMode, p.hysteresis, p.inputPolarity, p.slewRate, p.outputType);
+                LPC17_GpioInternal_ConfigurePin(pin, p.direction, p.pinFunction, p.resistorMode, p.hysteresis, p.inputPolarity, p.slewRate, p.outputType);
 
                 if (p.direction == LPC17_Gpio_Direction::Output)
-                    LPC17_Gpio_WritePin(pin, p.outputDirection);
+                    LPC17_GpioInternal_WritePin(pin, p.outputDirection);
             }
         }
 

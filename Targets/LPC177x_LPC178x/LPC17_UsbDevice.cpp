@@ -543,8 +543,8 @@ void LPC17_UsbDevice_StartHardware() {
     OTGClkCtrl = 0x1F;
     while ((OTGClkSt & 0x1F) != 0x1F);
 
-    LPC17_Gpio_ConfigurePin(14, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction3, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
-    LPC17_Gpio_ConfigurePin(31, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction1, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+    LPC17_GpioInternal_ConfigurePin(14, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction3, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
+    LPC17_GpioInternal_ConfigurePin(31, LPC17_Gpio_Direction::Input, LPC17_Gpio_PinFunction::PinFunction1, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
 
     OTGStCtrl |= 3;
 

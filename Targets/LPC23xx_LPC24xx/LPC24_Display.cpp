@@ -405,7 +405,7 @@ LPC24xx_LCD_Rotation m_LPC24_Display_CurrentRotation = LPC24xx_LCD_Rotation::rot
 
 bool LPC24_Display_Initialize();
 bool LPC24_Display_Uninitialize();
-bool LPC24_Display_SetPinConfiguration(bool enable);
+bool LPC24_Display_SetPinConfiguration(int32_t controllerIndex, bool enable);
 
 void LPC24_Display_WriteFormattedChar(uint8_t c);
 void LPC24_Display_WriteChar(uint8_t c, int32_t row, int32_t col);
@@ -662,38 +662,41 @@ bool  LPC24_Display_SetPinConfiguration(bool enable) {
     if (enable) {
         LPC24XX::PCB().PINSEL11 = (5 << 1) | 1;
         LPC24XX::PCB().PINSEL10 = 0;
+        // Open multi lcd pins
+        if (!LPC24_GpioInternal_OpenMultiPins(g_Display_ControllerPins[controllerIndex], 19)) {
+            return false;
+        }
 
+        // Set configuration
         for (auto i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins); i++) {
-            if (!LPC24_Gpio_OpenPin(g_Display_ControllerPins[i].number)) {
-                return false;
-            }
-
-            LPC24_Gpio_ConfigurePin(g_Display_ControllerPins[i].number, LPC24_Gpio_Direction::Input, g_Display_ControllerPins[i].pinFunction, LPC24_Gpio_PinMode::Inactive);
+            LPC24_GpioInternal_ConfigurePin(g_Display_ControllerPins[controllerIndex][i].number, LPC24_Gpio_Direction::Input, g_Display_ControllerPins[controllerIndex][i].pinFunction, LPC24_Gpio_PinMode::Inactive);
         }
 
         if (g_Display_EnablePin.number != PIN_NONE) {
-            if (!LPC24_Gpio_OpenPin(g_Display_EnablePin.number)) {
+            if (!LPC24_GpioInternal_OpenPin(g_Display_EnablePin.number)) {
+                LPC24_Display_SetPinConfiguration(controllerIndex, false);
+
                 return false;
             }
         }
 
         if (g_Display_BacklightPin.number != PIN_NONE) {
-            if (!LPC24_Gpio_OpenPin(g_Display_BacklightPin.number)) {
+            if (!LPC24_GpioInternal_OpenPin(g_Display_BacklightPin.number)) {
                 return false;
 
             }
 
-            LPC24_Gpio_EnableOutputPin(g_Display_BacklightPin.number, true);
+            LPC24_GpioInternal_EnableOutputPin(g_Display_BacklightPin.number, true);
         }
     }
     else {
         for (int32_t i = 0; i < SIZEOF_ARRAY(g_Display_ControllerPins); i++) {
-            LPC24_Gpio_ClosePin(g_Display_ControllerPins[i].number);
+            LPC24_GpioInternal_ClosePin(g_Display_ControllerPins[controllerIndex][i].number);
         }
 
-        LPC24_Gpio_ClosePin(g_Display_EnablePin.number);
+        LPC24_GpioInternal_ClosePin(g_Display_EnablePin.number);
 
-        LPC24_Gpio_ClosePin(g_Display_BacklightPin.number);
+        LPC24_GpioInternal_ClosePin(g_Display_BacklightPin.number);
     }
 
     return true;
@@ -723,7 +726,6 @@ int32_t LPC24_Display_GetHeight() {
 uint32_t LPC24_Display_GetPixelClockDivider() {
     return m_LPC24_DisplayPixelClockRateKHz;
 }
-
 int32_t LPC24_Display_GetOrientation() {
     return m_LPC24_Display_CurrentRotation;
 }
@@ -779,7 +781,7 @@ void LPC24_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height,
         }
         else {
             for (yTo = yOffset; yTo < (yOffset + height); yTo++) {
-                LPC24_Display_MemCopy((void*)(to + yTo * screenWidth + xOffset), (void*)(from), (width * 2)); 
+                LPC24_Display_MemCopy((void*)(to + yTo * screenWidth + xOffset), (void*)(from), (width * 2));
                 from += width;
             }
         }
@@ -884,7 +886,9 @@ TinyCLR_Result LPC24_Display_Acquire(const TinyCLR_Display_Controller* self) {
     if (displayInitializeCount == 0) {
         m_LPC24_Display_CurrentRotation = LPC24xx_LCD_Rotation::rotateNormal_0;
 
-        if (!LPC24_Display_SetPinConfiguration(true)) {
+        auto controllerIndex = 0;
+
+        if (!LPC24_Display_SetPinConfiguration(controllerIndex, true)) {
             return TinyCLR_Result::SharingViolation;
         }
     }
@@ -893,7 +897,7 @@ TinyCLR_Result LPC24_Display_Acquire(const TinyCLR_Display_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result LPC17_Display_Release(const TinyCLR_Display_Controller* self) {
+TinyCLR_Result LPC24_Display_Release(const TinyCLR_Display_Controller* self) {
     if (displayInitializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
     displayInitializeCount--;
@@ -901,7 +905,9 @@ TinyCLR_Result LPC17_Display_Release(const TinyCLR_Display_Controller* self) {
     if (displayInitializeCount == 0) {
         LPC24_Display_Uninitialize();
 
-        LPC24_Display_SetPinConfiguration(false);
+        auto controllerIndex = 0;
+
+        LPC24_Display_SetPinConfiguration(controllerIndex, false);
 
         m_LPC24_DisplayEnable = false;
 
@@ -987,9 +993,9 @@ TinyCLR_Result LPC24_Display_SetConfiguration(const TinyCLR_Display_Controller* 
 
         if (g_Display_EnablePin.number != PIN_NONE) {
             if (m_LPC24_DisplayOutputEnableIsFixed)
-                LPC24_Gpio_EnableOutputPin(g_Display_EnablePin.number, m_LPC24_DisplayOutputEnablePolarity);
+                LPC24_GpioInternal_EnableOutputPin(g_Display_EnablePin.number, m_LPC24_DisplayOutputEnablePolarity);
             else
-                LPC24_Gpio_ConfigurePin(g_Display_EnablePin.number, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
+                LPC24_GpioInternal_ConfigurePin(g_Display_EnablePin.number, LPC24_Gpio_Direction::Input, LPC24_Gpio_PinFunction::PinFunction3, LPC24_Gpio_PinMode::Inactive);
         }
     }
 
