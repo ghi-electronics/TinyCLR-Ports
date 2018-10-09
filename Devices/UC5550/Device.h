@@ -126,8 +126,8 @@
 
 #define INCLUDE_UART
 #define TOTAL_UART_CONTROLLERS 7
-#define STM32F7_UART_DEFAULT_TX_BUFFER_SIZE { 256, 256, 256, 256, 256, 256, 256 }
-#define STM32F7_UART_DEFAULT_RX_BUFFER_SIZE { 512, 512, 512, 512, 512, 512, 512 }
+#define STM32F7_UART_DEFAULT_TX_BUFFER_SIZE { 16*1024, 16*1024, 16*1024, 16*1024, 16*1024, 16*1024, 16*1024 }
+#define STM32F7_UART_DEFAULT_RX_BUFFER_SIZE { 16*1024, 16*1024, 16*1024, 16*1024, 16*1024, 16*1024, 16*1024 }
 
 #define STM32F7_UART_PINS { /*          TX                       RX                       RTS                      CTS*/                    \
                            /*UART0*/{ { PIN(A,  9), AF(7)   },  { PIN(A, 10), AF(7)   }, { PIN_NONE  , AF_NONE }, { PIN_NONE  , AF_NONE } },\

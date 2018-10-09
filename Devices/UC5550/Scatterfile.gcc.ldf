@@ -3,7 +3,7 @@ MEMORY
 {
     D_CCM : ORIGIN = 0x10000000, LENGTH = 0x00010000
     IRAM : ORIGIN = 0x20000000, LENGTH = 0x00050000
-    SDRAM : ORIGIN = 0xC0000000, LENGTH = 0x01000000
+    SDRAM : ORIGIN = 0xC0000000, LENGTH = 0x02000000
     LR_FLASH : ORIGIN = 0x08008400, LENGTH = 0x000B7C00    
 }
 SECTIONS
@@ -42,7 +42,7 @@ SECTIONS
         * (VectorTable)
     }>IRAM
 
-    ER_RAM_RW 0x20010000 :
+    ER_RAM_RW 0x20010000 : ALIGN(0x08)
     {
         * (rwdata)
         * (.data*)
@@ -73,17 +73,17 @@ SECTIONS
         * (SectionForHeapBegin)
     }>SDRAM
 
-    ER_HEAP_END 0xC0E00000 - 0x08 :
+    ER_HEAP_END 0xC1E00000 - 0x08 :
     {
         * (SectionForHeapEnd)
     }>SDRAM
 
-    ER_RLP_BEGIN 0xC0F00000 :
+    ER_RLP_BEGIN 0xC1F00000 :
     {
         * (SectionForRlpBegin)
     }>SDRAM
 
-    ER_RLP_END 0xC1000000 - 0x08 :
+    ER_RLP_END 0xC2000000 - 0x08 :
     {
         * (SectionForRlpEnd)
     }>SDRAM
