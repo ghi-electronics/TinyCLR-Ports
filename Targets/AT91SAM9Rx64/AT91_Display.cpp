@@ -500,7 +500,6 @@ static TinyCLR_Api_Info displayApi[TOTAL_DISPLAY_CONTROLLERS];
 
 static const AT91_Gpio_Pin displayPins[] = AT91_DISPLAY_CONTROL_PINS;
 static const AT91_Gpio_Pin displayEnablePin = AT91_DISPLAY_ENABLE_PIN;
-static const AT91_Gpio_Pin displayBacklightPins = AT91_DISPLAY_BACKLIGHT_PIN;
 
 bool AT91_Display_Initialize() {
 
@@ -827,13 +826,6 @@ bool AT91_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
         else {
             AT91_GpioInternal_ConfigurePin(displayEnablePin.number, AT91_Gpio_Direction::Input, displayEnablePin.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
         }
-
-        if (displayBacklightPins.number != PIN_NONE) {
-            if (!AT91_GpioInternal_OpenPin(displayBacklightPins.number))
-                return false;
-
-            AT91_GpioInternal_EnableOutputPin(displayBacklightPins.number, true);
-        }
     }
     else {
 
@@ -842,8 +834,6 @@ bool AT91_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
         }
 
         AT91_GpioInternal_ClosePin(displayEnablePin.number);
-
-        AT91_GpioInternal_ClosePin(displayBacklightPins.number);
     }
 
     return true;
