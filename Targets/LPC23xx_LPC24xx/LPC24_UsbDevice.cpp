@@ -175,7 +175,7 @@ void LPC24_UsbDevice_Reset() {
 }
 
 void LPC24_UsbDevice_InitializeConfiguration(UsClientState *usClientState) {
-    int32_t controllerIndex = 0;
+    auto controllerIndex = 0;
 
     if (usClientState != nullptr) {
         usClientState->controllerIndex = controllerIndex;
@@ -197,7 +197,7 @@ bool LPC24_UsbDevice_Initialize(UsClientState *usClientState) {
     if (usClientState == nullptr)
         return false;
 
-    int32_t controllerIndex = usClientState->controllerIndex;
+    auto controllerIndex = usClientState->controllerIndex;
 
     LPC24_InterruptInternal_Activate(USB_IRQn, (uint32_t*)&LPC24_UsbDevice_InterruptHandler, 0);
 

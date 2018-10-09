@@ -244,7 +244,7 @@ typedef struct {
 
 static const STM32F7_Gpio_Pin usbDevicePins[][4] = STM32F7_USB_PINS;
 
-void STM32F7_UsbDevice_ProtectPins(int32_t controller, bool On);
+void STM32F7_UsbDevice_ProtectPins(int32_t controllerIndex, bool On);
 void STM32F7_UsbDevice_Interrupt(void* param);
 
 /* usClientState variables for the controllers */
@@ -262,24 +262,24 @@ void STM32F7_UsbDevice_Reset() {
 }
 
 void STM32F7_UsbDevice_InitializeConfiguration(UsClientState *usClientState) {
-    int32_t controller = STM32F7_USB_FS_ID;
+    int32_t controllerIndex = STM32F7_USB_FS_ID;
 
     if (usClientState != nullptr) {
-        usClientState->controllerIndex = controller;
+        usClientState->controllerIndex = controllerIndex;
 
         usClientState->maxFifoPacketCountDefault = STM32F7_USB_PACKET_FIFO_COUNT;
         usClientState->totalEndpointsCount = STM32F7_USB_ENDPOINT_COUNT;
         usClientState->totalPipesCount = STM32F7_USB_PIPE_COUNT;
 
-        usbDeviceControllers[controller].usClientState = usClientState;
+        usbDeviceControllers[controllerIndex].usClientState = usClientState;
 
-        usbDeviceControllers[controller].endpointType = 0;
-        for (auto i = 0; i < usbDeviceControllers[controller].usClientState->deviceDescriptor.Configurations->Interfaces->EndpointCount; i++) {
-            TinyCLR_UsbClient_EndpointDescriptor  *ep = (TinyCLR_UsbClient_EndpointDescriptor*)&usbDeviceControllers[controller].usClientState->deviceDescriptor.Configurations->Interfaces->Endpoints[i];
+        usbDeviceControllers[controllerIndex].endpointType = 0;
+        for (auto i = 0; i < usbDeviceControllers[controllerIndex].usClientState->deviceDescriptor.Configurations->Interfaces->EndpointCount; i++) {
+            TinyCLR_UsbClient_EndpointDescriptor  *ep = (TinyCLR_UsbClient_EndpointDescriptor*)&usbDeviceControllers[controllerIndex].usClientState->deviceDescriptor.Configurations->Interfaces->Endpoints[i];
 
             auto idx = ep->Address & 0x0F;
 
-            usbDeviceControllers[controller].endpointType |= (ep->Attributes & 3) << (idx * 2);
+            usbDeviceControllers[controllerIndex].endpointType |= (ep->Attributes & 3) << (idx * 2);
         }
     }
 }
@@ -289,12 +289,12 @@ bool STM32F7_UsbDevice_Initialize(UsClientState* usClientState) {
     if (usClientState == nullptr)
         return false;
 
-    int32_t controller = usClientState->controllerIndex;
+    auto controllerIndex = usClientState->controllerIndex;
 
-    if (!STM32F7_GpioInternal_OpenMultiPins(usbDevicePins[controller], 2))
+    if (!STM32F7_GpioInternal_OpenMultiPins(usbDevicePins[controllerIndex], 2))
         return false;
 
-    if (STM32F7_USB_USE_ID_PIN(controller) && !STM32F7_GpioInternal_OpenPin(usbDevicePins[controller][USB_DEVICE_ID_PIN].number))
+    if (STM32F7_USB_USE_ID_PIN(controllerIndex) && !STM32F7_GpioInternal_OpenPin(usbDevicePins[controllerIndex][USB_DEVICE_ID_PIN].number))
         return false;
 
     // Enable USB clock
@@ -318,14 +318,14 @@ bool STM32F7_UsbDevice_Initialize(UsClientState* usClientState) {
 
     OTG->DCFG |= OTG_DCFG_DSPD;           // device speed = HS
 
-    if (STM32F7_USB_USE_VB_PIN(controller) == 0) { // no Vbus pin
+    if (STM32F7_USB_USE_VB_PIN(controllerIndex) == 0) { // no Vbus pin
         OTG->GCCFG |= OTG_GCCFG_NOVBUSSENS; // disable vbus sense
     }
 
     STM32F7_Time_Delay(nullptr, 1000); // asure host recognizes reattach
 
     // setup hardware
-    STM32F7_UsbDevice_ProtectPins(controller, true);
+    STM32F7_UsbDevice_ProtectPins(controllerIndex, true);
 
     STM32F7_InterruptInternal_Activate(OTG_FS_IRQn, (uint32_t*)&STM32F7_UsbDevice_Interrupt, 0);
     STM32F7_InterruptInternal_Activate(OTG_FS_WKUP_IRQn, (uint32_t*)&STM32F7_UsbDevice_Interrupt, 0);
@@ -572,9 +572,9 @@ void STM32F7_UsbDevice_Interrupt(void* param) {
 
     OTG_TypeDef* OTG = OTG_FS;
 
-    int32_t controller = STM32F7_USB_FS_ID;
+    int32_t controllerIndex = STM32F7_USB_FS_ID;
 
-    UsClientState* usClientState = usbDeviceControllers[controller].usClientState;
+    UsClientState* usClientState = usbDeviceControllers[controllerIndex].usClientState;
 
     uint32_t intPend = OTG->GINTSTS; // get pending bits
 
@@ -623,7 +623,7 @@ void STM32F7_UsbDevice_Interrupt(void* param) {
     }
     else {
         if (intPend & OTG_GINTSTS_USBSUSP) { // suspend
-            usbDeviceControllers[controller].previousDeviceState = usClientState->deviceState;
+            usbDeviceControllers[controllerIndex].previousDeviceState = usClientState->deviceState;
 
             usClientState->deviceState = USB_DEVICE_STATE_SUSPENDED;
 
@@ -635,7 +635,7 @@ void STM32F7_UsbDevice_Interrupt(void* param) {
         if (intPend & OTG_GINTSTS_WKUPINT) { // wakeup
             OTG->DCTL &= ~OTG_DCTL_RWUSIG; // remove remote wakeup signaling
 
-            usClientState->deviceState = usbDeviceControllers[controller].previousDeviceState;
+            usClientState->deviceState = usbDeviceControllers[controllerIndex].previousDeviceState;
 
             TinyCLR_UsbClient_StateCallback(usClientState);
 
@@ -690,23 +690,23 @@ bool STM32F7_UsbDevice_RxEnable(UsClientState* usClientState, int32_t ep) {
     return true;
 }
 
-void STM32F7_UsbDevice_ProtectPins(int32_t controller, bool on) {
-    UsClientState *usClientState = usbDeviceControllers[controller].usClientState;
+void STM32F7_UsbDevice_ProtectPins(int32_t controllerIndex, bool on) {
+    UsClientState *usClientState = usbDeviceControllers[controllerIndex].usClientState;
 
     OTG_TypeDef* OTG = OTG_FS;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    auto& dp = usbDevicePins[controller][USB_DEVICE_DP_PIN];
-    auto& dm = usbDevicePins[controller][USB_DEVICE_DM_PIN];
-    auto& id = usbDevicePins[controller][USB_DEVICE_ID_PIN];
+    auto& dp = usbDevicePins[controllerIndex][USB_DEVICE_DP_PIN];
+    auto& dm = usbDevicePins[controllerIndex][USB_DEVICE_DM_PIN];
+    auto& id = usbDevicePins[controllerIndex][USB_DEVICE_ID_PIN];
 
     if (on) {
 
         STM32F7_GpioInternal_ConfigurePin(dp.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, dp.alternateFunction);
         STM32F7_GpioInternal_ConfigurePin(dm.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, dm.alternateFunction);
 
-        if (STM32F7_USB_USE_ID_PIN(controller)) {
+        if (STM32F7_USB_USE_ID_PIN(controllerIndex)) {
             STM32F7_GpioInternal_ConfigurePin(id.number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::VeryHigh, STM32F7_Gpio_PullDirection::None, id.alternateFunction);
         }
 
@@ -727,7 +727,7 @@ void STM32F7_UsbDevice_ProtectPins(int32_t controller, bool on) {
         STM32F7_GpioInternal_ClosePin(dp.number);
         STM32F7_GpioInternal_ClosePin(dm.number);
 
-        if (STM32F7_USB_USE_ID_PIN(controller))
+        if (STM32F7_USB_USE_ID_PIN(controllerIndex))
             STM32F7_GpioInternal_ClosePin(id.number);
     }
 
