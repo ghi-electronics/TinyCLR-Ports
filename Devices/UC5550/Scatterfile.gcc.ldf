@@ -3,7 +3,7 @@ MEMORY
 {
     D_CCM : ORIGIN = 0x10000000, LENGTH = 0x00010000
     IRAM : ORIGIN = 0x20000000, LENGTH = 0x00050000
-    SDRAM : ORIGIN = 0xC0000000, LENGTH = 0x02000000
+    SDRAM : ORIGIN = 0x60000000, LENGTH = 0x02000000
     LR_FLASH : ORIGIN = 0x08008400, LENGTH = 0x000B7C00    
 }
 SECTIONS
@@ -68,22 +68,22 @@ SECTIONS
         * (.ARM.extab*)
     }
 
-    ER_HEAP_BEGIN 0xC0000000 :
+    ER_HEAP_BEGIN 0x60000000 :
     {
         * (SectionForHeapBegin)
     }>SDRAM
 
-    ER_HEAP_END 0xC1E00000 - 0x08 :
+    ER_HEAP_END 0x61E00000 - 0x08 :
     {
         * (SectionForHeapEnd)
     }>SDRAM
 
-    ER_RLP_BEGIN 0xC1F00000 :
+    ER_RLP_BEGIN 0x61F00000 :
     {
         * (SectionForRlpBegin)
     }>SDRAM
 
-    ER_RLP_END 0xC2000000 - 0x08 :
+    ER_RLP_END 0x62000000 - 0x08 :
     {
         * (SectionForRlpEnd)
     }>SDRAM
