@@ -247,6 +247,15 @@ void STM32F7_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const Ti
 
 extern "C" {
     void __section("SectionForBootstrapOperations") SystemInit() {
+        // Disable cahce
+        STM32F7_Startup_CacheDisable();
+
+        //Reset MPU
+        STM32F7_Mpu_Reset();
+
+        // Config MPU
+        STM32F7_Startup_MpuConfiguration();
+
         // Enable cahce
         STM32F7_Startup_CacheEnable();
 
