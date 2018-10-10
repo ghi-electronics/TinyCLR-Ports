@@ -2704,6 +2704,9 @@ void STM32F7_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
         sdCardApi[i].State = &sdCardStates[i];
 
         sdCardStates[i].controllerIndex = i;
+        sdCardStates[i].initializeCount = 0;
+        sdCardStates[i].regionSizes = nullptr;
+        sdCardStates[i].regionAddresses = nullptr;
 
         apiManager->Add(apiManager, &sdCardApi[i]);
     }
@@ -2791,8 +2794,11 @@ TinyCLR_Result STM32F7_SdCard_Release(const TinyCLR_Storage_Controller* self) {
 
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-        memoryProvider->Free(memoryProvider, state->regionSizes);
-        memoryProvider->Free(memoryProvider, state->regionAddresses);
+        if (state->regionSizes != nullptr)
+            memoryProvider->Free(memoryProvider, state->regionSizes);
+
+        if (state->regionAddresses != nullptr)
+            memoryProvider->Free(memoryProvider, state->regionAddresses);
 
         for (auto i = 0; i < 6; i++) {
             STM32F7_GpioInternal_ClosePin(sdCardPins[controllerIndex][i].number);
@@ -2911,10 +2917,12 @@ TinyCLR_Result STM32F7_SdCard_IsPresent(const TinyCLR_Storage_Controller* self, 
 
 TinyCLR_Result STM32F7_SdCard_Reset() {
     for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
-        sdCardStates[i].initializeCount = 0;
-
         STM32F7_SdCard_Close(&sdCardControllers[i]);
-        STM32F7_SdCard_Release(&sdCardControllers[i]);        
+        STM32F7_SdCard_Release(&sdCardControllers[i]);
+
+        sdCardStates[i].initializeCount = 0;
+        sdCardStates[i].regionSizes = nullptr;
+        sdCardStates[i].regionAddresses = nullptr;
     }
 
     return TinyCLR_Result::Success;

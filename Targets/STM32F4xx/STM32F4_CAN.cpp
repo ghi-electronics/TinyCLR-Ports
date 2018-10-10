@@ -1075,6 +1075,8 @@ void STM32F4_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
         canApi[i].State = &canStates[i];
 
         canStates[i].controllerIndex = i;
+        canStates[i].initializeCount = 0;
+        canStates[i].canRxMessagesFifo = nullptr;
 
         apiManager->Add(apiManager, &canApi[i]);
     }
@@ -1636,11 +1638,10 @@ uint32_t STM32F4_Can_GetSourceClock(const TinyCLR_Can_Controller* self) {
 
 void STM32F4_Can_Reset() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
-        canStates[i].canRxMessagesFifo = nullptr;
-
         STM32F4_Can_Release(&canControllers[i]);
 
         canStates[i].initializeCount = 0;
+        canStates[i].canRxMessagesFifo = nullptr;
     }
 }
 

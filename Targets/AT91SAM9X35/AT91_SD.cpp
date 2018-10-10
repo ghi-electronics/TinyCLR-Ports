@@ -2403,6 +2403,10 @@ void AT91_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
         sdCardApi[i].State = &sdCardStates[i];
 
         sdCardStates[i].controllerIndex = i;
+        sdCardStates[i].initializeCount = 0;
+        sdCardStates[i].pBuffer = nullptr;
+        sdCardStates[i].regionAddresses = nullptr;
+        sdCardStates[i].regionAddresses = nullptr;
 
         apiManager->Add(apiManager, &sdCardApi[i]);
     }
@@ -2525,9 +2529,14 @@ TinyCLR_Result AT91_SdCard_Release(const TinyCLR_Storage_Controller* self) {
 
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-        memoryProvider->Free(memoryProvider, state->pBuffer);
-        memoryProvider->Free(memoryProvider, state->regionSizes);
-        memoryProvider->Free(memoryProvider, state->regionAddresses);
+        if (state->pBuffer != nullptr)
+            memoryProvider->Free(memoryProvider, state->pBuffer);
+
+        if (state->regionSizes != nullptr)
+            memoryProvider->Free(memoryProvider, state->regionSizes);
+
+        if (state->regionAddresses != nullptr)
+            memoryProvider->Free(memoryProvider, state->regionAddresses);
 
         AT91_GpioInternal_ClosePin(d0.number);
         AT91_GpioInternal_ClosePin(d1.number);
@@ -2749,10 +2758,13 @@ TinyCLR_Result AT91_SdCard_IsPresent(const TinyCLR_Storage_Controller* self, boo
 
 TinyCLR_Result AT91_SdCard_Reset() {
     for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
-        sdCardStates[i].initializeCount = 0;
-
         AT91_SdCard_Close(&sdCardControllers[i]);
         AT91_SdCard_Release(&sdCardControllers[i]);
+
+        sdCardStates[i].initializeCount = 0;
+        sdCardStates[i].pBuffer = nullptr;
+        sdCardStates[i].regionAddresses = nullptr;
+        sdCardStates[i].regionAddresses = nullptr;
     }
 
     return TinyCLR_Result::Success;

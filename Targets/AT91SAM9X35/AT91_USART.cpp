@@ -116,6 +116,10 @@ void AT91_Uart_EnsureTableInitialized() {
         uartApi[i].State = &uartStates[i];
 
         uartStates[i].controllerIndex = i;
+        uartStates[i].initializeCount = 0;
+        uartStates[i].TxBuffer = nullptr;
+        uartStates[i].TxBuffer = nullptr;
+
         uartStates[i].tableInitialized = true;
     }
 }
@@ -598,8 +602,17 @@ TinyCLR_Result AT91_Uart_Release(const TinyCLR_Uart_Controller* self) {
         if (apiManager != nullptr) {
             auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-            memoryProvider->Free(memoryProvider, state->TxBuffer);
-            memoryProvider->Free(memoryProvider, state->RxBuffer);
+            if (state->TxBuffer != nullptr) {
+                memoryProvider->Free(memoryProvider, state->TxBuffer);
+
+                state->TxBuffer = nullptr;
+            }
+
+            if (state->RxBuffer != nullptr) {
+                memoryProvider->Free(memoryProvider, state->RxBuffer);
+
+                state->RxBuffer = nullptr;
+            }
         }
 
         state->handshaking = false;
@@ -833,10 +846,12 @@ TinyCLR_Result AT91_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self) {
 
 void AT91_Uart_Reset() {
     for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
-        uartStates[i].initializeCount = 0;
         AT91_Uart_Release(&uartControllers[i]);
 
         uartStates[i].tableInitialized = false;
+        uartStates[i].initializeCount = 0;
+        uartStates[i].TxBuffer = nullptr;
+        uartStates[i].TxBuffer = nullptr;
     }
 }
 
