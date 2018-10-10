@@ -368,6 +368,8 @@ bool m_LPC17_DisplayEnable = false;
 uint32_t displayInitializeCount = 0;
 
 uint16_t* m_LPC17_Display_VituralRam = nullptr;
+uint32_t* m_LPC17_Display_buffer = nullptr;
+
 size_t m_LPC17_DisplayBufferSize = 0;
 
 uint8_t m_LPC17_Display_TextBuffer[LCD_MAX_COLUMN][LCD_MAX_ROW];
@@ -625,12 +627,12 @@ const LPC17_Gpio_Pin displayEnablePin = LPC17_DISPLAY_ENABLE_PIN;
 bool  LPC17_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
     if (enable) {
         // Open multi lcd pins
-        if (!LPC17_GpioInternal_OpenMultiPins(displayPins[controllerIndex], 19)) {
+        if (!LPC17_GpioInternal_OpenMultiPins(displayPins[controllerIndex], SIZEOF_ARRAY(displayPins[controllerIndex]))) {
             return false;
         }
 
         // Set configuration
-        for (auto i = 0; i < SIZEOF_ARRAY(displayPins); i++) {
+        for (auto i = 0; i < SIZEOF_ARRAY(displayPins[controllerIndex]); i++) {
             LPC17_GpioInternal_ConfigurePin(displayPins[controllerIndex][i].number, LPC17_Gpio_Direction::Input, displayPins[controllerIndex][i].pinFunction, LPC17_Gpio_ResistorMode::Inactive, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::PushPull);
         }
 
@@ -641,14 +643,14 @@ bool  LPC17_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
 
                 return false;
             }
-        }        
+        }
     }
     else {
         for (int32_t i = 0; i < SIZEOF_ARRAY(displayPins); i++) {
             LPC17_GpioInternal_ClosePin(displayPins[controllerIndex][i].number);
         }
 
-        LPC17_GpioInternal_ClosePin(displayEnablePin.number);        
+        LPC17_GpioInternal_ClosePin(displayEnablePin.number);
     }
 
     return true;
@@ -682,34 +684,7 @@ int32_t LPC17_Display_GetOrientation() {
     return m_LPC17_Display_CurrentRotation;
 }
 
-void  LPC17_Display_MemCopy(void *dest, void *src, int32_t size) {
-    const int32_t MEMCOPY_BYTES_ALIGNED = 8;
-
-    uint64_t *from64 = (uint64_t *)src;
-    uint64_t *to64 = (uint64_t *)dest;
-
-    int32_t block = size / MEMCOPY_BYTES_ALIGNED;
-    int32_t remainder = size % MEMCOPY_BYTES_ALIGNED;
-
-    while (block > 0) {
-        *to64++ = *from64++;
-        block--;
-    }
-
-    if (remainder > 0) {
-        uint8_t *from8 = (uint8_t *)from64;
-        uint8_t *to8 = (uint8_t *)to64;
-
-        while (remainder > 0) {
-            *to8++ = *from8++;
-
-            remainder--;
-        }
-    }
-}
-
 void LPC17_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height, uint32_t data[]) {
-
     int32_t xTo, yTo, xFrom, yFrom;
     int32_t xOffset = x;
     int32_t yOffset = y;
@@ -729,11 +704,11 @@ void LPC17_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height,
 
         if (xOffset == 0 && yOffset == 0 &&
             width == screenWidth && height == screenHeight) {
-            LPC17_Display_MemCopy(to, from, (screenWidth*screenHeight * 2));
+            memcpy(to, from, (screenWidth*screenHeight * 2));
         }
         else {
             for (yTo = yOffset; yTo < (yOffset + height); yTo++) {
-                LPC17_Display_MemCopy((void*)(to + yTo * screenWidth + xOffset), (void*)(from), (width * 2));
+                memcpy((void*)(to + yTo * screenWidth + xOffset), (void*)(from), (width * 2));
                 from += width;
             }
         }
@@ -863,12 +838,12 @@ TinyCLR_Result LPC17_Display_Release(const TinyCLR_Display_Controller* self) {
 
         m_LPC17_DisplayEnable = false;
 
-        if (m_LPC17_Display_VituralRam != nullptr) {
+        if (m_LPC17_Display_buffer != nullptr) {
             auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-            memoryProvider->Free(memoryProvider, m_LPC17_Display_VituralRam);
+            memoryProvider->Free(memoryProvider, m_LPC17_Display_buffer);
 
-            m_LPC17_Display_VituralRam = nullptr;
+            m_LPC17_Display_buffer = nullptr;
         }
     }
     return TinyCLR_Result::Success;
@@ -931,18 +906,21 @@ TinyCLR_Result LPC17_Display_SetConfiguration(const TinyCLR_Display_Controller* 
 
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-        if (m_LPC17_Display_VituralRam != nullptr) {
-            memoryProvider->Free(memoryProvider, m_LPC17_Display_VituralRam);
+        if (m_LPC17_Display_buffer != nullptr) {
+            memoryProvider->Free(memoryProvider, m_LPC17_Display_buffer);
 
-            m_LPC17_Display_VituralRam = nullptr;
+            m_LPC17_Display_buffer = nullptr;
         }
 
-        m_LPC17_Display_VituralRam = (uint16_t*)((uint8_t*)memoryProvider->Allocate(memoryProvider, m_LPC17_DisplayBufferSize));
+        m_LPC17_Display_buffer = (uint32_t*)memoryProvider->Allocate(memoryProvider, m_LPC17_DisplayBufferSize + 8);
 
-        if (m_LPC17_Display_VituralRam == nullptr) {
+        if (m_LPC17_Display_buffer == nullptr) {
             return TinyCLR_Result::OutOfMemory;
         }
 
+        m_LPC17_Display_VituralRam = (uint16_t*)((((uint32_t)m_LPC17_Display_buffer) + (7)) & (~((uint32_t)(7))));
+
+        // Set displayEnablePin following m_LPC17_DisplayOutputEnableIsFixed
         if (displayEnablePin.number != PIN_NONE) {
             if (m_LPC17_DisplayOutputEnableIsFixed)
                 LPC17_GpioInternal_EnableOutputPin(displayEnablePin.number, m_LPC17_DisplayOutputEnablePolarity);
@@ -1056,7 +1034,9 @@ void LPC17_Display_AddApi(const TinyCLR_Api_Manager* apiManager) {
         apiManager->Add(apiManager, &displayApi[i]);
     }
 
-    m_LPC17_Display_VituralRam = nullptr;
+    displayInitializeCount = 0;
+    m_LPC17_Display_buffer = nullptr;
+    m_LPC17_DisplayEnable = false;
 
     apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::DisplayController, displayApi[0].Name);
 }
@@ -1069,5 +1049,6 @@ void LPC17_Display_Reset() {
 
     m_LPC17_DisplayEnable = false;
     displayInitializeCount = 0;
+    m_LPC17_Display_buffer = nullptr;
 }
 
