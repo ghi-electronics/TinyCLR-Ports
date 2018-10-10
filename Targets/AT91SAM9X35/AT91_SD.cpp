@@ -2455,33 +2455,32 @@ TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
 
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-        state->pBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, AT91_SD_SECTOR_SIZE + 4);
+        state->pBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, AT91_SD_SECTOR_SIZE + 8);
 
         if (state->pBuffer == nullptr) {
             return TinyCLR_Result::OutOfMemory;
         }
 
-        uint32_t alignAddress = (uint32_t)state->pBuffer;
-
-        while (alignAddress % 4 > 0) {
-            alignAddress++;
-        }
-
-        state->pBufferAligned = (uint8_t*)alignAddress;
+        state->pBufferAligned = (uint8_t*)((((uint32_t)state->pBuffer) + (7)) & (~((uint32_t)(7))));
 
         state->regionAddresses = (uint64_t*)memoryProvider->Allocate(memoryProvider, sizeof(uint64_t));
 
         if (state->regionAddresses == nullptr) {
             memoryProvider->Free(memoryProvider, state->pBuffer);
+
+            state->pBuffer = nullptr;
+
             return TinyCLR_Result::OutOfMemory;
         }
-
 
         state->regionSizes = (size_t*)memoryProvider->Allocate(memoryProvider, sizeof(size_t));
 
         if (state->regionSizes == nullptr) {
             memoryProvider->Free(memoryProvider, state->pBuffer);
             memoryProvider->Free(memoryProvider, state->regionAddresses);
+
+            state->pBuffer = nullptr;
+            state->regionAddresses = nullptr;
 
             return TinyCLR_Result::OutOfMemory;
         }
