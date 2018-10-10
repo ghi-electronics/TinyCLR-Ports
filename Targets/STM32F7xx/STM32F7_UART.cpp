@@ -38,8 +38,8 @@ typedef  USART_TypeDef* USART_TypeDef_Ptr;
 struct UartState {
     int32_t controllerIndex;
 
-    uint8_t *TxBuffer;
-    uint8_t *RxBuffer;
+    uint8_t *txBuffer;
+    uint8_t *rxBuffer;
 
     size_t txBufferCount;
     size_t txBufferIn;
@@ -152,8 +152,8 @@ void STM32F7_Uart_EnsureTableInitialized() {
 
         uartStates[i].controllerIndex = i;
         uartStates[i].initializeCount = 0;
-        uartStates[i].TxBuffer = nullptr;
-        uartStates[i].TxBuffer = nullptr;
+        uartStates[i].txBuffer = nullptr;
+        uartStates[i].txBuffer = nullptr;
 
         uartStates[i].tableInitialized = true;
     }
@@ -205,15 +205,15 @@ TinyCLR_Result STM32F7_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* sel
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
 
-    if (state->RxBuffer) {
-        memoryProvider->Free(memoryProvider, state->RxBuffer);
+    if (state->rxBuffer) {
+        memoryProvider->Free(memoryProvider, state->rxBuffer);
     }
 
     state->rxBufferSize = 0;
 
-    state->RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
+    state->rxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
 
-    if (state->RxBuffer == nullptr) {
+    if (state->rxBuffer == nullptr) {
         return TinyCLR_Result::OutOfMemory;
     }
 
@@ -236,15 +236,15 @@ TinyCLR_Result STM32F7_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* se
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
 
-    if (state->TxBuffer) {
-        memoryProvider->Free(memoryProvider, state->TxBuffer);
+    if (state->txBuffer) {
+        memoryProvider->Free(memoryProvider, state->txBuffer);
     }
 
     state->txBufferSize = 0;
 
-    state->TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
+    state->txBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
 
-    if (state->TxBuffer == nullptr) {
+    if (state->txBuffer == nullptr) {
         return TinyCLR_Result::OutOfMemory;
     }
 
@@ -298,7 +298,7 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
             return;
 
         if (sr & USART_ISR_RXNE) {
-            state->RxBuffer[state->rxBufferIn++] = data;
+            state->rxBuffer[state->rxBufferIn++] = data;
 
             state->rxBufferCount++;
 
@@ -325,7 +325,7 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
     if (sr & USART_ISR_TXE) {
         if (STM32F7_Uart_CanSend(controllerIndex)) {
             if (state->txBufferCount > 0) {
-                uint8_t data = state->TxBuffer[state->txBufferOut++];
+                uint8_t data = state->txBuffer[state->txBufferOut++];
 
                 state->txBufferCount--;
 
@@ -419,8 +419,8 @@ TinyCLR_Result STM32F7_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->lastEventRxBufferCount = 0;
         state->lastEventTime = STM32F7_Time_GetCurrentProcessorTime();
 
-        state->TxBuffer = nullptr;
-        state->RxBuffer = nullptr;
+        state->txBuffer = nullptr;
+        state->rxBuffer = nullptr;
 
         if (STM32F7_Uart_SetWriteBufferSize(self, uartTxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
             return TinyCLR_Result::OutOfMemory;
@@ -691,16 +691,16 @@ TinyCLR_Result STM32F7_Uart_Release(const TinyCLR_Uart_Controller* self) {
         if (apiManager != nullptr) {
             auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-            if (state->TxBuffer != nullptr) {
-                memoryProvider->Free(memoryProvider, state->TxBuffer);
+            if (state->txBuffer != nullptr) {
+                memoryProvider->Free(memoryProvider, state->txBuffer);
 
-                state->TxBuffer = nullptr;
+                state->txBuffer = nullptr;
             }
 
-            if (state->RxBuffer != nullptr) {
-                memoryProvider->Free(memoryProvider, state->RxBuffer);
+            if (state->rxBuffer != nullptr) {
+                memoryProvider->Free(memoryProvider, state->rxBuffer);
 
-                state->RxBuffer = nullptr;
+                state->rxBuffer = nullptr;
             }
         }
 
@@ -724,8 +724,8 @@ void STM32F7_Uart_Reset() {
 
         uartStates[i].tableInitialized = false;
         uartStates[i].initializeCount = 0;
-        uartStates[i].TxBuffer = nullptr;
-        uartStates[i].TxBuffer = nullptr;
+        uartStates[i].txBuffer = nullptr;
+        uartStates[i].txBuffer = nullptr;
 
     }
 }
@@ -789,7 +789,7 @@ TinyCLR_Result STM32F7_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* b
     size_t i = 0;
 
     while (i < length) {
-        buffer[i++] = state->RxBuffer[state->rxBufferOut];
+        buffer[i++] = state->rxBuffer[state->rxBufferOut];
 
         state->rxBufferOut++;
 
@@ -827,7 +827,7 @@ TinyCLR_Result STM32F7_Uart_Write(const TinyCLR_Uart_Controller* self, const uin
 
     while (i < length) {
 
-        state->TxBuffer[state->txBufferIn] = buffer[i++];
+        state->txBuffer[state->txBufferIn] = buffer[i++];
 
         state->txBufferCount++;
 
