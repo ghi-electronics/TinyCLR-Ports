@@ -732,6 +732,8 @@ bool m_AT91_DisplayEnable = false;
 uint32_t displayInitializeCount = 0;
 
 uint16_t* m_AT91_Display_VituralRam = nullptr;
+uint32_t* m_AT91_Display_buffer = nullptr;
+
 size_t m_AT91_DisplayBufferSize = 0;
 
 uint8_t m_AT91_Display_TextBuffer[LCD_MAX_COLUMN][LCD_MAX_ROW];
@@ -1039,11 +1041,11 @@ void AT91_Display_Clear() {
 bool AT91_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
     if (enable) {
         // Open multi lcd pins
-        if (!AT91_GpioInternal_OpenMultiPins(displayPins[controllerIndex], 20)) {
+        if (!AT91_GpioInternal_OpenMultiPins(displayPins[controllerIndex], SIZEOF_ARRAY(displayPins[controllerIndex]))) {
             return false;
         }
 
-        for (uint32_t pin = 0; pin < SIZEOF_ARRAY(displayPins); pin++) {
+        for (uint32_t pin = 0; pin < SIZEOF_ARRAY(displayPins[controllerIndex]); pin++) {
             AT91_GpioInternal_ConfigurePin(displayPins[controllerIndex][pin].number, AT91_Gpio_Direction::Input, displayPins[controllerIndex][pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
         }
 
@@ -1060,7 +1062,7 @@ bool AT91_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
         }
         else {
             AT91_GpioInternal_ConfigurePin(displayEnablePin.number, AT91_Gpio_Direction::Input, displayEnablePin.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-        }        
+        }
     }
     else {
 
@@ -1068,7 +1070,7 @@ bool AT91_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
             AT91_GpioInternal_ClosePin(displayPins[controllerIndex][i].number);
         }
 
-        AT91_GpioInternal_ClosePin(displayEnablePin.number);        
+        AT91_GpioInternal_ClosePin(displayEnablePin.number);
     }
 
     return true;
@@ -1104,32 +1106,6 @@ int32_t AT91_Display_GetOrientation() {
     return m_AT91_Display_CurrentRotation;
 }
 
-void  AT91_Display_MemCopy(void *dest, void *src, int32_t size) {
-    const int32_t MEMCOPY_BYTES_ALIGNED = 8;
-
-    uint64_t *from64 = (uint64_t *)src;
-    uint64_t *to64 = (uint64_t *)dest;
-
-    int32_t block = size / MEMCOPY_BYTES_ALIGNED;
-    int32_t remainder = size % MEMCOPY_BYTES_ALIGNED;
-
-    while (block > 0) {
-        *to64++ = *from64++;
-        block--;
-    }
-
-    if (remainder > 0) {
-        uint8_t *from8 = (uint8_t *)from64;
-        uint8_t *to8 = (uint8_t *)to64;
-
-        while (remainder > 0) {
-            *to8++ = *from8++;
-
-            remainder--;
-        }
-    }
-}
-
 void AT91_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height, uint32_t data[]) {
 
     int32_t xTo, yTo, xFrom, yFrom;
@@ -1151,11 +1127,11 @@ void AT91_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height, 
 
         if (xOffset == 0 && yOffset == 0 &&
             width == screenWidth && height == screenHeight) {
-            AT91_Display_MemCopy(to, from, (screenWidth*screenHeight * 2));
+            memcpy(to, from, (screenWidth*screenHeight * 2));
         }
         else {
             for (yTo = yOffset; yTo < (yOffset + height); yTo++) {
-                AT91_Display_MemCopy((void*)(to + yTo * screenWidth + xOffset), (void*)(from), (width * 2));
+                memcpy((void*)(to + yTo * screenWidth + xOffset), (void*)(from), (width * 2));
                 from += width;
             }
         }
@@ -1286,12 +1262,12 @@ TinyCLR_Result AT91_Display_Release(const TinyCLR_Display_Controller* self) {
 
         m_AT91_DisplayEnable = false;
 
-        if (m_AT91_Display_VituralRam != nullptr) {
+        if (m_AT91_Display_buffer != nullptr) {
             auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-            memoryProvider->Free(memoryProvider, m_AT91_Display_VituralRam);
+            memoryProvider->Free(memoryProvider, m_AT91_Display_buffer);
 
-            m_AT91_Display_VituralRam = nullptr;
+            m_AT91_Display_buffer = nullptr;
         }
     }
 
@@ -1355,18 +1331,21 @@ TinyCLR_Result AT91_Display_SetConfiguration(const TinyCLR_Display_Controller* s
 
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-        if (m_AT91_Display_VituralRam != nullptr) {
-            memoryProvider->Free(memoryProvider, m_AT91_Display_VituralRam);
+        if (m_AT91_Display_buffer != nullptr) {
+            memoryProvider->Free(memoryProvider, m_AT91_Display_buffer);
 
-            m_AT91_Display_VituralRam = nullptr;
+            m_AT91_Display_buffer = nullptr;
         }
 
-        m_AT91_Display_VituralRam = (uint16_t*)((uint8_t*)memoryProvider->Allocate(memoryProvider, m_AT91_DisplayBufferSize));
+        m_AT91_Display_buffer = (uint32_t*)memoryProvider->Allocate(memoryProvider, m_AT91_DisplayBufferSize + 8);
 
-        if (m_AT91_Display_VituralRam == nullptr) {
+        if (m_AT91_Display_buffer == nullptr) {
             return TinyCLR_Result::OutOfMemory;
         }
 
+        m_AT91_Display_VituralRam = (uint16_t*)((((uint32_t)m_AT91_Display_buffer) + (7)) & (~((uint32_t)(7))));
+
+        // Set displayEnablePin following m_AT91_DisplayOutputEnableIsFixed
         if (displayEnablePin.number != PIN_NONE) {
             if (m_AT91_DisplayOutputEnableIsFixed) {
                 AT91_GpioInternal_EnableOutputPin(displayEnablePin.number, m_AT91_DisplayOutputEnablePolarity);
@@ -1482,7 +1461,9 @@ void AT91_Display_AddApi(const TinyCLR_Api_Manager* apiManager) {
         apiManager->Add(apiManager, &displayApi[i]);
     }
 
-    m_AT91_Display_VituralRam = nullptr;
+    displayInitializeCount = 0;
+    m_AT91_Display_buffer = nullptr;
+    m_AT91_DisplayEnable = false;
 
     apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::DisplayController, displayApi[0].Name);
 }
@@ -1495,5 +1476,6 @@ void AT91_Display_Reset() {
 
     m_AT91_DisplayEnable = false;
     displayInitializeCount = 0;
+    m_AT91_Display_buffer = nullptr;
 }
 #endif // INCLUDE_DISPLAY
