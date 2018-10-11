@@ -85,14 +85,14 @@ void LPC17_Power_SetHandlers(void(*stop)(), void(*restart)()) {
 
 TinyCLR_Result LPC17_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCLR_Power_Level level, TinyCLR_Power_SleepWakeSource wakeSource, uint64_t data) {
     switch (level) {
-    case TinyCLR_Power_Level::Level1:
-    case TinyCLR_Power_Level::Level2:
-    case TinyCLR_Power_Level::Level3:
-    case TinyCLR_Power_Level::Level4:
+    case TinyCLR_Power_Level::Level2: // Other
+    case TinyCLR_Power_Level::Level3: // Other
+    case TinyCLR_Power_Level::Level4: // Other
         //TODO
         return TinyCLR_Result::NotSupported;
 
-    case TinyCLR_Power_Level::Level0:
+    case TinyCLR_Power_Level::Level0: // Active
+    case TinyCLR_Power_Level::Level1: // Sleep
         // TODO
 
     default:

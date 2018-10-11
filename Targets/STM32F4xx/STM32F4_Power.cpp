@@ -72,14 +72,14 @@ void STM32F4_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
 
 TinyCLR_Result STM32F4_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCLR_Power_Level level, TinyCLR_Power_SleepWakeSource wakeSource, uint64_t data) {
     switch (level) {
-    case TinyCLR_Power_Level::Level1:
-    case TinyCLR_Power_Level::Level2:
-    case TinyCLR_Power_Level::Level3:
-    case TinyCLR_Power_Level::Level4:
+    case TinyCLR_Power_Level::Level2: // Other
+    case TinyCLR_Power_Level::Level3: // Other
+    case TinyCLR_Power_Level::Level4: // Other
         //TODO
         return TinyCLR_Result::NotSupported;
 
-    case TinyCLR_Power_Level::Level0:
+    case TinyCLR_Power_Level::Level0: // Active
+    case TinyCLR_Power_Level::Level1: // Sleep
         // TODO
 
     default:
