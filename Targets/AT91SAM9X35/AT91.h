@@ -1400,7 +1400,7 @@ void AT91_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_t n
 void AT91_Power_AddApi(const TinyCLR_Api_Manager* apiManager);
 const TinyCLR_Api_Info* AT91_Power_GetRequiredApi();
 void AT91_Power_SetHandlers(void(*stop)(), void(*restart)());
-TinyCLR_Result AT91_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level, TinyCLR_Power_SleepWakeSource wakeSource);
+TinyCLR_Result AT91_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCLR_Power_Level level, TinyCLR_Power_SleepWakeSource wakeSource, uint64_t data);
 TinyCLR_Result AT91_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter);
 TinyCLR_Result AT91_Power_Initialize(const TinyCLR_Power_Controller* self);
 TinyCLR_Result AT91_Power_Uninitialize(const TinyCLR_Power_Controller* self);
