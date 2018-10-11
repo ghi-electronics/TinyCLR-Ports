@@ -95,8 +95,9 @@ void STM32F7_Startup_GetHeap(uint8_t*& start, size_t& length);
 void STM32F7_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration);
 void STM32F7_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration);
 void STM32F7_Startup_GetRunApp(bool& runApp);
-void STM32F7_Startup_CacheEnable(void);
-void STM32F7_Startup_CacheDisable(void);
+void STM32F7_Startup_CacheEnable();
+void STM32F7_Startup_CacheDisable();
+void STM32F7_Startup_MpuConfiguration();
 
 ////////////////////////////////////////////////////////////////////////////////
 //ADC
@@ -189,6 +190,56 @@ TinyCLR_Result STM32F7_I2c_Release(const TinyCLR_I2c_Controller* self);
 TinyCLR_Result STM32F7_I2c_SetActiveSettings(const TinyCLR_I2c_Controller* self, const TinyCLR_I2c_Settings* settings);
 TinyCLR_Result STM32F7_I2c_WriteRead(const TinyCLR_I2c_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool sendStartCondition, bool sendStopCondition, TinyCLR_I2c_TransferStatus& error);
 void STM32F7_I2c_Reset();
+
+////////////////////////////////////////////////////////////////////////////////
+//MPU
+////////////////////////////////////////////////////////////////////////////////
+enum class STM32F7_Mpu_RegionSize : uint32_t {
+    Size_32Bytes = 0x04,
+    Size_64Bytes = 0x05,
+    Size_128Bytes = 0x06,
+    Size_256Bytes = 0x07,
+    Size_512ytes = 0x08,
+    Size_1KBytes = 0x09,
+    Size_2KBytes = 0x0A,
+    Size_4Kytes = 0x0B,
+    Size_8KBytes = 0x0C,
+    Size_16KBytes = 0x0D,
+    Size_32KBytes = 0x0E,
+    Size_64KBytes = 0x0F,
+    Size_128KBytes = 0x10,
+    Size_256KBytes = 0x11,
+    Size_512KBytes = 0x12,
+    Size_1MBytes = 0x13,
+    Size_2MBytes = 0x14,
+    Size_4MBytes = 0x15,
+    Size_8MBytes = 0x16,
+    Size_16MBytes = 0x17,
+    Size_32MBytes = 0x18,
+    Size_64MBytes = 0x19,
+    Size_128MBytes = 0x1A,
+    Size_256MBytes = 0x1B,
+    Size_512MBytes = 0x1C,
+    Size_1GBytes = 0x1D,
+    Size_2GBytes = 0x1E,
+    Size_4GBytes = 0x1F,
+};
+
+enum class STM32F7_Mpu_RegionNumber : uint8_t {
+    Region0 = 0x00,
+    Region1 = 0x01,
+    Region2 = 0x02,
+    Region3 = 0x03,
+    Region4 = 0x04,
+    Region5 = 0x05,
+    Region6 = 0x06,
+    Region7 = 0x07,
+};
+
+void STM32F7_Mpu_Reset();
+void STM32F7_Mpu_Enable(uint32_t mpuControl);
+void STM32F7_Mpu_Disable();
+void STM32F7_Mpu_Configuration(uint32_t address, STM32F7_Mpu_RegionSize mpuRegionSize, STM32F7_Mpu_RegionNumber mpuRegionNumber, bool doCache);
 
 ////////////////////////////////////////////////////////////////////////////////
 //PWM
