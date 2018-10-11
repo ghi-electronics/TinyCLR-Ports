@@ -2266,6 +2266,8 @@ void LPC17_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
         canApi[i].State = &canStates[i];
 
         canStates[i].controllerIndex = i;
+        canStates[i].initializeCount = 0;
+        canStates[i].canRxMessagesFifo = nullptr;
 
         apiManager->Add(apiManager, &canApi[i]);
     }
@@ -2846,11 +2848,10 @@ TinyCLR_Result LPC17_Can_SetWriteBufferSize(const TinyCLR_Can_Controller* self, 
 
 void LPC17_Can_Reset() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
-        canStates[i].canRxMessagesFifo = nullptr;
-
         LPC17_Can_Release(&canControllers[i]);
 
         canStates[i].initializeCount = 0;
+        canStates[i].canRxMessagesFifo = nullptr;
     }
 }
 

@@ -192,8 +192,8 @@ static const uint32_t uartRxDefaultBuffersSize[] = LPC17_UART_DEFAULT_RX_BUFFER_
 struct UartState {
     int32_t controllerIndex;
 
-    uint8_t                             *TxBuffer;
-    uint8_t                             *RxBuffer;
+    uint8_t                             *txBuffer;
+    uint8_t                             *rxBuffer;
 
     size_t                              txBufferCount;
     size_t                              txBufferIn;
@@ -292,6 +292,10 @@ void LPC17_Uart_EnsureTableInitialized() {
         uartApi[i].State = &uartStates[i];
 
         uartStates[i].controllerIndex = i;
+        uartStates[i].initializeCount = 0;
+        uartStates[i].txBuffer = nullptr;
+        uartStates[i].txBuffer = nullptr;
+
         uartStates[i].tableInitialized = true;
     }
 }
@@ -324,15 +328,15 @@ TinyCLR_Result LPC17_Uart_SetReadBufferSize(const TinyCLR_Uart_Controller* self,
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
 
-    if (state->RxBuffer) {
-        memoryProvider->Free(memoryProvider, state->RxBuffer);
+    if (state->rxBuffer) {
+        memoryProvider->Free(memoryProvider, state->rxBuffer);
     }
 
     state->rxBufferSize = 0;
 
-    state->RxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
+    state->rxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
 
-    if (state->RxBuffer == nullptr) {
+    if (state->rxBuffer == nullptr) {
         return TinyCLR_Result::OutOfMemory;
     }
 
@@ -355,15 +359,15 @@ TinyCLR_Result LPC17_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controller* self
     if (size <= 0)
         return TinyCLR_Result::ArgumentInvalid;
 
-    if (state->TxBuffer) {
-        memoryProvider->Free(memoryProvider, state->TxBuffer);
+    if (state->txBuffer) {
+        memoryProvider->Free(memoryProvider, state->txBuffer);
     }
 
     state->txBufferSize = 0;
 
-    state->TxBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
+    state->txBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, size);
 
-    if (state->TxBuffer == nullptr) {
+    if (state->txBuffer == nullptr) {
         return TinyCLR_Result::OutOfMemory;
     }
 
@@ -471,7 +475,7 @@ void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
                         goto clear_status;
                     }
 
-                    state->RxBuffer[state->rxBufferIn++] = rxdata;
+                    state->rxBuffer[state->rxBufferIn++] = rxdata;
 
                     state->rxBufferCount++;
 
@@ -526,7 +530,7 @@ void LPC17_Uart_TransmitData(int controllerIndex, uint32_t LSR_Value, uint32_t I
         // Check if CTS is high
         if (LPC17_Uart_CanSend(controllerIndex)) {
             if (state->txBufferCount > 0) {
-                uint8_t txdata = state->TxBuffer[state->txBufferOut++];
+                uint8_t txdata = state->txBuffer[state->txBufferOut++];
 
                 state->txBufferCount--;
 
@@ -632,8 +636,8 @@ TinyCLR_Result LPC17_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->lastEventRxBufferCount = 0;
         state->lastEventTime = LPC17_Time_GetCurrentProcessorTime();
 
-        state->TxBuffer = nullptr;
-        state->RxBuffer = nullptr;
+        state->txBuffer = nullptr;
+        state->rxBuffer = nullptr;
 
         if (LPC17_Uart_SetWriteBufferSize(self, uartTxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
             return TinyCLR_Result::OutOfMemory;
@@ -855,8 +859,17 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Controller* self) {
         if (apiManager != nullptr) {
             auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-            memoryProvider->Free(memoryProvider, state->TxBuffer);
-            memoryProvider->Free(memoryProvider, state->RxBuffer);
+            if (state->txBuffer != nullptr) {
+                memoryProvider->Free(memoryProvider, state->txBuffer);
+
+                state->txBuffer = nullptr;
+            }
+
+            if (state->rxBuffer != nullptr) {
+                memoryProvider->Free(memoryProvider, state->rxBuffer);
+
+                state->rxBuffer = nullptr;
+            }
         }
 
         LPC17_Uart_PinConfiguration(controllerIndex, false);
@@ -952,7 +965,7 @@ TinyCLR_Result LPC17_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* buf
     size_t i = 0;
 
     while (i < length) {
-        buffer[i] = state->RxBuffer[state->rxBufferOut];
+        buffer[i] = state->rxBuffer[state->rxBufferOut];
 
         state->rxBufferOut++;
         i++;
@@ -992,7 +1005,7 @@ TinyCLR_Result LPC17_Uart_Write(const TinyCLR_Uart_Controller* self, const uint8
 
     while (i < length) {
 
-        state->TxBuffer[state->txBufferIn] = buffer[i];
+        state->txBuffer[state->txBufferIn] = buffer[i];
 
         state->txBufferCount++;
 
@@ -1107,11 +1120,12 @@ TinyCLR_Result LPC17_Uart_ClearWriteBuffer(const TinyCLR_Uart_Controller* self) 
 
 void LPC17_Uart_Reset() {
     for (auto i = 0; i < TOTAL_UART_CONTROLLERS; i++) {
-        uartStates[i].initializeCount = 0;
-
         LPC17_Uart_Release(&uartControllers[i]);
 
         uartStates[i].tableInitialized = false;
+        uartStates[i].initializeCount = 0;
+        uartStates[i].txBuffer = nullptr;
+        uartStates[i].txBuffer = nullptr;
     }
 }
 
