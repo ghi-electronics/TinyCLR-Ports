@@ -122,7 +122,12 @@
 #define AT91_USB_PIPE_COUNT 16
 
 #define INCLUDE_DISPLAY
-#define AT91_DISPLAY_CONTROLLER_PINS { { { PIN(C,0), PS(A) }, { PIN(C,1), PS(A) }, { PIN(C,2), PS(A) }, { PIN(C,3), PS(A) }, { PIN(C,4), PS(A) }, { PIN(C,5), PS(A) }, { PIN(C,6), PS(A) }, { PIN(C,7), PS(A) }, { PIN(C,8), PS(A) }, { PIN(C,9), PS(A) }, { PIN(C,10), PS(A) }, { PIN(C,11), PS(A) }, { PIN(C,12), PS(A) }, { PIN(C,13), PS(A) }, { PIN(C,14), PS(A) }, { PIN(C,15), PS(A) }, { PIN(C,24), PS(A) }, { PIN(C,27), PS(A) }, { PIN(C,28), PS(A) }, { PIN(C,30), PS(A) } } }
-#define AT91_DISPLAY_ENABLE_PIN { PIN(C, 29), PS(A) }
+#define AT91_DISPLAY_CONTROLLER_RED_PINS   { { PIN(C,0), PS(A) }, { PIN(C,1), PS(A) }, { PIN(C,2), PS(A) }, { PIN(C,3), PS(A) }, { PIN(C,4), PS(A) } }
+#define AT91_DISPLAY_CONTROLLER_GREEN_PINS { { PIN(C,5), PS(A) }, { PIN(C,6), PS(A) }, { PIN(C,7), PS(A) }, { PIN(C,8), PS(A) }, { PIN(C,9), PS(A) }, { PIN(C,10), PS(A) } }
+#define AT91_DISPLAY_CONTROLLER_BLUE_PINS  { { PIN(C,11), PS(A) }, { PIN(C,12), PS(A) }, { PIN(C,13), PS(A) }, { PIN(C,14), PS(A) }, { PIN(C,15), PS(A) } }
+#define AT91_DISPLAY_CONTROLLER_HSYNC_PIN { PIN(C,28), PS(A) }
+#define AT91_DISPLAY_CONTROLLER_VSYNC_PIN { PIN(C,27), PS(A) }
+#define AT91_DISPLAY_CONTROLLER_CLOCK_PIN { PIN(C,30), PS(A) }
+#define AT91_DISPLAY_CONTROLLER_DATA_ENABLE_PIN { PIN(C, 29), PS(A) }
 
 #include <AT91.h>
