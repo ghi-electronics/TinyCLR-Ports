@@ -2763,9 +2763,10 @@ TinyCLR_Result STM32F4_SdCard_Write(const TinyCLR_Storage_Controller* self, uint
 
     int32_t to;
 
-    auto sectorCount = count;
+    auto sectorCount = count / STM32F4_SD_SECTOR_SIZE;
+    auto sectorNum = address / STM32F4_SD_SECTOR_SIZE;
 
-    auto sectorNum = address;
+    if (count % STM32F4_SD_SECTOR_SIZE > 0) sectorCount++;
 
     uint8_t* pData = (uint8_t*)data;
 
@@ -2798,9 +2799,10 @@ TinyCLR_Result STM32F4_SdCard_Read(const TinyCLR_Storage_Controller* self, uint6
 
     int32_t to;
 
-    auto sectorCount = count;
+    auto sectorCount = count / STM32F4_SD_SECTOR_SIZE;
+    auto sectorNum = address / STM32F4_SD_SECTOR_SIZE;
 
-    auto sectorNum = address;
+    if (count % STM32F4_SD_SECTOR_SIZE > 0) sectorCount++;
 
     while (sectorCount) {
         to = timeout;
