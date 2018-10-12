@@ -42,7 +42,7 @@ void AT91_Power_EnsureTableInitialized() {
         powerControllers[i].Initialize = &AT91_Power_Initialize;
         powerControllers[i].Uninitialize = &AT91_Power_Uninitialize;
         powerControllers[i].Reset = &AT91_Power_Reset;
-        powerControllers[i].Sleep = &AT91_Power_SetLevel;
+        powerControllers[i].SetLevel = &AT91_Power_SetLevel;
 
         powerApi[i].Author = "GHI Electronics, LLC";
         powerApi[i].Name = powerApiNames[i];
@@ -81,14 +81,16 @@ TinyCLR_Result AT91_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCLR
     volatile uint32_t reg = 0;
 
     switch (level) {
-    case TinyCLR_Power_Level::Level2: // Other
-    case TinyCLR_Power_Level::Level3: // Other
-    case TinyCLR_Power_Level::Level4: // Other
+    case TinyCLR_Power_Level::Sleep1: // Sleep
+    case TinyCLR_Power_Level::Sleep2: // Sleep
+    case TinyCLR_Power_Level::Sleep3: // Sleep
+    case TinyCLR_Power_Level::Off:    // Off
+    case TinyCLR_Power_Level::Custom: // Custom
         //TODO
         return TinyCLR_Result::NotSupported;
 
-    case TinyCLR_Power_Level::Level0: // Active
-    case TinyCLR_Power_Level::Level1: // Sleep
+    case TinyCLR_Power_Level::Active: // Active
+    case TinyCLR_Power_Level::Idle:   // Idle
         // TODO
 
     default:
