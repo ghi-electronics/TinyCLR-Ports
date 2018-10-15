@@ -153,5 +153,10 @@
                          }
 
 #define INCLUDE_DISPLAY
-#define STM32F7_DISPLAY_CONTROLLER_PINS { { { PIN(I, 12), AF(14) }, { PIN(I, 13), AF(14) }, { PIN(I, 14), AF(14) }, { PIN(J, 2), AF(14) },{ PIN(J, 3), AF(14) },{ PIN(J, 4), AF(14) },{ PIN(J, 5), AF(14) },{ PIN(J, 6), AF(14) },{ PIN(J, 9), AF(14) },{ PIN(J, 10), AF(14) },{ PIN(J, 11), AF(14) },{ PIN(J, 15), AF(14) }, { PIN(K, 0), AF(14) },{ PIN(K, 1), AF(14) },{ PIN(K, 2), AF(14) },{ PIN(K, 3), AF(14) },{ PIN(K, 4), AF(14) },{ PIN(K, 5), AF(14) },{ PIN(K, 6), AF(14) } } }
-#define STM32F7_DISPLAY_ENABLE_PIN  { PIN(K, 7), AF(14) }
+#define STM32F7_DISPLAY_CONTROLLER_RED_PINS   { { PIN(J, 2) , AF(14) }, { PIN(J, 3), AF(14) }, { PIN(J, 4), AF(14) }, { PIN(J, 5), AF(14) }, { PIN(J, 6), AF(14) }  }
+#define STM32F7_DISPLAY_CONTROLLER_GREEN_PINS { { PIN(J, 9) , AF(14) }, { PIN(J, 10), AF(14)}, { PIN(J, 11), AF(14)}, { PIN(K, 0), AF(14) }, { PIN(K, 1), AF(14) }, { PIN(K, 2), AF(14) }  }
+#define STM32F7_DISPLAY_CONTROLLER_BLUE_PINS  { { PIN(J, 15), AF(14) }, { PIN(K, 3), AF(14) }, { PIN(K, 4), AF(14) }, { PIN(K, 5), AF(14) }, { PIN(K, 6), AF(14) }  }
+#define STM32F7_DISPLAY_CONTROLLER_HSYNC_PIN { PIN(I, 12), AF(14) }
+#define STM32F7_DISPLAY_CONTROLLER_VSYNC_PIN { PIN(I, 13), AF(14) }
+#define STM32F7_DISPLAY_CONTROLLER_CLOCK_PIN { PIN(I, 14), AF(14) }
+#define STM32F7_DISPLAY_CONTROLLER_DATA_ENABLE_PIN { PIN(K, 7), AF(14) }

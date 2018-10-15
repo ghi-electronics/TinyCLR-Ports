@@ -796,9 +796,6 @@ void AT91_Display_SetBaseLayerDMA() {
     lcd->LCDC_BASECHER = 0x3;
 }
 
-static const AT91_Gpio_Pin displayPins[][20] = AT91_DISPLAY_CONTROLLER_PINS;
-static const AT91_Gpio_Pin displayEnablePin = AT91_DISPLAY_ENABLE_PIN;
-
 bool AT91_Display_Initialize() {
 
     AT91SAM9X35_LCDC *lcd = (AT91SAM9X35_LCDC*)AT91C_BASE_LCDC;
@@ -1038,39 +1035,100 @@ void AT91_Display_Clear() {
     memset((uint32_t*)m_AT91_Display_VituralRam, 0, m_AT91_DisplayBufferSize);
 }
 
+struct DisplayPins {
+    AT91_Gpio_Pin red[5];
+    AT91_Gpio_Pin green[6];
+    AT91_Gpio_Pin blue[5];
+
+    AT91_Gpio_Pin hsync;
+    AT91_Gpio_Pin vsync;
+    AT91_Gpio_Pin clock;
+    AT91_Gpio_Pin enable;
+};
+
+const DisplayPins displayPins = {
+    AT91_DISPLAY_CONTROLLER_RED_PINS,
+    AT91_DISPLAY_CONTROLLER_GREEN_PINS,
+    AT91_DISPLAY_CONTROLLER_BLUE_PINS,
+
+    AT91_DISPLAY_CONTROLLER_HSYNC_PIN,
+    AT91_DISPLAY_CONTROLLER_VSYNC_PIN,
+    AT91_DISPLAY_CONTROLLER_CLOCK_PIN,
+    AT91_DISPLAY_CONTROLLER_DATA_ENABLE_PIN,
+};
+
 bool AT91_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
     if (enable) {
-        // Open multi lcd pins
-        if (!AT91_GpioInternal_OpenMultiPins(displayPins[controllerIndex], SIZEOF_ARRAY(displayPins[controllerIndex]))) {
+        bool openFailed = false;
+
+        // Open red pins
+        for (auto i = 0; i < 5; i++) {
+            openFailed |= !AT91_GpioInternal_OpenPin(displayPins.red[i].number);
+        }
+
+        // Open green pins
+        for (auto i = 0; i < 6; i++) {
+            openFailed |= !AT91_GpioInternal_OpenPin(displayPins.green[i].number);
+        }
+
+        // Open blue pins
+        for (auto i = 0; i < 5; i++) {
+            openFailed |= !AT91_GpioInternal_OpenPin(displayPins.blue[i].number);
+        }
+
+        // Open hsync, vsync, clock pins
+        openFailed |= !AT91_GpioInternal_OpenPin(displayPins.hsync.number);
+        openFailed |= !AT91_GpioInternal_OpenPin(displayPins.vsync.number);
+        openFailed |= !AT91_GpioInternal_OpenPin(displayPins.clock.number);
+
+        // Open enable pin
+        if (displayPins.enable.number != PIN_NONE) {
+            openFailed |= !AT91_GpioInternal_OpenPin(displayPins.enable.number);
+        }
+
+        if (openFailed) {
+            // Force to close all pin
+            AT91_Display_SetPinConfiguration(controllerIndex, false);
+
             return false;
         }
 
-        for (uint32_t pin = 0; pin < SIZEOF_ARRAY(displayPins[controllerIndex]); pin++) {
-            AT91_GpioInternal_ConfigurePin(displayPins[controllerIndex][pin].number, AT91_Gpio_Direction::Input, displayPins[controllerIndex][pin].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+        //Config all pins except for Enable pin, (for this pin, only do OpenPin Enable pin to reserve)
+        //Config Enable pin when SetActive.
+        for (auto i = 0; i < 5; i++) {
+            AT91_GpioInternal_ConfigurePin(displayPins.red[i].number, AT91_Gpio_Direction::Input, displayPins.red[i].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
         }
 
-        if (displayEnablePin.number != PIN_NONE) {
-            if (!AT91_GpioInternal_OpenPin(displayEnablePin.number)) {
-                AT91_Display_SetPinConfiguration(controllerIndex, false);
-
-                return false;
-            }
+        for (auto i = 0; i < 6; i++) {
+            AT91_GpioInternal_ConfigurePin(displayPins.green[i].number, AT91_Gpio_Direction::Input, displayPins.green[i].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
         }
 
-        if (m_AT91_DisplayOutputEnableIsFixed) {
-            AT91_GpioInternal_EnableOutputPin(displayEnablePin.number, m_AT91_DisplayOutputEnablePolarity);
+        for (auto i = 0; i < 5; i++) {
+            AT91_GpioInternal_ConfigurePin(displayPins.blue[i].number, AT91_Gpio_Direction::Input, displayPins.blue[i].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
         }
-        else {
-            AT91_GpioInternal_ConfigurePin(displayEnablePin.number, AT91_Gpio_Direction::Input, displayEnablePin.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-        }
+
+        AT91_GpioInternal_ConfigurePin(displayPins.hsync.number, AT91_Gpio_Direction::Input, displayPins.hsync.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+        AT91_GpioInternal_ConfigurePin(displayPins.vsync.number, AT91_Gpio_Direction::Input, displayPins.vsync.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+        AT91_GpioInternal_ConfigurePin(displayPins.clock.number, AT91_Gpio_Direction::Input, displayPins.clock.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+
     }
     else {
-
-        for (auto i = 0; i < SIZEOF_ARRAY(displayPins); i++) {
-            AT91_GpioInternal_ClosePin(displayPins[controllerIndex][i].number);
+        for (auto i = 0; i < 5; i++) {
+            AT91_GpioInternal_ClosePin(displayPins.red[i].number);
         }
 
-        AT91_GpioInternal_ClosePin(displayEnablePin.number);
+        for (auto i = 0; i < 6; i++) {
+            AT91_GpioInternal_ClosePin(displayPins.green[i].number);
+        }
+
+        for (auto i = 0; i < 5; i++) {
+            AT91_GpioInternal_ClosePin(displayPins.blue[i].number);
+        }
+
+        AT91_GpioInternal_ClosePin(displayPins.hsync.number);
+        AT91_GpioInternal_ClosePin(displayPins.vsync.number);
+        AT91_GpioInternal_ClosePin(displayPins.clock.number);
+        AT91_GpioInternal_ClosePin(displayPins.enable.number);
     }
 
     return true;
@@ -1345,13 +1403,13 @@ TinyCLR_Result AT91_Display_SetConfiguration(const TinyCLR_Display_Controller* s
 
         m_AT91_Display_VituralRam = (uint16_t*)((((uint32_t)m_AT91_Display_buffer) + (7)) & (~((uint32_t)(7))));
 
-        // Set displayEnablePin following m_AT91_DisplayOutputEnableIsFixed
-        if (displayEnablePin.number != PIN_NONE) {
+        // Set displayPins.enable following m_AT91_DisplayOutputEnableIsFixed
+        if (displayPins.enable.number != PIN_NONE) {
             if (m_AT91_DisplayOutputEnableIsFixed) {
-                AT91_GpioInternal_EnableOutputPin(displayEnablePin.number, m_AT91_DisplayOutputEnablePolarity);
+                AT91_GpioInternal_EnableOutputPin(displayPins.enable.number, m_AT91_DisplayOutputEnablePolarity);
             }
             else {
-                AT91_GpioInternal_ConfigurePin(displayEnablePin.number, AT91_Gpio_Direction::Input, displayEnablePin.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+                AT91_GpioInternal_ConfigurePin(displayPins.enable.number, AT91_Gpio_Direction::Input, displayPins.enable.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
             }
         }
     }
