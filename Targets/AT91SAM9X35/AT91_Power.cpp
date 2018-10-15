@@ -77,7 +77,7 @@ void AT91_Power_SetHandlers(void(*stop)(), void(*restart)()) {
     PowerRestartHandler = restart;
 }
 
-TinyCLR_Result AT91_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCLR_Power_Level level, TinyCLR_Power_SleepWakeSource wakeSource, uint64_t data) {
+TinyCLR_Result AT91_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCLR_Power_Level level, TinyCLR_Power_WakeSource wakeSource, uint64_t data) {
     volatile uint32_t reg = 0;
 
     switch (level) {
