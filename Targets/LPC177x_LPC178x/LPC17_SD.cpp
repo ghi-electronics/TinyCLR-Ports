@@ -2308,9 +2308,10 @@ TinyCLR_Result LPC17_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64
 
     int32_t to = timeout;
 
-    auto sectorCount = count;
+    auto sectorCount = count / LPC17_SD_SECTOR_SIZE;
+    auto sectorNum = address / LPC17_SD_SECTOR_SIZE;
 
-    auto sectorNum = address;
+    if (count % LPC17_SD_SECTOR_SIZE > 0) sectorCount++;
 
     uint8_t* pData = (uint8_t*)data;
 
@@ -2338,9 +2339,10 @@ TinyCLR_Result LPC17_SdCard_Read(const TinyCLR_Storage_Controller* self, uint64_
 
     int32_t to = timeout;
 
-    auto sectorCount = count;
+    auto sectorCount = count / LPC17_SD_SECTOR_SIZE;
+    auto sectorNum = address / LPC17_SD_SECTOR_SIZE;
 
-    auto sectorNum = address;
+    if (count % LPC17_SD_SECTOR_SIZE > 0) sectorCount++;
 
     while (sectorCount) {
         if (MCI_ReadSector(sectorNum, &data[index]) == true) {
@@ -2403,7 +2405,7 @@ TinyCLR_Result LPC17_SdCard_Reset() {
     for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
         LPC17_SdCard_Close(&sdCardControllers[i]);
         LPC17_SdCard_Release(&sdCardControllers[i]);
-        
+
         sdCardStates[i].initializeCount = 0;
         sdCardStates[i].regionSizes = nullptr;
         sdCardStates[i].regionAddresses = nullptr;

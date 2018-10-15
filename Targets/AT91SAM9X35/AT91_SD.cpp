@@ -2552,9 +2552,10 @@ TinyCLR_Result AT91_SdCard_Release(const TinyCLR_Storage_Controller* self) {
 TinyCLR_Result AT91_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
     int32_t to;
 
-    int32_t sectorCount = count;
+    auto sectorCount = count / AT91_SD_SECTOR_SIZE;
+    auto sectorNum = address / AT91_SD_SECTOR_SIZE;
 
-    auto sectorNum = address;
+    if (count % AT91_SD_SECTOR_SIZE > 0) sectorCount++;
 
     SdCard *pSd = &sdDrv;
 
@@ -2614,9 +2615,10 @@ TinyCLR_Result AT91_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64_
 TinyCLR_Result AT91_SdCard_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
     int32_t to;
 
-    int32_t sectorCount = count;
+    auto sectorCount = count / AT91_SD_SECTOR_SIZE;
+    auto sectorNum = address / AT91_SD_SECTOR_SIZE;
 
-    auto sectorNum = address;
+    if (count % AT91_SD_SECTOR_SIZE > 0) sectorCount++;
 
     SdCard *pSd = &sdDrv;
 
