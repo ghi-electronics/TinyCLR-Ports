@@ -26,6 +26,9 @@ struct Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices
     static const size_t FIELD___captureOnRisingEdge___BOOLEAN = 7;
     static const size_t FIELD___clockIdleState___GHIElectronicsTinyCLRDevicesGpioGHIElectronicsTinyCLRDevicesGpioGpioPinValue = 8;
     static const size_t FIELD___clockActiveState___GHIElectronicsTinyCLRDevicesGpioGHIElectronicsTinyCLRDevicesGpioGpioPinValue = 9;
+    static const size_t FIELD___chipSelectSetupTime___mscorlibSystemTimeSpan = 10;
+    static const size_t FIELD___chipSelectHoldTime___mscorlibSystemTimeSpan = 11;
+    static const size_t FIELD___chipSelectActiveState___BOOLEAN = 12;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_SpiConnectionSettings {
