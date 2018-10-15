@@ -40,7 +40,7 @@ void STM32F4_Power_EnsureTableInitialized() {
         powerControllers[i].Initialize = &STM32F4_Power_Initialize;
         powerControllers[i].Uninitialize = &STM32F4_Power_Uninitialize;
         powerControllers[i].Reset = &STM32F4_Power_Reset;
-        powerControllers[i].Sleep = &STM32F4_Power_Sleep;
+        powerControllers[i].SetLevel = &STM32F4_Power_SetLevel;
 
         powerApi[i].Author = "GHI Electronics, LLC";
         powerApi[i].Name = powerApiNames[i];
@@ -70,16 +70,18 @@ void STM32F4_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
     apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::PowerController, powerApi[0].Name);
 }
 
-TinyCLR_Result STM32F4_Power_Sleep(const TinyCLR_Power_Controller* self, TinyCLR_Power_SleepLevel level, TinyCLR_Power_SleepWakeSource wakeSource) {
+TinyCLR_Result STM32F4_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCLR_Power_Level level, TinyCLR_Power_SleepWakeSource wakeSource, uint64_t data) {
     switch (level) {
-    case TinyCLR_Power_SleepLevel::Level1:
-    case TinyCLR_Power_SleepLevel::Level2:
-    case TinyCLR_Power_SleepLevel::Level3:
-    case TinyCLR_Power_SleepLevel::Level4:
+    case TinyCLR_Power_Level::Sleep1: // Sleep
+    case TinyCLR_Power_Level::Sleep2: // Sleep
+    case TinyCLR_Power_Level::Sleep3: // Sleep
+    case TinyCLR_Power_Level::Off:    // Off
+    case TinyCLR_Power_Level::Custom: // Custom
         //TODO
         return TinyCLR_Result::NotSupported;
 
-    case TinyCLR_Power_SleepLevel::Level0:
+    case TinyCLR_Power_Level::Active: // Active
+    case TinyCLR_Power_Level::Idle:   // Idle
         // TODO
 
     default:
