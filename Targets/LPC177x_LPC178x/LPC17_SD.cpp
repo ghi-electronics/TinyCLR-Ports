@@ -18,6 +18,10 @@
 #include "LPC17.h"
 
 #ifdef INCLUDE_SD
+
+// 5 seconds default from user.
+#define LPC17_SD_DEFAULT_TIMEOUT (5 * 1000 * 10000) // ticks
+uint64_t sdTimeoutTicks = LPC17_SD_DEFAULT_TIMEOUT;
 //lpc17
 #define MCIPower (*(volatile unsigned long *)0x400C0000)
 #define MCIPower_OFFSET 0x0
@@ -700,9 +704,10 @@ void MCI_RXDisable(void) {
 ******************************************************************************/
 bool MCI_CheckStatus(void) {
     uint32_t respValue;
-    uint32_t i;
-    i = 0;
-    while (i < CheckStatus_TIME_OUT) {
+
+    uint64_t currentTime = LPC17_Time_GetCurrentProcessorTime();
+
+    while (true) {
         if ((respValue = MCI_Send_Status()) == INVALID_RESPONSE) {
             break;
         }
@@ -713,10 +718,12 @@ bool MCI_CheckStatus(void) {
             }
         }
 
-        i++;
-
         LPC17_Time_Delay(nullptr, 1000);
+
+        if (LPC17_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
+            return false;
     }
+
     return (false);
 }
 
@@ -2192,6 +2199,7 @@ void LPC17_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
         sdCardStates[i].initializeCount = 0;
         sdCardStates[i].regionSizes = nullptr;
         sdCardStates[i].regionAddresses = nullptr;
+        sdTimeoutTicks = LPC17_SD_DEFAULT_TIMEOUT;
 
         apiManager->Add(apiManager, &sdCardApi[i]);
     }
@@ -2306,12 +2314,14 @@ TinyCLR_Result LPC17_SdCard_Release(const TinyCLR_Storage_Controller* self) {
 TinyCLR_Result LPC17_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
     int32_t index = 0;
 
-    int32_t to = timeout;
+    sdTimeoutTicks = timeout;
 
     auto sectorCount = count / LPC17_SD_SECTOR_SIZE;
     auto sectorNum = address / LPC17_SD_SECTOR_SIZE;
 
     if (count % LPC17_SD_SECTOR_SIZE > 0) sectorCount++;
+
+    uint64_t currentTime = LPC17_Time_GetCurrentProcessorTime();
 
     uint8_t* pData = (uint8_t*)data;
 
@@ -2320,14 +2330,12 @@ TinyCLR_Result LPC17_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64
             index += LPC17_SD_SECTOR_SIZE;
             sectorNum++;
             sectorCount--;
-        }
-        else {
-            return TinyCLR_Result::InvalidOperation;
-        }
-    }
 
-    if (!to) {
-        return TinyCLR_Result::TimedOut;
+            currentTime = LPC17_Time_GetCurrentProcessorTime();
+        }
+
+        if (LPC17_Time_GetCurrentProcessorTime() - currentTime > timeout)
+            return TinyCLR_Result::TimedOut;
     }
 
     return TinyCLR_Result::Success;
@@ -2337,26 +2345,26 @@ TinyCLR_Result LPC17_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64
 TinyCLR_Result LPC17_SdCard_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
     int32_t index = 0;
 
-    int32_t to = timeout;
+    sdTimeoutTicks = timeout;
 
     auto sectorCount = count / LPC17_SD_SECTOR_SIZE;
     auto sectorNum = address / LPC17_SD_SECTOR_SIZE;
 
     if (count % LPC17_SD_SECTOR_SIZE > 0) sectorCount++;
 
+    uint64_t currentTime = LPC17_Time_GetCurrentProcessorTime();
+
     while (sectorCount) {
         if (MCI_ReadSector(sectorNum, &data[index]) == true) {
             index += LPC17_SD_SECTOR_SIZE;
             sectorNum++;
             sectorCount--;
-        }
-        else {
-            return TinyCLR_Result::InvalidOperation;
-        }
-    }
 
-    if (!to) {
-        return TinyCLR_Result::TimedOut;
+            currentTime = LPC17_Time_GetCurrentProcessorTime();
+        }
+
+        if (LPC17_Time_GetCurrentProcessorTime() - currentTime > timeout)
+            return TinyCLR_Result::TimedOut;
     }
 
     return TinyCLR_Result::Success;
