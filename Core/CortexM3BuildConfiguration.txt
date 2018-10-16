@@ -4,6 +4,6 @@ FloatCompileArguments:
 AdditionalIncludes:-I"!ScriptRoot!\CMSIS\CMSIS\Include"
 AdditionalDefines:-DPLATFORM_ARM_CORTEX_M3 -D__CORTEX_M3F -DCORTEX_M3 -DCOMPILE_THUMB2
 AdditionalAssemblerArguments:--defsym COMPILE_THUMB2=1 -mthumb
-AdditionalCompilerArguments:-mthumb
+AdditionalCompilerArguments:!AdditionalCompilerArguments! -mthumb
 GccLibrary:!GccDirectory!\arm-none-eabi\lib\thumb\v7-m
 NeedCmsis:1

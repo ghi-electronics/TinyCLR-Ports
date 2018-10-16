@@ -93,7 +93,7 @@ SET AdditionalIncludes=%AdditionalIncludes% -I"%ScriptRoot%\Devices\%DeviceName%
 SET AdditionalIncludes=%AdditionalIncludes% -I"%ScriptRoot%\Core"
 
 SET AdditionalDefines=%AdditionalDefines% -DGCC
-SET AdditionalCompilerArguments=-mstructure-size-boundary=8 -fno-exceptions -ffunction-sections -fdata-sections -fshort-wchar -mlong-calls
+SET AdditionalCompilerArguments=%AdditionalCompilerArguments% -mstructure-size-boundary=8 -fno-exceptions -ffunction-sections -fdata-sections -fshort-wchar
 
 IF "%BuildConfiguration%" == "debug" (
     SET AdditionalDefines=%AdditionalDefines% -DDEBUG -D_DEBUG
@@ -102,7 +102,14 @@ IF "%BuildConfiguration%" == "debug" (
 ) ELSE (
     SET AdditionalDefines=%AdditionalDefines%
     SET AssemblerCompileArguments=%AdditionalAssemblerArguments%
-    SET AdditionalCompilerArguments=%OptimizeLevel% %AdditionalCompilerArguments%
+
+    IF "%OptimizeLevel%" == "-size" (
+        SET OptimizeLevel=-Os
+    ) ELSE (
+        SET OptimizeLevel=-Ofast
+    )
+
+    SET AdditionalCompilerArguments=!OptimizeLevel! %AdditionalCompilerArguments%
 )
 
 SET OutputDirectory=%ScriptRoot%\Build\%BuildConfiguration%\%DeviceName%

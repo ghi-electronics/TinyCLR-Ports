@@ -1,4 +1,5 @@
 TargetName:AT91SAM9Rx64
 ImageGenParameters:0x73721954 0x6D5F426A 0x00008400 0x00262800
-OptimizeLevel:-Ofast
+OptimizeLevel:-speed
 AdditionalDeviceDrivers:AT45DB321D_Flash
+AdditionalCompilerArguments:!AdditionalCompilerArguments! -mlong-calls

@@ -4,5 +4,5 @@ FloatCompileArguments:-mfloat-abi=soft
 AdditionalIncludes:
 AdditionalDefines:-DCOMPILE_ARM -DPLATFORM_ARM_ARM9 -DPLATFORM_ARM_SAM9RL64_ANY
 AdditionalAssemblerArguments:--defsym COMPILE_ARM=1
-AdditionalCompilerArguments:-marm -mthumb-interwork
+AdditionalCompilerArguments:!AdditionalCompilerArguments! -marm -mthumb-interwork
 GccLibrary:!GccDirectory!\arm-none-eabi\lib

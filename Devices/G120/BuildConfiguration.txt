@@ -1,4 +1,5 @@
 TargetName:LPC177x_LPC178x
 ImageGenParameters:0x60C4ABCD 0x25F06C7B 0x00005000 0x0007B000
-OptimizeLevel:-Ofast
+OptimizeLevel:-speed
 AdditionalDeviceDrivers:S25FL032_Flash
+AdditionalCompilerArguments:!AdditionalCompilerArguments! -mlong-calls
