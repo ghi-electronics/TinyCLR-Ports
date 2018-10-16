@@ -1,5 +1,5 @@
 TargetName:LPC23xx_LPC24xx
 ImageGenParameters:0xB2C5A27D 0x1888FBFB 0x00004000 0x0007B000
-OptimizeLevel:-Ofast
+OptimizeLevel:-speed
 AdditionalDeviceDrivers:AT49BV322DT_Flash
-AdditionalCompilerArguments:-mlong-calls
+AdditionalCompilerArguments:!AdditionalCompilerArguments! -mlong-calls

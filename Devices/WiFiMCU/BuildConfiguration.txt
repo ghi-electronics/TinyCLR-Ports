@@ -1,2 +1,2 @@
 TargetName:STM32F4xx
-OptimizeLevel:-Ofast
+OptimizeLevel:-speed
