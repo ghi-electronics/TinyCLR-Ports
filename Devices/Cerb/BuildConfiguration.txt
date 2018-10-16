@@ -1,3 +1,4 @@
 TargetName:STM32F4xx
 ImageGenParameters:0x526603B1 0xE16B218D 0x08008000 0x000B8000
-OptimizeLevel:-Os
+OptimizeLevel:-Ofast
+AdditionalCompilerArguments:-mlong-calls

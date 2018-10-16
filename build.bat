@@ -93,7 +93,7 @@ SET AdditionalIncludes=%AdditionalIncludes% -I"%ScriptRoot%\Devices\%DeviceName%
 SET AdditionalIncludes=%AdditionalIncludes% -I"%ScriptRoot%\Core"
 
 SET AdditionalDefines=%AdditionalDefines% -DGCC
-SET AdditionalCompilerArguments=-mstructure-size-boundary=8 -fno-exceptions -ffunction-sections -fdata-sections -fshort-wchar -mlong-calls
+SET AdditionalCompilerArguments=%AdditionalInstructionTypeArguments% %AdditionalCompilerArguments% -mstructure-size-boundary=8 -fno-exceptions -ffunction-sections -fdata-sections -fshort-wchar
 
 IF "%BuildConfiguration%" == "debug" (
     SET AdditionalDefines=%AdditionalDefines% -DDEBUG -D_DEBUG
