@@ -17,7 +17,14 @@
 #include "STM32F4.h"
 
 #ifdef INCLUDE_SD
+
+// 5 seconds default from user.
+#define SDCARD_DEFAULT_TIMEOUT_IN_SYSTEM_TICKS (5 * 1000 * 10000) // ticks
+
+uint64_t sdTimeoutTicks = SDCARD_DEFAULT_TIMEOUT_IN_SYSTEM_TICKS;
+
 // sdio
+// Set SD timeout -1, timeout config by software
 #define SD_DATATIMEOUT                  ((uint32_t)0xFFFFFFFF)
 
 /* Exported constants --------------------------------------------------------*/
@@ -1855,6 +1862,9 @@ SD_Error SD_ReadBlock(uint8_t *readbuff, uint32_t ReadAddr, uint16_t BlockSize) 
 #if defined (SD_POLLING_MODE)
     /*!< In case of single block transfer, no need of stop transfer at all.*/
     /*!< Polling mode */
+
+    uint64_t currentTime = STM32F4_Time_GetCurrentProcessorTime();
+
     while (!(SDIO->STA &(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND | SDIO_FLAG_STBITERR))) {
         if (SDIO_GetFlagStatus(SDIO_FLAG_RXFIFOHF) != RESET) {
             for (count = 0; count < 8; count++) {
@@ -1862,6 +1872,9 @@ SD_Error SD_ReadBlock(uint8_t *readbuff, uint32_t ReadAddr, uint16_t BlockSize) 
             }
             tempbuff += 8;
         }
+
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
+            return(SD_DATA_TIMEOUT);
     }
 
     if (SDIO_GetFlagStatus(SDIO_FLAG_DTIMEOUT) != RESET) {
@@ -1956,6 +1969,9 @@ SD_Error SD_WriteBlock(uint8_t *writebuff, uint32_t WriteAddr, uint16_t BlockSiz
 
     /*!< In case of single data block transfer no need of stop command at all */
 #if defined (SD_POLLING_MODE)
+
+    uint64_t currentTime = STM32F4_Time_GetCurrentProcessorTime();
+
     while (!(SDIO->STA & (SDIO_FLAG_DBCKEND | SDIO_FLAG_TXUNDERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_STBITERR))) {
         if (SDIO_GetFlagStatus(SDIO_FLAG_TXFIFOHE) != RESET) {
             if ((512 - bytestransferred) < 32) {
@@ -1972,6 +1988,10 @@ SD_Error SD_WriteBlock(uint8_t *writebuff, uint32_t WriteAddr, uint16_t BlockSiz
                 bytestransferred += 32;
             }
         }
+
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
+            return(SD_DATA_TIMEOUT);
+
     }
     if (SDIO_GetFlagStatus(SDIO_FLAG_DTIMEOUT) != RESET) {
         SDIO_ClearFlag(SDIO_FLAG_DTIMEOUT);
@@ -2103,6 +2123,8 @@ SD_Error SD_SendSDStatus(uint32_t *psdstatus) {
         return(errorstatus);
     }
 
+    uint64_t currentTime = STM32F4_Time_GetCurrentProcessorTime();
+
     while (!(SDIO->STA &(SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND | SDIO_FLAG_STBITERR))) {
         if (SDIO_GetFlagStatus(SDIO_FLAG_RXFIFOHF) != RESET) {
             for (count = 0; count < 8; count++) {
@@ -2110,6 +2132,9 @@ SD_Error SD_SendSDStatus(uint32_t *psdstatus) {
             }
             psdstatus += 8;
         }
+
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
+            return(SD_DATA_TIMEOUT);
     }
 
     if (SDIO_GetFlagStatus(SDIO_FLAG_DTIMEOUT) != RESET) {
@@ -2179,9 +2204,14 @@ static SD_Error CmdResp7Error(void) {
 
     status = SDIO->STA;
 
-    while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT)) && (timeout > 0)) {
-        timeout--;
+    uint64_t currentTime = STM32F4_Time_GetCurrentProcessorTime();
+
+    while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT))) {
         status = SDIO->STA;
+
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks) {
+            return(SD_CMD_RSP_TIMEOUT);
+		}
     }
 
     if ((timeout == 0) || (status & SDIO_FLAG_CTIMEOUT)) {
@@ -2212,8 +2242,13 @@ static SD_Error CmdResp1Error(uint8_t cmd) {
 
     status = SDIO->STA;
 
+    uint64_t currentTime = STM32F4_Time_GetCurrentProcessorTime();
+
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT))) {
         status = SDIO->STA;
+
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
+            return(SD_CMD_RSP_TIMEOUT);
     }
 
     if (status & SDIO_FLAG_CTIMEOUT) {
@@ -2332,8 +2367,13 @@ static SD_Error CmdResp3Error(void) {
 
     status = SDIO->STA;
 
+    uint64_t currentTime = STM32F4_Time_GetCurrentProcessorTime();
+
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT))) {
         status = SDIO->STA;
+
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
+            return(SD_CMD_RSP_TIMEOUT);
     }
 
     if (status & SDIO_FLAG_CTIMEOUT) {
@@ -2351,14 +2391,20 @@ static SD_Error CmdResp3Error(void) {
   * @param  None
   * @retval SD_Error: SD Card Error code.
   */
+
 static SD_Error CmdResp2Error(void) {
     SD_Error errorstatus = SD_OK;
     uint32_t status;
 
     status = SDIO->STA;
 
+    uint64_t currentTime = STM32F4_Time_GetCurrentProcessorTime();
+
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CTIMEOUT | SDIO_FLAG_CMDREND))) {
         status = SDIO->STA;
+
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
+            return(SD_CMD_RSP_TIMEOUT);
     }
 
     if (status & SDIO_FLAG_CTIMEOUT) {
@@ -2385,6 +2431,7 @@ static SD_Error CmdResp2Error(void) {
   *         address RCA.
   * @retval SD_Error: SD Card Error code.
   */
+
 static SD_Error CmdResp6Error(uint8_t cmd, uint16_t *prca) {
     SD_Error errorstatus = SD_OK;
     uint32_t status;
@@ -2392,8 +2439,13 @@ static SD_Error CmdResp6Error(uint8_t cmd, uint16_t *prca) {
 
     status = SDIO->STA;
 
+    uint64_t currentTime = STM32F4_Time_GetCurrentProcessorTime();
+
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CTIMEOUT | SDIO_FLAG_CMDREND))) {
         status = SDIO->STA;
+
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
+            return(SD_CMD_RSP_TIMEOUT);
     }
 
     if (status & SDIO_FLAG_CTIMEOUT) {
@@ -2526,6 +2578,7 @@ static SD_Error SDEnWideBus(FunctionalState NewState) {
   * @param  pscr: pointer to the buffer that will contain the SCR value.
   * @retval SD_Error: SD Card Error code.
   */
+
 static SD_Error FindSCR(uint16_t rca, uint32_t *pscr) {
     uint32_t index = 0;
     SD_Error errorstatus = SD_OK;
@@ -2562,11 +2615,16 @@ static SD_Error FindSCR(uint16_t rca, uint32_t *pscr) {
         return(errorstatus);
     }
 
+    uint64_t currentTime = STM32F4_Time_GetCurrentProcessorTime();
+
     while (!(SDIO->STA & (SDIO_FLAG_RXOVERR | SDIO_FLAG_DCRCFAIL | SDIO_FLAG_DTIMEOUT | SDIO_FLAG_DBCKEND | SDIO_FLAG_STBITERR))) {
         if (SDIO_GetFlagStatus(SDIO_FLAG_RXDAVL) != RESET) {
             *(tempscr + index) = SDIO_ReadData();
             index++;
         }
+
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
+            return(SD_DATA_TIMEOUT);
     }
 
     if (SDIO_GetFlagStatus(SDIO_FLAG_DTIMEOUT) != RESET) {
@@ -2599,11 +2657,7 @@ static SD_Error FindSCR(uint16_t rca, uint32_t *pscr) {
 // stm32f4
 
 #define STM32F4_SD_SECTOR_SIZE 512
-#define STM32F4_SD_TIMEOUT 5000000
 #define TOTAL_SDCARD_CONTROLLERS 1
-
-static TinyCLR_Storage_Controller sdCardControllers[TOTAL_SDCARD_CONTROLLERS];
-static TinyCLR_Api_Info sdCardApi[TOTAL_SDCARD_CONTROLLERS];
 
 struct SdCardState {
     int32_t controllerIndex;
@@ -2616,6 +2670,10 @@ struct SdCardState {
     uint16_t initializeCount;
 };
 
+static SdCardState sdCardStates[TOTAL_SDCARD_CONTROLLERS];
+static TinyCLR_Storage_Controller sdCardControllers[TOTAL_SDCARD_CONTROLLERS];
+static TinyCLR_Api_Info sdCardApi[TOTAL_SDCARD_CONTROLLERS];
+
 #define SDCARD_DATA0_PIN 0
 #define SDCARD_DATA1_PIN 1
 #define SDCARD_DATA2_PIN 2
@@ -2624,8 +2682,6 @@ struct SdCardState {
 #define SDCARD_CMD_PIN 5
 
 static const STM32F4_Gpio_Pin sdCardPins[][6] = STM32F4_SD_PINS;
-
-static SdCardState sdCardStates[TOTAL_SDCARD_CONTROLLERS];
 
 const char* sdCardApiNames[TOTAL_SDCARD_CONTROLLERS] = {
     "GHIElectronics.TinyCLR.NativeApis.STM32F4.SdCardStorageController\\0"
@@ -2657,6 +2713,7 @@ void STM32F4_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
         sdCardStates[i].initializeCount = 0;
         sdCardStates[i].regionSizes = nullptr;
         sdCardStates[i].regionAddresses = nullptr;
+        sdTimeoutTicks = SDCARD_DEFAULT_TIMEOUT_IN_SYSTEM_TICKS;
 
         apiManager->Add(apiManager, &sdCardApi[i]);
     }
@@ -2761,7 +2818,7 @@ TinyCLR_Result STM32F4_SdCard_Release(const TinyCLR_Storage_Controller* self) {
 TinyCLR_Result STM32F4_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
     int32_t index = 0;
 
-    int32_t to;
+    sdTimeoutTicks = timeout;
 
     auto sectorCount = count / STM32F4_SD_SECTOR_SIZE;
     auto sectorNum = address / STM32F4_SD_SECTOR_SIZE;
@@ -2770,25 +2827,24 @@ TinyCLR_Result STM32F4_SdCard_Write(const TinyCLR_Storage_Controller* self, uint
 
     uint8_t* pData = (uint8_t*)data;
 
+    uint64_t currentTime = STM32F4_Time_GetCurrentProcessorTime();
+
     while (sectorCount) {
-        to = timeout;
+        if (SD_GetStatus() == SD_TRANSFER_OK) {
+            if (SD_WriteBlock(&pData[index], sectorNum * STM32F4_SD_SECTOR_SIZE, STM32F4_SD_SECTOR_SIZE) == SD_OK) {
+                index += STM32F4_SD_SECTOR_SIZE;
+                sectorNum++;
+                sectorCount--;
 
-        while (SD_GetStatus() != SD_TRANSFER_OK && to--) {
-            STM32F4_Time_Delay(nullptr, 1);
+                currentTime = STM32F4_Time_GetCurrentProcessorTime();
+            }
+            else {
+                SD_StopTransfer();
+            }
         }
 
-        if (to > 0 && SD_WriteBlock(&pData[index], sectorNum * STM32F4_SD_SECTOR_SIZE, STM32F4_SD_SECTOR_SIZE) == SD_OK) {
-            index += STM32F4_SD_SECTOR_SIZE;
-            sectorNum++;
-            sectorCount--;
-        }
-        else {
-            SD_StopTransfer();
-        }
-
-        if (!to) {
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > timeout)
             return TinyCLR_Result::TimedOut;
-        }
     }
 
     return TinyCLR_Result::Success;
@@ -2797,33 +2853,31 @@ TinyCLR_Result STM32F4_SdCard_Write(const TinyCLR_Storage_Controller* self, uint
 TinyCLR_Result STM32F4_SdCard_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
     int32_t index = 0;
 
-    int32_t to;
+    sdTimeoutTicks = timeout;
 
     auto sectorCount = count / STM32F4_SD_SECTOR_SIZE;
     auto sectorNum = address / STM32F4_SD_SECTOR_SIZE;
 
     if (count % STM32F4_SD_SECTOR_SIZE > 0) sectorCount++;
 
+    uint64_t currentTime = STM32F4_Time_GetCurrentProcessorTime();
+
     while (sectorCount) {
-        to = timeout;
+        if (SD_GetStatus() == SD_TRANSFER_OK) {
+            if (SD_ReadBlock(&data[index], sectorNum * STM32F4_SD_SECTOR_SIZE, STM32F4_SD_SECTOR_SIZE) == SD_OK) {
+                index += STM32F4_SD_SECTOR_SIZE;
+                sectorNum++;
+                sectorCount--;
 
-        while (SD_GetStatus() != SD_TRANSFER_OK && to--) {
-            STM32F4_Time_Delay(nullptr, 1);
+                currentTime = STM32F4_Time_GetCurrentProcessorTime();
+            }
+            else {
+                SD_StopTransfer();
+            }
         }
 
-        if (to > 0 && SD_ReadBlock(&data[index], sectorNum * STM32F4_SD_SECTOR_SIZE, STM32F4_SD_SECTOR_SIZE) == SD_OK) {
-
-            index += STM32F4_SD_SECTOR_SIZE;
-            sectorNum++;
-            sectorCount--;
-        }
-        else {
-            SD_StopTransfer();
-        }
-
-        if (!to) {
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > timeout)
             return TinyCLR_Result::TimedOut;
-        }
     }
 
     return TinyCLR_Result::Success;
