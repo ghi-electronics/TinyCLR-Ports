@@ -2657,9 +2657,7 @@ static SD_Error FindSCR(uint16_t rca, uint32_t *pscr) {
 // stm32f4
 
 #define STM32F4_SD_SECTOR_SIZE 512
-
 #define TOTAL_SDCARD_CONTROLLERS 1
-#define DEFAULT_SDCARD_CONTROLLERS 0
 
 struct SdCardState {
     int32_t controllerIndex;
