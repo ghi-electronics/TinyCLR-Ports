@@ -1874,7 +1874,7 @@ SD_Error SD_ReadBlock(uint8_t *readbuff, uint32_t ReadAddr, uint16_t BlockSize) 
         }
 
         if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
-            break;
+            return(SD_DATA_TIMEOUT);
     }
 
     if (SDIO_GetFlagStatus(SDIO_FLAG_DTIMEOUT) != RESET) {
@@ -1990,7 +1990,7 @@ SD_Error SD_WriteBlock(uint8_t *writebuff, uint32_t WriteAddr, uint16_t BlockSiz
         }
 
         if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
-            break;
+            return(SD_DATA_TIMEOUT);
 
     }
     if (SDIO_GetFlagStatus(SDIO_FLAG_DTIMEOUT) != RESET) {
@@ -2134,7 +2134,7 @@ SD_Error SD_SendSDStatus(uint32_t *psdstatus) {
         }
 
         if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
-            break;
+            return(SD_DATA_TIMEOUT);
     }
 
     if (SDIO_GetFlagStatus(SDIO_FLAG_DTIMEOUT) != RESET) {
@@ -2209,8 +2209,9 @@ static SD_Error CmdResp7Error(void) {
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT))) {
         status = SDIO->STA;
 
-        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
-            break;
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks) {
+            return(SD_CMD_RSP_TIMEOUT);
+		}
     }
 
     if ((timeout == 0) || (status & SDIO_FLAG_CTIMEOUT)) {
@@ -2247,7 +2248,7 @@ static SD_Error CmdResp1Error(uint8_t cmd) {
         status = SDIO->STA;
 
         if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
-            break;
+            return(SD_CMD_RSP_TIMEOUT);
     }
 
     if (status & SDIO_FLAG_CTIMEOUT) {
@@ -2372,7 +2373,7 @@ static SD_Error CmdResp3Error(void) {
         status = SDIO->STA;
 
         if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
-            break;
+            return(SD_CMD_RSP_TIMEOUT);
     }
 
     if (status & SDIO_FLAG_CTIMEOUT) {
@@ -2403,7 +2404,7 @@ static SD_Error CmdResp2Error(void) {
         status = SDIO->STA;
 
         if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
-            break;
+            return(SD_CMD_RSP_TIMEOUT);
     }
 
     if (status & SDIO_FLAG_CTIMEOUT) {
@@ -2444,7 +2445,7 @@ static SD_Error CmdResp6Error(uint8_t cmd, uint16_t *prca) {
         status = SDIO->STA;
 
         if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
-            break;
+            return(SD_CMD_RSP_TIMEOUT);
     }
 
     if (status & SDIO_FLAG_CTIMEOUT) {
@@ -2623,7 +2624,7 @@ static SD_Error FindSCR(uint16_t rca, uint32_t *pscr) {
         }
 
         if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
-            break;
+            return(SD_DATA_TIMEOUT);
     }
 
     if (SDIO_GetFlagStatus(SDIO_FLAG_DTIMEOUT) != RESET) {
