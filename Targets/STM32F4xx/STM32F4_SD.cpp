@@ -20,24 +20,8 @@
 
 // 5 seconds default from user.
 #define STM32F4_SD_DEFAULT_TIMEOUT (5 * 1000 * 10000) // ticks
-#define TOTAL_SDCARD_CONTROLLERS 1
-#define DEFAULT_SDCARD_CONTROLLERS 0
 
-struct SdCardState {
-    int32_t controllerIndex;
-
-    uint64_t *regionAddresses;
-    size_t  *regionSizes;
-
-    TinyCLR_Storage_Descriptor descriptor;
-
-    uint16_t initializeCount;
-    static uint64_t timeoutTicks;
-};
-
-uint64_t SdCardState::timeoutTicks = STM32F4_SD_DEFAULT_TIMEOUT;
-
-static SdCardState sdCardStates[TOTAL_SDCARD_CONTROLLERS];
+uint64_t sdTimeoutTicks = STM32F4_SD_DEFAULT_TIMEOUT;
 
 // sdio
 // Set SD timeout -1, timeout config by software
@@ -1889,7 +1873,7 @@ SD_Error SD_ReadBlock(uint8_t *readbuff, uint32_t ReadAddr, uint16_t BlockSize) 
             tempbuff += 8;
         }
 
-        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > SdCardState::timeoutTicks)
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
             break;
     }
 
@@ -2005,7 +1989,7 @@ SD_Error SD_WriteBlock(uint8_t *writebuff, uint32_t WriteAddr, uint16_t BlockSiz
             }
         }
 
-        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > SdCardState::timeoutTicks)
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
             break;
 
     }
@@ -2149,7 +2133,7 @@ SD_Error SD_SendSDStatus(uint32_t *psdstatus) {
             psdstatus += 8;
         }
 
-        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > SdCardState::timeoutTicks)
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
             break;
     }
 
@@ -2225,7 +2209,7 @@ static SD_Error CmdResp7Error(void) {
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT))) {
         status = SDIO->STA;
 
-        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > SdCardState::timeoutTicks)
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
             break;
     }
 
@@ -2262,7 +2246,7 @@ static SD_Error CmdResp1Error(uint8_t cmd) {
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT))) {
         status = SDIO->STA;
 
-        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > SdCardState::timeoutTicks)
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
             break;
     }
 
@@ -2387,7 +2371,7 @@ static SD_Error CmdResp3Error(void) {
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CMDREND | SDIO_FLAG_CTIMEOUT))) {
         status = SDIO->STA;
 
-        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > SdCardState::timeoutTicks)
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
             break;
     }
 
@@ -2418,7 +2402,7 @@ static SD_Error CmdResp2Error(void) {
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CTIMEOUT | SDIO_FLAG_CMDREND))) {
         status = SDIO->STA;
 
-        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > SdCardState::timeoutTicks)
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
             break;
     }
 
@@ -2459,7 +2443,7 @@ static SD_Error CmdResp6Error(uint8_t cmd, uint16_t *prca) {
     while (!(status & (SDIO_FLAG_CCRCFAIL | SDIO_FLAG_CTIMEOUT | SDIO_FLAG_CMDREND))) {
         status = SDIO->STA;
 
-        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > SdCardState::timeoutTicks)
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
             break;
     }
 
@@ -2638,7 +2622,7 @@ static SD_Error FindSCR(uint16_t rca, uint32_t *pscr) {
             index++;
         }
 
-        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > SdCardState::timeoutTicks)
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
             break;
     }
 
@@ -2673,6 +2657,21 @@ static SD_Error FindSCR(uint16_t rca, uint32_t *pscr) {
 
 #define STM32F4_SD_SECTOR_SIZE 512
 
+#define TOTAL_SDCARD_CONTROLLERS 1
+#define DEFAULT_SDCARD_CONTROLLERS 0
+
+struct SdCardState {
+    int32_t controllerIndex;
+
+    uint64_t *regionAddresses;
+    size_t  *regionSizes;
+
+    TinyCLR_Storage_Descriptor descriptor;
+
+    uint16_t initializeCount;
+};
+
+static SdCardState sdCardStates[TOTAL_SDCARD_CONTROLLERS];
 static TinyCLR_Storage_Controller sdCardControllers[TOTAL_SDCARD_CONTROLLERS];
 static TinyCLR_Api_Info sdCardApi[TOTAL_SDCARD_CONTROLLERS];
 
@@ -2715,7 +2714,7 @@ void STM32F4_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
         sdCardStates[i].initializeCount = 0;
         sdCardStates[i].regionSizes = nullptr;
         sdCardStates[i].regionAddresses = nullptr;
-        sdCardStates[i].timeoutTicks = STM32F4_SD_DEFAULT_TIMEOUT;
+        sdTimeoutTicks = STM32F4_SD_DEFAULT_TIMEOUT;
 
         apiManager->Add(apiManager, &sdCardApi[i]);
     }
@@ -2820,7 +2819,7 @@ TinyCLR_Result STM32F4_SdCard_Release(const TinyCLR_Storage_Controller* self) {
 TinyCLR_Result STM32F4_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
     int32_t index = 0;
 
-    SdCardState::timeoutTicks = timeout;
+    sdTimeoutTicks = timeout;
 
     auto sectorCount = count / STM32F4_SD_SECTOR_SIZE;
     auto sectorNum = address / STM32F4_SD_SECTOR_SIZE;
@@ -2845,7 +2844,7 @@ TinyCLR_Result STM32F4_SdCard_Write(const TinyCLR_Storage_Controller* self, uint
             }
         }
 
-        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > SdCardState::timeoutTicks)
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > timeout)
             return TinyCLR_Result::TimedOut;
     }
 
@@ -2855,7 +2854,7 @@ TinyCLR_Result STM32F4_SdCard_Write(const TinyCLR_Storage_Controller* self, uint
 TinyCLR_Result STM32F4_SdCard_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
     int32_t index = 0;
 
-    SdCardState::timeoutTicks = timeout;
+    sdTimeoutTicks = timeout;
 
     auto sectorCount = count / STM32F4_SD_SECTOR_SIZE;
     auto sectorNum = address / STM32F4_SD_SECTOR_SIZE;
@@ -2878,7 +2877,7 @@ TinyCLR_Result STM32F4_SdCard_Read(const TinyCLR_Storage_Controller* self, uint6
             }
         }
 
-        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > SdCardState::timeoutTicks)
+        if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > timeout)
             return TinyCLR_Result::TimedOut;
     }
 
