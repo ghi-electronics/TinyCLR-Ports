@@ -93,7 +93,7 @@ SET AdditionalIncludes=%AdditionalIncludes% -I"%ScriptRoot%\Devices\%DeviceName%
 SET AdditionalIncludes=%AdditionalIncludes% -I"%ScriptRoot%\Core"
 
 SET AdditionalDefines=%AdditionalDefines% -DGCC
-SET AdditionalCompilerArguments=%AdditionalCompilerArguments% -mstructure-size-boundary=8 -fno-exceptions -ffunction-sections -fdata-sections -fshort-wchar -Wno-invalid-offsetof
+SET AdditionalCompilerArguments=%AdditionalCompilerArguments% -mstructure-size-boundary=8 -fno-exceptions -ffunction-sections -fdata-sections -fshort-wchar
 
 IF "%BuildConfiguration%" == "debug" (
     SET AdditionalDefines=%AdditionalDefines% -DDEBUG -D_DEBUG
@@ -102,7 +102,7 @@ IF "%BuildConfiguration%" == "debug" (
 ) ELSE (
     SET AdditionalDefines=%AdditionalDefines%
     SET AssemblerCompileArguments=%AdditionalAssemblerArguments%
-buil
+
     IF "%OptimizeLevel%" == "-size" (
         SET OptimizeLevel=-Os
     ) ELSE (
