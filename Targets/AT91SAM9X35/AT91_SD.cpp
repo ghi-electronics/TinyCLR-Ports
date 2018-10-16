@@ -19,8 +19,8 @@
 
 #ifdef INCLUDE_SD
 // 5 seconds default from user.
-#define AT91_SD_DEFAULT_TIMEOUT (5 * 1000 * 10000) // ticks
-uint64_t sdTimeoutTicks = AT91_SD_DEFAULT_TIMEOUT;
+#define SDCARD_DEFAULT_TIMEOUT_IN_SYSTEM_TICKS (5 * 1000 * 10000) // ticks
+uint64_t sdTimeoutTicks = SDCARD_DEFAULT_TIMEOUT_IN_SYSTEM_TICKS;
 
 // DMA
 #define MAX_GPDMA_CHANNELS 8
@@ -2407,7 +2407,7 @@ void AT91_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
         sdCardStates[i].pBuffer = nullptr;
         sdCardStates[i].regionAddresses = nullptr;
         sdCardStates[i].regionAddresses = nullptr;
-        sdTimeoutTicks = AT91_SD_DEFAULT_TIMEOUT;
+        sdTimeoutTicks = SDCARD_DEFAULT_TIMEOUT_IN_SYSTEM_TICKS;
 
         apiManager->Add(apiManager, &sdCardApi[i]);
     }

@@ -20,8 +20,8 @@
 #ifdef INCLUDE_SD
 
 // 5 seconds default from user.
-#define LPC17_SD_DEFAULT_TIMEOUT (5 * 1000 * 10000) // ticks
-uint64_t sdTimeoutTicks = LPC17_SD_DEFAULT_TIMEOUT;
+#define SDCARD_DEFAULT_TIMEOUT_IN_SYSTEM_TICKS (5 * 1000 * 10000) // ticks
+uint64_t sdTimeoutTicks = SDCARD_DEFAULT_TIMEOUT_IN_SYSTEM_TICKS;
 //lpc17
 #define MCIPower (*(volatile unsigned long *)0x400C0000)
 #define MCIPower_OFFSET 0x0
@@ -2199,7 +2199,7 @@ void LPC17_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
         sdCardStates[i].initializeCount = 0;
         sdCardStates[i].regionSizes = nullptr;
         sdCardStates[i].regionAddresses = nullptr;
-        sdTimeoutTicks = LPC17_SD_DEFAULT_TIMEOUT;
+        sdTimeoutTicks = SDCARD_DEFAULT_TIMEOUT_IN_SYSTEM_TICKS;
 
         apiManager->Add(apiManager, &sdCardApi[i]);
     }

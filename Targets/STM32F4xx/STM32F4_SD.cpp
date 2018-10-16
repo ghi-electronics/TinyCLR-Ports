@@ -19,9 +19,9 @@
 #ifdef INCLUDE_SD
 
 // 5 seconds default from user.
-#define STM32F4_SD_DEFAULT_TIMEOUT (5 * 1000 * 10000) // ticks
+#define SDCARD_DEFAULT_TIMEOUT_IN_SYSTEM_TICKS (5 * 1000 * 10000) // ticks
 
-uint64_t sdTimeoutTicks = STM32F4_SD_DEFAULT_TIMEOUT;
+uint64_t sdTimeoutTicks = SDCARD_DEFAULT_TIMEOUT_IN_SYSTEM_TICKS;
 
 // sdio
 // Set SD timeout -1, timeout config by software
@@ -2713,7 +2713,7 @@ void STM32F4_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
         sdCardStates[i].initializeCount = 0;
         sdCardStates[i].regionSizes = nullptr;
         sdCardStates[i].regionAddresses = nullptr;
-        sdTimeoutTicks = STM32F4_SD_DEFAULT_TIMEOUT;
+        sdTimeoutTicks = SDCARD_DEFAULT_TIMEOUT_IN_SYSTEM_TICKS;
 
         apiManager->Add(apiManager, &sdCardApi[i]);
     }
