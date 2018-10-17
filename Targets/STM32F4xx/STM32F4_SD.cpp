@@ -2211,7 +2211,7 @@ static SD_Error CmdResp7Error(void) {
 
         if (STM32F4_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks) {
             return(SD_CMD_RSP_TIMEOUT);
-		}
+        }
     }
 
     if ((timeout == 0) || (status & SDIO_FLAG_CTIMEOUT)) {
@@ -2734,8 +2734,6 @@ TinyCLR_Result STM32F4_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
             STM32F4_GpioInternal_ConfigurePin(sdCardPins[controllerIndex][i].number, STM32F4_Gpio_PortMode::AlternateFunction, STM32F4_Gpio_OutputType::PushPull, STM32F4_Gpio_OutputSpeed::High, sdCardPins[controllerIndex][i].number != sdCardPins[controllerIndex][SDCARD_CLK_PIN].number ? STM32F4_Gpio_PullDirection::PullUp : STM32F4_Gpio_PullDirection::None, sdCardPins[controllerIndex][i].alternateFunction);
         }
 
-        RCC->APB2ENR |= (1 << 11);
-
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
         state->regionAddresses = (uint64_t*)memoryProvider->Allocate(memoryProvider, sizeof(uint64_t));
@@ -2762,22 +2760,6 @@ TinyCLR_Result STM32F4_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
 
         state->descriptor.RegionAddresses = reinterpret_cast<const uint64_t*>(state->regionAddresses);
         state->descriptor.RegionSizes = reinterpret_cast<const size_t*>(state->regionSizes);
-
-        SD_DeInit();
-
-        auto trycount = 3;
-    tryinit:
-        if (SD_Init() == SD_OK) {
-            state->initializeCount++;
-
-            return TinyCLR_Result::Success;
-        }
-        else {
-            if (trycount-- > 0)
-                goto tryinit;
-        }
-
-        return TinyCLR_Result::InvalidOperation;
     }
 
     state->initializeCount++;
@@ -2794,10 +2776,6 @@ TinyCLR_Result STM32F4_SdCard_Release(const TinyCLR_Storage_Controller* self) {
 
     if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
-
-        SD_DeInit();
-
-        RCC->APB2ENR &= ~(1 << 11);
 
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
@@ -2905,10 +2883,31 @@ TinyCLR_Result STM32F4_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* se
 }
 
 TinyCLR_Result STM32F4_SdCard_Open(const TinyCLR_Storage_Controller* self) {
-    return TinyCLR_Result::Success;
+    auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
+
+    RCC->APB2ENR |= (1 << 11);
+
+    // Make sure SD is not in Initialized state
+    SD_DeInit();
+
+    auto trycount = 3;
+tryinit:
+    if (SD_Init() == SD_OK) {
+        return TinyCLR_Result::Success;
+    }
+    else {
+        if (trycount-- > 0)
+            goto tryinit;
+    }
+
+    return TinyCLR_Result::InvalidOperation;
 }
 
 TinyCLR_Result STM32F4_SdCard_Close(const TinyCLR_Storage_Controller* self) {
+    SD_DeInit();
+
+    RCC->APB2ENR &= ~(1 << 11);
+
     return TinyCLR_Result::Success;
 }
 
