@@ -2699,8 +2699,6 @@ void STM32F4_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
         sdCardControllers[i].Erase = &STM32F4_SdCard_Erases;
         sdCardControllers[i].IsErased = &STM32F4_SdCard_IsErased;
         sdCardControllers[i].GetDescriptor = &STM32F4_SdCard_GetDescriptor;
-        sdCardControllers[i].IsPresent = &STM32F4_SdCard_IsPresent;
-        sdCardControllers[i].SetPresenceChangedHandler = &STM32F4_SdCard_SetPresenceChangedHandler;
 
         sdCardApi[i].Author = "GHI Electronics, LLC";
         sdCardApi[i].Name = sdCardApiNames[i];
@@ -2907,16 +2905,6 @@ TinyCLR_Result STM32F4_SdCard_Close(const TinyCLR_Storage_Controller* self) {
     SD_DeInit();
 
     RCC->APB2ENR &= ~(1 << 11);
-
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result STM32F4_SdCard_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler) {
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result STM32F4_SdCard_IsPresent(const TinyCLR_Storage_Controller* self, bool& present) {
-    present = true;
 
     return TinyCLR_Result::Success;
 }

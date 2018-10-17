@@ -2392,8 +2392,6 @@ void AT91_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
         sdCardControllers[i].Erase = &AT91_SdCard_Erases;
         sdCardControllers[i].IsErased = &AT91_SdCard_IsErased;
         sdCardControllers[i].GetDescriptor = &AT91_SdCard_GetDescriptor;
-        sdCardControllers[i].IsPresent = &AT91_SdCard_IsPresent;
-        sdCardControllers[i].SetPresenceChangedHandler = &AT91_SdCard_SetPresenceChangedHandler;
 
         sdCardApi[i].Author = "GHI Electronics, LLC";
         sdCardApi[i].Name = sdCardApiNames[i];
@@ -2760,16 +2758,6 @@ TinyCLR_Result AT91_SdCard_Close(const TinyCLR_Storage_Controller* self) {
     pmc.DisablePeriphClock(AT91C_ID_DMAC0); /* Disable clock to the Dma block */
 
     AT91_InterruptInternal_Deactivate(AT91C_ID_HSMCI0); /* Disable Interrupt */
-
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result AT91_SdCard_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler) {
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result AT91_SdCard_IsPresent(const TinyCLR_Storage_Controller* self, bool& present) {
-    present = true;
 
     return TinyCLR_Result::Success;
 }

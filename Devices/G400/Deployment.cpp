@@ -56,8 +56,6 @@ void AT91_Deployment_EnsureTableInitialized() {
         deploymentControllers[i].Erase = &AT91_Deployment_Erase;
         deploymentControllers[i].IsErased = &AT91_Deployment_IsErased;
         deploymentControllers[i].GetDescriptor = &AT91_Deployment_GetDescriptor;
-        deploymentControllers[i].IsPresent = &AT91_Deployment_IsPresent;
-        deploymentControllers[i].SetPresenceChangedHandler = &AT91_Deployment_SetPresenceChangedHandler;
 
         deploymentApi[i].Author = "GHI Electronics, LLC";
         deploymentApi[i].Name = deploymentApiNames[i];
@@ -186,15 +184,6 @@ TinyCLR_Result AT91_Deployment_IsErased(const TinyCLR_Storage_Controller* self, 
 
 TinyCLR_Result AT91_Deployment_GetBytesPerSector(const TinyCLR_Storage_Controller* self, uint32_t address, int32_t& size) {
     return AT45DB321D_Flash_GetBytesPerSector(address, size);
-}
-
-TinyCLR_Result AT91_Deployment_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler) {
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result AT91_Deployment_IsPresent(const TinyCLR_Storage_Controller* self, bool& present) {
-    present = true;
-    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_Deployment_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor) {

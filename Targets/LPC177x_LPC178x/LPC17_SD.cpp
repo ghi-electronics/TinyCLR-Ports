@@ -2185,8 +2185,6 @@ void LPC17_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
         sdCardControllers[i].Erase = &LPC17_SdCard_Erases;
         sdCardControllers[i].IsErased = &LPC17_SdCard_IsErased;
         sdCardControllers[i].GetDescriptor = &LPC17_SdCard_GetDescriptor;
-        sdCardControllers[i].IsPresent = &LPC17_SdCard_IsPresent;
-        sdCardControllers[i].SetPresenceChangedHandler = &LPC17_SdCard_SetPresenceChangedHandler;
 
         sdCardApi[i].Author = "GHI Electronics, LLC";
         sdCardApi[i].Name = sdCardApiNames[i];
@@ -2393,16 +2391,6 @@ TinyCLR_Result LPC17_SdCard_Close(const TinyCLR_Storage_Controller* self) {
     LPC_SC->PCONP &= ~(1 << 29); /* Disable clock to the Dma block */
 
     LPC17_InterruptInternal_Deactivate(DMA_IRQn); /* Disable Interrupt */
-
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result LPC17_SdCard_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler) {
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result LPC17_SdCard_IsPresent(const TinyCLR_Storage_Controller* self, bool& present) {
-    present = true;
 
     return TinyCLR_Result::Success;
 }

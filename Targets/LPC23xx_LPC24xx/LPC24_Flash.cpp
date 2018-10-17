@@ -77,8 +77,6 @@ void LPC24_Deployment_EnsureTableInitialized() {
         deploymentControllers[i].Erase = &LPC24_Deployment_Erase;
         deploymentControllers[i].IsErased = &LPC24_Deployment_IsErased;
         deploymentControllers[i].GetDescriptor = &LPC24_Deployment_GetDescriptor;
-        deploymentControllers[i].IsPresent = &LPC24_Deployment_IsPresent;
-        deploymentControllers[i].SetPresenceChangedHandler = &LPC24_Deployment_SetPresenceChangedHandler;
 
         deploymentApi[i].Author = "GHI Electronics, LLC";
         deploymentApi[i].Name = flashApiNames[i];
@@ -381,15 +379,6 @@ TinyCLR_Result LPC24_Deployment_Close(const TinyCLR_Storage_Controller* self) {
 
     state->isOpened = false;
 
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result LPC24_Deployment_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler) {
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result LPC24_Deployment_IsPresent(const TinyCLR_Storage_Controller* self, bool& present) {
-    present = true;
     return TinyCLR_Result::Success;
 }
 

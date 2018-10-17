@@ -681,8 +681,6 @@ TinyCLR_Result AT91_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64_
 TinyCLR_Result AT91_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t count, bool& erased);
 TinyCLR_Result AT91_SdCard_Erases(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout);
 TinyCLR_Result AT91_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor);
-TinyCLR_Result AT91_SdCard_IsPresent(const TinyCLR_Storage_Controller* self, bool& present);
-TinyCLR_Result AT91_SdCard_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler);
 TinyCLR_Result AT91_SdCard_Open(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result AT91_SdCard_Close(const TinyCLR_Storage_Controller* self);
 
@@ -1003,8 +1001,6 @@ TinyCLR_Result AT91_Deployment_Erase(const TinyCLR_Storage_Controller* self, uin
 TinyCLR_Result AT91_Deployment_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t count, bool& erased);
 TinyCLR_Result AT91_Deployment_GetBytesPerSector(const TinyCLR_Storage_Controller* self, uint32_t address, int32_t& size);
 TinyCLR_Result AT91_Deployment_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor);
-TinyCLR_Result AT91_Deployment_IsPresent(const TinyCLR_Storage_Controller* self, bool& present);
-TinyCLR_Result AT91_Deployment_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler);
 TinyCLR_Result AT91_Deployment_Open(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result AT91_Deployment_Close(const TinyCLR_Storage_Controller* self);
 

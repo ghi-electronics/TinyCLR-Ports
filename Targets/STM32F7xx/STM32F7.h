@@ -39,8 +39,6 @@ TinyCLR_Result STM32F7_Flash_Write(const TinyCLR_Storage_Controller* self, uint6
 TinyCLR_Result STM32F7_Flash_Erase(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout);
 TinyCLR_Result STM32F7_Flash_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t count, bool& erased);
 TinyCLR_Result STM32F7_Flash_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor);
-TinyCLR_Result STM32F7_Flash_IsPresent(const TinyCLR_Storage_Controller* self, bool& present);
-TinyCLR_Result STM32F7_Flash_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler);
 TinyCLR_Result STM32F7_Flash_Open(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result STM32F7_Flash_Close(const TinyCLR_Storage_Controller* self);
 const TinyCLR_Startup_DeploymentConfiguration* STM32F7_Flash_GetDeploymentConfiguration();
@@ -283,8 +281,6 @@ TinyCLR_Result STM32F7_SdCard_Erases(const TinyCLR_Storage_Controller* self, uin
 TinyCLR_Result STM32F7_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor);
 TinyCLR_Result STM32F7_SdCard_Open(const TinyCLR_Storage_Controller* self);
 TinyCLR_Result STM32F7_SdCard_Close(const TinyCLR_Storage_Controller* self);
-TinyCLR_Result STM32F7_SdCard_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler);
-TinyCLR_Result STM32F7_SdCard_IsPresent(const TinyCLR_Storage_Controller* self, bool& present);
 
 TinyCLR_Result STM32F7_SdCard_Reset();
 

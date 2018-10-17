@@ -80,8 +80,6 @@ void STM32F4_Flash_EnsureTableInitialized() {
         deploymentControllers[i].Erase = &STM32F4_Flash_Erase;
         deploymentControllers[i].IsErased = &STM32F4_Flash_IsErased;
         deploymentControllers[i].GetDescriptor = &STM32F4_Flash_GetDescriptor;
-        deploymentControllers[i].IsPresent = &STM32F4_Flash_IsPresent;
-        deploymentControllers[i].SetPresenceChangedHandler = &STM32F4_Flash_SetPresenceChangedHandler;
 
         deploymentApi[i].Author = "GHI Electronics, LLC";
         deploymentApi[i].Name = flashApiNames[i];
@@ -301,15 +299,6 @@ size_t STM32F4_Flash_GetSectorSizeFormAddress(const TinyCLR_Storage_Controller* 
     }
 
     return -1;
-}
-
-TinyCLR_Result STM32F4_Flash_SetPresenceChangedHandler(const TinyCLR_Storage_Controller* self, TinyCLR_Storage_PresenceChangedHandler handler) {
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result STM32F4_Flash_IsPresent(const TinyCLR_Storage_Controller* self, bool& present) {
-    present = true;
-    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Flash_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& storageDescriptor) {

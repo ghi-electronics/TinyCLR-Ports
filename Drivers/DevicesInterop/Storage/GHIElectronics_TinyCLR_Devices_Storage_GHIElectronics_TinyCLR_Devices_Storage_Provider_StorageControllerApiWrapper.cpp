@@ -1,24 +1,6 @@
 #include "GHIElectronics_TinyCLR_Devices_Storage.h"
 #include "../GHIElectronics_TinyCLR_InteropUtil.h"
 
-static void TinyCLR_Storage_PresenceChangedIsr(const TinyCLR_Storage_Controller* self, bool present, uint64_t timestamp) {
-    extern const TinyCLR_Api_Manager* apiManager;
-    auto interopManager = reinterpret_cast<const TinyCLR_Interop_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::InteropManager));
-
-    if (interopManager != nullptr)
-        interopManager->RaiseEvent(interopManager, "GHIElectronics.TinyCLR.NativeEventNames.Storage.PresenceChanged", self->ApiInfo->Name, (uint64_t)present, 0, 0, 0, timestamp);
-}
-
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper::get_IsPresent___BOOLEAN(const TinyCLR_Interop_MethodData md) {
-    auto api = reinterpret_cast<const TinyCLR_Storage_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
-
-    TinyCLR_Interop_ClrValue ret;
-
-    md.InteropManager->GetReturn(md.InteropManager, md.Stack, ret);
-
-    return api->IsPresent(api, ret.Data.Numeric->Boolean);
-}
-
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper::get_Descriptor___GHIElectronicsTinyCLRDevicesStorageStorageDescriptor(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Storage_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
@@ -187,12 +169,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_Tin
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper::Acquire___VOID(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Storage_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
-    auto res = api->Acquire(api);
-
-    if (res == TinyCLR_Result::Success)
-        res = api->SetPresenceChangedHandler(api, TinyCLR_Storage_PresenceChangedIsr);
-
-    return res;
+    return api->Acquire(api);
 }
 
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper::Release___VOID(const TinyCLR_Interop_MethodData md) {

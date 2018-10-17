@@ -2,18 +2,10 @@
 
 #include <TinyCLR.h>
 
-struct Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_PresenceChangedEventArgs {
-    static const size_t FIELD___Present__BackingField___BOOLEAN = 1;
-    static const size_t FIELD___Timestamp__BackingField___mscorlibSystemDateTime = 2;
-};
-
 struct Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper {
     static const size_t FIELD___impl___I = 1;
-    static const size_t FIELD___presenceChangedDispatcher___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeNativeEventDispatcher = 2;
-    static const size_t FIELD___Api__BackingField___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeApi = 3;
-    static const size_t FIELD___PresenceChanged___GHIElectronicsTinyCLRDevicesStoragePresenceChangedEventHandler = 4;
+    static const size_t FIELD___Api__BackingField___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeApi = 2;
 
-    static TinyCLR_Result get_IsPresent___BOOLEAN(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result get_Descriptor___GHIElectronicsTinyCLRDevicesStorageStorageDescriptor(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Open___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Close___VOID(const TinyCLR_Interop_MethodData md);
@@ -27,7 +19,6 @@ struct Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Dev
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_StorageController {
     static const size_t FIELD___Provider__BackingField___GHIElectronicsTinyCLRDevicesStorageProviderIStorageControllerProvider = 1;
-    static const size_t FIELD___PresenceChanged___GHIElectronicsTinyCLRDevicesStoragePresenceChangedEventHandler = 2;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_StorageDescriptor {
