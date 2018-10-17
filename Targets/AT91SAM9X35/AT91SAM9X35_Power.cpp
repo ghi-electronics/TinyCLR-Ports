@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "AT91.h"
+#include "AT91SAM9X35.h"
 
 #define TOTAL_POWER_CONTROLLERS 1
 
@@ -26,23 +26,23 @@ struct PowerState {
 };
 
 const char* powerApiNames[TOTAL_POWER_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.AT91.PowerController\\0"
+    "GHIElectronics.TinyCLR.NativeApis.AT91SAM9X35.PowerController\\0"
 };
 
 static TinyCLR_Power_Controller powerControllers[TOTAL_POWER_CONTROLLERS];
 static TinyCLR_Api_Info powerApi[TOTAL_POWER_CONTROLLERS];
 static PowerState powerStates[TOTAL_POWER_CONTROLLERS];
 
-void AT91_Power_EnsureTableInitialized() {
+void AT91SAM9X35_Power_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_POWER_CONTROLLERS; i++) {
         if (powerStates[i].tableInitialized)
             continue;
 
         powerControllers[i].ApiInfo = &powerApi[i];
-        powerControllers[i].Initialize = &AT91_Power_Initialize;
-        powerControllers[i].Uninitialize = &AT91_Power_Uninitialize;
-        powerControllers[i].Reset = &AT91_Power_Reset;
-        powerControllers[i].SetLevel = &AT91_Power_SetLevel;
+        powerControllers[i].Initialize = &AT91SAM9X35_Power_Initialize;
+        powerControllers[i].Uninitialize = &AT91SAM9X35_Power_Uninitialize;
+        powerControllers[i].Reset = &AT91SAM9X35_Power_Reset;
+        powerControllers[i].SetLevel = &AT91SAM9X35_Power_SetLevel;
 
         powerApi[i].Author = "GHI Electronics, LLC";
         powerApi[i].Name = powerApiNames[i];
@@ -56,14 +56,14 @@ void AT91_Power_EnsureTableInitialized() {
     }
 }
 
-const TinyCLR_Api_Info* AT91_Power_GetRequiredApi() {
-    AT91_Power_EnsureTableInitialized();
+const TinyCLR_Api_Info* AT91SAM9X35_Power_GetRequiredApi() {
+    AT91SAM9X35_Power_EnsureTableInitialized();
 
     return &powerApi[0];
 }
 
-void AT91_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
-    AT91_Power_EnsureTableInitialized();
+void AT91SAM9X35_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    AT91SAM9X35_Power_EnsureTableInitialized();
 
     for (auto i = 0; i < TOTAL_POWER_CONTROLLERS; i++) {
         apiManager->Add(apiManager, &powerApi[i]);
@@ -72,12 +72,12 @@ void AT91_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
     apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::PowerController, powerApi[0].Name);
 }
 
-void AT91_Power_SetHandlers(void(*stop)(), void(*restart)()) {
+void AT91SAM9X35_Power_SetHandlers(void(*stop)(), void(*restart)()) {
     PowerStopHandler = stop;
     PowerRestartHandler = restart;
 }
 
-TinyCLR_Result AT91_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCLR_Power_Level level, TinyCLR_Power_WakeSource wakeSource, uint64_t data) {
+TinyCLR_Result AT91SAM9X35_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCLR_Power_Level level, TinyCLR_Power_WakeSource wakeSource, uint64_t data) {
     volatile uint32_t reg = 0;
 
     switch (level) {
@@ -108,7 +108,7 @@ TinyCLR_Result AT91_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCLR
     }
 }
 
-TinyCLR_Result AT91_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {
+TinyCLR_Result AT91SAM9X35_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {
 #if defined RAM_BOOTLOADER_HOLD_VALUE && defined RAM_BOOTLOADER_HOLD_ADDRESS && RAM_BOOTLOADER_HOLD_ADDRESS > 0
     if (!runCoreAfter) {
         //See section 1.9 of UM10211.pdf. A write-back buffer holds the last written value. Two writes guarantee it'll appear after a reset.
@@ -128,10 +128,10 @@ TinyCLR_Result AT91_Power_Reset(const TinyCLR_Power_Controller* self, bool runCo
     return TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result AT91_Power_Initialize(const TinyCLR_Power_Controller* self) {
+TinyCLR_Result AT91SAM9X35_Power_Initialize(const TinyCLR_Power_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Power_Uninitialize(const TinyCLR_Power_Controller* self) {
+TinyCLR_Result AT91SAM9X35_Power_Uninitialize(const TinyCLR_Power_Controller* self) {
     return TinyCLR_Result::Success;
 }

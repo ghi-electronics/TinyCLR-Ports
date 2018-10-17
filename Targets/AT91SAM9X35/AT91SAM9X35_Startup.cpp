@@ -18,41 +18,41 @@
 #pragma GCC optimize 0
 #endif
 
-#include "AT91.h"
+#include "AT91SAM9X35.h"
 
-void AT91_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider) {
+void AT91SAM9X35_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider) {
 #ifdef INCLUDE_ADC
-    AT91_Adc_Reset();
+    AT91SAM9X35_Adc_Reset();
 #endif
 #ifdef INCLUDE_CAN
-    AT91_Can_Reset();
+    AT91SAM9X35_Can_Reset();
 #endif
 #ifdef INCLUDE_DAC
-    AT91_Dac_Reset();
+    AT91SAM9X35_Dac_Reset();
 #endif
 #ifdef INCLUDE_DISPLAY
-    AT91_Display_Reset();
+    AT91SAM9X35_Display_Reset();
 #endif
 #ifdef INCLUDE_GPIO
-    AT91_Gpio_Reset();
+    AT91SAM9X35_Gpio_Reset();
 #endif
 #ifdef INCLUDE_I2C
-    AT91_I2c_Reset();
+    AT91SAM9X35_I2c_Reset();
 #endif
 #ifdef INCLUDE_PWM
-    AT91_Pwm_Reset();
+    AT91SAM9X35_Pwm_Reset();
 #endif
 #ifdef INCLUDE_SD
-    AT91_SdCard_Reset();
+    AT91SAM9X35_SdCard_Reset();
 #endif
 #ifdef INCLUDE_SPI
-    AT91_Spi_Reset();
+    AT91SAM9X35_Spi_Reset();
 #endif
 #ifdef INCLUDE_UART
-    AT91_Uart_Reset();
+    AT91SAM9X35_Uart_Reset();
 #endif
 #ifdef INCLUDE_USBCLIENT
-    AT91_UsbDevice_Reset();
+    AT91SAM9X35_UsbDevice_Reset();
 #endif
 }
 
@@ -90,13 +90,13 @@ extern "C" {
 extern "C" {
     void __section("SectionForBootstrapOperations") SystemInit() {
 
-        AT91_CPU_BootstrapCode();
+        AT91SAM9X35_CPU_BootstrapCode();
 
-        AT91_MMU_Initialize();
+        AT91SAM9X35_MMU_Initialize();
 
-        AT91_Cache_EnableCaches();
+        AT91SAM9X35_Cache_EnableCaches();
 
-        AT91_WATCHDOG &g_WDT = AT91::WTDG();
+        AT91SAM9X35_WATCHDOG &g_WDT = AT91::WTDG();
 
         g_WDT.WTDG_MR |= 1 << 15;  // Disable watchdog
 
@@ -151,12 +151,12 @@ static void __section("SectionForBootstrapOperations") Prepare_Zero(uint32_t* ds
     }
 }
 
-void AT91_Startup_GetHeap(uint8_t*& start, size_t& length) {
+void AT91SAM9X35_Startup_GetHeap(uint8_t*& start, size_t& length) {
     start = (uint8_t*)&HeapBegin;
     length = (size_t)(((int)&HeapEnd) - ((int)&HeapBegin));
 }
 
-void AT91_Startup_Initialize() {
+void AT91SAM9X35_Startup_Initialize() {
     //
     // Copy RAM RO regions into proper location.
     //
@@ -210,7 +210,7 @@ void AT91_Startup_Initialize() {
 
 }
 
-const TinyCLR_Startup_UsbDebuggerConfiguration AT91_Startup_UsbDebuggerConfiguration = {
+const TinyCLR_Startup_UsbDebuggerConfiguration AT91SAM9X35_Startup_UsbDebuggerConfiguration = {
     USB_DEBUGGER_VENDOR_ID,
     USB_DEBUGGER_PRODUCT_ID,
     CONCAT(L,DEVICE_MANUFACTURER),
@@ -218,10 +218,10 @@ const TinyCLR_Startup_UsbDebuggerConfiguration AT91_Startup_UsbDebuggerConfigura
     0
 };
 
-void AT91_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration) {
+void AT91SAM9X35_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(AT91_Gpio_GetRequiredApi()->Implementation);
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(AT91SAM9X35_Gpio_GetRequiredApi()->Implementation);
 
     provider->OpenPin(provider, DEBUGGER_SELECTOR_PIN);
     provider->SetDriveMode(provider, DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
@@ -229,11 +229,11 @@ void AT91_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const vo
     provider->ClosePin(provider, DEBUGGER_SELECTOR_PIN);
 
     if (value == DEBUGGER_SELECTOR_USB_STATE) {
-        api = AT91_UsbDevice_GetRequiredApi();
-        configuration = (const void*)&AT91_Startup_UsbDebuggerConfiguration;
+        api = AT91SAM9X35_UsbDevice_GetRequiredApi();
+        configuration = (const void*)&AT91SAM9X35_Startup_UsbDebuggerConfiguration;
     }
     else {
-        api = AT91_Uart_GetRequiredApi();
+        api = AT91SAM9X35_Uart_GetRequiredApi();
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;
@@ -243,10 +243,10 @@ void AT91_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const vo
 #endif
 }
 
-void AT91_Startup_GetRunApp(bool& runApp) {
+void AT91SAM9X35_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(AT91_Gpio_GetRequiredApi()->Implementation);
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(AT91SAM9X35_Gpio_GetRequiredApi()->Implementation);
 
     provider->OpenPin(provider, RUN_APP_PIN);
     provider->SetDriveMode(provider, RUN_APP_PIN, RUN_APP_PULL);
@@ -261,6 +261,6 @@ void AT91_Startup_GetRunApp(bool& runApp) {
 #endif
 }
 
-void AT91_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
-    AT91_Deployment_GetDeploymentApi(api, configuration);
+void AT91SAM9X35_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
+    AT91SAM9X35_Deployment_GetDeploymentApi(api, configuration);
 }

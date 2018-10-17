@@ -13,9 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "AT91.h"
+#include "AT91SAM9X35.h"
 
-void AT91_Cache_FlushCaches() {
+void AT91SAM9X35_Cache_FlushCaches() {
     uint32_t reg = 0;
 #ifdef __GNUC__
     asm("MCR p15, 0, %0, c7,  c6, 0" :: "r" (reg));
@@ -34,7 +34,7 @@ void AT91_Cache_FlushCaches() {
     //  bne tci_loop
 }
 
-void AT91_Cache_DrainWriteBuffers() {
+void AT91SAM9X35_Cache_DrainWriteBuffers() {
     uint32_t  reg = 0;
 
 #ifdef __GNUC__
@@ -47,7 +47,7 @@ void AT91_Cache_DrainWriteBuffers() {
 #endif
 }
 
-void AT91_Cache_InvalidateCaches() {
+void AT91SAM9X35_Cache_InvalidateCaches() {
     uint32_t reg = 0;
 
 #ifdef __GNUC__
@@ -60,10 +60,10 @@ void AT91_Cache_InvalidateCaches() {
 #endif
 }
 
-void AT91_Cache_EnableCaches() {
+void AT91SAM9X35_Cache_EnableCaches() {
     uint32_t reg;
 
-    AT91_Cache_InvalidateCaches();
+    AT91SAM9X35_Cache_InvalidateCaches();
 
 #ifdef __GNUC__
     asm("MRC p15, 0, %0, c1, c0, 0" : "=r" (reg));
@@ -81,7 +81,7 @@ void AT91_Cache_EnableCaches() {
 #endif
 }
 
-void AT91_Cache_DisableCaches() {
+void AT91SAM9X35_Cache_DisableCaches() {
     uint32_t reg;
 
 #ifdef __GNUC__
@@ -99,12 +99,12 @@ void AT91_Cache_DisableCaches() {
     }
 #endif
 
-    AT91_Cache_FlushCaches();
+    AT91SAM9X35_Cache_FlushCaches();
 }
 
 //--//
 
-template <typename T> void AT91_Cache_InvalidateAddress(T* address) {
+template <typename T> void AT91SAM9X35_Cache_InvalidateAddress(T* address) {
     uint32_t reg = 0;
 
 #ifdef __GNUC__
@@ -123,13 +123,13 @@ template <typename T> void AT91_Cache_InvalidateAddress(T* address) {
 
 //--//
 
-size_t AT91_Cache_GetCachableAddress(size_t address) {
+size_t AT91SAM9X35_Cache_GetCachableAddress(size_t address) {
     return address;
 }
 
 //--//
 
-size_t AT91_Cache_GetUncachableAddress(size_t address) {
+size_t AT91SAM9X35_Cache_GetUncachableAddress(size_t address) {
     return address;
 }
 

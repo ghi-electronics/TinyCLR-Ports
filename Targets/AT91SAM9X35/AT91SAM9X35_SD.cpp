@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "AT91.h"
+#include "AT91SAM9X35.h"
 
 #include <string.h>
 
@@ -76,7 +76,7 @@ void DMA_Enable(void);
 **
 ******************************************************************************/
 void DMA_Init(void) {
-    AT91_PMC &pmc = AT91::PMC();
+    AT91SAM9X35_PMC &pmc = AT91::PMC();
     pmc.EnablePeriphClock(AT91C_ID_DMAC0);
 
     DMA_Enable();
@@ -444,7 +444,7 @@ void MCI_Init(Mci *pMci, AT91S_MCI *pMciHw, uint8_t mciId, uint32_t mode) {
     pMci->semaphore = 1;
     pMci->pCommand = 0;
 
-    AT91_PMC &pmc = AT91::PMC();
+    AT91SAM9X35_PMC &pmc = AT91::PMC();
 
     // Enable the MCI clock
     WRITE_PMC(AT91C_BASE_PMC, PMC_PCER, (1 << mciId));
@@ -462,7 +462,7 @@ void MCI_Init(Mci *pMci, AT91S_MCI *pMciHw, uint8_t mciId, uint32_t mode) {
     WRITE_MCI(pMciHw, MCI_DTOR, DTOR_1MEGA_CYCLES);
 
     // Set the Mode Register: 400KHz to init the card
-    clkDiv = (AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / (400000 * 2)) - 1;
+    clkDiv = (AT91SAM9X35_SYSTEM_PERIPHERAL_CLOCK_HZ / (400000 * 2)) - 1;
     WRITE_MCI(pMciHw, MCI_MR, (clkDiv | (AT91C_MCI_PWSDIV & (0x7 << 8))));
 
     // Set the SDCard Register
@@ -489,7 +489,7 @@ void MCI_Close(Mci *pMci) {
     pMci->semaphore = 1;
     pMci->pCommand = 0;
 
-    AT91_PMC &pmc = AT91::PMC();
+    AT91SAM9X35_PMC &pmc = AT91::PMC();
 
     // Disable the MCI peripheral clock.
     WRITE_PMC(AT91C_BASE_PMC, PMC_PCDR, (1 << pMci->mciId));
@@ -515,7 +515,7 @@ void MCI_SetSpeed(Mci *pMci, uint32_t mciSpeed) {
     mciMr = READ_MCI(pMciHw, MCI_MR) & (~AT91C_MCI_CLKDIV);
 
     if (mciSpeed > 0) {
-        clkdiv = (AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / (mciSpeed * 2));
+        clkdiv = (AT91SAM9X35_SYSTEM_PERIPHERAL_CLOCK_HZ / (mciSpeed * 2));
 
         if (clkdiv > 0) {
             clkdiv -= 1;
@@ -575,7 +575,7 @@ void MCI_SendCommand(Mci *pMci, MciCmd *pCommand) {
     pMci->pCommand = pCommand;
     pCommand->status = MCI_STATUS_PENDING;
 
-    AT91_PMC &pmc = AT91::PMC();
+    AT91SAM9X35_PMC &pmc = AT91::PMC();
 
     // Enable Peripheral clock
     WRITE_PMC(AT91C_BASE_PMC, PMC_PCER, (1 << pMci->mciId));
@@ -1165,10 +1165,10 @@ static uint8_t SendCommand(SdCard *pSd) {
     // Send command
     MCI_SendCommand((Mci *)pSdDriver, (MciCmd *)pCommand);
 
-    uint64_t currentTime = AT91_Time_GetCurrentProcessorTime();
+    uint64_t currentTime = AT91SAM9X35_Time_GetCurrentProcessorTime();
     // Wait for command to complete
     while (MCI_IsTxComplete((MciCmd *)pCommand) == false) {
-        if (AT91_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
+        if (AT91SAM9X35_Time_GetCurrentProcessorTime() - currentTime > sdTimeoutTicks)
             break;
     }
 
@@ -1902,7 +1902,7 @@ static uint8_t MoveToTransferState(SdCard *pSd, uint32_t address, uint16_t nbBlo
 
             error = Cmd13(pSd, &status);
 
-            AT91_Time_Delay(nullptr, 1);
+            AT91SAM9X35_Time_Delay(nullptr, 1);
 
             trycnt--;
 
@@ -1923,7 +1923,7 @@ static uint8_t MoveToTransferState(SdCard *pSd, uint32_t address, uint16_t nbBlo
         do {
             error = Cmd13(pSd, &status);
 
-            AT91_Time_Delay(nullptr, 1);
+            AT91SAM9X35_Time_Delay(nullptr, 1);
 
             trycnt--;
 
@@ -1986,7 +1986,7 @@ bool SD_ReadyToTransfer(SdCard *pSd, int32_t timeout) {
     uint32_t status;
 
     while (Cmd13(pSd, &status) && timeout--) {
-        AT91_Time_Delay(nullptr, 1);
+        AT91SAM9X35_Time_Delay(nullptr, 1);
     }
 
     return timeout > 0;
@@ -2344,7 +2344,7 @@ uint8_t SD_Stop(SdCard *pSd, SdDriver *pSdDriver) {
 static TinyCLR_Storage_Controller sdCardControllers[TOTAL_SDCARD_CONTROLLERS];
 static TinyCLR_Api_Info sdCardApi[TOTAL_SDCARD_CONTROLLERS];
 
-#define AT91_SD_SECTOR_SIZE 512
+#define AT91SAM9X35_SD_SECTOR_SIZE 512
 
 struct SdCardState {
     int32_t controllerIndex;
@@ -2366,7 +2366,7 @@ struct SdCardState {
 #define SDCARD_CLK_PIN 4
 #define SDCARD_CMD_PIN 5
 
-static const AT91_Gpio_Pin sdCardPins[][6] = AT91_SD_PINS;
+static const AT91SAM9X35_Gpio_Pin sdCardPins[][6] = AT91SAM9X35_SD_PINS;
 
 static SdCardState sdCardStates[TOTAL_SDCARD_CONTROLLERS];
 
@@ -2377,21 +2377,21 @@ static Mci mciDrv;
 static SdCard sdDrv;
 
 const char* sdCardApiNames[TOTAL_SDCARD_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.AT91.SdCardStorageController\\0"
+    "GHIElectronics.TinyCLR.NativeApis.AT91SAM9X35.SdCardStorageController\\0"
 };
 
-void AT91_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
+void AT91SAM9X35_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
         sdCardControllers[i].ApiInfo = &sdCardApi[i];
-        sdCardControllers[i].Acquire = &AT91_SdCard_Acquire;
-        sdCardControllers[i].Release = &AT91_SdCard_Release;
-        sdCardControllers[i].Open = &AT91_SdCard_Open;
-        sdCardControllers[i].Close = &AT91_SdCard_Close;
-        sdCardControllers[i].Write = &AT91_SdCard_Write;
-        sdCardControllers[i].Read = &AT91_SdCard_Read;
-        sdCardControllers[i].Erase = &AT91_SdCard_Erases;
-        sdCardControllers[i].IsErased = &AT91_SdCard_IsErased;
-        sdCardControllers[i].GetDescriptor = &AT91_SdCard_GetDescriptor;
+        sdCardControllers[i].Acquire = &AT91SAM9X35_SdCard_Acquire;
+        sdCardControllers[i].Release = &AT91SAM9X35_SdCard_Release;
+        sdCardControllers[i].Open = &AT91SAM9X35_SdCard_Open;
+        sdCardControllers[i].Close = &AT91SAM9X35_SdCard_Close;
+        sdCardControllers[i].Write = &AT91SAM9X35_SdCard_Write;
+        sdCardControllers[i].Read = &AT91SAM9X35_SdCard_Read;
+        sdCardControllers[i].Erase = &AT91SAM9X35_SdCard_Erases;
+        sdCardControllers[i].IsErased = &AT91SAM9X35_SdCard_IsErased;
+        sdCardControllers[i].GetDescriptor = &AT91SAM9X35_SdCard_GetDescriptor;
 
         sdCardApi[i].Author = "GHI Electronics, LLC";
         sdCardApi[i].Name = sdCardApiNames[i];
@@ -2412,7 +2412,7 @@ void AT91_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
 
     apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::StorageController, sdCardApi[0].Name);
 }
-TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
+TinyCLR_Result AT91SAM9X35_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
     if (state->initializeCount == 0) {
@@ -2426,19 +2426,19 @@ TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
         auto clk = sdCardPins[controllerIndex][SDCARD_CLK_PIN];
         auto cmd = sdCardPins[controllerIndex][SDCARD_CMD_PIN];
 
-        if (!AT91_GpioInternal_OpenMultiPins(sdCardPins[controllerIndex], 6))
+        if (!AT91SAM9X35_GpioInternal_OpenMultiPins(sdCardPins[controllerIndex], 6))
             return TinyCLR_Result::SharingViolation;
 
-        AT91_GpioInternal_ConfigurePin(d0.number, AT91_Gpio_Direction::Input, d0.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
-        AT91_GpioInternal_ConfigurePin(d1.number, AT91_Gpio_Direction::Input, d1.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
-        AT91_GpioInternal_ConfigurePin(d2.number, AT91_Gpio_Direction::Input, d2.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
-        AT91_GpioInternal_ConfigurePin(d3.number, AT91_Gpio_Direction::Input, d3.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
-        AT91_GpioInternal_ConfigurePin(clk.number, AT91_Gpio_Direction::Input, clk.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-        AT91_GpioInternal_ConfigurePin(cmd.number, AT91_Gpio_Direction::Input, cmd.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
+        AT91SAM9X35_GpioInternal_ConfigurePin(d0.number, AT91SAM9X35_Gpio_Direction::Input, d0.peripheralSelection, AT91SAM9X35_Gpio_ResistorMode::PullUp);
+        AT91SAM9X35_GpioInternal_ConfigurePin(d1.number, AT91SAM9X35_Gpio_Direction::Input, d1.peripheralSelection, AT91SAM9X35_Gpio_ResistorMode::PullUp);
+        AT91SAM9X35_GpioInternal_ConfigurePin(d2.number, AT91SAM9X35_Gpio_Direction::Input, d2.peripheralSelection, AT91SAM9X35_Gpio_ResistorMode::PullUp);
+        AT91SAM9X35_GpioInternal_ConfigurePin(d3.number, AT91SAM9X35_Gpio_Direction::Input, d3.peripheralSelection, AT91SAM9X35_Gpio_ResistorMode::PullUp);
+        AT91SAM9X35_GpioInternal_ConfigurePin(clk.number, AT91SAM9X35_Gpio_Direction::Input, clk.peripheralSelection, AT91SAM9X35_Gpio_ResistorMode::Inactive);
+        AT91SAM9X35_GpioInternal_ConfigurePin(cmd.number, AT91SAM9X35_Gpio_Direction::Input, cmd.peripheralSelection, AT91SAM9X35_Gpio_ResistorMode::PullUp);
 
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-        state->pBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, AT91_SD_SECTOR_SIZE + 8);
+        state->pBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, AT91SAM9X35_SD_SECTOR_SIZE + 8);
 
         if (state->pBuffer == nullptr) {
             return TinyCLR_Result::OutOfMemory;
@@ -2485,7 +2485,7 @@ TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_SdCard_Release(const TinyCLR_Storage_Controller* self) {
+TinyCLR_Result AT91SAM9X35_SdCard_Release(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
     if (state->initializeCount == 0) return TinyCLR_Result::InvalidOperation;
@@ -2513,25 +2513,25 @@ TinyCLR_Result AT91_SdCard_Release(const TinyCLR_Storage_Controller* self) {
         if (state->regionAddresses != nullptr)
             memoryProvider->Free(memoryProvider, state->regionAddresses);
 
-        AT91_GpioInternal_ClosePin(d0.number);
-        AT91_GpioInternal_ClosePin(d1.number);
-        AT91_GpioInternal_ClosePin(d2.number);
-        AT91_GpioInternal_ClosePin(d3.number);
-        AT91_GpioInternal_ClosePin(clk.number);
-        AT91_GpioInternal_ClosePin(cmd.number);
+        AT91SAM9X35_GpioInternal_ClosePin(d0.number);
+        AT91SAM9X35_GpioInternal_ClosePin(d1.number);
+        AT91SAM9X35_GpioInternal_ClosePin(d2.number);
+        AT91SAM9X35_GpioInternal_ClosePin(d3.number);
+        AT91SAM9X35_GpioInternal_ClosePin(clk.number);
+        AT91SAM9X35_GpioInternal_ClosePin(cmd.number);
     }
 
     return TinyCLR_Result::Success;
 
 }
 
-TinyCLR_Result AT91_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
-    auto sectorCount = count / AT91_SD_SECTOR_SIZE;
-    auto sectorNum = address / AT91_SD_SECTOR_SIZE;
+TinyCLR_Result AT91SAM9X35_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
+    auto sectorCount = count / AT91SAM9X35_SD_SECTOR_SIZE;
+    auto sectorNum = address / AT91SAM9X35_SD_SECTOR_SIZE;
 
     sdTimeoutTicks = timeout;
 
-    if (count % AT91_SD_SECTOR_SIZE > 0) sectorCount++;
+    if (count % AT91SAM9X35_SD_SECTOR_SIZE > 0) sectorCount++;
 
     SdCard *pSd = &sdDrv;
 
@@ -2549,45 +2549,45 @@ TinyCLR_Result AT91_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64_
 
     auto controllerIndex = state->controllerIndex;
 
-    uint64_t currentTime = AT91_Time_GetCurrentProcessorTime();
+    uint64_t currentTime = AT91SAM9X35_Time_GetCurrentProcessorTime();
 
     while (sectorCount > 0) {
-        memcpy(state->pBufferAligned, pData, AT91_SD_SECTOR_SIZE);
+        memcpy(state->pBufferAligned, pData, AT91SAM9X35_SD_SECTOR_SIZE);
 
-        AT91_Cache_DisableCaches();
+        AT91SAM9X35_Cache_DisableCaches();
 
-        currentTime = AT91_Time_GetCurrentProcessorTime();
+        currentTime = AT91SAM9X35_Time_GetCurrentProcessorTime();
 
         while (SD_ReadyToTransfer(pSd, timeout) == false) {
-            if (AT91_Time_GetCurrentProcessorTime() - currentTime > timeout) {
-                AT91_Cache_EnableCaches(); // since cache was disable, need enable back
+            if (AT91SAM9X35_Time_GetCurrentProcessorTime() - currentTime > timeout) {
+                AT91SAM9X35_Cache_EnableCaches(); // since cache was disable, need enable back
 
                 return TinyCLR_Result::TimedOut;
             }
         }
 
         if ((error = SD_WriteBlock(&sdDrv, sectorNum, 1, state->pBufferAligned, timeout)) == SD_ERROR_NO_ERROR) {
-            currentTime = AT91_Time_GetCurrentProcessorTime();
+            currentTime = AT91SAM9X35_Time_GetCurrentProcessorTime();
 
             while ((((status & AT91C_MCI_DMADONE) != AT91C_MCI_DMADONE) || ((status & AT91C_MCI_XFRDONE) != AT91C_MCI_XFRDONE) || ((status & AT91C_MCI_BLKE) != AT91C_MCI_BLKE))) {
-                AT91_Time_Delay(nullptr, 1);
+                AT91SAM9X35_Time_Delay(nullptr, 1);
                 status |= READ_MCI(pMciHw, MCI_SR);
 
-                if (AT91_Time_GetCurrentProcessorTime() - currentTime > timeout) {
-                    AT91_Cache_EnableCaches(); // since cache was disable, need enable back
+                if (AT91SAM9X35_Time_GetCurrentProcessorTime() - currentTime > timeout) {
+                    AT91SAM9X35_Cache_EnableCaches(); // since cache was disable, need enable back
 
                     return TinyCLR_Result::TimedOut;
                 }
             }
         }
 
-        AT91_Cache_EnableCaches();
+        AT91SAM9X35_Cache_EnableCaches();
 
         if (error) {
             return TinyCLR_Result::InvalidOperation;
         }
 
-        pData += AT91_SD_SECTOR_SIZE;
+        pData += AT91SAM9X35_SD_SECTOR_SIZE;
         sectorNum++;
         sectorCount--;
     }
@@ -2595,13 +2595,13 @@ TinyCLR_Result AT91_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64_
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_SdCard_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
-    auto sectorCount = count / AT91_SD_SECTOR_SIZE;
-    auto sectorNum = address / AT91_SD_SECTOR_SIZE;
+TinyCLR_Result AT91SAM9X35_SdCard_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
+    auto sectorCount = count / AT91SAM9X35_SD_SECTOR_SIZE;
+    auto sectorNum = address / AT91SAM9X35_SD_SECTOR_SIZE;
 
     sdTimeoutTicks = timeout;
 
-    if (count % AT91_SD_SECTOR_SIZE > 0) sectorCount++;
+    if (count % AT91SAM9X35_SD_SECTOR_SIZE > 0) sectorCount++;
 
     SdCard *pSd = &sdDrv;
 
@@ -2619,18 +2619,18 @@ TinyCLR_Result AT91_SdCard_Read(const TinyCLR_Storage_Controller* self, uint64_t
 
     auto controllerIndex = state->controllerIndex;
 
-    uint64_t currentTime = AT91_Time_GetCurrentProcessorTime();
+    uint64_t currentTime = AT91SAM9X35_Time_GetCurrentProcessorTime();
 
     while (sectorCount > 0) {
-        memset(state->pBufferAligned, 0, AT91_SD_SECTOR_SIZE);
+        memset(state->pBufferAligned, 0, AT91SAM9X35_SD_SECTOR_SIZE);
 
-        AT91_Cache_DisableCaches();
+        AT91SAM9X35_Cache_DisableCaches();
 
-        currentTime = AT91_Time_GetCurrentProcessorTime();
+        currentTime = AT91SAM9X35_Time_GetCurrentProcessorTime();
 
         while (SD_ReadyToTransfer(pSd, timeout) == false) {
-            if (AT91_Time_GetCurrentProcessorTime() - currentTime > timeout) {
-                AT91_Cache_EnableCaches(); // since cache was disable, need enable back
+            if (AT91SAM9X35_Time_GetCurrentProcessorTime() - currentTime > timeout) {
+                AT91SAM9X35_Cache_EnableCaches(); // since cache was disable, need enable back
 
                 return TinyCLR_Result::TimedOut;
             }
@@ -2639,30 +2639,30 @@ TinyCLR_Result AT91_SdCard_Read(const TinyCLR_Storage_Controller* self, uint64_t
         status = 0;
 
         if ((error = SD_ReadBlock(&sdDrv, sectorNum, 1, state->pBufferAligned, timeout)) == SD_ERROR_NO_ERROR) {
-            currentTime = AT91_Time_GetCurrentProcessorTime();
+            currentTime = AT91SAM9X35_Time_GetCurrentProcessorTime();
 
             while ((((status & AT91C_MCI_DMADONE) != AT91C_MCI_DMADONE) || ((status & AT91C_MCI_XFRDONE) != AT91C_MCI_XFRDONE))) {
-                AT91_Time_Delay(nullptr, 1);
+                AT91SAM9X35_Time_Delay(nullptr, 1);
 
                 status |= READ_MCI(pMciHw, MCI_SR);
 
-                if (AT91_Time_GetCurrentProcessorTime() - currentTime > timeout) {
-                    AT91_Cache_EnableCaches(); // since cache was disable, need enable back
+                if (AT91SAM9X35_Time_GetCurrentProcessorTime() - currentTime > timeout) {
+                    AT91SAM9X35_Cache_EnableCaches(); // since cache was disable, need enable back
 
                     return TinyCLR_Result::TimedOut;
                 }
             }
         }
 
-        AT91_Cache_EnableCaches();
+        AT91SAM9X35_Cache_EnableCaches();
 
         if (error) {
             return TinyCLR_Result::InvalidOperation;
         }
 
-        memcpy(pData, state->pBufferAligned, AT91_SD_SECTOR_SIZE);
+        memcpy(pData, state->pBufferAligned, AT91SAM9X35_SD_SECTOR_SIZE);
 
-        pData += AT91_SD_SECTOR_SIZE;
+        pData += AT91SAM9X35_SD_SECTOR_SIZE;
         sectorNum++;
         sectorCount--;
     }
@@ -2670,17 +2670,17 @@ TinyCLR_Result AT91_SdCard_Read(const TinyCLR_Storage_Controller* self, uint64_t
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t count, bool& erased) {
+TinyCLR_Result AT91SAM9X35_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t count, bool& erased) {
     erased = true;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_SdCard_Erases(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout) {
+TinyCLR_Result AT91SAM9X35_SdCard_Erases(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor) {
+TinyCLR_Result AT91SAM9X35_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
 
@@ -2723,16 +2723,16 @@ TinyCLR_Result AT91_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* self,
         MemCapacity = (uint64_t)(C_SIZE + 1) * 512 * 1024;
     }
 
-    state->regionSizes[0] = AT91_SD_SECTOR_SIZE;
-    state->descriptor.RegionCount = MemCapacity / AT91_SD_SECTOR_SIZE;
+    state->regionSizes[0] = AT91SAM9X35_SD_SECTOR_SIZE;
+    state->descriptor.RegionCount = MemCapacity / AT91SAM9X35_SD_SECTOR_SIZE;
 
     descriptor = reinterpret_cast<const TinyCLR_Storage_Descriptor*>(&state->descriptor);
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_SdCard_Open(const TinyCLR_Storage_Controller* self) {
-    AT91_PMC &pmc = AT91::PMC();
+TinyCLR_Result AT91SAM9X35_SdCard_Open(const TinyCLR_Storage_Controller* self) {
+    AT91SAM9X35_PMC &pmc = AT91::PMC();
 
     pmc.EnablePeriphClock(AT91C_ID_HSMCI0);
 
@@ -2740,7 +2740,7 @@ TinyCLR_Result AT91_SdCard_Open(const TinyCLR_Storage_Controller* self) {
 
     MCI_Init(&mciDrv, (AT91PS_MCI)AT91C_BASE_MCI, AT91C_ID_HSMCI0, MCI_SD_SLOTA);
 
-    AT91_InterruptInternal_Activate(AT91C_ID_HSMCI0, (uint32_t*)&MCI_Handler, (void*)&mciDrv);
+    AT91SAM9X35_InterruptInternal_Activate(AT91C_ID_HSMCI0, (uint32_t*)&MCI_Handler, (void*)&mciDrv);
 
     if (SD_Init(&sdDrv, (SdDriver *)&mciDrv) != SD_ERROR_NO_ERROR) {
         return TinyCLR_Result::InvalidOperation;
@@ -2751,21 +2751,21 @@ TinyCLR_Result AT91_SdCard_Open(const TinyCLR_Storage_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_SdCard_Close(const TinyCLR_Storage_Controller* self) {
-    AT91_PMC &pmc = AT91::PMC();
+TinyCLR_Result AT91SAM9X35_SdCard_Close(const TinyCLR_Storage_Controller* self) {
+    AT91SAM9X35_PMC &pmc = AT91::PMC();
 
     pmc.DisablePeriphClock(AT91C_ID_HSMCI0); /* Disable clock to the Mci block */
     pmc.DisablePeriphClock(AT91C_ID_DMAC0); /* Disable clock to the Dma block */
 
-    AT91_InterruptInternal_Deactivate(AT91C_ID_HSMCI0); /* Disable Interrupt */
+    AT91SAM9X35_InterruptInternal_Deactivate(AT91C_ID_HSMCI0); /* Disable Interrupt */
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_SdCard_Reset() {
+TinyCLR_Result AT91SAM9X35_SdCard_Reset() {
     for (auto i = 0; i < TOTAL_SDCARD_CONTROLLERS; i++) {
-        AT91_SdCard_Close(&sdCardControllers[i]);
-        AT91_SdCard_Release(&sdCardControllers[i]);
+        AT91SAM9X35_SdCard_Close(&sdCardControllers[i]);
+        AT91SAM9X35_SdCard_Release(&sdCardControllers[i]);
 
         sdCardStates[i].initializeCount = 0;
         sdCardStates[i].pBuffer = nullptr;

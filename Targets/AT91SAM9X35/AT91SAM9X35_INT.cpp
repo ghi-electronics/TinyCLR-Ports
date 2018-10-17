@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "AT91.h"
+#include "AT91SAM9X35.h"
 
 #define DISABLED_MASK 0x80
 
@@ -30,15 +30,15 @@ extern "C" {
     void        IRQ_LOCK_Restore_asm();
 }
 
-struct AT91_Interrupt_Vectors {
+struct AT91SAM9X35_Interrupt_Vectors {
     uint32_t                    Priority;
-    AT91_Interrupt_Callback    Handler;
+    AT91SAM9X35_Interrupt_Callback    Handler;
 };
 
 static const uint32_t c_VECTORING_GUARD = 32;
 static const uint32_t c_MaxInterruptIndex = 32;
 
-AT91_Interrupt_Vectors s_IsrTable[] =
+AT91SAM9X35_Interrupt_Vectors s_IsrTable[] =
 {
     DEFINE_IRQ(0,   7),      // Advanced Interrupt Controller
     DEFINE_IRQ(1,   7),      // System Peripherals
@@ -74,8 +74,8 @@ AT91_Interrupt_Vectors s_IsrTable[] =
     DEFINE_IRQ(31,  0),      // Advanced Interrupt Controller
 };
 
-TinyCLR_Interrupt_StartStopHandler AT91_Interrupt_Started;
-TinyCLR_Interrupt_StartStopHandler AT91_Interrupt_Ended;
+TinyCLR_Interrupt_StartStopHandler AT91SAM9X35_Interrupt_Started;
+TinyCLR_Interrupt_StartStopHandler AT91SAM9X35_Interrupt_Ended;
 
 #define TOTAL_INTERRUPT_CONTROLLERS 1
 
@@ -85,25 +85,25 @@ struct InterruptState {
 };
 
 const char* interruptApiNames[TOTAL_INTERRUPT_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.AT91.InterruptController\\0"
+    "GHIElectronics.TinyCLR.NativeApis.AT91SAM9X35.InterruptController\\0"
 };
 
 static TinyCLR_Interrupt_Controller interruptControllers[TOTAL_INTERRUPT_CONTROLLERS];
 static TinyCLR_Api_Info interruptApi[TOTAL_INTERRUPT_CONTROLLERS];
 static InterruptState interruptStates[TOTAL_INTERRUPT_CONTROLLERS];
 
-void AT91_Interrupt_EnsureTableInitialized() {
+void AT91SAM9X35_Interrupt_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
         if (interruptStates[i].tableInitialized)
             continue;
 
         interruptControllers[i].ApiInfo = &interruptApi[i];
-        interruptControllers[i].Initialize = &AT91_Interrupt_Initialize;
-        interruptControllers[i].Uninitialize = &AT91_Interrupt_Uninitialize;
-        interruptControllers[i].Enable = &AT91_Interrupt_Enable;
-        interruptControllers[i].Disable = &AT91_Interrupt_Disable;
-        interruptControllers[i].WaitForInterrupt = &AT91_Interrupt_WaitForInterrupt;
-        interruptControllers[i].IsDisabled = &AT91_Interrupt_IsDisabled;
+        interruptControllers[i].Initialize = &AT91SAM9X35_Interrupt_Initialize;
+        interruptControllers[i].Uninitialize = &AT91SAM9X35_Interrupt_Uninitialize;
+        interruptControllers[i].Enable = &AT91SAM9X35_Interrupt_Enable;
+        interruptControllers[i].Disable = &AT91SAM9X35_Interrupt_Disable;
+        interruptControllers[i].WaitForInterrupt = &AT91SAM9X35_Interrupt_WaitForInterrupt;
+        interruptControllers[i].IsDisabled = &AT91SAM9X35_Interrupt_IsDisabled;
 
         interruptApi[i].Author = "GHI Electronics, LLC";
         interruptApi[i].Name = interruptApiNames[i];
@@ -117,14 +117,14 @@ void AT91_Interrupt_EnsureTableInitialized() {
     }
 }
 
-const TinyCLR_Api_Info* AT91_Interrupt_GetRequiredApi() {
-    AT91_Interrupt_EnsureTableInitialized();
+const TinyCLR_Api_Info* AT91SAM9X35_Interrupt_GetRequiredApi() {
+    AT91SAM9X35_Interrupt_EnsureTableInitialized();
 
     return &interruptApi[0];
 }
 
-void AT91_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager) {
-    AT91_Interrupt_EnsureTableInitialized();
+void AT91SAM9X35_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    AT91SAM9X35_Interrupt_EnsureTableInitialized();
 
     for (auto i = 0; i < TOTAL_INTERRUPT_CONTROLLERS; i++) {
         apiManager->Add(apiManager, &interruptApi[i]);
@@ -134,8 +134,8 @@ void AT91_Interrupt_AddApi(const TinyCLR_Api_Manager* apiManager) {
 }
 
 
-AT91_Interrupt_Vectors* AT91_Interrupt_IrqToVector(uint32_t Irq) {
-    AT91_Interrupt_Vectors* IsrVector = s_IsrTable;
+AT91SAM9X35_Interrupt_Vectors* AT91SAM9X35_Interrupt_IrqToVector(uint32_t Irq) {
+    AT91SAM9X35_Interrupt_Vectors* IsrVector = s_IsrTable;
 
     if (Irq < c_VECTORING_GUARD) {
         return &IsrVector[Irq];
@@ -144,28 +144,28 @@ AT91_Interrupt_Vectors* AT91_Interrupt_IrqToVector(uint32_t Irq) {
     return nullptr;
 }
 
-void AT91_Interrupt_ForceInterrupt(uint32_t Irq_Index) {
-    AT91_AIC &AIC = AT91::AIC();
+void AT91SAM9X35_Interrupt_ForceInterrupt(uint32_t Irq_Index) {
+    AT91SAM9X35_AIC &AIC = AT91::AIC();
 
     AIC.AIC_ISCR = (1 << Irq_Index);
 }
 
-void AT91_Interrupt_RemoveForcedInterrupt(uint32_t Irq_Index) {
-    AT91_AIC &AIC = AT91::AIC();
+void AT91SAM9X35_Interrupt_RemoveForcedInterrupt(uint32_t Irq_Index) {
+    AT91SAM9X35_AIC &AIC = AT91::AIC();
     AIC.AIC_ICCR = (1 << Irq_Index);
 }
 
-void AT91_Interrupt_StubIrqVector(void* Param) {
+void AT91SAM9X35_Interrupt_StubIrqVector(void* Param) {
 
 }
 
-TinyCLR_Result AT91_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
-    AT91_Interrupt_Started = onInterruptStart;
-    AT91_Interrupt_Ended = onInterruptEnd;
+TinyCLR_Result AT91SAM9X35_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* self, TinyCLR_Interrupt_StartStopHandler onInterruptStart, TinyCLR_Interrupt_StartStopHandler onInterruptEnd) {
+    AT91SAM9X35_Interrupt_Started = onInterruptStart;
+    AT91SAM9X35_Interrupt_Ended = onInterruptEnd;
 
-    AT91_AIC &aic = AT91::AIC();
-    aic.AIC_IDCR = AT91_AIC::AIC_IDCR_DIABLE_ALL;           // Disable the interrupt on the interrupt controller
-    aic.AIC_ICCR = AT91_AIC::AIC_ICCR_CLEAR_ALL;            // Clear the interrupt on the Interrupt Controller ( if one is pending )
+    AT91SAM9X35_AIC &aic = AT91::AIC();
+    aic.AIC_IDCR = AT91SAM9X35_AIC::AIC_IDCR_DIABLE_ALL;           // Disable the interrupt on the interrupt controller
+    aic.AIC_ICCR = AT91SAM9X35_AIC::AIC_ICCR_CLEAR_ALL;            // Clear the interrupt on the Interrupt Controller ( if one is pending )
 
     for (int32_t i = 0; i < c_VECTORING_GUARD; ++i) {
         (void)aic.AIC_IVR;
@@ -173,20 +173,20 @@ TinyCLR_Result AT91_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* sel
     }
 
     // set all priorities to the lowest
-    AT91_Interrupt_Vectors* IsrVector = s_IsrTable;
+    AT91SAM9X35_Interrupt_Vectors* IsrVector = s_IsrTable;
 
     // set the priority level for each IRQ and stub the IRQ callback
     for (int32_t i = 0; i < c_VECTORING_GUARD; i++) {
         aic.AIC_SVR[i] = (uint32_t)i;
 
         if (i == AT91C_ID_TC0_TC1) {
-            aic.AIC_SMR[i] = AT91_AIC::AIC_SRCTYPE_INT_POSITIVE_EDGE;
+            aic.AIC_SMR[i] = AT91SAM9X35_AIC::AIC_SRCTYPE_INT_POSITIVE_EDGE;
         }
 
-        aic.AIC_SMR[i] &= ~AT91_AIC::AIC_PRIOR;
+        aic.AIC_SMR[i] &= ~AT91SAM9X35_AIC::AIC_PRIOR;
         aic.AIC_SMR[i] |= IsrVector[i].Priority;
 
-        IsrVector[i].Handler.Initialize((uint32_t*)&AT91_Interrupt_StubIrqVector, (void*)(size_t)IsrVector[i].Priority);
+        IsrVector[i].Handler.Initialize((uint32_t*)&AT91SAM9X35_Interrupt_StubIrqVector, (void*)(size_t)IsrVector[i].Priority);
     }
 
     // Set Spurious interrupt vector
@@ -196,18 +196,18 @@ TinyCLR_Result AT91_Interrupt_Initialize(const TinyCLR_Interrupt_Controller* sel
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self) {
+TinyCLR_Result AT91SAM9X35_Interrupt_Uninitialize(const TinyCLR_Interrupt_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-bool AT91_InterruptInternal_Activate(uint32_t Irq_Index, uint32_t *ISR, void* ISR_Param) {
+bool AT91SAM9X35_InterruptInternal_Activate(uint32_t Irq_Index, uint32_t *ISR, void* ISR_Param) {
     // figure out the interrupt
-    AT91_Interrupt_Vectors* IsrVector = AT91_Interrupt_IrqToVector(Irq_Index);
+    AT91SAM9X35_Interrupt_Vectors* IsrVector = AT91SAM9X35_Interrupt_IrqToVector(Irq_Index);
 
     if (!IsrVector)
         return false;
 
-    AT91_AIC &aic = AT91::AIC();
+    AT91SAM9X35_AIC &aic = AT91::AIC();
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -227,16 +227,16 @@ bool AT91_InterruptInternal_Activate(uint32_t Irq_Index, uint32_t *ISR, void* IS
 
 }
 
-bool AT91_InterruptInternal_Deactivate(uint32_t Irq_Index) {
+bool AT91SAM9X35_InterruptInternal_Deactivate(uint32_t Irq_Index) {
     // figure out the interrupt
-    AT91_Interrupt_Vectors* IsrVector = 0; //IRQToIRQVector( Irq_Index );
+    AT91SAM9X35_Interrupt_Vectors* IsrVector = 0; //IRQToIRQVector( Irq_Index );
 
     if (!IsrVector)
         return false;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    AT91_AIC &aic = AT91::AIC();
+    AT91SAM9X35_AIC &aic = AT91::AIC();
 
     // Clear the interrupt on the Interrupt Controller ( if one is pending )
     aic.AIC_ICCR = (1 << Irq_Index);
@@ -245,18 +245,18 @@ bool AT91_InterruptInternal_Deactivate(uint32_t Irq_Index) {
     aic.AIC_IDCR = (1 << Irq_Index);
 
     // as it is stub, just put the Priority to the ISR parameter
-    IsrVector->Handler.Initialize((uint32_t*)&AT91_Interrupt_StubIrqVector, (void*)(size_t)IsrVector->Priority);
+    IsrVector->Handler.Initialize((uint32_t*)&AT91SAM9X35_Interrupt_StubIrqVector, (void*)(size_t)IsrVector->Priority);
 
     return true;
 }
 
-AT91_InterruptStarted_RaiiHelper::AT91_InterruptStarted_RaiiHelper() { AT91_Interrupt_Started(); };
-AT91_InterruptStarted_RaiiHelper::~AT91_InterruptStarted_RaiiHelper() { AT91_Interrupt_Ended(); };
+AT91SAM9X35_InterruptStarted_RaiiHelper::AT91SAM9X35_InterruptStarted_RaiiHelper() { AT91SAM9X35_Interrupt_Started(); };
+AT91SAM9X35_InterruptStarted_RaiiHelper::~AT91SAM9X35_InterruptStarted_RaiiHelper() { AT91SAM9X35_Interrupt_Ended(); };
 
-AT91_DisableInterrupts_RaiiHelper::AT91_DisableInterrupts_RaiiHelper() {
+AT91SAM9X35_DisableInterrupts_RaiiHelper::AT91SAM9X35_DisableInterrupts_RaiiHelper() {
     state = IRQ_LOCK_Disable_asm();
 }
-AT91_DisableInterrupts_RaiiHelper::~AT91_DisableInterrupts_RaiiHelper() {
+AT91SAM9X35_DisableInterrupts_RaiiHelper::~AT91SAM9X35_DisableInterrupts_RaiiHelper() {
     uint32_t Cp = state;
 
     if ((Cp & DISABLED_MASK) == 0) {
@@ -264,11 +264,11 @@ AT91_DisableInterrupts_RaiiHelper::~AT91_DisableInterrupts_RaiiHelper() {
     }
 }
 
-bool AT91_DisableInterrupts_RaiiHelper::IsDisabled() {
+bool AT91SAM9X35_DisableInterrupts_RaiiHelper::IsDisabled() {
     return (state & DISABLED_MASK) == DISABLED_MASK;
 }
 
-void AT91_DisableInterrupts_RaiiHelper::Acquire() {
+void AT91SAM9X35_DisableInterrupts_RaiiHelper::Acquire() {
     uint32_t Cp = state;
 
     if ((Cp & DISABLED_MASK) == DISABLED_MASK) {
@@ -276,7 +276,7 @@ void AT91_DisableInterrupts_RaiiHelper::Acquire() {
     }
 }
 
-void AT91_DisableInterrupts_RaiiHelper::Release() {
+void AT91SAM9X35_DisableInterrupts_RaiiHelper::Release() {
     uint32_t Cp = state;
 
     if ((Cp & DISABLED_MASK) == 0) {
@@ -287,24 +287,24 @@ void AT91_DisableInterrupts_RaiiHelper::Release() {
 //////////////////////////////////////////////////////////////////////////////
 //Global Interrupt - Use in System Cote
 //////////////////////////////////////////////////////////////////////////////
-bool AT91_Interrupt_IsDisabled() {
+bool AT91SAM9X35_Interrupt_IsDisabled() {
     return ((IRQ_LOCK_GetState_asm() & DISABLED_MASK) == 0);
 }
 
-void AT91_Interrupt_Enable() {
+void AT91SAM9X35_Interrupt_Enable() {
     IRQ_LOCK_Release_asm();
 }
 
-void AT91_Interrupt_Disable() {
+void AT91SAM9X35_Interrupt_Disable() {
     IRQ_LOCK_Disable_asm();
 }
 
-void AT91_Interrupt_WaitForInterrupt() {
+void AT91SAM9X35_Interrupt_WaitForInterrupt() {
     IRQ_LOCK_Probe_asm();
 }
 
 extern "C" {
-    void AT91_Interrupt_UndefHandler(unsigned int*, unsigned int, unsigned int) {
+    void AT91SAM9X35_Interrupt_UndefHandler(unsigned int*, unsigned int, unsigned int) {
         volatile uint32_t debug = 0;
 
         while (debug == 0) {
@@ -312,7 +312,7 @@ extern "C" {
         }
     }
 
-    void AT91_Interrupt_AbortpHandler(unsigned int*, unsigned int, unsigned int) {
+    void AT91SAM9X35_Interrupt_AbortpHandler(unsigned int*, unsigned int, unsigned int) {
         volatile uint32_t debug = 0;
 
         while (debug == 0) {
@@ -320,7 +320,7 @@ extern "C" {
         }
     }
 
-    void AT91_Interrupt_AbortdHandler(unsigned int*, unsigned int, unsigned int) {
+    void AT91SAM9X35_Interrupt_AbortdHandler(unsigned int*, unsigned int, unsigned int) {
         volatile uint32_t debug = 0;
         while (debug == 0) {
             debug += debug;
@@ -333,14 +333,14 @@ extern "C" {
 
         uint32_t index;
 
-        AT91_AIC &aic = AT91::AIC();
+        AT91SAM9X35_AIC &aic = AT91::AIC();
 
         while ((index = aic.AIC_IVR) < c_VECTORING_GUARD) {
             // Read IVR register (de-assert NIRQ) & check if we a spurous IRQ
-            AT91_Interrupt_Vectors* IsrVector = &s_IsrTable[index];
+            AT91SAM9X35_Interrupt_Vectors* IsrVector = &s_IsrTable[index];
 
             // In case the interrupt was forced, remove the flag.
-            AT91_Interrupt_RemoveForcedInterrupt(index);
+            AT91SAM9X35_Interrupt_RemoveForcedInterrupt(index);
 
 
             IsrVector->Handler.Execute();

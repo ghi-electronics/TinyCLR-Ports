@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "AT91.h"
+#include "AT91SAM9X35.h"
 
 #define DATA_BIT_LENGTH_16  16
 #define DATA_BIT_LENGTH_8   8
@@ -22,7 +22,7 @@
 #define SPI_MISO_PIN 1
 #define SPI_CLK_PIN  2
 
-static const AT91_Gpio_Pin spiPins[][3] = AT91_SPI_PINS;
+static const AT91SAM9X35_Gpio_Pin spiPins[][3] = AT91SAM9X35_SPI_PINS;
 
 struct SpiState {
     int32_t controllerIndex;
@@ -57,27 +57,27 @@ static TinyCLR_Api_Info spiApi[TOTAL_SPI_CONTROLLERS];
 
 const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = {
 #if TOTAL_SPI_CONTROLLERS > 0
-"GHIElectronics.TinyCLR.NativeApis.AT91.SpiController\\0",
+"GHIElectronics.TinyCLR.NativeApis.AT91SAM9X35.SpiController\\0",
 #if TOTAL_SPI_CONTROLLERS > 1
-"GHIElectronics.TinyCLR.NativeApis.AT91.SpiController\\1",
+"GHIElectronics.TinyCLR.NativeApis.AT91SAM9X35.SpiController\\1",
 #endif
 #endif
 };
 
-void AT91_Spi_EnsureTableInitialized() {
+void AT91SAM9X35_Spi_EnsureTableInitialized() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         if (spiStates[i].tableInitialized)
             continue;
 
         spiControllers[i].ApiInfo = &spiApi[i];
-        spiControllers[i].Acquire = &AT91_Spi_Acquire;
-        spiControllers[i].Release = &AT91_Spi_Release;
-        spiControllers[i].WriteRead = &AT91_Spi_WriteRead;
-        spiControllers[i].SetActiveSettings = &AT91_Spi_SetActiveSettings;
-        spiControllers[i].GetChipSelectLineCount = &AT91_Spi_GetChipSelectLineCount;
-        spiControllers[i].GetMinClockFrequency = &AT91_Spi_GetMinClockFrequency;
-        spiControllers[i].GetMaxClockFrequency = &AT91_Spi_GetMaxClockFrequency;
-        spiControllers[i].GetSupportedDataBitLengths = &AT91_Spi_GetSupportedDataBitLengths;
+        spiControllers[i].Acquire = &AT91SAM9X35_Spi_Acquire;
+        spiControllers[i].Release = &AT91SAM9X35_Spi_Release;
+        spiControllers[i].WriteRead = &AT91SAM9X35_Spi_WriteRead;
+        spiControllers[i].SetActiveSettings = &AT91SAM9X35_Spi_SetActiveSettings;
+        spiControllers[i].GetChipSelectLineCount = &AT91SAM9X35_Spi_GetChipSelectLineCount;
+        spiControllers[i].GetMinClockFrequency = &AT91SAM9X35_Spi_GetMinClockFrequency;
+        spiControllers[i].GetMaxClockFrequency = &AT91SAM9X35_Spi_GetMaxClockFrequency;
+        spiControllers[i].GetSupportedDataBitLengths = &AT91SAM9X35_Spi_GetSupportedDataBitLengths;
 
         spiApi[i].Author = "GHI Electronics, LLC";
         spiApi[i].Name = spiApiNames[i];
@@ -91,58 +91,58 @@ void AT91_Spi_EnsureTableInitialized() {
     }
 }
 
-const TinyCLR_Api_Info* AT91_Spi_GetRequiredApi() {
-    AT91_Spi_EnsureTableInitialized();
+const TinyCLR_Api_Info* AT91SAM9X35_Spi_GetRequiredApi() {
+    AT91SAM9X35_Spi_EnsureTableInitialized();
 
     return &spiApi[0];
 }
 
-void AT91_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
-    AT91_Spi_EnsureTableInitialized();
+void AT91SAM9X35_Spi_AddApi(const TinyCLR_Api_Manager* apiManager) {
+    AT91SAM9X35_Spi_EnsureTableInitialized();
 
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
         apiManager->Add(apiManager, &spiApi[i]);
     }
 }
 
-bool AT91_Spi_Transaction_Start(int32_t controllerIndex) {
+bool AT91SAM9X35_Spi_Transaction_Start(int32_t controllerIndex) {
     auto state = &spiStates[controllerIndex];
 
     if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
-        AT91_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::Low : TinyCLR_Gpio_PinValue::High);
+        AT91SAM9X35_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::Low : TinyCLR_Gpio_PinValue::High);
     }
 
     if (state->chipSelectSetupTime > 0) {
-        auto currentTicks = AT91_Time_GetCurrentProcessorTime();
+        auto currentTicks = AT91SAM9X35_Time_GetCurrentProcessorTime();
 
-        while (AT91_Time_GetCurrentProcessorTime() - currentTicks < state->chipSelectSetupTime);
+        while (AT91SAM9X35_Time_GetCurrentProcessorTime() - currentTicks < state->chipSelectSetupTime);
     }
     else {
-        AT91_Time_Delay(nullptr, ((1000000 / (state->clockFrequency / 1000)) / 1000));
+        AT91SAM9X35_Time_Delay(nullptr, ((1000000 / (state->clockFrequency / 1000)) / 1000));
     }
 
     return true;
 }
 
-bool AT91_Spi_Transaction_Stop(int32_t controllerIndex) {
+bool AT91SAM9X35_Spi_Transaction_Stop(int32_t controllerIndex) {
     auto state = &spiStates[controllerIndex];
 
     if (state->chipSelectHoldTime > 0) {
-        auto currentTicks = AT91_Time_GetCurrentProcessorTime();
+        auto currentTicks = AT91SAM9X35_Time_GetCurrentProcessorTime();
 
-        while (AT91_Time_GetCurrentProcessorTime() - currentTicks < state->chipSelectHoldTime);
+        while (AT91SAM9X35_Time_GetCurrentProcessorTime() - currentTicks < state->chipSelectHoldTime);
     }
     else {
-        AT91_Time_Delay(nullptr, ((1000000 / (state->clockFrequency / 1000)) / 1000));
+        AT91SAM9X35_Time_Delay(nullptr, ((1000000 / (state->clockFrequency / 1000)) / 1000));
     }
     if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
-        AT91_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
+        AT91SAM9X35_Gpio_Write(nullptr, state->chipSelectLine, state->chipSelectActiveState == false ? TinyCLR_Gpio_PinValue::High : TinyCLR_Gpio_PinValue::Low);
     }
 
     return true;
 }
 
-bool AT91_Spi_Transaction_nWrite8_nRead8(int32_t controllerIndex) {
+bool AT91SAM9X35_Spi_Transaction_nWrite8_nRead8(int32_t controllerIndex) {
     uint8_t Data8;
     auto state = &spiStates[controllerIndex];
 
@@ -158,7 +158,7 @@ bool AT91_Spi_Transaction_nWrite8_nRead8(int32_t controllerIndex) {
 
     int32_t loopCnt = ReadTotal;
 
-    AT91_SPI &spi = AT91::SPI(controllerIndex);
+    AT91SAM9X35_SPI &spi = AT91::SPI(controllerIndex);
 
     // take the max of Read+offset or WrCnt
     if (loopCnt < WriteCount)
@@ -197,25 +197,25 @@ bool AT91_Spi_Transaction_nWrite8_nRead8(int32_t controllerIndex) {
     return true;
 }
 
-bool AT91_Spi_Transaction_nWrite16_nRead16(int32_t controllerIndex) {
+bool AT91SAM9X35_Spi_Transaction_nWrite16_nRead16(int32_t controllerIndex) {
     return false;
 }
 
-TinyCLR_Result AT91_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter) {
+TinyCLR_Result AT91SAM9X35_Spi_TransferSequential(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter) {
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
-    if (AT91_Spi_Write(self, writeBuffer, writeLength) != TinyCLR_Result::Success)
+    if (AT91SAM9X35_Spi_Write(self, writeBuffer, writeLength) != TinyCLR_Result::Success)
         return TinyCLR_Result::InvalidOperation;
 
-    return AT91_Spi_Read(self, readBuffer, readLength);
+    return AT91SAM9X35_Spi_Read(self, readBuffer, readLength);
 }
 
-TinyCLR_Result AT91_Spi_WriteRead(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter) {
+TinyCLR_Result AT91SAM9X35_Spi_WriteRead(const TinyCLR_Spi_Controller* self, const uint8_t* writeBuffer, size_t& writeLength, uint8_t* readBuffer, size_t& readLength, bool deselectAfter) {
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
 
-    if (!AT91_Spi_Transaction_Start(controllerIndex))
+    if (!AT91SAM9X35_Spi_Transaction_Start(controllerIndex))
         return TinyCLR_Result::InvalidOperation;
 
     state->readBuffer = readBuffer;
@@ -224,27 +224,27 @@ TinyCLR_Result AT91_Spi_WriteRead(const TinyCLR_Spi_Controller* self, const uint
     state->writeLength = writeLength;
 
     if (state->dataBitLength == DATA_BIT_LENGTH_16) {
-        if (!AT91_Spi_Transaction_nWrite16_nRead16(controllerIndex))
+        if (!AT91SAM9X35_Spi_Transaction_nWrite16_nRead16(controllerIndex))
             return TinyCLR_Result::InvalidOperation;
     }
     else {
-        if (!AT91_Spi_Transaction_nWrite8_nRead8(controllerIndex))
+        if (!AT91SAM9X35_Spi_Transaction_nWrite8_nRead8(controllerIndex))
             return TinyCLR_Result::InvalidOperation;
     }
 
-    if (!AT91_Spi_Transaction_Stop(controllerIndex))
+    if (!AT91SAM9X35_Spi_Transaction_Stop(controllerIndex))
         return TinyCLR_Result::InvalidOperation;
 
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Spi_Read(const TinyCLR_Spi_Controller* self, uint8_t* buffer, size_t& length) {
+TinyCLR_Result AT91SAM9X35_Spi_Read(const TinyCLR_Spi_Controller* self, uint8_t* buffer, size_t& length) {
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
 
-    if (!AT91_Spi_Transaction_Start(controllerIndex))
+    if (!AT91SAM9X35_Spi_Transaction_Start(controllerIndex))
         return TinyCLR_Result::InvalidOperation;
 
     state->readBuffer = buffer;
@@ -253,26 +253,26 @@ TinyCLR_Result AT91_Spi_Read(const TinyCLR_Spi_Controller* self, uint8_t* buffer
     state->writeLength = 0;
 
     if (state->dataBitLength == DATA_BIT_LENGTH_16) {
-        if (!AT91_Spi_Transaction_nWrite16_nRead16(controllerIndex))
+        if (!AT91SAM9X35_Spi_Transaction_nWrite16_nRead16(controllerIndex))
             return TinyCLR_Result::InvalidOperation;
     }
     else {
-        if (!AT91_Spi_Transaction_nWrite8_nRead8(controllerIndex))
+        if (!AT91SAM9X35_Spi_Transaction_nWrite8_nRead8(controllerIndex))
             return TinyCLR_Result::InvalidOperation;
     }
 
-    if (!AT91_Spi_Transaction_Stop(controllerIndex))
+    if (!AT91SAM9X35_Spi_Transaction_Stop(controllerIndex))
         return TinyCLR_Result::InvalidOperation;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8_t* buffer, size_t& length) {
+TinyCLR_Result AT91SAM9X35_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8_t* buffer, size_t& length) {
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
 
-    if (!AT91_Spi_Transaction_Start(controllerIndex))
+    if (!AT91SAM9X35_Spi_Transaction_Start(controllerIndex))
         return TinyCLR_Result::InvalidOperation;
 
     state->readBuffer = nullptr;
@@ -281,21 +281,21 @@ TinyCLR_Result AT91_Spi_Write(const TinyCLR_Spi_Controller* self, const uint8_t*
     state->writeLength = length;
 
     if (state->dataBitLength == DATA_BIT_LENGTH_16) {
-        if (!AT91_Spi_Transaction_nWrite16_nRead16(controllerIndex))
+        if (!AT91SAM9X35_Spi_Transaction_nWrite16_nRead16(controllerIndex))
             return TinyCLR_Result::InvalidOperation;
     }
     else {
-        if (!AT91_Spi_Transaction_nWrite8_nRead8(controllerIndex))
+        if (!AT91SAM9X35_Spi_Transaction_nWrite8_nRead8(controllerIndex))
             return TinyCLR_Result::InvalidOperation;
     }
 
-    if (!AT91_Spi_Transaction_Stop(controllerIndex))
+    if (!AT91SAM9X35_Spi_Transaction_Stop(controllerIndex))
         return TinyCLR_Result::InvalidOperation;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, const TinyCLR_Spi_Settings* settings) {
+TinyCLR_Result AT91SAM9X35_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, const TinyCLR_Spi_Settings* settings) {
     uint32_t chipSelectLine = settings->ChipSelectLine;
     TinyCLR_Spi_ChipSelectType chipSelectType = settings->ChipSelectType;
     uint32_t chipSelectSetupTime = settings->ChipSelectSetupTime;
@@ -328,10 +328,10 @@ TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, co
     state->dataBitLength = dataBitLength;
     state->spiMode = mode;
 
-    AT91_SPI &spi = AT91::SPI(controllerIndex);
+    AT91SAM9X35_SPI &spi = AT91::SPI(controllerIndex);
 
     uint32_t clkPin, misoPin, mosiPin;
-    AT91_Gpio_PeripheralSelection clkMode, misoMode, mosiMode;
+    AT91SAM9X35_Gpio_PeripheralSelection clkMode, misoMode, mosiMode;
 
     clkPin = spiPins[controllerIndex][SPI_CLK_PIN].number;
     misoPin = spiPins[controllerIndex][SPI_MISO_PIN].number;
@@ -341,26 +341,26 @@ TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, co
     misoMode = spiPins[controllerIndex][SPI_MISO_PIN].peripheralSelection;
     mosiMode = spiPins[controllerIndex][SPI_MOSI_PIN].peripheralSelection;
 
-    AT91_GpioInternal_ConfigurePin(clkPin, AT91_Gpio_Direction::Input, clkMode, AT91_Gpio_ResistorMode::Inactive);
-    AT91_GpioInternal_ConfigurePin(misoPin, AT91_Gpio_Direction::Input, misoMode, AT91_Gpio_ResistorMode::Inactive);
-    AT91_GpioInternal_ConfigurePin(mosiPin, AT91_Gpio_Direction::Input, mosiMode, AT91_Gpio_ResistorMode::Inactive);
+    AT91SAM9X35_GpioInternal_ConfigurePin(clkPin, AT91SAM9X35_Gpio_Direction::Input, clkMode, AT91SAM9X35_Gpio_ResistorMode::Inactive);
+    AT91SAM9X35_GpioInternal_ConfigurePin(misoPin, AT91SAM9X35_Gpio_Direction::Input, misoMode, AT91SAM9X35_Gpio_ResistorMode::Inactive);
+    AT91SAM9X35_GpioInternal_ConfigurePin(mosiPin, AT91SAM9X35_Gpio_Direction::Input, mosiMode, AT91SAM9X35_Gpio_ResistorMode::Inactive);
 
     uint32_t CSR = 0;
 
     if (state->dataBitLength == DATA_BIT_LENGTH_16) {
-        CSR |= AT91_SPI::SPI_CSR_16BITS;
+        CSR |= AT91SAM9X35_SPI::SPI_CSR_16BITS;
     }
     else {
-        CSR |= AT91_SPI::SPI_CSR_8BITS;
+        CSR |= AT91SAM9X35_SPI::SPI_CSR_8BITS;
     }
 
     // first build the mode register
-    spi.SPI_MR = AT91_SPI::SPI_MR_MSTR | AT91_SPI::SPI_MR_CS0 | AT91_SPI::SPI_MR_MODFDIS;
+    spi.SPI_MR = AT91SAM9X35_SPI::SPI_MR_MSTR | AT91SAM9X35_SPI::SPI_MR_CS0 | AT91SAM9X35_SPI::SPI_MR_MODFDIS;
 
     switch (state->spiMode) {
 
     case TinyCLR_Spi_Mode::Mode0: // CPOL = 0, CPHA = 0.
-        CSR |= AT91_SPI::SPI_CSR_NCPHA;
+        CSR |= AT91SAM9X35_SPI::SPI_CSR_NCPHA;
         break;
 
     case TinyCLR_Spi_Mode::Mode1: // CPOL = 0, CPHA = 1.
@@ -368,25 +368,25 @@ TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, co
         break;
 
     case TinyCLR_Spi_Mode::Mode2: //  CPOL = 1, CPHA = 0.
-        CSR |= AT91_SPI::SPI_CSR_CPOL | AT91_SPI::SPI_CSR_NCPHA;
+        CSR |= AT91SAM9X35_SPI::SPI_CSR_CPOL | AT91SAM9X35_SPI::SPI_CSR_NCPHA;
         break;
 
     case TinyCLR_Spi_Mode::Mode3: // CPOL = 1, CPHA = 1
-        CSR |= AT91_SPI::SPI_CSR_CPOL;
+        CSR |= AT91SAM9X35_SPI::SPI_CSR_CPOL;
         break;
     }
 
     int32_t clockRateKhz = state->clockFrequency / 1000;
 
-    CSR |= AT91_SPI::ConvertClockRateToDivisor(clockRateKhz) << AT91_SPI::SPI_CSR_SCBR_SHIFT;
+    CSR |= AT91SAM9X35_SPI::ConvertClockRateToDivisor(clockRateKhz) << AT91SAM9X35_SPI::SPI_CSR_SCBR_SHIFT;
 
     spi.SPI_CSR0 = CSR;
 
-    spi.SPI_CR |= AT91_SPI::SPI_CR_ENABLE_SPI;
+    spi.SPI_CR |= AT91SAM9X35_SPI::SPI_CR_ENABLE_SPI;
 
     if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
-        if (AT91_GpioInternal_OpenPin(state->chipSelectLine)) {
-            AT91_GpioInternal_EnableOutputPin(state->chipSelectLine, !state->chipSelectActiveState);
+        if (AT91SAM9X35_GpioInternal_OpenPin(state->chipSelectLine)) {
+            AT91SAM9X35_GpioInternal_EnableOutputPin(state->chipSelectLine, !state->chipSelectActiveState);
         }
         else {
             return TinyCLR_Result::SharingViolation;
@@ -396,12 +396,12 @@ TinyCLR_Result AT91_Spi_SetActiveSettings(const TinyCLR_Spi_Controller* self, co
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
+TinyCLR_Result AT91SAM9X35_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
     uint32_t clkPin, misoPin, mosiPin;
-    AT91_Gpio_PeripheralSelection clkMode, misoMode, mosiMode;
+    AT91SAM9X35_Gpio_PeripheralSelection clkMode, misoMode, mosiMode;
 
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
@@ -417,10 +417,10 @@ TinyCLR_Result AT91_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
         misoMode = spiPins[controllerIndex][SPI_MISO_PIN].peripheralSelection;
         mosiMode = spiPins[controllerIndex][SPI_MOSI_PIN].peripheralSelection;
 
-        AT91_PMC &pmc = AT91::PMC();
+        AT91SAM9X35_PMC &pmc = AT91::PMC();
 
         // Check each pin single time make sure once fail not effect to other pins
-        if (!AT91_GpioInternal_OpenMultiPins(spiPins[controllerIndex], 3))
+        if (!AT91SAM9X35_GpioInternal_OpenMultiPins(spiPins[controllerIndex], 3))
             return TinyCLR_Result::SharingViolation;
 
         switch (controllerIndex) {
@@ -433,9 +433,9 @@ TinyCLR_Result AT91_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
             break;
         }
 
-        AT91_GpioInternal_ConfigurePin(clkPin, AT91_Gpio_Direction::Input, clkMode, AT91_Gpio_ResistorMode::Inactive);
-        AT91_GpioInternal_ConfigurePin(misoPin, AT91_Gpio_Direction::Input, misoMode, AT91_Gpio_ResistorMode::Inactive);
-        AT91_GpioInternal_ConfigurePin(mosiPin, AT91_Gpio_Direction::Input, mosiMode, AT91_Gpio_ResistorMode::Inactive);
+        AT91SAM9X35_GpioInternal_ConfigurePin(clkPin, AT91SAM9X35_Gpio_Direction::Input, clkMode, AT91SAM9X35_Gpio_ResistorMode::Inactive);
+        AT91SAM9X35_GpioInternal_ConfigurePin(misoPin, AT91SAM9X35_Gpio_Direction::Input, misoMode, AT91SAM9X35_Gpio_ResistorMode::Inactive);
+        AT91SAM9X35_GpioInternal_ConfigurePin(mosiPin, AT91SAM9X35_Gpio_Direction::Input, mosiMode, AT91SAM9X35_Gpio_ResistorMode::Inactive);
     }
 
     state->initializeCount++;
@@ -443,11 +443,11 @@ TinyCLR_Result AT91_Spi_Acquire(const TinyCLR_Spi_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Controller* self) {
+TinyCLR_Result AT91SAM9X35_Spi_Release(const TinyCLR_Spi_Controller* self) {
     if (self == nullptr)
         return TinyCLR_Result::ArgumentNull;
 
-    AT91_PMC &pmc = AT91::PMC();
+    AT91SAM9X35_PMC &pmc = AT91::PMC();
 
     auto state = reinterpret_cast<SpiState*>(self->ApiInfo->State);
 
@@ -458,9 +458,9 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Controller* self) {
     if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
 
-        AT91_SPI &spi = AT91::SPI(controllerIndex);
+        AT91SAM9X35_SPI &spi = AT91::SPI(controllerIndex);
         // off SPI module
-        spi.SPI_CR |= AT91_SPI::SPI_CR_DISABLE_SPI;
+        spi.SPI_CR |= AT91SAM9X35_SPI::SPI_CR_DISABLE_SPI;
 
         switch (controllerIndex) {
         case 0:
@@ -479,16 +479,16 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Controller* self) {
         misoPin = spiPins[controllerIndex][SPI_MISO_PIN].number;
         mosiPin = spiPins[controllerIndex][SPI_MOSI_PIN].number;
 
-        AT91_GpioInternal_ClosePin(clkPin);
-        AT91_GpioInternal_ClosePin(misoPin);
-        AT91_GpioInternal_ClosePin(mosiPin);
+        AT91SAM9X35_GpioInternal_ClosePin(clkPin);
+        AT91SAM9X35_GpioInternal_ClosePin(misoPin);
+        AT91SAM9X35_GpioInternal_ClosePin(mosiPin);
 
         if (state->chipSelectType == TinyCLR_Spi_ChipSelectType::Gpio && state->chipSelectLine != PIN_NONE) {
             // Release the pin, set pin un-reserved
-            AT91_GpioInternal_ClosePin(state->chipSelectLine);
+            AT91SAM9X35_GpioInternal_ClosePin(state->chipSelectLine);
 
             // Keep chip select is inactive by internal pull up
-            AT91_GpioInternal_ConfigurePin(state->chipSelectLine, AT91_Gpio_Direction::Input, AT91_Gpio_PeripheralSelection::None, AT91_Gpio_ResistorMode::PullUp);
+            AT91SAM9X35_GpioInternal_ConfigurePin(state->chipSelectLine, AT91SAM9X35_Gpio_Direction::Input, AT91SAM9X35_Gpio_PeripheralSelection::None, AT91SAM9X35_Gpio_ResistorMode::PullUp);
 
             state->chipSelectLine = PIN_NONE;
         }
@@ -500,22 +500,22 @@ TinyCLR_Result AT91_Spi_Release(const TinyCLR_Spi_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-uint32_t AT91_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self) {
-    return AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 255;
+uint32_t AT91SAM9X35_Spi_GetMinClockFrequency(const TinyCLR_Spi_Controller* self) {
+    return AT91SAM9X35_SYSTEM_PERIPHERAL_CLOCK_HZ / 255;
 }
 
-uint32_t AT91_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self) {
-    return AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 1;
+uint32_t AT91SAM9X35_Spi_GetMaxClockFrequency(const TinyCLR_Spi_Controller* self) {
+    return AT91SAM9X35_SYSTEM_PERIPHERAL_CLOCK_HZ / 1;
 }
 
-uint32_t AT91_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self) {
-    return AT91_Gpio_GetPinCount(nullptr);
+uint32_t AT91SAM9X35_Spi_GetChipSelectLineCount(const TinyCLR_Spi_Controller* self) {
+    return AT91SAM9X35_Gpio_GetPinCount(nullptr);
 }
 
 static const int32_t dataBitsCount = 2;
 static int32_t dataBits[dataBitsCount] = { 8, 16 };
 
-TinyCLR_Result AT91_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller* self, uint32_t* dataBitLengths, size_t& dataBitLengthsCount) {
+TinyCLR_Result AT91SAM9X35_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller* self, uint32_t* dataBitLengths, size_t& dataBitLengthsCount) {
     if (dataBitLengths != nullptr)
         memcpy(dataBitLengths, dataBits, (dataBitsCount < dataBitLengthsCount ? dataBitsCount : dataBitLengthsCount) * sizeof(int32_t));
 
@@ -524,9 +524,9 @@ TinyCLR_Result AT91_Spi_GetSupportedDataBitLengths(const TinyCLR_Spi_Controller*
     return TinyCLR_Result::Success;
 }
 
-void AT91_Spi_Reset() {
+void AT91SAM9X35_Spi_Reset() {
     for (auto i = 0; i < TOTAL_SPI_CONTROLLERS; i++) {
-        AT91_Spi_Release(&spiControllers[i]);
+        AT91SAM9X35_Spi_Release(&spiControllers[i]);
 
         spiStates[i].tableInitialized = false;
         spiStates[i].initializeCount = 0;

@@ -22,10 +22,10 @@
     .global  PreStackInit_Exit_Pointer
     .global  PreStackInit
     .global  ARM_Vectors
-    .global AT91_CPU_InvalidateTLBs_asm
-    .global AT91_CPU_EnableMMU_asm
-    .global AT91_CPU_DisableMMU_asm
-    .global AT91_CPU_IsMMUEnabled_asm
+    .global AT91SAM9X35_CPU_InvalidateTLBs_asm
+    .global AT91SAM9X35_CPU_EnableMMU_asm
+    .global AT91SAM9X35_CPU_DisableMMU_asm
+    .global AT91SAM9X35_CPU_IsMMUEnabled_asm
 
     .global IRQ_LOCK_Release_asm
     .global IRQ_LOCK_Probe_asm
@@ -39,9 +39,9 @@
     @ .extern  PreStackInit
 
 
-    .extern AT91_Interrupt_UndefHandler               @ void AT91_Interrupt_UndefHandler  (unsigned int*, unsigned int, unsigned int)
-    .extern AT91_Interrupt_AbortpHandler              @ void AT91_Interrupt_AbortpHandler (unsigned int*, unsigned int, unsigned int)
-    .extern AT91_Interrupt_AbortdHandler              @ void AT91_Interrupt_AbortdHandler (unsigned int*, unsigned int, unsigned int)
+    .extern AT91SAM9X35_Interrupt_UndefHandler               @ void AT91SAM9X35_Interrupt_UndefHandler  (unsigned int*, unsigned int, unsigned int)
+    .extern AT91SAM9X35_Interrupt_AbortpHandler              @ void AT91SAM9X35_Interrupt_AbortpHandler (unsigned int*, unsigned int, unsigned int)
+    .extern AT91SAM9X35_Interrupt_AbortdHandler              @ void AT91SAM9X35_Interrupt_AbortdHandler (unsigned int*, unsigned int, unsigned int)
 
 
 
@@ -95,7 +95,7 @@ HeapEnd:
     .section    SectionForBootstrapOperations, "xa", %progbits
 
 
-AT91_CPU_InvalidateTLBs_asm:
+AT91SAM9X35_CPU_InvalidateTLBs_asm:
     mov		r0, #0
     mcr		p15, 0, r0, c8, c7, 0
     mrc     p15, 0, r1, c2, c0, 0
@@ -105,7 +105,7 @@ AT91_CPU_InvalidateTLBs_asm:
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-AT91_CPU_EnableMMU_asm:
+AT91SAM9X35_CPU_EnableMMU_asm:
     mcr     p15, 0, r0, c2, c0, 0		@ Set the TTB address location to CP15
     mrc     p15, 0, r1, c2, c0, 0
     nop
@@ -121,7 +121,7 @@ AT91_CPU_EnableMMU_asm:
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-AT91_CPU_DisableMMU_asm:
+AT91SAM9X35_CPU_DisableMMU_asm:
     mrc     p15, 0, r0, c1, c0, 0
     bic     r0, r0, #0x0001           @ Disable MMU
     mcr     p15, 0, r0, c1, c0, 0
@@ -134,7 +134,7 @@ AT91_CPU_DisableMMU_asm:
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-AT91_CPU_IsMMUEnabled_asm:
+AT91SAM9X35_CPU_IsMMUEnabled_asm:
     mrc     p15, 0, r0, c1, c0, 0
     mrc     p15, 0, r1, c2, c0, 0
     nop
@@ -277,7 +277,7 @@ PreStackEnd:
     ldr     pc,UNDEF_Handler_Ptr        @ address of vector routine in C to jump to, never expect to return
 
 UNDEF_Handler_Ptr:
-    .word   AT91_Interrupt_UndefHandler
+    .word   AT91SAM9X35_Interrupt_UndefHandler
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -314,7 +314,7 @@ ABORTP_SubHandler:
     ldr     pc,ABORTP_Handler_Ptr       @ address of vector routine in C to jump to, never expect to return
 
 ABORTP_Handler_Ptr:
-    .word   AT91_Interrupt_AbortpHandler
+    .word   AT91SAM9X35_Interrupt_AbortpHandler
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -349,7 +349,7 @@ ABORTD_SubHandler:
     ldr     pc,ABORTD_Handler_Ptr       @ address of vector routine in C to jump to, never expect to return
 
 ABORTD_Handler_Ptr:
-    .word   AT91_Interrupt_AbortdHandler
+    .word   AT91SAM9X35_Interrupt_AbortdHandler
 
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
