@@ -13,10 +13,10 @@
 // limitations under the License.
 
 
-#include "AT91.h"
+#include "AT91SAM9Rx64.h"
 
-#define AT91_RTC_TIMR_AM    (0x0)
-#define AT91_RTC_TIMR_PM    (0x1)
+#define AT91SAM9Rx64_RTC_TIMR_AM    (0x0)
+#define AT91SAM9Rx64_RTC_TIMR_PM    (0x1)
 
 #define AT91C_PMC_CSS   (0x3 << 0)
 
@@ -49,14 +49,14 @@ const char* rtcApiNames[TOTAL_RTC_CONTROLLERS] = {
     "GHIElectronics.TinyCLR.NativeApis.AT91.RtcController\\0"
 };
 
-void AT91_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager) {
+void AT91SAM9Rx64_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_RTC_CONTROLLERS; i++) {
         rtcControllers[i].ApiInfo = &rtcApi[i];
-        rtcControllers[i].Acquire = &AT91_Rtc_Acquire;
-        rtcControllers[i].Release = &AT91_Rtc_Release;
-        rtcControllers[i].IsValid = &AT91_Rtc_IsValid;
-        rtcControllers[i].GetTime = &AT91_Rtc_GetTime;
-        rtcControllers[i].SetTime = &AT91_Rtc_SetTime;
+        rtcControllers[i].Acquire = &AT91SAM9Rx64_Rtc_Acquire;
+        rtcControllers[i].Release = &AT91SAM9Rx64_Rtc_Release;
+        rtcControllers[i].IsValid = &AT91SAM9Rx64_Rtc_IsValid;
+        rtcControllers[i].GetTime = &AT91SAM9Rx64_Rtc_GetTime;
+        rtcControllers[i].SetTime = &AT91SAM9Rx64_Rtc_SetTime;
 
         rtcApi[i].Author = "GHI Electronics, LLC";
         rtcApi[i].Name = rtcApiNames[i];
@@ -71,12 +71,12 @@ void AT91_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager) {
     apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::RtcController, rtcApi[0].Name);
 }
 
-void AT91_Rtc_BinaryCodedDecimalExtract(uint32_t valueToConvert, uint32_t &tens, uint32_t &ones) {
+void AT91SAM9Rx64_Rtc_BinaryCodedDecimalExtract(uint32_t valueToConvert, uint32_t &tens, uint32_t &ones) {
     tens = valueToConvert / 10;
     ones = valueToConvert % 10;
 }
 
-uint32_t AT91_Rtc_BinaryCodedDecimalCombine(uint32_t tens, uint32_t ones) {
+uint32_t AT91SAM9Rx64_Rtc_BinaryCodedDecimalCombine(uint32_t tens, uint32_t ones) {
     uint32_t CombinedBinaryCodedDecimal = 0;
 
     CombinedBinaryCodedDecimal = tens * 10;
@@ -85,7 +85,7 @@ uint32_t AT91_Rtc_BinaryCodedDecimalCombine(uint32_t tens, uint32_t ones) {
     return CombinedBinaryCodedDecimal;
 }
 
-TinyCLR_Result AT91_Rtc_Acquire(const TinyCLR_Rtc_Controller* self) {
+TinyCLR_Result AT91SAM9Rx64_Rtc_Acquire(const TinyCLR_Rtc_Controller* self) {
     if ((PMC_MCKR & AT91C_PMC_CSS) != 0) {
         volatile uint32_t dumpReg = SCKCR_SCKCR;
 
@@ -93,13 +93,13 @@ TinyCLR_Result AT91_Rtc_Acquire(const TinyCLR_Rtc_Controller* self) {
         SCKCR_SCKCR |= (1 << 1);
 
         //Wait 32,768 Hz Startup Time for clock stabilization (software loop).
-        AT91_Time_Delay(nullptr, 100000);
+        AT91SAM9Rx64_Time_Delay(nullptr, 100000);
 
         //Switch from internal RC to 32,768 Hz oscillator by setting the bit OSCSEL to 1.
         SCKCR_SCKCR |= (1 << 3);
 
         //Wait 5 slow clock cycles for internal resynchronization.
-        AT91_Time_Delay(nullptr, 100000);
+        AT91SAM9Rx64_Time_Delay(nullptr, 100000);
 
         //Disable the RC oscillator by setting the bit RCEN to 0.
         SCKCR_SCKCR &= ~(1 << 0);
@@ -111,14 +111,14 @@ TinyCLR_Result AT91_Rtc_Acquire(const TinyCLR_Rtc_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Rtc_Release(const TinyCLR_Rtc_Controller* self) {
+TinyCLR_Result AT91SAM9Rx64_Rtc_Release(const TinyCLR_Rtc_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Rtc_IsValid(const TinyCLR_Rtc_Controller* self, bool& value) {
+TinyCLR_Result AT91SAM9Rx64_Rtc_IsValid(const TinyCLR_Rtc_Controller* self, bool& value) {
     TinyCLR_Rtc_DateTime rtcNow;
 
-    value = (AT91_Rtc_GetTime(self, rtcNow) == TinyCLR_Result::Success);
+    value = (AT91SAM9Rx64_Rtc_GetTime(self, rtcNow) == TinyCLR_Result::Success);
 
     if (rtcNow.Second >= 60 || rtcNow.Minute >= 60 || rtcNow.Hour >= 24 || rtcNow.DayOfMonth >= 32 || rtcNow.Month >= 13 || rtcNow.DayOfWeek >= 8)
         value = false;
@@ -126,7 +126,7 @@ TinyCLR_Result AT91_Rtc_IsValid(const TinyCLR_Rtc_Controller* self, bool& value)
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Rtc_GetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value) {
+TinyCLR_Result AT91SAM9Rx64_Rtc_GetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime& value) {
     uint32_t calenderRegister = RTC_CALR;
     uint32_t timeRegister = RTC_TIMR;
     uint32_t fullYear = 0;
@@ -141,27 +141,27 @@ TinyCLR_Result AT91_Rtc_GetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_
         else if ((calenderRegister & 0x7F) == 0x20)
             fullYear = 2000;
 
-        hundredYear = AT91_Rtc_BinaryCodedDecimalCombine((((calenderRegister & (0xFF << 8)) >> 8) >> 4), (((calenderRegister & (0xFF << 8)) >> 8) & 0xF));
+        hundredYear = AT91SAM9Rx64_Rtc_BinaryCodedDecimalCombine((((calenderRegister & (0xFF << 8)) >> 8) >> 4), (((calenderRegister & (0xFF << 8)) >> 8) & 0xF));
         value.Year = (uint32_t)(fullYear + hundredYear);
-        value.Month = (uint32_t)AT91_Rtc_BinaryCodedDecimalCombine((((calenderRegister & (0x1F << 16)) >> 16) >> 4), (((calenderRegister & (0x1F << 16)) >> 16) & 0xF));
-        value.DayOfMonth = (uint32_t)AT91_Rtc_BinaryCodedDecimalCombine((((calenderRegister & (0x3F << 24)) >> 24) >> 4), (((calenderRegister & (0x3F << 24)) >> 24) & 0xF));
-        value.DayOfWeek = (uint32_t)AT91_Rtc_BinaryCodedDecimalCombine((((calenderRegister & (0x07 << 21)) >> 21) >> 4), (((calenderRegister & (0x07 << 21)) >> 21) & 0xF));
-        value.Hour = AT91_Rtc_BinaryCodedDecimalCombine((((timeRegister & (0x3F << 16)) >> 16) >> 4), (((timeRegister & (0x3F << 16)) >> 16) & 0xF));
+        value.Month = (uint32_t)AT91SAM9Rx64_Rtc_BinaryCodedDecimalCombine((((calenderRegister & (0x1F << 16)) >> 16) >> 4), (((calenderRegister & (0x1F << 16)) >> 16) & 0xF));
+        value.DayOfMonth = (uint32_t)AT91SAM9Rx64_Rtc_BinaryCodedDecimalCombine((((calenderRegister & (0x3F << 24)) >> 24) >> 4), (((calenderRegister & (0x3F << 24)) >> 24) & 0xF));
+        value.DayOfWeek = (uint32_t)AT91SAM9Rx64_Rtc_BinaryCodedDecimalCombine((((calenderRegister & (0x07 << 21)) >> 21) >> 4), (((calenderRegister & (0x07 << 21)) >> 21) & 0xF));
+        value.Hour = AT91SAM9Rx64_Rtc_BinaryCodedDecimalCombine((((timeRegister & (0x3F << 16)) >> 16) >> 4), (((timeRegister & (0x3F << 16)) >> 16) & 0xF));
 
-        if (((timeRegister & 0x400000) >> 22) == AT91_RTC_TIMR_PM)
+        if (((timeRegister & 0x400000) >> 22) == AT91SAM9Rx64_RTC_TIMR_PM)
             value.Hour = value.Hour + 12;
         else
             value.Hour = value.Hour;
 
-        value.Minute = (uint32_t)AT91_Rtc_BinaryCodedDecimalCombine((((timeRegister & (0x7F << 8)) >> 8) >> 4), (((timeRegister & (0x7F << 8)) >> 8) & 0xF));
-        value.Second = (uint32_t)AT91_Rtc_BinaryCodedDecimalCombine(((timeRegister & 0x7F) >> 4), ((timeRegister & 0x7F) & 0xF));
+        value.Minute = (uint32_t)AT91SAM9Rx64_Rtc_BinaryCodedDecimalCombine((((timeRegister & (0x7F << 8)) >> 8) >> 4), (((timeRegister & (0x7F << 8)) >> 8) & 0xF));
+        value.Second = (uint32_t)AT91SAM9Rx64_Rtc_BinaryCodedDecimalCombine(((timeRegister & 0x7F) >> 4), ((timeRegister & 0x7F) & 0xF));
         value.Millisecond = 1;
     }
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Rtc_SetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value) {
+TinyCLR_Result AT91SAM9Rx64_Rtc_SetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_DateTime value) {
     uint32_t calenderRegister = 0;
     uint32_t timeRegister = 0;
     uint32_t lowerHundredYears = 0;
@@ -195,18 +195,18 @@ TinyCLR_Result AT91_Rtc_SetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_
     }
 
     // Add value.Year
-    AT91_Rtc_BinaryCodedDecimalExtract(lowerHundredYears, tens, ones);
+    AT91SAM9Rx64_Rtc_BinaryCodedDecimalExtract(lowerHundredYears, tens, ones);
     calenderRegister |= (uint32_t)((tens << 12) | (ones << 8));
     // Add value.Month
-    AT91_Rtc_BinaryCodedDecimalExtract(value.Month, tens, ones);
+    AT91SAM9Rx64_Rtc_BinaryCodedDecimalExtract(value.Month, tens, ones);
     calenderRegister |= (uint32_t)((tens << 20) | (ones << 16));
     // Add dayOfWeek
     calenderRegister |= (uint32_t)(((value.DayOfWeek + 1) << 21));
     // Add value.DayOfMonth
-    AT91_Rtc_BinaryCodedDecimalExtract(value.DayOfMonth, tens, ones);
+    AT91SAM9Rx64_Rtc_BinaryCodedDecimalExtract(value.DayOfMonth, tens, ones);
     calenderRegister |= (uint32_t)((tens << 28) | (ones << 24));
 
-    AT91_Time_Delay(nullptr, 500000);
+    AT91SAM9Rx64_Time_Delay(nullptr, 500000);
     // Write Calender to register
     RTC_CALR = calenderRegister;
     timeRegister = 0;
@@ -231,17 +231,17 @@ TinyCLR_Result AT91_Rtc_SetTime(const TinyCLR_Rtc_Controller* self, TinyCLR_Rtc_
     }
 
     // Add hour
-    AT91_Rtc_BinaryCodedDecimalExtract(value.Hour, tens, ones);
-    timeRegister = (uint32_t)((AT91_RTC_TIMR_AM << 22) | (tens << 20) | (ones << 16));
+    AT91SAM9Rx64_Rtc_BinaryCodedDecimalExtract(value.Hour, tens, ones);
+    timeRegister = (uint32_t)((AT91SAM9Rx64_RTC_TIMR_AM << 22) | (tens << 20) | (ones << 16));
     RTC_TIMR = timeRegister;
 
     // Add value.Minute
-    AT91_Rtc_BinaryCodedDecimalExtract(value.Minute, tens, ones);
+    AT91SAM9Rx64_Rtc_BinaryCodedDecimalExtract(value.Minute, tens, ones);
     timeRegister = (uint32_t)((tens << 12) | (ones << 8));
     RTC_TIMR |= timeRegister;
 
     // Add value.Second
-    AT91_Rtc_BinaryCodedDecimalExtract(value.Second, tens, ones);
+    AT91SAM9Rx64_Rtc_BinaryCodedDecimalExtract(value.Second, tens, ones);
     timeRegister = (uint32_t)((tens << 4) | ones);
     RTC_TIMR |= timeRegister;
 

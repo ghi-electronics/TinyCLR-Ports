@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "AT91.h"
+#include "AT91SAM9Rx64.h"
 
 #ifdef INCLUDE_DISPLAY
 //LUT configurations
@@ -433,134 +433,134 @@ const PALETTEENTRY_LCD c_rgbPalette[256] =
 #define SIDSAFB_CRST_VAL        0xc8   // 0xda
 
 
-enum AT91_LCD_Rotation {
+enum AT91SAM9Rx64_LCD_Rotation {
     rotateNormal_0,
     rotateCW_90,
     rotate_180,
     rotateCCW_90,
 };
 
-uint32_t m_AT91_DisplayWidth = 0;
-uint32_t m_AT91_DisplayHeight = 0;
-uint32_t m_AT91_DisplayPixelClockRateKHz = 0;
-uint32_t m_AT91_DisplayHorizontalSyncPulseWidth = 0;
-uint32_t m_AT91_DisplayHorizontalFrontPorch = 0;
-uint32_t m_AT91_DisplayHorizontalBackPorch = 0;
-uint32_t m_AT91_DisplayVerticalSyncPulseWidth = 0;
-uint32_t m_AT91_DisplayVerticalFrontPorch = 0;
-uint32_t m_AT91_DisplayVerticalBackPorch = 0;
-uint32_t m_AT91_Display_TextRow = 0;
-uint32_t m_AT91_Display_TextColumn = 0;
-uint32_t m_AT91_Display_PixelClockDivider = 0;
-uint32_t m_AT91_Display_BitsPerPixel = 16;
-uint32_t m_AT91_Display_EnableTFT = true;
+uint32_t m_AT91SAM9Rx64_DisplayWidth = 0;
+uint32_t m_AT91SAM9Rx64_DisplayHeight = 0;
+uint32_t m_AT91SAM9Rx64_DisplayPixelClockRateKHz = 0;
+uint32_t m_AT91SAM9Rx64_DisplayHorizontalSyncPulseWidth = 0;
+uint32_t m_AT91SAM9Rx64_DisplayHorizontalFrontPorch = 0;
+uint32_t m_AT91SAM9Rx64_DisplayHorizontalBackPorch = 0;
+uint32_t m_AT91SAM9Rx64_DisplayVerticalSyncPulseWidth = 0;
+uint32_t m_AT91SAM9Rx64_DisplayVerticalFrontPorch = 0;
+uint32_t m_AT91SAM9Rx64_DisplayVerticalBackPorch = 0;
+uint32_t m_AT91SAM9Rx64_Display_TextRow = 0;
+uint32_t m_AT91SAM9Rx64_Display_TextColumn = 0;
+uint32_t m_AT91SAM9Rx64_Display_PixelClockDivider = 0;
+uint32_t m_AT91SAM9Rx64_Display_BitsPerPixel = 16;
+uint32_t m_AT91SAM9Rx64_Display_EnableTFT = true;
 
-bool m_AT91_DisplayOutputEnableIsFixed = false;
-bool m_AT91_DisplayOutputEnablePolarity = false;
-bool m_AT91_DisplayPixelPolarity = false;
-bool m_AT91_DisplayHorizontalSyncPolarity = false;
-bool m_AT91_DisplayVerticalSyncPolarity = false;
-bool m_AT91_DisplayEnable = false;
+bool m_AT91SAM9Rx64_DisplayOutputEnableIsFixed = false;
+bool m_AT91SAM9Rx64_DisplayOutputEnablePolarity = false;
+bool m_AT91SAM9Rx64_DisplayPixelPolarity = false;
+bool m_AT91SAM9Rx64_DisplayHorizontalSyncPolarity = false;
+bool m_AT91SAM9Rx64_DisplayVerticalSyncPolarity = false;
+bool m_AT91SAM9Rx64_DisplayEnable = false;
 
 uint32_t displayInitializeCount = 0;
 
-uint16_t* m_AT91_Display_VituralRam = nullptr;
-uint32_t* m_AT91_Display_buffer = nullptr;
+uint16_t* m_AT91SAM9Rx64_Display_VituralRam = nullptr;
+uint32_t* m_AT91SAM9Rx64_Display_buffer = nullptr;
 
-size_t m_AT91_DisplayBufferSize = 0;
+size_t m_AT91SAM9Rx64_DisplayBufferSize = 0;
 
-uint8_t m_AT91_Display_TextBuffer[LCD_MAX_COLUMN][LCD_MAX_ROW];
+uint8_t m_AT91SAM9Rx64_Display_TextBuffer[LCD_MAX_COLUMN][LCD_MAX_ROW];
 
-AT91_LCD_Rotation m_AT91_Display_CurrentRotation = AT91_LCD_Rotation::rotateNormal_0;
+AT91SAM9Rx64_LCD_Rotation m_AT91SAM9Rx64_Display_CurrentRotation = AT91SAM9Rx64_LCD_Rotation::rotateNormal_0;
 
-bool AT91_Display_Initialize();
-bool AT91_Display_Uninitialize();
-bool AT91_Display_SetPinConfiguration(int32_t controllerIndex, bool enable);
+bool AT91SAM9Rx64_Display_Initialize();
+bool AT91SAM9Rx64_Display_Uninitialize();
+bool AT91SAM9Rx64_Display_SetPinConfiguration(int32_t controllerIndex, bool enable);
 
-void AT91_Display_WriteFormattedChar(uint8_t c);
-void AT91_Display_WriteChar(uint8_t c, int32_t row, int32_t col);
-void AT91_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height, uint32_t data[]);
-void AT91_Display_PaintPixel(uint32_t x, uint32_t y, uint8_t c);
-void AT91_Display_Paint8HorizontalPixels(uint32_t x, uint32_t y, uint8_t p);
-void AT91_Display_TextEnterClearMode();
-void AT91_Display_PrintChracter(uint32_t x, uint32_t y, uint8_t c);
-void AT91_Display_TextShiftColUp();
-void AT91_Display_Clear();
-void AT91_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenHeight);
+void AT91SAM9Rx64_Display_WriteFormattedChar(uint8_t c);
+void AT91SAM9Rx64_Display_WriteChar(uint8_t c, int32_t row, int32_t col);
+void AT91SAM9Rx64_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height, uint32_t data[]);
+void AT91SAM9Rx64_Display_PaintPixel(uint32_t x, uint32_t y, uint8_t c);
+void AT91SAM9Rx64_Display_Paint8HorizontalPixels(uint32_t x, uint32_t y, uint8_t p);
+void AT91SAM9Rx64_Display_TextEnterClearMode();
+void AT91SAM9Rx64_Display_PrintChracter(uint32_t x, uint32_t y, uint8_t c);
+void AT91SAM9Rx64_Display_TextShiftColUp();
+void AT91SAM9Rx64_Display_Clear();
+void AT91SAM9Rx64_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenHeight);
 
-int32_t AT91_Display_GetWidth();
-int32_t AT91_Display_GetHeight();
-int32_t AT91_Display_BitPerPixel();
-uint32_t AT91_Display_GetPixelClockDivider();
-int32_t AT91_Display_GetOrientation();
-uint32_t* AT91_Display_GetFrameBuffer();
+int32_t AT91SAM9Rx64_Display_GetWidth();
+int32_t AT91SAM9Rx64_Display_GetHeight();
+int32_t AT91SAM9Rx64_Display_BitPerPixel();
+uint32_t AT91SAM9Rx64_Display_GetPixelClockDivider();
+int32_t AT91SAM9Rx64_Display_GetOrientation();
+uint32_t* AT91SAM9Rx64_Display_GetFrameBuffer();
 
 #define TOTAL_DISPLAY_CONTROLLERS 1
 
 static TinyCLR_Display_Controller displayControllers[TOTAL_DISPLAY_CONTROLLERS];
 static TinyCLR_Api_Info displayApi[TOTAL_DISPLAY_CONTROLLERS];
 
-static const AT91_Gpio_Pin displayPins[] = AT91_DISPLAY_CONTROL_PINS;
-static const AT91_Gpio_Pin displayEnablePin = AT91_DISPLAY_ENABLE_PIN;
+static const AT91SAM9Rx64_Gpio_Pin displayPins[] = AT91SAM9Rx64_DISPLAY_CONTROL_PINS;
+static const AT91SAM9Rx64_Gpio_Pin displayEnablePin = AT91SAM9Rx64_DISPLAY_ENABLE_PIN;
 
-bool AT91_Display_Initialize() {
+bool AT91SAM9Rx64_Display_Initialize() {
 
-    if (m_AT91_DisplayPixelClockRateKHz == 0x0) {
+    if (m_AT91SAM9Rx64_DisplayPixelClockRateKHz == 0x0) {
 
         return false;
     }
 
     // Pixel Clock Divider is calculated by this equation Frequency = System Clock / ((Divider + 1) * 2)
     // The following equation should calculate Pixel Clock Divider
-    // Divider = ((AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 2) - (m_AT91_DisplayPixelClockRateKHz * 1000)) / (m_AT91_DisplayPixelClockRateKHz * 1000);
-    if (m_AT91_DisplayPixelClockRateKHz > 25000) // 25000 KHz is maximum supported frequency
-        m_AT91_DisplayPixelClockRateKHz = 25000;
+    // Divider = ((AT91SAM9Rx64_SYSTEM_PERIPHERAL_CLOCK_HZ / 2) - (m_AT91SAM9Rx64_DisplayPixelClockRateKHz * 1000)) / (m_AT91SAM9Rx64_DisplayPixelClockRateKHz * 1000);
+    if (m_AT91SAM9Rx64_DisplayPixelClockRateKHz > 25000) // 25000 KHz is maximum supported frequency
+        m_AT91SAM9Rx64_DisplayPixelClockRateKHz = 25000;
 
-    m_AT91_Display_PixelClockDivider = ((AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 2) - (m_AT91_DisplayPixelClockRateKHz * 1000)) / (m_AT91_DisplayPixelClockRateKHz * 1000);
+    m_AT91SAM9Rx64_Display_PixelClockDivider = ((AT91SAM9Rx64_SYSTEM_PERIPHERAL_CLOCK_HZ / 2) - (m_AT91SAM9Rx64_DisplayPixelClockRateKHz * 1000)) / (m_AT91SAM9Rx64_DisplayPixelClockRateKHz * 1000);
 
-    if (((AT91_SYSTEM_PERIPHERAL_CLOCK_HZ / 2) - (m_AT91_DisplayPixelClockRateKHz * 1000)) % (m_AT91_DisplayPixelClockRateKHz * 1000) > 0)
-        m_AT91_Display_PixelClockDivider += 1;
+    if (((AT91SAM9Rx64_SYSTEM_PERIPHERAL_CLOCK_HZ / 2) - (m_AT91SAM9Rx64_DisplayPixelClockRateKHz * 1000)) % (m_AT91SAM9Rx64_DisplayPixelClockRateKHz * 1000) > 0)
+        m_AT91SAM9Rx64_Display_PixelClockDivider += 1;
 
-    if (m_AT91_Display_PixelClockDivider > 511) // Pixel clock divider cannot exceed a 9 bit number which is 511 in Decimal.
-        m_AT91_Display_PixelClockDivider = 511;
+    if (m_AT91SAM9Rx64_Display_PixelClockDivider > 511) // Pixel clock divider cannot exceed a 9 bit number which is 511 in Decimal.
+        m_AT91SAM9Rx64_Display_PixelClockDivider = 511;
 
     uint32_t value;
 
-    AT91_PMC &pmc = AT91::PMC();
+    AT91SAM9Rx64_PMC &pmc = AT91::PMC();
     pmc.EnablePeriphClock(AT91C_ID_LCDC);
 
-    AT91_LCDC &lcdc = AT91::LCDC();
+    AT91SAM9Rx64_LCDC &lcdc = AT91::LCDC();
 
     /* Turn off the LCD controller and the DMA controller */
     lcdc.LCDC_PWRCON = 0x0C;
     lcdc.LCDC_DMACON = 0;
 
     // Reset LCDC DMA
-    lcdc.LCDC_DMACON = AT91_LCDC::LCDC_DMARST;
+    lcdc.LCDC_DMACON = AT91SAM9Rx64_LCDC::LCDC_DMARST;
 
     /* ...set frame size and burst length = 8 words (?) */
-    value = (m_AT91_DisplayHeight * m_AT91_DisplayWidth * m_AT91_Display_BitsPerPixel) >> 5; // / 32;
+    value = (m_AT91SAM9Rx64_DisplayHeight * m_AT91SAM9Rx64_DisplayWidth * m_AT91SAM9Rx64_Display_BitsPerPixel) >> 5; // / 32;
     value |= 0x04000000;
     lcdc.LCDC_FRMCFG = value;
 
     /* Set pixel clock divider */
-    if (m_AT91_Display_PixelClockDivider == 0)
-        lcdc.LCDC_LCDCON1 = AT91_LCDC::LCDC_BYPASS;
+    if (m_AT91SAM9Rx64_Display_PixelClockDivider == 0)
+        lcdc.LCDC_LCDCON1 = AT91SAM9Rx64_LCDC::LCDC_BYPASS;
     else
-        lcdc.LCDC_LCDCON1 = m_AT91_Display_PixelClockDivider << 12;
+        lcdc.LCDC_LCDCON1 = m_AT91SAM9Rx64_Display_PixelClockDivider << 12;
 
     /* Set configurations for LCDCON2 */
-    if (m_AT91_Display_EnableTFT)
-        value = (AT91_LCDC::LCDC_MEMOR_LITTLEIND | AT91_LCDC::LCDC_DISTYPE_TFT | AT91_LCDC::LCDC_CLKMOD);
+    if (m_AT91SAM9Rx64_Display_EnableTFT)
+        value = (AT91SAM9Rx64_LCDC::LCDC_MEMOR_LITTLEIND | AT91SAM9Rx64_LCDC::LCDC_DISTYPE_TFT | AT91SAM9Rx64_LCDC::LCDC_CLKMOD);
     else
-        value = (AT91_LCDC::LCDC_MEMOR_LITTLEIND | AT91_LCDC::LCDC_CLKMOD);
+        value = (AT91SAM9Rx64_LCDC::LCDC_MEMOR_LITTLEIND | AT91SAM9Rx64_LCDC::LCDC_CLKMOD);
 
-    if (m_AT91_DisplayHorizontalSyncPolarity == false) // Original was if it is true set 1
+    if (m_AT91SAM9Rx64_DisplayHorizontalSyncPolarity == false) // Original was if it is true set 1
         value |= 1 << 10;   /* INVLINE */
-    if (m_AT91_DisplayVerticalSyncPolarity == false) // Original was if it is true set 1
+    if (m_AT91SAM9Rx64_DisplayVerticalSyncPolarity == false) // Original was if it is true set 1
         value |= 1 << 9;    /* INVFRAME */
 
-    switch (m_AT91_Display_BitsPerPixel) {
+    switch (m_AT91SAM9Rx64_Display_BitsPerPixel) {
         //Bits per pixel: 0 = 1, 1 = 2, 2 = 4, 3 = 8, 4 = 16, 5 = 24
     case 1:
         value |= (0 << 5);
@@ -581,7 +581,7 @@ bool AT91_Display_Initialize() {
         value |= (5 << 5);
         break;
     default:
-        //debug_printf("Unsupported LCD Bus Width : %d\r\n", m_AT91_Display_BitsPerPixel);
+        //debug_printf("Unsupported LCD Bus Width : %d\r\n", m_AT91SAM9Rx64_Display_BitsPerPixel);
         return false;
     };
 
@@ -595,23 +595,23 @@ bool AT91_Display_Initialize() {
     }
 
     /* Horizontal timing */
-    value = (m_AT91_DisplayHorizontalFrontPorch - 1) << 21;
-    value |= (m_AT91_DisplayHorizontalSyncPulseWidth - 1) << 8;
-    value |= m_AT91_DisplayHorizontalBackPorch - 1;
+    value = (m_AT91SAM9Rx64_DisplayHorizontalFrontPorch - 1) << 21;
+    value |= (m_AT91SAM9Rx64_DisplayHorizontalSyncPulseWidth - 1) << 8;
+    value |= m_AT91SAM9Rx64_DisplayHorizontalBackPorch - 1;
     lcdc.LCDC_TIM2 = value;
 
     /* Vertical timing */
-    value = (m_AT91_DisplayVerticalSyncPulseWidth - 1) << 16;
+    value = (m_AT91SAM9Rx64_DisplayVerticalSyncPulseWidth - 1) << 16;
 
-    m_AT91_DisplayVerticalBackPorch += m_AT91_DisplayVerticalSyncPulseWidth; //1;//10; For Hydra or Atmel you need to add the VPW to the VBP in order for the screen to align properly.
+    m_AT91SAM9Rx64_DisplayVerticalBackPorch += m_AT91SAM9Rx64_DisplayVerticalSyncPulseWidth; //1;//10; For Hydra or Atmel you need to add the VPW to the VBP in order for the screen to align properly.
 
-    value |= m_AT91_DisplayVerticalBackPorch << 8;
+    value |= m_AT91SAM9Rx64_DisplayVerticalBackPorch << 8;
 
-    value |= m_AT91_DisplayVerticalFrontPorch;
+    value |= m_AT91SAM9Rx64_DisplayVerticalFrontPorch;
     lcdc.LCDC_TIM1 = value;
 
-    value = (m_AT91_DisplayWidth - 1) << 21;
-    value |= (m_AT91_DisplayHeight - 1);
+    value = (m_AT91SAM9Rx64_DisplayWidth - 1) << 21;
+    value |= (m_AT91SAM9Rx64_DisplayHeight - 1);
 
     lcdc.LCDC_LCDFRCFG = value;
 
@@ -623,7 +623,7 @@ bool AT91_Display_Initialize() {
     //lcdc.LCDC_MVAL = 0;
 
     //STN Dithering
-    if (!(m_AT91_Display_EnableTFT)) {
+    if (!(m_AT91SAM9Rx64_Display_EnableTFT)) {
         lcdc.LCDC_DP1_2 = 0xA5;
         lcdc.LCDC_DP4_7 = 0x05AF0FA5;
         lcdc.LCDC_DP3_5 = 0x000A5A5F;
@@ -637,98 +637,98 @@ bool AT91_Display_Initialize() {
     /* Disable all interrupts */
     lcdc.LCDC_IDR = ~0UL;
     // Set contrast
-    value = AT91_LCDC::LCDC_PS_DIVIDEDBYEIGHT | AT91_LCDC::LCDC_POL_POSITIVEPULSE | AT91_LCDC::LCDC_ENA_PWMGEMENABLED;
+    value = AT91SAM9Rx64_LCDC::LCDC_PS_DIVIDEDBYEIGHT | AT91SAM9Rx64_LCDC::LCDC_POL_POSITIVEPULSE | AT91SAM9Rx64_LCDC::LCDC_ENA_PWMGEMENABLED;
     lcdc.LCDC_CTRSTCON = value;
     lcdc.LCDC_CTRSTVAL = 0xDA;
 
-    lcdc.LCDC_BA1 = (uint32_t)m_AT91_Display_VituralRam;
-    lcdc.LCDC_FRMCFG = (4 << 24) + (m_AT91_DisplayHeight * m_AT91_DisplayWidth * m_AT91_Display_BitsPerPixel >> 5);
+    lcdc.LCDC_BA1 = (uint32_t)m_AT91SAM9Rx64_Display_VituralRam;
+    lcdc.LCDC_FRMCFG = (4 << 24) + (m_AT91SAM9Rx64_DisplayHeight * m_AT91SAM9Rx64_DisplayWidth * m_AT91SAM9Rx64_Display_BitsPerPixel >> 5);
 
     // Enable
-    lcdc.LCDC_DMACON = AT91_LCDC::LCDC_DMAEN;
-    lcdc.LCDC_PWRCON = AT91_LCDC::LCDC_PWR | (0x0F << 1);
+    lcdc.LCDC_DMACON = AT91SAM9Rx64_LCDC::LCDC_DMAEN;
+    lcdc.LCDC_PWRCON = AT91SAM9Rx64_LCDC::LCDC_PWR | (0x0F << 1);
 
     return true;
 }
 
-bool AT91_Display_Uninitialize() {
-    AT91_PMC &pmc = AT91::PMC();
+bool AT91SAM9Rx64_Display_Uninitialize() {
+    AT91SAM9Rx64_PMC &pmc = AT91::PMC();
     pmc.DisablePeriphClock(AT91C_ID_LCDC);
 
-    AT91_LCDC &lcdc = AT91::LCDC();
+    AT91SAM9Rx64_LCDC &lcdc = AT91::LCDC();
 
     lcdc.LCDC_PWRCON = 0x0C;
     lcdc.LCDC_DMACON = 0;
 
-    m_AT91_DisplayEnable = false;
+    m_AT91SAM9Rx64_DisplayEnable = false;
 
     return true;
 }
 
 //====================================================
-void AT91_Display_WriteFormattedChar(uint8_t c) {
-    if (m_AT91_DisplayEnable == false)
+void AT91SAM9Rx64_Display_WriteFormattedChar(uint8_t c) {
+    if (m_AT91SAM9Rx64_DisplayEnable == false)
         return;
 
     if (c == '\f') {
-        AT91_Display_Clear();
-        AT91_Display_TextEnterClearMode();
-        m_AT91_Display_TextColumn = 0;
+        AT91SAM9Rx64_Display_Clear();
+        AT91SAM9Rx64_Display_TextEnterClearMode();
+        m_AT91SAM9Rx64_Display_TextColumn = 0;
 
         return;
     }
 
     if (c == '\r') {
-        m_AT91_Display_TextColumn = 0;
+        m_AT91SAM9Rx64_Display_TextColumn = 0;
 
         return;
     }
     if (c == '\n') {
-        m_AT91_Display_TextColumn = 0;
+        m_AT91SAM9Rx64_Display_TextColumn = 0;
 
-        if (++m_AT91_Display_TextRow >= LCD_MAX_ROW) {
-            m_AT91_Display_TextRow = LCD_MAX_ROW - 1;
-            AT91_Display_TextShiftColUp();
+        if (++m_AT91SAM9Rx64_Display_TextRow >= LCD_MAX_ROW) {
+            m_AT91SAM9Rx64_Display_TextRow = LCD_MAX_ROW - 1;
+            AT91SAM9Rx64_Display_TextShiftColUp();
         }
         // clean the new line
         for (c = 0; c < (LCD_MAX_COLUMN - 1); c++) {
-            m_AT91_Display_TextBuffer[c][m_AT91_Display_TextRow] = ' ';
+            m_AT91SAM9Rx64_Display_TextBuffer[c][m_AT91SAM9Rx64_Display_TextRow] = ' ';
         }
 
         return;
     }
 
-    AT91_Display_PrintChracter(m_AT91_Display_TextColumn * 6, m_AT91_Display_TextRow * 8, c);
-    m_AT91_Display_TextBuffer[m_AT91_Display_TextColumn][m_AT91_Display_TextRow] = c;
+    AT91SAM9Rx64_Display_PrintChracter(m_AT91SAM9Rx64_Display_TextColumn * 6, m_AT91SAM9Rx64_Display_TextRow * 8, c);
+    m_AT91SAM9Rx64_Display_TextBuffer[m_AT91SAM9Rx64_Display_TextColumn][m_AT91SAM9Rx64_Display_TextRow] = c;
 
-    if (++m_AT91_Display_TextColumn >= (LCD_MAX_COLUMN - 1)) {
-        m_AT91_Display_TextColumn = 0;
+    if (++m_AT91SAM9Rx64_Display_TextColumn >= (LCD_MAX_COLUMN - 1)) {
+        m_AT91SAM9Rx64_Display_TextColumn = 0;
 
-        if (++m_AT91_Display_TextRow >= LCD_MAX_ROW) {
-            m_AT91_Display_TextRow = LCD_MAX_ROW - 1;
-            AT91_Display_TextShiftColUp();
+        if (++m_AT91SAM9Rx64_Display_TextRow >= LCD_MAX_ROW) {
+            m_AT91SAM9Rx64_Display_TextRow = LCD_MAX_ROW - 1;
+            AT91SAM9Rx64_Display_TextShiftColUp();
         }
         else {
             // clean the new line
             for (c = 0; c < LCD_MAX_COLUMN; c++) {
-                m_AT91_Display_TextBuffer[c][m_AT91_Display_TextRow] = ' ';
+                m_AT91SAM9Rx64_Display_TextBuffer[c][m_AT91SAM9Rx64_Display_TextRow] = ' ';
             }
         }
     }
 }
 //=======================================================
-void AT91_Display_PaintPixel(uint32_t x, uint32_t y, uint8_t c) {
+void AT91SAM9Rx64_Display_PaintPixel(uint32_t x, uint32_t y, uint8_t c) {
     volatile uint16_t * loc;
 
-    if (m_AT91_DisplayEnable == false)
+    if (m_AT91SAM9Rx64_DisplayEnable == false)
         return;
 
-    if (x >= m_AT91_DisplayWidth)
+    if (x >= m_AT91SAM9Rx64_DisplayWidth)
         return;
-    if (y >= m_AT91_DisplayHeight)
+    if (y >= m_AT91SAM9Rx64_DisplayHeight)
         return;
 
-    loc = m_AT91_Display_VituralRam + (y *m_AT91_DisplayWidth) + (x);
+    loc = m_AT91SAM9Rx64_Display_VituralRam + (y *m_AT91SAM9Rx64_DisplayWidth) + (x);
 
     if (c)
         *loc = 0x0fff;
@@ -736,127 +736,127 @@ void AT91_Display_PaintPixel(uint32_t x, uint32_t y, uint8_t c) {
         *loc = 0;
 }
 //=======================================================
-void AT91_Display_Paint8HorizontalPixels(uint32_t x, uint32_t y, uint8_t p) {
-    if (m_AT91_DisplayEnable == false)
+void AT91SAM9Rx64_Display_Paint8HorizontalPixels(uint32_t x, uint32_t y, uint8_t p) {
+    if (m_AT91SAM9Rx64_DisplayEnable == false)
         return;
 
     for (int32_t i = 0; i < 8; i++) {
         if (p&(1 << i))
-            AT91_Display_PaintPixel(x, y + i, 1);
+            AT91SAM9Rx64_Display_PaintPixel(x, y + i, 1);
         else
-            AT91_Display_PaintPixel(x, y + i, 0);//clear
+            AT91SAM9Rx64_Display_PaintPixel(x, y + i, 0);//clear
     }
 }
 //===========================================================
-void AT91_Display_TextEnterClearMode() {
+void AT91SAM9Rx64_Display_TextEnterClearMode() {
     uint32_t r, c;
 
-    if (m_AT91_DisplayEnable == false)
+    if (m_AT91SAM9Rx64_DisplayEnable == false)
         return;
 
-    AT91_Display_Clear();
-    m_AT91_Display_TextRow = 0;
-    m_AT91_Display_TextColumn = 0;
+    AT91SAM9Rx64_Display_Clear();
+    m_AT91SAM9Rx64_Display_TextRow = 0;
+    m_AT91SAM9Rx64_Display_TextColumn = 0;
 
     for (r = 0; r < LCD_MAX_ROW; r++) {
         for (c = 0; c < (LCD_MAX_COLUMN - 1); c++) {
-            m_AT91_Display_TextBuffer[c][r] = '1';
+            m_AT91SAM9Rx64_Display_TextBuffer[c][r] = '1';
         }
     }
 }
 //===========================================================
-void AT91_Display_PrintChracter(uint32_t x, uint32_t y, uint8_t c) {
+void AT91SAM9Rx64_Display_PrintChracter(uint32_t x, uint32_t y, uint8_t c) {
     uint8_t i;
 
-    if (m_AT91_DisplayEnable == false)
+    if (m_AT91SAM9Rx64_DisplayEnable == false)
         return;
 
     for (i = 0; i < 5; i++)
-        AT91_Display_Paint8HorizontalPixels(x + i, y, characters[c][i]);
+        AT91SAM9Rx64_Display_Paint8HorizontalPixels(x + i, y, characters[c][i]);
 
-    AT91_Display_Paint8HorizontalPixels(x + i, y, 0);
+    AT91SAM9Rx64_Display_Paint8HorizontalPixels(x + i, y, 0);
 }
 
-void AT91_Display_TextShiftColUp() {
+void AT91SAM9Rx64_Display_TextShiftColUp() {
     uint32_t r, c;
 
-    if (m_AT91_DisplayEnable == false)
+    if (m_AT91SAM9Rx64_DisplayEnable == false)
         return;
 
     // refresh with new data
-    AT91_Display_Clear();
-    m_AT91_Display_TextRow = 0;
-    m_AT91_Display_TextColumn = 0;
+    AT91SAM9Rx64_Display_Clear();
+    m_AT91SAM9Rx64_Display_TextRow = 0;
+    m_AT91SAM9Rx64_Display_TextColumn = 0;
 
     for (r = 0; r < (LCD_MAX_ROW - 1); r++) {
         for (c = 0; c < LCD_MAX_COLUMN - 1; c++) {
-            m_AT91_Display_TextBuffer[c][r] = m_AT91_Display_TextBuffer[c][r + 1];
-            AT91_Display_WriteFormattedChar(m_AT91_Display_TextBuffer[c][r]);
+            m_AT91SAM9Rx64_Display_TextBuffer[c][r] = m_AT91SAM9Rx64_Display_TextBuffer[c][r + 1];
+            AT91SAM9Rx64_Display_WriteFormattedChar(m_AT91SAM9Rx64_Display_TextBuffer[c][r]);
         }
     }
 }
 
-void AT91_Display_Clear() {
-    if (m_AT91_DisplayEnable == false || m_AT91_Display_VituralRam == nullptr)
+void AT91SAM9Rx64_Display_Clear() {
+    if (m_AT91SAM9Rx64_DisplayEnable == false || m_AT91SAM9Rx64_Display_VituralRam == nullptr)
         return;
 
-    memset((uint32_t*)m_AT91_Display_VituralRam, 0, m_AT91_DisplayBufferSize);
+    memset((uint32_t*)m_AT91SAM9Rx64_Display_VituralRam, 0, m_AT91SAM9Rx64_DisplayBufferSize);
 }
 
 struct DisplayPins {
-    AT91_Gpio_Pin red[5];
-    AT91_Gpio_Pin green[6];
-    AT91_Gpio_Pin blue[5];
+    AT91SAM9Rx64_Gpio_Pin red[5];
+    AT91SAM9Rx64_Gpio_Pin green[6];
+    AT91SAM9Rx64_Gpio_Pin blue[5];
 
-    AT91_Gpio_Pin hsync;
-    AT91_Gpio_Pin vsync;
-    AT91_Gpio_Pin clock;
-    AT91_Gpio_Pin enable;
+    AT91SAM9Rx64_Gpio_Pin hsync;
+    AT91SAM9Rx64_Gpio_Pin vsync;
+    AT91SAM9Rx64_Gpio_Pin clock;
+    AT91SAM9Rx64_Gpio_Pin enable;
 };
 
 const DisplayPins displayPins = {
-    AT91_DISPLAY_CONTROLLER_RED_PINS,
-    AT91_DISPLAY_CONTROLLER_GREEN_PINS,
-    AT91_DISPLAY_CONTROLLER_BLUE_PINS,
+    AT91SAM9Rx64_DISPLAY_CONTROLLER_RED_PINS,
+    AT91SAM9Rx64_DISPLAY_CONTROLLER_GREEN_PINS,
+    AT91SAM9Rx64_DISPLAY_CONTROLLER_BLUE_PINS,
 
-    AT91_DISPLAY_CONTROLLER_HSYNC_PIN,
-    AT91_DISPLAY_CONTROLLER_VSYNC_PIN,
-    AT91_DISPLAY_CONTROLLER_CLOCK_PIN,
-    AT91_DISPLAY_CONTROLLER_DATA_ENABLE_PIN,
+    AT91SAM9Rx64_DISPLAY_CONTROLLER_HSYNC_PIN,
+    AT91SAM9Rx64_DISPLAY_CONTROLLER_VSYNC_PIN,
+    AT91SAM9Rx64_DISPLAY_CONTROLLER_CLOCK_PIN,
+    AT91SAM9Rx64_DISPLAY_CONTROLLER_DATA_ENABLE_PIN,
 };
 
-bool AT91_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
+bool AT91SAM9Rx64_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
     if (enable) {
         bool openFailed = false;
 
         // Open red pins
         for (auto i = 0; i < 5; i++) {
-            openFailed |= !AT91_GpioInternal_OpenPin(displayPins.red[i].number);
+            openFailed |= !AT91SAM9Rx64_GpioInternal_OpenPin(displayPins.red[i].number);
         }
 
         // Open green pins
         for (auto i = 0; i < 6; i++) {
-            openFailed |= !AT91_GpioInternal_OpenPin(displayPins.green[i].number);
+            openFailed |= !AT91SAM9Rx64_GpioInternal_OpenPin(displayPins.green[i].number);
         }
 
         // Open blue pins
         for (auto i = 0; i < 5; i++) {
-            openFailed |= !AT91_GpioInternal_OpenPin(displayPins.blue[i].number);
+            openFailed |= !AT91SAM9Rx64_GpioInternal_OpenPin(displayPins.blue[i].number);
         }
 
         // Open hsync, vsync, clock pins
-        openFailed |= !AT91_GpioInternal_OpenPin(displayPins.hsync.number);
-        openFailed |= !AT91_GpioInternal_OpenPin(displayPins.vsync.number);
-        openFailed |= !AT91_GpioInternal_OpenPin(displayPins.clock.number);
+        openFailed |= !AT91SAM9Rx64_GpioInternal_OpenPin(displayPins.hsync.number);
+        openFailed |= !AT91SAM9Rx64_GpioInternal_OpenPin(displayPins.vsync.number);
+        openFailed |= !AT91SAM9Rx64_GpioInternal_OpenPin(displayPins.clock.number);
 
         // Open enable pin
         if (displayPins.enable.number != PIN_NONE) {
-            openFailed |= !AT91_GpioInternal_OpenPin(displayPins.enable.number);
+            openFailed |= !AT91SAM9Rx64_GpioInternal_OpenPin(displayPins.enable.number);
         }
 
         if (openFailed) {
             // Force to close all pin
-            AT91_Display_SetPinConfiguration(controllerIndex, false);
+            AT91SAM9Rx64_Display_SetPinConfiguration(controllerIndex, false);
 
             return false;
         }
@@ -864,92 +864,92 @@ bool AT91_Display_SetPinConfiguration(int32_t controllerIndex, bool enable) {
         //Config all pins except for Enable pin, (for this pin, only do OpenPin Enable pin to reserve)
         //Config Enable pin when SetActive.
         for (auto i = 0; i < 5; i++) {
-            AT91_GpioInternal_ConfigurePin(displayPins.red[i].number, AT91_Gpio_Direction::Input, displayPins.red[i].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+            AT91SAM9Rx64_GpioInternal_ConfigurePin(displayPins.red[i].number, AT91SAM9Rx64_Gpio_Direction::Input, displayPins.red[i].peripheralSelection, AT91SAM9Rx64_Gpio_ResistorMode::Inactive);
         }
 
         for (auto i = 0; i < 6; i++) {
-            AT91_GpioInternal_ConfigurePin(displayPins.green[i].number, AT91_Gpio_Direction::Input, displayPins.green[i].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+            AT91SAM9Rx64_GpioInternal_ConfigurePin(displayPins.green[i].number, AT91SAM9Rx64_Gpio_Direction::Input, displayPins.green[i].peripheralSelection, AT91SAM9Rx64_Gpio_ResistorMode::Inactive);
         }
 
         for (auto i = 0; i < 5; i++) {
-            AT91_GpioInternal_ConfigurePin(displayPins.blue[i].number, AT91_Gpio_Direction::Input, displayPins.blue[i].peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+            AT91SAM9Rx64_GpioInternal_ConfigurePin(displayPins.blue[i].number, AT91SAM9Rx64_Gpio_Direction::Input, displayPins.blue[i].peripheralSelection, AT91SAM9Rx64_Gpio_ResistorMode::Inactive);
         }
 
-        AT91_GpioInternal_ConfigurePin(displayPins.hsync.number, AT91_Gpio_Direction::Input, displayPins.hsync.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-        AT91_GpioInternal_ConfigurePin(displayPins.vsync.number, AT91_Gpio_Direction::Input, displayPins.vsync.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
-        AT91_GpioInternal_ConfigurePin(displayPins.clock.number, AT91_Gpio_Direction::Input, displayPins.clock.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+        AT91SAM9Rx64_GpioInternal_ConfigurePin(displayPins.hsync.number, AT91SAM9Rx64_Gpio_Direction::Input, displayPins.hsync.peripheralSelection, AT91SAM9Rx64_Gpio_ResistorMode::Inactive);
+        AT91SAM9Rx64_GpioInternal_ConfigurePin(displayPins.vsync.number, AT91SAM9Rx64_Gpio_Direction::Input, displayPins.vsync.peripheralSelection, AT91SAM9Rx64_Gpio_ResistorMode::Inactive);
+        AT91SAM9Rx64_GpioInternal_ConfigurePin(displayPins.clock.number, AT91SAM9Rx64_Gpio_Direction::Input, displayPins.clock.peripheralSelection, AT91SAM9Rx64_Gpio_ResistorMode::Inactive);
 
     }
     else {
         for (auto i = 0; i < 5; i++) {
-            AT91_GpioInternal_ClosePin(displayPins.red[i].number);
+            AT91SAM9Rx64_GpioInternal_ClosePin(displayPins.red[i].number);
         }
 
         for (auto i = 0; i < 6; i++) {
-            AT91_GpioInternal_ClosePin(displayPins.green[i].number);
+            AT91SAM9Rx64_GpioInternal_ClosePin(displayPins.green[i].number);
         }
 
         for (auto i = 0; i < 5; i++) {
-            AT91_GpioInternal_ClosePin(displayPins.blue[i].number);
+            AT91SAM9Rx64_GpioInternal_ClosePin(displayPins.blue[i].number);
         }
 
-        AT91_GpioInternal_ClosePin(displayPins.hsync.number);
-        AT91_GpioInternal_ClosePin(displayPins.vsync.number);
-        AT91_GpioInternal_ClosePin(displayPins.clock.number);
-        AT91_GpioInternal_ClosePin(displayPins.enable.number);
+        AT91SAM9Rx64_GpioInternal_ClosePin(displayPins.hsync.number);
+        AT91SAM9Rx64_GpioInternal_ClosePin(displayPins.vsync.number);
+        AT91SAM9Rx64_GpioInternal_ClosePin(displayPins.clock.number);
+        AT91SAM9Rx64_GpioInternal_ClosePin(displayPins.enable.number);
     }
 
     return true;
 }
 
-uint32_t* AT91_Display_GetFrameBuffer() {
-    return (uint32_t*)m_AT91_Display_VituralRam;
+uint32_t* AT91SAM9Rx64_Display_GetFrameBuffer() {
+    return (uint32_t*)m_AT91SAM9Rx64_Display_VituralRam;
 }
 
-int32_t AT91_Display_GetWidth() {
-    int32_t width = m_AT91_DisplayWidth;
-    int32_t height = m_AT91_DisplayHeight;
+int32_t AT91SAM9Rx64_Display_GetWidth() {
+    int32_t width = m_AT91SAM9Rx64_DisplayWidth;
+    int32_t height = m_AT91SAM9Rx64_DisplayHeight;
 
-    AT91_Display_GetRotatedDimensions(&width, &height);
+    AT91SAM9Rx64_Display_GetRotatedDimensions(&width, &height);
 
     return width;
 }
 
-int32_t AT91_Display_GetHeight() {
-    int32_t width = m_AT91_DisplayWidth;
-    int32_t height = m_AT91_DisplayHeight;
+int32_t AT91SAM9Rx64_Display_GetHeight() {
+    int32_t width = m_AT91SAM9Rx64_DisplayWidth;
+    int32_t height = m_AT91SAM9Rx64_DisplayHeight;
 
-    AT91_Display_GetRotatedDimensions(&width, &height);
+    AT91SAM9Rx64_Display_GetRotatedDimensions(&width, &height);
 
     return height;
 }
 
-uint32_t AT91_Display_GetPixelClockDivider() {
-    return m_AT91_DisplayPixelClockRateKHz;
+uint32_t AT91SAM9Rx64_Display_GetPixelClockDivider() {
+    return m_AT91SAM9Rx64_DisplayPixelClockRateKHz;
 }
 
-int32_t AT91_Display_GetOrientation() {
-    return m_AT91_Display_CurrentRotation;
+int32_t AT91SAM9Rx64_Display_GetOrientation() {
+    return m_AT91SAM9Rx64_Display_CurrentRotation;
 }
 
-void AT91_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height, uint32_t data[]) {
+void AT91SAM9Rx64_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height, uint32_t data[]) {
 
     int32_t xTo, yTo, xFrom, yFrom;
     int32_t xOffset = x;
     int32_t yOffset = y;
     uint16_t *from = (uint16_t *)data;
-    uint16_t *to = (uint16_t *)m_AT91_Display_VituralRam;
+    uint16_t *to = (uint16_t *)m_AT91SAM9Rx64_Display_VituralRam;
 
 
-    int32_t screenWidth = m_AT91_DisplayWidth;
-    int32_t screenHeight = m_AT91_DisplayHeight;
+    int32_t screenWidth = m_AT91SAM9Rx64_DisplayWidth;
+    int32_t screenHeight = m_AT91SAM9Rx64_DisplayHeight;
     int32_t startPx, toAddition;
 
-    if (m_AT91_DisplayEnable == false)
+    if (m_AT91SAM9Rx64_DisplayEnable == false)
         return;
 
-    switch (m_AT91_Display_CurrentRotation) {
-    case AT91_LCD_Rotation::rotateNormal_0:
+    switch (m_AT91SAM9Rx64_Display_CurrentRotation) {
+    case AT91SAM9Rx64_LCD_Rotation::rotateNormal_0:
 
         if (xOffset == 0 && yOffset == 0 &&
             width == screenWidth && height == screenHeight) {
@@ -964,7 +964,7 @@ void AT91_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height, 
 
         break;
 
-    case AT91_LCD_Rotation::rotateCCW_90:
+    case AT91SAM9Rx64_LCD_Rotation::rotateCCW_90:
 
         startPx = yOffset * screenHeight;
         xFrom = xOffset + width;
@@ -987,7 +987,7 @@ void AT91_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height, 
 
         break;
 
-    case AT91_LCD_Rotation::rotateCW_90:
+    case AT91SAM9Rx64_LCD_Rotation::rotateCW_90:
 
         startPx = (yOffset + height - 1) * screenHeight;
         xFrom = xOffset;
@@ -1011,7 +1011,7 @@ void AT91_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height, 
 
         break;
 
-    case AT91_LCD_Rotation::rotate_180:
+    case AT91SAM9Rx64_LCD_Rotation::rotate_180:
 
         xFrom = (yOffset + height - 1) * screenWidth + xOffset + width;
 
@@ -1036,35 +1036,35 @@ void AT91_Display_BitBltEx(int32_t x, int32_t y, int32_t width, int32_t height, 
 
 }
 
-void AT91_Display_WriteChar(uint8_t c, int32_t row, int32_t col) {
-    m_AT91_Display_TextRow = row;
-    m_AT91_Display_TextColumn = col;
-    AT91_Display_WriteFormattedChar(c);
+void AT91SAM9Rx64_Display_WriteChar(uint8_t c, int32_t row, int32_t col) {
+    m_AT91SAM9Rx64_Display_TextRow = row;
+    m_AT91SAM9Rx64_Display_TextColumn = col;
+    AT91SAM9Rx64_Display_WriteFormattedChar(c);
 
 }
-void AT91_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenHeight) {
-    switch (m_AT91_Display_CurrentRotation) {
-    case AT91_LCD_Rotation::rotateNormal_0:
-    case AT91_LCD_Rotation::rotate_180:
-        *screenWidth = m_AT91_DisplayWidth;
-        *screenHeight = m_AT91_DisplayHeight;
+void AT91SAM9Rx64_Display_GetRotatedDimensions(int32_t *screenWidth, int32_t *screenHeight) {
+    switch (m_AT91SAM9Rx64_Display_CurrentRotation) {
+    case AT91SAM9Rx64_LCD_Rotation::rotateNormal_0:
+    case AT91SAM9Rx64_LCD_Rotation::rotate_180:
+        *screenWidth = m_AT91SAM9Rx64_DisplayWidth;
+        *screenHeight = m_AT91SAM9Rx64_DisplayHeight;
         break;
 
-    case AT91_LCD_Rotation::rotateCCW_90:
-    case AT91_LCD_Rotation::rotateCW_90:
-        *screenWidth = m_AT91_DisplayHeight;
-        *screenHeight = m_AT91_DisplayWidth;
+    case AT91SAM9Rx64_LCD_Rotation::rotateCCW_90:
+    case AT91SAM9Rx64_LCD_Rotation::rotateCW_90:
+        *screenWidth = m_AT91SAM9Rx64_DisplayHeight;
+        *screenHeight = m_AT91SAM9Rx64_DisplayWidth;
         break;
     }
 }
 
-TinyCLR_Result AT91_Display_Acquire(const TinyCLR_Display_Controller* self) {
+TinyCLR_Result AT91SAM9Rx64_Display_Acquire(const TinyCLR_Display_Controller* self) {
     if (displayInitializeCount == 0) {
-        m_AT91_Display_CurrentRotation = AT91_LCD_Rotation::rotateNormal_0;
+        m_AT91SAM9Rx64_Display_CurrentRotation = AT91SAM9Rx64_LCD_Rotation::rotateNormal_0;
 
         auto controllerIndex = 0;
 
-        if (!AT91_Display_SetPinConfiguration(controllerIndex, true)) {
+        if (!AT91SAM9Rx64_Display_SetPinConfiguration(controllerIndex, true)) {
             return TinyCLR_Result::SharingViolation;
         }
     }
@@ -1074,35 +1074,35 @@ TinyCLR_Result AT91_Display_Acquire(const TinyCLR_Display_Controller* self) {
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Display_Release(const TinyCLR_Display_Controller* self) {
+TinyCLR_Result AT91SAM9Rx64_Display_Release(const TinyCLR_Display_Controller* self) {
     if (displayInitializeCount == 0) return TinyCLR_Result::InvalidOperation;
 
     displayInitializeCount--;
 
     if (displayInitializeCount == 0) {
-        AT91_Display_Uninitialize();
+        AT91SAM9Rx64_Display_Uninitialize();
 
         auto controllerIndex = 0;
 
-        AT91_Display_SetPinConfiguration(controllerIndex, false);
+        AT91SAM9Rx64_Display_SetPinConfiguration(controllerIndex, false);
 
-        m_AT91_DisplayEnable = false;
+        m_AT91SAM9Rx64_DisplayEnable = false;
 
-        if (m_AT91_Display_buffer != nullptr) {
+        if (m_AT91SAM9Rx64_Display_buffer != nullptr) {
             auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-            memoryProvider->Free(memoryProvider, m_AT91_Display_buffer);
+            memoryProvider->Free(memoryProvider, m_AT91SAM9Rx64_Display_buffer);
 
-            m_AT91_Display_buffer = nullptr;
+            m_AT91SAM9Rx64_Display_buffer = nullptr;
         }
     }
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Display_Enable(const TinyCLR_Display_Controller* self) {
-    if (m_AT91_DisplayEnable || AT91_Display_Initialize()) {
-        m_AT91_DisplayEnable = true;
+TinyCLR_Result AT91SAM9Rx64_Display_Enable(const TinyCLR_Display_Controller* self) {
+    if (m_AT91SAM9Rx64_DisplayEnable || AT91SAM9Rx64_Display_Initialize()) {
+        m_AT91SAM9Rx64_DisplayEnable = true;
 
         return TinyCLR_Result::Success;
     }
@@ -1110,44 +1110,44 @@ TinyCLR_Result AT91_Display_Enable(const TinyCLR_Display_Controller* self) {
     return TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result AT91_Display_Disable(const TinyCLR_Display_Controller* self) {
-    AT91_Display_Uninitialize();
+TinyCLR_Result AT91SAM9Rx64_Display_Disable(const TinyCLR_Display_Controller* self) {
+    AT91SAM9Rx64_Display_Uninitialize();
 
-    m_AT91_DisplayEnable = false;
+    m_AT91SAM9Rx64_DisplayEnable = false;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Display_SetConfiguration(const TinyCLR_Display_Controller* self, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration) {
+TinyCLR_Result AT91SAM9Rx64_Display_SetConfiguration(const TinyCLR_Display_Controller* self, TinyCLR_Display_DataFormat dataFormat, uint32_t width, uint32_t height, const void* configuration) {
     if (dataFormat != TinyCLR_Display_DataFormat::Rgb565) return TinyCLR_Result::NotSupported;
 
     if (configuration != nullptr) {
         auto& cfg = *(const TinyCLR_Display_ParallelConfiguration*)configuration;
 
-        m_AT91_DisplayWidth = width;
-        m_AT91_DisplayHeight = height;
+        m_AT91SAM9Rx64_DisplayWidth = width;
+        m_AT91SAM9Rx64_DisplayHeight = height;
 
-        m_AT91_DisplayOutputEnableIsFixed = cfg.DataEnableIsFixed;
-        m_AT91_DisplayOutputEnablePolarity = cfg.DataEnablePolarity;
-        m_AT91_DisplayPixelPolarity = cfg.PixelPolarity;
+        m_AT91SAM9Rx64_DisplayOutputEnableIsFixed = cfg.DataEnableIsFixed;
+        m_AT91SAM9Rx64_DisplayOutputEnablePolarity = cfg.DataEnablePolarity;
+        m_AT91SAM9Rx64_DisplayPixelPolarity = cfg.PixelPolarity;
 
-        m_AT91_DisplayPixelClockRateKHz = cfg.PixelClockRate / 1000;
+        m_AT91SAM9Rx64_DisplayPixelClockRateKHz = cfg.PixelClockRate / 1000;
 
-        m_AT91_DisplayHorizontalSyncPolarity = cfg.HorizontalSyncPolarity;
+        m_AT91SAM9Rx64_DisplayHorizontalSyncPolarity = cfg.HorizontalSyncPolarity;
 
-        m_AT91_DisplayHorizontalSyncPulseWidth = cfg.HorizontalSyncPulseWidth;
-        m_AT91_DisplayHorizontalFrontPorch = cfg.HorizontalFrontPorch;
-        m_AT91_DisplayHorizontalBackPorch = cfg.HorizontalBackPorch;
+        m_AT91SAM9Rx64_DisplayHorizontalSyncPulseWidth = cfg.HorizontalSyncPulseWidth;
+        m_AT91SAM9Rx64_DisplayHorizontalFrontPorch = cfg.HorizontalFrontPorch;
+        m_AT91SAM9Rx64_DisplayHorizontalBackPorch = cfg.HorizontalBackPorch;
 
-        m_AT91_DisplayVerticalSyncPolarity = cfg.VerticalSyncPolarity;
+        m_AT91SAM9Rx64_DisplayVerticalSyncPolarity = cfg.VerticalSyncPolarity;
 
-        m_AT91_DisplayVerticalSyncPulseWidth = cfg.VerticalSyncPulseWidth;
-        m_AT91_DisplayVerticalFrontPorch = cfg.VerticalFrontPorch;
-        m_AT91_DisplayVerticalBackPorch = cfg.VerticalBackPorch;
+        m_AT91SAM9Rx64_DisplayVerticalSyncPulseWidth = cfg.VerticalSyncPulseWidth;
+        m_AT91SAM9Rx64_DisplayVerticalFrontPorch = cfg.VerticalFrontPorch;
+        m_AT91SAM9Rx64_DisplayVerticalBackPorch = cfg.VerticalBackPorch;
 
         switch (dataFormat) {
         case TinyCLR_Display_DataFormat::Rgb565:
-            m_AT91_DisplayBufferSize = width * height * 2;
+            m_AT91SAM9Rx64_DisplayBufferSize = width * height * 2;
             break;
 
         default:
@@ -1157,27 +1157,27 @@ TinyCLR_Result AT91_Display_SetConfiguration(const TinyCLR_Display_Controller* s
 
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-        if (m_AT91_Display_buffer != nullptr) {
-            memoryProvider->Free(memoryProvider, m_AT91_Display_buffer);
+        if (m_AT91SAM9Rx64_Display_buffer != nullptr) {
+            memoryProvider->Free(memoryProvider, m_AT91SAM9Rx64_Display_buffer);
 
-            m_AT91_Display_buffer = nullptr;
+            m_AT91SAM9Rx64_Display_buffer = nullptr;
         }
 
-        m_AT91_Display_buffer = (uint32_t*)memoryProvider->Allocate(memoryProvider, m_AT91_DisplayBufferSize + 8);
+        m_AT91SAM9Rx64_Display_buffer = (uint32_t*)memoryProvider->Allocate(memoryProvider, m_AT91SAM9Rx64_DisplayBufferSize + 8);
 
-        if (m_AT91_Display_buffer == nullptr) {
+        if (m_AT91SAM9Rx64_Display_buffer == nullptr) {
             return TinyCLR_Result::OutOfMemory;
         }
 
-        m_AT91_Display_VituralRam = (uint16_t*)((((uint32_t)m_AT91_Display_buffer) + (7)) & (~((uint32_t)(7))));
+        m_AT91SAM9Rx64_Display_VituralRam = (uint16_t*)((((uint32_t)m_AT91SAM9Rx64_Display_buffer) + (7)) & (~((uint32_t)(7))));
 
-        // Set displayPins.enable following m_AT91_DisplayOutputEnableIsFixed
+        // Set displayPins.enable following m_AT91SAM9Rx64_DisplayOutputEnableIsFixed
         if (displayPins.enable.number != PIN_NONE) {
-            if (m_AT91_DisplayOutputEnableIsFixed) {
-                AT91_GpioInternal_EnableOutputPin(displayPins.enable.number, m_AT91_DisplayOutputEnablePolarity);
+            if (m_AT91SAM9Rx64_DisplayOutputEnableIsFixed) {
+                AT91SAM9Rx64_GpioInternal_EnableOutputPin(displayPins.enable.number, m_AT91SAM9Rx64_DisplayOutputEnablePolarity);
             }
             else {
-                AT91_GpioInternal_ConfigurePin(displayPins.enable.number, AT91_Gpio_Direction::Input, displayPins.enable.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
+                AT91SAM9Rx64_GpioInternal_ConfigurePin(displayPins.enable.number, AT91SAM9Rx64_Gpio_Direction::Input, displayPins.enable.peripheralSelection, AT91SAM9Rx64_Gpio_ResistorMode::Inactive);
             }
         }
     }
@@ -1185,31 +1185,31 @@ TinyCLR_Result AT91_Display_SetConfiguration(const TinyCLR_Display_Controller* s
     return  TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Display_GetConfiguration(const TinyCLR_Display_Controller* self, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration) {
+TinyCLR_Result AT91SAM9Rx64_Display_GetConfiguration(const TinyCLR_Display_Controller* self, TinyCLR_Display_DataFormat& dataFormat, uint32_t& width, uint32_t& height, void* configuration) {
     dataFormat = TinyCLR_Display_DataFormat::Rgb565;
-    width = m_AT91_DisplayWidth;
-    height = m_AT91_DisplayHeight;
+    width = m_AT91SAM9Rx64_DisplayWidth;
+    height = m_AT91SAM9Rx64_DisplayHeight;
 
     if (configuration != nullptr) {
         auto& cfg = *(TinyCLR_Display_ParallelConfiguration*)configuration;
 
-        cfg.DataEnableIsFixed = m_AT91_DisplayOutputEnableIsFixed;
-        cfg.DataEnablePolarity = m_AT91_DisplayOutputEnablePolarity;
-        cfg.PixelPolarity = m_AT91_DisplayPixelPolarity;
+        cfg.DataEnableIsFixed = m_AT91SAM9Rx64_DisplayOutputEnableIsFixed;
+        cfg.DataEnablePolarity = m_AT91SAM9Rx64_DisplayOutputEnablePolarity;
+        cfg.PixelPolarity = m_AT91SAM9Rx64_DisplayPixelPolarity;
 
-        cfg.PixelClockRate = m_AT91_DisplayPixelClockRateKHz * 1000;
+        cfg.PixelClockRate = m_AT91SAM9Rx64_DisplayPixelClockRateKHz * 1000;
 
-        cfg.HorizontalSyncPolarity = m_AT91_DisplayHorizontalSyncPolarity;
+        cfg.HorizontalSyncPolarity = m_AT91SAM9Rx64_DisplayHorizontalSyncPolarity;
 
-        cfg.HorizontalSyncPulseWidth = m_AT91_DisplayHorizontalSyncPulseWidth;
-        cfg.HorizontalFrontPorch = m_AT91_DisplayHorizontalFrontPorch;
-        cfg.HorizontalBackPorch = m_AT91_DisplayHorizontalBackPorch;
+        cfg.HorizontalSyncPulseWidth = m_AT91SAM9Rx64_DisplayHorizontalSyncPulseWidth;
+        cfg.HorizontalFrontPorch = m_AT91SAM9Rx64_DisplayHorizontalFrontPorch;
+        cfg.HorizontalBackPorch = m_AT91SAM9Rx64_DisplayHorizontalBackPorch;
 
-        cfg.VerticalSyncPolarity = m_AT91_DisplayVerticalSyncPolarity;
+        cfg.VerticalSyncPolarity = m_AT91SAM9Rx64_DisplayVerticalSyncPolarity;
 
-        cfg.VerticalSyncPulseWidth = m_AT91_DisplayVerticalSyncPulseWidth;
-        cfg.VerticalFrontPorch = m_AT91_DisplayVerticalFrontPorch;
-        cfg.VerticalBackPorch = m_AT91_DisplayVerticalBackPorch;
+        cfg.VerticalSyncPulseWidth = m_AT91SAM9Rx64_DisplayVerticalSyncPulseWidth;
+        cfg.VerticalFrontPorch = m_AT91SAM9Rx64_DisplayVerticalFrontPorch;
+        cfg.VerticalBackPorch = m_AT91SAM9Rx64_DisplayVerticalBackPorch;
 
         return TinyCLR_Result::Success;
     }
@@ -1217,41 +1217,41 @@ TinyCLR_Result AT91_Display_GetConfiguration(const TinyCLR_Display_Controller* s
     return TinyCLR_Result::InvalidOperation;
 }
 
-TinyCLR_Result AT91_Display_DrawBuffer(const TinyCLR_Display_Controller* self, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const uint8_t* data) {
-    AT91_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
+TinyCLR_Result AT91SAM9Rx64_Display_DrawBuffer(const TinyCLR_Display_Controller* self, uint32_t x, uint32_t y, uint32_t width, uint32_t height, const uint8_t* data) {
+    AT91SAM9Rx64_Display_BitBltEx(x, y, width, height, (uint32_t*)data);
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Display_DrawPixel(const TinyCLR_Display_Controller* self, uint32_t x, uint32_t y, uint64_t color) {
+TinyCLR_Result AT91SAM9Rx64_Display_DrawPixel(const TinyCLR_Display_Controller* self, uint32_t x, uint32_t y, uint64_t color) {
     uint16_t rgb565 = ((color & 0xF80000) >> 8) | ((color & 0x00FC00) >> 5) | ((color & 0x0000F8) >> 3);
 
     volatile uint16_t * loc;
 
-    if (m_AT91_DisplayEnable == false)
+    if (m_AT91SAM9Rx64_DisplayEnable == false)
         return TinyCLR_Result::InvalidOperation;
 
-    if (x >= m_AT91_DisplayWidth)
+    if (x >= m_AT91SAM9Rx64_DisplayWidth)
         return TinyCLR_Result::InvalidOperation;
-    if (y >= m_AT91_DisplayHeight)
+    if (y >= m_AT91SAM9Rx64_DisplayHeight)
         return TinyCLR_Result::InvalidOperation;
 
-    loc = m_AT91_Display_VituralRam + (y *m_AT91_DisplayWidth) + (x);
+    loc = m_AT91SAM9Rx64_Display_VituralRam + (y *m_AT91SAM9Rx64_DisplayWidth) + (x);
 
     *loc = rgb565;
 
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result AT91_Display_DrawString(const TinyCLR_Display_Controller* self, const char* data, size_t length) {
+TinyCLR_Result AT91SAM9Rx64_Display_DrawString(const TinyCLR_Display_Controller* self, const char* data, size_t length) {
     for (size_t i = 0; i < length; i++)
-        AT91_Display_WriteFormattedChar(data[i]);
+        AT91SAM9Rx64_Display_WriteFormattedChar(data[i]);
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Display_DataFormat dataFormats[] = { TinyCLR_Display_DataFormat::Rgb565 };
 
-TinyCLR_Result AT91_Display_GetCapabilities(const TinyCLR_Display_Controller* self, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount) {
+TinyCLR_Result AT91SAM9Rx64_Display_GetCapabilities(const TinyCLR_Display_Controller* self, TinyCLR_Display_InterfaceType& type, const TinyCLR_Display_DataFormat*& supportedDataFormats, size_t& supportedDataFormatCount) {
     type = TinyCLR_Display_InterfaceType::Parallel;
     supportedDataFormatCount = SIZEOF_ARRAY(dataFormats);
     supportedDataFormats = dataFormats;
@@ -1263,19 +1263,19 @@ const char* displayApiNames[TOTAL_DISPLAY_CONTROLLERS] = {
     "GHIElectronics.TinyCLR.NativeApis.AT91.DisplayController\\0"
 };
 
-void AT91_Display_AddApi(const TinyCLR_Api_Manager* apiManager) {
+void AT91SAM9Rx64_Display_AddApi(const TinyCLR_Api_Manager* apiManager) {
     for (auto i = 0; i < TOTAL_DISPLAY_CONTROLLERS; i++) {
         displayControllers[i].ApiInfo = &displayApi[i];
-        displayControllers[i].Acquire = &AT91_Display_Acquire;
-        displayControllers[i].Release = &AT91_Display_Release;
-        displayControllers[i].Enable = &AT91_Display_Enable;
-        displayControllers[i].Disable = &AT91_Display_Disable;
-        displayControllers[i].SetConfiguration = &AT91_Display_SetConfiguration;
-        displayControllers[i].GetConfiguration = &AT91_Display_GetConfiguration;
-        displayControllers[i].GetCapabilities = &AT91_Display_GetCapabilities;
-        displayControllers[i].DrawBuffer = &AT91_Display_DrawBuffer;
-        displayControllers[i].DrawPixel = &AT91_Display_DrawPixel;
-        displayControllers[i].DrawString = &AT91_Display_DrawString;
+        displayControllers[i].Acquire = &AT91SAM9Rx64_Display_Acquire;
+        displayControllers[i].Release = &AT91SAM9Rx64_Display_Release;
+        displayControllers[i].Enable = &AT91SAM9Rx64_Display_Enable;
+        displayControllers[i].Disable = &AT91SAM9Rx64_Display_Disable;
+        displayControllers[i].SetConfiguration = &AT91SAM9Rx64_Display_SetConfiguration;
+        displayControllers[i].GetConfiguration = &AT91SAM9Rx64_Display_GetConfiguration;
+        displayControllers[i].GetCapabilities = &AT91SAM9Rx64_Display_GetCapabilities;
+        displayControllers[i].DrawBuffer = &AT91SAM9Rx64_Display_DrawBuffer;
+        displayControllers[i].DrawPixel = &AT91SAM9Rx64_Display_DrawPixel;
+        displayControllers[i].DrawString = &AT91SAM9Rx64_Display_DrawString;
 
         displayApi[i].Author = "GHI Electronics, LLC";
         displayApi[i].Name = displayApiNames[i];
@@ -1288,20 +1288,20 @@ void AT91_Display_AddApi(const TinyCLR_Api_Manager* apiManager) {
     }
 
     displayInitializeCount = 0;
-    m_AT91_Display_buffer = nullptr;
-    m_AT91_DisplayEnable = false;
+    m_AT91SAM9Rx64_Display_buffer = nullptr;
+    m_AT91SAM9Rx64_DisplayEnable = false;
 
     apiManager->SetDefaultName(apiManager, TinyCLR_Api_Type::DisplayController, displayApi[0].Name);
 }
 
-void AT91_Display_Reset() {
-    AT91_Display_Clear();
+void AT91SAM9Rx64_Display_Reset() {
+    AT91SAM9Rx64_Display_Clear();
 
-    if (m_AT91_DisplayEnable)
-        AT91_Display_Release(&displayControllers[0]);
+    if (m_AT91SAM9Rx64_DisplayEnable)
+        AT91SAM9Rx64_Display_Release(&displayControllers[0]);
 
-    m_AT91_DisplayEnable = false;
+    m_AT91SAM9Rx64_DisplayEnable = false;
     displayInitializeCount = 0;
-    m_AT91_Display_buffer = nullptr;
+    m_AT91SAM9Rx64_Display_buffer = nullptr;
 }
 #endif // INCLUDE_DISPLAY

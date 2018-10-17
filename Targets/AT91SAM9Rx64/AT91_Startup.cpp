@@ -18,41 +18,41 @@
 #pragma GCC optimize 0
 #endif
 
-#include "AT91.h"
+#include "AT91SAM9Rx64.h"
 
-void AT91_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider) {
+void AT91SAM9Rx64_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const TinyCLR_Interop_Manager* interopProvider) {
 #ifdef INCLUDE_ADC
-    AT91_Adc_Reset();
+    AT91SAM9Rx64_Adc_Reset();
 #endif
 #ifdef INCLUDE_CAN
-    AT91_Can_Reset();
+    AT91SAM9Rx64_Can_Reset();
 #endif
 #ifdef INCLUDE_DAC
-    AT91_Dac_Reset();
+    AT91SAM9Rx64_Dac_Reset();
 #endif
 #ifdef INCLUDE_DISPLAY
-    AT91_Display_Reset();
+    AT91SAM9Rx64_Display_Reset();
 #endif
 #ifdef INCLUDE_GPIO
-    AT91_Gpio_Reset();
+    AT91SAM9Rx64_Gpio_Reset();
 #endif
 #ifdef INCLUDE_I2C
-    AT91_I2c_Reset();
+    AT91SAM9Rx64_I2c_Reset();
 #endif
 #ifdef INCLUDE_PWM
-    AT91_Pwm_Reset();
+    AT91SAM9Rx64_Pwm_Reset();
 #endif
 #ifdef INCLUDE_SD
-    AT91_SdCard_Reset();
+    AT91SAM9Rx64_SdCard_Reset();
 #endif
 #ifdef INCLUDE_SPI
-    AT91_Spi_Reset();
+    AT91SAM9Rx64_Spi_Reset();
 #endif
 #ifdef INCLUDE_UART
-    AT91_Uart_Reset();
+    AT91SAM9Rx64_Uart_Reset();
 #endif
 #ifdef INCLUDE_USBCLIENT
-    AT91_UsbDevice_Reset();
+    AT91SAM9Rx64_UsbDevice_Reset();
 #endif
 }
 
@@ -76,21 +76,21 @@ extern "C" {
     extern uint32_t ARM_Vectors;
 
 }
-void AT91_SAM_ClockInit(void);
+void AT91SAM9Rx64_SAM_ClockInit(void);
 #pragma arm section code = "SectionForBootstrapOperations"
 
 extern "C" {
     void __section("SectionForBootstrapOperations") SystemInit() {
 
-        AT91_SAM_ClockInit();
+        AT91SAM9Rx64_SAM_ClockInit();
 
-        AT91_CPU_BootstrapCode();
+        AT91SAM9Rx64_CPU_BootstrapCode();
 
-        AT91_MMU_Initialize();
+        AT91SAM9Rx64_MMU_Initialize();
 
-        AT91_Cache_EnableCaches();
+        AT91SAM9Rx64_Cache_EnableCaches();
 
-        AT91_WATCHDOG &g_WDT = AT91::WTDG();
+        AT91SAM9Rx64_WATCHDOG &g_WDT = AT91::WTDG();
 
         g_WDT.WTDG_MR |= 1 << 15;  // Disable watchdog
 
@@ -145,12 +145,12 @@ static void __section("SectionForBootstrapOperations") Prepare_Zero(uint32_t* ds
     }
 }
 
-void AT91_Startup_GetHeap(uint8_t*& start, size_t& length) {
+void AT91SAM9Rx64_Startup_GetHeap(uint8_t*& start, size_t& length) {
     start = (uint8_t*)&HeapBegin;
     length = (size_t)(((int)&HeapEnd) - ((int)&HeapBegin));
 }
 
-void AT91_Startup_Initialize() {
+void AT91SAM9Rx64_Startup_Initialize() {
     //
     // Copy RAM RO regions into proper location.
     //
@@ -204,7 +204,7 @@ void AT91_Startup_Initialize() {
 
 }
 
-const TinyCLR_Startup_UsbDebuggerConfiguration AT91_Startup_UsbDebuggerConfiguration = {
+const TinyCLR_Startup_UsbDebuggerConfiguration AT91SAM9Rx64_Startup_UsbDebuggerConfiguration = {
     USB_DEBUGGER_VENDOR_ID,
     USB_DEBUGGER_PRODUCT_ID,
     CONCAT(L,DEVICE_MANUFACTURER),
@@ -212,10 +212,10 @@ const TinyCLR_Startup_UsbDebuggerConfiguration AT91_Startup_UsbDebuggerConfigura
     0
 };
 
-void AT91_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration) {
+void AT91SAM9Rx64_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const void*& configuration) {
 #if defined(DEBUGGER_SELECTOR_PIN)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(AT91_Gpio_GetRequiredApi()->Implementation);
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(AT91SAM9Rx64_Gpio_GetRequiredApi()->Implementation);
 
     provider->OpenPin(provider, DEBUGGER_SELECTOR_PIN);
     provider->SetDriveMode(provider, DEBUGGER_SELECTOR_PIN, DEBUGGER_SELECTOR_PULL);
@@ -223,11 +223,11 @@ void AT91_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const vo
     provider->ClosePin(provider, DEBUGGER_SELECTOR_PIN);
 
     if (value == DEBUGGER_SELECTOR_USB_STATE) {
-        api = AT91_UsbDevice_GetRequiredApi();
-        configuration = (const void*)&AT91_Startup_UsbDebuggerConfiguration;
+        api = AT91SAM9Rx64_UsbDevice_GetRequiredApi();
+        configuration = (const void*)&AT91SAM9Rx64_Startup_UsbDebuggerConfiguration;
     }
     else {
-        api = AT91_Uart_GetRequiredApi();
+        api = AT91SAM9Rx64_Uart_GetRequiredApi();
     }
 #elif defined(DEBUGGER_FORCE_API) && defined(DEBUGGER_FORCE_INDEX)
     api = DEBUGGER_FORCE_API;
@@ -237,10 +237,10 @@ void AT91_Startup_GetDebuggerTransportApi(const TinyCLR_Api_Info*& api, const vo
 #endif
 }
 
-void AT91_Startup_GetRunApp(bool& runApp) {
+void AT91SAM9Rx64_Startup_GetRunApp(bool& runApp) {
 #if defined(RUN_APP_PIN)
     TinyCLR_Gpio_PinValue value;
-    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(AT91_Gpio_GetRequiredApi()->Implementation);
+    auto provider = static_cast<const TinyCLR_Gpio_Controller*>(AT91SAM9Rx64_Gpio_GetRequiredApi()->Implementation);
 
     provider->OpenPin(provider, RUN_APP_PIN);
     provider->SetDriveMode(provider, RUN_APP_PIN, RUN_APP_PULL);
@@ -255,12 +255,12 @@ void AT91_Startup_GetRunApp(bool& runApp) {
 #endif
 }
 
-#define BOARD_OSCOUNT           (AT91_PMC::CKGR_OSCOUNT & (64 << 8))
-#define BOARD_CKGR_PLLA         ( (0x1 << 29) | AT91_PMC::CKGR_OUT_2)
+#define BOARD_OSCOUNT           (AT91SAM9Rx64_PMC::CKGR_OSCOUNT & (64 << 8))
+#define BOARD_CKGR_PLLA         ( (0x1 << 29) | AT91SAM9Rx64_PMC::CKGR_OUT_2)
 #define BOARD_PLLACOUNT         (63 << 8)
-#define BOARD_MULA              (AT91_PMC::CKGR_MUL & (199 << 16))
-#define BOARD_DIVA              (AT91_PMC::CKGR_DIV & 12)
-#define BOARD_PRESCALER         AT91_PMC::PMC_MDIV_2
+#define BOARD_MULA              (AT91SAM9Rx64_PMC::CKGR_MUL & (199 << 16))
+#define BOARD_DIVA              (AT91SAM9Rx64_PMC::CKGR_DIV & 12)
+#define BOARD_PRESCALER         AT91SAM9Rx64_PMC::PMC_MDIV_2
 
 #define BOARD_USBDIV            AT91C_CKGR_USBDIV_2
 #define BOARD_CKGR_PLLB         AT91C_CKGR_OUT_0
@@ -279,39 +279,39 @@ void AT91_Startup_GetRunApp(bool& runApp) {
 /*
 * Setup PLL & SDRAM
 */
-void AT91_SAM_ClockInit(void) {
+void AT91SAM9Rx64_SAM_ClockInit(void) {
     // Power Management Controller
-    AT91_PMC &pmc = AT91::PMC();
+    AT91SAM9Rx64_PMC &pmc = AT91::PMC();
 
     // Initialize main oscillator
-    pmc.PMC_CKGR_MOR = BOARD_OSCOUNT | AT91_PMC::CKGR_MOSCEN;
-    while (!(pmc.PMC_SR & AT91_PMC::PMC_MOSCS));
+    pmc.PMC_CKGR_MOR = BOARD_OSCOUNT | AT91SAM9Rx64_PMC::CKGR_MOSCEN;
+    while (!(pmc.PMC_SR & AT91SAM9Rx64_PMC::PMC_MOSCS));
 
     // Initialize PLLA at 200MHz
     pmc.PMC_CKGR_PLLAR = BOARD_CKGR_PLLA
         | BOARD_PLLACOUNT
         | BOARD_MULA
         | BOARD_DIVA;
-    while (!(pmc.PMC_SR & AT91_PMC::PMC_LOCKA));
+    while (!(pmc.PMC_SR & AT91SAM9Rx64_PMC::PMC_LOCKA));
 
     // Initialize UTMI for USB usage
     pmc.PMC_CKGR_UCKR = BOARD_USBEN | BOARD_USBPLLCOUNT | BOARD_BIASEN | BOARD_BIASCOUNT;
-    while (!(pmc.PMC_SR & AT91_PMC::PMC_LOCKU));
+    while (!(pmc.PMC_SR & AT91SAM9Rx64_PMC::PMC_LOCKU));
 
 
     // Wait for the master clock if it was already initialized
-    while (!(pmc.PMC_SR & AT91_PMC::PMC_MCKRDY));
+    while (!(pmc.PMC_SR & AT91SAM9Rx64_PMC::PMC_MCKRDY));
 
     // Switch to fast clock
     // Switch to main oscillator + prescaler
     pmc.PMC_MCKR = BOARD_PRESCALER;
-    while (!(pmc.PMC_SR & AT91_PMC::PMC_MCKRDY));
+    while (!(pmc.PMC_SR & AT91SAM9Rx64_PMC::PMC_MCKRDY));
 
     // Switch to PLL + prescaler
-    pmc.PMC_MCKR |= AT91_PMC::PMC_CSS_PLLA_CLK;
-    while (!(pmc.PMC_SR & AT91_PMC::PMC_MCKRDY));
+    pmc.PMC_MCKR |= AT91SAM9Rx64_PMC::PMC_CSS_PLLA_CLK;
+    while (!(pmc.PMC_SR & AT91SAM9Rx64_PMC::PMC_MCKRDY));
 }
 
-void AT91_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
-    AT91_Deployment_GetDeploymentApi(api, configuration);
+void AT91SAM9Rx64_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
+    AT91SAM9Rx64_Deployment_GetDeploymentApi(api, configuration);
 }

@@ -13,43 +13,43 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "AT91.h"
+#include "AT91SAM9Rx64.h"
 
 #ifdef INCLUDE_SD
 
-void AT91_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
+void AT91SAM9Rx64_SdCard_AddApi(const TinyCLR_Api_Manager* apiManager) {
     return nullptr;
 }
 
-TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
+TinyCLR_Result AT91SAM9Rx64_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
     return TinyCLR_Result::NotSupported;
 }
 
-TinyCLR_Result AT91_SdCard_Release(const TinyCLR_Storage_Controller* self) {
+TinyCLR_Result AT91SAM9Rx64_SdCard_Release(const TinyCLR_Storage_Controller* self) {
     return TinyCLR_Result::NotSupported;
 }
 
-TinyCLR_Result AT91_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
+TinyCLR_Result AT91SAM9Rx64_SdCard_Write(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, const uint8_t* data, uint64_t timeout) {
     return TinyCLR_Result::NotSupported;
 }
 
-TinyCLR_Result AT91_SdCard_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
+TinyCLR_Result AT91SAM9Rx64_SdCard_Read(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint8_t* data, uint64_t timeout) {
     return TinyCLR_Result::NotSupported;
 }
 
-TinyCLR_Result AT91_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t count, bool& erased) {
+TinyCLR_Result AT91SAM9Rx64_SdCard_IsErased(const TinyCLR_Storage_Controller* self, uint64_t address, size_t count, bool& erased) {
     return TinyCLR_Result::NotSupported;
 }
 
-TinyCLR_Result AT91_SdCard_Erases(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout) {
+TinyCLR_Result AT91SAM9Rx64_SdCard_Erases(const TinyCLR_Storage_Controller* self, uint64_t address, size_t& count, uint64_t timeout) {
     return TinyCLR_Result::NotSupported;
 }
 
-TinyCLR_Result AT91_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor) {
+TinyCLR_Result AT91SAM9Rx64_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor) {
     return TinyCLR_Result::NotSupported;
 }
 
-TinyCLR_Result AT91_SdCard_Reset() {
+TinyCLR_Result AT91SAM9Rx64_SdCard_Reset() {
     return TinyCLR_Result::NotSupported;
 }
 #endif // INCLUDE_SD

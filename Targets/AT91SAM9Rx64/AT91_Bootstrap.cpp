@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "AT91.h"
+#include "AT91SAM9Rx64.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -40,7 +40,7 @@
     nop \
 
 
-void __section("SectionForBootstrapOperations") AT91_CPU_BootstrapCode() {
+void __section("SectionForBootstrapOperations") AT91SAM9Rx64_CPU_BootstrapCode() {
     uint32_t reg;
 
     //--//
@@ -136,7 +136,7 @@ void __section("SectionForBootstrapOperations") AT91_CPU_BootstrapCode() {
 #endif
 
 #elif defined(COMPILE_THUMB2)
-void AT91_CPU_ARM9_BootstrapCode() {
+void AT91SAM9Rx64_CPU_ARM9_BootstrapCode() {
 }
 
 #endif

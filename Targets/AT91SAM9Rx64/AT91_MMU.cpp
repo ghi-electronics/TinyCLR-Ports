@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "AT91.h"
+#include "AT91SAM9Rx64.h"
 
 // the arm3.0 compiler optimizes out much of the boot strap code which causes
 // the device not to boot for RTM builds (optimization level 3), adding this pragma
@@ -68,27 +68,27 @@ void __section("SectionForBootstrapOperations") ARM9_MMU::GenerateL1_Sections(ui
 
 extern "C"
 {
-    void	AT91_CPU_InvalidateTLBs_asm();
-    void	AT91_CPU_EnableMMU_asm(void* TTB);
-    void	AT91_CPU_DisableMMU_asm();
-    bool	AT91_CPU_IsMMUEnabled_asm();
+    void	AT91SAM9Rx64_CPU_InvalidateTLBs_asm();
+    void	AT91SAM9Rx64_CPU_EnableMMU_asm(void* TTB);
+    void	AT91SAM9Rx64_CPU_DisableMMU_asm();
+    bool	AT91SAM9Rx64_CPU_IsMMUEnabled_asm();
 }
 
-void __section("SectionForBootstrapOperations") AT91_CPU_InvalidateTLBs() {
-    AT91_CPU_InvalidateTLBs_asm();
+void __section("SectionForBootstrapOperations") AT91SAM9Rx64_CPU_InvalidateTLBs() {
+    AT91SAM9Rx64_CPU_InvalidateTLBs_asm();
 }
 
-void __section("SectionForBootstrapOperations") AT91_CPU_EnableMMU(void* TTB) {
-    AT91_CPU_EnableMMU_asm(TTB);
-    AT91_CPU_InvalidateTLBs_asm();
+void __section("SectionForBootstrapOperations") AT91SAM9Rx64_CPU_EnableMMU(void* TTB) {
+    AT91SAM9Rx64_CPU_EnableMMU_asm(TTB);
+    AT91SAM9Rx64_CPU_InvalidateTLBs_asm();
 }
 
-void __section("SectionForBootstrapOperations") AT91_CPU_DisableMMU() {
-    AT91_CPU_DisableMMU_asm();
+void __section("SectionForBootstrapOperations") AT91SAM9Rx64_CPU_DisableMMU() {
+    AT91SAM9Rx64_CPU_DisableMMU_asm();
 }
 
-bool __section("SectionForBootstrapOperations") AT91_CPU_IsMMUEnabled() {
-    return AT91_CPU_IsMMUEnabled_asm();
+bool __section("SectionForBootstrapOperations") AT91SAM9Rx64_CPU_IsMMUEnabled() {
+    return AT91SAM9Rx64_CPU_IsMMUEnabled_asm();
 }
 
 #elif (defined(COMPILE_ARM) || defined(COMPILE_THUMB))
@@ -208,7 +208,7 @@ static const uint32_t c_RLP_Virtual_Address_Cached = 0xA0000000; // Added for RL
 static const uint32_t c_RLP_Virtual_Address_Uncached = 0xB0000000; // Added for RLP Support of Memory MMU
 
 
-void AT91_MMU_Initialize() {
+void AT91SAM9Rx64_MMU_Initialize() {
     uint32_t c_Bootstrap_SDRAM_Begin = ((uint32_t)&Load$$SDRAM$$Base);
     uint32_t c_Bootstrap_SDRAM_End = c_Bootstrap_SDRAM_Begin + ((uint32_t)&Image$$SDRAM$$Length) - ARM9_MMU::c_TTB_size;
     uint32_t c_Bootstrap_SRAM_Begin = ((uint32_t)&Load$$SRAM$$Base);;
@@ -323,6 +323,6 @@ void AT91_MMU_Initialize() {
         false,                                                  // Buffered
         false);                                                 // Extended
 
-    AT91_Cache_FlushCaches();
-    AT91_CPU_EnableMMU(c_Bootstrap_BaseOfTTBs);
+    AT91SAM9Rx64_Cache_FlushCaches();
+    AT91SAM9Rx64_CPU_EnableMMU(c_Bootstrap_BaseOfTTBs);
 }
