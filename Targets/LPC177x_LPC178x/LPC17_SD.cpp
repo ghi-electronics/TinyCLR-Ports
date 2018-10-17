@@ -2257,9 +2257,6 @@ TinyCLR_Result LPC17_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
 
         state->descriptor.RegionAddresses = reinterpret_cast<const uint64_t*>(state->regionAddresses);
         state->descriptor.RegionSizes = reinterpret_cast<const size_t*>(state->regionSizes);
-
-        if (!MCI_And_Card_initialize())
-            return TinyCLR_Result::InvalidOperation;
     }
 
     state->initializeCount++;
@@ -2284,12 +2281,6 @@ TinyCLR_Result LPC17_SdCard_Release(const TinyCLR_Storage_Controller* self) {
         auto clk = sdCardPins[controllerIndex][SDCARD_CLK_PIN];
         auto cmd = sdCardPins[controllerIndex][SDCARD_CMD_PIN];
 
-        LPC_SC->PCONP &= ~(1 << 28); /* Disable clock to the Mci block */
-
-        LPC_SC->PCONP &= ~(1 << 29); /* Disable clock to the Dma block */
-
-        LPC17_InterruptInternal_Deactivate(DMA_IRQn); /* Disable Interrupt */
-
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
         if (state->regionSizes != nullptr)
@@ -2300,6 +2291,7 @@ TinyCLR_Result LPC17_SdCard_Release(const TinyCLR_Storage_Controller* self) {
 
         state->descriptor.RegionAddresses = nullptr;
         state->descriptor.RegionSizes = nullptr;
+
         LPC17_GpioInternal_ClosePin(d0.number);
         LPC17_GpioInternal_ClosePin(d1.number);
         LPC17_GpioInternal_ClosePin(d2.number);
@@ -2392,10 +2384,16 @@ TinyCLR_Result LPC17_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* self
 }
 
 TinyCLR_Result LPC17_SdCard_Open(const TinyCLR_Storage_Controller* self) {
-    return TinyCLR_Result::Success;
+    return MCI_And_Card_initialize() == true ? TinyCLR_Result::Success : TinyCLR_Result::InvalidOperation;
 }
 
 TinyCLR_Result LPC17_SdCard_Close(const TinyCLR_Storage_Controller* self) {
+    LPC_SC->PCONP &= ~(1 << 28); /* Disable clock to the Mci block */
+
+    LPC_SC->PCONP &= ~(1 << 29); /* Disable clock to the Dma block */
+
+    LPC17_InterruptInternal_Deactivate(DMA_IRQn); /* Disable Interrupt */
+
     return TinyCLR_Result::Success;
 }
 

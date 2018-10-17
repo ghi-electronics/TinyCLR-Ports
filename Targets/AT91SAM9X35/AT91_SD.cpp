@@ -2438,22 +2438,6 @@ TinyCLR_Result AT91_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
         AT91_GpioInternal_ConfigurePin(clk.number, AT91_Gpio_Direction::Input, clk.peripheralSelection, AT91_Gpio_ResistorMode::Inactive);
         AT91_GpioInternal_ConfigurePin(cmd.number, AT91_Gpio_Direction::Input, cmd.peripheralSelection, AT91_Gpio_ResistorMode::PullUp);
 
-        AT91_PMC &pmc = AT91::PMC();
-        pmc.EnablePeriphClock(AT91C_ID_HSMCI0);
-
-        DMA_Init();
-
-        MCI_Init(&mciDrv, (AT91PS_MCI)AT91C_BASE_MCI, AT91C_ID_HSMCI0, MCI_SD_SLOTA);
-
-        AT91_InterruptInternal_Activate(AT91C_ID_HSMCI0, (uint32_t*)&MCI_Handler, (void*)&mciDrv);
-
-        if (SD_Init(&sdDrv, (SdDriver *)&mciDrv) != SD_ERROR_NO_ERROR) {
-
-            return TinyCLR_Result::InvalidOperation;
-        }
-
-        MCI_SetSpeed(&mciDrv, 8000000);
-
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
         state->pBuffer = (uint8_t*)memoryProvider->Allocate(memoryProvider, AT91_SD_SECTOR_SIZE + 8);
@@ -2519,13 +2503,6 @@ TinyCLR_Result AT91_SdCard_Release(const TinyCLR_Storage_Controller* self) {
         auto d3 = sdCardPins[controllerIndex][SDCARD_DATA3_PIN];
         auto clk = sdCardPins[controllerIndex][SDCARD_CLK_PIN];
         auto cmd = sdCardPins[controllerIndex][SDCARD_CMD_PIN];
-
-        AT91_PMC &pmc = AT91::PMC();
-
-        pmc.DisablePeriphClock(AT91C_ID_HSMCI0); /* Disable clock to the Mci block */
-        pmc.DisablePeriphClock(AT91C_ID_DMAC0); /* Disable clock to the Dma block */
-
-        AT91_InterruptInternal_Deactivate(AT91C_ID_HSMCI0); /* Disable Interrupt */
 
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
@@ -2757,10 +2734,33 @@ TinyCLR_Result AT91_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* self,
 }
 
 TinyCLR_Result AT91_SdCard_Open(const TinyCLR_Storage_Controller* self) {
+    AT91_PMC &pmc = AT91::PMC();
+
+    pmc.EnablePeriphClock(AT91C_ID_HSMCI0);
+
+    DMA_Init();
+
+    MCI_Init(&mciDrv, (AT91PS_MCI)AT91C_BASE_MCI, AT91C_ID_HSMCI0, MCI_SD_SLOTA);
+
+    AT91_InterruptInternal_Activate(AT91C_ID_HSMCI0, (uint32_t*)&MCI_Handler, (void*)&mciDrv);
+
+    if (SD_Init(&sdDrv, (SdDriver *)&mciDrv) != SD_ERROR_NO_ERROR) {
+        return TinyCLR_Result::InvalidOperation;
+    }
+
+    MCI_SetSpeed(&mciDrv, 8000000);
+
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91_SdCard_Close(const TinyCLR_Storage_Controller* self) {
+    AT91_PMC &pmc = AT91::PMC();
+
+    pmc.DisablePeriphClock(AT91C_ID_HSMCI0); /* Disable clock to the Mci block */
+    pmc.DisablePeriphClock(AT91C_ID_DMAC0); /* Disable clock to the Dma block */
+
+    AT91_InterruptInternal_Deactivate(AT91C_ID_HSMCI0); /* Disable Interrupt */
+
     return TinyCLR_Result::Success;
 }
 
