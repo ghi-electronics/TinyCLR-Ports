@@ -59,7 +59,7 @@ static TinyCLR_Gpio_Controller gpioControllers[TOTAL_GPIO_PINS];
 static TinyCLR_Api_Info gpioApi[TOTAL_GPIO_PINS];
 
 const char* GpioApiNames[TOTAL_GPIO_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.AT91.GpioController\\0"
+    "GHIElectronics.TinyCLR.NativeApis.AT91SAM9Rx64.GpioController\\0"
 };
 
 void AT91SAM9Rx64_Gpio_EnsureTableInitialized() {

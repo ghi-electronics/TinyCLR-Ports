@@ -57,9 +57,9 @@ static TinyCLR_Api_Info spiApi[TOTAL_SPI_CONTROLLERS];
 
 const char* spiApiNames[TOTAL_SPI_CONTROLLERS] = {
 #if TOTAL_SPI_CONTROLLERS > 0
-"GHIElectronics.TinyCLR.NativeApis.AT91.SpiController\\0",
+"GHIElectronics.TinyCLR.NativeApis.AT91SAM9Rx64.SpiController\\0",
 #if TOTAL_SPI_CONTROLLERS > 1
-"GHIElectronics.TinyCLR.NativeApis.AT91.SpiController\\1",
+"GHIElectronics.TinyCLR.NativeApis.AT91SAM9Rx64.SpiController\\1",
 #endif
 #endif
 };

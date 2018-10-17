@@ -60,17 +60,17 @@ static TinyCLR_Api_Info uartApi[TOTAL_UART_CONTROLLERS];
 
 const char* uartApiNames[] = {
 #if TOTAL_UART_CONTROLLERS > 0
-"GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\0",
+"GHIElectronics.TinyCLR.NativeApis.AT91SAM9Rx64.UartController\\0",
 #if TOTAL_UART_CONTROLLERS > 1
-"GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\1",
+"GHIElectronics.TinyCLR.NativeApis.AT91SAM9Rx64.UartController\\1",
 #if TOTAL_UART_CONTROLLERS > 2
-"GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\2",
+"GHIElectronics.TinyCLR.NativeApis.AT91SAM9Rx64.UartController\\2",
 #if TOTAL_UART_CONTROLLERS > 3
-"GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\3",
+"GHIElectronics.TinyCLR.NativeApis.AT91SAM9Rx64.UartController\\3",
 #if TOTAL_UART_CONTROLLERS > 4
-"GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\4",
+"GHIElectronics.TinyCLR.NativeApis.AT91SAM9Rx64.UartController\\4",
 #if TOTAL_UART_CONTROLLERS > 5
-"GHIElectronics.TinyCLR.NativeApis.AT91.UartController\\5",
+"GHIElectronics.TinyCLR.NativeApis.AT91SAM9Rx64.UartController\\5",
 #endif
 #endif
 #endif

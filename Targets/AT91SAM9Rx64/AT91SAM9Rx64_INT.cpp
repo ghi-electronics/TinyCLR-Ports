@@ -85,7 +85,7 @@ struct InterruptState {
 };
 
 const char* interruptApiNames[TOTAL_INTERRUPT_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.AT91.InterruptController\\0"
+    "GHIElectronics.TinyCLR.NativeApis.AT91SAM9Rx64.InterruptController\\0"
 };
 
 static TinyCLR_Interrupt_Controller interruptControllers[TOTAL_INTERRUPT_CONTROLLERS];

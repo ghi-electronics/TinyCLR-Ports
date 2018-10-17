@@ -31,7 +31,7 @@ static TinyCLR_Api_Info adcApi[TOTAL_ADC_CONTROLLERS];
 static const AT91SAM9Rx64_Gpio_Pin adcPins[] = AT91SAM9Rx64_ADC_PINS;
 
 const char* adcApiNames[TOTAL_ADC_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.AT91.AdcController\\0"
+    "GHIElectronics.TinyCLR.NativeApis.AT91SAM9Rx64.AdcController\\0"
 };
 
 struct AdcState {

@@ -26,7 +26,7 @@ struct PowerState {
 };
 
 const char* powerApiNames[TOTAL_POWER_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.AT91.PowerController\\0"
+    "GHIElectronics.TinyCLR.NativeApis.AT91SAM9Rx64.PowerController\\0"
 };
 
 static TinyCLR_Power_Controller powerControllers[TOTAL_POWER_CONTROLLERS];

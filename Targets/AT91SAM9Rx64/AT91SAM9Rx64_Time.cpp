@@ -218,7 +218,7 @@ static TinyCLR_NativeTime_Controller timeControllers[TOTAL_TIME_CONTROLLERS];
 static TinyCLR_Api_Info timeApi[TOTAL_TIME_CONTROLLERS];
 
 const char* timeApiNames[TOTAL_TIME_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.AT91.NativeTimeController\\0",
+    "GHIElectronics.TinyCLR.NativeApis.AT91SAM9Rx64.NativeTimeController\\0",
 
 };
 

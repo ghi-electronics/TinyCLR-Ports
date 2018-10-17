@@ -46,7 +46,7 @@ static TinyCLR_Rtc_Controller rtcControllers[TOTAL_RTC_CONTROLLERS];
 static TinyCLR_Api_Info rtcApi[TOTAL_RTC_CONTROLLERS];
 
 const char* rtcApiNames[TOTAL_RTC_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.AT91.RtcController\\0"
+    "GHIElectronics.TinyCLR.NativeApis.AT91SAM9Rx64.RtcController\\0"
 };
 
 void AT91SAM9Rx64_Rtc_AddApi(const TinyCLR_Api_Manager* apiManager) {

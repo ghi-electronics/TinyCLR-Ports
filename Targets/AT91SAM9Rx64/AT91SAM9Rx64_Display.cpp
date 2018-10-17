@@ -1260,7 +1260,7 @@ TinyCLR_Result AT91SAM9Rx64_Display_GetCapabilities(const TinyCLR_Display_Contro
 }
 
 const char* displayApiNames[TOTAL_DISPLAY_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.AT91.DisplayController\\0"
+    "GHIElectronics.TinyCLR.NativeApis.AT91SAM9Rx64.DisplayController\\0"
 };
 
 void AT91SAM9Rx64_Display_AddApi(const TinyCLR_Api_Manager* apiManager) {
