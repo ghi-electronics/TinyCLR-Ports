@@ -62,7 +62,8 @@ struct PwmState {
     uint32_t            presc;
     uint32_t            timer;
 
-    uint16_t initializeCount;
+    uint16_t            initializeCount;
+    bool                forceUpdate;
 
 };
 
@@ -183,6 +184,7 @@ TinyCLR_Result STM32F4_Pwm_OpenChannel(const TinyCLR_Pwm_Controller* self, uint3
     *reg |= mode;
 
     state->isOpened[channel] = true;
+    state->forceUpdate = true;
 
     return TinyCLR_Result::Success;
 }
@@ -390,8 +392,8 @@ TinyCLR_Result STM32F4_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self
     if (duration > state->period)
         duration = state->period;
 
-    treg->PSC = state->presc - 1;
-    treg->ARR = state->period - 1;
+    treg->PSC = (state->presc > 0) ? (state->presc - 1) : 0; // Make sure smallest is zero
+    treg->ARR = state->period; // User manual, ARR has no plus 1
 
     if (state->timer == 2 || state->timer == 5) {
         if (channel == 0)
@@ -416,7 +418,13 @@ TinyCLR_Result STM32F4_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* self
         treg->CCER &= ~invBit;
     }
 
-    treg->EGR = TIM_EGR_UG; // enforce register update - update immidiately any changes
+    if (state->forceUpdate) {
+        treg->EGR = TIM_EGR_UG; // enforce register update
+
+        // Need to force to update for next time if frequency still zero
+        // or set dutycles while frequency is zero may take ~ a minute to start
+        state->forceUpdate = (state->period == 0) ? true : false;
+    }
 
     state->invert[channel] = polarity;
     state->dutyCycle[channel] = dutyCycle;
@@ -516,5 +524,6 @@ void STM32F4_Pwm_ResetController(int32_t controllerIndex) {
     state->period = 0;
     state->presc = 0;
     state->timer = controllerIndex + 1;
+    state->forceUpdate = true;
 }
 
