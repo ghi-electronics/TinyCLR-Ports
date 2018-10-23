@@ -783,6 +783,8 @@ TinyCLR_Result STM32F4_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* b
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     if (state->initializeCount == 0) {
+        length = 0; // make sure length is updated
+
         return TinyCLR_Result::NotAvailable;
     }
 
@@ -815,6 +817,8 @@ TinyCLR_Result STM32F4_Uart_Write(const TinyCLR_Uart_Controller* self, const uin
     int32_t controllerIndex = state->controllerIndex;
 
     if (state->initializeCount == 0) {
+        length = 0; // make sure length is updated
+
         return TinyCLR_Result::NotAvailable;
     }
 
