@@ -954,8 +954,8 @@ TinyCLR_Result LPC17_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* buf
 
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    if (state->initializeCount == 0 || state->rxBufferSize == 0) {
-        length = 0;
+    if (state->initializeCount == 0) {
+        length = 0; // make sure length is updated
 
         return TinyCLR_Result::NotAvailable;
     }
@@ -988,8 +988,8 @@ TinyCLR_Result LPC17_Uart_Write(const TinyCLR_Uart_Controller* self, const uint8
 
     auto controllerIndex = state->controllerIndex;
 
-    if (state->initializeCount == 0 || state->txBufferSize == 0) {
-        length = 0;
+    if (state->initializeCount == 0) {
+        length = 0; // make sure length is updated
 
         return TinyCLR_Result::NotAvailable;
     }
