@@ -136,7 +136,7 @@
                            /*UART3*/{ { PIN_NONE, AF_NONE   },  { PIN_NONE, AF_NONE   }, { PIN_NONE, AF_NONE   }, { PIN_NONE, AF_NONE   } },\
                            /*UART4*/{ { PIN_NONE, AF_NONE   },  { PIN_NONE, AF_NONE   }, { PIN_NONE, AF_NONE   }, { PIN_NONE, AF_NONE   } },\
                            /*UART5*/{ { PIN(C, 6), AF(8)    },  { PIN(C, 7), AF(8)    }, { PIN_NONE , AF_NONE  }, { PIN_NONE , AF_NONE  } },\
-                           /*UART6*/{ { PIN(F, 7), AF(8)    },  { PIN(F, 6), AF(8)    }, { PIN(F, 9), AF(8)    }, { PIN(F, 8), AF(8)    } },\
+                           /*UART6*/{ { PIN(F, 7), AF(8)    },  { PIN(F, 6), AF(8)    }, { PIN_NONE , AF_NONE  }, { PIN_NONE , AF_NONE  } },\
                           }
                            
 
