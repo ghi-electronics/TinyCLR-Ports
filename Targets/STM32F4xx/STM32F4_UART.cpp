@@ -343,7 +343,7 @@ void STM32F4_Uart_InterruptHandler(int8_t controllerIndex) {
 
         STM32F4_Uart_GetClearToSendState(state->controller, ctsState);
 
-        if (canPostEvent && state->cleartosendEventHandler != nullptr)
+        if (state->cleartosendEventHandler != nullptr)
             state->cleartosendEventHandler(state->controller, ctsState, STM32F4_Time_GetCurrentProcessorTime());
     }
 }

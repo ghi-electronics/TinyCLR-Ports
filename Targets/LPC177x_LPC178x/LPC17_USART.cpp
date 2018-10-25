@@ -573,7 +573,7 @@ void LPC17_UART_IntHandler(int controllerIndex) {
 
             auto canPostEvent = LPC17_Uart_CanPostEvent(controllerIndex);
 
-            if (canPostEvent && state->cleartosendEventHandler != nullptr)
+            if (state->cleartosendEventHandler != nullptr)
                 state->cleartosendEventHandler(state->controller, ctsState, LPC17_Time_GetCurrentProcessorTime());
         }
     }
