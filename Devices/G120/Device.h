@@ -115,7 +115,7 @@
 
 #define LPC17_G120_UART_PINS {/*           TX                       RX                     RTS                      CTS*/                   \
                               /*UART0*/{ { PIN(0,  2), PF(1)   }, { PIN(0,  3), PF(1) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
-                              /*UART1*/{ { PIN(2,  0), PF(2)   }, { PIN(0, 16), PF(1) }, { PIN(0, 17), PF(1)   }, { PIN(0,  6), PF(4)   } },\
+                              /*UART1*/{ { PIN(2,  0), PF(2)   }, { PIN(0, 16), PF(1) }, { PIN(0, 6), PF(4)   }, { PIN(0,  17), PF(1)   } },\
                               /*UART2*/{ { PIN(0, 10), PF(1)   }, { PIN(0, 11), PF(1) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
                               /*UART3*/{ { PIN(4, 29), PF(2)   }, { PIN(4, 28), PF(2) }, { PIN_NONE , PF_NONE  }, { PIN_NONE , PF_NONE  } },\
                               /*UART4*/{ { PIN(1, 29), PF(5)   }, { PIN(2,  9), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } } \
@@ -123,7 +123,7 @@
 
 #define LPC17_G120E_UART_PINS {/*           TX                     RX                     RTS                      CTS*/                   \
                                /*UART0*/{ { PIN(0,  2), PF(1) }, { PIN(0,  3), PF(1) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
-                               /*UART1*/{ { PIN(2,  0), PF(2) }, { PIN(0, 16), PF(1) }, { PIN(0, 17), PF(1)   }, { PIN(0,  6), PF(4)   } },\
+                               /*UART1*/{ { PIN(2,  0), PF(2) }, { PIN(0, 16), PF(1) }, { PIN(0, 6), PF(4)   }, { PIN(3,  18), PF(3)   } },\
                                /*UART2*/{ { PIN(0, 10), PF(1) }, { PIN(0, 11), PF(1) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
                                /*UART3*/{ { PIN(0, 25), PF(3) }, { PIN(0, 26), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } },\
                                /*UART4*/{ { PIN(1, 29), PF(5) }, { PIN(2,  9), PF(3) }, { PIN_NONE  , PF_NONE }, { PIN_NONE  , PF_NONE } } \
