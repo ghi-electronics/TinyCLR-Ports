@@ -368,7 +368,7 @@ void AT91SAM9X35_Uart_InterruptHandler(void *param) {
         if (sr & AT91SAM9X35_USART::US_CTSIC) {
             auto canPostEvent = AT91SAM9X35_Uart_CanPostEvent(controllerIndex);
 
-            if (canPostEvent && state->cleartosendEventHandler != nullptr)
+            if (state->cleartosendEventHandler != nullptr)
                 state->cleartosendEventHandler(state->controller, ctsState, AT91SAM9X35_Time_GetCurrentProcessorTime());
         }
 
