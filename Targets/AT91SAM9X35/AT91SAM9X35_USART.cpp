@@ -365,14 +365,21 @@ void AT91SAM9X35_Uart_InterruptHandler(void *param) {
     if (state->handshaking) {
         bool ctsState = ((sr & AT91SAM9X35_USART::US_CTS) > 0) ? false : true;
 
-        if (sr & AT91SAM9X35_USART::US_CTSIC) {
-            auto canPostEvent = AT91SAM9X35_Uart_CanPostEvent(controllerIndex);
-
+        if (sr & AT91SAM9X35_USART::US_CTSIC) {            
             if (state->cleartosendEventHandler != nullptr)
                 state->cleartosendEventHandler(state->controller, ctsState, AT91SAM9X35_Time_GetCurrentProcessorTime());
+
+            if (ctsState) {
+                // If tx was disable to avoid locked up
+                // Need Enable back if detected OK to send
+                AT91SAM9X35_Uart_TxBufferEmptyInterruptEnable(controllerIndex, true);
+            }
         }
 
         if (!ctsState) {
+            // Temporary disable tx during cts is high to avoild device lockup
+            AT91SAM9X35_Uart_TxBufferEmptyInterruptEnable(controllerIndex, false);
+
             return;
         }
     }
@@ -649,7 +656,7 @@ void AT91SAM9X35_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enab
 
 bool AT91SAM9X35_Uart_CanSend(int controllerIndex) {
     auto state = &uartStates[controllerIndex];
-    bool value;
+    bool value = true;
 
     AT91SAM9X35_Uart_GetClearToSendState(state->controller, value);
 

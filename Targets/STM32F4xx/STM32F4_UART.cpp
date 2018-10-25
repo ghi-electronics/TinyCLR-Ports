@@ -333,10 +333,14 @@ void STM32F4_Uart_InterruptHandler(int8_t controllerIndex) {
                 STM32F4_Uart_TxBufferEmptyInterruptEnable(controllerIndex, false); // Disable interrupt when no more data to send.
             }
         }
+        else {
+            // Temporary disable tx during cts is high to avoild device lockup
+            STM32F4_Uart_TxBufferEmptyInterruptEnable(controllerIndex, false);
+        }
     }
 
     if (state->handshaking && (sr & USART_SR_CTS)) {
-        bool ctsState;
+        bool ctsState = true;
 
         // STM32F4 write 0 to clear CTS interrupt
         (state->portReg->SR) &= ~USART_SR_CTS;
@@ -345,6 +349,11 @@ void STM32F4_Uart_InterruptHandler(int8_t controllerIndex) {
 
         if (state->cleartosendEventHandler != nullptr)
             state->cleartosendEventHandler(state->controller, ctsState, STM32F4_Time_GetCurrentProcessorTime());
+
+        // If tx was disable to avoid locked up
+        // Need Enable back if detected OK to send
+        if (ctsState)
+            STM32F4_Uart_TxBufferEmptyInterruptEnable(controllerIndex, true);
     }
 }
 
@@ -756,7 +765,7 @@ void STM32F4_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable) 
 
 bool STM32F4_Uart_CanSend(int controllerIndex) {
     auto state = &uartStates[controllerIndex];
-    bool value;
+    bool value = true;
 
     STM32F4_Uart_GetClearToSendState(state->controller, value);
 
