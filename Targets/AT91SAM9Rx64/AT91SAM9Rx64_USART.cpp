@@ -370,9 +370,18 @@ void AT91SAM9Rx64_Uart_InterruptHandler(void *param) {
 
             if (state->cleartosendEventHandler != nullptr)
                 state->cleartosendEventHandler(state->controller, ctsState, AT91SAM9Rx64_Time_GetCurrentProcessorTime());
+
+            if (ctsState) {
+                // If tx was disable to avoid locked up
+                // Need Enable back if detected OK to send
+                AT91SAM9Rx64_Uart_TxBufferEmptyInterruptEnable(controllerIndex, true);
+            }
         }
 
         if (!ctsState) {
+            // Temporary disable tx during cts is high to avoild device lockup
+            AT91SAM9Rx64_Uart_TxBufferEmptyInterruptEnable(controllerIndex, false);
+
             return;
         }
     }

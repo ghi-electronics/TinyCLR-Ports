@@ -544,6 +544,10 @@ void LPC17_Uart_TransmitData(int controllerIndex, uint32_t LSR_Value, uint32_t I
                 LPC17_Uart_TxBufferEmptyInterruptEnable(controllerIndex, false); // Disable interrupt when no more data to send.
             }
         }
+        else {
+            // Temporary disable tx during cts is high to avoild device lockup
+            LPC17_Uart_TxBufferEmptyInterruptEnable(controllerIndex, false);
+        }
     }
 }
 
@@ -575,6 +579,11 @@ void LPC17_UART_IntHandler(int controllerIndex) {
 
             if (state->cleartosendEventHandler != nullptr)
                 state->cleartosendEventHandler(state->controller, ctsState, LPC17_Time_GetCurrentProcessorTime());
+
+            // If tx was disable to avoid locked up
+            // Need Enable back if detected OK to send
+            if (ctsState)
+                LPC17_Uart_TxBufferEmptyInterruptEnable(controllerIndex, true);
         }
     }
 }

@@ -339,6 +339,10 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
                 STM32F7_Uart_TxBufferEmptyInterruptEnable(controllerIndex, false); // Disable interrupt when no more data to send.
             }
         }
+        else {
+            // Temporary disable tx during cts is high to avoild device lockup
+            STM32F7_Uart_TxBufferEmptyInterruptEnable(controllerIndex, false);
+        }
     }
 
     if (state->handshaking && (sr & USART_ISR_CTSIF)) {
@@ -349,6 +353,11 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
 
         if (state->cleartosendEventHandler != nullptr)
             state->cleartosendEventHandler(state->controller, ctsState, STM32F7_Time_GetCurrentProcessorTime());
+
+        // If tx was disable to avoid locked up
+        // Need Enable back if detected OK to send
+        if (ctsState)
+            STM32F7_Uart_TxBufferEmptyInterruptEnable(controllerIndex, true);
     }
 }
 
