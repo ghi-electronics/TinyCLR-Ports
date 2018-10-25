@@ -763,7 +763,7 @@ void STM32F7_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable) 
 
 bool STM32F7_Uart_CanSend(int controllerIndex) {
     auto state = &uartStates[controllerIndex];
-    bool value;
+    bool value = true;
 
     STM32F7_Uart_GetClearToSendState(state->controller, value);
 

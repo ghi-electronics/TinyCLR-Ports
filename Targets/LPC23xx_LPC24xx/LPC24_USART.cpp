@@ -408,7 +408,7 @@ void LPC24_Uart_InterruptHandler(void *param) {
         volatile uint32_t msr = USARTC.UART_MSR; // clear cts interrupt
 
         if (msr & 0x1) {  // detect cts changed bit
-            bool ctsState;
+            bool ctsState = true;
 
             LPC24_Uart_GetClearToSendState(state->controller, ctsState);
 
@@ -768,7 +768,7 @@ void LPC24_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable) {
 
 bool LPC24_Uart_CanSend(int controllerIndex) {
     auto state = &uartStates[controllerIndex];
-    bool value;
+    bool value = true;
 
     LPC24_Uart_GetClearToSendState(state->controller, value);
 

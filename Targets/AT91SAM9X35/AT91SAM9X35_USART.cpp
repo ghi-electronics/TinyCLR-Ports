@@ -656,7 +656,7 @@ void AT91SAM9X35_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enab
 
 bool AT91SAM9X35_Uart_CanSend(int controllerIndex) {
     auto state = &uartStates[controllerIndex];
-    bool value;
+    bool value = true;
 
     AT91SAM9X35_Uart_GetClearToSendState(state->controller, value);
 

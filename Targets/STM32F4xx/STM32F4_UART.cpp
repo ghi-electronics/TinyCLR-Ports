@@ -340,7 +340,7 @@ void STM32F4_Uart_InterruptHandler(int8_t controllerIndex) {
     }
 
     if (state->handshaking && (sr & USART_SR_CTS)) {
-        bool ctsState;
+        bool ctsState = true;
 
         // STM32F4 write 0 to clear CTS interrupt
         (state->portReg->SR) &= ~USART_SR_CTS;
@@ -765,7 +765,7 @@ void STM32F4_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable) 
 
 bool STM32F4_Uart_CanSend(int controllerIndex) {
     auto state = &uartStates[controllerIndex];
-    bool value;
+    bool value = true;
 
     STM32F4_Uart_GetClearToSendState(state->controller, value);
 
