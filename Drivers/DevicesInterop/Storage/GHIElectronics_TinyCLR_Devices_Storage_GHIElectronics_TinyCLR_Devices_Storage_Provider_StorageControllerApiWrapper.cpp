@@ -72,7 +72,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_Tin
     return api->Close(api);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper::Read___I4__I8__I4__SZARRAY_U1__I4__I8(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper::Read___I4__I8__I4__SZARRAY_U1__I4__mscorlibSystemTimeSpan(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Storage_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue args[5];
@@ -81,35 +81,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_Tin
         md.InteropManager->GetArgument(md.InteropManager, md.Stack, i, args[i]);
     }
 
-    auto sector = static_cast<uint64_t>(args[0].Data.Numeric->I8);
-    auto count = static_cast<size_t>(args[1].Data.Numeric->I4);
-    auto buffer = reinterpret_cast<uint8_t*>(args[2].Data.SzArray.Data);
-    auto offset = args[3].Data.Numeric->I8;
-    auto timeout = args[4].Data.Numeric->I4;
-
-    buffer += offset;
-
-    auto result = api->Read(api, sector, count, buffer, timeout);
-
-    TinyCLR_Interop_ClrValue ret;
-
-    md.InteropManager->GetReturn(md.InteropManager, md.Stack, ret);
-
-    ret.Data.Numeric->I4 = count;
-
-    return result;
-}
-
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper::Write___I4__I8__I4__SZARRAY_U1__I4__I8(const TinyCLR_Interop_MethodData md) {
-    auto api = reinterpret_cast<const TinyCLR_Storage_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
-
-    TinyCLR_Interop_ClrValue args[5];
-
-    for (auto i = 0; i < sizeof(args) / sizeof(TinyCLR_Interop_ClrValue); i++) {
-        md.InteropManager->GetArgument(md.InteropManager, md.Stack, i, args[i]);
-    }
-
-    auto sector = static_cast<uint64_t>(args[0].Data.Numeric->I8);
+    auto address = static_cast<uint64_t>(args[0].Data.Numeric->I8);
     auto count = static_cast<size_t>(args[1].Data.Numeric->I4);
     auto buffer = reinterpret_cast<uint8_t*>(args[2].Data.SzArray.Data);
     auto offset = args[3].Data.Numeric->I4;
@@ -117,7 +89,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_Tin
 
     buffer += offset;
 
-    auto result = api->Write(api, sector, count, buffer, timeout);
+    auto result = api->Read(api, address, count, buffer, timeout);
 
     TinyCLR_Interop_ClrValue ret;
 
@@ -128,7 +100,35 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_Tin
     return result;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper::Erase___I4__I8__I4__I8(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper::Write___I4__I8__I4__SZARRAY_U1__I4__mscorlibSystemTimeSpan(const TinyCLR_Interop_MethodData md) {
+    auto api = reinterpret_cast<const TinyCLR_Storage_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
+
+    TinyCLR_Interop_ClrValue args[5];
+
+    for (auto i = 0; i < sizeof(args) / sizeof(TinyCLR_Interop_ClrValue); i++) {
+        md.InteropManager->GetArgument(md.InteropManager, md.Stack, i, args[i]);
+    }
+
+    auto address = static_cast<uint64_t>(args[0].Data.Numeric->I8);
+    auto count = static_cast<size_t>(args[1].Data.Numeric->I4);
+    auto buffer = reinterpret_cast<uint8_t*>(args[2].Data.SzArray.Data);
+    auto offset = args[3].Data.Numeric->I4;
+    auto timeout = args[4].Data.Numeric->I8;
+
+    buffer += offset;
+
+    auto result = api->Write(api, address, count, buffer, timeout);
+
+    TinyCLR_Interop_ClrValue ret;
+
+    md.InteropManager->GetReturn(md.InteropManager, md.Stack, ret);
+
+    ret.Data.Numeric->I4 = count;
+
+    return result;
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper::Erase___I4__I8__I4__mscorlibSystemTimeSpan(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Storage_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue args[3];
@@ -137,12 +137,12 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_Tin
         md.InteropManager->GetArgument(md.InteropManager, md.Stack, i, args[i]);
     }
 
-    auto sector = static_cast<uint64_t>(args[0].Data.Numeric->I8);
+    auto address = static_cast<uint64_t>(args[0].Data.Numeric->I8);
     auto count = static_cast<size_t>(args[1].Data.Numeric->I4);
 
     auto timeout = args[2].Data.Numeric->I8;
 
-    auto result = api->Erase(api, sector, count, timeout);
+    auto result = api->Erase(api, address, count, timeout);
 
     TinyCLR_Interop_ClrValue ret;
 
