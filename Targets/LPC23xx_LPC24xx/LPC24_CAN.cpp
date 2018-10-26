@@ -24,6 +24,8 @@
 
 static const uint32_t canDefaultBuffersSize[] = LPC24_CAN_BUFFER_DEFAULT_SIZE;
 
+#define CAN_MINIMUM_MESSAGES_LEFT 3
+
 #define CAN_TRANSFER_TIMEOUT 0xFFFF
 
 #define CAN_MEM_BASE        0xE0038000
@@ -2321,7 +2323,7 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
 
         return;
     }
-    else if (state->can_rx_count > state->can_rxBufferSize - 3) { // Raise full event soon when internal buffer has only 3 availble msg left
+    else if (state->can_rx_count > state->can_rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
         state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, LPC24_Time_GetCurrentProcessorTime());
     }
 
@@ -2833,7 +2835,7 @@ TinyCLR_Result LPC24_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, s
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
     auto controllerIndex = state->controllerIndex;
 
-    if (size > 3) {
+    if (size > CAN_MINIMUM_MESSAGES_LEFT) {
         state->can_rxBufferSize = size;
         return TinyCLR_Result::Success;
     }

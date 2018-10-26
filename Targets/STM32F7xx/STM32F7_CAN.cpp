@@ -20,6 +20,8 @@
 
 #ifdef INCLUDE_CAN
 
+#define CAN_MINIMUM_MESSAGES_LEFT 3
+
 #define CAN_TRANSFER_TIMEOUT 0xFFFF
 
 #define CAN_Mode_Normal             ((uint8_t)0x00)  /*!< normal mode */
@@ -1095,7 +1097,7 @@ TinyCLR_Result STM32F7_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self,
 
     int32_t controllerIndex = state->controllerIndex;
 
-    if (size > 3) {
+    if (size > CAN_MINIMUM_MESSAGES_LEFT) {
         state->can_rxBufferSize = size;
         return TinyCLR_Result::Success;
     }
@@ -1179,7 +1181,7 @@ void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
 
         return;
     }
-    else if (state->can_rx_count > state->can_rxBufferSize - 3) { // Raise full event soon when internal buffer has only 3 availble msg left
+    else if (state->can_rx_count > state->can_rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
         state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, STM32F7_Time_GetCurrentProcessorTime());
     }
 
