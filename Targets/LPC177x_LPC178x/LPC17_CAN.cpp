@@ -2310,7 +2310,7 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
         }
     }
 
-    if (state->can_rx_count > (state->can_rxBufferSize - 3)) {
+    if (state->can_rx_count == state->can_rxBufferSize) { // Raise error full
         if (controllerIndex == 0)
             C1CMR = 0x04; // release receive buffer
         else
@@ -2319,6 +2319,9 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
         state->errorEventHandler(state->provider, TinyCLR_Can_Error::BufferFull, LPC17_Time_GetCurrentProcessorTime());
 
         return;
+    }
+    else if (state->can_rx_count > state->can_rxBufferSize - 3) { // Raise full event soon when internal buffer has only 3 availble msg left
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, LPC17_Time_GetCurrentProcessorTime());
     }
 
     // initialize destination pointer

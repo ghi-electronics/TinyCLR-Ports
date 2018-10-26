@@ -1074,7 +1074,7 @@ void STM32F7_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
         canApi[i].Implementation = &canControllers[i];
         canApi[i].State = &canStates[i];
 
-        canStates[i].controllerIndex = i;        
+        canStates[i].controllerIndex = i;
         canStates[i].initializeCount = 0;
         canStates[i].canRxMessagesFifo = nullptr;
 
@@ -1174,8 +1174,13 @@ void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
         }
     }
 
-    if (state->can_rx_count > state->can_rxBufferSize - 3) {
+    if (state->can_rx_count == state->can_rxBufferSize) { // Return if internal buffer is full
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, STM32F7_Time_GetCurrentProcessorTime());
+
         return;
+    }
+    else if (state->can_rx_count > state->can_rxBufferSize - 3) { // Raise full event soon when internal buffer has only 3 availble msg left
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, STM32F7_Time_GetCurrentProcessorTime());
     }
 
     STM32F7_Can_Message *can_msg = &state->canRxMessagesFifo[state->can_rx_in];
@@ -1639,7 +1644,7 @@ uint32_t STM32F7_Can_GetSourceClock(const TinyCLR_Can_Controller* self) {
 void STM32F7_Can_Reset() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
         STM32F7_Can_Release(&canControllers[i]);
-        
+
         canStates[i].initializeCount = 0;
         canStates[i].canRxMessagesFifo = nullptr;
     }

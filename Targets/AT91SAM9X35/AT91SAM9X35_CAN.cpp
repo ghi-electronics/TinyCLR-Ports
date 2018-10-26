@@ -1301,7 +1301,12 @@ void CopyMessageFromMailBoxToBuffer(uint8_t controllerIndex, uint32_t dwMsr) {
         }
     }
 
-    if (state->can_rx_count > (state->can_rxBufferSize - 3)) {
+    if (state->can_rx_count == state->can_rxBufferSize) { // Raise error full
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, AT91SAM9X35_Time_GetCurrentProcessorTime());
+
+        return;
+    }
+    else if (state->can_rx_count > state->can_rxBufferSize - 3) { // Raise full event soon when internal buffer has only 3 availble msg left
         state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, AT91SAM9X35_Time_GetCurrentProcessorTime());
     }
 

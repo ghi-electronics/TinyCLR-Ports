@@ -2321,6 +2321,9 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
 
         return;
     }
+    else if (state->can_rx_count > state->can_rxBufferSize - 3) { // Raise full event soon when internal buffer has only 3 availble msg left
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, LPC24_Time_GetCurrentProcessorTime());
+    }
 
     // initialize destination pointer
     LPC24_Can_Message *can_msg = &state->canRxMessagesFifo[state->can_rx_in];
