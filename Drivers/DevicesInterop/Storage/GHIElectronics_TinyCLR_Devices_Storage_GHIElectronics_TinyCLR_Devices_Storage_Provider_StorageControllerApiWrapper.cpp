@@ -84,8 +84,8 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_Tin
     auto address = static_cast<uint64_t>(args[0].Data.Numeric->I8);
     auto count = static_cast<size_t>(args[1].Data.Numeric->I4);
     auto buffer = reinterpret_cast<uint8_t*>(args[2].Data.SzArray.Data);
-    auto offset = args[3].Data.Numeric->I8;
-    auto timeout = args[4].Data.Numeric->I4;
+    auto offset = args[3].Data.Numeric->I4;
+    auto timeout = args[4].Data.Numeric->I8;
 
     buffer += offset;
 
