@@ -2005,7 +2005,7 @@ typedef struct {
 struct CanState {
     int32_t controllerIndex;
 
-    const TinyCLR_Can_Controller* provider;
+    const TinyCLR_Can_Controller* controller;
 
     LPC17_Can_Message *canRxMessagesFifo;
 
@@ -2316,7 +2316,7 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
         else
             C2CMR = 0x04; // release receive buffer
 
-        state->errorEventHandler(state->provider, TinyCLR_Can_Error::BufferFull, LPC17_Time_GetCurrentProcessorTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, LPC17_Time_GetCurrentProcessorTime());
 
         return;
     }
@@ -2372,7 +2372,7 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
         state->can_rx_in = 0;
     }
 
-    state->messageReceivedEventHandler(state->provider, state->can_rx_count, LPC17_Time_GetCurrentProcessorTime());
+    state->messageReceivedEventHandler(state->controller, state->can_rx_count, LPC17_Time_GetCurrentProcessorTime());
 }
 void LPC17_Can_RxInterruptHandler(void *param) {
     uint32_t status = CANRxSR;
@@ -2391,14 +2391,14 @@ void LPC17_Can_RxInterruptHandler(void *param) {
         CAN_ISR_Rx(controllerIndex);
 
         if (c1 & (1 << 3)) {
-            state->errorEventHandler(state->provider, TinyCLR_Can_Error::Overrun, LPC17_Time_GetCurrentProcessorTime());
+            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Overrun, LPC17_Time_GetCurrentProcessorTime());
         }
         if (c1 & (1 << 5)) {
-            state->errorEventHandler(state->provider, TinyCLR_Can_Error::Passive, LPC17_Time_GetCurrentProcessorTime());
+            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, LPC17_Time_GetCurrentProcessorTime());
         }
         if (c1 & (1 << 7)) {
             C1MOD = 1;    // Reset CAN
-            state->errorEventHandler(state->provider, TinyCLR_Can_Error::BusOff, LPC17_Time_GetCurrentProcessorTime());
+            state->errorEventHandler(state->controller, TinyCLR_Can_Error::BusOff, LPC17_Time_GetCurrentProcessorTime());
         }
 
     }
@@ -2412,14 +2412,14 @@ void LPC17_Can_RxInterruptHandler(void *param) {
         CAN_ISR_Rx(controllerIndex);
 
         if (c2 & (1 << 3)) {
-            state->errorEventHandler(state->provider, TinyCLR_Can_Error::Overrun, LPC17_Time_GetCurrentProcessorTime());
+            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Overrun, LPC17_Time_GetCurrentProcessorTime());
         }
         if (c2 & (1 << 5)) {
-            state->errorEventHandler(state->provider, TinyCLR_Can_Error::Passive, LPC17_Time_GetCurrentProcessorTime());
+            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, LPC17_Time_GetCurrentProcessorTime());
         }
         if (c2 & (1 << 7)) {
             C2MOD = 1;    // Reset CAN
-            state->errorEventHandler(state->provider, TinyCLR_Can_Error::BusOff, LPC17_Time_GetCurrentProcessorTime());
+            state->errorEventHandler(state->controller, TinyCLR_Can_Error::BusOff, LPC17_Time_GetCurrentProcessorTime());
         }
     }
 }
@@ -2445,7 +2445,7 @@ TinyCLR_Result LPC17_Can_Acquire(const TinyCLR_Can_Controller* self) {
         state->can_rx_out = 0;
         state->baudrate = 0;
         state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
-        state->provider = self;
+        state->controller = self;
         state->enable = false;
 
         state->canDataFilter.matchFiltersSize = 0;
