@@ -34,6 +34,8 @@ static const uint32_t canDefaultBuffersSize[] = AT91SAM9X35_CAN_BUFFER_DEFAULT_S
 #define CANMB_NUMBER 8
 #define CAN_NUM_MAILBOX     8
 
+#define CAN_MINIMUM_MESSAGES_LEFT 3
+
 // CAN mail box
 typedef struct {
     uint32_t  CAN_MMR;        /**< \brief (CanMb Offset: 0x0) Mailbox Mode Register */
@@ -1301,7 +1303,12 @@ void CopyMessageFromMailBoxToBuffer(uint8_t controllerIndex, uint32_t dwMsr) {
         }
     }
 
-    if (state->can_rx_count > (state->can_rxBufferSize - 3)) {
+    if (state->can_rx_count == state->can_rxBufferSize) { // Raise error full
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, AT91SAM9X35_Time_GetCurrentProcessorTime());
+
+        return;
+    }
+    else if (state->can_rx_count > state->can_rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
         state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, AT91SAM9X35_Time_GetCurrentProcessorTime());
     }
 
@@ -1910,7 +1917,7 @@ TinyCLR_Result AT91SAM9X35_Can_SetReadBufferSize(const TinyCLR_Can_Controller* s
 
     auto controllerIndex = state->controllerIndex;
 
-    if (size > 3) {
+    if (size > CAN_MINIMUM_MESSAGES_LEFT) {
         state->can_rxBufferSize = size;
         return TinyCLR_Result::Success;
     }

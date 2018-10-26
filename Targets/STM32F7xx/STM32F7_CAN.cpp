@@ -20,6 +20,8 @@
 
 #ifdef INCLUDE_CAN
 
+#define CAN_MINIMUM_MESSAGES_LEFT 3
+
 #define CAN_TRANSFER_TIMEOUT 0xFFFF
 
 #define CAN_Mode_Normal             ((uint8_t)0x00)  /*!< normal mode */
@@ -300,7 +302,7 @@ typedef struct {
 struct CanState {
     int32_t controllerIndex;
 
-    const TinyCLR_Can_Controller* provider;
+    const TinyCLR_Can_Controller* controller;
 
     STM32F7_Can_Message *canRxMessagesFifo;
 
@@ -992,25 +994,25 @@ bool CAN_ErrorHandler(uint8_t controllerIndex) {
 
     if (CAN_GetITStatus(CANx, CAN_IT_FF0)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_FF0);
-        state->errorEventHandler(state->provider, TinyCLR_Can_Error::BufferFull, STM32F7_Time_GetCurrentProcessorTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, STM32F7_Time_GetCurrentProcessorTime());
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_FOV0)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_FOV0);
-        state->errorEventHandler(state->provider, TinyCLR_Can_Error::Overrun, STM32F7_Time_GetCurrentProcessorTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Overrun, STM32F7_Time_GetCurrentProcessorTime());
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_BOF)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_BOF);
-        state->errorEventHandler(state->provider, TinyCLR_Can_Error::BusOff, STM32F7_Time_GetCurrentProcessorTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BusOff, STM32F7_Time_GetCurrentProcessorTime());
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_EPV)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_EPV);
-        state->errorEventHandler(state->provider, TinyCLR_Can_Error::Passive, STM32F7_Time_GetCurrentProcessorTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, STM32F7_Time_GetCurrentProcessorTime());
 
         return true;
     }
@@ -1020,13 +1022,13 @@ bool CAN_ErrorHandler(uint8_t controllerIndex) {
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_ERR)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_ERR);
-        state->errorEventHandler(state->provider, TinyCLR_Can_Error::Passive, STM32F7_Time_GetCurrentProcessorTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, STM32F7_Time_GetCurrentProcessorTime());
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_EWG)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_EWG);
-        state->errorEventHandler(state->provider, TinyCLR_Can_Error::Passive, STM32F7_Time_GetCurrentProcessorTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, STM32F7_Time_GetCurrentProcessorTime());
     }
 
     return false;
@@ -1074,7 +1076,7 @@ void STM32F7_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
         canApi[i].Implementation = &canControllers[i];
         canApi[i].State = &canStates[i];
 
-        canStates[i].controllerIndex = i;        
+        canStates[i].controllerIndex = i;
         canStates[i].initializeCount = 0;
         canStates[i].canRxMessagesFifo = nullptr;
 
@@ -1095,7 +1097,7 @@ TinyCLR_Result STM32F7_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self,
 
     int32_t controllerIndex = state->controllerIndex;
 
-    if (size > 3) {
+    if (size > CAN_MINIMUM_MESSAGES_LEFT) {
         state->can_rxBufferSize = size;
         return TinyCLR_Result::Success;
     }
@@ -1174,8 +1176,13 @@ void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
         }
     }
 
-    if (state->can_rx_count > state->can_rxBufferSize - 3) {
+    if (state->can_rx_count == state->can_rxBufferSize) { // Return if internal buffer is full
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, STM32F7_Time_GetCurrentProcessorTime());
+
         return;
+    }
+    else if (state->can_rx_count > state->can_rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, STM32F7_Time_GetCurrentProcessorTime());
     }
 
     STM32F7_Can_Message *can_msg = &state->canRxMessagesFifo[state->can_rx_in];
@@ -1205,7 +1212,7 @@ void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
         state->can_rx_in = 0;
     }
 
-    state->messageReceivedEventHandler(state->provider, state->can_rx_count, t);
+    state->messageReceivedEventHandler(state->controller, state->can_rx_count, t);
 
     return;
 }
@@ -1247,7 +1254,7 @@ TinyCLR_Result STM32F7_Can_Acquire(const TinyCLR_Can_Controller* self) {
         state->can_rx_out = 0;
         state->baudrate = 0;
         state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
-        state->provider = self;
+        state->controller = self;
         state->enable = false;
 
         state->canRxMessagesFifo = nullptr;
@@ -1639,7 +1646,7 @@ uint32_t STM32F7_Can_GetSourceClock(const TinyCLR_Can_Controller* self) {
 void STM32F7_Can_Reset() {
     for (int i = 0; i < TOTAL_CAN_CONTROLLERS; i++) {
         STM32F7_Can_Release(&canControllers[i]);
-        
+
         canStates[i].initializeCount = 0;
         canStates[i].canRxMessagesFifo = nullptr;
     }

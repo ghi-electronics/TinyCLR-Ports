@@ -24,6 +24,8 @@
 
 static const uint32_t canDefaultBuffersSize[] = LPC24_CAN_BUFFER_DEFAULT_SIZE;
 
+#define CAN_MINIMUM_MESSAGES_LEFT 3
+
 #define CAN_TRANSFER_TIMEOUT 0xFFFF
 
 #define CAN_MEM_BASE        0xE0038000
@@ -2006,7 +2008,7 @@ typedef struct {
 struct CanState {
     int32_t controllerIndex;
 
-    const TinyCLR_Can_Controller* provider;
+    const TinyCLR_Can_Controller* controller;
 
     LPC24_Can_Message *canRxMessagesFifo;
 
@@ -2317,9 +2319,12 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
         else
             C2CMR = 0x04; // release receive buffer
 
-        state->errorEventHandler(state->provider, TinyCLR_Can_Error::BufferFull, LPC24_Time_GetCurrentProcessorTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, LPC24_Time_GetCurrentProcessorTime());
 
         return;
+    }
+    else if (state->can_rx_count > state->can_rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, LPC24_Time_GetCurrentProcessorTime());
     }
 
     // initialize destination pointer
@@ -2370,7 +2375,7 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
         state->can_rx_in = 0;
     }
 
-    state->messageReceivedEventHandler(state->provider, state->can_rx_count, t);
+    state->messageReceivedEventHandler(state->controller, state->can_rx_count, t);
 }
 void LPC24_Can_RxInterruptHandler(void *param) {
     uint32_t status = CANRxSR;
@@ -2389,14 +2394,14 @@ void LPC24_Can_RxInterruptHandler(void *param) {
         CAN_ISR_Rx(controllerIndex);
 
         if (c1 & (1 << 3)) {
-            state->errorEventHandler(state->provider, TinyCLR_Can_Error::Overrun, LPC24_Time_GetCurrentProcessorTime());
+            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Overrun, LPC24_Time_GetCurrentProcessorTime());
         }
         if (c1 & (1 << 5)) {
-            state->errorEventHandler(state->provider, TinyCLR_Can_Error::Passive, LPC24_Time_GetCurrentProcessorTime());
+            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, LPC24_Time_GetCurrentProcessorTime());
         }
         if (c1 & (1 << 7)) {
             C1MOD = 1;    // Reset CAN
-            state->errorEventHandler(state->provider, TinyCLR_Can_Error::BusOff, LPC24_Time_GetCurrentProcessorTime());
+            state->errorEventHandler(state->controller, TinyCLR_Can_Error::BusOff, LPC24_Time_GetCurrentProcessorTime());
         }
 
     }
@@ -2410,14 +2415,14 @@ void LPC24_Can_RxInterruptHandler(void *param) {
         CAN_ISR_Rx(controllerIndex);
 
         if (c2 & (1 << 3)) {
-            state->errorEventHandler(state->provider, TinyCLR_Can_Error::Overrun, LPC24_Time_GetCurrentProcessorTime());
+            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Overrun, LPC24_Time_GetCurrentProcessorTime());
         }
         if (c2 & (1 << 5)) {
-            state->errorEventHandler(state->provider, TinyCLR_Can_Error::Passive, LPC24_Time_GetCurrentProcessorTime());
+            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, LPC24_Time_GetCurrentProcessorTime());
         }
         if (c2 & (1 << 7)) {
             C2MOD = 1;    // Reset CAN
-            state->errorEventHandler(state->provider, TinyCLR_Can_Error::BusOff, LPC24_Time_GetCurrentProcessorTime());
+            state->errorEventHandler(state->controller, TinyCLR_Can_Error::BusOff, LPC24_Time_GetCurrentProcessorTime());
         }
     }
 }
@@ -2443,7 +2448,7 @@ TinyCLR_Result LPC24_Can_Acquire(const TinyCLR_Can_Controller* self) {
         state->can_rx_out = 0;
         state->baudrate = 0;
         state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
-        state->provider = self;
+        state->controller = self;
         state->enable = false;
 
         state->canDataFilter.matchFiltersSize = 0;
@@ -2830,7 +2835,7 @@ TinyCLR_Result LPC24_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, s
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
     auto controllerIndex = state->controllerIndex;
 
-    if (size > 3) {
+    if (size > CAN_MINIMUM_MESSAGES_LEFT) {
         state->can_rxBufferSize = size;
         return TinyCLR_Result::Success;
     }
