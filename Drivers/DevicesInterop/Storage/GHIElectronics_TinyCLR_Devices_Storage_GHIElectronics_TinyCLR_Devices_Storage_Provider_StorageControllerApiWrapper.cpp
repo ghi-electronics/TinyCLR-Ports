@@ -81,7 +81,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_Tin
         md.InteropManager->GetArgument(md.InteropManager, md.Stack, i, args[i]);
     }
 
-    auto sector = static_cast<uint64_t>(args[0].Data.Numeric->I8);
+    auto address = static_cast<uint64_t>(args[0].Data.Numeric->I8);
     auto count = static_cast<size_t>(args[1].Data.Numeric->I4);
     auto buffer = reinterpret_cast<uint8_t*>(args[2].Data.SzArray.Data);
     auto offset = args[3].Data.Numeric->I8;
@@ -89,7 +89,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_Tin
 
     buffer += offset;
 
-    auto result = api->Read(api, sector, count, buffer, timeout);
+    auto result = api->Read(api, address, count, buffer, timeout);
 
     TinyCLR_Interop_ClrValue ret;
 
@@ -109,7 +109,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_Tin
         md.InteropManager->GetArgument(md.InteropManager, md.Stack, i, args[i]);
     }
 
-    auto sector = static_cast<uint64_t>(args[0].Data.Numeric->I8);
+    auto address = static_cast<uint64_t>(args[0].Data.Numeric->I8);
     auto count = static_cast<size_t>(args[1].Data.Numeric->I4);
     auto buffer = reinterpret_cast<uint8_t*>(args[2].Data.SzArray.Data);
     auto offset = args[3].Data.Numeric->I4;
@@ -117,7 +117,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_Tin
 
     buffer += offset;
 
-    auto result = api->Write(api, sector, count, buffer, timeout);
+    auto result = api->Write(api, address, count, buffer, timeout);
 
     TinyCLR_Interop_ClrValue ret;
 
@@ -137,12 +137,12 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_Tin
         md.InteropManager->GetArgument(md.InteropManager, md.Stack, i, args[i]);
     }
 
-    auto sector = static_cast<uint64_t>(args[0].Data.Numeric->I8);
+    auto address = static_cast<uint64_t>(args[0].Data.Numeric->I8);
     auto count = static_cast<size_t>(args[1].Data.Numeric->I4);
 
     auto timeout = args[2].Data.Numeric->I8;
 
-    auto result = api->Erase(api, sector, count, timeout);
+    auto result = api->Erase(api, address, count, timeout);
 
     TinyCLR_Interop_ClrValue ret;
 
