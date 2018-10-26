@@ -72,7 +72,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_Tin
     return api->Close(api);
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper::Read___I4__I8__I4__SZARRAY_U1__I4__I8(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper::Read___I4__I8__I4__SZARRAY_U1__I4__mscorlibSystemTimeSpan(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Storage_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue args[5];
@@ -100,7 +100,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_Tin
     return result;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper::Write___I4__I8__I4__SZARRAY_U1__I4__I8(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper::Write___I4__I8__I4__SZARRAY_U1__I4__mscorlibSystemTimeSpan(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Storage_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue args[5];
@@ -128,7 +128,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_Tin
     return result;
 }
 
-TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper::Erase___I4__I8__I4__I8(const TinyCLR_Interop_MethodData md) {
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Devices_Storage_Provider_StorageControllerApiWrapper::Erase___I4__I8__I4__mscorlibSystemTimeSpan(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Storage_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Interop_ClrValue args[3];

@@ -9,9 +9,9 @@ struct Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_TinyCLR_Dev
     static TinyCLR_Result get_Descriptor___GHIElectronicsTinyCLRDevicesStorageStorageDescriptor(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Open___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Close___VOID(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result Read___I4__I8__I4__SZARRAY_U1__I4__I8(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result Write___I4__I8__I4__SZARRAY_U1__I4__I8(const TinyCLR_Interop_MethodData md);
-    static TinyCLR_Result Erase___I4__I8__I4__I8(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result Read___I4__I8__I4__SZARRAY_U1__I4__mscorlibSystemTimeSpan(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result Write___I4__I8__I4__SZARRAY_U1__I4__mscorlibSystemTimeSpan(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result Erase___I4__I8__I4__mscorlibSystemTimeSpan(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result IsErased___BOOLEAN__I8__I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Acquire___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Release___VOID(const TinyCLR_Interop_MethodData md);
