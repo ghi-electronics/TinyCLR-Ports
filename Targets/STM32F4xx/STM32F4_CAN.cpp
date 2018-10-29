@@ -1176,18 +1176,19 @@ void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
         }
     }
 
+    // timestamp
+    uint64_t t = STM32F4_Time_GetCurrentProcessorTime();
+
     if (state->can_rx_count == state->can_rxBufferSize) { // Return if internal buffer is full
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, STM32F4_Time_GetCurrentProcessorTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, t);
 
         return;
     }
-    else if (state->can_rx_count > state->can_rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, STM32F4_Time_GetCurrentProcessorTime());
+    else if (state->can_rx_count >= state->can_rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, t);
     }
 
     STM32F4_Can_Message *can_msg = &state->canRxMessagesFifo[state->can_rx_in];
-
-    uint64_t t = STM32F4_Time_GetCurrentProcessorTime();
 
     can_msg->TimeStampL = t & 0xFFFFFFFF;
 

@@ -2312,25 +2312,25 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
         }
     }
 
+    // timestamp
+    uint64_t t = LPC17_Time_GetCurrentProcessorTime();
+
     if (state->can_rx_count == state->can_rxBufferSize) { // Raise error full
         if (controllerIndex == 0)
             C1CMR = 0x04; // release receive buffer
         else
             C2CMR = 0x04; // release receive buffer
 
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, LPC17_Time_GetCurrentProcessorTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, t);
 
         return;
     }
-    else if (state->can_rx_count > state->can_rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, LPC17_Time_GetCurrentProcessorTime());
+    else if (state->can_rx_count >= state->can_rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, t);
     }
 
     // initialize destination pointer
     LPC17_Can_Message *can_msg = &state->canRxMessagesFifo[state->can_rx_in];
-
-    // timestamp
-    uint64_t t = LPC17_Time_GetCurrentProcessorTime();
 
     can_msg->timeStampL = t & 0xFFFFFFFF;
     can_msg->timeStampH = t >> 32;
