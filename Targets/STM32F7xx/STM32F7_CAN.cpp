@@ -1086,16 +1086,15 @@ void STM32F7_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
 
 size_t STM32F7_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
-
-    int32_t controllerIndex = state->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
     return state->can_rxBufferSize == 0 ? canDefaultBuffersSize[controllerIndex] : state->can_rxBufferSize;
 }
 
 TinyCLR_Result STM32F7_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+    auto controllerIndex = state->controllerIndex;
 
-    int32_t controllerIndex = state->controllerIndex;
     TinyCLR_Result result = TinyCLR_Result::Success;
 
     if (size > CAN_MINIMUM_MESSAGES_LEFT) {
@@ -1259,7 +1258,7 @@ TinyCLR_Result STM32F7_Can_Acquire(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     if (state->initializeCount == 0) {
-        int32_t controllerIndex = state->controllerIndex;
+        auto controllerIndex = state->controllerIndex;
 
         if (!STM32F7_GpioInternal_OpenMultiPins(canPins[controllerIndex], 2))
             return TinyCLR_Result::SharingViolation;
@@ -1297,7 +1296,7 @@ TinyCLR_Result STM32F7_Can_Release(const TinyCLR_Can_Controller* self) {
     state->initializeCount--;
 
     if (state->initializeCount == 0) {
-        int32_t controllerIndex = state->controllerIndex;
+        auto controllerIndex = state->controllerIndex;
 
         self->Disable(self);
 
@@ -1330,7 +1329,7 @@ TinyCLR_Result STM32F7_Can_WriteMessage(const TinyCLR_Can_Controller* self, cons
 
     if (!state->enable) return TinyCLR_Result::NotAvailable;
 
-    int32_t controllerIndex = state->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
     uint32_t* data32 = (uint32_t*)data;
 
@@ -1544,7 +1543,7 @@ TinyCLR_Result STM32F7_Can_ClearReadBuffer(const TinyCLR_Can_Controller* self) {
 TinyCLR_Result STM32F7_Can_IsWritingAllowed(const TinyCLR_Can_Controller* self, bool& allowed) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    int32_t controllerIndex = state->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
     CAN_TypeDef* CANx = ((controllerIndex == 0) ? CAN1 : CAN2);
 
@@ -1558,7 +1557,7 @@ TinyCLR_Result STM32F7_Can_IsWritingAllowed(const TinyCLR_Can_Controller* self, 
 size_t STM32F7_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    int32_t controllerIndex = state->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
     CAN_TypeDef* CANx = ((controllerIndex == 0) ? CAN1 : CAN2);
 
@@ -1568,7 +1567,7 @@ size_t STM32F7_Can_GetReadErrorCount(const TinyCLR_Can_Controller* self) {
 size_t STM32F7_Can_GetWriteErrorCount(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    int32_t controllerIndex = state->controllerIndex;
+    auto controllerIndex = state->controllerIndex;
 
     CAN_TypeDef* CANx = ((controllerIndex == 0) ? CAN1 : CAN2);
 
@@ -1596,7 +1595,7 @@ TinyCLR_Result STM32F7_Can_Enable(const TinyCLR_Can_Controller* self) {
     }
 
     if (!state->enable) {
-        int32_t controllerIndex = state->controllerIndex;
+        auto controllerIndex = state->controllerIndex;
 
         CAN_TypeDef* CANx = ((controllerIndex == 0) ? CAN1 : CAN2);
 
@@ -1656,7 +1655,7 @@ TinyCLR_Result STM32F7_Can_Enable(const TinyCLR_Can_Controller* self) {
 TinyCLR_Result STM32F7_Can_Disable(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
     if (state->enable) {
-        int32_t controllerIndex = state->controllerIndex;
+        auto controllerIndex = state->controllerIndex;
 
         CAN_TypeDef* CANx = ((controllerIndex == 0) ? CAN1 : CAN2);
 
