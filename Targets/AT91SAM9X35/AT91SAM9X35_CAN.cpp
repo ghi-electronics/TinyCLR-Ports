@@ -5,7 +5,6 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// You may obtain a copy of the License at
 //
 //     http://www.apache.org/licenses/LICENSE-2.0
 //
@@ -1556,7 +1555,7 @@ TinyCLR_Result AT91SAM9X35_Can_WriteMessage(const TinyCLR_Can_Controller* self, 
 
     auto controllerIndex = state->controllerIndex;
 
-    if (!state->enable) return TinyCLR_Result::NotAvailable;
+    if (!state->enable) return TinyCLR_Result::InvalidOperation;
 
     sCand *pCand = &state->cand;
 
@@ -1631,7 +1630,7 @@ TinyCLR_Result AT91SAM9X35_Can_ReadMessage(const TinyCLR_Can_Controller* self, T
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    if (!state->enable) return TinyCLR_Result::NotAvailable;
+    if (!state->enable) return TinyCLR_Result::InvalidOperation;
 
     if (state->can_rx_count) {
         DISABLE_INTERRUPTS_SCOPED(irq);

@@ -1329,7 +1329,7 @@ TinyCLR_Result STM32F7_Can_WriteMessage(const TinyCLR_Can_Controller* self, cons
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    if (!state->enable) return TinyCLR_Result::NotAvailable;
+    if (!state->enable) return TinyCLR_Result::InvalidOperation;
 
     auto controllerIndex = state->controllerIndex;
 
@@ -1393,7 +1393,7 @@ TinyCLR_Result STM32F7_Can_ReadMessage(const TinyCLR_Can_Controller* self, TinyC
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    if (!state->enable) return TinyCLR_Result::NotAvailable;
+    if (!state->enable) return TinyCLR_Result::InvalidOperation;
 
     STM32F7_Can_Message *can_msg;
 

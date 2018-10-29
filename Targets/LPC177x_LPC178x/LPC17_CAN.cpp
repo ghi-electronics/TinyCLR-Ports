@@ -2516,7 +2516,7 @@ TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Controller* self, const 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
     auto controllerIndex = state->controllerIndex;
 
-    if (!state->enable) return TinyCLR_Result::NotAvailable;
+    if (!state->enable) return TinyCLR_Result::InvalidOperation;
 
     if (isExtendedId)
         flags |= 0x80000000;
@@ -2584,7 +2584,7 @@ TinyCLR_Result LPC17_Can_ReadMessage(const TinyCLR_Can_Controller* self, TinyCLR
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    if (!state->enable) return TinyCLR_Result::NotAvailable;
+    if (!state->enable) return TinyCLR_Result::InvalidOperation;
 
     if (state->can_rx_count) {
         DISABLE_INTERRUPTS_SCOPED(irq);
