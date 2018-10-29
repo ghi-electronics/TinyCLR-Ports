@@ -1204,6 +1204,8 @@ void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
     else if (state->can_rx_count >= state->can_rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
         state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, t);
     }
+    
+    if (!state->enable) return; // Not copy to internal buffer if enable if off
 
     STM32F7_Can_Message *can_msg = &state->canRxMessagesFifo[state->can_rx_in];
 
