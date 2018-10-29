@@ -1314,6 +1314,8 @@ void CopyMessageFromMailBoxToBuffer(uint8_t controllerIndex, uint32_t dwMsr) {
     else if (state->can_rx_count >= state->can_rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
         state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, t);
     }
+    
+    if (!state->enable) return; // Not copy to internal buffer if enable if off
 
     // initialize destination pointer
     AT91SAM9X35_Can_Message *can_msg = &state->canRxMessagesFifo[state->can_rx_in];
@@ -1490,12 +1492,9 @@ TinyCLR_Result AT91SAM9X35_Can_Acquire(const TinyCLR_Can_Controller* self) {
         state->cand.pHw = (controllerIndex == 0 ? AT91SAM9X35_CAN0 : AT91SAM9X35_CAN1);
         state->cand.bID = (controllerIndex == 0 ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
 
-        AT91SAM9X35_PMC &pmc = AT91::PMC();
-        pmc.EnablePeriphClock((controllerIndex == 0) ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
+        state->canRxMessagesFifo = nullptr;
 
-        CAN_DisableIt(state->cand.pHw, 0xFFFFFFFF);
-
-        state->controllerIndex = controllerIndex;
+        AT91SAM9X35_Can_SetReadBufferSize(self, canDefaultBuffersSize[controllerIndex]);
     }
 
     state->initializeCount++;
@@ -1518,15 +1517,10 @@ TinyCLR_Result AT91SAM9X35_Can_Release(const TinyCLR_Can_Controller* self) {
 
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
-        CAN_DisableIt(state->cand.pHw, 0xFFFFFFFF);
-
-        AT91SAM9X35_PMC &pmc = AT91::PMC();
-        pmc.DisablePeriphClock((controllerIndex == 0) ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
-
+        self->Disable(self);
 
         AT91SAM9X35_GpioInternal_ClosePin(canPins[controllerIndex][CAN_TX_PIN].number);
         AT91SAM9X35_GpioInternal_ClosePin(canPins[controllerIndex][CAN_RX_PIN].number);
-
 
         if (state->canRxMessagesFifo != nullptr) {
             memoryProvider->Free(memoryProvider, state->canRxMessagesFifo);
@@ -1536,53 +1530,7 @@ TinyCLR_Result AT91SAM9X35_Can_Release(const TinyCLR_Can_Controller* self) {
 
         CAN_DisableExplicitFilters(controllerIndex);
         CAN_DisableGroupFilters(controllerIndex);
-
     }
-
-    return TinyCLR_Result::Success;
-}
-
-TinyCLR_Result AT91SAM9X35_Can_SoftReset(const TinyCLR_Can_Controller* self) {
-    volatile int32_t i;
-
-    auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
-
-    state->can_rx_count = 0;
-    state->can_rx_in = 0;
-    state->can_rx_out = 0;
-
-    sCand *pCand = &state->cand;
-
-    // Disable
-    CAN_Enable(state->cand.pHw, 0);
-    pCand->bState = CAND_STATE_DISABLED;
-
-    for (i = 0xFF; i > 0; i--);
-
-    state->cand.wBaudrate = state->baudrate;
-
-    CAN_ConfigureBaudrate(state->cand.pHw, state->baudrate);
-
-    CAN_ConfigureMode(state->cand.pHw, 0);
-
-    /* Reset all mailboxes */
-    CAND_ResetMailboxes(&state->cand);
-
-    /* Enable the interrupts for error cases */
-    CAN_EnableIt(state->cand.pHw, CAN_ERRS);
-
-    CAND_Activate(&state->cand);
-
-    int32_t timeout = CAN_TRANSFER_TIMEOUT;
-
-    while (timeout > 0) {
-        if (CAND_IsReady(&state->cand)) {
-            return TinyCLR_Result::Success;
-        }
-        timeout--;
-    }
-
-    pCand->bState = CAND_STATE_ACTIVATED;
 
     return TinyCLR_Result::Success;
 }
@@ -1606,6 +1554,8 @@ TinyCLR_Result AT91SAM9X35_Can_WriteMessage(const TinyCLR_Can_Controller* self, 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
+
+    if (!state->enable) return TinyCLR_Result::InvalidOperation;
 
     sCand *pCand = &state->cand;
 
@@ -1680,6 +1630,8 @@ TinyCLR_Result AT91SAM9X35_Can_ReadMessage(const TinyCLR_Can_Controller* self, T
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
+    if (!state->enable) return TinyCLR_Result::InvalidOperation;
+
     if (state->can_rx_count) {
         DISABLE_INTERRUPTS_SCOPED(irq);
 
@@ -1723,43 +1675,11 @@ TinyCLR_Result AT91SAM9X35_Can_SetBitTiming(const TinyCLR_Can_Controller* self, 
 
     state->cand.dwMck = AT91SAM9X35_SYSTEM_PERIPHERAL_CLOCK_HZ;
 
-    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
-
-    if (state->canRxMessagesFifo == nullptr)
-        state->canRxMessagesFifo = (AT91SAM9X35_Can_Message*)memoryProvider->Allocate(memoryProvider, state->can_rxBufferSize * sizeof(AT91SAM9X35_Can_Message));
-
-    if (state->canRxMessagesFifo == nullptr) {
-        return TinyCLR_Result::OutOfMemory;
-    }
-
     state->baudrate = CAN_BR_PHASE2(phase2) | CAN_BR_PHASE1(phase1) | CAN_BR_PROPAG(propagation) | CAN_BR_SJW(synchronizationJumpWidth) | CAN_BR_BRP(baudratePrescaler) | (useMultiBitSampling ? CAN_BR_SMP_THREE : CAN_BR_SMP_ONCE);
 
     state->cand.wBaudrate = state->baudrate;
 
-    CAN_ConfigureBaudrate(state->cand.pHw, state->baudrate);
-
-    CAN_ConfigureMode(state->cand.pHw, 0);
-
-    /* Reset all mailboxes */
-    CAND_ResetMailboxes(&state->cand);
-
-    /* Enable the interrupts for error cases */
-    CAN_EnableIt(state->cand.pHw, CAN_ERRS);
-
-    AT91SAM9X35_InterruptInternal_Activate(controllerIndex == 0 ? AT91C_ID_CAN0 : AT91C_ID_CAN1, (uint32_t*)&AT91SAM9X35_Can_RxInterruptHandler, (void*)&state->controllerIndex);
-
-    CAND_Activate(&state->cand);
-
-    int32_t timeout = CAN_TRANSFER_TIMEOUT;
-
-    while (timeout > 0) {
-        if (CAND_IsReady(&state->cand)) {
-            return TinyCLR_Result::Success;
-        }
-        timeout--;
-    }
-
-    return TinyCLR_Result::InvalidOperation;
+    return TinyCLR_Result::Success;
 }
 
 size_t AT91SAM9X35_Can_GetMessagesToRead(const TinyCLR_Can_Controller* self) {
@@ -1916,15 +1836,32 @@ TinyCLR_Result AT91SAM9X35_Can_SetReadBufferSize(const TinyCLR_Can_Controller* s
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     auto controllerIndex = state->controllerIndex;
+    TinyCLR_Result result = TinyCLR_Result::Success;
 
     if (size > CAN_MINIMUM_MESSAGES_LEFT) {
         state->can_rxBufferSize = size;
-        return TinyCLR_Result::Success;
+        result = TinyCLR_Result::Success;
     }
     else {
         state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
-        return TinyCLR_Result::ArgumentInvalid;;
+        result = TinyCLR_Result::ArgumentInvalid;
     }
+
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+    if (state->canRxMessagesFifo != nullptr) {
+        memoryProvider->Free(memoryProvider, state->canRxMessagesFifo);
+
+        state->canRxMessagesFifo = nullptr;
+    }
+
+    state->canRxMessagesFifo = (AT91SAM9X35_Can_Message*)memoryProvider->Allocate(memoryProvider, state->can_rxBufferSize * sizeof(AT91SAM9X35_Can_Message));
+
+    if (state->canRxMessagesFifo == nullptr) {
+        result = TinyCLR_Result::OutOfMemory;
+    }
+
+    return result;
 }
 
 size_t AT91SAM9X35_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self) {
@@ -1950,14 +1887,61 @@ void AT91SAM9X35_Can_Reset() {
 
 TinyCLR_Result AT91SAM9X35_Can_Enable(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
-    state->enable = true;
+    auto controllerIndex = state->controllerIndex;
+
+    if (!state->enable) {
+        AT91SAM9X35_PMC &pmc = AT91::PMC();
+        pmc.EnablePeriphClock((controllerIndex == 0) ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
+
+        CAN_DisableIt(state->cand.pHw, 0xFFFFFFFF);
+
+        CAN_ConfigureBaudrate(state->cand.pHw, state->baudrate);
+
+        CAN_ConfigureMode(state->cand.pHw, 0);
+
+        /* Reset all mailboxes */
+        CAND_ResetMailboxes(&state->cand);
+
+        /* Enable the interrupts for error cases */
+        CAN_EnableIt(state->cand.pHw, CAN_ERRS);
+
+        AT91SAM9X35_InterruptInternal_Activate(controllerIndex == 0 ? AT91C_ID_CAN0 : AT91C_ID_CAN1, (uint32_t*)&AT91SAM9X35_Can_RxInterruptHandler, (void*)&state->controllerIndex);
+
+        CAND_Activate(&state->cand);
+
+        int32_t timeout = CAN_TRANSFER_TIMEOUT;
+
+        while (timeout > 0) {
+            if (CAND_IsReady(&state->cand)) {
+
+                state->enable = true;
+
+                return TinyCLR_Result::Success;
+            }
+
+            timeout--;
+        }
+
+        return TinyCLR_Result::InvalidOperation;
+    }
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91SAM9X35_Can_Disable(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
-    state->enable = false;
+    auto controllerIndex = state->controllerIndex;
+
+    if (state->enable) {
+        CAN_DisableIt(state->cand.pHw, 0xFFFFFFFF);
+
+        AT91SAM9X35_InterruptInternal_Deactivate(controllerIndex == 0 ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
+
+        AT91SAM9X35_PMC &pmc = AT91::PMC();
+        pmc.DisablePeriphClock((controllerIndex == 0) ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
+
+        state->enable = false;
+    }
 
     return TinyCLR_Result::Success;
 }
