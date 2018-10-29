@@ -1303,20 +1303,20 @@ void CopyMessageFromMailBoxToBuffer(uint8_t controllerIndex, uint32_t dwMsr) {
         }
     }
 
+    // timestamp
+    uint64_t t = AT91SAM9X35_Time_GetCurrentProcessorTime();
+
     if (state->can_rx_count == state->can_rxBufferSize) { // Raise error full
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, AT91SAM9X35_Time_GetCurrentProcessorTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, t);
 
         return;
     }
     else if (state->can_rx_count >= state->can_rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, AT91SAM9X35_Time_GetCurrentProcessorTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, t);
     }
 
     // initialize destination pointer
     AT91SAM9X35_Can_Message *can_msg = &state->canRxMessagesFifo[state->can_rx_in];
-
-    // timestamp
-    uint64_t t = AT91SAM9X35_Time_GetCurrentProcessorTime();
 
     can_msg->timeStampL = t & 0xFFFFFFFF;
     can_msg->timeStampH = t >> 32;
