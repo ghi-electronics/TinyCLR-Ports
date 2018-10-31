@@ -387,6 +387,7 @@ extern "C" {
 #if (FLASH_SETUP == 1)                  /* Flash Accelerator Setup            */
         LPC_SC->FLASHCFG = FLASHCFG_Val | 0x03A;
 #endif
+        LPC_SC->EMCDLYCTL = 0x00001111;
     }
 
 }
