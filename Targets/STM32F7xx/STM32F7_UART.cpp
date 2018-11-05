@@ -179,7 +179,7 @@ void STM32F7_Uart_EnsureTableInitialized() {
 const TinyCLR_Api_Info* STM32F7_Uart_GetRequiredApi() {
     STM32F7_Uart_EnsureTableInitialized();
 
-    return &uartApi[0];
+    return &uartApi[UART_DEBUGGER_INDEX];
 }
 
 
