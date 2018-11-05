@@ -303,7 +303,7 @@ void LPC17_Uart_EnsureTableInitialized() {
 const TinyCLR_Api_Info* LPC17_Uart_GetRequiredApi() {
     LPC17_Uart_EnsureTableInitialized();
 
-    return &uartApi[0];
+    return &uartApi[UART_DEBUGGER_INDEX];
 }
 
 void LPC17_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {

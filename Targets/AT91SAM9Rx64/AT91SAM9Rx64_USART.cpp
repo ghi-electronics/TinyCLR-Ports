@@ -127,7 +127,7 @@ void AT91SAM9Rx64_Uart_EnsureTableInitialized() {
 const TinyCLR_Api_Info* AT91SAM9Rx64_Uart_GetRequiredApi() {
     AT91SAM9Rx64_Uart_EnsureTableInitialized();
 
-    return &uartApi[0];
+    return &uartApi[UART_DEBUGGER_INDEX];
 }
 
 void AT91SAM9Rx64_Uart_AddApi(const TinyCLR_Api_Manager* apiManager) {
