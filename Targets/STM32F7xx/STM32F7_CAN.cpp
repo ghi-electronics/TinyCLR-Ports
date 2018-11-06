@@ -70,6 +70,11 @@ an empty mailbox */
 #define CAN_Id_Standard             ((uint32_t)0x00000000)  /*!< Standard Id */
 #define CAN_Id_Extended             ((uint32_t)0x00000004)  /*!< Extended Id */
 
+/** @defgroup Remote transmission
+* @{
+*/
+#define CAN_Rtr_Frame				((uint32_t)0x00000002)  /*!< Remote transmission request */
+
 
 /** @defgroup CAN_receive_FIFO_number_constants
   * @{
@@ -612,7 +617,7 @@ void CAN_Receive(CAN_TypeDef* CANx, uint8_t FIFONumber, STM32F7_Can_RxMessage* R
         RxMessage->ExtId = (uint32_t)0x1FFFFFFF & (CANx->sFIFOMailBox[FIFONumber].RIR >> 3);
     }
 
-    RxMessage->RTR = (uint8_t)0x02 & CANx->sFIFOMailBox[FIFONumber].RIR;
+    RxMessage->RTR = ((uint8_t)CAN_Rtr_Frame) & CANx->sFIFOMailBox[FIFONumber].RIR;
     /* Get the DLC */
     RxMessage->DLC = (uint8_t)0x0F & CANx->sFIFOMailBox[FIFONumber].RDTR;
     /* Get the FMI */
@@ -1086,6 +1091,7 @@ void STM32F7_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
 
 size_t STM32F7_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
+
     auto controllerIndex = state->controllerIndex;
 
     return state->can_rxBufferSize == 0 ? canDefaultBuffersSize[controllerIndex] : state->can_rxBufferSize;
@@ -1093,8 +1099,8 @@ size_t STM32F7_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self) {
 
 TinyCLR_Result STM32F7_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
-    auto controllerIndex = state->controllerIndex;
 
+    auto controllerIndex = state->controllerIndex;
     TinyCLR_Result result = TinyCLR_Result::Success;
 
     if (size > CAN_MINIMUM_MESSAGES_LEFT) {
@@ -1136,7 +1142,7 @@ TinyCLR_Result STM32F7_Can_SetWriteBufferSize(const TinyCLR_Can_Controller* self
     return size == 1 ? TinyCLR_Result::Success : TinyCLR_Result::NotSupported;
 }
 
-void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
+void STM32F7_Can_RxInterruptHandler(int32_t controllerIndex) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     auto state = reinterpret_cast<CanState*>(&canStates[controllerIndex]);
@@ -1174,7 +1180,7 @@ void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
         extendMode = true;
     }
 
-    rtrmode = (((rxMessage.RTR) & 0x02) != 0) ? true : false;
+    rtrmode = (((rxMessage.RTR) & CAN_Rtr_Frame) != 0) ? true : false;
 
     // Filter
     if (state->canDataFilter.groupFiltersSize || state->canDataFilter.matchFiltersSize) {
@@ -1204,7 +1210,7 @@ void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
     else if (state->can_rx_count >= state->can_rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
         state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, t);
     }
-    
+
     if (!state->enable) return; // Not copy to internal buffer if enable if off
 
     STM32F7_Can_Message *can_msg = &state->canRxMessagesFifo[state->can_rx_in];
@@ -1233,8 +1239,8 @@ void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
     }
 
     // If we raise count here, because interrupt faster than raising an event, example there are only 2 messages comming,
-	// the first event will raise 1 message, the second will raise 2 messages in buffer if the first msg isn't read yet.
-	// This cause misunderstanding to user that there are 3 msg totally.
+    // the first event will raise 1 message, the second will raise 2 messages in buffer if the first msg isn't read yet.
+    // This cause misunderstanding to user that there are 3 msg totally.
     state->messageReceivedEventHandler(state->controller, 1, t);
 
     return;
@@ -1249,11 +1255,11 @@ void STM32F7_Can_TxInterruptHandler1(void *param) {
 }
 
 void STM32F7_Can_RxInterruptHandler0(void *param) {
-    STM32_Can_RxInterruptHandler(0);
+    STM32F7_Can_RxInterruptHandler(0);
 }
 
 void STM32F7_Can_RxInterruptHandler1(void *param) {
-    STM32_Can_RxInterruptHandler(1);
+    STM32F7_Can_RxInterruptHandler(1);
 }
 
 TinyCLR_Result STM32F7_Can_Acquire(const TinyCLR_Can_Controller* self) {
@@ -1347,7 +1353,7 @@ TinyCLR_Result STM32F7_Can_WriteMessage(const TinyCLR_Can_Controller* self, cons
     STM32F7_Can_TxMessage txMessage;
 
     /* Transmit Structure preparation */
-    txMessage.RTR = (isRemoteTransmissionRequest == true) ? 1 : 0;
+    txMessage.RTR = (isRemoteTransmissionRequest == true) ? CAN_Rtr_Frame : 0;
 
     if (isExtendedId) {
         txMessage.IDE = CAN_Id_Extended;
