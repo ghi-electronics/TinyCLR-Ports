@@ -363,7 +363,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR
     TinyCLR_Interop_ClrValue arg0, arg1;
 
     md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg0);
-    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg1);
+    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 1, arg1);
 
     uint32_t* lowerBounds = reinterpret_cast<uint32_t*>(arg0.Data.SzArray.Data);
     uint32_t* upperBounds = reinterpret_cast<uint32_t*>(arg1.Data.SzArray.Data);
