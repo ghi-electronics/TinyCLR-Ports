@@ -19,8 +19,8 @@
 
 #define USART_EVENT_POST_DEBOUNCE_TICKS (10 * 10000) // 10ms between each events
 // StopBits
-#define USART_STOP_BITS_NONE          0
-#define USART_STOP_BITS_ONE           1
+#define USART_STOP_BITS_ONE           0
+#define USART_STOP_BITS_HALF          1
 #define USART_STOP_BITS_TWO           2
 #define USART_STOP_BITS_ONEPOINTFIVE  3
 
@@ -514,7 +514,7 @@ TinyCLR_Result STM32F4_Uart_SetActiveSettings(const TinyCLR_Uart_Controller* sel
     state->portReg->CR1 = ctrl_cr1;
 
 
-    uint32_t stopbit = USART_STOP_BITS_NONE;
+    uint32_t stopbit = USART_STOP_BITS_ONE;
 
     switch (stopBits) {
     case TinyCLR_Uart_StopBitCount::OnePointFive:
