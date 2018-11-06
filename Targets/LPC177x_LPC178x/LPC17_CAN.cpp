@@ -2376,6 +2376,9 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
         state->can_rx_in = 0;
     }
 
+    // If we raise count here, because interrupt faster than raising an event, example there are only 2 messages comming,
+	// the first event will raise 1 message, the second will raise 2 messages in buffer if the first msg isn't read yet.
+	// This cause misunderstanding to user that there are 3 msg totally.
     state->messageReceivedEventHandler(state->controller, 1, t);
 }
 void LPC17_Can_RxInterruptHandler(void *param) {
