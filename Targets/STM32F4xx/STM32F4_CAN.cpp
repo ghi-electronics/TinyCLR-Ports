@@ -1233,7 +1233,7 @@ void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
         state->can_rx_in = 0;
     }
 
-    state->messageReceivedEventHandler(state->controller, state->can_rx_count, t);
+    state->messageReceivedEventHandler(state->controller, 1, t);
 
     return;
 }

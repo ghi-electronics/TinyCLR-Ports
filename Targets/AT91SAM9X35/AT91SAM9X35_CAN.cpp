@@ -1342,7 +1342,7 @@ void CopyMessageFromMailBoxToBuffer(uint8_t controllerIndex, uint32_t dwMsr) {
         state->can_rx_in = 0;
     }
 
-    state->messageReceivedEventHandler(state->controller, state->can_rx_count, t);
+    state->messageReceivedEventHandler(state->controller, 1, t);
 }
 
 void CAN_ProccessMailbox(uint8_t controllerIndex) {

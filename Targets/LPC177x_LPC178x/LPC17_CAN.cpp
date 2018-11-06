@@ -2376,7 +2376,7 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
         state->can_rx_in = 0;
     }
 
-    state->messageReceivedEventHandler(state->controller, state->can_rx_count, t);
+    state->messageReceivedEventHandler(state->controller, 1, t);
 }
 void LPC17_Can_RxInterruptHandler(void *param) {
     uint32_t status = CANRxSR;
