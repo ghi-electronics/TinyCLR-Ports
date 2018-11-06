@@ -73,8 +73,7 @@ an empty mailbox */
 /** @defgroup Remote transmission
 * @{
 */
-#define CAN_Rtr_Frame				((uint32_t)0x00000002)  /*!< Remote transmission request */
-
+#define CAN_Rtr_Frame               ((uint32_t)0x00000002)  /*!< Remote transmission request */
 
 /** @defgroup CAN_receive_FIFO_number_constants
   * @{
