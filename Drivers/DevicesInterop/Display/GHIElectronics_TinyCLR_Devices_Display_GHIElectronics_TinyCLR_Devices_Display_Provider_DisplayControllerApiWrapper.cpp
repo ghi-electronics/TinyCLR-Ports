@@ -114,7 +114,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_Tin
     if (res == TinyCLR_Result::Success) {
         interop->GetThisObject(interop, md.Stack, self);
 
-        interop->FindType(interop, "GHIElectronics.TinyCLR.Devices", "GHIElectronics.TinyCLR.Devices.Display", "DisplayDataFormat", idx);
+        interop->FindType(interop, "GHIElectronics.TinyCLR.Devices.Display", "GHIElectronics.TinyCLR.Devices.Display", "DisplayDataFormat", idx);
 
         interop->GetField(interop, ret.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_DisplayControllerSettings::FIELD___DataFormat__BackingField___GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat, arr);
 
