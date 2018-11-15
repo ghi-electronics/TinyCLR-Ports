@@ -238,8 +238,12 @@ void STM32F7_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const Ti
 #define FLASH_ACR_LATENCY_BITS FLASH_ACR_LATENCY_3WS // 3 wait states
 #elif STM32F7_AHB_CLOCK_HZ <= 150000000
 #define FLASH_ACR_LATENCY_BITS FLASH_ACR_LATENCY_4WS // 4 wait states
-#else
+#elif STM32F7_AHB_CLOCK_HZ <= 180000000
 #define FLASH_ACR_LATENCY_BITS FLASH_ACR_LATENCY_5WS // 5 wait states
+#elif STM32F7_AHB_CLOCK_HZ <= 210000000
+#define FLASH_ACR_LATENCY_BITS FLASH_ACR_LATENCY_6WS // 6 wait states
+#else
+#define FLASH_ACR_LATENCY_BITS FLASH_ACR_LATENCY_7WS // 7 wait states
 #endif
 #endif
 
