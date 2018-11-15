@@ -1303,5 +1303,8 @@ void AT91SAM9Rx64_Display_Reset() {
     m_AT91SAM9Rx64_DisplayEnable = false;
     displayInitializeCount = 0;
     m_AT91SAM9Rx64_Display_buffer = nullptr;
+
+    m_AT91SAM9Rx64_Display_TextRow = 0;
+    m_AT91SAM9Rx64_Display_TextColumn = 0;
 }
 #endif // INCLUDE_DISPLAY

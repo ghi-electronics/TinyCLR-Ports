@@ -801,7 +801,7 @@ void STM32F7_Display_Clear() {
     if (m_STM32F7_DisplayEnable == false || m_STM32F7_Display_VituralRam == nullptr)
         return;
 
-    memset((uint32_t*)m_STM32F7_Display_VituralRam, 0, m_STM32F7_DisplayBufferSize);
+    memset((uint32_t*)m_STM32F7_Display_VituralRam, 0, m_STM32F7_DisplayBufferSize);    
 }
 
 struct DisplayPins {
@@ -1302,6 +1302,9 @@ void STM32F7_Display_Reset() {
     m_STM32F7_DisplayEnable = false;
     displayInitializeCount = 0;
     m_STM32F7_Display_buffer = nullptr;
+    
+    m_STM32F7_Display_TextRow = 0;
+    m_STM32F7_Display_TextColumn = 0;
 
 }
 #endif
