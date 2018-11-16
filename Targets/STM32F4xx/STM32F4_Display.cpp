@@ -1221,21 +1221,14 @@ TinyCLR_Result STM32F4_Display_DrawBuffer(const TinyCLR_Display_Controller* self
 }
 
 TinyCLR_Result STM32F4_Display_DrawPixel(const TinyCLR_Display_Controller* self, uint32_t x, uint32_t y, uint64_t color) {
-    uint16_t rgb565 = ((color & 0xF80000) >> 8) | ((color & 0x00FC00) >> 5) | ((color & 0x0000F8) >> 3);
-
     volatile uint16_t * loc;
 
-    if (m_STM32F4_DisplayEnable == false)
-        return TinyCLR_Result::InvalidOperation;
-
-    if (x >= m_STM32F4_DisplayWidth)
-        return TinyCLR_Result::InvalidOperation;
-    if (y >= m_STM32F4_DisplayHeight)
+    if (m_STM32F4_DisplayEnable == false || x >= m_STM32F4_DisplayWidth || y >= m_STM32F4_DisplayHeight)
         return TinyCLR_Result::InvalidOperation;
 
     loc = m_STM32F4_Display_VituralRam + (y *m_STM32F4_DisplayWidth) + (x);
 
-    *loc = rgb565;
+    *loc = static_cast<uint16_t>(color & 0xFFFF);
 
     return TinyCLR_Result::Success;
 }
@@ -1301,5 +1294,8 @@ void STM32F4_Display_Reset() {
     m_STM32F4_DisplayEnable = false;
     displayInitializeCount = 0;
     m_STM32F4_Display_buffer = nullptr;
+
+    m_STM32F4_Display_TextRow = 0;
+    m_STM32F4_Display_TextColumn = 0;
 }
 #endif

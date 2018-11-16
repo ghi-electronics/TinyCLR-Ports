@@ -1223,21 +1223,14 @@ TinyCLR_Result AT91SAM9Rx64_Display_DrawBuffer(const TinyCLR_Display_Controller*
 }
 
 TinyCLR_Result AT91SAM9Rx64_Display_DrawPixel(const TinyCLR_Display_Controller* self, uint32_t x, uint32_t y, uint64_t color) {
-    uint16_t rgb565 = ((color & 0xF80000) >> 8) | ((color & 0x00FC00) >> 5) | ((color & 0x0000F8) >> 3);
-
     volatile uint16_t * loc;
 
-    if (m_AT91SAM9Rx64_DisplayEnable == false)
-        return TinyCLR_Result::InvalidOperation;
-
-    if (x >= m_AT91SAM9Rx64_DisplayWidth)
-        return TinyCLR_Result::InvalidOperation;
-    if (y >= m_AT91SAM9Rx64_DisplayHeight)
+    if (m_AT91SAM9Rx64_DisplayEnable == false || x >= m_AT91SAM9Rx64_DisplayWidth || y >= m_AT91SAM9Rx64_DisplayHeight)
         return TinyCLR_Result::InvalidOperation;
 
     loc = m_AT91SAM9Rx64_Display_VituralRam + (y *m_AT91SAM9Rx64_DisplayWidth) + (x);
 
-    *loc = rgb565;
+    *loc = static_cast<uint16_t>(color & 0xFFFF);
 
     return TinyCLR_Result::Success;
 }
@@ -1303,5 +1296,8 @@ void AT91SAM9Rx64_Display_Reset() {
     m_AT91SAM9Rx64_DisplayEnable = false;
     displayInitializeCount = 0;
     m_AT91SAM9Rx64_Display_buffer = nullptr;
+
+    m_AT91SAM9Rx64_Display_TextRow = 0;
+    m_AT91SAM9Rx64_Display_TextColumn = 0;
 }
 #endif // INCLUDE_DISPLAY
