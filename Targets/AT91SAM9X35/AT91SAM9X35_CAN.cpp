@@ -1403,11 +1403,11 @@ void CAN_ErrorHandler(sCand *pCand, uint32_t dwErrS, int32_t controllerIndex) {
 
     if (dwErrS & CAN_SR_BOFF) // BusOff is higher priority
     {
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BusOff, AT91SAM9X35_Time_GetSystemTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BusOff, AT91SAM9X35_Time_GetSystemTime(nullptr));
 
     }
     else if (dwErrS & CAN_SR_ERRP) {
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, AT91SAM9X35_Time_GetSystemTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, AT91SAM9X35_Time_GetSystemTime(nullptr));
     }
 }
 
@@ -1462,7 +1462,7 @@ void AT91SAM9X35_Can_RxInterruptHandler(void *param) {
     }
     /* Timer overflow */
     if (dwSr & CAN_SR_TOVF) {
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Overrun, AT91SAM9X35_Time_GetSystemTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Overrun, AT91SAM9X35_Time_GetSystemTime(nullptr));
     }
 }
 

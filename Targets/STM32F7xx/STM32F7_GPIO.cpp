@@ -152,7 +152,7 @@ void STM32F7_Gpio_ISR(int num)  // 0 <= num <= 15
         }
 
         if (executeIsr)
-            interruptState->handler(interruptState->controller, interruptState->pin, edge, STM32F7_Time_GetSystemTime());
+            interruptState->handler(interruptState->controller, interruptState->pin, edge, STM32F7_Time_GetSystemTime(nullptr));
     }
 }
 

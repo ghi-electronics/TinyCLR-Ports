@@ -1391,7 +1391,7 @@ TinyCLR_Result AT91SAM9X35_Time_SetTickCallback(const TinyCLR_NativeTime_Control
 void AT91SAM9X35_Time_Delay(const TinyCLR_NativeTime_Controller* self, uint64_t microseconds);
 void AT91SAM9X35_Time_GetDriftParameters(const TinyCLR_NativeTime_Controller* self, int32_t* a, int32_t* b, int64_t* c);
 void AT91SAM9X35_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_t nativeTime);
-uint64_t AT91SAM9X35_Time_GetSystemTime();
+uint64_t AT91SAM9X35_Time_GetSystemTime(const TinyCLR_NativeTime_Controller* self);
 
 // Power
 void AT91SAM9X35_Power_AddApi(const TinyCLR_Api_Manager* apiManager);

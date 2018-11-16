@@ -1279,7 +1279,7 @@ void AT91SAM9Rx64_Time_Delay(const TinyCLR_NativeTime_Controller* self, uint64_t
 void AT91SAM9Rx64_Time_Delay(const TinyCLR_NativeTime_Controller* self, uint64_t microseconds);
 void AT91SAM9Rx64_Time_GetDriftParameters(const TinyCLR_NativeTime_Controller* self, int32_t* a, int32_t* b, int64_t* c);
 void AT91SAM9Rx64_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_t nativeTime);
-uint64_t AT91SAM9Rx64_Time_GetSystemTime();
+uint64_t AT91SAM9Rx64_Time_GetSystemTime(const TinyCLR_NativeTime_Controller* self);
 
 // Power
 void AT91SAM9Rx64_Power_AddApi(const TinyCLR_Api_Manager* apiManager);

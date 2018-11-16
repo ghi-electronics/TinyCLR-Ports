@@ -182,7 +182,7 @@ void LPC17_Gpio_InterruptHandler(void* param) {
                 }
 
                 if (executeIsr)
-                    interruptState->handler(interruptState->controller, interruptState->pin, edge, LPC17_Time_GetSystemTime());
+                    interruptState->handler(interruptState->controller, interruptState->pin, edge, LPC17_Time_GetSystemTime(nullptr));
             }
         }
     }

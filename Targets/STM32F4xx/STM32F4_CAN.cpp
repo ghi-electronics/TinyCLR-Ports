@@ -998,25 +998,25 @@ bool CAN_ErrorHandler(uint8_t controllerIndex) {
 
     if (CAN_GetITStatus(CANx, CAN_IT_FF0)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_FF0);
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, STM32F4_Time_GetSystemTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, STM32F4_Time_GetSystemTime(nullptr));
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_FOV0)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_FOV0);
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Overrun, STM32F4_Time_GetSystemTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Overrun, STM32F4_Time_GetSystemTime(nullptr));
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_BOF)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_BOF);
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BusOff, STM32F4_Time_GetSystemTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BusOff, STM32F4_Time_GetSystemTime(nullptr));
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_EPV)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_EPV);
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, STM32F4_Time_GetSystemTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, STM32F4_Time_GetSystemTime(nullptr));
 
         return true;
     }
@@ -1026,13 +1026,13 @@ bool CAN_ErrorHandler(uint8_t controllerIndex) {
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_ERR)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_ERR);
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, STM32F4_Time_GetSystemTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, STM32F4_Time_GetSystemTime(nullptr));
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_EWG)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_EWG);
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, STM32F4_Time_GetSystemTime());
+        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, STM32F4_Time_GetSystemTime(nullptr));
     }
 
     return false;

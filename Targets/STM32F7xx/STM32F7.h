@@ -83,7 +83,7 @@ TinyCLR_Result STM32F7_Time_SetTickCallback(const TinyCLR_NativeTime_Controller*
 TinyCLR_Result STM32F7_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Controller* self, uint64_t processorTicks);
 void STM32F7_Time_Delay(const TinyCLR_NativeTime_Controller* self, uint64_t microseconds);
 void STM32F7_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_t nativeTime);
-uint64_t STM32F7_Time_GetSystemTime();
+uint64_t STM32F7_Time_GetSystemTime(const TinyCLR_NativeTime_Controller* self);
 
 
 ////////////////////////////////////////////////////////////////////////////////
