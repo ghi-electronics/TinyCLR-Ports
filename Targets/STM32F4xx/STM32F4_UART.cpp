@@ -255,7 +255,8 @@ bool STM32F4_Uart_CanPostEvent(int8_t controllerIndex) {
     auto state = reinterpret_cast<UartState*>(&uartStates[controllerIndex]);
     bool canPost = (STM32F4_Time_GetCurrentProcessorTime() - state->lastEventTime) > USART_EVENT_POST_DEBOUNCE_TICKS;
 
-    state->lastEventTime = STM32F4_Time_GetCurrentProcessorTime();
+    if (canPost) // only update when debounce is over
+        state->lastEventTime = STM32F4_Time_GetCurrentProcessorTime();
 
     return canPost;
 }

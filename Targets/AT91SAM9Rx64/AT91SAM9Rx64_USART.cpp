@@ -211,7 +211,8 @@ bool AT91SAM9Rx64_Uart_CanPostEvent(int8_t controllerIndex) {
     auto state = reinterpret_cast<UartState*>(&uartStates[controllerIndex]);
     bool canPost = (AT91SAM9Rx64_Time_GetCurrentProcessorTime() - state->lastEventTime) > USART_EVENT_POST_DEBOUNCE_TICKS;
 
-    state->lastEventTime = AT91SAM9Rx64_Time_GetCurrentProcessorTime();
+    if (canPost) // only update when debounce is over
+        state->lastEventTime = AT91SAM9Rx64_Time_GetCurrentProcessorTime();
 
     return canPost;
 }
