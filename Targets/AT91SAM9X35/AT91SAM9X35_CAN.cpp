@@ -1304,7 +1304,7 @@ void CopyMessageFromMailBoxToBuffer(uint8_t controllerIndex, uint32_t dwMsr) {
     }
 
     // timestamp
-    uint64_t t = AT91SAM9X35_Time_GetCurrentProcessorTime();
+    uint64_t t = AT91SAM9X35_Time_GetSystemTime(nullptr);
 
     if (state->can_rx_count == state->can_rxBufferSize) { // Raise error full
         state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, t);

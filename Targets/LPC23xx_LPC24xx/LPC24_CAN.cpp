@@ -2314,7 +2314,7 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
     }
 
     // timestamp
-    uint64_t t = LPC24_Time_GetCurrentProcessorTime();
+    uint64_t t = LPC24_Time_GetSystemTime(nullptr);
 
     if (state->can_rx_count == state->can_rxBufferSize) { // Return if internal buffer is full
         if (controllerIndex == 0)
