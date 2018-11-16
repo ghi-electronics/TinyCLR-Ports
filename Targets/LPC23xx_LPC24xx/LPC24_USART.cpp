@@ -210,7 +210,8 @@ bool LPC24_Uart_CanPostEvent(int8_t controllerIndex) {
     auto state = reinterpret_cast<UartState*>(&uartStates[controllerIndex]);
     bool canPost = (LPC24_Time_GetCurrentProcessorTime() - state->lastEventTime) > USART_EVENT_POST_DEBOUNCE_TICKS;
 
-    state->lastEventTime = LPC24_Time_GetCurrentProcessorTime();
+    if (canPost) // only update when debounce is over
+        state->lastEventTime = LPC24_Time_GetCurrentProcessorTime();
 
     return canPost;
 }
