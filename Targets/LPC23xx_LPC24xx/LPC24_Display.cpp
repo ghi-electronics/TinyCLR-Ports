@@ -5,6 +5,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
@@ -1150,7 +1151,7 @@ void LPC24_Display_Reset() {
     m_LPC24_DisplayEnable = false;
     displayInitializeCount = 0;
     m_LPC24_Display_buffer = nullptr;
-    
+
     m_LPC24_Display_TextRow = 0;
     m_LPC24_Display_TextColumn = 0;
 }
