@@ -19,7 +19,7 @@
 #define TOTAL_DEPLOYMENT_CONTROLLERS 1
 
 const char* deploymentApiNames[TOTAL_DEPLOYMENT_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.S25FL032.ExternalFlash.StorageController\\0"
+    "GHIElectronics.TinyCLR.NativeApis.S25FL032.StorageController\\0"
 };
 
 static TinyCLR_Storage_Controller deploymentControllers[TOTAL_DEPLOYMENT_CONTROLLERS];

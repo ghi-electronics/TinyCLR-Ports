@@ -62,7 +62,7 @@ struct DeploymentState {
 static DeploymentState deploymentStates[TOTAL_DEPLOYMENT_CONTROLLERS];
 
 const char* flashApiNames[TOTAL_DEPLOYMENT_CONTROLLERS] = {
-   "GHIElectronics.TinyCLR.NativeApis.STM32F4.InternalFlash.StorageController\\0"
+   "GHIElectronics.TinyCLR.NativeApis.STM32F4.InternalFlashStorageController\\0"
 };
 
 void STM32F4_Flash_EnsureTableInitialized() {

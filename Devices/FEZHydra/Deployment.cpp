@@ -38,7 +38,7 @@ struct DeploymentState {
 static DeploymentState deploymentStates[TOTAL_DEPLOYMENT_CONTROLLERS];
 
 const char* deploymentApiNames[TOTAL_DEPLOYMENT_CONTROLLERS] = {
-    "GHIElectronics.TinyCLR.NativeApis.AT91SAM9Rx64.StorageController\\0"
+    "GHIElectronics.TinyCLR.NativeApis.AT45DB321D.StorageController\\0"
 };
 
 void AT91SAM9Rx64_Deployment_EnsureTableInitialized() {
