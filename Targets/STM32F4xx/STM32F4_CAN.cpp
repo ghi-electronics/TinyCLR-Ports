@@ -1601,7 +1601,7 @@ TinyCLR_Result STM32F4_Can_Enable(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     if (state->baudrate == 0) {
-        return TinyCLR_Result::NotAvailable; // Can not enable if baudrate = 0;
+        return TinyCLR_Result::InvalidOperation; // Can not enable if baudrate = 0;
     }
 
     if (!state->enable) {

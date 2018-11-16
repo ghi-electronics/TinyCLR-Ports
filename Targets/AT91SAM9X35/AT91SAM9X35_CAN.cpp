@@ -1892,6 +1892,10 @@ TinyCLR_Result AT91SAM9X35_Can_Enable(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
     auto controllerIndex = state->controllerIndex;
 
+    if (state->baudrate == 0) {
+        return TinyCLR_Result::InvalidOperation; // Can not enable if baudrate = 0;
+    }
+
     if (!state->enable) {
         AT91SAM9X35_PMC &pmc = AT91::PMC();
         pmc.EnablePeriphClock((controllerIndex == 0) ? AT91C_ID_CAN0 : AT91C_ID_CAN1);
