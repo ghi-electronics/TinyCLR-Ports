@@ -64,6 +64,8 @@
 #define INCLUDE_DAC
 #define LPC24_DAC_PINS { { PIN(0,26), PF(2)} }
 
+#define INCLUDE_DEPLOYMENT
+
 #define INCLUDE_I2C
 #define TOTAL_I2C_CONTROLLERS 1
 #define LPC24_I2C_PINS {/*          SDA                   SCL*/                  \

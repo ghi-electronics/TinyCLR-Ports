@@ -34,6 +34,10 @@ void OnSoftReset(const TinyCLR_Api_Manager* apiManager) {
     TARGET(_Dac_AddApi)(apiManager);
 #endif
 
+#ifdef INCLUDE_DEPLOYMENT
+    TARGET(_Deployment_AddApi)(apiManager);
+#endif
+
 #ifdef INCLUDE_DISPLAY
     TARGET(_Display_AddApi)(apiManager);
 #endif
