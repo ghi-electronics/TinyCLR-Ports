@@ -1034,21 +1034,14 @@ TinyCLR_Result LPC17_Display_DrawBuffer(const TinyCLR_Display_Controller* self, 
 }
 
 TinyCLR_Result LPC17_Display_DrawPixel(const TinyCLR_Display_Controller* self, uint32_t x, uint32_t y, uint64_t color) {
-    uint16_t rgb565 = ((color & 0xF80000) >> 8) | ((color & 0x00FC00) >> 5) | ((color & 0x0000F8) >> 3);
-
     volatile uint16_t * loc;
 
-    if (m_LPC17_DisplayEnable == false)
-        return TinyCLR_Result::InvalidOperation;
-
-    if (x >= m_LPC17_DisplayWidth)
-        return TinyCLR_Result::InvalidOperation;
-    if (y >= m_LPC17_DisplayHeight)
+    if (m_LPC17_DisplayEnable == false || x >= m_LPC17_DisplayWidth || y >= m_LPC17_DisplayHeight)
         return TinyCLR_Result::InvalidOperation;
 
     loc = m_LPC17_Display_VituralRam + (y *m_LPC17_DisplayWidth) + (x);
 
-    *loc = rgb565;
+    *loc = static_cast<uint16_t>(color & 0xFFFF);
 
     return TinyCLR_Result::Success;
 }
