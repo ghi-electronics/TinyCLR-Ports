@@ -160,7 +160,7 @@ void AT91SAM9Rx64_Gpio_InterruptHandler(void* param) {
                 }
 
                 if (executeIsr)
-                    interruptState->handler(interruptState->controller, interruptState->pin, edge, AT91SAM9Rx64_Time_GetCurrentProcessorTime());
+                    interruptState->handler(interruptState->controller, interruptState->pin, edge, AT91SAM9Rx64_Time_GetSystemTime(nullptr));
             }
 
             interruptsActive ^= bitMask;

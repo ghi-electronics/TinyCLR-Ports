@@ -40,6 +40,8 @@ struct TimeState {
     uint64_t m_nextCompare;
 
     TinyCLR_NativeTime_Callback m_DequeuAndExecute;
+    const TinyCLR_SystemTime_Manager* systemTime;
+
     bool tableInitialized;
 
     static bool   Initialize(uint32_t timer, uint32_t* ISR, void* ISR_Param);
@@ -404,6 +406,20 @@ TinyCLR_Result LPC24_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* s
     state->m_DequeuAndExecute = callback;
 
     return TinyCLR_Result::Success;
+}
+
+uint64_t LPC24_Time_GetSystemTime(const TinyCLR_NativeTime_Controller* self) {
+    uint64_t utc;
+    int32_t tz;
+
+    auto state = ((self == nullptr) ? &timeStates[0] : reinterpret_cast<TimeState*>(self->ApiInfo->State));
+
+    if (state->systemTime == nullptr)
+        state->systemTime = reinterpret_cast<const TinyCLR_SystemTime_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::SystemTimeManager));
+
+    state->systemTime->GetTime(state->systemTime, utc, tz);
+
+    return utc;
 }
 
 extern "C" void IDelayLoop(int32_t iterations);

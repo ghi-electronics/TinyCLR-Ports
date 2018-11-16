@@ -32,6 +32,7 @@ struct TimeState {
     uint32_t m_periodTicks;
 
     TinyCLR_NativeTime_Callback m_DequeuAndExecute;
+    const TinyCLR_SystemTime_Manager* systemTime;
 
     static void Reload(uint32_t value);
     bool tableInitialized;
@@ -242,6 +243,20 @@ TinyCLR_Result LPC17_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* s
     state->m_DequeuAndExecute = callback;
 
     return TinyCLR_Result::Success;
+}
+
+uint64_t LPC17_Time_GetSystemTime(const TinyCLR_NativeTime_Controller* self) {
+    uint64_t utc;
+    int32_t tz;
+
+    auto state = ((self == nullptr) ? &timeStates[0] : reinterpret_cast<TimeState*>(self->ApiInfo->State));
+
+    if (state->systemTime == nullptr)
+        state->systemTime = reinterpret_cast<const TinyCLR_SystemTime_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::SystemTimeManager));
+
+    state->systemTime->GetTime(state->systemTime, utc, tz);
+
+    return utc;
 }
 
 extern "C" void IDelayLoop(int32_t iterations);

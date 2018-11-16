@@ -2399,14 +2399,14 @@ void LPC24_Can_RxInterruptHandler(void *param) {
         CAN_ISR_Rx(controllerIndex);
 
         if (c1 & (1 << 3)) {
-            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Overrun, LPC24_Time_GetCurrentProcessorTime());
+            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Overrun, LPC24_Time_GetSystemTime(nullptr));
         }
         if (c1 & (1 << 5)) {
-            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, LPC24_Time_GetCurrentProcessorTime());
+            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, LPC24_Time_GetSystemTime(nullptr));
         }
         if (c1 & (1 << 7)) {
             C1MOD = 1;    // Reset CAN
-            state->errorEventHandler(state->controller, TinyCLR_Can_Error::BusOff, LPC24_Time_GetCurrentProcessorTime());
+            state->errorEventHandler(state->controller, TinyCLR_Can_Error::BusOff, LPC24_Time_GetSystemTime(nullptr));
         }
 
     }
@@ -2420,14 +2420,14 @@ void LPC24_Can_RxInterruptHandler(void *param) {
         CAN_ISR_Rx(controllerIndex);
 
         if (c2 & (1 << 3)) {
-            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Overrun, LPC24_Time_GetCurrentProcessorTime());
+            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Overrun, LPC24_Time_GetSystemTime(nullptr));
         }
         if (c2 & (1 << 5)) {
-            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, LPC24_Time_GetCurrentProcessorTime());
+            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, LPC24_Time_GetSystemTime(nullptr));
         }
         if (c2 & (1 << 7)) {
             C2MOD = 1;    // Reset CAN
-            state->errorEventHandler(state->controller, TinyCLR_Can_Error::BusOff, LPC24_Time_GetCurrentProcessorTime());
+            state->errorEventHandler(state->controller, TinyCLR_Can_Error::BusOff, LPC24_Time_GetSystemTime(nullptr));
         }
     }
 }
