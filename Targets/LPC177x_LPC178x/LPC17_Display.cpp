@@ -1114,5 +1114,8 @@ void LPC17_Display_Reset() {
     m_LPC17_DisplayEnable = false;
     displayInitializeCount = 0;
     m_LPC17_Display_buffer = nullptr;
+
+    m_LPC17_Display_TextRow = 0;
+    m_LPC17_Display_TextColumn = 0;
 }
 

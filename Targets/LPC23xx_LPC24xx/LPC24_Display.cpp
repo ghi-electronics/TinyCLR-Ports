@@ -1150,5 +1150,8 @@ void LPC24_Display_Reset() {
     m_LPC24_DisplayEnable = false;
     displayInitializeCount = 0;
     m_LPC24_Display_buffer = nullptr;
+
+    m_LPC24_Display_TextRow = 0;
+    m_LPC24_Display_TextColumn = 0;
 }
 #endif

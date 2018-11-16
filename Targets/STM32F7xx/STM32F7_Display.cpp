@@ -1303,5 +1303,8 @@ void STM32F7_Display_Reset() {
     displayInitializeCount = 0;
     m_STM32F7_Display_buffer = nullptr;
 
+    m_STM32F7_Display_TextRow = 0;
+    m_STM32F7_Display_TextColumn = 0;
+
 }
 #endif

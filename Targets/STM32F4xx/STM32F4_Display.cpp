@@ -1301,5 +1301,8 @@ void STM32F4_Display_Reset() {
     m_STM32F4_DisplayEnable = false;
     displayInitializeCount = 0;
     m_STM32F4_Display_buffer = nullptr;
+
+    m_STM32F4_Display_TextRow = 0;
+    m_STM32F4_Display_TextColumn = 0;
 }
 #endif
