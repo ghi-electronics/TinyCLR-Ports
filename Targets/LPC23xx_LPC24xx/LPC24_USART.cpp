@@ -283,7 +283,7 @@ void LPC24_Uart_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error)
     auto state = &uartStates[controllerIndex];
 
     if (state->errorEventHandler != nullptr)
-        state->errorEventHandler(state->controller, error, LPC24_Time_GetCurrentProcessorTime());
+        state->errorEventHandler(state->controller, error, LPC24_Time_GetSystemTime());
 }
 
 void LPC24_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t IIR_Value) {
@@ -322,11 +322,11 @@ void LPC24_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
                         if (canPostEvent) {
                             if (state->rxBufferCount > state->lastEventRxBufferCount) {
                                 // if driver hold event long enough that more than 1 byte
-                                state->dataReceivedEventHandler(state->controller, state->rxBufferCount - state->lastEventRxBufferCount, LPC24_Time_GetCurrentProcessorTime());
+                                state->dataReceivedEventHandler(state->controller, state->rxBufferCount - state->lastEventRxBufferCount, LPC24_Time_GetSystemTime());
                             }
                             else {
                                 // if user use poll to read data and rxBufferCount <= lastEventRxBufferCount, driver send at least 1 byte comming
-                                state->dataReceivedEventHandler(state->controller, 1, LPC24_Time_GetCurrentProcessorTime());
+                                state->dataReceivedEventHandler(state->controller, 1, LPC24_Time_GetSystemTime());
                             }
 
                             state->lastEventRxBufferCount = state->rxBufferCount;
@@ -413,7 +413,7 @@ void LPC24_Uart_InterruptHandler(void *param) {
             LPC24_Uart_GetClearToSendState(state->controller, ctsState);
 
             if (state->cleartosendEventHandler != nullptr)
-                state->cleartosendEventHandler(state->controller, ctsState, LPC24_Time_GetCurrentProcessorTime());
+                state->cleartosendEventHandler(state->controller, ctsState, LPC24_Time_GetSystemTime());
 
             // If tx was disable to avoid locked up
             // Need Enable back if detected OK to send

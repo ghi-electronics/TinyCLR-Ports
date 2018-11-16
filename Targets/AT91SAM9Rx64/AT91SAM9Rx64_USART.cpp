@@ -260,7 +260,7 @@ void AT91SAM9Rx64_Uart_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error
     auto state = &uartStates[controllerIndex];
 
     if (state->errorEventHandler != nullptr)
-        state->errorEventHandler(state->controller, error, AT91SAM9Rx64_Time_GetCurrentProcessorTime());
+        state->errorEventHandler(state->controller, error, AT91SAM9Rx64_Time_GetSystemTime());
 }
 
 void AT91SAM9Rx64_Uart_ReceiveData(int32_t controllerIndex, uint32_t sr) {
@@ -306,11 +306,11 @@ void AT91SAM9Rx64_Uart_ReceiveData(int32_t controllerIndex, uint32_t sr) {
             if (canPostEvent) {
                 if (state->rxBufferCount > state->lastEventRxBufferCount) {
                     // if driver hold event long enough that more than 1 byte
-                    state->dataReceivedEventHandler(state->controller, state->rxBufferCount - state->lastEventRxBufferCount, AT91SAM9Rx64_Time_GetCurrentProcessorTime());
+                    state->dataReceivedEventHandler(state->controller, state->rxBufferCount - state->lastEventRxBufferCount, AT91SAM9Rx64_Time_GetSystemTime());
                 }
                 else {
                     // if user use poll to read data and rxBufferCount <= lastEventRxBufferCount, driver send at least 1 byte comming
-                    state->dataReceivedEventHandler(state->controller, 1, AT91SAM9Rx64_Time_GetCurrentProcessorTime());
+                    state->dataReceivedEventHandler(state->controller, 1, AT91SAM9Rx64_Time_GetSystemTime());
                 }
 
                 state->lastEventRxBufferCount = state->rxBufferCount;
@@ -367,7 +367,7 @@ void AT91SAM9Rx64_Uart_InterruptHandler(void *param) {
 
         if (sr & AT91SAM9Rx64_USART::US_CTSIC) {
             if (state->cleartosendEventHandler != nullptr)
-                state->cleartosendEventHandler(state->controller, ctsState, AT91SAM9Rx64_Time_GetCurrentProcessorTime());
+                state->cleartosendEventHandler(state->controller, ctsState, AT91SAM9Rx64_Time_GetSystemTime());
 
             if (ctsState) {
                 // If tx was disable to avoid locked up
