@@ -243,6 +243,19 @@ TinyCLR_Result STM32F7_Time_SetTickCallback(const TinyCLR_NativeTime_Controller*
     return TinyCLR_Result::Success;
 }
 
+uint64_t  STM32F7_Time_GetSystemTime() {
+    uint64_t utc;
+    int32_t tz;
+
+    //To scale to the current internal epoch of 1601-01-01
+    const uint64_t TICKS_AT_ORIGIN = 504911232000000000;
+
+    auto st = reinterpret_cast<const TinyCLR_SystemTime_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::SystemTimeManager));
+    auto res = st->GetTime(st, utc, tz);
+
+    return utc - TICKS_AT_ORIGIN;
+}
+
 extern "C" void IDelayLoop(int32_t iterations);
 
 void STM32F7_Time_Delay(const TinyCLR_NativeTime_Controller* self, uint64_t microseconds) {

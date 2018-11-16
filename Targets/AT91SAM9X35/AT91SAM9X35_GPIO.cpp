@@ -161,18 +161,8 @@ void AT91SAM9X35_Gpio_InterruptHandler(void* param) {
                     interruptState->lastDebounceTicks = AT91SAM9X35_Time_GetTimeForProcessorTicks(nullptr, AT91SAM9X35_Time_GetCurrentProcessorTicks(nullptr));
                 }
 
-                if (executeIsr) {
-                    auto st = reinterpret_cast<const TinyCLR_SystemTime_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::SystemTimeManager));
-
-                    uint64_t utc;
-                    int32_t tz;
-
-                    //To scale to the current internal epoch of 1601-01-01
-                    const uint64_t TICKS_AT_ORIGIN = 504911232000000000;
-                    auto res = st->GetTime(st, utc, tz);
-
-                    interruptState->handler(interruptState->controller, interruptState->pin, edge, utc - TICKS_AT_ORIGIN);
-                }
+                if (executeIsr)
+                    interruptState->handler(interruptState->controller, interruptState->pin, edge, AT91SAM9X35_Time_GetSystemTime());
             }
 
             interruptsActive ^= bitMask;

@@ -385,6 +385,7 @@ TinyCLR_Result LPC17_Time_SetTickCallback(const TinyCLR_NativeTime_Controller* s
 TinyCLR_Result LPC17_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Controller* self, uint64_t processorTicks);
 void LPC17_Time_Delay(const TinyCLR_NativeTime_Controller* self, uint64_t microseconds);
 void LPC17_Time_DelayNative(const TinyCLR_NativeTime_Controller* self, uint64_t nativeTime);
+uint64_t LPC17_Time_GetSystemTime();
 
 // Power
 void LPC17_Power_AddApi(const TinyCLR_Api_Manager* apiManager);
