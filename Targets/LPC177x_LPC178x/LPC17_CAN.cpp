@@ -2822,6 +2822,10 @@ TinyCLR_Result LPC17_Can_Enable(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
     auto controllerIndex = state->controllerIndex;
 
+    if (state->baudrate == 0) {
+        return TinyCLR_Result::InvalidOperation; // Can not enable if baudrate = 0;
+    }
+
     if (!state->enable) {
         if (controllerIndex == 0)
             LPC_SC->PCONP |= (1 << 13);    // Enable clock to the peripheral
