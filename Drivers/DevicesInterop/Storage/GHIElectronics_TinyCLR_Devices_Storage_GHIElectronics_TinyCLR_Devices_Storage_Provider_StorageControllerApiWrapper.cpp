@@ -38,19 +38,38 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Storage_GHIElectronics_Tin
         regionsEqualSizedField.Data.Numeric->Boolean = descriptor->RegionsEqualSized;
         regionCountField.Data.Numeric->I4 = descriptor->RegionCount;
 
+        auto addressCount = descriptor->RegionCount;
+        auto sizeCount = descriptor->RegionCount;
+
+        if (descriptor->RegionsContiguous) {
+            addressCount = 1;
+        }
+
+        if (descriptor->RegionsEqualSized) {
+            sizeCount = 1;
+        }
+
+        TinyCLR_Interop_ClrValue regionAddressesFieldArray, regionSizesFieldArray;
+
         md.InteropManager->FindType(md.InteropManager, "mscorlib", "System", "Int64", type);
-        md.InteropManager->CreateArray(md.InteropManager, descriptor->RegionCount, type, regionAddressesField);
+        md.InteropManager->CreateArray(md.InteropManager, addressCount, type, regionAddressesFieldArray);
 
         md.InteropManager->FindType(md.InteropManager, "mscorlib", "System", "Int32", type);
-        md.InteropManager->CreateArray(md.InteropManager, descriptor->RegionCount, type, regionSizesField);
+        md.InteropManager->CreateArray(md.InteropManager, sizeCount, type, regionSizesFieldArray);
 
-        auto regionAddresses = reinterpret_cast<int64_t*>(regionAddressesField.Data.SzArray.Data);
-        auto regionSizes = reinterpret_cast<int32_t*>(regionSizesField.Data.SzArray.Data);
+        auto regionAddresses = reinterpret_cast<int64_t*>(regionAddressesFieldArray.Data.SzArray.Data);
+        auto regionSizes = reinterpret_cast<int32_t*>(regionSizesFieldArray.Data.SzArray.Data);
 
-        for (auto i = 0; i < descriptor->RegionCount; i++) {
+        for (auto i = 0; i < addressCount; i++) {
             regionAddresses[i] = descriptor->RegionAddresses[i];
+        }
+
+        for (auto i = 0; i < sizeCount; i++) {
             regionSizes[i] = descriptor->RegionSizes[i];
         }
+
+        md.InteropManager->AssignObjectReference(md.InteropManager, regionAddressesField, regionAddressesFieldArray.Object);
+        md.InteropManager->AssignObjectReference(md.InteropManager, regionSizesField, regionSizesFieldArray.Object);
 
         md.InteropManager->GetReturn(md.InteropManager, md.Stack, ret);
 
