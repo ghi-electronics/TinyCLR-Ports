@@ -1060,6 +1060,7 @@ void STM32F7_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
         canControllers[i].ReadMessage = &STM32F7_Can_ReadMessage;
         canControllers[i].SetBitTiming = &STM32F7_Can_SetBitTiming;
         canControllers[i].GetMessagesToRead = &STM32F7_Can_GetMessagesToRead;
+        canControllers[i].GetMessagesToWrite = &STM32F7_Can_GetMessagesToWrite;
         canControllers[i].SetMessageReceivedHandler = &STM32F7_Can_SetMessageReceivedHandler;
         canControllers[i].SetErrorReceivedHandler = &STM32F7_Can_SetErrorReceivedHandler;
         canControllers[i].SetExplicitFilters = &STM32F7_Can_SetExplicitFilters;
@@ -1449,6 +1450,10 @@ size_t STM32F7_Can_GetMessagesToRead(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     return state->can_rx_count;
+}
+
+size_t STM32F7_Can_GetMessagesToWrite(const TinyCLR_Can_Controller* self) {
+    return 1;
 }
 
 TinyCLR_Result STM32F7_Can_SetMessageReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_MessageReceivedHandler handler) {
