@@ -40,26 +40,33 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR
 TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR_Devices_Spi_Provider_SpiControllerApiWrapper::get_SupportedDataBitLengths___SZARRAY_I4(const TinyCLR_Interop_MethodData md) {
     auto api = reinterpret_cast<const TinyCLR_Spi_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
-    size_t ptrLen = 10;
-    uint32_t ptr[ptrLen];
+    const size_t MAX_SUPPORT_ARRAY_SIZE = 10;
+
+    size_t ptrLen = MAX_SUPPORT_ARRAY_SIZE;
+
+    uint32_t ptr[MAX_SUPPORT_ARRAY_SIZE];
 
     auto result = api->GetSupportedDataBitLengths(api, ptr, ptrLen);
 
     auto interop = md.InteropManager;
 
+    ptrLen = ptrLen > MAX_SUPPORT_ARRAY_SIZE ? MAX_SUPPORT_ARRAY_SIZE : ptrLen;
+
     TinyCLR_Interop_ClrTypeId idx;
 
-    TinyCLR_Interop_ClrValue ret;
+    TinyCLR_Interop_ClrValue arr, ret;
+
+    interop->FindType(interop, "mscorlib", "System", "Int32", idx);
+    interop->CreateArray(interop, ptrLen, idx, arr);
+
+    auto p = reinterpret_cast<int32_t*>(arr.Data.SzArray.Data);
+
+    for (auto i = 0; i < ptrLen; i++)
+        p[i] = ptr[i];    
 
     md.InteropManager->GetReturn(md.InteropManager, md.Stack, ret);
 
-    interop->FindType(interop, "mscorlib", "System", "Int32", idx);
-    interop->CreateArray(interop, ptrLen, idx, ret);
-
-    auto p = reinterpret_cast<int32_t*>(ret.Data.SzArray.Data);
-
-    for (auto i = 0; i < ptrLen; i++)
-        p[i] = ptr[i];
+    md.InteropManager->AssignObjectReference(md.InteropManager, ret, arr.Object);
 
     return result;
 }
