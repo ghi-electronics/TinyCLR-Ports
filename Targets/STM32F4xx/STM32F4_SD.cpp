@@ -2872,6 +2872,7 @@ TinyCLR_Result STM32F4_SdCard_Erases(const TinyCLR_Storage_Controller* self, uin
 TinyCLR_Result STM32F4_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
+    state->regionAddresses[0] = 0;
     state->regionSizes[0] = STM32F4_SD_SECTOR_SIZE;
     state->descriptor.RegionCount = SDCardInfo.CardCapacity / STM32F4_SD_SECTOR_SIZE;
 
