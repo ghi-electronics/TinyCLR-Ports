@@ -62,7 +62,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Spi_GHIElectronics_TinyCLR
     auto p = reinterpret_cast<int32_t*>(arr.Data.SzArray.Data);
 
     for (auto i = 0; i < ptrLen; i++)
-        p[i] = ptr[i];    
+        p[i] = ptr[i];
 
     md.InteropManager->GetReturn(md.InteropManager, md.Stack, ret);
 
