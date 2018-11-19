@@ -344,7 +344,7 @@ TinyCLR_Result STM32F7_Flash_Open(const TinyCLR_Storage_Controller* self) {
     state->storageDescriptor.CanExecuteDirect = true;
     state->storageDescriptor.EraseBeforeWrite = true;
     state->storageDescriptor.Removable = false;
-    state->storageDescriptor.RegionsContiguous = false;
+    state->storageDescriptor.RegionsContiguous = true;
     state->storageDescriptor.RegionsEqualSized = false;
 
     state->storageDescriptor.RegionCount = state->regionCount;
@@ -354,8 +354,8 @@ TinyCLR_Result STM32F7_Flash_Open(const TinyCLR_Storage_Controller* self) {
     state->deploymentConfiguration.RegionCount = state->storageDescriptor.RegionCount;
     state->deploymentConfiguration.RegionAddresses = state->storageDescriptor.RegionAddresses;
     state->deploymentConfiguration.RegionSizes = state->storageDescriptor.RegionSizes;
-    state->deploymentConfiguration.RegionsContiguous = false;
-    state->deploymentConfiguration.RegionsEqualSized = false;
+    state->deploymentConfiguration.RegionsContiguous = state->storageDescriptor.RegionsContiguous;
+    state->deploymentConfiguration.RegionsEqualSized = state->storageDescriptor.RegionsEqualSized;
 
     state->isOpened = true;
 

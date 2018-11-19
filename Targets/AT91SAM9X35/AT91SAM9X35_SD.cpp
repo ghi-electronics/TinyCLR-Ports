@@ -2473,8 +2473,8 @@ TinyCLR_Result AT91SAM9X35_SdCard_Acquire(const TinyCLR_Storage_Controller* self
         state->descriptor.CanExecuteDirect = false;
         state->descriptor.EraseBeforeWrite = false;
         state->descriptor.Removable = true;
-        state->descriptor.RegionsContiguous = false;
-        state->descriptor.RegionsEqualSized = false;
+        state->descriptor.RegionsContiguous = true;
+        state->descriptor.RegionsEqualSized = true;
 
         state->descriptor.RegionAddresses = reinterpret_cast<const uint64_t*>(state->regionAddresses);
         state->descriptor.RegionSizes = reinterpret_cast<const size_t*>(state->regionSizes);

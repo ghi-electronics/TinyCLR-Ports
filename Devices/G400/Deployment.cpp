@@ -119,8 +119,8 @@ TinyCLR_Result AT91SAM9X35_Deployment_Open(const TinyCLR_Storage_Controller* sel
     state->storageDescriptor.CanExecuteDirect = false;
     state->storageDescriptor.EraseBeforeWrite = true;
     state->storageDescriptor.Removable = false;
-    state->storageDescriptor.RegionsContiguous = false;
-    state->storageDescriptor.RegionsEqualSized = false;
+    state->storageDescriptor.RegionsContiguous = true;
+    state->storageDescriptor.RegionsEqualSized = true;
 
     size_t regionCount;
 
@@ -139,8 +139,8 @@ TinyCLR_Result AT91SAM9X35_Deployment_Open(const TinyCLR_Storage_Controller* sel
     state->deploymentConfiguration.RegionCount = state->storageDescriptor.RegionCount;
     state->deploymentConfiguration.RegionAddresses = state->storageDescriptor.RegionAddresses;
     state->deploymentConfiguration.RegionSizes = state->storageDescriptor.RegionSizes;
-    state->deploymentConfiguration.RegionsContiguous = false;
-    state->deploymentConfiguration.RegionsEqualSized = false;
+    state->deploymentConfiguration.RegionsContiguous = state->storageDescriptor.RegionsContiguous;
+    state->deploymentConfiguration.RegionsEqualSized = state->storageDescriptor.RegionsEqualSized;
 
     state->isOpened = true;
 
