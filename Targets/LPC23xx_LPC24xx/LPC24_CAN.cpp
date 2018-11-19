@@ -2248,6 +2248,7 @@ void LPC24_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
         canControllers[i].ReadMessage = &LPC24_Can_ReadMessage;
         canControllers[i].SetBitTiming = &LPC24_Can_SetBitTiming;
         canControllers[i].GetMessagesToRead = &LPC24_Can_GetMessagesToRead;
+        canControllers[i].GetMessagesToWrite = &LPC24_Can_GetMessagesToWrite;
         canControllers[i].SetMessageReceivedHandler = &LPC24_Can_SetMessageReceivedHandler;
         canControllers[i].SetErrorReceivedHandler = &LPC24_Can_SetErrorReceivedHandler;
         canControllers[i].SetExplicitFilters = &LPC24_Can_SetExplicitFilters;
@@ -2637,6 +2638,10 @@ size_t LPC24_Can_GetMessagesToRead(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     return state->can_rx_count;
+}
+
+size_t LPC24_Can_GetMessagesToWrite(const TinyCLR_Can_Controller* self) {
+    return 0;
 }
 
 TinyCLR_Result LPC24_Can_SetMessageReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_MessageReceivedHandler handler) {

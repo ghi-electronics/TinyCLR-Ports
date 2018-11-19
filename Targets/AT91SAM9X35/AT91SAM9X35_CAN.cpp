@@ -1214,6 +1214,7 @@ void AT91SAM9X35_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
         canControllers[i].ReadMessage = &AT91SAM9X35_Can_ReadMessage;
         canControllers[i].SetBitTiming = &AT91SAM9X35_Can_SetBitTiming;
         canControllers[i].GetMessagesToRead = &AT91SAM9X35_Can_GetMessagesToRead;
+        canControllers[i].GetMessagesToWrite = &AT91SAM9X35_Can_GetMessagesToWrite;
         canControllers[i].SetMessageReceivedHandler = &AT91SAM9X35_Can_SetMessageReceivedHandler;
         canControllers[i].SetErrorReceivedHandler = &AT91SAM9X35_Can_SetErrorReceivedHandler;
         canControllers[i].SetExplicitFilters = &AT91SAM9X35_Can_SetExplicitFilters;
@@ -1689,6 +1690,10 @@ size_t AT91SAM9X35_Can_GetMessagesToRead(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
     return state->can_rx_count;
+}
+
+size_t AT91SAM9X35_Can_GetMessagesToWrite(const TinyCLR_Can_Controller* self) {
+    return 0;
 }
 
 TinyCLR_Result AT91SAM9X35_Can_SetMessageReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_MessageReceivedHandler handler) {

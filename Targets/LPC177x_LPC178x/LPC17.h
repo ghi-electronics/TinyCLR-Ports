@@ -52,7 +52,7 @@ TinyCLR_Result LPC17_Can_WriteMessage(const TinyCLR_Can_Controller* self, const 
 TinyCLR_Result LPC17_Can_ReadMessage(const TinyCLR_Can_Controller* self, TinyCLR_Can_Message* messages, size_t& length);
 TinyCLR_Result LPC17_Can_SetBitTiming(const TinyCLR_Can_Controller* self, const TinyCLR_Can_BitTiming* timing);
 size_t LPC17_Can_GetMessagesToRead(const TinyCLR_Can_Controller* self);
-size_t LP17_Can_GetMessagesToWrite(const TinyCLR_Can_Controller* self);
+size_t LPC17_Can_GetMessagesToWrite(const TinyCLR_Can_Controller* self);
 TinyCLR_Result LPC17_Can_SetMessageReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_MessageReceivedHandler handler);
 TinyCLR_Result LPC17_Can_SetErrorReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_ErrorReceivedHandler handler);
 TinyCLR_Result LPC17_Can_SetExplicitFilters(const TinyCLR_Can_Controller* self, const uint32_t* filters, size_t count);
