@@ -2640,7 +2640,7 @@ size_t LPC17_Can_GetMessagesToRead(const TinyCLR_Can_Controller* self) {
 }
 
 size_t LPC17_Can_GetMessagesToWrite(const TinyCLR_Can_Controller* self) {
-    return 1;
+    return 0;
 }
 
 TinyCLR_Result LPC17_Can_SetMessageReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_MessageReceivedHandler handler) {

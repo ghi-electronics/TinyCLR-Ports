@@ -1693,7 +1693,7 @@ size_t AT91SAM9X35_Can_GetMessagesToRead(const TinyCLR_Can_Controller* self) {
 }
 
 size_t AT91SAM9X35_Can_GetMessagesToWrite(const TinyCLR_Can_Controller* self) {
-    return 1;
+    return 0;
 }
 
 TinyCLR_Result AT91SAM9X35_Can_SetMessageReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_MessageReceivedHandler handler) {
