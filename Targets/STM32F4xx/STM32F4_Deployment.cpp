@@ -260,7 +260,7 @@ TinyCLR_Result STM32F4_Flash_Open(const TinyCLR_Storage_Controller* self) {
     state->storageDescriptor.CanExecuteDirect = true;
     state->storageDescriptor.EraseBeforeWrite = true;
     state->storageDescriptor.Removable = false;
-    state->storageDescriptor.RegionsContiguous = false;
+    state->storageDescriptor.RegionsContiguous = true;
     state->storageDescriptor.RegionsEqualSized = false;
 
     state->storageDescriptor.RegionCount = state->regionCount;
