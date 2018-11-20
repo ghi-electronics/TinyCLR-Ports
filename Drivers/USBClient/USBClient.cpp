@@ -25,9 +25,9 @@ static TinyCLR_UsbClient_Controller usbClientControllers[TOTAL_USBCLIENT_CONTROL
 static TinyCLR_Api_Info usbClientApi[TOTAL_USBCLIENT_CONTROLLERS];
 static UsbClientState usbClientStates[TOTAL_USBCLIENT_CONTROLLERS];
 
-TinyCLR_UsbClient_DataReceivedHandler TinyCLR_UsbClient_SetDataReceived;
-TinyCLR_UsbClient_RequestHandler TinyCLR_UsbClient_ProcessVendorClassRequest = nullptr;
-TinyCLR_UsbClient_RequestHandler TinyCLR_UsbClient_SetGetDescriptor = nullptr;
+TinyCLR_UsbClient_DataReceivedHandler TinyCLR_UsbClient_SetDataReceivedEvent;
+TinyCLR_UsbClient_RequestHandler TinyCLR_UsbClient_ProcessVendorClassRequestEvent = nullptr;
+TinyCLR_UsbClient_RequestHandler TinyCLR_UsbClient_SetGetDescriptorEvent = nullptr;
 
 void TinyCLR_UsbClient_SetEvent(UsbClientState *usbClientState, uint32_t event) {
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -37,7 +37,7 @@ void TinyCLR_UsbClient_SetEvent(UsbClientState *usbClientState, uint32_t event) 
     usbClientState->event |= event;
 
     if (old_event != usbClientState->event) {
-        TinyCLR_UsbClient_SetDataReceived(nullptr, 0);
+        TinyCLR_UsbClient_SetDataReceivedEvent(nullptr, 0);
     }
 }
 
@@ -511,13 +511,13 @@ uint8_t TinyCLR_UsbClient_HandleConfigurationRequests(UsbClientState* usbClientS
 
         default:
 
-            if (TinyCLR_UsbClient_SetGetDescriptor != nullptr) {
+            if (TinyCLR_UsbClient_SetGetDescriptorEvent != nullptr) {
 
                 const uint8_t* responsePayload;
 
                 size_t responsePayloadLength = 0;
 
-                if (TinyCLR_UsbClient_SetGetDescriptor(&usbClientControllers[controllerIndex], Setup, responsePayload, responsePayloadLength, TinyCLR_UsbClient_Now()) == TinyCLR_Result::Success) {
+                if (TinyCLR_UsbClient_SetGetDescriptorEvent(&usbClientControllers[controllerIndex], Setup, responsePayload, responsePayloadLength, TinyCLR_UsbClient_Now()) == TinyCLR_Result::Success) {
                     memcpy(usbClientState->controlEndpointBuffer, reinterpret_cast<uint8_t*>(const_cast<uint8_t*>(responsePayload)), responsePayloadLength);
                     usbClientState->residualData = usbClientState->controlEndpointBuffer;
                     usbClientState->residualCount = __min(usbClientState->expected, responsePayloadLength);
@@ -533,7 +533,7 @@ uint8_t TinyCLR_UsbClient_HandleConfigurationRequests(UsbClientState* usbClientS
 
             size_t responsePayloadLength = 0;
 
-            if (TinyCLR_UsbClient_ProcessVendorClassRequest(&usbClientControllers[controllerIndex], Setup, responsePayload, responsePayloadLength, TinyCLR_UsbClient_Now()) == TinyCLR_Result::Success) {
+            if (TinyCLR_UsbClient_ProcessVendorClassRequestEvent(&usbClientControllers[controllerIndex], Setup, responsePayload, responsePayloadLength, TinyCLR_UsbClient_Now()) == TinyCLR_Result::Success) {
                 memcpy(usbClientState->controlEndpointBuffer, reinterpret_cast<uint8_t*>(const_cast<uint8_t*>(responsePayload)), responsePayloadLength);
 
                 usbClientState->residualData = usbClientState->controlEndpointBuffer;
@@ -1253,19 +1253,19 @@ TinyCLR_Result TinyCLR_UsbClient_FlushPipe(const TinyCLR_UsbClient_Controller* s
 }
 
 TinyCLR_Result TinyCLR_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Controller* self, TinyCLR_UsbClient_DataReceivedHandler handler) {
-    TinyCLR_UsbClient_SetDataReceived = handler;
+    TinyCLR_UsbClient_SetDataReceivedEvent = handler;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result TinyCLR_UsbClient_SetVendorClassRequestHandler(const TinyCLR_UsbClient_Controller* self, TinyCLR_UsbClient_RequestHandler handler) {
-    TinyCLR_UsbClient_ProcessVendorClassRequest = handler;
+    TinyCLR_UsbClient_ProcessVendorClassRequestEvent = handler;
 
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result TinyCLR_UsbClient_SetGetDescriptorHandler(const TinyCLR_UsbClient_Controller* self, TinyCLR_UsbClient_RequestHandler handler) {
-    TinyCLR_UsbClient_SetGetDescriptor = handler;
+    TinyCLR_UsbClient_SetGetDescriptorEvent = handler;
 
     return TinyCLR_Result::Success;
 }
