@@ -50,27 +50,27 @@
 
 // -------- UDPHS_EPTCFG : (UDPHS_EPT Offset: 0x0) UDPHS Endpoint Config Register --------
 #define AT91C_UDPHS_EPT_SIZE  (0x7 <<  0) // (UDPHS_EPT) Endpoint Size
-#define 	AT91C_UDPHS_EPT_SIZE_8                    (0x0) // (UDPHS_EPT)    8 bytes
-#define 	AT91C_UDPHS_EPT_SIZE_16                   (0x1) // (UDPHS_EPT)   16 bytes
-#define 	AT91C_UDPHS_EPT_SIZE_32                   (0x2) // (UDPHS_EPT)   32 bytes
-#define 	AT91C_UDPHS_EPT_SIZE_64                   (0x3) // (UDPHS_EPT)   64 bytes
-#define 	AT91C_UDPHS_EPT_SIZE_128                  (0x4) // (UDPHS_EPT)  128 bytes
-#define 	AT91C_UDPHS_EPT_SIZE_256                  (0x5) // (UDPHS_EPT)  256 bytes
-#define 	AT91C_UDPHS_EPT_SIZE_512                  (0x6) // (UDPHS_EPT)  512 bytes
-#define 	AT91C_UDPHS_EPT_SIZE_1024                 (0x7) // (UDPHS_EPT) 1024 bytes
+#define     AT91C_UDPHS_EPT_SIZE_8                    (0x0) // (UDPHS_EPT)    8 bytes
+#define     AT91C_UDPHS_EPT_SIZE_16                   (0x1) // (UDPHS_EPT)   16 bytes
+#define     AT91C_UDPHS_EPT_SIZE_32                   (0x2) // (UDPHS_EPT)   32 bytes
+#define     AT91C_UDPHS_EPT_SIZE_64                   (0x3) // (UDPHS_EPT)   64 bytes
+#define     AT91C_UDPHS_EPT_SIZE_128                  (0x4) // (UDPHS_EPT)  128 bytes
+#define     AT91C_UDPHS_EPT_SIZE_256                  (0x5) // (UDPHS_EPT)  256 bytes
+#define     AT91C_UDPHS_EPT_SIZE_512                  (0x6) // (UDPHS_EPT)  512 bytes
+#define     AT91C_UDPHS_EPT_SIZE_1024                 (0x7) // (UDPHS_EPT) 1024 bytes
 #define AT91C_UDPHS_EPT_DIR   (0x1 <<  3) // (UDPHS_EPT) Endpoint Direction 0:OUT, 1:IN
-#define 	AT91C_UDPHS_EPT_DIR_OUT                  (0x0 <<  3) // (UDPHS_EPT) Direction OUT
-#define 	AT91C_UDPHS_EPT_DIR_IN                   (0x1 <<  3) // (UDPHS_EPT) Direction IN
+#define     AT91C_UDPHS_EPT_DIR_OUT                  (0x0 <<  3) // (UDPHS_EPT) Direction OUT
+#define     AT91C_UDPHS_EPT_DIR_IN                   (0x1 <<  3) // (UDPHS_EPT) Direction IN
 #define AT91C_UDPHS_EPT_TYPE  (0x3 <<  4) // (UDPHS_EPT) Endpoint Type
-#define 	AT91C_UDPHS_EPT_TYPE_CTL_EPT              (0x0 <<  4) // (UDPHS_EPT) Control endpoint
-#define 	AT91C_UDPHS_EPT_TYPE_ISO_EPT              (0x1 <<  4) // (UDPHS_EPT) Isochronous endpoint
-#define 	AT91C_UDPHS_EPT_TYPE_BUL_EPT              (0x2 <<  4) // (UDPHS_EPT) Bulk endpoint
-#define 	AT91C_UDPHS_EPT_TYPE_INT_EPT              (0x3 <<  4) // (UDPHS_EPT) Interrupt endpoint
+#define     AT91C_UDPHS_EPT_TYPE_CTL_EPT              (0x0 <<  4) // (UDPHS_EPT) Control endpoint
+#define     AT91C_UDPHS_EPT_TYPE_ISO_EPT              (0x1 <<  4) // (UDPHS_EPT) Isochronous endpoint
+#define     AT91C_UDPHS_EPT_TYPE_BUL_EPT              (0x2 <<  4) // (UDPHS_EPT) Bulk endpoint
+#define     AT91C_UDPHS_EPT_TYPE_INT_EPT              (0x3 <<  4) // (UDPHS_EPT) Interrupt endpoint
 #define AT91C_UDPHS_BK_NUMBER (0x3 <<  6) // (UDPHS_EPT) Number of Banks
-#define 	AT91C_UDPHS_BK_NUMBER_0                    (0x0 <<  6) // (UDPHS_EPT) Zero Bank, the EndPoint is not mapped in memory
-#define 	AT91C_UDPHS_BK_NUMBER_1                    (0x1 <<  6) // (UDPHS_EPT) One Bank (Bank0)
-#define 	AT91C_UDPHS_BK_NUMBER_2                    (0x2 <<  6) // (UDPHS_EPT) Double bank (Ping-Pong : Bank0 / Bank1)
-#define 	AT91C_UDPHS_BK_NUMBER_3                    (0x3 <<  6) // (UDPHS_EPT) Triple Bank (Bank0 / Bank1 / Bank2)
+#define     AT91C_UDPHS_BK_NUMBER_0                    (0x0 <<  6) // (UDPHS_EPT) Zero Bank, the EndPoint is not mapped in memory
+#define     AT91C_UDPHS_BK_NUMBER_1                    (0x1 <<  6) // (UDPHS_EPT) One Bank (Bank0)
+#define     AT91C_UDPHS_BK_NUMBER_2                    (0x2 <<  6) // (UDPHS_EPT) Double bank (Ping-Pong : Bank0 / Bank1)
+#define     AT91C_UDPHS_BK_NUMBER_3                    (0x3 <<  6) // (UDPHS_EPT) Triple Bank (Bank0 / Bank1 / Bank2)
 #define AT91C_UDPHS_NB_TRANS  (0x3 <<  8) // (UDPHS_EPT) Number Of Transaction per Micro-Frame (High-Bandwidth iso only)
 #define AT91C_UDPHS_EPT_MAPD  ((uint32_t)0x1 << 31) // (UDPHS_EPT) Endpoint Mapped (read only
 
@@ -154,85 +154,85 @@
 #define USB_MAX_DATA_PACKET_SIZE    64
 
 struct AT91SAM9X35_UDPHS_EPT {
-    volatile uint32_t	 UDPHS_EPTCFG; 	// UDPHS Endpoint Config Register
-    volatile uint32_t	 UDPHS_EPTCTLENB; 	// UDPHS Endpoint Control Enable Register
-    volatile uint32_t	 UDPHS_EPTCTLDIS; 	// UDPHS Endpoint Control Disable Register
-    volatile uint32_t	 UDPHS_EPTCTL; 	// UDPHS Endpoint Control Register
-    volatile uint32_t	 Reserved0[1]; 	//
-    volatile uint32_t	 UDPHS_EPTSETSTA; 	// UDPHS Endpoint Set Status Register
-    volatile uint32_t	 UDPHS_EPTCLRSTA; 	// UDPHS Endpoint Clear Status Register
-    volatile uint32_t	 UDPHS_EPTSTA; 	// UDPHS Endpoint Status Register
+    volatile uint32_t     UDPHS_EPTCFG;     // UDPHS Endpoint Config Register
+    volatile uint32_t     UDPHS_EPTCTLENB;     // UDPHS Endpoint Control Enable Register
+    volatile uint32_t     UDPHS_EPTCTLDIS;     // UDPHS Endpoint Control Disable Register
+    volatile uint32_t     UDPHS_EPTCTL;     // UDPHS Endpoint Control Register
+    volatile uint32_t     Reserved0[1];     //
+    volatile uint32_t     UDPHS_EPTSETSTA;     // UDPHS Endpoint Set Status Register
+    volatile uint32_t     UDPHS_EPTCLRSTA;     // UDPHS Endpoint Clear Status Register
+    volatile uint32_t     UDPHS_EPTSTA;     // UDPHS Endpoint Status Register
 };
 
 struct AT91SAM9X35_UDPHS_DMA {
-    volatile uint32_t	 UDPHS_DMANXTDSC; 	// UDPHS DMA Channel Next Descriptor address
-    volatile uint32_t	 UDPHS_DMAADDRESS; 	// UDPHS DMA Channel address Register
-    volatile uint32_t	 UDPHS_DMACONTROL; 	// UDPHS DMA Channel Control Register
-    volatile uint32_t	 UDPHS_DMASTATUS; 	// UDPHS DMA Channel Status Register
+    volatile uint32_t     UDPHS_DMANXTDSC;     // UDPHS DMA Channel Next Descriptor address
+    volatile uint32_t     UDPHS_DMAADDRESS;     // UDPHS DMA Channel address Register
+    volatile uint32_t     UDPHS_DMACONTROL;     // UDPHS DMA Channel Control Register
+    volatile uint32_t     UDPHS_DMASTATUS;     // UDPHS DMA Channel Status Register
 };
 
 struct AT91SAM9X35_UDPHS {
-    volatile uint32_t	 UDPHS_CTRL; 	// UDPHS Control Register					0x0000
-    volatile uint32_t	 UDPHS_FNUM; 	// UDPHS Frame Number Register				0x0004
-    volatile uint32_t	 Reserved0[2]; 	//											0x0008, 0x000C
-    volatile uint32_t	 UDPHS_IEN; 	// UDPHS Interrupt Enable Register			0x0010
-    volatile uint32_t	 UDPHS_INTSTA; 	// UDPHS Interrupt Status Register			0x0014
-    volatile uint32_t	 UDPHS_CLRINT; 	// UDPHS Clear Interrupt Register			0x0018
-    volatile uint32_t	 UDPHS_EPTRST; 	// UDPHS Endpoints Reset Register			0x001C
-    volatile uint32_t	 Reserved1[44]; 	//										0x0020, 0x0024, 0x0028, 0x002C, 0x0030, 0x0034, 0x0038, 0x003C, 0x0040, 0x0044, 0x0048, 0x004C, 0x0050, 0x0054, 0x0058, 0x005C,
-                                        //										0x0060, 0x0064, 0x0068, 0x006C, 0x0070, 0x0074, 0x0078, 0x007C, 0x0080, 0x0084, 0x0088, 0x008C, 0x0090, 0x0094, 0x0098, 0x009C,
-                                        //										0x00A0, 0x00A4, 0x00A8, 0x00AC, 0x00B0, 0x00B4, 0x00B8, 0x00BC, 0x00C0, 0x00C4, 0x00C8, 0x00CC
-    volatile uint32_t	 UDPHS_TSTSOFCNT; 	// UDPHS Test SOF Counter Register		0x00D0
-    volatile uint32_t	 UDPHS_TSTCNTA; 	// UDPHS Test A Counter Register		0x00D4
-    volatile uint32_t	 UDPHS_TSTCNTB; 	// UDPHS Test B Counter Register		0x00D8
-    volatile uint32_t	 UDPHS_TSTMODREG; 	// UDPHS Test Mode Register				0x00DC
-    volatile uint32_t	 UDPHS_TST; 	// UDPHS Test Register						0x00E0
-    volatile uint32_t	 Reserved2[2]; 	//											0x00E4, 0x00E8
-    volatile uint32_t	 UDPHS_RIPPADDRSIZE; 	// UDPHS PADDRSIZE Register			0x00EC
-    volatile uint32_t	 UDPHS_RIPNAME1; 	// UDPHS Name1 Register					0x00F0
-    volatile uint32_t	 UDPHS_RIPNAME2; 	// UDPHS Name2 Register					0x00F4
-    volatile uint32_t	 UDPHS_IPFEATURES; 	// UDPHS Features Register				0x00F8
-    volatile uint32_t	 UDPHS_IPVERSION; 	// UDPHS Version Register				0x00FC
-    struct AT91SAM9X35_UDPHS_EPT	 UDPHS_EPT[16]; 	// UDPHS Endpoint struct		0x0100
-    struct AT91SAM9X35_UDPHS_DMA	 UDPHS_DMA[8]; 	// UDPHS DMA channel struct (not use [0])
+    volatile uint32_t     UDPHS_CTRL;     // UDPHS Control Register                    0x0000
+    volatile uint32_t     UDPHS_FNUM;     // UDPHS Frame Number Register                0x0004
+    volatile uint32_t     Reserved0[2];     //                                            0x0008, 0x000C
+    volatile uint32_t     UDPHS_IEN;     // UDPHS Interrupt Enable Register            0x0010
+    volatile uint32_t     UDPHS_INTSTA;     // UDPHS Interrupt Status Register            0x0014
+    volatile uint32_t     UDPHS_CLRINT;     // UDPHS Clear Interrupt Register            0x0018
+    volatile uint32_t     UDPHS_EPTRST;     // UDPHS Endpoints Reset Register            0x001C
+    volatile uint32_t     Reserved1[44];     //                                        0x0020, 0x0024, 0x0028, 0x002C, 0x0030, 0x0034, 0x0038, 0x003C, 0x0040, 0x0044, 0x0048, 0x004C, 0x0050, 0x0054, 0x0058, 0x005C,
+                                        //                                        0x0060, 0x0064, 0x0068, 0x006C, 0x0070, 0x0074, 0x0078, 0x007C, 0x0080, 0x0084, 0x0088, 0x008C, 0x0090, 0x0094, 0x0098, 0x009C,
+                                        //                                        0x00A0, 0x00A4, 0x00A8, 0x00AC, 0x00B0, 0x00B4, 0x00B8, 0x00BC, 0x00C0, 0x00C4, 0x00C8, 0x00CC
+    volatile uint32_t     UDPHS_TSTSOFCNT;     // UDPHS Test SOF Counter Register        0x00D0
+    volatile uint32_t     UDPHS_TSTCNTA;     // UDPHS Test A Counter Register        0x00D4
+    volatile uint32_t     UDPHS_TSTCNTB;     // UDPHS Test B Counter Register        0x00D8
+    volatile uint32_t     UDPHS_TSTMODREG;     // UDPHS Test Mode Register                0x00DC
+    volatile uint32_t     UDPHS_TST;     // UDPHS Test Register                        0x00E0
+    volatile uint32_t     Reserved2[2];     //                                            0x00E4, 0x00E8
+    volatile uint32_t     UDPHS_RIPPADDRSIZE;     // UDPHS PADDRSIZE Register            0x00EC
+    volatile uint32_t     UDPHS_RIPNAME1;     // UDPHS Name1 Register                    0x00F0
+    volatile uint32_t     UDPHS_RIPNAME2;     // UDPHS Name2 Register                    0x00F4
+    volatile uint32_t     UDPHS_IPFEATURES;     // UDPHS Features Register                0x00F8
+    volatile uint32_t     UDPHS_IPVERSION;     // UDPHS Version Register                0x00FC
+    struct AT91SAM9X35_UDPHS_EPT     UDPHS_EPT[16];     // UDPHS Endpoint struct        0x0100
+    struct AT91SAM9X35_UDPHS_DMA     UDPHS_DMA[8];     // UDPHS DMA channel struct (not use [0])
 };
 
 struct AT91SAM9X35_UDPHS_EPTFIFO {
-    volatile uint32_t	 UDPHS_READEPT0[16384]; 	// FIFO Endpoint data Register 0
-    volatile uint32_t	 UDPHS_READEPT1[16384]; 	// FIFO Endpoint data Register 1
-    volatile uint32_t	 UDPHS_READEPT2[16384]; 	// FIFO Endpoint data Register 2
-    volatile uint32_t	 UDPHS_READEPT3[16384]; 	// FIFO Endpoint data Register 3
-    volatile uint32_t	 UDPHS_READEPT4[16384]; 	// FIFO Endpoint data Register 4
-    volatile uint32_t	 UDPHS_READEPT5[16384]; 	// FIFO Endpoint data Register 5
-    volatile uint32_t	 UDPHS_READEPT6[16384]; 	// FIFO Endpoint data Register 6
-    volatile uint32_t	 UDPHS_READEPT7[16384]; 	// FIFO Endpoint data Register 7
-    volatile uint32_t	 UDPHS_READEPT8[16384]; 	// FIFO Endpoint data Register 8
-    volatile uint32_t	 UDPHS_READEPT9[16384]; 	// FIFO Endpoint data Register 9
-    volatile uint32_t	 UDPHS_READEPTA[16384]; 	// FIFO Endpoint data Register 10
-    volatile uint32_t	 UDPHS_READEPTB[16384]; 	// FIFO Endpoint data Register 11
-    volatile uint32_t	 UDPHS_READEPTC[16384]; 	// FIFO Endpoint data Register 12
-    volatile uint32_t	 UDPHS_READEPTD[16384]; 	// FIFO Endpoint data Register 13
-    volatile uint32_t	 UDPHS_READEPTE[16384]; 	// FIFO Endpoint data Register 14
-    volatile uint32_t	 UDPHS_READEPTF[16384]; 	// FIFO Endpoint data Register 15
+    volatile uint32_t     UDPHS_READEPT0[16384];     // FIFO Endpoint data Register 0
+    volatile uint32_t     UDPHS_READEPT1[16384];     // FIFO Endpoint data Register 1
+    volatile uint32_t     UDPHS_READEPT2[16384];     // FIFO Endpoint data Register 2
+    volatile uint32_t     UDPHS_READEPT3[16384];     // FIFO Endpoint data Register 3
+    volatile uint32_t     UDPHS_READEPT4[16384];     // FIFO Endpoint data Register 4
+    volatile uint32_t     UDPHS_READEPT5[16384];     // FIFO Endpoint data Register 5
+    volatile uint32_t     UDPHS_READEPT6[16384];     // FIFO Endpoint data Register 6
+    volatile uint32_t     UDPHS_READEPT7[16384];     // FIFO Endpoint data Register 7
+    volatile uint32_t     UDPHS_READEPT8[16384];     // FIFO Endpoint data Register 8
+    volatile uint32_t     UDPHS_READEPT9[16384];     // FIFO Endpoint data Register 9
+    volatile uint32_t     UDPHS_READEPTA[16384];     // FIFO Endpoint data Register 10
+    volatile uint32_t     UDPHS_READEPTB[16384];     // FIFO Endpoint data Register 11
+    volatile uint32_t     UDPHS_READEPTC[16384];     // FIFO Endpoint data Register 12
+    volatile uint32_t     UDPHS_READEPTD[16384];     // FIFO Endpoint data Register 13
+    volatile uint32_t     UDPHS_READEPTE[16384];     // FIFO Endpoint data Register 14
+    volatile uint32_t     UDPHS_READEPTF[16384];     // FIFO Endpoint data Register 15
 };
 
 struct AT91SAM9X35_UsbDeviceDriver {
     UsbClientState *usbClientState;
 
-    uint8_t			previousDeviceState;
+    uint8_t            previousDeviceState;
 
-    bool			firstDescriptorPacket;
-    bool			txRunning[AT91SAM9X35_USB_ENDPOINT_COUNT];
-    bool			txNeedZLPS[AT91SAM9X35_USB_ENDPOINT_COUNT];
+    bool            firstDescriptorPacket;
+    bool            txRunning[AT91SAM9X35_USB_ENDPOINT_COUNT];
+    bool            txNeedZLPS[AT91SAM9X35_USB_ENDPOINT_COUNT];
 };
 
 static AT91SAM9X35_UsbDeviceDriver usbDeviceDrivers[AT91SAM9X35_TOTAL_USB_CONTROLLERS];
 
 struct AT91SAM9X35_UDP_ENDPOINT_ATTRIBUTE {
-    uint16_t		Dir_Type;
-    uint16_t		Payload;
-    bool		DualBank;
-    uint32_t		dFlag;
+    uint16_t        Dir_Type;
+    uint16_t        Payload;
+    bool        DualBank;
+    uint32_t        dFlag;
 };
 
 void AT91SAM9X35_UsbDevice_StallEndPoint(uint32_t ep);

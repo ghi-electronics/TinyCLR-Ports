@@ -352,7 +352,7 @@ bool LPC17_UsbDevice_RxEnable(UsbClientState* usbClientState, int32_t endpoint) 
 
 static uint8_t  LPC17_UsbDevice_DeviceAddress = 0;
 
-#define CONTORL_EP_ADDR	0x80
+#define CONTORL_EP_ADDR    0x80
 
 #define USB_POWER           0
 #define USB_IF_NUM          4
@@ -551,7 +551,7 @@ void LPC17_UsbDevice_StartHardware() {
     LPC17_UsbDevice_HardwareReset();
     LPC17_UsbDevice_SetAddress(0);
 
-    USBDevIntEn = DEV_STAT_INT;	/* Enable Device Status Interrupt */
+    USBDevIntEn = DEV_STAT_INT;    /* Enable Device Status Interrupt */
 
     LPC17_UsbDevice_Connect(false);
     // delay if removed and then connected...

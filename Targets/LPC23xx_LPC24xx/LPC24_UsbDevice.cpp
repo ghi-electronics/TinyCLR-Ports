@@ -118,7 +118,7 @@
 #define EP_STAT_RF_MO       0x40
 #define EP_STAT_CND_ST      0x80
 
-#define USB_IRQn			22
+#define USB_IRQn            22
 struct UsbDeviceDriver {
     UsbClientState *usbClientState;
 
@@ -321,7 +321,7 @@ bool LPC24_UsbDevice_RxEnable(UsbClientState* usbClientState, int32_t endpoint) 
 
 static uint8_t  LPC24_UsbDevice_DeviceAddress = 0;
 
-#define CONTORL_EP_ADDR	0x80
+#define CONTORL_EP_ADDR    0x80
 
 #define USB_POWER           0
 #define USB_IF_NUM          4
@@ -514,7 +514,7 @@ void LPC24_UsbDevice_StartHardware() {
     LPC24_UsbDevice_HardwareReset();
     LPC24_UsbDevice_SetAddress(0);
 
-    USBDevIntEn = DEV_STAT_INT;	/* Enable Device Status Interrupt */
+    USBDevIntEn = DEV_STAT_INT;    /* Enable Device Status Interrupt */
 
     LPC24_UsbDevice_Connect(false);
     // delay if removed and then connected...
