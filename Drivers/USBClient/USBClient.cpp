@@ -25,7 +25,7 @@ static TinyCLR_UsbClient_Controller usbClientControllers[TOTAL_USBCLIENT_CONTROL
 static TinyCLR_Api_Info usbClientApi[TOTAL_USBCLIENT_CONTROLLERS];
 static UsbClientState usbClientStates[TOTAL_USBCLIENT_CONTROLLERS];
 
-TinyCLR_UsbClient_DataReceivedHandler TinyCLR_UsbClient_SetDataReceivedEvent;
+TinyCLR_UsbClient_DataReceivedHandler TinyCLR_UsbClient_SetDataReceivedEvent = nullptr;
 TinyCLR_UsbClient_RequestHandler TinyCLR_UsbClient_ProcessVendorClassRequestEvent = nullptr;
 TinyCLR_UsbClient_RequestHandler TinyCLR_UsbClient_SetGetDescriptorEvent = nullptr;
 
