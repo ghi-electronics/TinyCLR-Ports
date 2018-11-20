@@ -759,7 +759,7 @@ void TinyCLR_UsbClient_Delay(uint64_t microseconds) {
 }
 
 uint64_t TinyCLR_UsbClient_Now() {
-    return STM32F4_Time_GetCurrentProcessorTime();
+    return STM32F4_Time_GetSystemTime(nullptr);
 }
 
 void TinyCLR_UsbClient_InitializeConfiguration(UsbClientState *usbClientState) {

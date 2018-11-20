@@ -954,7 +954,7 @@ void TinyCLR_UsbClient_Delay(uint64_t microseconds) {
 }
 
 uint64_t TinyCLR_UsbClient_Now() {
-    return AT91SAM9X35_Time_GetCurrentProcessorTime();
+    return AT91SAM9X35_Time_GetSystemTime(nullptr);
 }
 
 void TinyCLR_UsbClient_InitializeConfiguration(UsbClientState *usbClientState) {
