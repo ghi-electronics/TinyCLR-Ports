@@ -101,7 +101,7 @@ void TinyCLR_UsbClient_StateCallback(UsbClientState* usbClientState) {
         }
 
         if (TinyCLR_UsbClient_ConnectionChangedEvent != nullptr)
-            TinyCLR_UsbClient_ConnectionChangedEvent(usbClientState, usbClientState->currentState, TinyCLR_UsbClient_Now());
+            TinyCLR_UsbClient_ConnectionChangedEvent(&usbClientControllers[usbClientState->controllerIndex], usbClientState->currentState, TinyCLR_UsbClient_Now());
     }
 }
 
