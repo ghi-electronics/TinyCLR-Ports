@@ -458,7 +458,7 @@ struct AT91SAM9Rx64_Gpio_PinConfiguration {
 #define INIT(pinDirection, resistorMode, peripheralSelection, outputDirection, apply) { AT91SAM9Rx64_Gpio_Direction::pinDirection, AT91SAM9Rx64_Gpio_ResistorMode::resistorMode, AT91SAM9Rx64_Gpio_MultiDriver::Disable, AT91SAM9Rx64_Gpio_Filter::Disable, AT91SAM9Rx64_Gpio_FilterSlowClock::Disable, AT91SAM9Rx64_Gpio_Schmitt::Disable,  AT91SAM9Rx64_Gpio_DriveSpeed::High, AT91SAM9Rx64_Gpio_PeripheralSelection::peripheralSelection, outputDirection, apply }
 #define ALTFUN(direction, resistorMode, peripheralSelection) { AT91SAM9Rx64_Gpio_Direction::direction, AT91SAM9Rx64_Gpio_ResistorMode::resistorMode, AT91SAM9Rx64_Gpio_MultiDriver::Disable, AT91SAM9Rx64_Gpio_Filter::Disable, AT91SAM9Rx64_Gpio_FilterSlowClock::Disable, AT91SAM9Rx64_Gpio_Schmitt::Disable,  AT91SAM9Rx64_Gpio_DriveSpeed::High, AT91SAM9Rx64_Gpio_PeripheralSelection::peripheralSelection, true }
 #define INPUT(resistorMode) { AT91SAM9Rx64_Gpio_Direction::Input, AT91SAM9Rx64_Gpio_ResistorMode::resistorMode, AT91SAM9Rx64_Gpio_MultiDriver::Disable, AT91SAM9Rx64_Gpio_Filter::Disable, AT91SAM9Rx64_Gpio_FilterSlowClock::Disable, AT91SAM9Rx64_Gpio_Schmitt::Disable, AT91SAM9Rx64_Gpio_DriveSpeed::High, AT91SAM9Rx64_Gpio_PeripheralSelection::None, true }
-#define DEFAULT() INIT(Input, Inactive, None, false, true)
+#define DEFAULT() INIT(Input, PullUp, None, false, true)
 #define NO_INIT() INIT(Input, Inactive, None, false, false)
 
 void AT91SAM9Rx64_Gpio_Reset();

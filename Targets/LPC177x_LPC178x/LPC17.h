@@ -155,7 +155,7 @@ struct LPC17_Gpio_PinConfiguration {
 #define INIT(direction, resistorMode, hysteresis, inputPolarity, slewRate, outputType, pinFunction, outputDirection, apply) { LPC17_Gpio_Direction::direction, LPC17_Gpio_ResistorMode::resistorMode, LPC17_Gpio_Hysteresis::hysteresis, LPC17_Gpio_InputPolarity::inputPolarity, LPC17_Gpio_SlewRate::slewRate, LPC17_Gpio_OutputType::outputType,LPC17_Gpio_PinFunction::pinFunction, outputDirection, apply }
 #define ALTFUN(direction, resistorMode, outputType, pinFunction) { LPC17_Gpio_Direction::direction, LPC17_Gpio_ResistorMode::resistorMode, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::outputType,LPC17_Gpio_PinFunction::pinFunction, true }
 #define INPUT(outputType, resistorMode) { LPC17_Gpio_Direction::Input, LPC17_Gpio_ResistorMode::resistorMode, LPC17_Gpio_Hysteresis::Disable, LPC17_Gpio_InputPolarity::NotInverted, LPC17_Gpio_SlewRate::StandardMode, LPC17_Gpio_OutputType::outputType,LPC17_Gpio_PinFunction::PinFunction0, true }
-#define DEFAULT() INIT(Input, Inactive, Disable, NotInverted, StandardMode, PushPull, PinFunction0, false, true)
+#define DEFAULT() INIT(Input, PullUp, Disable, NotInverted, StandardMode, PushPull, PinFunction0, false, true)
 #define NO_INIT() INIT(Input, Inactive, Disable, NotInverted, StandardMode, PushPull, PinFunction0, false, false)
 
 void LPC17_Gpio_Reset();
