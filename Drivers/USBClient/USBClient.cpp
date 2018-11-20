@@ -28,7 +28,7 @@ static UsbClientState usbClientStates[TOTAL_USBCLIENT_CONTROLLERS];
 TinyCLR_UsbClient_DataReceivedHandler TinyCLR_UsbClient_SetDataReceivedEvent = nullptr;
 TinyCLR_UsbClient_RequestHandler TinyCLR_UsbClient_ProcessVendorClassRequestEvent = nullptr;
 TinyCLR_UsbClient_RequestHandler TinyCLR_UsbClient_SetGetDescriptorEvent = nullptr;
-TinyCLR_UsbClient_ConnectionChangedHandler TinyCLR_UsbClient_ConnectionChangedEvent = nullptr;
+TinyCLR_UsbClient_DeviceStateChangedHandler TinyCLR_UsbClient_DeviceStateChangeEvent = nullptr;
 
 void TinyCLR_UsbClient_SetEvent(UsbClientState *usbClientState, uint32_t event) {
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -100,8 +100,8 @@ void TinyCLR_UsbClient_StateCallback(UsbClientState* usbClientState) {
             break;
         }
 
-        if (TinyCLR_UsbClient_ConnectionChangedEvent != nullptr)
-            TinyCLR_UsbClient_ConnectionChangedEvent(&usbClientControllers[usbClientState->controllerIndex], usbClientState->currentState, TinyCLR_UsbClient_Now());
+        if (TinyCLR_UsbClient_DeviceStateChangeEvent != nullptr)
+            TinyCLR_UsbClient_DeviceStateChangeEvent(&usbClientControllers[usbClientState->controllerIndex], static_cast<TinyCLR_UsbClient_DeviceState>(usbClientState->currentState), TinyCLR_UsbClient_Now());
     }
 }
 
@@ -755,7 +755,8 @@ void TinyCLR_UsbClient_EnsureTableInitialized() {
         usbClientControllers[i].SetDataReceivedHandler = &TinyCLR_UsbClient_SetDataReceivedHandler;
         usbClientControllers[i].SetVendorClassRequestHandler = &TinyCLR_UsbClient_SetVendorClassRequestHandler;
         usbClientControllers[i].SetDeviceDescriptor = &TinyCLR_UsbClient_SetDeviceDescriptor;
-        usbClientControllers[i].SetConnectionChangedHandler = &TinyCLR_UsbClient_SetConnectionChangedHandler;
+        usbClientControllers[i].SetDeviceStateChangedHandler = &TinyCLR_UsbClient_SetDeviceStateChangedHandler;
+        usbClientControllers[i].GetDeviceState = &TinyCLR_UsbClient_GetDeviceState;
         usbClientControllers[i].GetBytesToWrite = &TinyCLR_UsbClient_GetBytesToWrite;
         usbClientControllers[i].GetBytesToRead = &TinyCLR_UsbClient_GetBytesToRead;
         usbClientControllers[i].ClearWriteBuffer = &TinyCLR_UsbClient_ClearWriteBuffer;
@@ -1277,12 +1278,19 @@ TinyCLR_Result TinyCLR_UsbClient_SetGetDescriptorHandler(const TinyCLR_UsbClient
     return TinyCLR_Result::Success;
 }
 
-TinyCLR_Result TinyCLR_UsbClient_SetConnectionChangedHandler(const TinyCLR_UsbClient_Controller* self, TinyCLR_UsbClient_ConnectionChangedHandler handler) {
-    TinyCLR_UsbClient_ConnectionChangedEvent = handler;
+TinyCLR_Result TinyCLR_UsbClient_SetDeviceStateChangedHandler(const TinyCLR_UsbClient_Controller* self, TinyCLR_UsbClient_DeviceStateChangedHandler handler) {
+    TinyCLR_UsbClient_DeviceStateChangeEvent = handler;
 
     return TinyCLR_Result::Success;
 }
 
+TinyCLR_Result TinyCLR_UsbClient_GetDeviceState(const TinyCLR_UsbClient_Controller* self, TinyCLR_UsbClient_DeviceState& state) {
+    UsbClientState * usbClientState = reinterpret_cast<UsbClientState*>(self->ApiInfo->State);
+
+    state = static_cast<TinyCLR_UsbClient_DeviceState>(usbClientState->currentState);
+
+    return TinyCLR_Result::Success;
+}
 size_t TinyCLR_UsbClient_GetBytesToWrite(const TinyCLR_UsbClient_Controller* self, uint32_t pipe) {
 #if DEVICE_MEMORY_PROFILE_FACTOR > 5
     UsbClientState * usbClientState = reinterpret_cast<UsbClientState*>(self->ApiInfo->State);
