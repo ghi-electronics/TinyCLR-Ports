@@ -197,6 +197,7 @@ TinyCLR_Result TinyCLR_UsbClient_FlushPipe(const TinyCLR_UsbClient_Controller* s
 TinyCLR_Result TinyCLR_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Controller* self, TinyCLR_UsbClient_DataReceivedHandler handler);
 TinyCLR_Result TinyCLR_UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Controller* self, const TinyCLR_UsbClient_DeviceDescriptor* descriptor);
 TinyCLR_Result TinyCLR_UsbClient_SetVendorClassRequestHandler(const TinyCLR_UsbClient_Controller* self, TinyCLR_UsbClient_RequestHandler handler);
+TinyCLR_Result TinyCLR_UsbClient_SetConnectionChangedHandler(const TinyCLR_UsbClient_Controller* self, TinyCLR_UsbClient_ConnectionChangedHandler handler);
 const uint8_t* TinyCLR_UsbClient_FindRecord(UsbClientState* usbClientState, uint8_t marker, TinyCLR_UsbClient_SetupPacket * iValue);
 size_t TinyCLR_UsbClient_GetBytesToWrite(const TinyCLR_UsbClient_Controller* self, uint32_t pipe);
 size_t TinyCLR_UsbClient_GetBytesToRead(const TinyCLR_UsbClient_Controller* self, uint32_t pipe);
