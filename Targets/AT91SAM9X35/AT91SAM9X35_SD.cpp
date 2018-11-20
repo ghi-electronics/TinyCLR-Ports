@@ -2723,6 +2723,7 @@ TinyCLR_Result AT91SAM9X35_SdCard_GetDescriptor(const TinyCLR_Storage_Controller
         MemCapacity = (uint64_t)(C_SIZE + 1) * 512 * 1024;
     }
 
+    state->regionAddresses[0] = 0;
     state->regionSizes[0] = AT91SAM9X35_SD_SECTOR_SIZE;
     state->descriptor.RegionCount = MemCapacity / AT91SAM9X35_SD_SECTOR_SIZE;
 

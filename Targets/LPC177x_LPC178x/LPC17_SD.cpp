@@ -2373,6 +2373,7 @@ TinyCLR_Result LPC17_SdCard_Erases(const TinyCLR_Storage_Controller* self, uint6
 TinyCLR_Result LPC17_SdCard_GetDescriptor(const TinyCLR_Storage_Controller* self, const TinyCLR_Storage_Descriptor*& descriptor) {
     auto state = reinterpret_cast<SdCardState*>(self->ApiInfo->State);
 
+    state->regionAddresses[0] = 0;
     state->regionSizes[0] = LPC17_SD_SECTOR_SIZE;
     state->descriptor.RegionCount = sdMediaSize / LPC17_SD_SECTOR_SIZE;
 
