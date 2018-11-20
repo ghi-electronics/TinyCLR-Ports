@@ -395,8 +395,8 @@ struct STM32F4_Gpio_PinConfiguration {
 #define ANALOG() INIT(Analog, PushPull, VeryHigh, false, None, AF0, true)
 #define OUTPUT(outputType, outputSpeed, outputDirection, pullDirection) INIT(GeneralPurposeOutput, outputType, outputSpeed, outputDirection, pullDirection, AF0, true)
 #define INPUT(pullDirection) INIT(Input, PushPull, VeryHigh, false, pullDirection, AF0, true)
-#define DEFAULT() INIT(Input, PushPull, VeryHigh, false, PullDown, AF0, true)
-#define NO_INIT() INIT(Input, PushPull, VeryHigh, false, PullDown, AF0, false)
+#define DEFAULT() INIT(Input, PushPull, VeryHigh, false, PullUp, AF0, true)
+#define NO_INIT() INIT(Input, PushPull, VeryHigh, false, None, AF0, false)
 
 bool STM32F4_GpioInternal_OpenPin(int32_t pin);
 bool STM32F4_GpioInternal_OpenMultiPins(const STM32F4_Gpio_Pin* pins, size_t count);
