@@ -141,8 +141,8 @@ TinyCLR_Result AT91SAM9X35_Deployment_Release(const TinyCLR_Storage_Controller* 
 TinyCLR_Result AT91SAM9X35_Deployment_Open(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);
 
-    state->storageDescriptor.CanReadDirect = true;
-    state->storageDescriptor.CanWriteDirect = true;
+    state->storageDescriptor.CanReadDirect = false;
+    state->storageDescriptor.CanWriteDirect = false;
     state->storageDescriptor.CanExecuteDirect = false;
     state->storageDescriptor.EraseBeforeWrite = true;
     state->storageDescriptor.Removable = false;

@@ -348,7 +348,7 @@ TinyCLR_Result STM32F7_Flash_Open(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);
 
     state->storageDescriptor.CanReadDirect = true;
-    state->storageDescriptor.CanWriteDirect = true;
+    state->storageDescriptor.CanWriteDirect = false;
     state->storageDescriptor.CanExecuteDirect = true;
     state->storageDescriptor.EraseBeforeWrite = true;
     state->storageDescriptor.Removable = false;
