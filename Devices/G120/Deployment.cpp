@@ -35,7 +35,7 @@ struct DeploymentState {
     TinyCLR_Storage_Descriptor storageDescriptor;
     TinyCLR_Startup_DeploymentConfiguration deploymentConfiguration;
 
-    bool isOpened = false;
+    uint32_t initializeCount;
     bool tableInitialized = false;
 };
 
@@ -65,6 +65,7 @@ void LPC17_Deployment_EnsureTableInitialized() {
         deploymentApi[i].State = &deploymentStates[i];
 
         deploymentStates[i].controllerIndex = i;
+        deploymentStates[i].initializeCount = 0;
         deploymentStates[i].regionCount = LPC17_DEPLOYMENT_SECTOR_NUM;
 
         deploymentStates[i].tableInitialized = true;
@@ -91,24 +92,50 @@ void LPC17_Deployment_AddApi(const TinyCLR_Api_Manager* apiManager) {
 }
 
 TinyCLR_Result LPC17_Deployment_Acquire(const TinyCLR_Storage_Controller* self) {
-    auto spiApi = CONCAT(DEVICE_TARGET, _Spi_GetRequiredApi)();
+    auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);
 
-    spiApi += LPC17_DEPLOYMENT_SPI_PORT;
+    TinyCLR_Result result = TinyCLR_Result::Success;
 
-    TinyCLR_Spi_Controller* spiController = (TinyCLR_Spi_Controller*)spiApi->Implementation;
+    if (state != nullptr) {
+        if (state->initializeCount == 0) {
+            auto spiApi = CONCAT(DEVICE_TARGET, _Spi_GetRequiredApi)();
 
-    return S25FL032_Flash_Acquire(spiController, LPC17_DEPLOYMENT_SPI_ENABLE_PIN);
+            spiApi += LPC17_DEPLOYMENT_SPI_PORT;
+
+            TinyCLR_Spi_Controller* spiController = (TinyCLR_Spi_Controller*)spiApi->Implementation;
+
+            result = S25FL032_Flash_Acquire(spiController, LPC17_DEPLOYMENT_SPI_ENABLE_PIN);
+        }
+
+        if (result == TinyCLR_Result::Success) {
+            state->initializeCount++;
+        }
+    }
+
+    return result = (state != nullptr) ? result : TinyCLR_Result::ArgumentNull;
 }
 
 TinyCLR_Result LPC17_Deployment_Release(const TinyCLR_Storage_Controller* self) {
-    return S25FL032_Flash_Release();
+    auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);
+
+    TinyCLR_Result result = TinyCLR_Result::Success;
+
+    if (state != nullptr) {
+        if (state->initializeCount == 0)
+            return TinyCLR_Result::InvalidOperation;
+
+        result = S25FL032_Flash_Release();
+
+        if (result == TinyCLR_Result::Success) {
+            state->initializeCount--;
+        }
+    }
+
+    return result = (state != nullptr) ? result : TinyCLR_Result::ArgumentNull;
 }
 
 TinyCLR_Result LPC17_Deployment_Open(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);
-
-    if (state->isOpened)
-        return TinyCLR_Result::SharingViolation;
 
     state->storageDescriptor.CanReadDirect = true;
     state->storageDescriptor.CanWriteDirect = true;
@@ -138,19 +165,11 @@ TinyCLR_Result LPC17_Deployment_Open(const TinyCLR_Storage_Controller* self) {
     state->deploymentConfiguration.RegionsContiguous = state->storageDescriptor.RegionsContiguous;
     state->deploymentConfiguration.RegionsEqualSized = state->storageDescriptor.RegionsEqualSized;
 
-    state->isOpened = true;
-
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC17_Deployment_Close(const TinyCLR_Storage_Controller* self) {
-    auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);
-
-    if (!state->isOpened)
-        return TinyCLR_Result::NotFound;
-
-    state->isOpened = false;
-
+    // Close internal flash
     return TinyCLR_Result::Success;
 }
 
