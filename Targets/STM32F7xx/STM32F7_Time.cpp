@@ -195,12 +195,11 @@ extern "C" {
 
     void SysTick_Handler(void *param) {
         INTERRUPT_STARTED_SCOPED(isr);
-
-        auto controllerIndex = 0; // default index if no specific
-
+		
+		auto controllerIndex = 0; // default index if no specific
         auto state = &timeStates[controllerIndex];
-
         auto self = &timeControllers[controllerIndex];
+
         if (STM32F7_Time_GetCurrentProcessorTicks(self) >= timerNextEvent) { // handle event
             state->m_DequeuAndExecute();
         }

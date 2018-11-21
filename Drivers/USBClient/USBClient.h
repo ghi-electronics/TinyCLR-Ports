@@ -125,7 +125,7 @@ struct USB_PIPE_MAP {
     uint8_t TxEP;
 };
 
-struct UsClientState {
+struct UsbClientState {
     int32_t controllerIndex;
     bool initialized;
     uint8_t currentState;
@@ -197,7 +197,9 @@ TinyCLR_Result TinyCLR_UsbClient_FlushPipe(const TinyCLR_UsbClient_Controller* s
 TinyCLR_Result TinyCLR_UsbClient_SetDataReceivedHandler(const TinyCLR_UsbClient_Controller* self, TinyCLR_UsbClient_DataReceivedHandler handler);
 TinyCLR_Result TinyCLR_UsbClient_SetDeviceDescriptor(const TinyCLR_UsbClient_Controller* self, const TinyCLR_UsbClient_DeviceDescriptor* descriptor);
 TinyCLR_Result TinyCLR_UsbClient_SetVendorClassRequestHandler(const TinyCLR_UsbClient_Controller* self, TinyCLR_UsbClient_RequestHandler handler);
-const uint8_t* TinyCLR_UsbClient_FindRecord(UsClientState* usClientState, uint8_t marker, TinyCLR_UsbClient_SetupPacket * iValue);
+TinyCLR_Result TinyCLR_UsbClient_SetDeviceStateChangedHandler(const TinyCLR_UsbClient_Controller* self, TinyCLR_UsbClient_DeviceStateChangedHandler handler);
+TinyCLR_Result TinyCLR_UsbClient_GetDeviceState(const TinyCLR_UsbClient_Controller* self, TinyCLR_UsbClient_DeviceState& state);
+const uint8_t* TinyCLR_UsbClient_FindRecord(UsbClientState* usbClientState, uint8_t marker, TinyCLR_UsbClient_SetupPacket * iValue);
 size_t TinyCLR_UsbClient_GetBytesToWrite(const TinyCLR_UsbClient_Controller* self, uint32_t pipe);
 size_t TinyCLR_UsbClient_GetBytesToRead(const TinyCLR_UsbClient_Controller* self, uint32_t pipe);
 TinyCLR_Result TinyCLR_UsbClient_ClearWriteBuffer(const TinyCLR_UsbClient_Controller* self, uint32_t pipe);
@@ -207,13 +209,13 @@ size_t TinyCLR_UsbClient_GetReadBufferSize(const TinyCLR_UsbClient_Controller* s
 TinyCLR_Result TinyCLR_UsbClient_SetWriteBufferSize(const TinyCLR_UsbClient_Controller* self, uint32_t pipe, size_t size);
 TinyCLR_Result TinyCLR_UsbClient_SetReadBufferSize(const TinyCLR_UsbClient_Controller* self, uint32_t pipe, size_t size);
 
-bool TinyCLR_UsbClient_Initialize(UsClientState* usClientState);
-bool TinyCLR_UsbClient_Uninitialize(UsClientState* usClientState);
-bool TinyCLR_UsbClient_StartOutput(UsClientState* usClientState, int32_t endpoint);
-bool TinyCLR_UsbClient_RxEnable(UsClientState* usClientState, int32_t endpoint);
+bool TinyCLR_UsbClient_Initialize(UsbClientState* usbClientState);
+bool TinyCLR_UsbClient_Uninitialize(UsbClientState* usbClientState);
+bool TinyCLR_UsbClient_StartOutput(UsbClientState* usbClientState, int32_t endpoint);
+bool TinyCLR_UsbClient_RxEnable(UsbClientState* usbClientState, int32_t endpoint);
 void TinyCLR_UsbClient_Delay(uint64_t microseconds);
 uint64_t TinyCLR_UsbClient_Now();
 TinyCLR_Result TinyCLR_UsbClient_GetControllerCount(const TinyCLR_UsbClient_Controller* self, int32_t& count);
 
-void TinyCLR_UsbClient_InitializeConfiguration(UsClientState *usClientState);
+void TinyCLR_UsbClient_InitializeConfiguration(UsbClientState *usbClientState);
 uint32_t TinyCLR_UsbClient_GetEndpointSize(int32_t endpoint);
