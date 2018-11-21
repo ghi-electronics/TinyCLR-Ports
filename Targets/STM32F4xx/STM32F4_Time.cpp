@@ -195,10 +195,10 @@ TinyCLR_Result STM32F4_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Con
 extern "C" {
 
     void SysTick_Handler(void *param) {
+        INTERRUPT_STARTED_SCOPED(isr);
+
         auto controllerIndex = 0; // default index if no specific
-
         auto state = &timeStates[controllerIndex];
-
         auto self = &timeControllers[controllerIndex];
 
         if (STM32F4_Time_GetCurrentProcessorTicks(self) >= timerNextEvent) { // handle event
