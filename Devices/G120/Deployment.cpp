@@ -137,8 +137,8 @@ TinyCLR_Result LPC17_Deployment_Release(const TinyCLR_Storage_Controller* self) 
 TinyCLR_Result LPC17_Deployment_Open(const TinyCLR_Storage_Controller* self) {
     auto state = reinterpret_cast<DeploymentState*>(self->ApiInfo->State);
 
-    state->storageDescriptor.CanReadDirect = true;
-    state->storageDescriptor.CanWriteDirect = true;
+    state->storageDescriptor.CanReadDirect = false;
+    state->storageDescriptor.CanWriteDirect = false;
     state->storageDescriptor.CanExecuteDirect = false;
     state->storageDescriptor.EraseBeforeWrite = true;
     state->storageDescriptor.Removable = false;

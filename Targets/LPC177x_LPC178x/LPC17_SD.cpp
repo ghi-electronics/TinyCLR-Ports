@@ -2245,8 +2245,8 @@ TinyCLR_Result LPC17_SdCard_Acquire(const TinyCLR_Storage_Controller* self) {
             return TinyCLR_Result::OutOfMemory;
         }
 
-        state->descriptor.CanReadDirect = true;
-        state->descriptor.CanWriteDirect = true;
+        state->descriptor.CanReadDirect = false;
+        state->descriptor.CanWriteDirect = false;
         state->descriptor.CanExecuteDirect = false;
         state->descriptor.EraseBeforeWrite = false;
         state->descriptor.Removable = true;
