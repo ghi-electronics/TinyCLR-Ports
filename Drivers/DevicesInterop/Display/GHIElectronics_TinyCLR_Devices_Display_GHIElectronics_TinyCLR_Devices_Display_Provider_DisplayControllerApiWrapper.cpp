@@ -93,30 +93,19 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_Tin
     auto api = reinterpret_cast<const TinyCLR_Display_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     TinyCLR_Display_InterfaceType type;
-
     const TinyCLR_Display_DataFormat* supportedDataFormats;
-
     size_t supportedDataFormatCount;
 
-    TinyCLR_Interop_ClrValue ret;
-
-    md.InteropManager->GetReturn(md.InteropManager, md.Stack, ret);
-
     auto res = api->GetCapabilities(api, type, supportedDataFormats, supportedDataFormatCount);
-
     auto interop = md.InteropManager;
 
-    const TinyCLR_Interop_ClrObject* self;
-
-    TinyCLR_Interop_ClrValue arr;
-    TinyCLR_Interop_ClrTypeId idx;
-
     if (res == TinyCLR_Result::Success) {
-        interop->GetThisObject(interop, md.Stack, self);
+        TinyCLR_Interop_ClrValue arr, ret;
+        TinyCLR_Interop_ClrTypeId idx;
 
         interop->FindType(interop, "GHIElectronics.TinyCLR.Devices.Display", "GHIElectronics.TinyCLR.Devices.Display", "DisplayDataFormat", idx);
 
-        interop->GetField(interop, ret.Object, Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_TinyCLR_Devices_Display_DisplayControllerSettings::FIELD___DataFormat__BackingField___GHIElectronicsTinyCLRDevicesDisplayDisplayDataFormat, arr);
+        interop->GetReturn(md.InteropManager, md.Stack, ret);
 
         interop->CreateArray(interop, supportedDataFormatCount, idx, arr);
 
@@ -124,6 +113,8 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Display_GHIElectronics_Tin
 
         for (auto i = 0; i < supportedDataFormatCount; i++)
             p[i] = supportedDataFormats[i];
+
+        res = md.InteropManager->AssignObjectReference(md.InteropManager, ret, arr.Object);
     }
 
     return res;
