@@ -97,6 +97,9 @@ void STM32F7_Startup_GetRunApp(bool& runApp);
 void STM32F7_Startup_CacheEnable();
 void STM32F7_Startup_CacheDisable();
 void STM32F7_Startup_MpuConfiguration();
+void STM32F7_Startup_EnableOverDrive();
+void STM32F7_Startup_DisableOverDrive();
+void STM32F7_Startup_ResetPeripherals();
 
 ////////////////////////////////////////////////////////////////////////////////
 //ADC
