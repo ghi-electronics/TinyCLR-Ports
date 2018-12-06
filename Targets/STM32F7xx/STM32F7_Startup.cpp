@@ -51,6 +51,9 @@ void STM32F7_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, const Ti
 #ifdef INCLUDE_USBCLIENT
     STM32F7_UsbDevice_Reset();
 #endif
+#ifdef INCLUDE_USBHOST
+    STM32F7_UsbHost_Reset();
+#endif
 }
 
 #ifndef FLASH
