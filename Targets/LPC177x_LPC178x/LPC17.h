@@ -412,6 +412,12 @@ USB_PACKET64* TinyCLR_UsbClient_TxDequeue(UsbClientState* usbClientState, int32_
 void TinyCLR_UsbClient_StateCallback(UsbClientState* usbClientState);
 uint8_t TinyCLR_UsbClient_ControlCallback(UsbClientState* usbClientState);
 
+////////////////////////////////////////////////////////////////////////////////
+//USB Host
+////////////////////////////////////////////////////////////////////////////////
+void LPC17_UsbHost_AddApi(const TinyCLR_Api_Manager* apiManager);
+TinyCLR_Result LPC17_UsbHost_Reset();
+
 // LCD
 void LPC17_Display_Reset();
 void LPC17_Display_AddApi(const TinyCLR_Api_Manager* apiManager);
