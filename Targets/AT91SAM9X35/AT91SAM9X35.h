@@ -120,8 +120,9 @@
 #define AT91C_BASE_ITCM             0x00100000 // (ITCM) Base Address
 #define AT91C_BASE_DTCM             0x00200000 // (DTCM) Base Address
 #define AT91C_BASE_LCDC             0xF8038000 // Hydra original address 0x00500000 // (LCDC) Base Address
-#define AT91C_BASE_UDP_DMA            0x00500000 // Hydra original address 0x00600000 // (UDP DMA) Base Address
-#define AT91C_BASE_EMAC                0xF802C000
+#define AT91C_BASE_UDP_DMA          0x00500000 // Hydra original address 0x00600000 // (UDP DMA) Base Address
+#define AT91C_BASE_UHP_OHCI         0x00600000 // USB OHCI
+#define AT91C_BASE_EMAC             0xF802C000
 
 // RTSC bit defines
 #define AT91C_RTSC__PROCRST     0x01         // processor reset bit
@@ -1418,6 +1419,12 @@ USB_PACKET64* TinyCLR_UsbClient_RxEnqueue(UsbClientState* usbClientState, int32_
 USB_PACKET64* TinyCLR_UsbClient_TxDequeue(UsbClientState* usbClientState, int32_t endpoint);
 void TinyCLR_UsbClient_StateCallback(UsbClientState* usbClientState);
 uint8_t TinyCLR_UsbClient_ControlCallback(UsbClientState* usbClientState);
+
+////////////////////////////////////////////////////////////////////////////////
+//USB Host
+////////////////////////////////////////////////////////////////////////////////
+void AT91SAM9X35_UsbHost_AddApi(const TinyCLR_Api_Manager* apiManager);
+TinyCLR_Result AT91SAM9X35_UsbHost_Reset();
 
 // LCD
 void AT91SAM9X35_Display_Reset();

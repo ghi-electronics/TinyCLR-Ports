@@ -191,6 +191,9 @@ extern "C" {
     extern uint32_t Load$$ER_RLP$$Base;
     extern uint32_t Image$$ER_RLP$$Length;
 
+    extern uint32_t Load$$ER_DMA$$Base;
+    extern uint32_t Image$$ER_DMA$$Length;
+
 }
 
 static const uint32_t c_Bootstrap_Register_Begin = 0xF0000000;//0xFFF00000;
@@ -210,6 +213,9 @@ void AT91SAM9X35_MMU_Initialize() {
 
     uint32_t c_RLP_Physical_Address = ((uint32_t)&Load$$ER_RLP$$Base);
     uint32_t c_RLP_Size = ((uint32_t)&Image$$ER_RLP$$Length);
+
+    uint32_t c_DMA_Physical_Address = ((uint32_t)&Load$$ER_DMA$$Base);
+    uint32_t c_DMA_Size = ((uint32_t)&Image$$ER_DMA$$Length);
 
     // Fill Translation table with faults.
     ARM9_MMU::InitializeL1(c_Bootstrap_BaseOfTTBs);
@@ -280,9 +286,9 @@ void AT91SAM9X35_MMU_Initialize() {
         // Direct map for the USBHS buffer registers(0x00500000~0x005FFFFF)
     ARM9_MMU::GenerateL1_Sections(
         c_Bootstrap_BaseOfTTBs,                                 // base of TTBs
-        AT91C_BASE_UDP_DMA,                                        // mapped address
-        AT91C_BASE_UDP_DMA,                                        // physical address
-        ARM9_MMU::c_MMU_L1_size,                 		      // length to be mapped
+        AT91C_BASE_UDP_DMA,                                     // mapped address
+        AT91C_BASE_UDP_DMA,                                     // physical address
+        ARM9_MMU::c_MMU_L1_size,                                // length to be mapped
         ARM9_MMU::c_AP__Manager,                                // AP
         0,                                                      // Domain
         false,                                                  // Cacheable
@@ -297,8 +303,8 @@ void AT91SAM9X35_MMU_Initialize() {
     ARM9_MMU::GenerateL1_Sections(
         c_Bootstrap_BaseOfTTBs,                                 // base of TTBs
         c_RLP_Virtual_Address_Cached,                           // mapped address
-        c_RLP_Physical_Address,									// physical address
-        c_RLP_Size,											// length to be mapped
+        c_RLP_Physical_Address,                                 // physical address
+        c_RLP_Size,                                             // length to be mapped
         ARM9_MMU::c_AP__Manager,                                // AP
         0,                                                      // Domain
         true,                                                   // Cacheable
@@ -309,13 +315,35 @@ void AT91SAM9X35_MMU_Initialize() {
     ARM9_MMU::GenerateL1_Sections(
         c_Bootstrap_BaseOfTTBs,                                 // base of TTBs
         c_RLP_Virtual_Address_Uncached,                         // mapped address
-        c_RLP_Physical_Address,									// physical address
-        c_RLP_Size,											// length to be mapped
+        c_RLP_Physical_Address,                                 // physical address
+        c_RLP_Size,                                             // length to be mapped
         ARM9_MMU::c_AP__Manager,                                // AP
         0,                                                      // Domain
         false,                                                  // Cacheable
         false,                                                  // Buffered
         false);                                                 // Extended
+
+    ARM9_MMU::GenerateL1_Sections(
+        c_Bootstrap_BaseOfTTBs,                                 // base of TTBs
+        AT91C_BASE_UHP_OHCI,                                    // mapped address
+        AT91C_BASE_UHP_OHCI,                                    // physical address
+        ARM9_MMU::c_MMU_L1_size,                                // length to be mapped
+        ARM9_MMU::c_AP__Manager,                                // AP
+        0,                                                      // Domain
+        false,                                                  // Cacheable
+        false,                                                  // Buffered
+        false);
+
+    ARM9_MMU::GenerateL1_Sections(
+        c_Bootstrap_BaseOfTTBs,                                 // base of TTBs
+        c_DMA_Physical_Address,                                 // mapped address
+        c_DMA_Physical_Address,                                 // physical address
+        c_DMA_Size,	// length to be mapped
+        ARM9_MMU::c_AP__Manager,                                // AP
+        0,                                                      // Domain
+        false,                                                  // Cacheable
+        false,                                                  // Buffered
+        false);
 
     AT91SAM9X35_Cache_FlushCaches();
     AT91SAM9X35_CPU_EnableMMU(c_Bootstrap_BaseOfTTBs);

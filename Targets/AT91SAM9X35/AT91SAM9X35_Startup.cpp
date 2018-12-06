@@ -54,6 +54,9 @@ void AT91SAM9X35_Startup_OnSoftReset(const TinyCLR_Api_Manager* apiManager, cons
 #ifdef INCLUDE_USBCLIENT
     AT91SAM9X35_UsbDevice_Reset();
 #endif
+#ifdef INCLUDE_USBHOST
+    AT91SAM9X35_UsbHost_Reset();
+#endif
 }
 
 #define MEM_MAP_REG 0xE01FC040 // memory maping register
