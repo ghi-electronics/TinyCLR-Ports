@@ -120,8 +120,9 @@
 #define AT91C_BASE_ITCM             0x00100000 // (ITCM) Base Address
 #define AT91C_BASE_DTCM             0x00200000 // (DTCM) Base Address
 #define AT91C_BASE_LCDC             0xF8038000 // Hydra original address 0x00500000 // (LCDC) Base Address
-#define AT91C_BASE_UDP_DMA            0x00500000 // Hydra original address 0x00600000 // (UDP DMA) Base Address
-#define AT91C_BASE_EMAC                0xF802C000
+#define AT91C_BASE_UDP_DMA          0x00500000 // Hydra original address 0x00600000 // (UDP DMA) Base Address
+#define AT91C_BASE_UHP_OHCI         0x00600000 // USB OHCI
+#define AT91C_BASE_EMAC             0xF802C000
 
 // RTSC bit defines
 #define AT91C_RTSC__PROCRST     0x01         // processor reset bit

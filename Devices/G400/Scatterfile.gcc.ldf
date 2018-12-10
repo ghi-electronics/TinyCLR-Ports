@@ -80,7 +80,17 @@ SECTIONS
         * (SectionForRlpBegin)
     }>IRAM
     
-    ER_RLP_END 0x27E00000 - 0x08: 
+    ER_RLP_END 0x26800000 - 0x08: 
+    {
+        * (SectionForRlpEnd)
+    }>IRAM
+
+    ER_DMA_BEGIN 0x26800000: 
+    {
+        * (SectionForRlpEnd)
+    }>IRAM
+
+    ER_DMA_END 0x26900000 - 0x08: 
     {
         * (SectionForRlpEnd)
     }>IRAM
@@ -114,4 +124,7 @@ Image$$ER_RAM_RW$$ZI$$Base = ADDR(.bss);
 Image$$ER_RAM_RW$$ZI$$Length = SIZEOF(.bss);
 Load$$ER_RLP$$Base = LOADADDR(ER_RLP_BEGIN);
 Image$$ER_RLP$$Length = LOADADDR(ER_RLP_END) - LOADADDR(ER_RLP_BEGIN);
+Load$$ER_DMA$$Base = LOADADDR(ER_DMA_BEGIN);
+Image$$ER_DMA$$Length = LOADADDR(ER_DMA_END) - LOADADDR(ER_DMA_BEGIN);
+
 __use_no_semihosting_swi = 0;
