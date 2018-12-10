@@ -78,10 +78,6 @@ void OnSoftReset(const TinyCLR_Api_Manager* apiManager) {
     TARGET(_UsbDevice_AddApi)(apiManager);
 #endif
 
-#ifdef INCLUDE_USBHOST
-    TARGET(_UsbHost_AddApi)(apiManager);
-#endif
-
     auto interopManager = reinterpret_cast<const TinyCLR_Interop_Manager*>(apiManager->FindDefault(apiManager, TinyCLR_Api_Type::InteropManager));
 
     TARGET(_Startup_OnSoftReset)(apiManager, interopManager);
