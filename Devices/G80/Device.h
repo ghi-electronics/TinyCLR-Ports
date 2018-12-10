@@ -142,3 +142,7 @@
 #define STM32F4_USB_PINS {/*          DM                      DP                      VB                      ID*/                   \
                           /*USBC0*/{ { PIN(A, 11), AF(10) }, { PIN(A, 12), AF(10) }, { PIN(A,  9), AF(10) }, { PIN(A, 10), AF(10) } }\
                          }
+
+#define STM32F4_USBHOST_PINS {/*          DM                      DP                 \
+                          /*USBH0*/{ { PIN(B, 14), AF(12) }, { PIN(B, 15), AF(12) } }\
+                         }

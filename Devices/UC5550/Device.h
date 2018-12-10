@@ -154,6 +154,10 @@
                           /*USBC0*/{ { PIN(A, 11), AF(10) }, { PIN(A, 12), AF(10) }, { PIN(A,  9), AF(10) }, { PIN(A, 10), AF(10) } }\
                          }
 
+#define STM32F7_USBHOST_PINS {/*          DM                      DP                 \
+                          /*USBH0*/{ { PIN(B, 14), AF(12) }, { PIN(B, 15), AF(12) } }\
+                         }
+
 #define INCLUDE_DISPLAY
 #define STM32F7_DISPLAY_CONTROLLER_RED_PINS   { { PIN(J, 2) , AF(14) }, { PIN(J, 3), AF(14) }, { PIN(J, 4), AF(14) }, { PIN(J, 5), AF(14) }, { PIN(J, 6), AF(14) }  }
 #define STM32F7_DISPLAY_CONTROLLER_GREEN_PINS { { PIN(J, 9) , AF(14) }, { PIN(J, 10), AF(14)}, { PIN(J, 11), AF(14)}, { PIN(K, 0), AF(14) }, { PIN(K, 1), AF(14) }, { PIN(K, 2), AF(14) }  }
