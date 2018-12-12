@@ -1225,9 +1225,14 @@ void STM32F7_Can_RxInterruptHandler(int32_t controllerIndex) {
 
     can_msg->remoteTransmissionRequest = rtrmode;
 
-    can_msg->DataA = rxMessage.Data[0] | (rxMessage.Data[1] << 8) | (rxMessage.Data[2] << 16) | (rxMessage.Data[3] << 24);
-
-    can_msg->DataB = rxMessage.Data[4] | (rxMessage.Data[5] << 8) | (rxMessage.Data[6] << 16) | (rxMessage.Data[7] << 24);
+    if (rtrmode) {
+        can_msg->DataA = 0x00000000;
+        can_msg->DataB = 0x00000000;
+    }
+    else {
+        can_msg->DataA = rxMessage.Data[0] | (rxMessage.Data[1] << 8) | (rxMessage.Data[2] << 16) | (rxMessage.Data[3] << 24);
+        can_msg->DataB = rxMessage.Data[4] | (rxMessage.Data[5] << 8) | (rxMessage.Data[6] << 16) | (rxMessage.Data[7] << 24);
+    }
 
     can_msg->length = len;
 
