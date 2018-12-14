@@ -489,7 +489,7 @@ uint8_t CAN_Initialize(CAN_TypeDef* CANx, STM32F4_Can_InitTypeDef* CAN_InitStruc
             ((uint32_t)CAN_InitStruct->CAN_SJW << 24) | \
             ((uint32_t)CAN_InitStruct->CAN_BS1 << 16) | \
             ((uint32_t)CAN_InitStruct->CAN_BS2 << 20) | \
-            ((uint32_t)CAN_InitStruct->CAN_Prescaler - 1);
+            ((uint32_t)CAN_InitStruct->CAN_Prescaler);
 
         /* Request leave initialisation */
         CANx->MCR &= ~(uint32_t)CAN_MCR_INRQ;
@@ -1436,7 +1436,7 @@ TinyCLR_Result STM32F4_Can_ReadMessage(const TinyCLR_Can_Controller* self, TinyC
 TinyCLR_Result STM32F4_Can_SetBitTiming(const TinyCLR_Can_Controller* self, const TinyCLR_Can_BitTiming* timing) {
     uint32_t phase1 = (timing->Phase1 + timing->Propagation - 1) & 0x0F;
     uint32_t phase2 = (timing->Phase2 - 1) & 0x07;
-    uint32_t baudratePrescaler = timing->BaudratePrescaler & 0x03FF;
+    uint32_t baudratePrescaler = (timing->BaudratePrescaler - 1) & 0x03FF;
     uint32_t synchronizationJumpWidth = (timing->SynchronizationJumpWidth - 1) & 0x03;
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
