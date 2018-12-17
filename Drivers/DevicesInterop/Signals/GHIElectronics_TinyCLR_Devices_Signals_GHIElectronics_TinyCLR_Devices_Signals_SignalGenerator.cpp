@@ -60,7 +60,7 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
 
         gpio->Write(gpio, pin, next);
 
-        if (!((next == idleState) && (generateCarrierFrequency && carrierFrequency))) {
+        if (!((next != idleState) && (generateCarrierFrequency && carrierFrequency))) {
             time->Wait(time, time->ConvertSystemTimeToNativeTime(time, delayTicks));
         }
         else {
