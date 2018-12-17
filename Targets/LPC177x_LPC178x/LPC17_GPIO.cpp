@@ -259,9 +259,9 @@ bool LPC17_GpioInternal_OpenMultiPins(const LPC17_Gpio_Pin* pins, size_t count) 
         if (!LPC17_GpioInternal_OpenPin(pins[i].number)) {
             for (auto ii = 0; ii < i; ii++) {
                 LPC17_GpioInternal_ClosePin(pins[ii].number);
-
-                return false;
             }
+
+            return false;
         }
     }
 
