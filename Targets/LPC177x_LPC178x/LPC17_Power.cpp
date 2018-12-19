@@ -18,8 +18,11 @@
 #define LPC_SC_PCON_PM0_Pos            0                                             /*!< Power mode control bit 0. */
 #define LPC_SC_PCON_PM0_Msk            (1UL << LPC_SC_PCON_PM0_Pos)                  /*!< LPC_SC_PCON_PM0_Msk. */
 
-#define LPC_SC_PCON_PM1_Pos            1                                             /*!< Power mode control bit 0. */
-#define LPC_SC_PCON_PM1_Msk            (1UL << LPC_SC_PCON_PM0_Pos)                  /*!< LPC_SC_PCON_PM0_Msk. */
+#define LPC_SC_PCON_PM1_Pos            1                                             /*!< Power mode control bit 1. */
+#define LPC_SC_PCON_PM1_Msk            (1UL << LPC_SC_PCON_PM1_Pos)                  /*!< LPC_SC_PCON_PM0_Msk. */
+
+#define LPC_SC_PCON_BOGD_Pos           3                                             /*!< PBOGD control bit 3. */
+#define LPC_SC_PCON_BOGD_Msk           (1UL << LPC_SC_PCON_BOGD_Pos)                  /*!< LPC_SC_PCON_BOGD_Msk. */
 
 static void(*PowerStopHandler)();
 static void(*PowerRestartHandler)();
@@ -88,14 +91,42 @@ TinyCLR_Result LPC17_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCL
     case TinyCLR_Power_Level::Sleep1: // Sleep
     case TinyCLR_Power_Level::Sleep2: // Sleep
     case TinyCLR_Power_Level::Sleep3: // Sleep
+        TinyCLR_UsbClient_Uninitialize(nullptr);
+
+        SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
+        SCB->SCR = SCB_SCR_SLEEPDEEP_Msk;
+        LPC_SC->PCON &= ~(LPC_SC_PCON_PM0_Msk | LPC_SC_PCON_PM1_Msk);
+
+        __WFI();
+
+        SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;
+
+        SystemInit();
+
+        SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
+
+        TinyCLR_UsbClient_Initialize(nullptr);
+
+        break;
+
     case TinyCLR_Power_Level::Off:    // Off
+        TinyCLR_UsbClient_Uninitialize(nullptr);
+
+        SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
+        SCB->SCR = SCB_SCR_SLEEPDEEP_Msk;
+        LPC_SC->PCON = LPC_SC_PCON_PM0_Msk | LPC_SC_PCON_PM1_Msk | LPC_SC_PCON_BOGD_Msk;
+
+        __WFI();
+        break;
     case TinyCLR_Power_Level::Custom: // Custom
         //TODO
         return TinyCLR_Result::NotSupported;
 
     case TinyCLR_Power_Level::Idle:   // Idle
-        LPC_SC->PCON &= ~(LPC_SC_PCON_PM0_Msk | LPC_SC_PCON_PM1_Msk); // clear PM0 and PM1 to 0 => sleep
-        __WFI(); // sleep and wait for interrupt
+        SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;
+        LPC_SC->PCON &= ~(LPC_SC_PCON_PM0_Msk | LPC_SC_PCON_PM1_Msk);
+
+        __WFI();
 
         return TinyCLR_Result::Success;
 
@@ -104,6 +135,8 @@ TinyCLR_Result LPC17_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCL
         // Highest performance
         return TinyCLR_Result::Success;
     }
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC17_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {
