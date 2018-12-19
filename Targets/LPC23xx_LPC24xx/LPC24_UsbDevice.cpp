@@ -119,7 +119,7 @@
 #define EP_STAT_CND_ST      0x80
 
 #define USB_IRQn            22
-struct UsbDeviceDriver {
+struct UsbDeviceController {
     UsbClientState *usbClientState;
 
     bool txRunning[LPC24_USB_ENDPOINT_COUNT];
@@ -129,7 +129,7 @@ struct UsbDeviceDriver {
     bool firstDescriptorPacket;
 };
 
-UsbDeviceDriver usbDeviceDrivers[LPC24_TOTAL_USB_CONTROLLERS];
+UsbDeviceController usbDeviceControllers[LPC24_TOTAL_USB_CONTROLLERS];
 
 union EndpointConfiguration {
     struct {
@@ -187,7 +187,7 @@ void LPC24_UsbDevice_InitializeConfiguration(UsbClientState *usbClientState) {
         // Update endpoint size DeviceDescriptor Configuration if device value is different to default value
         usbClientState->deviceDescriptor.MaxPacketSizeEp0 = TinyCLR_UsbClient_GetEndpointSize(0);
 
-        usbDeviceDrivers[controllerIndex].usbClientState = usbClientState;
+        usbDeviceControllers[controllerIndex].usbClientState = usbClientState;
     }
 }
 
@@ -273,8 +273,8 @@ bool LPC24_UsbDevice_StartOutput(UsbClientState* usbClientState, int32_t endpoin
     }
 
     //If txRunning, interrupts will drain the queue
-    if (!usbDeviceDrivers[usbClientState->controllerIndex].txRunning[endpoint]) {
-        usbDeviceDrivers[usbClientState->controllerIndex].txRunning[endpoint] = true;
+    if (!usbDeviceControllers[usbClientState->controllerIndex].txRunning[endpoint]) {
+        usbDeviceControllers[usbClientState->controllerIndex].txRunning[endpoint] = true;
 
         // Calling both LPC24_UsbDevice_TxPacket & EP_TxISR in this routine could cause a TX FIFO overflow
         LPC24_UsbDevice_TxPacket(usbClientState, endpoint);
@@ -556,20 +556,20 @@ void LPC24_UsbDevice_TxPacket(UsbClientState* usbClientState, int32_t endpoint) 
 
         USB_WriteEP(endpoint, Packet64->Buffer, Packet64->Size);
 
-        usbDeviceDrivers[usbClientState->controllerIndex].txNeedZLPS[endpoint] = false;
+        usbDeviceControllers[usbClientState->controllerIndex].txNeedZLPS[endpoint] = false;
         if (Packet64->Size == 64)
-            usbDeviceDrivers[usbClientState->controllerIndex].txNeedZLPS[endpoint] = true;
+            usbDeviceControllers[usbClientState->controllerIndex].txNeedZLPS[endpoint] = true;
     }
     else {
         // send the zero length packet since we landed on the FIFO boundary before
         // (and we queued a zero length packet to transmit)
-        if (usbDeviceDrivers[usbClientState->controllerIndex].txNeedZLPS[endpoint]) {
+        if (usbDeviceControllers[usbClientState->controllerIndex].txNeedZLPS[endpoint]) {
             USB_WriteEP(endpoint, (uint8_t*)nullptr, 0);
-            usbDeviceDrivers[usbClientState->controllerIndex].txNeedZLPS[endpoint] = false;
+            usbDeviceControllers[usbClientState->controllerIndex].txNeedZLPS[endpoint] = false;
         }
 
         // no more data
-        usbDeviceDrivers[usbClientState->controllerIndex].txRunning[endpoint] = false;
+        usbDeviceControllers[usbClientState->controllerIndex].txRunning[endpoint] = false;
     }
 }
 void LPC24_UsbDevice_ControlNext(UsbClientState *usbClientState) {
@@ -590,7 +590,7 @@ void LPC24_UsbDevice_ControlNext(UsbClientState *usbClientState) {
             }
 
             // special handling the USB state set address test, cannot use the first descriptor as the ADDRESS state is handle in the hardware
-            if (usbDeviceDrivers[usbClientState->controllerIndex].firstDescriptorPacket) {
+            if (usbDeviceControllers[usbClientState->controllerIndex].firstDescriptorPacket) {
                 usbClientState->dataCallback = nullptr;
             }
 
@@ -606,7 +606,7 @@ void LPC24_UsbDevice_InterruptHandler(void* param) {
     disr = USBDevIntSt;                      /* Device Interrupt Status */
     USBDevIntClr = disr;                       /* A known issue on LPC214x */
 
-    UsbClientState *usbClientState = usbDeviceDrivers[USB_USBCLIENT_ID].usbClientState;
+    UsbClientState *usbClientState = usbDeviceControllers[USB_USBCLIENT_ID].usbClientState;
 
     if (disr & DEV_STAT_INT) {
         LPC24_UsbDevice_WrCmd(CMD_GET_DEV_STAT);
@@ -689,9 +689,9 @@ void LPC24_UsbDevice_ProcessEP0(UsbClientState *usbClientState, int32_t in, int3
         // special handling for the very first SETUP command - Getdescriptor[DeviceType], the host looks for 8 bytes data only
         TinyCLR_UsbClient_SetupPacket* Setup = (TinyCLR_UsbClient_SetupPacket*)&usbClientState->controlEndpointBuffer[0];
         if ((Setup->Request == USB_GET_DESCRIPTOR) && (((Setup->Value & 0xFF00) >> 8) == USB_DEVICE_DESCRIPTOR_TYPE) && (Setup->Length != 0x12))
-            usbDeviceDrivers[usbClientState->controllerIndex].firstDescriptorPacket = true;
+            usbDeviceControllers[usbClientState->controllerIndex].firstDescriptorPacket = true;
         else
-            usbDeviceDrivers[usbClientState->controllerIndex].firstDescriptorPacket = false;
+            usbDeviceControllers[usbClientState->controllerIndex].firstDescriptorPacket = false;
 
         // send it to the upper layer
         usbClientState->ptrData = &usbClientState->controlEndpointBuffer[0];
@@ -796,7 +796,7 @@ void LPC24_UsbDevice_SuspendEvent(UsbClientState *usbClientState) {
     // SUSPEND event only happened when Host(PC) set the device to SUSPEND
     // as there is always SOF every 1ms on the BUS to keep the device from
     // suspending. Therefore, the REMOTE wake up is not necessary at the ollie side
-    usbDeviceDrivers[usbClientState->controllerIndex].previousDeviceState = usbClientState->deviceState;
+    usbDeviceControllers[usbClientState->controllerIndex].previousDeviceState = usbClientState->deviceState;
 
     usbClientState->deviceState = USB_DEVICE_STATE_SUSPENDED;
 
@@ -805,7 +805,7 @@ void LPC24_UsbDevice_SuspendEvent(UsbClientState *usbClientState) {
 
 
 void LPC24_UsbDevice_ResumeEvent(UsbClientState *usbClientState) {
-    usbClientState->deviceState = usbDeviceDrivers[usbClientState->controllerIndex].previousDeviceState;
+    usbClientState->deviceState = usbDeviceControllers[usbClientState->controllerIndex].previousDeviceState;
 
     TinyCLR_UsbClient_StateCallback(usbClientState);
 }
@@ -818,8 +818,8 @@ void LPC24_UsbDevice_ResetEvent(UsbClientState *usbClientState) {
     TinyCLR_UsbClient_ClearEvent(usbClientState, 0xFFFFFFFF);
 
     for (int32_t ep = 0; ep < LPC24_USB_ENDPOINT_COUNT; ep++) {
-        usbDeviceDrivers[usbClientState->controllerIndex].txRunning[ep] = false;
-        usbDeviceDrivers[usbClientState->controllerIndex].txNeedZLPS[ep] = false;
+        usbDeviceControllers[usbClientState->controllerIndex].txRunning[ep] = false;
+        usbDeviceControllers[usbClientState->controllerIndex].txNeedZLPS[ep] = false;
     }
 
     usbClientState->deviceState = USB_DEVICE_STATE_DEFAULT;
@@ -828,7 +828,7 @@ void LPC24_UsbDevice_ResetEvent(UsbClientState *usbClientState) {
 }
 
 bool LPC24_UsbDevice_ProtectPins(int32_t controllerIndex, bool On) {
-    UsbClientState *usbClientState = usbDeviceDrivers[controllerIndex].usbClientState;
+    UsbClientState *usbClientState = usbDeviceControllers[controllerIndex].usbClientState;
 
     DISABLE_INTERRUPTS_SCOPED(irq);
 

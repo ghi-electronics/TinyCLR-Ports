@@ -216,7 +216,7 @@ struct AT91SAM9Rx64_UDPHS_EPTFIFO {
     volatile uint32_t     UDPHS_READEPTF[16384];     // FIFO Endpoint data Register 15
 };
 
-struct AT91SAM9Rx64_UsbDeviceDriver {
+struct UsbDeviceController {
     UsbClientState *usbClientState;
 
     uint8_t            previousDeviceState;
@@ -226,7 +226,7 @@ struct AT91SAM9Rx64_UsbDeviceDriver {
     bool            txNeedZLPS[AT91SAM9Rx64_USB_ENDPOINT_COUNT];
 };
 
-static AT91SAM9Rx64_UsbDeviceDriver usbDeviceDrivers[AT91SAM9Rx64_TOTAL_USB_CONTROLLERS];
+static UsbDeviceController usbDeviceDrivers[AT91SAM9Rx64_TOTAL_USB_CONTROLLERS];
 
 struct AT91SAM9Rx64_UDP_ENDPOINT_ATTRIBUTE {
     uint16_t        Dir_Type;
