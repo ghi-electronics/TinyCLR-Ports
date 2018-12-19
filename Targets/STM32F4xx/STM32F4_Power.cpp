@@ -85,6 +85,7 @@ TinyCLR_Result STM32F4_Power_SetLevel(const TinyCLR_Power_Controller* self, Tiny
 
         TinyCLR_UsbClient_Uninitialize(nullptr);
 
+        SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
         RCC->APB1ENR |= RCC_APB1ENR_PWREN;
 
         tmpreg = PWR->CR;
@@ -100,7 +101,7 @@ TinyCLR_Result STM32F4_Power_SetLevel(const TinyCLR_Power_Controller* self, Tiny
         SCB->SCR &= (uint32_t)~((uint32_t)SCB_SCR_SLEEPDEEP_Msk);
 
         SystemInit();
-
+        SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
         TinyCLR_UsbClient_Initialize(nullptr);
         break;
 
