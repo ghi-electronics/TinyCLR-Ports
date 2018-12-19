@@ -87,43 +87,30 @@ TinyCLR_Result STM32F4_Power_SetLevel(const TinyCLR_Power_Controller* self, Tiny
 
         RCC->APB1ENR |= RCC_APB1ENR_PWREN;
 
-        /* Select the regulator state in STOP mode ---------------------------------*/
         tmpreg = PWR->CR;
-        /* Clear PDDS and LPDSR bits */
         tmpreg &= CR_DS_MASK;
-
-        /* Set LPDSR bit according to PWR_Regulator value */
         tmpreg |= PWR_CR_LPDS;
 
-        /* Store the new value */
         PWR->CR = tmpreg;
 
-        /* Set SLEEPDEEP bit of Cortex System Control Register */
         SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
 
         __WFI();
 
-        /* Reset SLEEPDEEP bit of Cortex System Control Register */
         SCB->SCR &= (uint32_t)~((uint32_t)SCB_SCR_SLEEPDEEP_Msk);
 
         SystemInit();
 
         TinyCLR_UsbClient_Initialize(nullptr);
-
         break;
 
-    case TinyCLR_Power_Level::Off:// Off - Non wakeup
+    case TinyCLR_Power_Level::Off:// Off
 
-        /* Clear Wakeup flag */
         PWR->CR |= PWR_CR_CWUF;
-
-        /* Select STANDBY mode */
         PWR->CR |= PWR_CR_PDDS;
 
-        /* Set SLEEPDEEP bit of Cortex System Control Register */
         SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
 
-        /* Request Wait For Interrupt */
         __WFI();
 
         break;
@@ -131,7 +118,7 @@ TinyCLR_Result STM32F4_Power_SetLevel(const TinyCLR_Power_Controller* self, Tiny
     case TinyCLR_Power_Level::Idle:   // Idle
         PWR->CR |= PWR_CR_CWUF;
 
-        __WFI(); // sleep and wait for interrupt
+        __WFI();
         return TinyCLR_Result::Success;
 
     case TinyCLR_Power_Level::Custom: // Custom - NotSupported
