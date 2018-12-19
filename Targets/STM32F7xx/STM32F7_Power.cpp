@@ -74,11 +74,41 @@ void STM32F7_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
 }
 
 TinyCLR_Result STM32F7_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCLR_Power_Level level, TinyCLR_Power_WakeSource wakeSource, uint64_t data) {
+    volatile uint32_t tmpreg = 0;
+
     switch (level) {
     case TinyCLR_Power_Level::Sleep1: // Sleep
     case TinyCLR_Power_Level::Sleep2: // Sleep
     case TinyCLR_Power_Level::Sleep3: // Sleep
-    case TinyCLR_Power_Level::Off:    // Off
+        TinyCLR_UsbClient_Uninitialize(nullptr);
+
+        RCC->APB1ENR |= RCC_APB1ENR_PWREN;
+
+        tmpreg = PWR->CR1;
+        tmpreg &= (uint32_t)~(PWR_CR1_PDDS | PWR_CR1_LPDS);
+        tmpreg |= PWR_CR1_LPDS;
+
+        PWR->CR1 = tmpreg;
+
+        SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+
+        __WFI();
+
+        SCB->SCR &= (uint32_t)~((uint32_t)SCB_SCR_SLEEPDEEP_Msk);
+
+        SystemInit();
+        TinyCLR_UsbClient_Initialize(nullptr);
+        break;
+    case TinyCLR_Power_Level::Off: // Off - Non wakeup
+        RCC->APB1ENR |= RCC_APB1ENR_PWREN;
+
+        PWR->CR1 |= PWR_CR1_PDDS;
+
+        SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+
+        __WFI();
+        break;
+
     case TinyCLR_Power_Level::Custom: // Custom
         //TODO
         return TinyCLR_Result::NotSupported;
@@ -86,7 +116,6 @@ TinyCLR_Result STM32F7_Power_SetLevel(const TinyCLR_Power_Controller* self, Tiny
     case TinyCLR_Power_Level::Idle:   // Idle
         CLEAR_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPDEEP_Msk));
 
-        /* Request Wait For Interrupt */
         __WFI();
 
         return TinyCLR_Result::Success;
@@ -96,6 +125,8 @@ TinyCLR_Result STM32F7_Power_SetLevel(const TinyCLR_Power_Controller* self, Tiny
         // Highest performance
         return TinyCLR_Result::Success;
     }
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F7_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {
