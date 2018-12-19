@@ -83,15 +83,17 @@ TinyCLR_Result STM32F7_Power_SetLevel(const TinyCLR_Power_Controller* self, Tiny
         //TODO
         return TinyCLR_Result::NotSupported;
 
-    case TinyCLR_Power_Level::Active: // Active
     case TinyCLR_Power_Level::Idle:   // Idle
-        // TODO
-    default:
         CLEAR_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPDEEP_Msk));
 
         /* Request Wait For Interrupt */
         __WFI();
 
+        return TinyCLR_Result::Success;
+
+    case TinyCLR_Power_Level::Active: // Active
+    default:
+        // Highest performance
         return TinyCLR_Result::Success;
     }
 }

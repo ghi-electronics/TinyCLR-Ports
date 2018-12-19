@@ -80,14 +80,15 @@ TinyCLR_Result STM32F4_Power_SetLevel(const TinyCLR_Power_Controller* self, Tiny
         //TODO
         return TinyCLR_Result::NotSupported;
 
-    case TinyCLR_Power_Level::Active: // Active
     case TinyCLR_Power_Level::Idle:   // Idle
-        // TODO
-
-    default:
         PWR->CR |= PWR_CR_CWUF;
 
         __WFI(); // sleep and wait for interrupt
+        return TinyCLR_Result::Success;
+
+    case TinyCLR_Power_Level::Active: // Active
+    default:
+        // Highest performance
         return TinyCLR_Result::Success;
     }
 }

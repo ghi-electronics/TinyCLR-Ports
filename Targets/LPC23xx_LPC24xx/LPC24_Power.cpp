@@ -89,13 +89,14 @@ TinyCLR_Result LPC24_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCL
         //TODO
         return TinyCLR_Result::NotSupported;
 
-    case TinyCLR_Power_Level::Active: // Active
     case TinyCLR_Power_Level::Idle:   // Idle
-        // TODO
-
-    default:
         PCON |= 1;
 
+        return TinyCLR_Result::Success;
+
+    case TinyCLR_Power_Level::Active: // Active
+    default:
+        // Highest performance
         return TinyCLR_Result::Success;
     }
 }

@@ -89,11 +89,7 @@ TinyCLR_Result AT91SAM9Rx64_Power_SetLevel(const TinyCLR_Power_Controller* self,
         //TODO
         return TinyCLR_Result::NotSupported;
 
-    case TinyCLR_Power_Level::Active: // Active
     case TinyCLR_Power_Level::Idle:   // Idle
-        // TODO
-
-    default:
         // ARM926EJ-S Wait For Interrupt
 #ifdef __GNUC__
         asm("MCR p15, 0, %0, c7, c0, 4" :: "r" (reg));
@@ -104,6 +100,11 @@ TinyCLR_Result AT91SAM9Rx64_Power_SetLevel(const TinyCLR_Power_Controller* self,
         }
 #endif
 
+        return TinyCLR_Result::Success;
+
+    case TinyCLR_Power_Level::Active: // Active
+    default:
+        // Highest performance
         return TinyCLR_Result::Success;
     }
 }
