@@ -321,10 +321,10 @@ extern "C" {
 #endif
 
         // remove Flash remap to Boot area to avoid problems with Monitor_Execute
-        SYSCFG->MEMRMP = SYSCFG_MEMRMP_MEM_BOOT; // map System memory to Boot area. 
+        SYSCFG->MEMRMP = SYSCFG_MEMRMP_MEM_BOOT; // map System memory to Boot area.
 
         //Swap FMC address
-        SYSCFG->MEMRMP |= SYSCFG_MEMRMP_SWP_FMC_0; 
+        SYSCFG->MEMRMP |= SYSCFG_MEMRMP_SWP_FMC_0;
 
         // GPIO port A to D is always present
         RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN | RCC_AHB1ENR_GPIODEN;
@@ -514,19 +514,19 @@ void STM32F7_Startup_GetRunApp(bool& runApp) {
 }
 
 void STM32F7_Startup_CacheEnable(void) {
-    /* Enable I-Cache */
-    SCB_EnableICache();
+    if (SCB->CCR & SCB_CCR_IC_Msk == 0)
+        SCB_EnableICache(); /* Enable I-Cache */
 
-    /* Enable D-Cache */
-    SCB_EnableDCache();
+    if (SCB->CCR & SCB_CCR_DC_Msk == 0)
+        SCB_EnableDCache();  /* Enable D-Cache */
 }
 
 void STM32F7_Startup_CacheDisable(void) {
-    /* Enable I-Cache */
-    SCB_DisableICache();
+    if (SCB->CCR & SCB_CCR_IC_Msk)
+        SCB_DisableICache(); /* Disable I-Cache */
 
-    /* Enable D-Cache */
-    SCB_DisableDCache();
+    if (SCB->CCR & SCB_CCR_DC_Msk)
+        SCB_DisableDCache();  /* Disable D-Cache */
 }
 
 void STM32F7_Startup_GetDeploymentApi(const TinyCLR_Api_Info*& api, const TinyCLR_Startup_DeploymentConfiguration*& configuration) {
