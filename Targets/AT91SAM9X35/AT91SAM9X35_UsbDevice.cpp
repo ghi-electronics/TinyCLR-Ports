@@ -827,8 +827,12 @@ void AT91SAM9X35_UsbDevice_InitializeConfiguration(UsbClientState *usbClientStat
 }
 
 bool AT91SAM9X35_UsbDevice_Initialize(UsbClientState *usbClientState) {
-    if (usbClientState == nullptr)
-        return false;
+    if (usbClientState == nullptr) {
+        if (usbDeviceControllers[0].usbClientState != nullptr)
+            usbClientState = usbDeviceControllers[0].usbClientState;
+        else
+            return false;
+    }
 
     auto controllerIndex = usbClientState->controllerIndex;
 
@@ -876,6 +880,13 @@ bool AT91SAM9X35_UsbDevice_Initialize(UsbClientState *usbClientState) {
 
 bool AT91SAM9X35_UsbDevice_Uninitialize(UsbClientState *usbClientState) {
     DISABLE_INTERRUPTS_SCOPED(irq);
+
+    if (usbClientState == nullptr) {
+        if (usbDeviceControllers[0].usbClientState != nullptr)
+            usbClientState = usbDeviceControllers[0].usbClientState;
+        else
+            return false;
+    }
 
     AT91SAM9X35_UsbDevice_PmcDisableUTMIBIAS();
     AT91SAM9X35_UsbDevice_PmcDisableUsbClock();

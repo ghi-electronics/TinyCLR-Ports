@@ -194,8 +194,12 @@ void LPC24_UsbDevice_InitializeConfiguration(UsbClientState *usbClientState) {
 bool LPC24_UsbDevice_Initialize(UsbClientState *usbClientState) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
-    if (usbClientState == nullptr)
-        return false;
+    if (usbClientState == nullptr) {
+        if (usbDeviceControllers[0].usbClientState != nullptr)
+            usbClientState = usbDeviceControllers[0].usbClientState;
+        else
+            return false;
+    }
 
     auto controllerIndex = usbClientState->controllerIndex;
 
@@ -238,6 +242,13 @@ bool LPC24_UsbDevice_Initialize(UsbClientState *usbClientState) {
 
 bool LPC24_UsbDevice_Uninitialize(UsbClientState *usbClientState) {
     DISABLE_INTERRUPTS_SCOPED(irq);
+
+    if (usbClientState == nullptr) {
+        if (usbDeviceControllers[0].usbClientState != nullptr)
+            usbClientState = usbDeviceControllers[0].usbClientState;
+        else
+            return false;
+    }
 
     LPC24_InterruptInternal_Deactivate(USB_IRQn);
 

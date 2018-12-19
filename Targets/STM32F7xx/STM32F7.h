@@ -349,6 +349,8 @@ USB_PACKET64* TinyCLR_UsbClient_TxDequeue(UsbClientState* usbClientState, int32_
 void TinyCLR_UsbClient_StateCallback(UsbClientState* usbClientState);
 uint8_t TinyCLR_UsbClient_ControlCallback(UsbClientState* usbClientState);
 bool TinyCLR_UsbClient_CanReceivePackage(UsbClientState* usbClientState, int32_t endpoint);
+bool TinyCLR_UsbClient_Initialize(UsbClientState* usbClientState);
+bool TinyCLR_UsbClient_Uninitialize(UsbClientState* usbClientState);
 
 ////////////////////////////////////////////////////////////////////////////////
 //Interrupt Internal
