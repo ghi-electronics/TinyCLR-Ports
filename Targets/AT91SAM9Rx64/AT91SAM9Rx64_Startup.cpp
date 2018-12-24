@@ -71,6 +71,10 @@ extern "C" {
     extern uint32_t Image$$ER_RAM_RO$$Base;
     extern uint32_t Image$$ER_RAM_RO$$Length;
 
+    extern uint32_t Load$$ER_IRAM_RW$$Base;
+    extern uint32_t Image$$ER_IRAM_RW$$Base;
+    extern uint32_t Image$$ER_IRAM_RW$$Length;
+
     extern uint32_t Load$$ER_FLASH$$Base;
 
     extern uint32_t ARM_Vectors;
@@ -158,6 +162,15 @@ void AT91SAM9Rx64_Startup_Initialize() {
         uint32_t* src = (uint32_t*)((uint32_t)&Load$$ER_RAM_RO$$Base);
         uint32_t* dst = (uint32_t*)((uint32_t)&Image$$ER_RAM_RO$$Base);
         uint32_t  len = (uint32_t)((uint32_t)&Image$$ER_RAM_RO$$Length);
+
+        if (len != 0) // only copy if len is not 0
+            Prepare_Copy(src, dst, len);
+    }
+
+    {
+        uint32_t* src = (uint32_t*)((uint32_t)&Load$$ER_IRAM_RW$$Base);
+        uint32_t* dst = (uint32_t*)((uint32_t)&Image$$ER_IRAM_RW$$Base);
+        uint32_t  len = (uint32_t)((uint32_t)&Image$$ER_IRAM_RW$$Length);
 
         if (len != 0) // only copy if len is not 0
             Prepare_Copy(src, dst, len);

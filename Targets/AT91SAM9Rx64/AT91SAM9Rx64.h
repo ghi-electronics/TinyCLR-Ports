@@ -145,6 +145,23 @@
 
 extern const TinyCLR_Api_Manager* apiManager;
 
+struct AT91SAM9Rx64_DDRS {
+    static const uint32_t c_Base = AT91C_BASE_SDRAMC;
+    volatile uint32_t DDRSDRC_MR;   
+    volatile uint32_t DDRSDRC_RTR; 
+    volatile uint32_t DDRSDRC_CR;   
+    volatile uint32_t DDRSDRC_TPR0; 
+    volatile uint32_t DDRSDRC_TPR1; 
+    volatile uint32_t DDRSDRC_TPR2; 
+    volatile uint32_t Reserved[1];  //Reserved
+    volatile uint32_t DDRSDRC_LPR;  
+    volatile uint32_t DDRSDRC_MD;   
+    volatile uint32_t DDRSDRC_DLL; 
+    volatile uint32_t DDRSDRC_HS;   
+    volatile uint32_t DDRSDRC_WPMR; 
+    volatile uint32_t DDRSDRC_WPSR; 
+};
+
 struct AT91SAM9Rx64_PMC {
     static const uint32_t c_Base = AT91C_BASE_PMC;
 

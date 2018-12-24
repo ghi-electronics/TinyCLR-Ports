@@ -226,7 +226,7 @@ struct UsbDeviceController {
     bool            txNeedZLPS[AT91SAM9Rx64_USB_ENDPOINT_COUNT];
 };
 
-static UsbDeviceController usbDeviceDrivers[AT91SAM9Rx64_TOTAL_USB_CONTROLLERS];
+static UsbDeviceController usbDeviceControllers[AT91SAM9Rx64_TOTAL_USB_CONTROLLERS];
 
 struct AT91SAM9Rx64_UDP_ENDPOINT_ATTRIBUTE {
     uint16_t        Dir_Type;
@@ -325,8 +325,8 @@ void AT91SAM9Rx64_UsbDevice_ResetEvent(UsbClientState *usbClientState) {
     TinyCLR_UsbClient_ClearEvent(usbClientState, 0xFFFFFFFF); // clear all events on all endpoints
 
     for (int32_t ep = 0; ep < AT91SAM9Rx64_USB_ENDPOINT_COUNT; ep++) {
-        usbDeviceDrivers[usbClientState->controllerIndex].txRunning[ep] = false;
-        usbDeviceDrivers[usbClientState->controllerIndex].txNeedZLPS[ep] = false;
+        usbDeviceControllers[usbClientState->controllerIndex].txRunning[ep] = false;
+        usbDeviceControllers[usbClientState->controllerIndex].txNeedZLPS[ep] = false;
     }
 
     usbClientState->deviceState = USB_DEVICE_STATE_DEFAULT;
@@ -345,7 +345,7 @@ void AT91SAM9Rx64_UsbDevice_ResumeEvent(UsbClientState *usbClientState) {
     // TODO: will be replaced by PMC API
     AT91SAM9Rx64_UsbDevice_PmcEnableUsbClock();
 
-    usbClientState->deviceState = usbDeviceDrivers[usbClientState->controllerIndex].previousDeviceState;
+    usbClientState->deviceState = usbDeviceControllers[usbClientState->controllerIndex].previousDeviceState;
 
     TinyCLR_UsbClient_StateCallback(usbClientState);
 
@@ -568,18 +568,18 @@ void AT91SAM9Rx64_UsbDevice_TxPacket(UsbClientState* usbClientState, int32_t end
         int32_t i;
 
         AT91SAM9Rx64_UsbDevice_WriteEndPoint(endpoint, Packet64->Buffer, Packet64->Size);
-        usbDeviceDrivers[usbClientState->controllerIndex].txNeedZLPS[endpoint] = (Packet64->Size == USB_BULK_WMAXPACKETSIZE_EP_WRITE);
+        usbDeviceControllers[usbClientState->controllerIndex].txNeedZLPS[endpoint] = (Packet64->Size == USB_BULK_WMAXPACKETSIZE_EP_WRITE);
     }
     else {
         // send the zero leght packet since we landed on the FIFO boundary before
         // (and we queued a zero length packet to transmit)
-        if (usbDeviceDrivers[usbClientState->controllerIndex].txNeedZLPS[endpoint]) {
+        if (usbDeviceControllers[usbClientState->controllerIndex].txNeedZLPS[endpoint]) {
             pUdp->UDPHS_EPT[endpoint].UDPHS_EPTSETSTA = AT91C_UDPHS_TX_PK_RDY;
-            usbDeviceDrivers[usbClientState->controllerIndex].txNeedZLPS[endpoint] = false;
+            usbDeviceControllers[usbClientState->controllerIndex].txNeedZLPS[endpoint] = false;
         }
 
         // no more data
-        usbDeviceDrivers[usbClientState->controllerIndex].txRunning[endpoint] = false;
+        usbDeviceControllers[usbClientState->controllerIndex].txRunning[endpoint] = false;
         pUdp->UDPHS_EPT[endpoint].UDPHS_EPTCTLDIS = AT91C_UDPHS_TX_PK_RDY;
     }
 }
@@ -599,7 +599,7 @@ void AT91SAM9Rx64_UsbDevice_ControlNext(UsbClientState *usbClientState) {
             AT91SAM9Rx64_UsbDevice_WriteEndPoint(0, usbClientState->ptrData, usbClientState->dataSize);
 
             // special handling the USB state set address test, cannot use the first descriptor as the ADDRESS state is handle in the hardware
-            if (usbDeviceDrivers[usbClientState->controllerIndex].firstDescriptorPacket) {
+            if (usbDeviceControllers[usbClientState->controllerIndex].firstDescriptorPacket) {
                 usbClientState->dataCallback = NULL;
             }
         }
@@ -676,9 +676,9 @@ void AT91SAM9Rx64_UsbDevice_EndpointIsr(UsbClientState *usbClientState, uint32_t
 
 
             if ((Setup->Request == USB_GET_DESCRIPTOR) && (((Setup->Value & 0xFF00) >> 8) == USB_DEVICE_DESCRIPTOR_TYPE) && (Setup->Length != 0x12))
-                usbDeviceDrivers[usbClientState->controllerIndex].firstDescriptorPacket = true;
+                usbDeviceControllers[usbClientState->controllerIndex].firstDescriptorPacket = true;
             else
-                usbDeviceDrivers[usbClientState->controllerIndex].firstDescriptorPacket = false;
+                usbDeviceControllers[usbClientState->controllerIndex].firstDescriptorPacket = false;
 
 
             while (pUdp->UDPHS_EPT[0].UDPHS_EPTSTA & AT91C_UDPHS_RX_SETUP)
@@ -823,7 +823,7 @@ void AT91SAM9Rx64_UsbDevice_InitializeConfiguration(UsbClientState *usbClientSta
         // Update endpoint size DeviceDescriptor Configuration if device value is different to default value
         usbClientState->deviceDescriptor.MaxPacketSizeEp0 = TinyCLR_UsbClient_GetEndpointSize(0);
 
-        usbDeviceDrivers[controllerIndex].usbClientState = usbClientState;
+        usbDeviceControllers[controllerIndex].usbClientState = usbClientState;
     }
 }
 
@@ -837,7 +837,7 @@ bool AT91SAM9Rx64_UsbDevice_Initialize(UsbClientState *usbClientState) {
 
     auto controllerIndex = usbClientState->controllerIndex;
 
-    usbDeviceDrivers[controllerIndex].usbClientState = usbClientState;
+    usbDeviceControllers[controllerIndex].usbClientState = usbClientState;
 
     struct AT91SAM9Rx64_UDPHS *pUdp = (struct AT91SAM9Rx64_UDPHS *) (AT91C_BASE_UDP);
     struct AT91SAM9Rx64_UDPHS_EPT *pEp = (struct AT91SAM9Rx64_UDPHS_EPT *) (AT91C_BASE_UDP + 0x100);
@@ -922,9 +922,9 @@ bool AT91SAM9Rx64_UsbDevice_StartOutput(UsbClientState* usbClientState, int32_t 
     }
 
     //If txRunning, interrupts will drain the queue
-    if (!(bool)((uint8_t)usbDeviceDrivers[usbClientState->controllerIndex].txRunning[endpoint])) {
+    if (!(bool)((uint8_t)usbDeviceControllers[usbClientState->controllerIndex].txRunning[endpoint])) {
 
-        usbDeviceDrivers[usbClientState->controllerIndex].txRunning[endpoint] = true;
+        usbDeviceControllers[usbClientState->controllerIndex].txRunning[endpoint] = true;
 
         AT91SAM9Rx64_UsbDevice_TxPacket(usbClientState, endpoint);
     }
