@@ -221,25 +221,13 @@ void __section(".SectionForInternalRam.EnterLowPowerMode") AT91SAM9X35_Power_Ent
 
     int i;
     AT91_DDRS *ddrs = (AT91_DDRS *)(AT91C_BASE_DDRS);
-
-    AT91SAM9X35_AIC &aic = AT91::AIC();
     AT91SAM9X35_PMC &pmc = AT91::PMC();
 
     pcmMoRegisterBackup = pmc.PMC_CKGR_MOR;
     pcmPllaRegisterBackup = pmc.PMC_CKGR_PLLAR;
     pcmMckRegisterBackup = pmc.PMC_MCKR;
 
-    uint32_t irqStatus = aic.AIC_IMR;
-
-    for (i = 4; i <= 30; i++) {
-        aic.AIC_ICCR = (1 << i);
-        aic.AIC_IDCR = (1 << i);
-    }
-
-    AT91SAM9X35_Display_Disable(nullptr);
-    TinyCLR_UsbClient_Uninitialize(nullptr);
-
-    ddrs->DDRSDRC_LPR |= (2 << 12) | 1;  // Delay 120 cycles before enter self refresh mode
+    ddrs->DDRSDRC_LPR |= (2 << 12) | 1;
 
     AT91SAM9X35_Power_EnableRcSlowClockMode();
 
@@ -248,28 +236,43 @@ void __section(".SectionForInternalRam.EnterLowPowerMode") AT91SAM9X35_Power_Ent
     asm("MCR p15, 0, %0, c7, c0, 4" :: "r" (reg));
 
     ddrs->DDRSDRC_LPR &= ~1;
-
-    for (i = 0; i <= 30; i++) {
-        if (irqStatus & (1 << i)) {
-            aic.AIC_IDCR = (0x01 << i);
-            aic.AIC_ICCR = (0x01 << i);
-            aic.AIC_IECR = 0x01 << i;
-        }
-    }
-
-    TinyCLR_UsbClient_Initialize(nullptr);
-    AT91SAM9X35_Display_Enable(nullptr);
 }
 
 TinyCLR_Result AT91SAM9X35_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCLR_Power_Level level, TinyCLR_Power_WakeSource wakeSource, uint64_t data) {
     volatile uint32_t reg = 0;
+    uint32_t irqStatus;
+
+    AT91SAM9X35_AIC &aic = AT91::AIC();
 
     switch (level) {
     case TinyCLR_Power_Level::Sleep1: // Sleep
     case TinyCLR_Power_Level::Sleep2: // Sleep
     case TinyCLR_Power_Level::Sleep3: // Sleep
 
+        irqStatus = aic.AIC_IMR;
+
+        for (auto i = 4; i <= 30; i++) {
+            aic.AIC_ICCR = (1 << i);
+            aic.AIC_IDCR = (1 << i);
+        }
+
+        AT91SAM9X35_Display_Disable(nullptr);
+
+        TinyCLR_UsbClient_Uninitialize(nullptr);
+
         AT91SAM9X35_Power_EnterLowPowerMode();
+
+        for (auto i = 4; i <= 30; i++) {
+            if (irqStatus & (1 << i)) {
+                aic.AIC_IDCR = (0x01 << i);
+                aic.AIC_ICCR = (0x01 << i);
+                aic.AIC_IECR = 0x01 << i;
+            }
+        }
+
+        TinyCLR_UsbClient_Initialize(nullptr);
+
+        AT91SAM9X35_Display_Enable(nullptr);
 
         break;
 

@@ -333,35 +333,30 @@ extern "C" {
         AT91SAM9X35_PMC &pmc = AT91::PMC();
 
         if ((pmc.PMC_MCKR & 3) == 0) {
-            #define AIC_EOICR_REG              (*(volatile uint32_t *)(0xFFFFF130))
-
-            // Mark end of Interrupt
-            AIC_EOICR_REG = 1;
-
             AT91SAM9X35_Power_RestoreClock();
         }
-        else  {
-            AT91SAM9X35_AIC &aic = AT91::AIC();
-            INTERRUPT_STARTED_SCOPED(isr);
 
-            uint32_t index;
+        INTERRUPT_STARTED_SCOPED(isr);
 
-            while ((index = aic.AIC_IVR) < c_VECTORING_GUARD) {
-                // Read IVR register (de-assert NIRQ) & check if we a spurous IRQ
-                AT91SAM9X35_Interrupt_Vectors* IsrVector = &s_IsrTable[index];
+        AT91SAM9X35_AIC &aic = AT91::AIC();
+        uint32_t index;
 
-                // In case the interrupt was forced, remove the flag.
-                AT91SAM9X35_Interrupt_RemoveForcedInterrupt(index);
+        while ((index = aic.AIC_IVR) < c_VECTORING_GUARD) {
+            // Read IVR register (de-assert NIRQ) & check if we a spurous IRQ
+            AT91SAM9X35_Interrupt_Vectors* IsrVector = &s_IsrTable[index];
+
+            // In case the interrupt was forced, remove the flag.
+            AT91SAM9X35_Interrupt_RemoveForcedInterrupt(index);
 
 
-                IsrVector->Handler.Execute();
+            IsrVector->Handler.Execute();
 
-                // Mark end of Interrupt
-                aic.AIC_EOICR = 1;
-            }
-
-            // Mark end of Interrupt (Last IVR read)
+            // Mark end of Interrupt
             aic.AIC_EOICR = 1;
         }
+
+        // Mark end of Interrupt (Last IVR read)
+        aic.AIC_EOICR = 1;
+
     }
 }
