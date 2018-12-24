@@ -15,20 +15,18 @@
 
 #include "LPC24.h"
 
-#define PCON_REG (*(volatile unsigned char *)0xE01FC0C0)
-#define EXT_INTERRUPT_REG  (*(volatile uint32_t*)0xE01FC140)
-#define EMC_DYNAMIC_CTRL_REG (*(volatile uint32_t*)0xFFE08020)
-#define EMC_STATUS_REG (*(volatile uint32_t*)0xFFE08004)
-#define INTERRUPT_WAKEUP_REG (*(volatile uint32_t*)0xE01FC144)
-
+#define PCON_REG                (*(volatile unsigned char *)0xE01FC0C0)
+#define EXT_INTERRUPT_REG       (*(volatile uint32_t*)0xE01FC140)
+#define EMC_DYNAMIC_CTRL_REG    (*(volatile uint32_t*)0xFFE08020)
+#define EMC_STATUS_REG          (*(volatile uint32_t*)0xFFE08004)
+#define EMC_SELF_REFRESH_MODE   4
+#define INTERRUPT_WAKEUP_REG    (*(volatile uint32_t*)0xE01FC144)
 #define GPIO_INTERRUPT          ( 1 << 7 | 1 << 8)
 
-#define EMC_SELF_REFRESH_MODE 4
+#define TOTAL_POWER_CONTROLLERS 1
 
 static void(*PowerStopHandler)();
 static void(*PowerRestartHandler)();
-
-#define TOTAL_POWER_CONTROLLERS 1
 
 struct PowerState {
     uint32_t controllerIndex;
