@@ -44,7 +44,7 @@ SECTIONS
         *(SectionForBootstrapInRam)
     }>ERAM AT>LR_FLASH
     
-    ER_RAM_RW 0x20101000:
+    ER_RAM_RW 0x20101000: ALIGN(0x8)
     {
         * (rwdata)
         * (.data*)

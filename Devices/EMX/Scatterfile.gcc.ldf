@@ -46,7 +46,7 @@ SECTIONS
         * (SectionForCodeReadOnlyRAM)
     }>SDRAM
 
-    ER_RAM_RW 0xA0040000 :
+    ER_RAM_RW 0xA0040000 : ALIGN(0x8)
     {
         * (rwdata)
         * (.data*)
@@ -68,7 +68,7 @@ SECTIONS
         * (.ARM.extab*)
     }
 
-    ER_HEAP_BEGIN 0xA0200000 :
+    ER_HEAP_BEGIN 0xA0200000 : 
     {
         * (SectionForHeapBegin)
     }>SDRAM
