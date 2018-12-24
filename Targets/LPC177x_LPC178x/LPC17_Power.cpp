@@ -91,6 +91,7 @@ TinyCLR_Result LPC17_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCL
     case TinyCLR_Power_Level::Sleep1: // Sleep
     case TinyCLR_Power_Level::Sleep2: // Sleep
     case TinyCLR_Power_Level::Sleep3: // Sleep
+        LPC17_Display_Disable(nullptr);
         TinyCLR_UsbClient_Uninitialize(nullptr);
 
         SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
@@ -106,7 +107,7 @@ TinyCLR_Result LPC17_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCL
         SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
 
         TinyCLR_UsbClient_Initialize(nullptr);
-
+        LPC17_Display_Enable(nullptr);
         break;
 
     case TinyCLR_Power_Level::Off:    // Off

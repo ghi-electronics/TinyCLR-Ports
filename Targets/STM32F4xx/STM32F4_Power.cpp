@@ -82,7 +82,9 @@ TinyCLR_Result STM32F4_Power_SetLevel(const TinyCLR_Power_Controller* self, Tiny
     case TinyCLR_Power_Level::Sleep1: // Sleep
     case TinyCLR_Power_Level::Sleep2: // Sleep
     case TinyCLR_Power_Level::Sleep3: // Sleep
-
+#ifdef INCLUDE_DISPLAY
+        STM32F4_Display_Disable(nullptr);
+#endif
         TinyCLR_UsbClient_Uninitialize(nullptr);
 
         SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
@@ -103,6 +105,9 @@ TinyCLR_Result STM32F4_Power_SetLevel(const TinyCLR_Power_Controller* self, Tiny
         SystemInit();
         SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
         TinyCLR_UsbClient_Initialize(nullptr);
+#ifdef INCLUDE_DISPLAY
+        STM32F4_Display_Enable(nullptr);
+#endif
         break;
 
     case TinyCLR_Power_Level::Off:// Off

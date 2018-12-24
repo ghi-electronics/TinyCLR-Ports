@@ -235,7 +235,9 @@ void __section(".SectionForInternalRam.EnterLowPowerMode") AT91SAM9Rx64_Power_En
         aic.AIC_ICCR = (1 << i);
         aic.AIC_IDCR = (1 << i);
     }
-
+#ifdef INCLUDE_DISPLAY
+    AT91SAM9Rx64_Display_Disable(nullptr);
+#endif
     TinyCLR_UsbClient_Uninitialize(nullptr);
 
     ddrs->DDRSDRC_LPR |= (2 << 12) | 1;  // Delay 120 cycles before enter self refresh mode
@@ -257,6 +259,9 @@ void __section(".SectionForInternalRam.EnterLowPowerMode") AT91SAM9Rx64_Power_En
     }
 
     TinyCLR_UsbClient_Initialize(nullptr);
+#ifdef INCLUDE_DISPLAY
+    AT91SAM9Rx64_Display_Enable(nullptr);
+#endif
 }
 TinyCLR_Result AT91SAM9Rx64_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCLR_Power_Level level, TinyCLR_Power_WakeSource wakeSource, uint64_t data) {
     volatile uint32_t reg = 0;

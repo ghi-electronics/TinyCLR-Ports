@@ -80,6 +80,7 @@ TinyCLR_Result STM32F7_Power_SetLevel(const TinyCLR_Power_Controller* self, Tiny
     case TinyCLR_Power_Level::Sleep1: // Sleep
     case TinyCLR_Power_Level::Sleep2: // Sleep
     case TinyCLR_Power_Level::Sleep3: // Sleep
+        STM32F7_Display_Disable(nullptr);
         TinyCLR_UsbClient_Uninitialize(nullptr);
 
         SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
@@ -100,6 +101,7 @@ TinyCLR_Result STM32F7_Power_SetLevel(const TinyCLR_Power_Controller* self, Tiny
         SystemInit();
         SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
         TinyCLR_UsbClient_Initialize(nullptr);
+        STM32F7_Display_Enable(nullptr);
         break;
     case TinyCLR_Power_Level::Off: // Off - Non wakeup
         RCC->APB1ENR |= RCC_APB1ENR_PWREN;
