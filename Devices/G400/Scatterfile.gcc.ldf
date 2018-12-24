@@ -40,7 +40,7 @@ SECTIONS
     ER_RAM_RO 0x20500000 : ALIGN(0x8)
     {        
         *(VectorsTrampolines)
-        *(SectionForCodeReadOnlyRAM)       
+        *(SectionForCodeReadOnlyRAM)
         *(SectionForBootstrapInRam)
     }>ERAM AT>LR_FLASH
     
@@ -88,12 +88,17 @@ SECTIONS
     ER_STACK_BOTTOM 0x300030 :
     {
         * (SectionForStackBottom)
-    }
+    }>IRAM
     
-    ER_STACK_TOP 0x307FF0 :
+    ER_STACK_TOP 0x305FF0 :
     {
         * (SectionForStackTop +LAST)
-    }
+    }>IRAM
+    
+    ER_IRAM_RW 0x307000 :
+    {
+        *(.SectionForInternalRam.*)
+    }>IRAM AT>LR_FLASH
 
     Load$$SDRAM$$Base = ORIGIN(ERAM);
     Image$$SDRAM$$Length = LENGTH(ERAM);
@@ -107,6 +112,11 @@ Image$$ER_FLASH$$Length = SIZEOF(ER_FLASH);
 Image$$ER_RAM_RO$$Base = ADDR(ER_RAM_RO);
 Image$$ER_RAM_RO$$Length = SIZEOF(ER_RAM_RO);
 Load$$ER_RAM_RO$$Base = LOADADDR(ER_RAM_RO);
+
+Image$$ER_IRAM_RW$$Base = ADDR(ER_IRAM_RW);
+Image$$ER_IRAM_RW$$Length = SIZEOF(ER_IRAM_RW);
+Load$$ER_IRAM_RW$$Base = LOADADDR(ER_IRAM_RW);
+
 Image$$ER_RAM_RW$$Base = ADDR(ER_RAM_RW);
 Image$$ER_RAM_RW$$Length = SIZEOF(ER_RAM_RW);
 Load$$ER_RAM_RW$$Base = LOADADDR(ER_RAM_RW);

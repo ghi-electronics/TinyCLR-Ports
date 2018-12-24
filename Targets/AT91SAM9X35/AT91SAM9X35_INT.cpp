@@ -303,6 +303,8 @@ void AT91SAM9X35_Interrupt_WaitForInterrupt() {
     IRQ_LOCK_Probe_asm();
 }
 
+extern void AT91SAM9X35_Power_RestoreClock();
+
 extern "C" {
     void AT91SAM9X35_Interrupt_UndefHandler(unsigned int*, unsigned int, unsigned int) {
         volatile uint32_t debug = 0;
@@ -327,30 +329,39 @@ extern "C" {
         }
     }
 
-    void __attribute__((interrupt("IRQ"))) IRQ_Handler(void *param) {
-        // set before jumping elsewhere or allowing other interrupts
-        INTERRUPT_STARTED_SCOPED(isr);
+    void __attribute__((interrupt("IRQ"))) __attribute__((section(".SectionForInternalRam.Interrupt"))) IRQ_Handler(void *param) {
+        AT91SAM9X35_PMC &pmc = AT91::PMC();
 
-        uint32_t index;
-
-        AT91SAM9X35_AIC &aic = AT91::AIC();
-
-        while ((index = aic.AIC_IVR) < c_VECTORING_GUARD) {
-            // Read IVR register (de-assert NIRQ) & check if we a spurous IRQ
-            AT91SAM9X35_Interrupt_Vectors* IsrVector = &s_IsrTable[index];
-
-            // In case the interrupt was forced, remove the flag.
-            AT91SAM9X35_Interrupt_RemoveForcedInterrupt(index);
-
-
-            IsrVector->Handler.Execute();
+        if ((pmc.PMC_MCKR & 3) == 0) {
+            #define AIC_EOICR_REG              (*(volatile uint32_t *)(0xFFFFF130))
 
             // Mark end of Interrupt
+            AIC_EOICR_REG = 1;
+
+            AT91SAM9X35_Power_RestoreClock();
+        }
+        else  {
+            AT91SAM9X35_AIC &aic = AT91::AIC();
+            INTERRUPT_STARTED_SCOPED(isr);
+
+            uint32_t index;
+
+            while ((index = aic.AIC_IVR) < c_VECTORING_GUARD) {
+                // Read IVR register (de-assert NIRQ) & check if we a spurous IRQ
+                AT91SAM9X35_Interrupt_Vectors* IsrVector = &s_IsrTable[index];
+
+                // In case the interrupt was forced, remove the flag.
+                AT91SAM9X35_Interrupt_RemoveForcedInterrupt(index);
+
+
+                IsrVector->Handler.Execute();
+
+                // Mark end of Interrupt
+                aic.AIC_EOICR = 1;
+            }
+
+            // Mark end of Interrupt (Last IVR read)
             aic.AIC_EOICR = 1;
         }
-
-        // Mark end of Interrupt (Last IVR read)
-        aic.AIC_EOICR = 1;
-
     }
 }
