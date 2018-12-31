@@ -32,6 +32,7 @@ bool STM32F4_Uart_CanSend(int controllerIndex);
 void STM32F4_Uart_TxBufferEmptyInterruptEnable(int controllerIndex, bool enable);
 void STM32F4_Uart_RxBufferFullInterruptEnable(int controllerIndex, bool enable);
 void STM32F4_Uart_Reset();
+void STM32F4_Uart_EventCallback(const TinyCLR_Task_Manager* self, const TinyCLR_Api_Manager* apiManager, TinyCLR_Task_Reference task, void* arg);
 
 typedef USART_TypeDef* USART_TypeDef_Ptr;
 
@@ -60,11 +61,19 @@ struct UartState {
     TinyCLR_Uart_DataReceivedHandler dataReceivedEventHandler;
     TinyCLR_Uart_ClearToSendChangedHandler cleartosendEventHandler;
 
+    TinyCLR_Task_Reference errorCallbackTaskReference;
+    TinyCLR_Task_Reference dataReceivedCallbackTaskReference;
+
+    const TinyCLR_Task_Manager* taskManager;
+
     const TinyCLR_Uart_Controller* controller;
     bool tableInitialized;
     uint16_t initializeCount;
     uint64_t lastEventTime;
+    size_t lastReadRxBufferCount;
     size_t lastEventRxBufferCount;
+
+    uint8_t error;
 };
 
 #define UART_TXD_PIN 0
@@ -267,54 +276,43 @@ void STM32F4_Uart_InterruptHandler(int8_t controllerIndex) {
     auto state = reinterpret_cast<UartState*>(&uartStates[controllerIndex]);
     auto sr = (uint16_t)(state->portReg->SR);
     auto canPostEvent = STM32F4_Uart_CanPostEvent(controllerIndex);
-    bool error = (state->rxBufferCount == state->rxBufferSize) || (sr & USART_SR_ORE) || (sr & USART_SR_FE) || (sr & USART_SR_PE);
+    bool error = (sr & USART_SR_ORE) || (sr & USART_SR_FE) || (sr & USART_SR_PE);
 
     if (sr & USART_SR_RXNE || sr & USART_SR_ORE || sr & USART_SR_FE || sr & USART_SR_PE) {
         uint8_t data = (uint8_t)(state->portReg->DR); // read RX data
 
-        if (state->errorEventHandler != nullptr && canPostEvent) {
-            if (state->rxBufferCount == state->rxBufferSize) {
-                state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferFull, STM32F4_Time_GetSystemTime(nullptr));
-            }
-
-            if (sr & USART_SR_ORE) {
-                state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Overrun, STM32F4_Time_GetSystemTime(nullptr));
-            }
-
-            if (sr & USART_SR_FE) {
-                state->errorEventHandler(state->controller, TinyCLR_Uart_Error::Frame, STM32F4_Time_GetSystemTime(nullptr));
-            }
-
-            if (sr & USART_SR_PE) {
-                state->errorEventHandler(state->controller, TinyCLR_Uart_Error::ReceiveParity, STM32F4_Time_GetSystemTime(nullptr));
-            }
-        }
-
-        if (error)
-            return;
-
-        if (sr & USART_SR_RXNE) {
+        if (!error && (sr & USART_SR_RXNE)) {
             state->rxBuffer[state->rxBufferIn++] = data;
 
-            state->rxBufferCount++;
+            if (state->rxBufferCount < state->rxBufferSize)
+                state->rxBufferCount++;
 
             if (state->rxBufferIn == state->rxBufferSize)
                 state->rxBufferIn = 0;
 
-            if (state->dataReceivedEventHandler != nullptr) {
-                if (canPostEvent) {
-                    if (state->rxBufferCount > state->lastEventRxBufferCount) {
-                        // if driver hold event long enough that more than 1 byte
-                        state->dataReceivedEventHandler(state->controller, state->rxBufferCount - state->lastEventRxBufferCount, STM32F4_Time_GetSystemTime(nullptr));
-                    }
-                    else {
-                        // if user use poll to read data and rxBufferCount <= lastEventRxBufferCount, driver send at least 1 byte comming
-                        state->dataReceivedEventHandler(state->controller, 1, STM32F4_Time_GetSystemTime(nullptr));
-                    }
+            // Task callback will decide post the event immediately or delay
+            STM32F4_Uart_EventCallback(state->taskManager, apiManager, state->dataReceivedCallbackTaskReference, (void*)state);
+        }
+        else {
 
-                    state->lastEventRxBufferCount = state->rxBufferCount;
-                }
+            if (state->rxBufferCount == state->rxBufferSize) {
+                state->error = 1 << (uint8_t)TinyCLR_Uart_Error::BufferFull;
             }
+
+            if (sr & USART_SR_ORE) {
+                state->error = 1 << (uint8_t)TinyCLR_Uart_Error::Overrun;
+            }
+
+            if (sr & USART_SR_FE) {
+                state->error = 1 << (uint8_t)TinyCLR_Uart_Error::Frame;
+            }
+
+            if (sr & USART_SR_PE) {
+                state->error = 1 << (uint8_t)TinyCLR_Uart_Error::ReceiveParity;
+            }
+
+            // Task callback will decide post the event immediately or delay
+            STM32F4_Uart_EventCallback(state->taskManager, apiManager, state->errorCallbackTaskReference, (void*)state);
         }
     }
 
@@ -423,7 +421,9 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->handshaking = false;
         state->enable = false;
 
+        state->lastReadRxBufferCount = 0;
         state->lastEventRxBufferCount = 0;
+        state->error = 0;
         state->lastEventTime = STM32F4_Time_GetCurrentProcessorTime();
 
         state->txBuffer = nullptr;
@@ -813,6 +813,9 @@ TinyCLR_Result STM32F4_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* b
             state->rxBufferOut = 0;
     }
 
+    // Update last read
+    state->lastReadRxBufferCount = state->rxBufferCount;
+
     return TinyCLR_Result::Success;
 }
 
@@ -860,10 +863,81 @@ TinyCLR_Result STM32F4_Uart_Write(const TinyCLR_Uart_Controller* self, const uin
     return TinyCLR_Result::Success;
 }
 
+TinyCLR_Uart_Error STM32F4_Uart_GetError(uint32_t error) {
+    switch (error) {
+    case 1:
+        return TinyCLR_Uart_Error::Frame;
+
+    case 2:
+        return TinyCLR_Uart_Error::Overrun;
+
+    case 8:
+        return TinyCLR_Uart_Error::ReceiveParity;
+
+    default:
+        return TinyCLR_Uart_Error::BufferFull;
+    }
+}
+
+void STM32F4_Uart_EventCallback(const TinyCLR_Task_Manager* self, const TinyCLR_Api_Manager* apiManager, TinyCLR_Task_Reference task, void* arg) {
+    auto state = reinterpret_cast<UartState*>(arg);
+
+    auto canPostEvent = STM32F4_Uart_CanPostEvent(state->controllerIndex);
+
+    if (task == state->dataReceivedCallbackTaskReference) {
+        if (state->rxBufferCount > 0 && state->dataReceivedEventHandler != nullptr) {
+            // First byte or canPost, post immediately asap
+            if ((state->rxBufferCount == 1 && state->lastReadRxBufferCount == 0) || canPostEvent) {
+                state->dataReceivedEventHandler(state->controller, state->rxBufferCount - state->lastReadRxBufferCount, STM32F4_Time_GetSystemTime(nullptr));
+
+                // Event posted, no need to schedule callback.
+                // Update last event count to detect any change for next event.
+                state->lastEventRxBufferCount = state->rxBufferCount;
+            }
+            else {
+                // Couldn't post event on time, scheduel callback to do later.
+                if (state->rxBufferCount != state->lastEventRxBufferCount) {
+                    state->taskManager->Enqueue(state->taskManager, task, STM32F4_Time_GetProcessorTicksForTime(nullptr, USART_EVENT_POST_DEBOUNCE_TICKS));
+                }
+            }
+        }
+    }
+    else if (task == state->errorCallbackTaskReference) {
+        if (state->error > 0 && state->errorEventHandler != nullptr) {
+            //If new error detected or called by callback and can post event, post the event.
+            if (canPostEvent) {
+                auto error = STM32F4_Uart_GetError(state->error);
+                state->errorEventHandler(state->controller, error, STM32F4_Time_GetSystemTime(nullptr));
+
+                // Clear error, no post more than twice if no error change
+                state->error = 0;
+            }
+            else {
+                // Couldn't post event on time, scheduel callback to do later.
+                state->taskManager->Enqueue(state->taskManager, task, STM32F4_Time_GetProcessorTicksForTime(nullptr, USART_EVENT_POST_DEBOUNCE_TICKS));
+            }
+        }
+    }
+}
+
 TinyCLR_Result STM32F4_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ErrorReceivedHandler handler) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    state->errorEventHandler = handler;
+    if (handler != nullptr) {
+        state->errorEventHandler = handler;
+        state->taskManager = (const TinyCLR_Task_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::TaskManager);
+        state->taskManager->Create(state->taskManager, STM32F4_Uart_EventCallback, (void*)state, false, state->errorCallbackTaskReference);
+        state->taskManager->Enqueue(state->taskManager, state->errorCallbackTaskReference, STM32F4_Time_GetProcessorTicksForTime(nullptr, USART_EVENT_POST_DEBOUNCE_TICKS));
+    }
+    else {
+        if (state->errorEventHandler != nullptr && state->taskManager != nullptr && state->errorCallbackTaskReference) {
+            state->taskManager->Free(state->taskManager, state->errorCallbackTaskReference);
+
+            state->errorEventHandler = nullptr;
+            state->errorCallbackTaskReference = nullptr;
+        }
+
+    }
 
     return TinyCLR_Result::Success;
 }
@@ -871,7 +945,22 @@ TinyCLR_Result STM32F4_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Controlle
 TinyCLR_Result STM32F4_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_DataReceivedHandler handler) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    state->dataReceivedEventHandler = handler;
+    if (handler != nullptr) {
+        state->dataReceivedEventHandler = handler;
+        state->taskManager = (const TinyCLR_Task_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::TaskManager);
+        state->taskManager->Create(state->taskManager, STM32F4_Uart_EventCallback, (void*)state, false, state->dataReceivedCallbackTaskReference);
+        state->taskManager->Enqueue(state->taskManager, state->dataReceivedCallbackTaskReference, STM32F4_Time_GetProcessorTicksForTime(nullptr, USART_EVENT_POST_DEBOUNCE_TICKS));
+    }
+
+    else {
+        if (state->dataReceivedEventHandler != nullptr && state->taskManager != nullptr && state->dataReceivedCallbackTaskReference != nullptr) {
+            state->taskManager->Free(state->taskManager, state->dataReceivedCallbackTaskReference);
+
+            state->dataReceivedEventHandler = nullptr;
+            state->dataReceivedCallbackTaskReference = nullptr;
+        }
+
+    }
 
     return TinyCLR_Result::Success;
 }
@@ -939,7 +1028,7 @@ size_t STM32F4_Uart_GetBytesToWrite(const TinyCLR_Uart_Controller* self) {
 TinyCLR_Result STM32F4_Uart_ClearReadBuffer(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    state->rxBufferCount = state->rxBufferIn = state->rxBufferOut = state->lastEventRxBufferCount = 0;
+    state->rxBufferCount = state->rxBufferIn = state->rxBufferOut = state->lastReadRxBufferCount = state->lastEventRxBufferCount = 0;
 
     return TinyCLR_Result::Success;
 }
