@@ -44,15 +44,18 @@ struct Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCLR_Device
     static TinyCLR_Result Write___I4__SZARRAY_U1__I4__I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result ClearWriteBuffer___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result ClearReadBuffer___VOID(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result SetClearToSendChangedEventEnabled___VOID__BOOLEAN(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result SetDataReceivedEventEnabled___VOID__BOOLEAN(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result SetErrorReceivedEventEnabled___VOID__BOOLEAN(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Acquire___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Release___VOID(const TinyCLR_Interop_MethodData md);
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCLR_Devices_Uart_UartController {
     static const size_t FIELD___Provider__BackingField___GHIElectronicsTinyCLRDevicesUartProviderIUartControllerProvider = 1;
-    static const size_t FIELD___ClearToSendChanged___GHIElectronicsTinyCLRDevicesUartClearToSendChangedEventHandler = 2;
-    static const size_t FIELD___DataReceived___GHIElectronicsTinyCLRDevicesUartDataReceivedEventHandler = 3;
-    static const size_t FIELD___ErrorReceived___GHIElectronicsTinyCLRDevicesUartErrorReceivedEventHandler = 4;
+    static const size_t FIELD___clearToSendChangedEvents___GHIElectronicsTinyCLRDevicesUartClearToSendChangedEventHandler = 2;
+    static const size_t FIELD___dataReceivedEvents___GHIElectronicsTinyCLRDevicesUartDataReceivedEventHandler = 3;
+    static const size_t FIELD___errorReceivedEvents___GHIElectronicsTinyCLRDevicesUartErrorReceivedEventHandler = 4;
 };
 
 extern const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices_Uart;
