@@ -1315,7 +1315,7 @@ void CopyMessageFromMailBoxToBuffer(uint8_t controllerIndex, uint32_t dwMsr) {
     else if (state->can_rx_count >= state->can_rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
         state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, t);
     }
-    
+
     if (!state->enable) return; // Not copy to internal buffer if enable if off
 
     // initialize destination pointer
@@ -1332,9 +1332,14 @@ void CopyMessageFromMailBoxToBuffer(uint8_t controllerIndex, uint32_t dwMsr) {
 
     can_msg->msgId = msgid; // ID
 
-    can_msg->dataA = state->can_rx.msgData[0]; // Data A
-
-    can_msg->dataB = state->can_rx.msgData[1]; // Data B
+    if (can_msg->remoteTransmissionRequest) {
+        can_msg->dataA = 0x00000000;
+        can_msg->dataB = 0x00000000;
+    }
+    else {
+        can_msg->dataA = state->can_rx.msgData[0]; // Data A
+        can_msg->dataB = state->can_rx.msgData[1]; // Data B
+    }
 
     state->can_rx_count++;
     state->can_rx_in++;
@@ -1344,9 +1349,9 @@ void CopyMessageFromMailBoxToBuffer(uint8_t controllerIndex, uint32_t dwMsr) {
     }
 
     // If we raise count here, because interrupt faster than raising an event, example there are only 2 messages comming,
-	// the first event will raise 1 message, the second will raise 2 messages in buffer if the first msg isn't read yet.
-	// This cause misunderstanding to user that there are 3 msg totally.
-	state->messageReceivedEventHandler(state->controller, 1, t);
+    // the first event will raise 1 message, the second will raise 2 messages in buffer if the first msg isn't read yet.
+    // This cause misunderstanding to user that there are 3 msg totally.
+    state->messageReceivedEventHandler(state->controller, 1, t);
 }
 
 void CAN_ProccessMailbox(uint8_t controllerIndex) {
