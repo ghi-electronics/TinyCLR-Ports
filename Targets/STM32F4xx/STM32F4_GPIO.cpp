@@ -284,10 +284,9 @@ bool STM32F4_GpioInternal_OpenMultiPins(const STM32F4_Gpio_Pin* pins, size_t cou
         if (!STM32F4_GpioInternal_OpenPin(pins[i].number)) {
             for (auto ii = 0; ii < i; ii++) {
                 STM32F4_GpioInternal_ClosePin(pins[ii].number);
-
-                return false;
-
             }
+
+            return false;
         }
     }
 
