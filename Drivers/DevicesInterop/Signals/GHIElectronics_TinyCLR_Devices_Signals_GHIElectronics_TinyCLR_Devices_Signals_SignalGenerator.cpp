@@ -56,7 +56,11 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
             goto release_and_return;
         }
 
-        if (!((next == idleState) && (generateCarrierFrequency && carrierFrequency))) {
+        next = next == TinyCLR_Gpio_PinValue::High ? TinyCLR_Gpio_PinValue::Low : TinyCLR_Gpio_PinValue::High;
+
+        gpio->Write(gpio, pin, next);
+
+        if (!((next != idleState) && (generateCarrierFrequency && carrierFrequency))) {
             time->Wait(time, time->ConvertSystemTimeToNativeTime(time, delayTicks));
         }
         else {
@@ -68,9 +72,6 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Signals_GHIElectronics_Tin
             }
         }
 
-        next = next == TinyCLR_Gpio_PinValue::High ? TinyCLR_Gpio_PinValue::Low : TinyCLR_Gpio_PinValue::High;
-
-        gpio->Write(gpio, pin, next);
     }
 
 release_and_return:
