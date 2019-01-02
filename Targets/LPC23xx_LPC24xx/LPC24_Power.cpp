@@ -15,12 +15,18 @@
 
 #include "LPC24.h"
 
-#define PCON (*(volatile unsigned char *)0xE01FC0C0)
+#define PCON_REG                (*(volatile unsigned char *)0xE01FC0C0)
+#define EXT_INTERRUPT_REG       (*(volatile uint32_t*)0xE01FC140)
+#define EMC_DYNAMIC_CTRL_REG    (*(volatile uint32_t*)0xFFE08020)
+#define EMC_STATUS_REG          (*(volatile uint32_t*)0xFFE08004)
+#define EMC_SELF_REFRESH_MODE   4
+#define INTERRUPT_WAKEUP_REG    (*(volatile uint32_t*)0xE01FC144)
+#define GPIO_INTERRUPT          ( 1 << 7 | 1 << 8)
+
+#define TOTAL_POWER_CONTROLLERS 1
 
 static void(*PowerStopHandler)();
 static void(*PowerRestartHandler)();
-
-#define TOTAL_POWER_CONTROLLERS 1
 
 struct PowerState {
     uint32_t controllerIndex;
@@ -79,25 +85,66 @@ void LPC24_Power_SetHandlers(void(*stop)(), void(*restart)()) {
     PowerRestartHandler = restart;
 }
 
+bool LPC24_Emc_IsSelfRefreshMode() {
+    return (EMC_STATUS_REG & EMC_SELF_REFRESH_MODE) == EMC_SELF_REFRESH_MODE;
+}
+
+void LPC24_Emc_ClearSelfRefreshMode() {
+    EMC_DYNAMIC_CTRL_REG &= ~EMC_SELF_REFRESH_MODE;
+}
+
+void LPC24_Emc_EnterSelfRefreshMode() {
+    EMC_DYNAMIC_CTRL_REG |= EMC_SELF_REFRESH_MODE;
+}
+
+extern "C" void SystemInit();
 TinyCLR_Result LPC24_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCLR_Power_Level level, TinyCLR_Power_WakeSource wakeSource, uint64_t data) {
     switch (level) {
     case TinyCLR_Power_Level::Sleep1: // Sleep
     case TinyCLR_Power_Level::Sleep2: // Sleep
     case TinyCLR_Power_Level::Sleep3: // Sleep
     case TinyCLR_Power_Level::Off:    // Off
+
+        INTERRUPT_WAKEUP_REG = (uint32_t)(GPIO_INTERRUPT);
+
+        TinyCLR_UsbClient_Uninitialize(nullptr);
+
+        EXT_INTERRUPT_REG = EXT_INTERRUPT_REG; // clear pending interrupt
+
+        // SDRAM enable self mode
+        LPC24_Emc_EnterSelfRefreshMode();
+        while (!LPC24_Emc_IsSelfRefreshMode());
+
+        if (level == TinyCLR_Power_Level::Off)
+            PCON_REG |= 6; // off
+        else
+            PCON_REG |= 2; // Power-down mode
+
+        SystemInit();
+
+        // Clear EINT flags
+        EXT_INTERRUPT_REG = EXT_INTERRUPT_REG;
+        INTERRUPT_WAKEUP_REG = 0;
+
+        TinyCLR_UsbClient_Initialize(nullptr);
+        break;
+
     case TinyCLR_Power_Level::Custom: // Custom
         //TODO
         return TinyCLR_Result::NotSupported;
 
-    case TinyCLR_Power_Level::Active: // Active
     case TinyCLR_Power_Level::Idle:   // Idle
-        // TODO
-
-    default:
-        PCON |= 1;
+        PCON_REG |= 1;
 
         return TinyCLR_Result::Success;
+
+    case TinyCLR_Power_Level::Active: // Active
+    default:
+        // Highest performance
+        return TinyCLR_Result::Success;
     }
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result LPC24_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {

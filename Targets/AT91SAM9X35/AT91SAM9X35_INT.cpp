@@ -303,6 +303,8 @@ void AT91SAM9X35_Interrupt_WaitForInterrupt() {
     IRQ_LOCK_Probe_asm();
 }
 
+extern void AT91SAM9X35_Power_RestoreClock();
+
 extern "C" {
     void AT91SAM9X35_Interrupt_UndefHandler(unsigned int*, unsigned int, unsigned int) {
         volatile uint32_t debug = 0;
@@ -327,13 +329,17 @@ extern "C" {
         }
     }
 
-    void __attribute__((interrupt("IRQ"))) IRQ_Handler(void *param) {
-        // set before jumping elsewhere or allowing other interrupts
+    void __attribute__((interrupt("IRQ"))) __attribute__((section(".SectionForInternalRam.Interrupt"))) IRQ_Handler(void *param) {
+        AT91SAM9X35_PMC &pmc = AT91::PMC();
+
+        if ((pmc.PMC_MCKR & 3) == 0) {
+            AT91SAM9X35_Power_RestoreClock();
+        }
+
         INTERRUPT_STARTED_SCOPED(isr);
 
-        uint32_t index;
-
         AT91SAM9X35_AIC &aic = AT91::AIC();
+        uint32_t index;
 
         while ((index = aic.AIC_IVR) < c_VECTORING_GUARD) {
             // Read IVR register (de-assert NIRQ) & check if we a spurous IRQ

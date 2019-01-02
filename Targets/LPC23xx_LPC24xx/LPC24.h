@@ -238,6 +238,10 @@ uint32_t LPC24_Dac_GetResolutionInBits(const TinyCLR_Dac_Controller* self);
 int32_t LPC24_Dac_GetMinValue(const TinyCLR_Dac_Controller* self);
 int32_t LPC24_Dac_GetMaxValue(const TinyCLR_Dac_Controller* self);
 
+//Emc
+bool LPC24_Emc_IsSelfRefreshMode();
+void LPC24_Emc_ClearSelfRefreshMode();
+
 // PWM
 struct PwmState {
     int32_t                     controllerIndex;
@@ -494,6 +498,8 @@ USB_PACKET64* TinyCLR_UsbClient_RxEnqueue(UsbClientState* usbClientState, int32_
 USB_PACKET64* TinyCLR_UsbClient_TxDequeue(UsbClientState* usbClientState, int32_t endpoint);
 void TinyCLR_UsbClient_StateCallback(UsbClientState* usbClientState);
 uint8_t TinyCLR_UsbClient_ControlCallback(UsbClientState* usbClientState);
+bool TinyCLR_UsbClient_Initialize(UsbClientState* usbClientState);
+bool TinyCLR_UsbClient_Uninitialize(UsbClientState* usbClientState);
 
 // LCD
 void LPC24_Display_Reset();

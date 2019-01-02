@@ -17,6 +17,11 @@
 #include "STM32F4.h"
 
 #define TOTAL_POWER_CONTROLLERS 1
+/* CR register bit mask */
+#define CR_DS_MASK               ((uint32_t)0xFFFFFFFC)
+#define CR_PLS_MASK              ((uint32_t)0xFFFFFF1F)
+
+extern "C" void SystemInit();
 
 struct PowerState {
     uint32_t controllerIndex;
@@ -71,25 +76,67 @@ void STM32F4_Power_AddApi(const TinyCLR_Api_Manager* apiManager) {
 }
 
 TinyCLR_Result STM32F4_Power_SetLevel(const TinyCLR_Power_Controller* self, TinyCLR_Power_Level level, TinyCLR_Power_WakeSource wakeSource, uint64_t data) {
+    volatile uint32_t tmpreg = 0;
+
     switch (level) {
     case TinyCLR_Power_Level::Sleep1: // Sleep
     case TinyCLR_Power_Level::Sleep2: // Sleep
     case TinyCLR_Power_Level::Sleep3: // Sleep
-    case TinyCLR_Power_Level::Off:    // Off
-    case TinyCLR_Power_Level::Custom: // Custom
+#ifdef INCLUDE_DISPLAY
+        STM32F4_Display_Disable(nullptr);
+#endif
+        TinyCLR_UsbClient_Uninitialize(nullptr);
+
+        SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
+        RCC->APB1ENR |= RCC_APB1ENR_PWREN;
+
+        tmpreg = PWR->CR;
+        tmpreg &= CR_DS_MASK;
+        tmpreg |= PWR_CR_LPDS;
+
+        PWR->CR = tmpreg;
+
+        SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+
+        __WFI();
+
+        SCB->SCR &= (uint32_t)~((uint32_t)SCB_SCR_SLEEPDEEP_Msk);
+
+        SystemInit();
+        SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
+        TinyCLR_UsbClient_Initialize(nullptr);
+#ifdef INCLUDE_DISPLAY
+        STM32F4_Display_Enable(nullptr);
+#endif
+        break;
+
+    case TinyCLR_Power_Level::Off:// Off
+
+        PWR->CR |= PWR_CR_CWUF;
+        PWR->CR |= PWR_CR_PDDS;
+
+        SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+
+        __WFI();
+
+        break;
+
+    case TinyCLR_Power_Level::Idle:   // Idle
+        PWR->CR |= PWR_CR_CWUF;
+
+        __WFI();
+        return TinyCLR_Result::Success;
+
+    case TinyCLR_Power_Level::Custom: // Custom - NotSupported
         //TODO
         return TinyCLR_Result::NotSupported;
 
-    case TinyCLR_Power_Level::Active: // Active
-    case TinyCLR_Power_Level::Idle:   // Idle
-        // TODO
-
+    case TinyCLR_Power_Level::Active: // Active - Highest performance
     default:
-        PWR->CR |= PWR_CR_CWUF;
-
-        __WFI(); // sleep and wait for interrupt
         return TinyCLR_Result::Success;
     }
+
+    return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result STM32F4_Power_Reset(const TinyCLR_Power_Controller* self, bool runCoreAfter) {
