@@ -1669,11 +1669,11 @@ TinyCLR_Result AT91SAM9X35_Can_ReadMessage(const TinyCLR_Can_Controller* self, T
 }
 
 TinyCLR_Result AT91SAM9X35_Can_SetBitTiming(const TinyCLR_Can_Controller* self, const TinyCLR_Can_BitTiming* timing) {
-    uint32_t propagation = timing->Propagation;
-    uint32_t phase1 = timing->Phase1;
-    uint32_t phase2 = timing->Phase2;
-    uint32_t baudratePrescaler = timing->BaudratePrescaler;
-    uint32_t synchronizationJumpWidth = timing->SynchronizationJumpWidth;
+    uint32_t propagation = (timing->Propagation - 1) & 0x7;
+    uint32_t phase1 = (timing->Phase1 - 1) & 0x7;
+    uint32_t phase2 = (timing->Phase2 - 1) & 0x7;
+    uint32_t baudratePrescaler = (timing->BaudratePrescaler - 1) & 0x7F;
+    uint32_t synchronizationJumpWidth = (timing->SynchronizationJumpWidth - 1) & 0x03;
     bool useMultiBitSampling = timing->UseMultiBitSampling;
 
     uint32_t sourceClk;

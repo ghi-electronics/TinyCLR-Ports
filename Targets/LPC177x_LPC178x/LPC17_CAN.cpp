@@ -2623,16 +2623,15 @@ TinyCLR_Result LPC17_Can_ReadMessage(const TinyCLR_Can_Controller* self, TinyCLR
 }
 
 TinyCLR_Result LPC17_Can_SetBitTiming(const TinyCLR_Can_Controller* self, const TinyCLR_Can_BitTiming* timing) {
-    uint32_t propagation = timing->Propagation;
-    uint32_t phase1 = timing->Phase1;
-    uint32_t phase2 = timing->Phase2;
-    uint32_t baudratePrescaler = timing->BaudratePrescaler;
-    uint32_t synchronizationJumpWidth = timing->SynchronizationJumpWidth;
-    bool useMultiBitSampling = timing->UseMultiBitSampling;
+    uint32_t phase1 = (timing->Phase1 + timing->Propagation - 1) & 0x0F;
+    uint32_t phase2 = (timing->Phase2 - 1) & 0x07;
+    uint32_t baudratePrescaler = (timing->BaudratePrescaler - 1) & 0x03FF;
+    uint32_t synchronizationJumpWidth = (timing->SynchronizationJumpWidth - 1) & 0x03;
+    uint32_t useMultiBitSampling = timing->UseMultiBitSampling ? 1 : 0;
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    state->baudrate = ((phase2 - 1) << 20) | ((phase1 - 1) << 16) | ((baudratePrescaler - 1) << 0);
+    state->baudrate = (useMultiBitSampling << 23) | (phase2 << 20) | (phase1 << 16) | (synchronizationJumpWidth << 14) | (baudratePrescaler << 0);
 
     return TinyCLR_Result::Success;
 }
