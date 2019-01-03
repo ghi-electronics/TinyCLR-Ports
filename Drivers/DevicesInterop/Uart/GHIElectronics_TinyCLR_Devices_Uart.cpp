@@ -73,6 +73,9 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
     nullptr,
     Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::Acquire___VOID,
     Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::Release___VOID,
+    Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::SetClearToSendChangedEventEnabled___VOID__BOOLEAN,
+    Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::SetDataReceivedEventEnabled___VOID__BOOLEAN,
+    Interop_GHIElectronics_TinyCLR_Devices_Uart_GHIElectronics_TinyCLR_Devices_Uart_Provider_UartControllerApiWrapper::SetErrorReceivedEventEnabled___VOID__BOOLEAN,
     nullptr,
     nullptr,
     nullptr,
@@ -114,6 +117,6 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
 
 const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices_Uart = {
     "GHIElectronics.TinyCLR.Devices.Uart",
-    0x8A8E94F6,
+    0x3E687729,
     methods
 };
