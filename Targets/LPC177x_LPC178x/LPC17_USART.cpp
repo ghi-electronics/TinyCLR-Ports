@@ -471,7 +471,7 @@ void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
     LPC17xx_USART& USARTC = LPC17xx_USART::UART(controllerIndex);
 
     auto state = &uartStates[controllerIndex];
-    bool error = (LSR_Value & (LPC17xx_USART::UART_LSR_PEI | LPC17xx_USART::UART_LSR_OEI | LPC17xx_USART::UART_LSR_FEI));
+    bool error = (LSR_Value & (LPC17xx_USART::UART_LSR_PEI | LPC17xx_USART::UART_LSR_OEI | LPC17xx_USART::UART_LSR_FEI)) != 0;
 
     // Read data from Rx FIFO
     if ((USARTC.SEL2.IER.UART_IER & (LPC17xx_USART::UART_IER_RDAIE)) || error) {
