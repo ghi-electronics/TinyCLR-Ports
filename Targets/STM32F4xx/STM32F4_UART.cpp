@@ -835,8 +835,6 @@ TinyCLR_Result STM32F4_Uart_Write(const TinyCLR_Uart_Controller* self, const uin
 
     int32_t i = 0;
 
-    DISABLE_INTERRUPTS_SCOPED(irq);
-
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
     int32_t controllerIndex = state->controllerIndex;
@@ -866,6 +864,12 @@ TinyCLR_Result STM32F4_Uart_Write(const TinyCLR_Uart_Controller* self, const uin
 
         if (state->txBufferIn == state->txBufferSize)
             state->txBufferIn = 0;
+    }
+
+    {
+        DISABLE_INTERRUPTS_SCOPED(irq);
+
+        state->txBufferCount += length;
     }
 
     if (length > 0) {
