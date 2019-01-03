@@ -278,7 +278,7 @@ void STM32F4_Uart_InterruptHandler(int8_t controllerIndex) {
 
     auto state = reinterpret_cast<UartState*>(&uartStates[controllerIndex]);
     auto sr = (uint16_t)(state->portReg->SR);
-    bool error = ((sr & USART_SR_ORE) || (sr & USART_SR_FE) || (sr & USART_SR_PE)) != 0 ? true : false;
+    bool error = ((sr & USART_SR_ORE) || (sr & USART_SR_FE) || (sr & USART_SR_PE)) != 0;
 
     if (error || (sr & USART_SR_RXNE)) {
         // Still read latest data
