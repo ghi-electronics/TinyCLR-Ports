@@ -15,14 +15,14 @@
 
 #include "AT91SAM9X35.h"
 
-#define TIMER_IDLE_VALUE  0x0000FFFFFFFFFFFFFull
+#define TIMER_IDLE_VALUE  0x0000FFFFFFFFFFFFull
 
 #define AT91SAM9X35_SLEEP_USEC_FIXED_OVERHEAD_CLOCKS 4
 
 #define SLOW_CLOCKS_PER_SECOND              (AT91SAM9X35_SYSTEM_PERIPHERAL_CLOCK_HZ / 32)
-#define CLOCK_COMMON_FACTOR                 10
-#define SLOW_CLOCKS_TEN_MHZ_GCD             10
-#define SLOW_CLOCKS_MILLISECOND_GCD         10
+#define CLOCK_COMMON_FACTOR                 2
+#define SLOW_CLOCKS_TEN_MHZ_GCD             2
+#define SLOW_CLOCKS_MILLISECOND_GCD         2
 
 //////////////////////////////////////////////////////////////////////////////
 // TIMER state
@@ -308,7 +308,7 @@ uint64_t AT91SAM9X35_Time_MillisecondsToTicks(const TinyCLR_NativeTime_Controlle
 
 uint64_t AT91SAM9X35_Time_MicrosecondsToTicks(const TinyCLR_NativeTime_Controller* self, uint64_t microseconds) {
 #if 1000000 <= SLOW_CLOCKS_PER_SECOND
-    return microseconds * (SLOW_CLOCKS_PER_SECOND / 1000000);
+    return (microseconds * SLOW_CLOCKS_PER_SECOND) / 1000000;
 #else
     return microseconds / (1000000 / SLOW_CLOCKS_PER_SECOND);
 #endif

@@ -137,6 +137,10 @@
 #define LPC17_USB_ENDPOINT0_SIZE 64
 #define LPC17_USB_ENDPOINT_COUNT 16
 #define LPC17_USB_PIPE_COUNT 16
+ 
+#define LPC17_USBHOST_PINS {/*          DP                      DM                 \
+                          /*USBH0*/{ { PIN(0, 29), PF(1) }, { PIN(0, 30), PF(1) } }\
+                         }
 
 #define INCLUDE_DISPLAY
 #define LPC17_DISPLAY_CONTROLLER_RED_PINS   { { PIN(2, 9), PF(7)  }, { PIN(2, 6), PF(7)  }, { PIN(2, 7), PF(7)  }, { PIN(2, 8), PF(7)  }, { PIN(2, 12), PF(5) } }

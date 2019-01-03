@@ -489,7 +489,7 @@ uint8_t CAN_Initialize(CAN_TypeDef* CANx, STM32F7_Can_InitTypeDef* CAN_InitStruc
             ((uint32_t)CAN_InitStruct->CAN_SJW << 24) | \
             ((uint32_t)CAN_InitStruct->CAN_BS1 << 16) | \
             ((uint32_t)CAN_InitStruct->CAN_BS2 << 20) | \
-            ((uint32_t)CAN_InitStruct->CAN_Prescaler - 1);
+            ((uint32_t)CAN_InitStruct->CAN_Prescaler);
 
         /* Request leave initialisation */
         CANx->MCR &= ~(uint32_t)CAN_MCR_INRQ;
@@ -1225,9 +1225,14 @@ void STM32F7_Can_RxInterruptHandler(int32_t controllerIndex) {
 
     can_msg->remoteTransmissionRequest = rtrmode;
 
-    can_msg->DataA = rxMessage.Data[0] | (rxMessage.Data[1] << 8) | (rxMessage.Data[2] << 16) | (rxMessage.Data[3] << 24);
-
-    can_msg->DataB = rxMessage.Data[4] | (rxMessage.Data[5] << 8) | (rxMessage.Data[6] << 16) | (rxMessage.Data[7] << 24);
+    if (rtrmode) {
+        can_msg->DataA = 0x00000000;
+        can_msg->DataB = 0x00000000;
+    }
+    else {
+        can_msg->DataA = rxMessage.Data[0] | (rxMessage.Data[1] << 8) | (rxMessage.Data[2] << 16) | (rxMessage.Data[3] << 24);
+        can_msg->DataB = rxMessage.Data[4] | (rxMessage.Data[5] << 8) | (rxMessage.Data[6] << 16) | (rxMessage.Data[7] << 24);
+    }
 
     can_msg->length = len;
 
@@ -1434,14 +1439,14 @@ TinyCLR_Result STM32F7_Can_ReadMessage(const TinyCLR_Can_Controller* self, TinyC
 }
 
 TinyCLR_Result STM32F7_Can_SetBitTiming(const TinyCLR_Can_Controller* self, const TinyCLR_Can_BitTiming* timing) {
-    uint32_t phase1 = timing->Phase1;
-    uint32_t phase2 = timing->Phase2;
-    uint32_t baudratePrescaler = timing->BaudratePrescaler;
-    uint32_t synchronizationJumpWidth = timing->SynchronizationJumpWidth;
+    uint32_t phase1 = (timing->Phase1 + timing->Propagation - 1) & 0x0F;
+    uint32_t phase2 = (timing->Phase2 - 1) & 0x07;
+    uint32_t baudratePrescaler = (timing->BaudratePrescaler - 1) & 0x03FF;
+    uint32_t synchronizationJumpWidth = (timing->SynchronizationJumpWidth - 1) & 0x03;
 
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    state->baudrate = (((synchronizationJumpWidth - 1) << 24) | ((phase2 - 1) << 20) | ((phase1 - 1) << 16) | baudratePrescaler);
+    state->baudrate = (synchronizationJumpWidth << 24) | (phase2 << 20) | (phase1 << 16) | baudratePrescaler;
 
     return TinyCLR_Result::Success;
 }

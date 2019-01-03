@@ -327,11 +327,16 @@ extern "C" {
 
     void __attribute__((interrupt("IRQ"))) IRQ_Handler(void *param) {
         // set before jumping elsewhere or allowing other interrupts
-        INTERRUPT_STARTED_SCOPED(isr);
+        LPC24XX_VIC& VIC = LPC24XX::VIC();
 
         uint32_t index;
 
-        LPC24XX_VIC& VIC = LPC24XX::VIC();
+        if (LPC24_Emc_IsSelfRefreshMode()) {
+            LPC24_Emc_ClearSelfRefreshMode();
+            while (LPC24_Emc_IsSelfRefreshMode());
+        }
+
+        INTERRUPT_STARTED_SCOPED(isr);
 
         index = VIC.ADDRESS;
 

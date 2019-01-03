@@ -286,8 +286,12 @@ void STM32F4_UsbDevice_InitializeConfiguration(UsbClientState *usbClientState) {
 
 bool STM32F4_UsbDevice_Initialize(UsbClientState* usbClientState) {
 
-    if (usbClientState == nullptr)
-        return false;
+    if (usbClientState == nullptr) {
+        if (usbDeviceControllers[0].usbClientState != nullptr)
+            usbClientState = usbDeviceControllers[0].usbClientState;
+        else
+            return false;
+    }
 
     auto controllerIndex = usbClientState->controllerIndex;
 
@@ -344,6 +348,13 @@ bool STM32F4_UsbDevice_Initialize(UsbClientState* usbClientState) {
 }
 
 bool STM32F4_UsbDevice_Uninitialize(UsbClientState* usbClientState) {
+    if (usbClientState == nullptr) {
+        if (usbDeviceControllers[0].usbClientState != nullptr)
+            usbClientState = usbDeviceControllers[0].usbClientState;
+        else
+            return false;
+    }
+    
     STM32F4_InterruptInternal_Deactivate(OTG_FS_WKUP_IRQn);
     STM32F4_InterruptInternal_Deactivate(OTG_FS_IRQn);
 

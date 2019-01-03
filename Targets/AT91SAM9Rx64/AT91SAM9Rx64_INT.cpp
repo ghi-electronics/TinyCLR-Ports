@@ -303,6 +303,8 @@ void AT91SAM9Rx64_Interrupt_WaitForInterrupt() {
     IRQ_LOCK_Probe_asm();
 }
 
+extern void AT91SAM9Rx64_Power_RestoreClock();
+
 extern "C" {
     void AT91SAM9Rx64_Interrupt_UndefHandler(unsigned int*, unsigned int, unsigned int) {
         volatile uint32_t debug = 0;
@@ -327,7 +329,13 @@ extern "C" {
         }
     }
 
-    void __attribute__((interrupt("IRQ"))) IRQ_Handler(void *param) {
+    void __attribute__((interrupt("IRQ"))) __attribute__((section(".SectionForInternalRam.Interrupt"))) IRQ_Handler(void *param) {
+        AT91SAM9Rx64_PMC &pmc = AT91::PMC();
+
+        if ((pmc.PMC_MCKR & 3) == 0) {
+            AT91SAM9Rx64_Power_RestoreClock();
+        }
+
         // set before jumping elsewhere or allowing other interrupts
         INTERRUPT_STARTED_SCOPED(isr);
 

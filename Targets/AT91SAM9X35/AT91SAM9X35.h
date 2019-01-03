@@ -120,8 +120,9 @@
 #define AT91C_BASE_ITCM             0x00100000 // (ITCM) Base Address
 #define AT91C_BASE_DTCM             0x00200000 // (DTCM) Base Address
 #define AT91C_BASE_LCDC             0xF8038000 // Hydra original address 0x00500000 // (LCDC) Base Address
-#define AT91C_BASE_UDP_DMA            0x00500000 // Hydra original address 0x00600000 // (UDP DMA) Base Address
-#define AT91C_BASE_EMAC                0xF802C000
+#define AT91C_BASE_UDP_DMA          0x00500000 // Hydra original address 0x00600000 // (UDP DMA) Base Address
+#define AT91C_BASE_UHP_OHCI         0x00600000 // USB OHCI
+#define AT91C_BASE_EMAC             0xF802C000
 
 // RTSC bit defines
 #define AT91C_RTSC__PROCRST     0x01         // processor reset bit
@@ -139,6 +140,23 @@
 #define AT91C_SHDWC__SHDW           0x01         // processor reset bit
 
 extern const TinyCLR_Api_Manager* apiManager;
+
+struct AT91_DDRS {
+    static const uint32_t c_Base = AT91C_BASE_DDRS;
+    volatile uint32_t DDRSDRC_MR;   // 0xFFFFE800 DDRSDRC Mode Register
+    volatile uint32_t DDRSDRC_RTR;  // 0xFFFFE804 DDRSDRC Refresh Timer Register
+    volatile uint32_t DDRSDRC_CR;   // 0xFFFFE808 DDRSDRC Configuration Register
+    volatile uint32_t DDRSDRC_TPR0; // 0xFFFFE80C DDRSDRC Timing Parameter 0 Register
+    volatile uint32_t DDRSDRC_TPR1; //0xFFFFE810 DDRSDRC Timing Parameter 1 Register
+    volatile uint32_t DDRSDRC_TPR2; // 0xFFFFE814 DDRSDRC Timing Parameter 2 Register
+    volatile uint32_t Reserved[1];  //Reserved
+    volatile uint32_t DDRSDRC_LPR;  //0xFFFFE81C DDRSDRC Low-power Register
+    volatile uint32_t DDRSDRC_MD;   // 0xFFFFE820DDRSDRC Memory Device Register
+    volatile uint32_t DDRSDRC_DLL;  //0xFFFFE824 DDRSDRC DLL Register
+    volatile uint32_t DDRSDRC_HS;   //0xFFFFE82C DDRSDRC High Speed Register
+    volatile uint32_t DDRSDRC_WPMR; //DDRSDRC Write Protect Mode Register
+    volatile uint32_t DDRSDRC_WPSR; //DDRSDRC Write Protect Status Register
+};
 
 struct AT91SAM9X35_PMC {
     static const uint32_t c_Base = AT91C_BASE_PMC;
@@ -1418,6 +1436,8 @@ USB_PACKET64* TinyCLR_UsbClient_RxEnqueue(UsbClientState* usbClientState, int32_
 USB_PACKET64* TinyCLR_UsbClient_TxDequeue(UsbClientState* usbClientState, int32_t endpoint);
 void TinyCLR_UsbClient_StateCallback(UsbClientState* usbClientState);
 uint8_t TinyCLR_UsbClient_ControlCallback(UsbClientState* usbClientState);
+bool TinyCLR_UsbClient_Initialize(UsbClientState* usbClientState);
+bool TinyCLR_UsbClient_Uninitialize(UsbClientState* usbClientState);
 
 // LCD
 void AT91SAM9X35_Display_Reset();

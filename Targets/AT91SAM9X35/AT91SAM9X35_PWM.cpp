@@ -401,9 +401,9 @@ TinyCLR_Result AT91SAM9X35_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* 
 
     // Flips the pulse
     if (polarity == TinyCLR_Pwm_PulsePolarity::ActiveLow)
-        pulseBeginsOnHighEdge = 1;
-    else
         pulseBeginsOnHighEdge = 0;
+    else
+        pulseBeginsOnHighEdge = 1;
 
     *state->channelModeReg = (volatile unsigned long)(registerDividerFlag | (pulseBeginsOnHighEdge << 9) | (1 << 10));
     *state->channelUpdateReg = (volatile unsigned long)(convertedPeriod / (divider * 7.5));
