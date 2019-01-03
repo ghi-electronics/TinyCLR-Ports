@@ -436,6 +436,9 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
 
         state->txBuffer = nullptr;
         state->rxBuffer = nullptr;
+        state->errorEventHandler = nullptr;
+        state->dataReceivedEventHandler = nullptr;
+        state->cleartosendEventHandler = nullptr;
 
         if (STM32F4_Uart_SetWriteBufferSize(self, uartTxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
             return TinyCLR_Result::OutOfMemory;
