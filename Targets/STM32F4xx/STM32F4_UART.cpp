@@ -73,8 +73,7 @@ struct UartState {
     bool tableInitialized;
     uint16_t initializeCount;
     uint64_t lastEventTime;
-    size_t lastReadRxBufferCount;
-    size_t lastEventRxBufferCount;
+    size_t lastReadRxBufferCount;    
 
     uint8_t error;
 };
@@ -434,8 +433,7 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->wasDataReceivedCallbackTaskEnqueued = false;
         state->wasErrorCallbackTaskEnqueued = false;
 
-        state->lastReadRxBufferCount = 0;
-        state->lastEventRxBufferCount = 0;
+        state->lastReadRxBufferCount = 0;        
         state->error = 0;
         state->lastEventTime = STM32F4_Time_GetCurrentProcessorTime();
 
@@ -1056,7 +1054,7 @@ size_t STM32F4_Uart_GetBytesToWrite(const TinyCLR_Uart_Controller* self) {
 TinyCLR_Result STM32F4_Uart_ClearReadBuffer(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    state->rxBufferCount = state->rxBufferIn = state->rxBufferOut = state->lastReadRxBufferCount = state->lastEventRxBufferCount = 0;
+    state->rxBufferCount = state->rxBufferIn = state->rxBufferOut = state->lastReadRxBufferCount = 0;
 
     return TinyCLR_Result::Success;
 }
