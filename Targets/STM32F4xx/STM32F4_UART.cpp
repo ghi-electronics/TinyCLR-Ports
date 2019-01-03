@@ -61,8 +61,11 @@ struct UartState {
     TinyCLR_Uart_DataReceivedHandler dataReceivedEventHandler;
     TinyCLR_Uart_ClearToSendChangedHandler cleartosendEventHandler;
 
-    TinyCLR_Task_Reference errorCallbackTaskReference;
     TinyCLR_Task_Reference dataReceivedCallbackTaskReference;
+    bool wasDataReceivedCallbackTaskEnqueued;
+
+    TinyCLR_Task_Reference errorCallbackTaskReference;
+    bool wasErrorCallbackTaskEnqueued;
 
     const TinyCLR_Task_Manager* taskManager;
 
@@ -428,6 +431,8 @@ TinyCLR_Result STM32F4_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->controller = self;
         state->handshaking = false;
         state->enable = false;
+        state->wasDataReceivedCallbackTaskEnqueued = false;
+        state->wasErrorCallbackTaskEnqueued = false;
 
         state->lastReadRxBufferCount = 0;
         state->lastEventRxBufferCount = 0;
@@ -906,14 +911,14 @@ void STM32F4_Uart_EventCallback(const TinyCLR_Task_Manager* self, const TinyCLR_
             if ((state->rxBufferCount == 1 && state->lastReadRxBufferCount == 0) || canPostEvent) {
                 state->dataReceivedEventHandler(state->controller, state->rxBufferCount - state->lastReadRxBufferCount, STM32F4_Time_GetSystemTime(nullptr));
 
-                // Event posted, no need to schedule callback.
-                // Update last event count to detect any change for next event.
-                state->lastEventRxBufferCount = state->rxBufferCount;
+                // Clear for next Enqueue
+                state->wasDataReceivedCallbackTaskEnqueued = false;
             }
             else {
                 // Couldn't post event on time, scheduel callback to do later.
-                if (state->rxBufferCount != state->lastEventRxBufferCount) {
+                if (state->wasDataReceivedCallbackTaskEnqueued == false) {
                     state->taskManager->Enqueue(state->taskManager, task, STM32F4_Time_GetProcessorTicksForTime(nullptr, USART_EVENT_POST_DEBOUNCE_TICKS));
+                    state->wasDataReceivedCallbackTaskEnqueued = true;
                 }
             }
         }
@@ -927,12 +932,19 @@ void STM32F4_Uart_EventCallback(const TinyCLR_Task_Manager* self, const TinyCLR_
                 auto error = STM32F4_Uart_GetError(state->error);
                 state->errorEventHandler(state->controller, error, STM32F4_Time_GetSystemTime(nullptr));
 
-                // Clear error, no post more than twice if no error change
+                // Clear error
                 state->error = 0;
+
+                // Clear for next Enqueue
+                state->wasErrorCallbackTaskEnqueued = false;
             }
             else {
                 // Couldn't post event on time, scheduel callback to do later.
-                state->taskManager->Enqueue(state->taskManager, task, STM32F4_Time_GetProcessorTicksForTime(nullptr, USART_EVENT_POST_DEBOUNCE_TICKS));
+                if (state->wasErrorCallbackTaskEnqueued == false) {
+                    state->taskManager->Enqueue(state->taskManager, task, STM32F4_Time_GetProcessorTicksForTime(nullptr, USART_EVENT_POST_DEBOUNCE_TICKS));
+
+                    state->wasErrorCallbackTaskEnqueued = true;
+                }
             }
         }
     }
@@ -944,7 +956,7 @@ TinyCLR_Result STM32F4_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Controlle
     if (handler != nullptr) {
         state->errorEventHandler = handler;
         state->taskManager = (const TinyCLR_Task_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::TaskManager);
-        state->taskManager->Create(state->taskManager, STM32F4_Uart_EventCallback, (void*)state, false, state->errorCallbackTaskReference);        
+        state->taskManager->Create(state->taskManager, STM32F4_Uart_EventCallback, (void*)state, false, state->errorCallbackTaskReference);
     }
     else {
         if (state->errorEventHandler != nullptr && state->taskManager != nullptr && state->errorCallbackTaskReference) {
@@ -965,7 +977,7 @@ TinyCLR_Result STM32F4_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Controller
     if (handler != nullptr) {
         state->dataReceivedEventHandler = handler;
         state->taskManager = (const TinyCLR_Task_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::TaskManager);
-        state->taskManager->Create(state->taskManager, STM32F4_Uart_EventCallback, (void*)state, false, state->dataReceivedCallbackTaskReference);        
+        state->taskManager->Create(state->taskManager, STM32F4_Uart_EventCallback, (void*)state, false, state->dataReceivedCallbackTaskReference);
     }
 
     else {
