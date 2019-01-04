@@ -266,14 +266,6 @@ TinyCLR_Result AT91SAM9X35_Uart_PinConfiguration(int controllerIndex, bool enabl
     return TinyCLR_Result::Success;
 }
 
-void AT91SAM9X35_Uart_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error) {
-
-    auto state = &uartStates[controllerIndex];
-
-    if (state->errorEventHandler != nullptr)
-        state->errorEventHandler(state->controller, error, AT91SAM9X35_Time_GetSystemTime(nullptr));
-}
-
 void AT91SAM9X35_Uart_ReceiveData(int32_t controllerIndex, uint32_t sr) {
     AT91SAM9X35_USART &usart = AT91::USART(controllerIndex);
 
