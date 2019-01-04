@@ -109,7 +109,7 @@ void STM32F4_I2c_AddApi(const TinyCLR_Api_Manager* apiManager) {
 }
 
 void STM32F4_I2C_ER_Interrupt(int32_t controllerIndex) {// Error Interrupt Handler
-    INTERRUPT_STARTED_SCOPED(isr);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     auto state = &i2cStates[controllerIndex];
 
@@ -122,7 +122,7 @@ void STM32F4_I2C_ER_Interrupt(int32_t controllerIndex) {// Error Interrupt Handl
 }
 
 void STM32F4_I2C_EV_Interrupt(int32_t controllerIndex) {// Event Interrupt Handler
-    INTERRUPT_STARTED_SCOPED(isr);
+    DISABLE_INTERRUPTS_SCOPED(irq);
 
     auto& I2Cx = i2cPorts[controllerIndex];
 

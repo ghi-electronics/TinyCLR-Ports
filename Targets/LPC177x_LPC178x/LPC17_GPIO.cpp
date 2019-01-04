@@ -142,8 +142,6 @@ TinyCLR_Result LPC17_Gpio_Release(const TinyCLR_Gpio_Controller* self) {
 }
 
 void LPC17_Gpio_InterruptHandler(void* param) {
-    INTERRUPT_STARTED_SCOPED(isr);
-
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t* GPIO_INT_Overall_IO_Status_Register = GPIO_INT_Overall_IO_Status;

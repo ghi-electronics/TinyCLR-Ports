@@ -195,7 +195,7 @@ TinyCLR_Result LPC17_Time_SetNextTickCallbackTime(const TinyCLR_NativeTime_Contr
 extern "C" {
 
     void SysTick_Handler(void *param) {
-        INTERRUPT_STARTED_SCOPED(isr);
+        DISABLE_INTERRUPTS_SCOPED(irq);
 
         auto controllerIndex = 0; // default index if no specific
         auto state = &timeStates[controllerIndex];

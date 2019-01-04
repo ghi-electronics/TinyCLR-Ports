@@ -579,8 +579,6 @@ void STM32F4_UsbDevice_EndpointOutInterrupt(OTG_TypeDef* OTG, UsbClientState* us
 }
 
 void STM32F4_UsbDevice_Interrupt(void* param) {
-    INTERRUPT_STARTED_SCOPED(isr);
-
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     OTG_TypeDef* OTG = OTG_FS;

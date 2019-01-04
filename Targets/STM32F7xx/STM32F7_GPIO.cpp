@@ -124,8 +124,6 @@ TinyCLR_Result STM32F7_Gpio_Release(const TinyCLR_Gpio_Controller* self) {
  */
 void STM32F7_Gpio_ISR(int num)  // 0 <= num <= 15
 {
-    INTERRUPT_STARTED_SCOPED(isr);
-
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     bool executeIsr = false;

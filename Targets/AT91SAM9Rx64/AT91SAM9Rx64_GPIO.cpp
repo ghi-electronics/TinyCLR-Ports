@@ -119,8 +119,6 @@ TinyCLR_Result AT91SAM9Rx64_Gpio_Release(const TinyCLR_Gpio_Controller* self) {
 }
 
 void AT91SAM9Rx64_Gpio_InterruptHandler(void* param) {
-    INTERRUPT_STARTED_SCOPED(isr);
-
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     for (auto port = 0; port < MAX_PORT; port++) {

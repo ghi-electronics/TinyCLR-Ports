@@ -121,9 +121,7 @@ TinyCLR_Result STM32F4_Gpio_Release(const TinyCLR_Gpio_Controller* self) {
  * Interrupt Handler
  */
 void STM32F4_Gpio_ISR(int num)  // 0 <= num <= 15
-{
-    INTERRUPT_STARTED_SCOPED(isr);
-
+{    
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     bool executeIsr = false;
