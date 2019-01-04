@@ -850,7 +850,7 @@ TinyCLR_Result STM32F7_Uart_Write(const TinyCLR_Uart_Controller* self, const uin
         if (state->errorEventHandler != nullptr)
             state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferFull, STM32F7_Time_GetSystemTime(nullptr));
 
-        return TinyCLR_Result::Success;
+        return TinyCLR_Result::Busy;
     }
 
     while (i < length) {
