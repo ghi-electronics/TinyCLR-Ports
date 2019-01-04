@@ -456,13 +456,6 @@ TinyCLR_Result LPC17_Uart_PinConfiguration(int controllerIndex, bool enable) {
     return TinyCLR_Result::Success;
 }
 
-void LPC17_Uart_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error) {
-    auto state = &uartStates[controllerIndex];
-
-    if (state->errorEventHandler != nullptr)
-        state->errorEventHandler(state->controller, error, LPC17_Time_GetSystemTime(nullptr));
-}
-
 void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t IIR_Value) {
     INTERRUPT_STARTED_SCOPED(isr);
 
@@ -1025,7 +1018,7 @@ TinyCLR_Result LPC17_Uart_Write(const TinyCLR_Uart_Controller* self, const uint8
 
     if (state->txBufferCount == state->txBufferSize) {
         if (state->errorEventHandler != nullptr)
-            LPC17_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferFull);
+            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferFull, LPC17_Time_GetSystemTime(nullptr));
 
         return TinyCLR_Result::Busy;
     }
