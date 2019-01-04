@@ -78,7 +78,7 @@ struct UartState {
     uint64_t lastEventTime;
     size_t lastReadRxBufferCount;
 
-    uint8_t error;
+    uint8_t errorEvent;
 };
 
 #define UART_TXD_PIN 0
@@ -299,7 +299,7 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
         }
 
         if (state->rxBufferCount == state->rxBufferSize) {
-            state->error = 1 << (uint8_t)TinyCLR_Uart_Error::BufferFull;
+            state->errorEvent = 1 << (uint8_t)TinyCLR_Uart_Error::BufferFull;
 
             error = true;
         }
@@ -313,17 +313,17 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
         if (error) {
             if (sr & USART_ISR_ORE) {
                 state->portReg->ICR |= USART_ISR_ORE;
-                state->error = 1 << (uint8_t)TinyCLR_Uart_Error::Overrun;
+                state->errorEvent = 1 << (uint8_t)TinyCLR_Uart_Error::Overrun;
             }
 
             else if (sr & USART_ISR_FE) {
                 state->portReg->ICR |= USART_ISR_FE;
-                state->error = 1 << (uint8_t)TinyCLR_Uart_Error::Frame;
+                state->errorEvent = 1 << (uint8_t)TinyCLR_Uart_Error::Frame;
             }
 
             else if (sr & USART_ISR_PE) {
                 state->portReg->ICR |= USART_ISR_PE;
-                state->error = 1 << (uint8_t)TinyCLR_Uart_Error::ReceiveParity;
+                state->errorEvent = 1 << (uint8_t)TinyCLR_Uart_Error::ReceiveParity;
             }
 
             // Task callback will decide post the event immediately or delay
@@ -436,7 +436,7 @@ TinyCLR_Result STM32F7_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->wasErrorCallbackTaskEnqueued = false;
 
         state->lastReadRxBufferCount = 0;
-        state->error = 0;
+        state->errorEvent = 0;
         state->lastEventTime = STM32F7_Time_GetCurrentProcessorTime();
 
         state->txBuffer = nullptr;
@@ -918,16 +918,16 @@ void STM32F7_Uart_EventCallback(const TinyCLR_Task_Manager* self, const TinyCLR_
         }
     }
     else if (task == state->errorCallbackTaskReference) {
-        if (state->error > 0 && state->errorEventHandler != nullptr) {
+        if (state->errorEvent > 0 && state->errorEventHandler != nullptr) {
             auto canPostEvent = STM32F7_Uart_CanPostEvent(state->controllerIndex);
 
             //If new error detected or called by callback and can post event, post the event.
             if (canPostEvent) {
-                auto error = STM32F7_Uart_GetError(state->error);
+                auto error = STM32F7_Uart_GetError(state->errorEvent);
                 state->errorEventHandler(state->controller, error, STM32F7_Time_GetSystemTime(nullptr));
 
                 // Clear error
-                state->error = 0;
+                state->errorEvent = 0;
 
                 // Clear for next Enqueue
                 state->wasErrorCallbackTaskEnqueued = false;

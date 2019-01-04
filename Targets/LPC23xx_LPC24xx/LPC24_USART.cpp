@@ -62,7 +62,7 @@ struct UartState {
     uint64_t lastEventTime;
     size_t lastReadRxBufferCount;
 
-    uint8_t error;
+    uint8_t errorEvent;
 };
 
 #define SET_BITS(Var,Shift,Mask,fieldsMask) {Var = setFieldValue(Var,Shift,Mask,fieldsMask);}
@@ -326,19 +326,19 @@ void LPC24_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
                 }
 
                 if (state->rxBufferCount == state->rxBufferSize) {
-                    state->error = 1 << (uint8_t)TinyCLR_Uart_Error::BufferFull;
+                    state->errorEvent = 1 << (uint8_t)TinyCLR_Uart_Error::BufferFull;
                     raiseErrorReceived = true;
                 }
                 else if (LSR_Value & 0x02) {
-                    state->error = 1 << (uint8_t)TinyCLR_Uart_Error::Overrun;
+                    state->errorEvent = 1 << (uint8_t)TinyCLR_Uart_Error::Overrun;
                     raiseErrorReceived = true;
                 }
                 else if ((LSR_Value & 0x08) || (LSR_Value & 0x80)) {
-                    state->error = 1 << (uint8_t)TinyCLR_Uart_Error::Frame;
+                    state->errorEvent = 1 << (uint8_t)TinyCLR_Uart_Error::Frame;
                     raiseErrorReceived = true;
                 }
                 else if (LSR_Value & 0x04) {
-                    state->error = 1 << (uint8_t)TinyCLR_Uart_Error::ReceiveParity;
+                    state->errorEvent = 1 << (uint8_t)TinyCLR_Uart_Error::ReceiveParity;
                     raiseErrorReceived = true;
                 }
 
@@ -464,7 +464,7 @@ TinyCLR_Result LPC24_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->wasErrorCallbackTaskEnqueued = false;
 
         state->lastReadRxBufferCount = 0;
-        state->error = 0;
+        state->errorEvent = 0;
         state->lastEventTime = LPC24_Time_GetCurrentProcessorTime();
 
         state->txBuffer = nullptr;
@@ -921,16 +921,16 @@ void LPC24_Uart_EventCallback(const TinyCLR_Task_Manager* self, const TinyCLR_Ap
         }
     }
     else if (task == state->errorCallbackTaskReference) {
-        if (state->error > 0 && state->errorEventHandler != nullptr) {
+        if (state->errorEvent > 0 && state->errorEventHandler != nullptr) {
             auto canPostEvent = LPC24_Uart_CanPostEvent(state->controllerIndex);
 
             //If new error detected or called by callback and can post event, post the event.
             if (canPostEvent) {
-                auto error = LPC24_Uart_GetError(state->error);
+                auto error = LPC24_Uart_GetError(state->errorEvent);
                 state->errorEventHandler(state->controller, error, LPC24_Time_GetSystemTime(nullptr));
 
                 // Clear error
-                state->error = 0;
+                state->errorEvent = 0;
 
                 // Clear for next Enqueue
                 state->wasErrorCallbackTaskEnqueued = false;

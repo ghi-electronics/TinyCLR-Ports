@@ -60,7 +60,7 @@ struct UartState {
     uint64_t lastEventTime;
     size_t lastReadRxBufferCount;
 
-    uint8_t error;
+    uint8_t errorEvent;
 };
 
 static UartState uartStates[TOTAL_UART_CONTROLLERS];
@@ -290,19 +290,19 @@ void AT91SAM9X35_Uart_ReceiveData(int32_t controllerIndex, uint32_t sr) {
     }
 
     if (state->rxBufferCount == state->rxBufferSize) {
-        state->error = 1 << (uint8_t)TinyCLR_Uart_Error::BufferFull;
+        state->errorEvent = 1 << (uint8_t)TinyCLR_Uart_Error::BufferFull;
         raiseErrorReceived = true;
     }
     else if (sr & AT91SAM9X35_USART::US_OVRE) {
-        state->error = 1 << (uint8_t)TinyCLR_Uart_Error::Overrun;
+        state->errorEvent = 1 << (uint8_t)TinyCLR_Uart_Error::Overrun;
         raiseErrorReceived = true;
     }
     else if (sr & AT91SAM9X35_USART::US_FRAME) {
-        state->error = 1 << (uint8_t)TinyCLR_Uart_Error::Frame;
+        state->errorEvent = 1 << (uint8_t)TinyCLR_Uart_Error::Frame;
         raiseErrorReceived = true;
     }
     else if (sr & AT91SAM9X35_USART::US_PARE) {
-        state->error = 1 << (uint8_t)TinyCLR_Uart_Error::ReceiveParity;
+        state->errorEvent = 1 << (uint8_t)TinyCLR_Uart_Error::ReceiveParity;
         raiseErrorReceived = true;
     }
 
@@ -434,7 +434,7 @@ TinyCLR_Result AT91SAM9X35_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->wasErrorCallbackTaskEnqueued = false;
 
         state->lastReadRxBufferCount = 0;
-        state->error = 0;
+        state->errorEvent = 0;
         state->lastEventTime = AT91SAM9X35_Time_GetCurrentProcessorTime();
 
         state->txBuffer = nullptr;
@@ -815,16 +815,16 @@ void AT91SAM9X35_Uart_EventCallback(const TinyCLR_Task_Manager* self, const Tiny
         }
     }
     else if (task == state->errorCallbackTaskReference) {
-        if (state->error > 0 && state->errorEventHandler != nullptr) {
+        if (state->errorEvent > 0 && state->errorEventHandler != nullptr) {
             auto canPostEvent = AT91SAM9X35_Uart_CanPostEvent(state->controllerIndex);
 
             //If new error detected or called by callback and can post event, post the event.
             if (canPostEvent) {
-                auto error = AT91SAM9X35_Uart_GetError(state->error);
+                auto error = AT91SAM9X35_Uart_GetError(state->errorEvent);
                 state->errorEventHandler(state->controller, error, AT91SAM9X35_Time_GetSystemTime(nullptr));
 
                 // Clear error
-                state->error = 0;
+                state->errorEvent = 0;
 
                 // Clear for next Enqueue
                 state->wasErrorCallbackTaskEnqueued = false;
