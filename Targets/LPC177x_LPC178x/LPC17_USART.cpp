@@ -457,8 +457,6 @@ TinyCLR_Result LPC17_Uart_PinConfiguration(int controllerIndex, bool enable) {
 }
 
 void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t IIR_Value) {
-    INTERRUPT_STARTED_SCOPED(isr);
-
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     LPC17xx_USART& USARTC = LPC17xx_USART::UART(controllerIndex);
@@ -524,8 +522,6 @@ void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
     }
 }
 void LPC17_Uart_TransmitData(int controllerIndex, uint32_t LSR_Value, uint32_t IIR_Value) {
-    INTERRUPT_STARTED_SCOPED(isr);
-
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     LPC17xx_USART& USARTC = LPC17xx_USART::UART(controllerIndex);
@@ -559,8 +555,6 @@ void LPC17_Uart_TransmitData(int controllerIndex, uint32_t LSR_Value, uint32_t I
 }
 
 void LPC17_UART_IntHandler(int controllerIndex) {
-    INTERRUPT_STARTED_SCOPED(isr);
-
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     LPC17xx_USART& USARTC = LPC17xx_USART::UART(controllerIndex);
