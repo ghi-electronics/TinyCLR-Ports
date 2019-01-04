@@ -17,7 +17,7 @@
 #include "AT91SAM9Rx64.h"
 
 #define USART_EVENT_POST_DEBOUNCE_TICKS (10 * 10000) // 10ms between each events
-
+void AT91SAM9Rx64_Uart_EventCallback(const TinyCLR_Task_Manager* self, const TinyCLR_Api_Manager* apiManager, TinyCLR_Task_Reference task, void* arg);
 static const uint32_t uartTxDefaultBuffersSize[] = AT91SAM9Rx64_UART_DEFAULT_TX_BUFFER_SIZE;
 static const uint32_t uartRxDefaultBuffersSize[] = AT91SAM9Rx64_UART_DEFAULT_RX_BUFFER_SIZE;
 
@@ -43,15 +43,24 @@ struct UartState {
     TinyCLR_Uart_DataReceivedHandler dataReceivedEventHandler;
     TinyCLR_Uart_ClearToSendChangedHandler cleartosendEventHandler;
 
+    TinyCLR_Task_Reference dataReceivedCallbackTaskReference;
+    bool wasDataReceivedCallbackTaskEnqueued;
+
+    TinyCLR_Task_Reference errorCallbackTaskReference;
+    bool wasErrorCallbackTaskEnqueued;
+
+    const TinyCLR_Task_Manager* taskManager;
+
     const TinyCLR_Uart_Controller* controller;
 
-    bool tableInitialized = false;
+    bool tableInitialized;
 
     uint16_t initializeCount;
 
-    uint32_t errorEvent;
     uint64_t lastEventTime;
-    size_t lastEventRxBufferCount;
+    size_t lastReadRxBufferCount;
+
+    uint8_t error;
 };
 
 static UartState uartStates[TOTAL_UART_CONTROLLERS];
@@ -209,10 +218,11 @@ TinyCLR_Result AT91SAM9Rx64_Uart_SetWriteBufferSize(const TinyCLR_Uart_Controlle
 
 bool AT91SAM9Rx64_Uart_CanPostEvent(int8_t controllerIndex) {
     auto state = reinterpret_cast<UartState*>(&uartStates[controllerIndex]);
-    bool canPost = (AT91SAM9Rx64_Time_GetCurrentProcessorTime() - state->lastEventTime) > USART_EVENT_POST_DEBOUNCE_TICKS;
+    auto currentTime = AT91SAM9Rx64_Time_GetCurrentProcessorTime();
+    bool canPost = (currentTime - state->lastEventTime) > USART_EVENT_POST_DEBOUNCE_TICKS;
 
     if (canPost) // only update when debounce is over
-        state->lastEventTime = AT91SAM9Rx64_Time_GetCurrentProcessorTime();
+        state->lastEventTime = currentTime;
 
     return canPost;
 }
@@ -256,34 +266,44 @@ TinyCLR_Result AT91SAM9Rx64_Uart_PinConfiguration(int controllerIndex, bool enab
     return TinyCLR_Result::Success;
 }
 
-void AT91SAM9Rx64_Uart_SetErrorEvent(int32_t controllerIndex, TinyCLR_Uart_Error error) {
-
-    auto state = &uartStates[controllerIndex];
-
-    if (state->errorEventHandler != nullptr)
-        state->errorEventHandler(state->controller, error, AT91SAM9Rx64_Time_GetSystemTime(nullptr));
-}
-
 void AT91SAM9Rx64_Uart_ReceiveData(int32_t controllerIndex, uint32_t sr) {
     AT91SAM9Rx64_USART &usart = AT91::USART(controllerIndex);
 
-    uint8_t rxdata = usart.US_RHR;
-
     auto state = &uartStates[controllerIndex];
-    auto canPostEvent = AT91SAM9Rx64_Uart_CanPostEvent(controllerIndex);
-    bool error = (state->rxBufferCount == state->rxBufferSize) || (sr & AT91SAM9Rx64_USART::US_OVRE) || (sr & AT91SAM9Rx64_USART::US_FRAME) || (sr & AT91SAM9Rx64_USART::US_PARE);
+    bool error = ((sr & AT91SAM9Rx64_USART::US_OVRE) || (sr & AT91SAM9Rx64_USART::US_FRAME) || (sr & AT91SAM9Rx64_USART::US_PARE)) != 0;
+    auto raiseDataReceived = false;
+    auto raiseErrorReceived = false;
 
-    if (sr & AT91SAM9Rx64_USART::US_OVRE)
-        if (canPostEvent) AT91SAM9Rx64_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Overrun);
+    uint8_t data = usart.US_RHR;
 
-    if (sr & AT91SAM9Rx64_USART::US_FRAME)
-        if (canPostEvent) AT91SAM9Rx64_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::Frame);
+    if (sr & AT91SAM9Rx64_USART::US_RXRDY) {
+        state->rxBuffer[state->rxBufferIn++] = data;
 
-    if (sr & AT91SAM9Rx64_USART::US_PARE)
-        if (canPostEvent) AT91SAM9Rx64_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::ReceiveParity);
+        if (state->rxBufferCount < state->rxBufferSize) {
+            state->rxBufferCount++;
+        }
+
+        if (state->rxBufferIn == state->rxBufferSize)
+            state->rxBufferIn = 0;
+
+        raiseDataReceived = true;
+    }
 
     if (state->rxBufferCount == state->rxBufferSize) {
-        if (canPostEvent) AT91SAM9Rx64_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferFull);
+        state->error = 1 << (uint8_t)TinyCLR_Uart_Error::BufferFull;
+        raiseErrorReceived = true;
+    }
+    else if (sr & AT91SAM9Rx64_USART::US_OVRE) {
+        state->error = 1 << (uint8_t)TinyCLR_Uart_Error::Overrun;
+        raiseErrorReceived = true;
+    }
+    else if (sr & AT91SAM9Rx64_USART::US_FRAME) {
+        state->error = 1 << (uint8_t)TinyCLR_Uart_Error::Frame;
+        raiseErrorReceived = true;
+    }
+    else if (sr & AT91SAM9Rx64_USART::US_PARE) {
+        state->error = 1 << (uint8_t)TinyCLR_Uart_Error::ReceiveParity;
+        raiseErrorReceived = true;
     }
 
     if (error) {
@@ -292,32 +312,14 @@ void AT91SAM9Rx64_Uart_ReceiveData(int32_t controllerIndex, uint32_t sr) {
 
         usart.US_CR = AT91SAM9Rx64_USART::US_RXEN;
         usart.US_CR = AT91SAM9Rx64_USART::US_TXEN;
-        return;
     }
 
-    if (sr & AT91SAM9Rx64_USART::US_RXRDY) {
-        state->rxBuffer[state->rxBufferIn++] = rxdata;
-
-        state->rxBufferCount++;
-
-        if (state->rxBufferIn == state->rxBufferSize)
-            state->rxBufferIn = 0;
-
-        if (state->dataReceivedEventHandler != nullptr) {
-            if (canPostEvent) {
-                if (state->rxBufferCount > state->lastEventRxBufferCount) {
-                    // if driver hold event long enough that more than 1 byte
-                    state->dataReceivedEventHandler(state->controller, state->rxBufferCount - state->lastEventRxBufferCount, AT91SAM9Rx64_Time_GetSystemTime(nullptr));
-                }
-                else {
-                    // if user use poll to read data and rxBufferCount <= lastEventRxBufferCount, driver send at least 1 byte comming
-                    state->dataReceivedEventHandler(state->controller, 1, AT91SAM9Rx64_Time_GetSystemTime(nullptr));
-                }
-
-                state->lastEventRxBufferCount = state->rxBufferCount;
-            }
-        }
-    }
+    // If Data Rx and Error happen at same time, Error event has higher priority.
+    // Raise the error first so user know dataEvent comes after may wrong.
+    if (raiseErrorReceived)
+        AT91SAM9Rx64_Uart_EventCallback(state->taskManager, apiManager, state->errorCallbackTaskReference, (void*)state);
+    else if (raiseDataReceived)
+        AT91SAM9Rx64_Uart_EventCallback(state->taskManager, apiManager, state->dataReceivedCallbackTaskReference, (void*)state);
 
     // Control rts by software - enable / disable when internal buffer reach 3/4
     if (state->handshaking && (state->rxBufferCount >= ((state->rxBufferSize * 3) / 4))) {
@@ -347,8 +349,6 @@ void AT91SAM9Rx64_Uart_TransmitData(int32_t controllerIndex) {
 
 }
 void AT91SAM9Rx64_Uart_InterruptHandler(void *param) {
-    INTERRUPT_STARTED_SCOPED(isr);
-
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t controllerIndex = *reinterpret_cast<uint32_t*>(param);
@@ -413,6 +413,8 @@ TinyCLR_Result AT91SAM9Rx64_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
 
     if (state->initializeCount == 0) {
         auto controllerIndex = state->controllerIndex;
+        if (controllerIndex >= TOTAL_UART_CONTROLLERS)
+            return TinyCLR_Result::ArgumentInvalid;
 
         if (!AT91SAM9Rx64_GpioInternal_OpenMultiPins(uartPins[controllerIndex], 2))
             return TinyCLR_Result::SharingViolation;
@@ -428,12 +430,18 @@ TinyCLR_Result AT91SAM9Rx64_Uart_Acquire(const TinyCLR_Uart_Controller* self) {
         state->controller = self;
         state->handshaking = false;
         state->enable = false;
+        state->wasDataReceivedCallbackTaskEnqueued = false;
+        state->wasErrorCallbackTaskEnqueued = false;
 
-        state->lastEventRxBufferCount = 0;
+        state->lastReadRxBufferCount = 0;
+        state->error = 0;
         state->lastEventTime = AT91SAM9Rx64_Time_GetCurrentProcessorTime();
 
         state->txBuffer = nullptr;
         state->rxBuffer = nullptr;
+        state->errorEventHandler = nullptr;
+        state->dataReceivedEventHandler = nullptr;
+        state->cleartosendEventHandler = nullptr;
 
         if (AT91SAM9Rx64_Uart_SetWriteBufferSize(self, uartTxDefaultBuffersSize[controllerIndex]) != TinyCLR_Result::Success)
             return TinyCLR_Result::OutOfMemory;
@@ -679,8 +687,6 @@ TinyCLR_Result AT91SAM9Rx64_Uart_Flush(const TinyCLR_Uart_Controller* self) {
 }
 
 TinyCLR_Result AT91SAM9Rx64_Uart_Read(const TinyCLR_Uart_Controller* self, uint8_t* buffer, size_t& length) {
-    DISABLE_INTERRUPTS_SCOPED(irq);
-
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
     auto controllerIndex = state->controllerIndex;
 
@@ -695,11 +701,7 @@ TinyCLR_Result AT91SAM9Rx64_Uart_Read(const TinyCLR_Uart_Controller* self, uint8
     size_t i = 0;
 
     while (i < length) {
-        buffer[i] = state->rxBuffer[state->rxBufferOut];
-
-        state->rxBufferOut++;
-        i++;
-        state->rxBufferCount--;
+        buffer[i++] = state->rxBuffer[state->rxBufferOut++];
 
         if (state->rxBufferOut == state->rxBufferSize)
             state->rxBufferOut = 0;
@@ -711,14 +713,22 @@ TinyCLR_Result AT91SAM9Rx64_Uart_Read(const TinyCLR_Uart_Controller* self, uint8
         }
     }
 
+    {
+        DISABLE_INTERRUPTS_SCOPED(irq);
+
+        state->rxBufferCount -= length;
+
+        // Update last read
+        state->lastReadRxBufferCount = state->rxBufferCount;
+
+    }
+
     return TinyCLR_Result::Success;
 }
 
 TinyCLR_Result AT91SAM9Rx64_Uart_Write(const TinyCLR_Uart_Controller* self, const uint8_t* buffer, size_t& length) {
 
     int32_t i = 0;
-
-    DISABLE_INTERRUPTS_SCOPED(irq);
 
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
@@ -731,7 +741,8 @@ TinyCLR_Result AT91SAM9Rx64_Uart_Write(const TinyCLR_Uart_Controller* self, cons
     }
 
     if (state->txBufferCount == state->txBufferSize) {
-        AT91SAM9Rx64_Uart_SetErrorEvent(controllerIndex, TinyCLR_Uart_Error::BufferFull);
+        if (state->errorEventHandler != nullptr)
+            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferFull, AT91SAM9Rx64_Time_GetSystemTime(nullptr));
 
         return TinyCLR_Result::Busy;
     }
@@ -741,16 +752,20 @@ TinyCLR_Result AT91SAM9Rx64_Uart_Write(const TinyCLR_Uart_Controller* self, cons
 
     while (i < length) {
 
-        state->txBuffer[state->txBufferIn] = buffer[i];
+        state->txBuffer[state->txBufferIn] = buffer[i++];
 
         state->txBufferCount++;
-
-        i++;
 
         state->txBufferIn++;
 
         if (state->txBufferIn == state->txBufferSize)
             state->txBufferIn = 0;
+    }
+
+    {
+        DISABLE_INTERRUPTS_SCOPED(irq);
+
+        state->txBufferCount += length;
     }
 
     if (length > 0) {
@@ -760,10 +775,89 @@ TinyCLR_Result AT91SAM9Rx64_Uart_Write(const TinyCLR_Uart_Controller* self, cons
     return TinyCLR_Result::Success;
 }
 
+TinyCLR_Uart_Error AT91SAM9Rx64_Uart_GetError(uint32_t error) {
+    switch (error) {
+    case 1:
+        return TinyCLR_Uart_Error::Frame;
+
+    case 2:
+        return TinyCLR_Uart_Error::Overrun;
+
+    case 8:
+        return TinyCLR_Uart_Error::ReceiveParity;
+
+    default:
+        return TinyCLR_Uart_Error::BufferFull;
+    }
+}
+
+void AT91SAM9Rx64_Uart_EventCallback(const TinyCLR_Task_Manager* self, const TinyCLR_Api_Manager* apiManager, TinyCLR_Task_Reference task, void* arg) {
+    auto state = reinterpret_cast<UartState*>(arg);
+
+    if (task == state->dataReceivedCallbackTaskReference) {
+        if (state->rxBufferCount > 0 && state->dataReceivedEventHandler != nullptr) {
+            auto canPostEvent = AT91SAM9Rx64_Uart_CanPostEvent(state->controllerIndex);
+
+            // First byte or canPost, post immediately asap
+            if ((state->rxBufferCount == 1 && state->lastReadRxBufferCount == 0) || canPostEvent) {
+                state->dataReceivedEventHandler(state->controller, state->rxBufferCount - state->lastReadRxBufferCount, AT91SAM9Rx64_Time_GetSystemTime(nullptr));
+
+                // Clear for next Enqueue
+                state->wasDataReceivedCallbackTaskEnqueued = false;
+            }
+            else {
+                // Couldn't post event on time, scheduel callback to do later.
+                if (state->wasDataReceivedCallbackTaskEnqueued == false) {
+                    state->taskManager->Enqueue(state->taskManager, task, AT91SAM9Rx64_Time_GetProcessorTicksForTime(nullptr, USART_EVENT_POST_DEBOUNCE_TICKS));
+                    state->wasDataReceivedCallbackTaskEnqueued = true;
+                }
+            }
+        }
+    }
+    else if (task == state->errorCallbackTaskReference) {
+        if (state->error > 0 && state->errorEventHandler != nullptr) {
+            auto canPostEvent = AT91SAM9Rx64_Uart_CanPostEvent(state->controllerIndex);
+
+            //If new error detected or called by callback and can post event, post the event.
+            if (canPostEvent) {
+                auto error = AT91SAM9Rx64_Uart_GetError(state->error);
+                state->errorEventHandler(state->controller, error, AT91SAM9Rx64_Time_GetSystemTime(nullptr));
+
+                // Clear error
+                state->error = 0;
+
+                // Clear for next Enqueue
+                state->wasErrorCallbackTaskEnqueued = false;
+            }
+            else {
+                // Couldn't post event on time, scheduel callback to do later.
+                if (state->wasErrorCallbackTaskEnqueued == false) {
+                    state->taskManager->Enqueue(state->taskManager, task, AT91SAM9Rx64_Time_GetProcessorTicksForTime(nullptr, USART_EVENT_POST_DEBOUNCE_TICKS));
+
+                    state->wasErrorCallbackTaskEnqueued = true;
+                }
+            }
+        }
+    }
+}
+
 TinyCLR_Result AT91SAM9Rx64_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_ErrorReceivedHandler handler) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    state->errorEventHandler = handler;
+    if (handler != nullptr) {
+        state->errorEventHandler = handler;
+        state->taskManager = (const TinyCLR_Task_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::TaskManager);
+        state->taskManager->Create(state->taskManager, AT91SAM9Rx64_Uart_EventCallback, (void*)state, false, state->errorCallbackTaskReference);
+    }
+    else {
+        if (state->errorEventHandler != nullptr && state->taskManager != nullptr && state->errorCallbackTaskReference) {
+            state->taskManager->Free(state->taskManager, state->errorCallbackTaskReference);
+
+            state->errorEventHandler = nullptr;
+            state->errorCallbackTaskReference = nullptr;
+        }
+
+    }
 
     return TinyCLR_Result::Success;
 }
@@ -771,7 +865,21 @@ TinyCLR_Result AT91SAM9Rx64_Uart_SetErrorReceivedHandler(const TinyCLR_Uart_Cont
 TinyCLR_Result AT91SAM9Rx64_Uart_SetDataReceivedHandler(const TinyCLR_Uart_Controller* self, TinyCLR_Uart_DataReceivedHandler handler) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    state->dataReceivedEventHandler = handler;
+    if (handler != nullptr) {
+        state->dataReceivedEventHandler = handler;
+        state->taskManager = (const TinyCLR_Task_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::TaskManager);
+        state->taskManager->Create(state->taskManager, AT91SAM9Rx64_Uart_EventCallback, (void*)state, false, state->dataReceivedCallbackTaskReference);
+    }
+
+    else {
+        if (state->dataReceivedEventHandler != nullptr && state->taskManager != nullptr && state->dataReceivedCallbackTaskReference != nullptr) {
+            state->taskManager->Free(state->taskManager, state->dataReceivedCallbackTaskReference);
+
+            state->dataReceivedEventHandler = nullptr;
+            state->dataReceivedCallbackTaskReference = nullptr;
+        }
+
+    }
 
     return TinyCLR_Result::Success;
 }
@@ -839,7 +947,7 @@ size_t AT91SAM9Rx64_Uart_GetBytesToWrite(const TinyCLR_Uart_Controller* self) {
 TinyCLR_Result AT91SAM9Rx64_Uart_ClearReadBuffer(const TinyCLR_Uart_Controller* self) {
     auto state = reinterpret_cast<UartState*>(self->ApiInfo->State);
 
-    state->rxBufferCount = state->rxBufferIn = state->rxBufferOut = state->lastEventRxBufferCount = 0;
+    state->rxBufferCount = state->rxBufferIn = state->rxBufferOut = state->lastReadRxBufferCount = 0;
 
     return TinyCLR_Result::Success;
 }
