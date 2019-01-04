@@ -357,8 +357,6 @@ void AT91SAM9X35_Uart_TransmitData(int32_t controllerIndex) {
 
 }
 void AT91SAM9X35_Uart_InterruptHandler(void *param) {
-    INTERRUPT_STARTED_SCOPED(isr);
-
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     uint32_t controllerIndex = *reinterpret_cast<uint32_t*>(param);
