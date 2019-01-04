@@ -26,6 +26,8 @@ static const uint32_t canDefaultBuffersSize[] = LPC17_CAN_BUFFER_DEFAULT_SIZE;
 
 #define CAN_MINIMUM_MESSAGES_LEFT 3
 
+#define CAN_EVENT_POST_DEBOUNCE_TICKS (10 * 10000)
+
 #define CAN_TRANSFER_TIMEOUT 0xFFFF
 
 #define CAN_MEM_BASE        0xE0038000
@@ -2028,6 +2030,19 @@ struct CanState {
     uint16_t initializeCount;
 
     bool enable;
+
+    TinyCLR_Task_Reference messageReceivedCallbackTaskReference;
+    bool wasDataReceivedCallbackTaskEnqueued;
+
+    TinyCLR_Task_Reference errorCallbackTaskReference;
+    bool wasErrorCallbackTaskEnqueued;
+
+    const TinyCLR_Task_Manager* taskManager;
+
+    uint64_t lastEventTime;
+    size_t lastReadRxBufferCount;
+
+    uint8_t errorEvent;
 };
 
 #define CAN_TX_PIN 0
@@ -2039,6 +2054,9 @@ static CanState canStates[TOTAL_CAN_CONTROLLERS];
 
 static TinyCLR_Can_Controller canControllers[TOTAL_CAN_CONTROLLERS];
 static TinyCLR_Api_Info canApi[TOTAL_CAN_CONTROLLERS];
+
+void LPC17_Can_EventCallback(const TinyCLR_Task_Manager* self, const TinyCLR_Api_Manager* apiManager, TinyCLR_Task_Reference task, void* arg);
+bool LPC17_Can_CanPostEvent(int8_t controllerIndex);
 
 void CAN_DisableExplicitFilters(int32_t controllerIndex) {
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -2276,6 +2294,32 @@ void LPC17_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
     }
 }
 
+
+bool LPC17_Can_ErrorHandler(uint8_t controllerIndex) {
+    auto state = &canStates[controllerIndex];
+
+    bool error = false;
+
+    uint32_t c = (controllerIndex == 0) ? CAN1ICR : CAN2ICR;
+    if (c & (1 << 3)) {
+        state->errorEvent = 1 << (uint8_t)TinyCLR_Can_Error::Overrun;
+        error = true;
+    }
+    if (c & (1 << 5)) {
+        state->errorEvent = 1 << (uint8_t)TinyCLR_Can_Error::Passive;
+        error = true;
+    }
+    if (c & (1 << 7)) {
+        if (controllerIndex == 0) C1MOD = 1;    // Reset CAN
+        if (controllerIndex == 1) C2MOD = 1;    // Reset CAN
+
+        state->errorEvent = 1 << (uint8_t)(uint8_t)TinyCLR_Can_Error::BusOff;
+        error = true;
+    }
+
+    return error;
+}
+
 /******************************************************************************
 ** Function name:        CAN_ISR_Rx
 **
@@ -2287,6 +2331,13 @@ void LPC17_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
 ******************************************************************************/
 void CAN_ISR_Rx(int32_t controllerIndex) {
     auto state = &canStates[controllerIndex];
+
+    uint64_t t;
+    LPC17_Can_Message *can_msg;
+
+    auto raiseErrorEvent = false;
+
+    bool error = LPC17_Can_ErrorHandler(controllerIndex);
 
     // filter
     if (state->canDataFilter.groupFiltersSize || state->canDataFilter.matchFiltersSize) {
@@ -2314,7 +2365,7 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
     }
 
     // timestamp
-    uint64_t t = LPC17_Time_GetSystemTime(nullptr);
+    t = LPC17_Time_GetSystemTime(nullptr);
 
     if (state->can_rx_count == state->can_rxBufferSize) { // Return if internal buffer is full
         if (controllerIndex == 0)
@@ -2322,18 +2373,29 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
         else
             C2CMR = 0x04; // release receive buffer
 
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, t);
+        state->errorEvent = 1 << (uint8_t)TinyCLR_Can_Error::BufferFull;
+        raiseErrorEvent = true;
 
-        return;
+        // raise event full, buffer is full, no more data receive.
+        goto raiseEvent;
     }
     else if (state->can_rx_count >= state->can_rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, t);
+        raiseErrorEvent = true;
+        state->errorEvent = 1 << (uint8_t)TinyCLR_Can_Error::BufferFull;
+        // No return, continue take CAN_MINIMUM_MESSAGES_LEFT but warning buffer full.
     }
 
     if (!state->enable) return; // Not copy to internal buffer if enable if off
 
+
+
+    if (error) {
+        raiseErrorEvent = true;
+        goto raiseEvent;
+    }
+
     // initialize destination pointer
-    LPC17_Can_Message *can_msg = &state->canRxMessagesFifo[state->can_rx_in];
+    can_msg = &state->canRxMessagesFifo[state->can_rx_in];
 
     can_msg->timeStampL = t & 0xFFFFFFFF;
     can_msg->timeStampH = t >> 32;
@@ -2382,58 +2444,24 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
         state->can_rx_in = 0;
     }
 
-    // If we raise count here, because interrupt faster than raising an event, example there are only 2 messages comming,
-    // the first event will raise 1 message, the second will raise 2 messages in buffer if the first msg isn't read yet.
-    // This cause misunderstanding to user that there are 3 msg totally.
-    state->messageReceivedEventHandler(state->controller, 1, t);
+raiseEvent:
+    if (raiseErrorEvent)
+        LPC17_Can_EventCallback(state->taskManager, apiManager, state->errorCallbackTaskReference, (void*)state);
+    else
+        LPC17_Can_EventCallback(state->taskManager, apiManager, state->messageReceivedCallbackTaskReference, (void*)state);
 }
+
 void LPC17_Can_RxInterruptHandler(void *param) {
-    uint32_t status = CANRxSR;
-
-    int32_t controllerIndex;
-
     DISABLE_INTERRUPTS_SCOPED(irq);
 
+    uint32_t status = CANRxSR;
+
     if (status & (1 << 8)) {
-        controllerIndex = 0;
-
-        auto state = &canStates[controllerIndex];
-
-        uint32_t c1 = CAN1ICR;
-
-        CAN_ISR_Rx(controllerIndex);
-
-        if (c1 & (1 << 3)) {
-            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Overrun, LPC17_Time_GetSystemTime(nullptr));
-        }
-        if (c1 & (1 << 5)) {
-            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, LPC17_Time_GetSystemTime(nullptr));
-        }
-        if (c1 & (1 << 7)) {
-            C1MOD = 1;    // Reset CAN
-            state->errorEventHandler(state->controller, TinyCLR_Can_Error::BusOff, LPC17_Time_GetSystemTime(nullptr));
-        }
-
+        CAN_ISR_Rx(0);
     }
+
     if (status & (1 << 9)) {
-        controllerIndex = 1;
-
-        auto state = &canStates[controllerIndex];
-
-        uint32_t c2 = CAN2ICR;
-
-        CAN_ISR_Rx(controllerIndex);
-
-        if (c2 & (1 << 3)) {
-            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Overrun, LPC17_Time_GetSystemTime(nullptr));
-        }
-        if (c2 & (1 << 5)) {
-            state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, LPC17_Time_GetSystemTime(nullptr));
-        }
-        if (c2 & (1 << 7)) {
-            C2MOD = 1;    // Reset CAN
-            state->errorEventHandler(state->controller, TinyCLR_Can_Error::BusOff, LPC17_Time_GetSystemTime(nullptr));
-        }
+        CAN_ISR_Rx(1);
     }
 }
 
@@ -2467,6 +2495,16 @@ TinyCLR_Result LPC17_Can_Acquire(const TinyCLR_Can_Controller* self) {
         state->canRxMessagesFifo = nullptr;
 
         LPC17_Can_SetReadBufferSize(self, canDefaultBuffersSize[controllerIndex]);
+
+        state->wasDataReceivedCallbackTaskEnqueued = false;
+        state->wasErrorCallbackTaskEnqueued = false;
+
+        state->lastReadRxBufferCount = 0;
+        state->errorEvent = 0;
+        state->lastEventTime = LPC17_Time_GetCurrentProcessorTime();
+
+        state->errorEventHandler = nullptr;
+        state->messageReceivedEventHandler = nullptr;
     }
 
     state->initializeCount++;
@@ -2596,15 +2634,12 @@ TinyCLR_Result LPC17_Can_ReadMessage(const TinyCLR_Can_Controller* self, TinyCLR
     if (!state->enable) return TinyCLR_Result::InvalidOperation;
 
     if (state->can_rx_count) {
-        DISABLE_INTERRUPTS_SCOPED(irq);
 
         can_msg = &state->canRxMessagesFifo[state->can_rx_out];
         state->can_rx_out++;
 
         if (state->can_rx_out == state->can_rxBufferSize)
             state->can_rx_out = 0;
-
-        state->can_rx_count--;
 
         arbitrationId = can_msg->msgId;
         isExtendedId = can_msg->extendedId;
@@ -2616,10 +2651,16 @@ TinyCLR_Result LPC17_Can_ReadMessage(const TinyCLR_Can_Controller* self, TinyCLR
         length = can_msg->length;
 
         timestamp = ((uint64_t)can_msg->timeStampL) | ((uint64_t)can_msg->timeStampH << 32);
+
+        {
+            DISABLE_INTERRUPTS_SCOPED(irq);
+
+            state->can_rx_count--;
+            state->lastReadRxBufferCount = state->can_rx_count;
+        }
     }
 
     return TinyCLR_Result::Success;
-
 }
 
 TinyCLR_Result LPC17_Can_SetBitTiming(const TinyCLR_Can_Controller* self, const TinyCLR_Can_BitTiming* timing) {
@@ -2647,10 +2688,100 @@ size_t LPC17_Can_GetMessagesToWrite(const TinyCLR_Can_Controller* self) {
     return 0;
 }
 
+bool LPC17_Can_CanPostEvent(int8_t controllerIndex) {
+    auto state = reinterpret_cast<CanState*>(&canStates[controllerIndex]);
+    auto currentTime = LPC17_Time_GetCurrentProcessorTime();
+    bool canPost = (currentTime - state->lastEventTime) > CAN_EVENT_POST_DEBOUNCE_TICKS;
+
+    if (canPost) // only update when debounce is over
+        state->lastEventTime = currentTime;
+
+    return canPost;
+}
+
+TinyCLR_Can_Error LPC17_Can_GetError(uint32_t error) {
+    switch (error) {
+    case 1:
+        return TinyCLR_Can_Error::Overrun;
+
+    case 4:
+        return TinyCLR_Can_Error::BusOff;
+
+    case 8:
+        return TinyCLR_Can_Error::Passive;
+
+    default:
+        return TinyCLR_Can_Error::BufferFull;
+    }
+}
+
+void LPC17_Can_EventCallback(const TinyCLR_Task_Manager* self, const TinyCLR_Api_Manager* apiManager, TinyCLR_Task_Reference task, void* arg) {
+    auto state = reinterpret_cast<CanState*>(arg);
+
+    if (task == state->messageReceivedCallbackTaskReference) {
+        if (state->can_rx_count > 0 && state->messageReceivedEventHandler != nullptr) {
+            auto canPostEvent = LPC17_Can_CanPostEvent(state->controllerIndex);
+
+            // First byte or canPost, post immediately asap
+            if ((state->can_rx_count == 1 && state->lastReadRxBufferCount == 0) || canPostEvent) {
+                state->messageReceivedEventHandler(state->controller, state->can_rx_count - state->lastReadRxBufferCount, LPC17_Time_GetSystemTime(nullptr));
+
+                // Clear for next Enqueue
+                state->wasDataReceivedCallbackTaskEnqueued = false;
+            }
+            else {
+                // Couldn't post event on time, scheduel callback to do later.
+                if (state->wasDataReceivedCallbackTaskEnqueued == false) {
+                    state->taskManager->Enqueue(state->taskManager, task, LPC17_Time_GetProcessorTicksForTime(nullptr, CAN_EVENT_POST_DEBOUNCE_TICKS));
+                    state->wasDataReceivedCallbackTaskEnqueued = true;
+                }
+            }
+        }
+    }
+    else if (task == state->errorCallbackTaskReference) {
+        if (state->errorEvent > 0 && state->errorEventHandler != nullptr) {
+            auto canPostEvent = LPC17_Can_CanPostEvent(state->controllerIndex);
+
+            //If new error detected or called by callback and can post event, post the event.
+            if (canPostEvent) {
+                auto error = LPC17_Can_GetError(state->errorEvent);
+                state->errorEventHandler(state->controller, error, LPC17_Time_GetSystemTime(nullptr));
+
+                // Clear error
+                state->errorEvent = 0;
+
+                // Clear for next Enqueue
+                state->wasErrorCallbackTaskEnqueued = false;
+            }
+            else {
+                // Couldn't post event on time, scheduel callback to do later.
+                if (state->wasErrorCallbackTaskEnqueued == false) {
+                    state->taskManager->Enqueue(state->taskManager, task, LPC17_Time_GetProcessorTicksForTime(nullptr, CAN_EVENT_POST_DEBOUNCE_TICKS));
+
+                    state->wasErrorCallbackTaskEnqueued = true;
+                }
+            }
+        }
+    }
+}
+
 TinyCLR_Result LPC17_Can_SetMessageReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_MessageReceivedHandler handler) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    state->messageReceivedEventHandler = handler;
+    if (handler != nullptr) {
+        state->messageReceivedEventHandler = handler;
+        state->taskManager = (const TinyCLR_Task_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::TaskManager);
+        state->taskManager->Create(state->taskManager, LPC17_Can_EventCallback, (void*)state, false, state->messageReceivedCallbackTaskReference);
+    }
+
+    else {
+        if (state->messageReceivedEventHandler != nullptr && state->taskManager != nullptr && state->messageReceivedCallbackTaskReference != nullptr) {
+            state->taskManager->Free(state->taskManager, state->messageReceivedCallbackTaskReference);
+
+            state->messageReceivedEventHandler = nullptr;
+            state->messageReceivedCallbackTaskReference = nullptr;
+        }
+    }
 
     return TinyCLR_Result::Success;
 }
@@ -2658,7 +2789,19 @@ TinyCLR_Result LPC17_Can_SetMessageReceivedHandler(const TinyCLR_Can_Controller*
 TinyCLR_Result LPC17_Can_SetErrorReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_ErrorReceivedHandler handler) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    state->errorEventHandler = handler;
+    if (handler != nullptr) {
+        state->errorEventHandler = handler;
+        state->taskManager = (const TinyCLR_Task_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::TaskManager);
+        state->taskManager->Create(state->taskManager, LPC17_Can_EventCallback, (void*)state, false, state->errorCallbackTaskReference);
+    }
+    else {
+        if (state->errorEventHandler != nullptr && state->taskManager != nullptr && state->errorCallbackTaskReference) {
+            state->taskManager->Free(state->taskManager, state->errorCallbackTaskReference);
+
+            state->errorEventHandler = nullptr;
+            state->errorCallbackTaskReference = nullptr;
+        }
+    }
 
     return TinyCLR_Result::Success;
 }
@@ -2745,6 +2888,7 @@ TinyCLR_Result LPC17_Can_ClearReadBuffer(const TinyCLR_Can_Controller* self) {
     state->can_rx_count = 0;
     state->can_rx_in = 0;
     state->can_rx_out = 0;
+    state->lastReadRxBufferCount = 0;
 
     return TinyCLR_Result::Success;
 }
