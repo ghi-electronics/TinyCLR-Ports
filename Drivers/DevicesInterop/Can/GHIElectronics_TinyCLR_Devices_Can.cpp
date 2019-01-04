@@ -134,12 +134,14 @@ static const TinyCLR_Interop_MethodHandler methods[] = {
     nullptr,
     Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::Acquire___VOID,
     Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::Release___VOID,
+    Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::SetMessageaReceivedEventEnabled___VOID__BOOLEAN,
+    Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::SetErrorReceivedEventEnabled___VOID__BOOLEAN,
     nullptr,
     nullptr,
 };
 
 const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices_Can = {
     "GHIElectronics.TinyCLR.Devices.Can",
-    0x1D600CD4,
+    0x9F850BD1,
     methods
 };
