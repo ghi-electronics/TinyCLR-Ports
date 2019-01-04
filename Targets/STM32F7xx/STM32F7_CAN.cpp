@@ -318,12 +318,12 @@ struct CanState {
     TinyCLR_Can_ErrorReceivedHandler   errorEventHandler;
     TinyCLR_Can_MessageReceivedHandler    messageReceivedEventHandler;
 
-    int32_t can_rx_count;
-    int32_t can_rx_in;
-    int32_t can_rx_out;
+    int32_t rxCount;
+    int32_t rxIn;
+    int32_t rxOut;
 
-    size_t can_rxBufferSize;
-    size_t can_txBufferSize;
+    size_t rxBufferSize;
+    size_t txBufferSize;
 
     uint32_t baudrate;
 
@@ -1112,7 +1112,7 @@ size_t STM32F7_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self) {
 
     auto controllerIndex = state->controllerIndex;
 
-    return state->can_rxBufferSize == 0 ? canDefaultBuffersSize[controllerIndex] : state->can_rxBufferSize;
+    return state->rxBufferSize == 0 ? canDefaultBuffersSize[controllerIndex] : state->rxBufferSize;
 }
 
 TinyCLR_Result STM32F7_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
@@ -1122,11 +1122,11 @@ TinyCLR_Result STM32F7_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self,
     TinyCLR_Result result = TinyCLR_Result::Success;
 
     if (size > CAN_MINIMUM_MESSAGES_LEFT) {
-        state->can_rxBufferSize = size;
+        state->rxBufferSize = size;
         result = TinyCLR_Result::Success;
     }
     else {
-        state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
+        state->rxBufferSize = canDefaultBuffersSize[controllerIndex];
         result = TinyCLR_Result::ArgumentInvalid;
     }
 
@@ -1138,7 +1138,7 @@ TinyCLR_Result STM32F7_Can_SetReadBufferSize(const TinyCLR_Can_Controller* self,
         state->canRxMessagesFifo = nullptr;
     }
 
-    state->canRxMessagesFifo = (STM32F7_Can_Message*)memoryProvider->Allocate(memoryProvider, state->can_rxBufferSize * sizeof(STM32F7_Can_Message));
+    state->canRxMessagesFifo = (STM32F7_Can_Message*)memoryProvider->Allocate(memoryProvider, state->rxBufferSize * sizeof(STM32F7_Can_Message));
 
     if (state->canRxMessagesFifo == nullptr) {
         result = TinyCLR_Result::OutOfMemory;
@@ -1155,7 +1155,7 @@ size_t STM32F7_Can_GetWriteBufferSize(const TinyCLR_Can_Controller* self) {
 TinyCLR_Result STM32F7_Can_SetWriteBufferSize(const TinyCLR_Can_Controller* self, size_t size) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    state->can_txBufferSize = 1;
+    state->txBufferSize = 1;
 
     return size == 1 ? TinyCLR_Result::Success : TinyCLR_Result::NotSupported;
 }
@@ -1230,20 +1230,20 @@ void STM32F7_Can_RxInterruptHandler(int32_t controllerIndex) {
 
     if (!state->enable) return; // Not copy to internal buffer if enable if off
 
-    if (state->can_rx_count == state->can_rxBufferSize) { // Return if internal buffer is full
+    if (state->rxCount == state->rxBufferSize) { // Return if internal buffer is full
         state->errorEvent = 1 << (uint8_t)TinyCLR_Can_Error::BufferFull;
         raiseErrorEvent = true;
 
         // raise event full, buffer is full, no more data receive.
         goto raiseEvent;
     }
-    else if (state->can_rx_count >= state->can_rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
+    else if (state->rxCount >= state->rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
         raiseErrorEvent = true;
         state->errorEvent = 1 << (uint8_t)TinyCLR_Can_Error::BufferFull;
         // No return, continue take CAN_MINIMUM_MESSAGES_LEFT but warning buffer full.
     }
 
-    can_msg = &state->canRxMessagesFifo[state->can_rx_in];
+    can_msg = &state->canRxMessagesFifo[state->rxIn];
 
     can_msg->TimeStampL = t & 0xFFFFFFFF;
 
@@ -1266,11 +1266,11 @@ void STM32F7_Can_RxInterruptHandler(int32_t controllerIndex) {
 
     can_msg->length = len;
 
-    state->can_rx_count++;
-    state->can_rx_in++;
+    state->rxCount++;
+    state->rxIn++;
 
-    if (state->can_rx_in == state->can_rxBufferSize) {
-        state->can_rx_in = 0;
+    if (state->rxIn == state->rxBufferSize) {
+        state->rxIn = 0;
     }
 
 raiseEvent:
@@ -1312,11 +1312,11 @@ TinyCLR_Result STM32F7_Can_Acquire(const TinyCLR_Can_Controller* self) {
         STM32F7_GpioInternal_ConfigurePin(canPins[controllerIndex][CAN_TX_PIN].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, canPins[controllerIndex][CAN_TX_PIN].alternateFunction);
         STM32F7_GpioInternal_ConfigurePin(canPins[controllerIndex][CAN_RX_PIN].number, STM32F7_Gpio_PortMode::AlternateFunction, STM32F7_Gpio_OutputType::PushPull, STM32F7_Gpio_OutputSpeed::High, STM32F7_Gpio_PullDirection::PullUp, canPins[controllerIndex][CAN_RX_PIN].alternateFunction);
 
-        state->can_rx_count = 0;
-        state->can_rx_in = 0;
-        state->can_rx_out = 0;
+        state->rxCount = 0;
+        state->rxIn = 0;
+        state->rxOut = 0;
         state->baudrate = 0;
-        state->can_rxBufferSize = canDefaultBuffersSize[controllerIndex];
+        state->rxBufferSize = canDefaultBuffersSize[controllerIndex];
         state->controller = self;
         state->enable = false;
 
@@ -1452,12 +1452,12 @@ TinyCLR_Result STM32F7_Can_ReadMessage(const TinyCLR_Can_Controller* self, TinyC
 
     uint32_t* data32 = (uint32_t*)data;
 
-    if (state->can_rx_count) {
-        can_msg = &state->canRxMessagesFifo[state->can_rx_out];
-        state->can_rx_out++;
+    if (state->rxCount) {
+        can_msg = &state->canRxMessagesFifo[state->rxOut];
+        state->rxOut++;
 
-        if (state->can_rx_out == state->can_rxBufferSize)
-            state->can_rx_out = 0;
+        if (state->rxOut == state->rxBufferSize)
+            state->rxOut = 0;
 
         arbitrationId = can_msg->MsgID;
         isExtendedId = can_msg->extendedId;
@@ -1472,8 +1472,8 @@ TinyCLR_Result STM32F7_Can_ReadMessage(const TinyCLR_Can_Controller* self, TinyC
         {
             DISABLE_INTERRUPTS_SCOPED(irq);
 
-            state->can_rx_count--;
-            state->lastReadRxBufferCount = state->can_rx_count;
+            state->rxCount--;
+            state->lastReadRxBufferCount = state->rxCount;
         }
     }
 
@@ -1496,7 +1496,7 @@ TinyCLR_Result STM32F7_Can_SetBitTiming(const TinyCLR_Can_Controller* self, cons
 size_t STM32F7_Can_GetMessagesToRead(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    return state->can_rx_count;
+    return state->rxCount;
 }
 
 size_t STM32F7_Can_GetMessagesToWrite(const TinyCLR_Can_Controller* self) {
@@ -1534,12 +1534,12 @@ void STM32F7_Can_EventCallback(const TinyCLR_Task_Manager* self, const TinyCLR_A
     auto state = reinterpret_cast<CanState*>(arg);
 
     if (task == state->messageReceivedCallbackTaskReference) {
-        if (state->can_rx_count > 0 && state->messageReceivedEventHandler != nullptr) {
+        if (state->rxCount > 0 && state->messageReceivedEventHandler != nullptr) {
             auto canPostEvent = STM32F7_Can_CanPostEvent(state->controllerIndex);
 
             // First byte or canPost, post immediately asap
-            if ((state->can_rx_count == 1 && state->lastReadRxBufferCount == 0) || canPostEvent) {
-                state->messageReceivedEventHandler(state->controller, state->can_rx_count - state->lastReadRxBufferCount, STM32F7_Time_GetSystemTime(nullptr));
+            if ((state->rxCount == 1 && state->lastReadRxBufferCount == 0) || canPostEvent) {
+                state->messageReceivedEventHandler(state->controller, state->rxCount - state->lastReadRxBufferCount, STM32F7_Time_GetSystemTime(nullptr));
 
                 // Clear for next Enqueue
                 state->wasDataReceivedCallbackTaskEnqueued = false;
@@ -1698,9 +1698,9 @@ TinyCLR_Result STM32F7_Can_SetGroupFilters(const TinyCLR_Can_Controller* self, c
 TinyCLR_Result STM32F7_Can_ClearReadBuffer(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    state->can_rx_count = 0;
-    state->can_rx_in = 0;
-    state->can_rx_out = 0;
+    state->rxCount = 0;
+    state->rxIn = 0;
+    state->rxOut = 0;
     state->lastReadRxBufferCount = 0;
 
     return TinyCLR_Result::Success;
