@@ -22,6 +22,8 @@
 
 #define CAN_MINIMUM_MESSAGES_LEFT 3
 
+#define CAN_EVENT_POST_DEBOUNCE_TICKS (10 * 10000)
+
 #define CAN_TRANSFER_TIMEOUT 0xFFFF
 
 #define CAN_Mode_Normal             ((uint8_t)0x00)  /*!< normal mode */
@@ -330,6 +332,19 @@ struct CanState {
     uint16_t initializeCount;
 
     bool enable;
+
+    TinyCLR_Task_Reference messageReceivedCallbackTaskReference;
+    bool wasDataReceivedCallbackTaskEnqueued;
+
+    TinyCLR_Task_Reference errorCallbackTaskReference;
+    bool wasErrorCallbackTaskEnqueued;
+
+    const TinyCLR_Task_Manager* taskManager;
+
+    uint64_t lastEventTime;
+    size_t lastReadRxBufferCount;
+
+    uint8_t errorEvent;
 };
 
 #define CAN_TX_PIN 0
@@ -342,6 +357,9 @@ static CanState canStates[TOTAL_CAN_CONTROLLERS];
 
 static TinyCLR_Can_Controller canControllers[TOTAL_CAN_CONTROLLERS];;
 static TinyCLR_Api_Info canApi[TOTAL_CAN_CONTROLLERS];;
+
+void STM32F4_Can_EventCallback(const TinyCLR_Task_Manager* self, const TinyCLR_Api_Manager* apiManager, TinyCLR_Task_Reference task, void* arg);
+bool STM32F4_Can_CanPostEvent(int8_t controllerIndex);
 
 bool InsertionSort2CheckOverlap(uint32_t* lowerBounds, uint32_t* upperBounds, int32_t length) {
 
@@ -998,26 +1016,24 @@ bool CAN_ErrorHandler(uint8_t controllerIndex) {
 
     if (CAN_GetITStatus(CANx, CAN_IT_FF0)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_FF0);
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, STM32F4_Time_GetSystemTime(nullptr));
+        state->errorEvent = 1 << (uint8_t)TinyCLR_Can_Error::BufferFull;
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_FOV0)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_FOV0);
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Overrun, STM32F4_Time_GetSystemTime(nullptr));
+        state->errorEvent = 1 << (uint8_t)TinyCLR_Can_Error::Overrun;
 
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_BOF)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_BOF);
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BusOff, STM32F4_Time_GetSystemTime(nullptr));
-
+        state->errorEvent = 1 << (uint8_t)(uint8_t)TinyCLR_Can_Error::BusOff;
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_EPV)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_EPV);
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, STM32F4_Time_GetSystemTime(nullptr));
-
+        state->errorEvent = 1 << (uint8_t)TinyCLR_Can_Error::Passive;
         return true;
     }
 
@@ -1026,13 +1042,12 @@ bool CAN_ErrorHandler(uint8_t controllerIndex) {
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_ERR)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_ERR);
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, STM32F4_Time_GetSystemTime(nullptr));
-
+        state->errorEvent = 1 << (uint8_t)TinyCLR_Can_Error::Passive;
         return true;
     }
     else if (CAN_GetITStatus(CANx, CAN_IT_EWG)) {
         CAN_ClearITPendingBit(CANx, CAN_IT_EWG);
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::Passive, STM32F4_Time_GetSystemTime(nullptr));
+        state->errorEvent = 1 << (uint8_t)TinyCLR_Can_Error::Passive;
     }
 
     return false;
@@ -1147,6 +1162,8 @@ void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
 
     auto state = reinterpret_cast<CanState*>(&canStates[controllerIndex]);
 
+    auto raiseErrorEvent = false;
+
     uint32_t* pDest;
 
     int32_t len = 0;
@@ -1164,10 +1181,16 @@ void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
 
     uint32_t error = CAN_ErrorHandler(controllerIndex);
 
+    uint64_t t;
+
+    STM32F4_Can_Message *can_msg;
+
     CAN_Receive(CANx, CAN_FIFO0, &rxMessage);
 
-    if (error)
-        return;
+    if (error) {
+        raiseErrorEvent = true;
+        goto raiseEvent;
+    }
 
     len = rxMessage.DLC;
 
@@ -1200,20 +1223,24 @@ void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
     }
 
     // timestamp
-    uint64_t t = STM32F4_Time_GetSystemTime(nullptr);
-
-    if (state->can_rx_count == state->can_rxBufferSize) { // Return if internal buffer is full
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, t);
-
-        return;
-    }
-    else if (state->can_rx_count >= state->can_rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
-        state->errorEventHandler(state->controller, TinyCLR_Can_Error::BufferFull, t);
-    }
+    t = STM32F4_Time_GetSystemTime(nullptr);
 
     if (!state->enable) return; // Not copy to internal buffer if enable if off
 
-    STM32F4_Can_Message *can_msg = &state->canRxMessagesFifo[state->can_rx_in];
+    if (state->can_rx_count == state->can_rxBufferSize) { // Return if internal buffer is full
+        state->errorEvent = 1 << (uint8_t)TinyCLR_Can_Error::BufferFull;
+        raiseErrorEvent = true;
+
+        // raise event full, buffer is full, no more data receive.
+        goto raiseEvent;
+    }
+    else if (state->can_rx_count >= state->can_rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
+        raiseErrorEvent = true;
+        state->errorEvent = 1 << (uint8_t)TinyCLR_Can_Error::BufferFull;
+        // No return, continue take CAN_MINIMUM_MESSAGES_LEFT but warning buffer full.
+    }
+
+    can_msg = &state->canRxMessagesFifo[state->can_rx_in];
 
     can_msg->TimeStampL = t & 0xFFFFFFFF;
 
@@ -1243,12 +1270,11 @@ void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
         state->can_rx_in = 0;
     }
 
-    // If we raise count here, because interrupt faster than raising an event, example there are only 2 messages comming,
-    // the first event will raise 1 message, the second will raise 2 messages in buffer if the first msg isn't read yet.
-    // This cause misunderstanding to user that there are 3 msg totally.
-    state->messageReceivedEventHandler(state->controller, 1, t);
-
-    return;
+raiseEvent:
+    if (raiseErrorEvent)
+        STM32F4_Can_EventCallback(state->taskManager, apiManager, state->errorCallbackTaskReference, (void*)state);
+    else
+        STM32F4_Can_EventCallback(state->taskManager, apiManager, state->messageReceivedCallbackTaskReference, (void*)state);
 }
 
 void STM32F4_Can_TxInterruptHandler0(void *param) {
@@ -1294,6 +1320,16 @@ TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Controller* self) {
         state->canRxMessagesFifo = nullptr;
 
         STM32F4_Can_SetReadBufferSize(self, canDefaultBuffersSize[controllerIndex]);
+
+        state->wasDataReceivedCallbackTaskEnqueued = false;
+        state->wasErrorCallbackTaskEnqueued = false;
+
+        state->lastReadRxBufferCount = 0;
+        state->errorEvent = 0;
+        state->lastEventTime = STM32F4_Time_GetCurrentProcessorTime();
+
+        state->errorEventHandler = nullptr;
+        state->messageReceivedEventHandler = nullptr;
     }
 
     state->initializeCount++;
@@ -1414,15 +1450,11 @@ TinyCLR_Result STM32F4_Can_ReadMessage(const TinyCLR_Can_Controller* self, TinyC
     uint32_t* data32 = (uint32_t*)data;
 
     if (state->can_rx_count) {
-        DISABLE_INTERRUPTS_SCOPED(irq);
-
         can_msg = &state->canRxMessagesFifo[state->can_rx_out];
         state->can_rx_out++;
 
         if (state->can_rx_out == state->can_rxBufferSize)
             state->can_rx_out = 0;
-
-        state->can_rx_count--;
 
         arbitrationId = can_msg->MsgID;
         isExtendedId = can_msg->extendedId;
@@ -1433,6 +1465,13 @@ TinyCLR_Result STM32F4_Can_ReadMessage(const TinyCLR_Can_Controller* self, TinyC
         data32[1] = can_msg->DataB;
 
         timestamp = ((uint64_t)can_msg->TimeStampL) | ((uint64_t)can_msg->TimeStampH << 32);
+
+        {
+            DISABLE_INTERRUPTS_SCOPED(irq);
+
+            state->can_rx_count--;
+            state->lastReadRxBufferCount = state->can_rx_count;
+        }
     }
 
     return TinyCLR_Result::Success;
@@ -1461,10 +1500,100 @@ size_t STM32F4_Can_GetMessagesToWrite(const TinyCLR_Can_Controller* self) {
     return 0;
 }
 
+bool STM32F4_Can_CanPostEvent(int8_t controllerIndex) {
+    auto state = reinterpret_cast<CanState*>(&canStates[controllerIndex]);
+    auto currentTime = STM32F4_Time_GetCurrentProcessorTime();
+    bool canPost = (currentTime - state->lastEventTime) > CAN_EVENT_POST_DEBOUNCE_TICKS;
+
+    if (canPost) // only update when debounce is over
+        state->lastEventTime = currentTime;
+
+    return canPost;
+}
+
+TinyCLR_Can_Error STM32F4_Can_GetError(uint32_t error) {
+    switch (error) {
+    case 1:
+        return TinyCLR_Can_Error::Overrun;
+
+    case 4:
+        return TinyCLR_Can_Error::BusOff;
+
+    case 8:
+        return TinyCLR_Can_Error::Passive;
+
+    default:
+        return TinyCLR_Can_Error::BufferFull;
+    }
+}
+
+void STM32F4_Can_EventCallback(const TinyCLR_Task_Manager* self, const TinyCLR_Api_Manager* apiManager, TinyCLR_Task_Reference task, void* arg) {
+    auto state = reinterpret_cast<CanState*>(arg);
+
+    if (task == state->messageReceivedCallbackTaskReference) {
+        if (state->can_rx_count > 0 && state->messageReceivedEventHandler != nullptr) {
+            auto canPostEvent = STM32F4_Can_CanPostEvent(state->controllerIndex);
+
+            // First byte or canPost, post immediately asap
+            if ((state->can_rx_count == 1 && state->lastReadRxBufferCount == 0) || canPostEvent) {
+                state->messageReceivedEventHandler(state->controller, state->can_rx_count - state->lastReadRxBufferCount, STM32F4_Time_GetSystemTime(nullptr));
+
+                // Clear for next Enqueue
+                state->wasDataReceivedCallbackTaskEnqueued = false;
+            }
+            else {
+                // Couldn't post event on time, scheduel callback to do later.
+                if (state->wasDataReceivedCallbackTaskEnqueued == false) {
+                    state->taskManager->Enqueue(state->taskManager, task, STM32F4_Time_GetProcessorTicksForTime(nullptr, CAN_EVENT_POST_DEBOUNCE_TICKS));
+                    state->wasDataReceivedCallbackTaskEnqueued = true;
+                }
+            }
+        }
+    }
+    else if (task == state->errorCallbackTaskReference) {
+        if (state->errorEvent > 0 && state->errorEventHandler != nullptr) {
+            auto canPostEvent = STM32F4_Can_CanPostEvent(state->controllerIndex);
+
+            //If new error detected or called by callback and can post event, post the event.
+            if (canPostEvent) {
+                auto error = STM32F4_Can_GetError(state->errorEvent);
+                state->errorEventHandler(state->controller, error, STM32F4_Time_GetSystemTime(nullptr));
+
+                // Clear error
+                state->errorEvent = 0;
+
+                // Clear for next Enqueue
+                state->wasErrorCallbackTaskEnqueued = false;
+            }
+            else {
+                // Couldn't post event on time, scheduel callback to do later.
+                if (state->wasErrorCallbackTaskEnqueued == false) {
+                    state->taskManager->Enqueue(state->taskManager, task, STM32F4_Time_GetProcessorTicksForTime(nullptr, CAN_EVENT_POST_DEBOUNCE_TICKS));
+
+                    state->wasErrorCallbackTaskEnqueued = true;
+                }
+            }
+        }
+    }
+}
+
 TinyCLR_Result STM32F4_Can_SetMessageReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_MessageReceivedHandler handler) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    state->messageReceivedEventHandler = handler;
+    if (handler != nullptr) {
+        state->messageReceivedEventHandler = handler;
+        state->taskManager = (const TinyCLR_Task_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::TaskManager);
+        state->taskManager->Create(state->taskManager, STM32F4_Can_EventCallback, (void*)state, false, state->messageReceivedCallbackTaskReference);
+    }
+
+    else {
+        if (state->messageReceivedEventHandler != nullptr && state->taskManager != nullptr && state->messageReceivedCallbackTaskReference != nullptr) {
+            state->taskManager->Free(state->taskManager, state->messageReceivedCallbackTaskReference);
+
+            state->messageReceivedEventHandler = nullptr;
+            state->messageReceivedCallbackTaskReference = nullptr;
+        }
+    }
 
     return TinyCLR_Result::Success;
 }
@@ -1472,7 +1601,19 @@ TinyCLR_Result STM32F4_Can_SetMessageReceivedHandler(const TinyCLR_Can_Controlle
 TinyCLR_Result STM32F4_Can_SetErrorReceivedHandler(const TinyCLR_Can_Controller* self, TinyCLR_Can_ErrorReceivedHandler handler) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
-    state->errorEventHandler = handler;
+    if (handler != nullptr) {
+        state->errorEventHandler = handler;
+        state->taskManager = (const TinyCLR_Task_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::TaskManager);
+        state->taskManager->Create(state->taskManager, STM32F4_Can_EventCallback, (void*)state, false, state->errorCallbackTaskReference);
+    }
+    else {
+        if (state->errorEventHandler != nullptr && state->taskManager != nullptr && state->errorCallbackTaskReference) {
+            state->taskManager->Free(state->taskManager, state->errorCallbackTaskReference);
+
+            state->errorEventHandler = nullptr;
+            state->errorCallbackTaskReference = nullptr;
+        }
+    }
 
     return TinyCLR_Result::Success;
 }
@@ -1556,6 +1697,7 @@ TinyCLR_Result STM32F4_Can_ClearReadBuffer(const TinyCLR_Can_Controller* self) {
     state->can_rx_count = 0;
     state->can_rx_in = 0;
     state->can_rx_out = 0;
+    state->lastReadRxBufferCount = 0;
 
     return TinyCLR_Result::Success;
 }
