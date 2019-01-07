@@ -392,14 +392,8 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     if (api != nullptr) {
-        if (api->Acquire(api) == TinyCLR_Result::Success) {
-            api->SetMessageReceivedHandler(api, TinyCLR_Can_MessageReceivedIsr);
-            api->SetErrorReceivedHandler(api, TinyCLR_Can_ErrorReceivedIsr);
 
-            return TinyCLR_Result::Success;
-        }
-
-        return TinyCLR_Result::SharingViolation;
+        return api->Acquire(api);
     }
 
     return TinyCLR_Result::ArgumentNull;
@@ -409,4 +403,28 @@ TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR
     auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
 
     return api->Release(api);
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::SetMessageaReceivedEventEnabled___VOID__BOOLEAN(const TinyCLR_Interop_MethodData md) {
+    TinyCLR_Interop_ClrValue arg;
+
+    auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
+
+    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg);
+
+    auto enable = arg.Data.Numeric->Boolean;
+
+    return api->SetMessageReceivedHandler(api, enable ? TinyCLR_Can_MessageReceivedIsr : nullptr);
+}
+
+TinyCLR_Result Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_Provider_CanControllerApiWrapper::SetErrorReceivedEventEnabled___VOID__BOOLEAN(const TinyCLR_Interop_MethodData md) {
+    TinyCLR_Interop_ClrValue arg;
+
+    auto api = reinterpret_cast<const TinyCLR_Can_Controller*>(TinyCLR_Interop_GetApi(md, FIELD___impl___I));
+
+    md.InteropManager->GetArgument(md.InteropManager, md.Stack, 0, arg);
+
+    auto enable = arg.Data.Numeric->Boolean;
+
+    return api->SetErrorReceivedHandler(api, enable ? TinyCLR_Can_ErrorReceivedIsr : nullptr);
 }

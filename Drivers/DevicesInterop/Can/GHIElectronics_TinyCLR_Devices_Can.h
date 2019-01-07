@@ -12,9 +12,9 @@ struct Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_CanController {
-    static const size_t FIELD___Provider__BackingField___GHIElectronicsTinyCLRDevicesCanProviderICanControllerProvider = 1;
-    static const size_t FIELD___MessageReceived___GHIElectronicsTinyCLRDevicesCanMessageReceivedEventHandler = 2;
-    static const size_t FIELD___ErrorReceived___GHIElectronicsTinyCLRDevicesCanErrorReceivedEventHandler = 3;
+    static const size_t FIELD___messageReceivedCallbacks___GHIElectronicsTinyCLRDevicesCanMessageReceivedEventHandler = 1;
+    static const size_t FIELD___errorReceivedCallbacks___GHIElectronicsTinyCLRDevicesCanErrorReceivedEventHandler = 2;
+    static const size_t FIELD___Provider__BackingField___GHIElectronicsTinyCLRDevicesCanProviderICanControllerProvider = 3;
 };
 
 struct Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices_Can_CanMessage {
@@ -40,9 +40,9 @@ struct Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices
     static const size_t FIELD___impl___I = 1;
     static const size_t FIELD___messageReceivedDispatcher___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeNativeEventDispatcher = 2;
     static const size_t FIELD___errorReceivedDispatcher___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeNativeEventDispatcher = 3;
-    static const size_t FIELD___Api__BackingField___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeApi = 4;
-    static const size_t FIELD___MessageReceived___GHIElectronicsTinyCLRDevicesCanMessageReceivedEventHandler = 5;
-    static const size_t FIELD___ErrorReceived___GHIElectronicsTinyCLRDevicesCanErrorReceivedEventHandler = 6;
+    static const size_t FIELD___messageReceivedCallbacks___GHIElectronicsTinyCLRDevicesCanMessageReceivedEventHandler = 4;
+    static const size_t FIELD___errorReceivedCallbacks___GHIElectronicsTinyCLRDevicesCanErrorReceivedEventHandler = 5;
+    static const size_t FIELD___Api__BackingField___GHIElectronicsTinyCLRNativeGHIElectronicsTinyCLRNativeApi = 6;
 
     static TinyCLR_Result get_WriteBufferSize___I4(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result set_WriteBufferSize___VOID__I4(const TinyCLR_Interop_MethodData md);
@@ -66,6 +66,8 @@ struct Interop_GHIElectronics_TinyCLR_Devices_Can_GHIElectronics_TinyCLR_Devices
     static TinyCLR_Result ClearReadBuffer___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Acquire___VOID(const TinyCLR_Interop_MethodData md);
     static TinyCLR_Result Release___VOID(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result SetMessageaReceivedEventEnabled___VOID__BOOLEAN(const TinyCLR_Interop_MethodData md);
+    static TinyCLR_Result SetErrorReceivedEventEnabled___VOID__BOOLEAN(const TinyCLR_Interop_MethodData md);
 };
 
 extern const TinyCLR_Interop_Assembly Interop_GHIElectronics_TinyCLR_Devices_Can;
