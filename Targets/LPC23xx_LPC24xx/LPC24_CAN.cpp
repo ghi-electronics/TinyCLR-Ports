@@ -2337,6 +2337,7 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
     LPC24_Can_Message *can_msg;
 
     auto raiseErrorEvent = false;
+    auto raiseMessageReceivedEvent = false;
 
     bool error = LPC24_Can_ErrorHandler(controllerIndex);
 
@@ -2445,10 +2446,13 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
         state->rxIn = 0;
     }
 
+    raiseMessageReceivedEvent = true;
+
 raiseEvent:
     if (raiseErrorEvent)
         LPC24_Can_EventCallback(state->taskManager, apiManager, state->errorCallbackTaskReference, (void*)state);
-    else
+
+    if (raiseMessageReceivedEvent)
         LPC24_Can_EventCallback(state->taskManager, apiManager, state->messageReceivedCallbackTaskReference, (void*)state);
 }
 void LPC24_Can_RxInterruptHandler(void *param) {

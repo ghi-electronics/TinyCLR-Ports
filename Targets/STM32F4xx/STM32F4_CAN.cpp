@@ -1163,6 +1163,7 @@ void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
     auto state = reinterpret_cast<CanState*>(&canStates[controllerIndex]);
 
     auto raiseErrorEvent = false;
+    auto raiseMessageReceivedEvent = false;
 
     uint32_t* pDest;
 
@@ -1270,10 +1271,13 @@ void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
         state->rxIn = 0;
     }
 
+    raiseMessageReceivedEvent = true;
+
 raiseEvent:
     if (raiseErrorEvent)
         STM32F4_Can_EventCallback(state->taskManager, apiManager, state->errorCallbackTaskReference, (void*)state);
-    else
+
+    if (raiseMessageReceivedEvent)
         STM32F4_Can_EventCallback(state->taskManager, apiManager, state->messageReceivedCallbackTaskReference, (void*)state);
 }
 
