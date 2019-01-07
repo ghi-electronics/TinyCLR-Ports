@@ -284,6 +284,7 @@ void STM32F4_Uart_InterruptHandler(int8_t controllerIndex) {
         // Still read latest data
         // Read data also clear error status
         auto data = (uint8_t)(state->portReg->DR);
+        auto raiseDataReceived = false;
 
         if (sr & USART_SR_RXNE) {
             state->rxBuffer[state->rxBufferIn++] = data;
@@ -294,6 +295,8 @@ void STM32F4_Uart_InterruptHandler(int8_t controllerIndex) {
 
             if (state->rxBufferIn == state->rxBufferSize)
                 state->rxBufferIn = 0;
+
+            raiseDataReceived = true;
         }
 
         if (state->rxBufferCount == state->rxBufferSize) {
@@ -319,9 +322,9 @@ void STM32F4_Uart_InterruptHandler(int8_t controllerIndex) {
             // Task callback will decide post the event immediately or delay
             STM32F4_Uart_EventCallback(state->taskManager, apiManager, state->errorCallbackTaskReference, (void*)state);
         }
-        
-        if (sr & USART_SR_RXNE) {
-            // Task callback will decide post the event immediately or delay           
+
+        if (raiseDataReceived) {
+            // Task callback will decide post the event immediately or delay
             STM32F4_Uart_EventCallback(state->taskManager, apiManager, state->dataReceivedCallbackTaskReference, (void*)state);
         }
     }

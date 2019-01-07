@@ -286,6 +286,7 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
         // Still read latest data
        // Read data also clear error status
         auto data = (uint8_t)(state->portReg->RDR); // read RX data
+        auto raiseDataReceived = false;
 
         if (sr & USART_ISR_RXNE) {
             state->rxBuffer[state->rxBufferIn++] = data;
@@ -296,6 +297,8 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
 
             if (state->rxBufferIn == state->rxBufferSize)
                 state->rxBufferIn = 0;
+
+            raiseDataReceived = true;
         }
 
         if (state->rxBufferCount == state->rxBufferSize) {
@@ -325,7 +328,7 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
             STM32F7_Uart_EventCallback(state->taskManager, apiManager, state->errorCallbackTaskReference, (void*)state);
         }
 
-        if (sr & USART_ISR_RXNE) {
+        if (raiseDataReceived) {
             // Task callback will decide post the event immediately or delay
             STM32F7_Uart_EventCallback(state->taskManager, apiManager, state->dataReceivedCallbackTaskReference, (void*)state);
         }
@@ -707,7 +710,7 @@ TinyCLR_Result STM32F7_Uart_Release(const TinyCLR_Uart_Controller* self) {
 #ifdef UART9
         else if (controllerIndex == 8) {
             RCC->APB2ENR &= ~RCC_APB2ENR_UART9EN;
-        }
+    }
 #endif
 #endif
 #endif
@@ -736,7 +739,7 @@ TinyCLR_Result STM32F7_Uart_Release(const TinyCLR_Uart_Controller* self) {
             STM32F7_GpioInternal_ClosePin(uartPins[controllerIndex][UART_CTS_PIN].number);
             STM32F7_GpioInternal_ClosePin(uartPins[controllerIndex][UART_RTS_PIN].number);
         }
-    }
+}
 
     return TinyCLR_Result::Success;
 }
