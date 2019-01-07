@@ -314,11 +314,11 @@ void AT91SAM9X35_Uart_ReceiveData(int32_t controllerIndex, uint32_t sr) {
         usart.US_CR = AT91SAM9X35_USART::US_TXEN;
     }
 
-    // If Data Rx and Error happen at same time, Error event has higher priority.
-    // Raise the error first so user know dataEvent comes after may wrong.
+    // If Error is detected, raise error first to let user know that data come after may not accurated.
     if (raiseErrorReceived)
         AT91SAM9X35_Uart_EventCallback(state->taskManager, apiManager, state->errorCallbackTaskReference, (void*)state);
-    else if (raiseDataReceived)
+    
+    if (raiseDataReceived)
         AT91SAM9X35_Uart_EventCallback(state->taskManager, apiManager, state->dataReceivedCallbackTaskReference, (void*)state);
 
     // Control rts by software - enable / disable when internal buffer reach 3/4

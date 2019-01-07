@@ -505,11 +505,11 @@ void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
                     raiseErrorReceived = true;
                 }
 
-                // If Data Rx and Error happen at same time, Error event has higher priority.
-                // Raise the error first so user know dataEvent comes after may wrong.
+                // If Error is detected, raise error first to let user know that data come after may not accurated.
                 if (raiseErrorReceived)
                     LPC17_Uart_EventCallback(state->taskManager, apiManager, state->errorCallbackTaskReference, (void*)state);
-                else if (raiseDataReceived)
+
+                if (raiseDataReceived)
                     // Task callback will decide post the event immediately or delay
                     LPC17_Uart_EventCallback(state->taskManager, apiManager, state->dataReceivedCallbackTaskReference, (void*)state);
 

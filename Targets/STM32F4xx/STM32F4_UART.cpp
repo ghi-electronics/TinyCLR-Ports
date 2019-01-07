@@ -302,12 +302,7 @@ void STM32F4_Uart_InterruptHandler(int8_t controllerIndex) {
             error = true;
         }
 
-        if (!error && (sr & USART_SR_RXNE)) {
-            // Task callback will decide post the event immediately or delay
-            // If Data Rx and Error happen at same time, Error event has higher priority.
-            STM32F4_Uart_EventCallback(state->taskManager, apiManager, state->dataReceivedCallbackTaskReference, (void*)state);
-        }
-
+        // If Error is detected, raise error first to let user know that data come after may not accurated.
         if (error) {
             if (sr & USART_SR_ORE) {
                 state->errorEvent = 1 << (uint8_t)TinyCLR_Uart_Error::Overrun;
@@ -323,6 +318,11 @@ void STM32F4_Uart_InterruptHandler(int8_t controllerIndex) {
 
             // Task callback will decide post the event immediately or delay
             STM32F4_Uart_EventCallback(state->taskManager, apiManager, state->errorCallbackTaskReference, (void*)state);
+        }
+        
+        if (sr & USART_SR_RXNE) {
+            // Task callback will decide post the event immediately or delay           
+            STM32F4_Uart_EventCallback(state->taskManager, apiManager, state->dataReceivedCallbackTaskReference, (void*)state);
         }
     }
 

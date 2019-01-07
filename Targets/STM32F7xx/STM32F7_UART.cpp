@@ -304,12 +304,7 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
             error = true;
         }
 
-        if (!error && (sr & USART_ISR_RXNE)) {
-            // Task callback will decide post the event immediately or delay
-            // If Data Rx and Error happen at same time, Error event has higher priority.
-            STM32F7_Uart_EventCallback(state->taskManager, apiManager, state->dataReceivedCallbackTaskReference, (void*)state);
-        }
-
+        // If Error is detected, raise error first to let user know that data come after may not accurated.
         if (error) {
             if (sr & USART_ISR_ORE) {
                 state->portReg->ICR |= USART_ISR_ORE;
@@ -328,6 +323,11 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
 
             // Task callback will decide post the event immediately or delay
             STM32F7_Uart_EventCallback(state->taskManager, apiManager, state->errorCallbackTaskReference, (void*)state);
+        }
+
+        if (sr & USART_ISR_RXNE) {
+            // Task callback will decide post the event immediately or delay
+            STM32F7_Uart_EventCallback(state->taskManager, apiManager, state->dataReceivedCallbackTaskReference, (void*)state);
         }
     }
 
