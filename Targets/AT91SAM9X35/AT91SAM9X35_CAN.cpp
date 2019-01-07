@@ -1285,6 +1285,7 @@ bool CAN_RxInitialize(int8_t controllerIndex) {
 void CopyMessageFromMailBoxToBuffer(uint8_t controllerIndex, uint32_t dwMsr) {
     auto state = &canStates[controllerIndex];
     auto raiseErrorEvent = false;
+    auto raiseMessageReceivedEvent = false;
 
     sCand *pCand = &state->cand;
 
@@ -1375,10 +1376,13 @@ void CopyMessageFromMailBoxToBuffer(uint8_t controllerIndex, uint32_t dwMsr) {
         state->rxIn = 0;
     }
 
+    raiseMessageReceivedEvent = true;
+
 raiseEvent:
     if (raiseErrorEvent)
         AT91SAM9X35_Can_EventCallback(state->taskManager, apiManager, state->errorCallbackTaskReference, (void*)state);
-    else
+
+    if (raiseMessageReceivedEvent)
         AT91SAM9X35_Can_EventCallback(state->taskManager, apiManager, state->messageReceivedCallbackTaskReference, (void*)state);
 }
 
@@ -1553,6 +1557,9 @@ TinyCLR_Result AT91SAM9X35_Can_Acquire(const TinyCLR_Can_Controller* self) {
 
         state->errorEventHandler = nullptr;
         state->messageReceivedEventHandler = nullptr;
+
+        state->canDataFilter.matchFiltersSize = 0;
+        state->canDataFilter.groupFiltersSize = 0;
     }
 
     state->initializeCount++;
@@ -1580,11 +1587,15 @@ TinyCLR_Result AT91SAM9X35_Can_Release(const TinyCLR_Can_Controller* self) {
         AT91SAM9X35_GpioInternal_ClosePin(canPins[controllerIndex][CAN_TX_PIN].number);
         AT91SAM9X35_GpioInternal_ClosePin(canPins[controllerIndex][CAN_RX_PIN].number);
 
+        // Release memory
         if (state->canRxMessagesFifo != nullptr) {
             memoryProvider->Free(memoryProvider, state->canRxMessagesFifo);
 
             state->canRxMessagesFifo = nullptr;
         }
+
+        AT91SAM9X35_Can_SetMessageReceivedHandler(self, nullptr);
+        AT91SAM9X35_Can_SetErrorReceivedHandler(self, nullptr);
 
         CAN_DisableExplicitFilters(controllerIndex);
         CAN_DisableGroupFilters(controllerIndex);

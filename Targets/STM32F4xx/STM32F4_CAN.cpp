@@ -1104,6 +1104,38 @@ void STM32F4_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
     }
 }
 
+void CAN_DisableExplicitFilters(int32_t controllerIndex) {
+    DISABLE_INTERRUPTS_SCOPED(irq);
+
+    auto state = &canStates[controllerIndex];
+
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+    if (state->canDataFilter.matchFiltersSize && state->canDataFilter.matchFilters != nullptr) {
+        memoryProvider->Free(memoryProvider, state->canDataFilter.matchFilters);
+
+        state->canDataFilter.matchFiltersSize = 0;
+    }
+}
+
+void CAN_DisableGroupFilters(int32_t controllerIndex) {
+    DISABLE_INTERRUPTS_SCOPED(irq);
+
+    auto state = &canStates[controllerIndex];
+
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+    if (state->canDataFilter.groupFiltersSize) {
+        if (state->canDataFilter.lowerBoundFilters != nullptr)
+            memoryProvider->Free(memoryProvider, state->canDataFilter.lowerBoundFilters);
+
+        if (state->canDataFilter.upperBoundFilters != nullptr)
+            memoryProvider->Free(memoryProvider, state->canDataFilter.upperBoundFilters);
+
+        state->canDataFilter.groupFiltersSize = 0;
+    }
+}
+
 size_t STM32F4_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
@@ -1157,12 +1189,13 @@ TinyCLR_Result STM32F4_Can_SetWriteBufferSize(const TinyCLR_Can_Controller* self
     return size == 1 ? TinyCLR_Result::Success : TinyCLR_Result::NotSupported;
 }
 
-void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
+void STM32F4_Can_RxInterruptHandler(int32_t controllerIndex) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     auto state = reinterpret_cast<CanState*>(&canStates[controllerIndex]);
 
     auto raiseErrorEvent = false;
+    auto raiseMessageReceivedEvent = false;
 
     uint32_t* pDest;
 
@@ -1270,10 +1303,13 @@ void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
         state->rxIn = 0;
     }
 
+    raiseMessageReceivedEvent = true;
+
 raiseEvent:
     if (raiseErrorEvent)
         STM32F4_Can_EventCallback(state->taskManager, apiManager, state->errorCallbackTaskReference, (void*)state);
-    else
+
+    if (raiseMessageReceivedEvent)
         STM32F4_Can_EventCallback(state->taskManager, apiManager, state->messageReceivedCallbackTaskReference, (void*)state);
 }
 
@@ -1286,11 +1322,11 @@ void STM32F4_Can_TxInterruptHandler1(void *param) {
 }
 
 void STM32F4_Can_RxInterruptHandler0(void *param) {
-    STM32_Can_RxInterruptHandler(0);
+    STM32F4_Can_RxInterruptHandler(0);
 }
 
 void STM32F4_Can_RxInterruptHandler1(void *param) {
-    STM32_Can_RxInterruptHandler(1);
+    STM32F4_Can_RxInterruptHandler(1);
 }
 
 TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Controller* self) {
@@ -1330,6 +1366,9 @@ TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Controller* self) {
 
         state->errorEventHandler = nullptr;
         state->messageReceivedEventHandler = nullptr;
+        
+        state->canDataFilter.matchFiltersSize = 0;
+        state->canDataFilter.groupFiltersSize = 0;
     }
 
     state->initializeCount++;
@@ -1352,6 +1391,7 @@ TinyCLR_Result STM32F4_Can_Release(const TinyCLR_Can_Controller* self) {
 
         self->Disable(self);
 
+        // Release memory
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
         if (state->canRxMessagesFifo != nullptr) {
@@ -1359,6 +1399,12 @@ TinyCLR_Result STM32F4_Can_Release(const TinyCLR_Can_Controller* self) {
 
             state->canRxMessagesFifo = nullptr;
         }
+
+        STM32F4_Can_SetMessageReceivedHandler(self, nullptr);
+        STM32F4_Can_SetErrorReceivedHandler(self, nullptr);
+
+        CAN_DisableExplicitFilters(controllerIndex);
+        CAN_DisableGroupFilters(controllerIndex);
 
         STM32F4_GpioInternal_ClosePin(canPins[controllerIndex][CAN_TX_PIN].number);
         STM32F4_GpioInternal_ClosePin(canPins[controllerIndex][CAN_RX_PIN].number);

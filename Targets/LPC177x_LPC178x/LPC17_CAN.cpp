@@ -2336,6 +2336,7 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
     LPC17_Can_Message *can_msg;
 
     auto raiseErrorEvent = false;
+    auto raiseMessageReceivedEvent = false;
 
     bool error = LPC17_Can_ErrorHandler(controllerIndex);
 
@@ -2444,10 +2445,13 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
         state->rxIn = 0;
     }
 
+    raiseMessageReceivedEvent = true;
+
 raiseEvent:
     if (raiseErrorEvent)
         LPC17_Can_EventCallback(state->taskManager, apiManager, state->errorCallbackTaskReference, (void*)state);
-    else
+
+    if (raiseMessageReceivedEvent)
         LPC17_Can_EventCallback(state->taskManager, apiManager, state->messageReceivedCallbackTaskReference, (void*)state);
 }
 
@@ -2505,6 +2509,9 @@ TinyCLR_Result LPC17_Can_Acquire(const TinyCLR_Can_Controller* self) {
 
         state->errorEventHandler = nullptr;
         state->messageReceivedEventHandler = nullptr;
+
+        state->canDataFilter.matchFiltersSize = 0;
+        state->canDataFilter.groupFiltersSize = 0;
     }
 
     state->initializeCount++;
@@ -2529,11 +2536,15 @@ TinyCLR_Result LPC17_Can_Release(const TinyCLR_Can_Controller* self) {
 
         self->Disable(self);
 
+        // Release memory
         if (state->canRxMessagesFifo != nullptr) {
             memoryProvider->Free(memoryProvider, state->canRxMessagesFifo);
 
             state->canRxMessagesFifo = nullptr;
         }
+
+        LPC17_Can_SetMessageReceivedHandler(self, nullptr);
+        LPC17_Can_SetErrorReceivedHandler(self, nullptr);
 
         CAN_DisableExplicitFilters(controllerIndex);
         CAN_DisableGroupFilters(controllerIndex);
