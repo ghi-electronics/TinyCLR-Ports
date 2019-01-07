@@ -1584,11 +1584,15 @@ TinyCLR_Result AT91SAM9X35_Can_Release(const TinyCLR_Can_Controller* self) {
         AT91SAM9X35_GpioInternal_ClosePin(canPins[controllerIndex][CAN_TX_PIN].number);
         AT91SAM9X35_GpioInternal_ClosePin(canPins[controllerIndex][CAN_RX_PIN].number);
 
+        // Release memory
         if (state->canRxMessagesFifo != nullptr) {
             memoryProvider->Free(memoryProvider, state->canRxMessagesFifo);
 
             state->canRxMessagesFifo = nullptr;
         }
+
+        AT91SAM9X35_Can_SetMessageReceivedHandler(self, nullptr);
+        AT91SAM9X35_Can_SetErrorReceivedHandler(self, nullptr);
 
         CAN_DisableExplicitFilters(controllerIndex);
         CAN_DisableGroupFilters(controllerIndex);

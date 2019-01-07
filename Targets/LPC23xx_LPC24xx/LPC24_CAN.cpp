@@ -2532,11 +2532,15 @@ TinyCLR_Result LPC24_Can_Release(const TinyCLR_Can_Controller* self) {
 
         self->Disable(self);
 
+        // Release memory
         if (state->canRxMessagesFifo != nullptr) {
             memoryProvider->Free(memoryProvider, state->canRxMessagesFifo);
 
             state->canRxMessagesFifo = nullptr;
         }
+
+        LPC24_Can_SetMessageReceivedHandler(self, nullptr);
+        LPC24_Can_SetErrorReceivedHandler(self, nullptr);
 
         CAN_DisableExplicitFilters(controllerIndex);
         CAN_DisableGroupFilters(controllerIndex);

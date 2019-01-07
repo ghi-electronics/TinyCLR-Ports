@@ -1356,6 +1356,7 @@ TinyCLR_Result STM32F4_Can_Release(const TinyCLR_Can_Controller* self) {
 
         self->Disable(self);
 
+        // Release memory
         auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
         if (state->canRxMessagesFifo != nullptr) {
@@ -1363,6 +1364,9 @@ TinyCLR_Result STM32F4_Can_Release(const TinyCLR_Can_Controller* self) {
 
             state->canRxMessagesFifo = nullptr;
         }
+
+        STM32F4_Can_SetMessageReceivedHandler(self, nullptr);
+        STM32F4_Can_SetErrorReceivedHandler(self, nullptr);
 
         STM32F4_GpioInternal_ClosePin(canPins[controllerIndex][CAN_TX_PIN].number);
         STM32F4_GpioInternal_ClosePin(canPins[controllerIndex][CAN_RX_PIN].number);
