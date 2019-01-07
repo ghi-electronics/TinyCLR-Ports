@@ -1189,7 +1189,7 @@ TinyCLR_Result STM32F4_Can_SetWriteBufferSize(const TinyCLR_Can_Controller* self
     return size == 1 ? TinyCLR_Result::Success : TinyCLR_Result::NotSupported;
 }
 
-void STM32_Can_RxInterruptHandler(int32_t controllerIndex) {
+void STM32F4_Can_RxInterruptHandler(int32_t controllerIndex) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     auto state = reinterpret_cast<CanState*>(&canStates[controllerIndex]);
@@ -1322,11 +1322,11 @@ void STM32F4_Can_TxInterruptHandler1(void *param) {
 }
 
 void STM32F4_Can_RxInterruptHandler0(void *param) {
-    STM32_Can_RxInterruptHandler(0);
+    STM32F4_Can_RxInterruptHandler(0);
 }
 
 void STM32F4_Can_RxInterruptHandler1(void *param) {
-    STM32_Can_RxInterruptHandler(1);
+    STM32F4_Can_RxInterruptHandler(1);
 }
 
 TinyCLR_Result STM32F4_Can_Acquire(const TinyCLR_Can_Controller* self) {
