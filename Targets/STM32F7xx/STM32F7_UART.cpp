@@ -710,10 +710,11 @@ TinyCLR_Result STM32F7_Uart_Release(const TinyCLR_Uart_Controller* self) {
 #ifdef UART9
         else if (controllerIndex == 8) {
             RCC->APB2ENR &= ~RCC_APB2ENR_UART9EN;
-    }
+        }
 #endif
 #endif
 #endif
+        // Release memory
         if (apiManager != nullptr) {
             auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
@@ -730,6 +731,9 @@ TinyCLR_Result STM32F7_Uart_Release(const TinyCLR_Uart_Controller* self) {
             }
         }
 
+        STM32F7_Uart_SetErrorReceivedHandler(self, nullptr);
+        STM32F7_Uart_SetDataReceivedHandler(self, nullptr);
+
         STM32F7_GpioInternal_ClosePin(uartPins[controllerIndex][UART_RXD_PIN].number);
         STM32F7_GpioInternal_ClosePin(uartPins[controllerIndex][UART_TXD_PIN].number);
 
@@ -739,7 +743,7 @@ TinyCLR_Result STM32F7_Uart_Release(const TinyCLR_Uart_Controller* self) {
             STM32F7_GpioInternal_ClosePin(uartPins[controllerIndex][UART_CTS_PIN].number);
             STM32F7_GpioInternal_ClosePin(uartPins[controllerIndex][UART_RTS_PIN].number);
         }
-}
+    }
 
     return TinyCLR_Result::Success;
 }

@@ -293,7 +293,7 @@ TinyCLR_Result LPC24_Uart_PinConfiguration(int controllerIndex, bool enable) {
     return TinyCLR_Result::Success;
 }
 
-void LPC24_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t IIR_Value) {    
+void LPC24_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t IIR_Value) {
     DISABLE_INTERRUPTS_SCOPED(irq);
 
     LPC24XX_USART& USARTC = LPC24XX::UART(controllerIndex);
@@ -729,6 +729,8 @@ TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Controller* self) {
             LPC24XX::SYSCON().PCONP &= ~PCONP_PCUART3;
             break;
         }
+
+        // Release memory
         if (apiManager != nullptr) {
             auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
@@ -744,6 +746,9 @@ TinyCLR_Result LPC24_Uart_Release(const TinyCLR_Uart_Controller* self) {
                 state->rxBuffer = nullptr;
             }
         }
+
+        LPC24_Uart_SetErrorReceivedHandler(self, nullptr);
+        LPC24_Uart_SetDataReceivedHandler(self, nullptr);
     }
 
     return TinyCLR_Result::Success;

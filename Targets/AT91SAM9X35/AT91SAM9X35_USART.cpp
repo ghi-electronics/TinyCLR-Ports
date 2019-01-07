@@ -317,7 +317,7 @@ void AT91SAM9X35_Uart_ReceiveData(int32_t controllerIndex, uint32_t sr) {
     // If Error is detected, raise error first to let user know that data come after may not accurated.
     if (raiseErrorReceived)
         AT91SAM9X35_Uart_EventCallback(state->taskManager, apiManager, state->errorCallbackTaskReference, (void*)state);
-    
+
     if (raiseDataReceived)
         AT91SAM9X35_Uart_EventCallback(state->taskManager, apiManager, state->dataReceivedCallbackTaskReference, (void*)state);
 
@@ -615,6 +615,7 @@ TinyCLR_Result AT91SAM9X35_Uart_Release(const TinyCLR_Uart_Controller* self) {
 
         pmc.DisablePeriphClock(uartId);
 
+        // Release memory
         if (apiManager != nullptr) {
             auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
@@ -630,6 +631,9 @@ TinyCLR_Result AT91SAM9X35_Uart_Release(const TinyCLR_Uart_Controller* self) {
                 state->rxBuffer = nullptr;
             }
         }
+
+        AT91SAM9X35_Uart_SetErrorReceivedHandler(self, nullptr);
+        AT91SAM9X35_Uart_SetDataReceivedHandler(self, nullptr);
 
         state->handshaking = false;
     }

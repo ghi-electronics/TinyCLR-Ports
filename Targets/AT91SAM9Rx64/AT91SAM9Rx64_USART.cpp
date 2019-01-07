@@ -615,6 +615,7 @@ TinyCLR_Result AT91SAM9Rx64_Uart_Release(const TinyCLR_Uart_Controller* self) {
 
         pmc.DisablePeriphClock(uartId);
 
+        // Release memory
         if (apiManager != nullptr) {
             auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
@@ -630,6 +631,9 @@ TinyCLR_Result AT91SAM9Rx64_Uart_Release(const TinyCLR_Uart_Controller* self) {
                 state->rxBuffer = nullptr;
             }
         }
+
+        AT91SAM9Rx64_Uart_SetErrorReceivedHandler(self, nullptr);
+        AT91SAM9Rx64_Uart_SetDataReceivedHandler(self, nullptr);
 
         state->handshaking = false;
     }

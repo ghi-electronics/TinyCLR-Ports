@@ -720,6 +720,7 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Controller* self) {
 #endif
 #endif
 #endif
+        // Release memory
         if (apiManager != nullptr) {
             auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
@@ -735,6 +736,9 @@ TinyCLR_Result STM32F4_Uart_Release(const TinyCLR_Uart_Controller* self) {
                 state->rxBuffer = nullptr;
             }
         }
+
+        STM32F4_Uart_SetErrorReceivedHandler(self, nullptr);
+        STM32F4_Uart_SetDataReceivedHandler(self, nullptr);
 
         STM32F4_GpioInternal_ClosePin(uartPins[controllerIndex][UART_RXD_PIN].number);
         STM32F4_GpioInternal_ClosePin(uartPins[controllerIndex][UART_TXD_PIN].number);

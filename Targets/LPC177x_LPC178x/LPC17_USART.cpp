@@ -870,6 +870,8 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Controller* self) {
         state->rxBufferCount = 0;
         state->rxBufferIn = 0;
         state->rxBufferOut = 0;
+
+        // Release memory
         if (apiManager != nullptr) {
             auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
@@ -885,6 +887,9 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Controller* self) {
                 state->rxBuffer = nullptr;
             }
         }
+
+        LPC17_Uart_SetErrorReceivedHandler(self, nullptr);
+        LPC17_Uart_SetDataReceivedHandler(self, nullptr);
 
         LPC17_Uart_PinConfiguration(controllerIndex, false);
 
