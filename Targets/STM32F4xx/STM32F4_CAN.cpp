@@ -1104,6 +1104,38 @@ void STM32F4_Can_AddApi(const TinyCLR_Api_Manager* apiManager) {
     }
 }
 
+void CAN_DisableExplicitFilters(int32_t controllerIndex) {
+    DISABLE_INTERRUPTS_SCOPED(irq);
+
+    auto state = &canStates[controllerIndex];
+
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+    if (state->canDataFilter.matchFiltersSize && state->canDataFilter.matchFilters != nullptr) {
+        memoryProvider->Free(memoryProvider, state->canDataFilter.matchFilters);
+
+        state->canDataFilter.matchFiltersSize = 0;
+    }
+}
+
+void CAN_DisableGroupFilters(int32_t controllerIndex) {
+    DISABLE_INTERRUPTS_SCOPED(irq);
+
+    auto state = &canStates[controllerIndex];
+
+    auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
+
+    if (state->canDataFilter.groupFiltersSize) {
+        if (state->canDataFilter.lowerBoundFilters != nullptr)
+            memoryProvider->Free(memoryProvider, state->canDataFilter.lowerBoundFilters);
+
+        if (state->canDataFilter.upperBoundFilters != nullptr)
+            memoryProvider->Free(memoryProvider, state->canDataFilter.upperBoundFilters);
+
+        state->canDataFilter.groupFiltersSize = 0;
+    }
+}
+
 size_t STM32F4_Can_GetReadBufferSize(const TinyCLR_Can_Controller* self) {
     auto state = reinterpret_cast<CanState*>(self->ApiInfo->State);
 
@@ -1367,6 +1399,9 @@ TinyCLR_Result STM32F4_Can_Release(const TinyCLR_Can_Controller* self) {
 
         STM32F4_Can_SetMessageReceivedHandler(self, nullptr);
         STM32F4_Can_SetErrorReceivedHandler(self, nullptr);
+
+        CAN_DisableExplicitFilters(controllerIndex);
+        CAN_DisableGroupFilters(controllerIndex);
 
         STM32F4_GpioInternal_ClosePin(canPins[controllerIndex][CAN_TX_PIN].number);
         STM32F4_GpioInternal_ClosePin(canPins[controllerIndex][CAN_RX_PIN].number);
