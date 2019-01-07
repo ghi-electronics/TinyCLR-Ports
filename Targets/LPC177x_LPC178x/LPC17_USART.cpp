@@ -505,11 +505,11 @@ void LPC17_Uart_ReceiveData(int controllerIndex, uint32_t LSR_Value, uint32_t II
                     raiseErrorReceived = true;
                 }
 
-                // If Data Rx and Error happen at same time, Error event has higher priority.
-                // Raise the error first so user know dataEvent comes after may wrong.
+                // If Error is detected, raise error first to let user know that data come after may not accurated.
                 if (raiseErrorReceived)
                     LPC17_Uart_EventCallback(state->taskManager, apiManager, state->errorCallbackTaskReference, (void*)state);
-                else if (raiseDataReceived)
+
+                if (raiseDataReceived)
                     // Task callback will decide post the event immediately or delay
                     LPC17_Uart_EventCallback(state->taskManager, apiManager, state->dataReceivedCallbackTaskReference, (void*)state);
 
@@ -870,6 +870,8 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Controller* self) {
         state->rxBufferCount = 0;
         state->rxBufferIn = 0;
         state->rxBufferOut = 0;
+
+        // Release memory
         if (apiManager != nullptr) {
             auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
@@ -885,6 +887,9 @@ TinyCLR_Result LPC17_Uart_Release(const TinyCLR_Uart_Controller* self) {
                 state->rxBuffer = nullptr;
             }
         }
+
+        LPC17_Uart_SetErrorReceivedHandler(self, nullptr);
+        LPC17_Uart_SetDataReceivedHandler(self, nullptr);
 
         LPC17_Uart_PinConfiguration(controllerIndex, false);
 
@@ -1075,12 +1080,15 @@ void LPC17_Uart_EventCallback(const TinyCLR_Task_Manager* self, const TinyCLR_Ap
                 // Clear for next Enqueue
                 state->wasDataReceivedCallbackTaskEnqueued = false;
             }
-            else {
-                // Couldn't post event on time, scheduel callback to do later.
-                if (state->wasDataReceivedCallbackTaskEnqueued == false) {
-                    state->taskManager->Enqueue(state->taskManager, task, LPC17_Time_GetProcessorTicksForTime(nullptr, USART_EVENT_POST_DEBOUNCE_TICKS));
-                    state->wasDataReceivedCallbackTaskEnqueued = true;
-                }
+
+            // If already scheduled => ignored, make sure no more than one event within USART_EVENT_POST_DEBOUNCE_TICKS
+            // If not scheduled and event posted (by wasDataReceivedCallbackTaskEnqueued = false),
+            //      schedule one more callback to be sure that no missing last interrupt for the case (!canPostEvent)
+            //      and Uart_Read didn't read all data in buffer (because state->rxBufferCount is updated by last interrupt)
+            // Last callback will do nothing if no data left by "if (state->rxBufferCount > 0...)" above.
+            if (state->wasDataReceivedCallbackTaskEnqueued == false) {
+                state->taskManager->Enqueue(state->taskManager, task, LPC17_Time_GetProcessorTicksForTime(nullptr, USART_EVENT_POST_DEBOUNCE_TICKS));
+                state->wasDataReceivedCallbackTaskEnqueued = true;
             }
         }
     }

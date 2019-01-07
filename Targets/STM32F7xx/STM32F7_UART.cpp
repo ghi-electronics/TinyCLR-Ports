@@ -286,6 +286,7 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
         // Still read latest data
        // Read data also clear error status
         auto data = (uint8_t)(state->portReg->RDR); // read RX data
+        auto raiseDataReceived = false;
 
         if (sr & USART_ISR_RXNE) {
             state->rxBuffer[state->rxBufferIn++] = data;
@@ -296,6 +297,8 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
 
             if (state->rxBufferIn == state->rxBufferSize)
                 state->rxBufferIn = 0;
+
+            raiseDataReceived = true;
         }
 
         if (state->rxBufferCount == state->rxBufferSize) {
@@ -304,12 +307,7 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
             error = true;
         }
 
-        if (!error && (sr & USART_ISR_RXNE)) {
-            // Task callback will decide post the event immediately or delay
-            // If Data Rx and Error happen at same time, Error event has higher priority.
-            STM32F7_Uart_EventCallback(state->taskManager, apiManager, state->dataReceivedCallbackTaskReference, (void*)state);
-        }
-
+        // If Error is detected, raise error first to let user know that data come after may not accurated.
         if (error) {
             if (sr & USART_ISR_ORE) {
                 state->portReg->ICR |= USART_ISR_ORE;
@@ -328,6 +326,11 @@ void STM32F7_Uart_InterruptHandler(int8_t controllerIndex) {
 
             // Task callback will decide post the event immediately or delay
             STM32F7_Uart_EventCallback(state->taskManager, apiManager, state->errorCallbackTaskReference, (void*)state);
+        }
+
+        if (raiseDataReceived) {
+            // Task callback will decide post the event immediately or delay
+            STM32F7_Uart_EventCallback(state->taskManager, apiManager, state->dataReceivedCallbackTaskReference, (void*)state);
         }
     }
 
@@ -711,6 +714,7 @@ TinyCLR_Result STM32F7_Uart_Release(const TinyCLR_Uart_Controller* self) {
 #endif
 #endif
 #endif
+        // Release memory
         if (apiManager != nullptr) {
             auto memoryProvider = (const TinyCLR_Memory_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::MemoryManager);
 
@@ -726,6 +730,9 @@ TinyCLR_Result STM32F7_Uart_Release(const TinyCLR_Uart_Controller* self) {
                 state->rxBuffer = nullptr;
             }
         }
+
+        STM32F7_Uart_SetErrorReceivedHandler(self, nullptr);
+        STM32F7_Uart_SetDataReceivedHandler(self, nullptr);
 
         STM32F7_GpioInternal_ClosePin(uartPins[controllerIndex][UART_RXD_PIN].number);
         STM32F7_GpioInternal_ClosePin(uartPins[controllerIndex][UART_TXD_PIN].number);
@@ -908,12 +915,15 @@ void STM32F7_Uart_EventCallback(const TinyCLR_Task_Manager* self, const TinyCLR_
                 // Clear for next Enqueue
                 state->wasDataReceivedCallbackTaskEnqueued = false;
             }
-            else {
-                // Couldn't post event on time, scheduel callback to do later.
-                if (state->wasDataReceivedCallbackTaskEnqueued == false) {
-                    state->taskManager->Enqueue(state->taskManager, task, STM32F7_Time_GetProcessorTicksForTime(nullptr, USART_EVENT_POST_DEBOUNCE_TICKS));
-                    state->wasDataReceivedCallbackTaskEnqueued = true;
-                }
+
+            // If already scheduled => ignored, make sure no more than one event within USART_EVENT_POST_DEBOUNCE_TICKS
+            // If not scheduled and event posted (by wasDataReceivedCallbackTaskEnqueued = false),
+            //      schedule one more callback to be sure that no missing last interrupt for the case (!canPostEvent)
+            //      and Uart_Read didn't read all data in buffer (because state->rxBufferCount is updated by last interrupt)
+            // Last callback will do nothing if no data left by "if (state->rxBufferCount > 0...)" above.
+            if (state->wasDataReceivedCallbackTaskEnqueued == false) {
+                state->taskManager->Enqueue(state->taskManager, task, STM32F7_Time_GetProcessorTicksForTime(nullptr, USART_EVENT_POST_DEBOUNCE_TICKS));
+                state->wasDataReceivedCallbackTaskEnqueued = true;
             }
         }
     }

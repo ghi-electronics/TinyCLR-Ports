@@ -1805,12 +1805,15 @@ void AT91SAM9X35_Can_EventCallback(const TinyCLR_Task_Manager* self, const TinyC
                 // Clear for next Enqueue
                 state->wasDataReceivedCallbackTaskEnqueued = false;
             }
-            else {
-                // Couldn't post event on time, scheduel callback to do later.
-                if (state->wasDataReceivedCallbackTaskEnqueued == false) {
-                    state->taskManager->Enqueue(state->taskManager, task, AT91SAM9X35_Time_GetProcessorTicksForTime(nullptr, CAN_EVENT_POST_DEBOUNCE_TICKS));
-                    state->wasDataReceivedCallbackTaskEnqueued = true;
-                }
+
+            // If already scheduled => ignored, make sure no more than one event within CAN_EVENT_POST_DEBOUNCE_TICKS
+            // If not scheduled and event posted (by wasDataReceivedCallbackTaskEnqueued = false),
+            //      schedule one more callback to be sure that no missing last interrupt for the case (!canPostEvent)
+            //      and ReadMessage didn't read all data in buffer (because state->rxCount is updated by last interrupt)
+            // Last callback will do nothing if no data left by "if (state->rxCount > 0...)" above.
+            if (state->wasDataReceivedCallbackTaskEnqueued == false) {
+                state->taskManager->Enqueue(state->taskManager, task, AT91SAM9X35_Time_GetProcessorTicksForTime(nullptr, CAN_EVENT_POST_DEBOUNCE_TICKS));
+                state->wasDataReceivedCallbackTaskEnqueued = true;
             }
         }
     }
