@@ -1557,6 +1557,9 @@ TinyCLR_Result AT91SAM9X35_Can_Acquire(const TinyCLR_Can_Controller* self) {
 
         state->errorEventHandler = nullptr;
         state->messageReceivedEventHandler = nullptr;
+
+        state->canDataFilter.matchFiltersSize = 0;
+        state->canDataFilter.groupFiltersSize = 0;
     }
 
     state->initializeCount++;
