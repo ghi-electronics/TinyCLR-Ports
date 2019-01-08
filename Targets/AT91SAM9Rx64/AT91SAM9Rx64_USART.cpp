@@ -722,15 +722,9 @@ TinyCLR_Result AT91SAM9Rx64_Uart_Write(const TinyCLR_Uart_Controller* self, cons
         return TinyCLR_Result::NotAvailable;
     }
 
-    if (state->txBufferCount == state->txBufferSize) {
-        if (state->errorEventHandler != nullptr)
-            state->errorEventHandler(state->controller, TinyCLR_Uart_Error::BufferFull, AT91SAM9Rx64_Time_GetSystemTime(nullptr));
-
-        return TinyCLR_Result::Busy;
-    }
-
     length = std::min(state->txBufferSize - state->txBufferCount, length);
 
+    if (length == 0) return TinyCLR_Result::Success; // Return Success with nothing written;
 
     while (i < length) {
 
