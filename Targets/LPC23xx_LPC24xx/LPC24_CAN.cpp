@@ -2033,15 +2033,12 @@ struct CanState {
     bool enable;
 
     TinyCLR_Task_Reference messageReceivedCallbackTaskReference;
-    bool wasDataReceivedCallbackTaskEnqueued;
-
     TinyCLR_Task_Reference errorCallbackTaskReference;
-    bool wasErrorCallbackTaskEnqueued;
 
     const TinyCLR_Task_Manager* taskManager;
 
-    uint64_t lastEventTime;
-    size_t lastReadRxBufferCount;
+    size_t lastRxTime;
+    size_t lastEventRxBufferCount;
 
     uint8_t errorEvent;
 };
@@ -2336,9 +2333,6 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
     uint64_t t;
     LPC24_Can_Message *can_msg;
 
-    auto raiseErrorEvent = false;
-    auto raiseMessageReceivedEvent = false;
-
     bool error = LPC24_Can_ErrorHandler(controllerIndex);
 
     // filter
@@ -2376,28 +2370,20 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
             C2CMR = 0x04; // release receive buffer
 
         state->errorEvent = 1 << (uint8_t)TinyCLR_Can_Error::BufferFull;
-        raiseErrorEvent = true;
-
-        // raise event full, buffer is full, no more data receive.
-        goto raiseEvent;
     }
     else if (state->rxCount >= state->rxBufferSize - CAN_MINIMUM_MESSAGES_LEFT) { // Raise full event soon when internal buffer has only 3 availble msg left
-        raiseErrorEvent = true;
         state->errorEvent = 1 << (uint8_t)TinyCLR_Can_Error::BufferFull;
-        // No return, continue take CAN_MINIMUM_MESSAGES_LEFT but warning buffer full.
     }
 
-    if (!state->enable) return; // Not copy to internal buffer if enable if off
-
-
+    if (!state->enable)
+        return; // Not copy to internal buffer if enable if off
 
     if (error) {
-        raiseErrorEvent = true;
-        goto raiseEvent;
+        return;
     }
 
     // initialize destination pointer
-    can_msg = &state->canRxMessagesFifo[state->rxIn];
+    can_msg = &state->canRxMessagesFifo[state->rxIn++];
 
     can_msg->timeStampL = t & 0xFFFFFFFF;
     can_msg->timeStampH = t >> 32;
@@ -2439,21 +2425,26 @@ void CAN_ISR_Rx(int32_t controllerIndex) {
         can_msg->dataB = dataB; // Data B
     }
 
-    state->rxCount++;
-    state->rxIn++;
+    if (state->rxCount < state->rxBufferSize) {
+        state->rxCount++;        
+    }
 
     if (state->rxIn == state->rxBufferSize) {
         state->rxIn = 0;
     }
 
-    raiseMessageReceivedEvent = true;
+    if (state->messageReceivedEventHandler != nullptr) {
+        auto now = t;
 
-raiseEvent:
-    if (raiseErrorEvent)
-        LPC24_Can_EventCallback(state->taskManager, apiManager, state->errorCallbackTaskReference, (void*)state);
+        state->lastEventRxBufferCount++;
 
-    if (raiseMessageReceivedEvent)
-        LPC24_Can_EventCallback(state->taskManager, apiManager, state->messageReceivedCallbackTaskReference, (void*)state);
+        if (now > (state->lastRxTime + CAN_EVENT_POST_DEBOUNCE_TICKS)) {
+            state->messageReceivedEventHandler(state->controller, state->lastEventRxBufferCount, now);
+            state->lastEventRxBufferCount = 0;
+        }
+
+        state->lastRxTime = now;
+    }
 }
 void LPC24_Can_RxInterruptHandler(void *param) {
     DISABLE_INTERRUPTS_SCOPED(irq);
@@ -2500,12 +2491,9 @@ TinyCLR_Result LPC24_Can_Acquire(const TinyCLR_Can_Controller* self) {
 
         LPC24_Can_SetReadBufferSize(self, canDefaultBuffersSize[controllerIndex]);
 
-        state->wasDataReceivedCallbackTaskEnqueued = false;
-        state->wasErrorCallbackTaskEnqueued = false;
-
-        state->lastReadRxBufferCount = 0;
+        state->lastRxTime = 0;
+        state->lastEventRxBufferCount = 0;
         state->errorEvent = 0;
-        state->lastEventTime = LPC24_Time_GetCurrentProcessorTime();
 
         state->errorEventHandler = nullptr;
         state->messageReceivedEventHandler = nullptr;
@@ -2665,8 +2653,7 @@ TinyCLR_Result LPC24_Can_ReadMessage(const TinyCLR_Can_Controller* self, TinyCLR
         {
             DISABLE_INTERRUPTS_SCOPED(irq);
 
-            state->rxCount--;
-            state->lastReadRxBufferCount = state->rxCount;
+            state->rxCount--;                        
         }
     }
 
@@ -2699,17 +2686,6 @@ size_t LPC24_Can_GetMessagesToWrite(const TinyCLR_Can_Controller* self) {
     return 0;
 }
 
-bool LPC24_Can_CanPostEvent(int8_t controllerIndex) {
-    auto state = reinterpret_cast<CanState*>(&canStates[controllerIndex]);
-    auto currentTime = LPC24_Time_GetCurrentProcessorTime();
-    bool canPost = (currentTime - state->lastEventTime) > CAN_EVENT_POST_DEBOUNCE_TICKS;
-
-    if (canPost) // only update when debounce is over
-        state->lastEventTime = currentTime;
-
-    return canPost;
-}
-
 TinyCLR_Can_Error LPC24_Can_GetError(uint32_t error) {
     switch (error) {
     case 1:
@@ -2730,52 +2706,33 @@ void LPC24_Can_EventCallback(const TinyCLR_Task_Manager* self, const TinyCLR_Api
     auto state = reinterpret_cast<CanState*>(arg);
 
     if (task == state->messageReceivedCallbackTaskReference) {
-        if (state->rxCount > 0 && state->messageReceivedEventHandler != nullptr) {
-            auto canPostEvent = LPC24_Can_CanPostEvent(state->controllerIndex);
+        size_t latestCount = 0;
 
-            // First byte or canPost, post immediately asap
-            if ((state->rxCount == 1 && state->lastReadRxBufferCount == 0) || canPostEvent) {
-                state->messageReceivedEventHandler(state->controller, state->rxCount - state->lastReadRxBufferCount, LPC24_Time_GetSystemTime(nullptr));
-
-                // Clear for next Enqueue
-                state->wasDataReceivedCallbackTaskEnqueued = false;
-            }
-
-            // If already scheduled => ignored, make sure no more than one event within CAN_EVENT_POST_DEBOUNCE_TICKS
-            // If not scheduled and event posted (by wasDataReceivedCallbackTaskEnqueued = false),
-            //      schedule one more callback to be sure that no missing last interrupt for the case (!canPostEvent)
-            //      and ReadMessage didn't read all data in buffer (because state->rxCount is updated by last interrupt)
-            // Last callback will do nothing if no data left by "if (state->rxCount > 0...)" above.
-            if (state->wasDataReceivedCallbackTaskEnqueued == false) {
-                state->taskManager->Enqueue(state->taskManager, task, LPC24_Time_GetProcessorTicksForTime(nullptr, CAN_EVENT_POST_DEBOUNCE_TICKS));
-                state->wasDataReceivedCallbackTaskEnqueued = true;
-            }
+        {
+            DISABLE_INTERRUPTS_SCOPED(irq);
+            latestCount = state->lastEventRxBufferCount;
+            state->lastEventRxBufferCount = 0;
         }
+
+        if (latestCount > 0 && state->messageReceivedEventHandler != nullptr) {
+            state->messageReceivedEventHandler(state->controller, latestCount, LPC24_Time_GetSystemTime(nullptr));
+        }
+
+        state->taskManager->Enqueue(state->taskManager, task, LPC24_Time_GetProcessorTicksForTime(nullptr, CAN_EVENT_POST_DEBOUNCE_TICKS));
     }
     else if (task == state->errorCallbackTaskReference) {
-        if (state->errorEvent > 0 && state->errorEventHandler != nullptr) {
-            auto canPostEvent = LPC24_Can_CanPostEvent(state->controllerIndex);
+        uint8_t latestError = 0;
 
-            //If new error detected or called by callback and can post event, post the event.
-            if (canPostEvent) {
-                auto error = LPC24_Can_GetError(state->errorEvent);
-                state->errorEventHandler(state->controller, error, LPC24_Time_GetSystemTime(nullptr));
-
-                // Clear error
-                state->errorEvent = 0;
-
-                // Clear for next Enqueue
-                state->wasErrorCallbackTaskEnqueued = false;
-            }
-            else {
-                // Couldn't post event on time, scheduel callback to do later.
-                if (state->wasErrorCallbackTaskEnqueued == false) {
-                    state->taskManager->Enqueue(state->taskManager, task, LPC24_Time_GetProcessorTicksForTime(nullptr, CAN_EVENT_POST_DEBOUNCE_TICKS));
-
-                    state->wasErrorCallbackTaskEnqueued = true;
-                }
-            }
+        {
+            DISABLE_INTERRUPTS_SCOPED(irq);
+            latestError = state->errorEvent;
+            state->errorEvent = 0;
         }
+
+        if ((latestError != 0) && state->errorEventHandler != nullptr) {
+            state->errorEventHandler(state->controller, LPC24_Can_GetError(latestError), LPC24_Time_GetSystemTime(nullptr));
+        }
+        state->taskManager->Enqueue(state->taskManager, task, LPC24_Time_GetProcessorTicksForTime(nullptr, CAN_EVENT_POST_DEBOUNCE_TICKS));
     }
 }
 
@@ -2786,6 +2743,7 @@ TinyCLR_Result LPC24_Can_SetMessageReceivedHandler(const TinyCLR_Can_Controller*
         state->messageReceivedEventHandler = handler;
         state->taskManager = (const TinyCLR_Task_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::TaskManager);
         state->taskManager->Create(state->taskManager, LPC24_Can_EventCallback, (void*)state, false, state->messageReceivedCallbackTaskReference);
+        state->taskManager->Enqueue(state->taskManager, state->messageReceivedCallbackTaskReference, LPC24_Time_GetProcessorTicksForTime(nullptr, CAN_EVENT_POST_DEBOUNCE_TICKS));
     }
 
     else {
@@ -2807,6 +2765,7 @@ TinyCLR_Result LPC24_Can_SetErrorReceivedHandler(const TinyCLR_Can_Controller* s
         state->errorEventHandler = handler;
         state->taskManager = (const TinyCLR_Task_Manager*)apiManager->FindDefault(apiManager, TinyCLR_Api_Type::TaskManager);
         state->taskManager->Create(state->taskManager, LPC24_Can_EventCallback, (void*)state, false, state->errorCallbackTaskReference);
+        state->taskManager->Enqueue(state->taskManager, state->errorCallbackTaskReference, LPC24_Time_GetProcessorTicksForTime(nullptr, CAN_EVENT_POST_DEBOUNCE_TICKS));
     }
     else {
         if (state->errorEventHandler != nullptr && state->taskManager != nullptr && state->errorCallbackTaskReference) {
@@ -2819,7 +2778,6 @@ TinyCLR_Result LPC24_Can_SetErrorReceivedHandler(const TinyCLR_Can_Controller* s
 
     return TinyCLR_Result::Success;
 }
-
 TinyCLR_Result LPC24_Can_SetExplicitFilters(const TinyCLR_Can_Controller* self, const uint32_t* filters, size_t count) {
     uint32_t *_matchFilters;
 
@@ -2901,8 +2859,8 @@ TinyCLR_Result LPC24_Can_ClearReadBuffer(const TinyCLR_Can_Controller* self) {
 
     state->rxCount = 0;
     state->rxIn = 0;
-    state->rxOut = 0;
-    state->lastReadRxBufferCount = 0;
+    state->rxOut = 0;    
+    state->lastEventRxBufferCount = 0;
 
     return TinyCLR_Result::Success;
 }
