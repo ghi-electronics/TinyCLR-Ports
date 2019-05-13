@@ -80,7 +80,7 @@
 #define TOTAL_SPI_CONTROLLERS 2
 #define STM32F4_SPI_PINS {/*         MOSI                    MISO                   CLOCK*/                \
                           /*SPI0*/{ { PIN(B,  5), AF(5) },  { PIN(B,  4), AF(5) }, { PIN(B, 3) , AF(5) } },\
-                          /*SPI1*/{ { PIN(B, 15), AF(5) },  { PIN(B, 14), AF(5) }, { PIN(B, 3) , AF(5) } },\
+                          /*SPI1*/{ { PIN(B, 15), AF(5) },  { PIN(B, 14), AF(5) }, { PIN(B, 13) , AF(5) } },\
                          }
 
 #define INCLUDE_STORAGE
