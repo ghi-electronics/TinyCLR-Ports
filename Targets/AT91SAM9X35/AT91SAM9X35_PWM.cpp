@@ -376,38 +376,42 @@ TinyCLR_Result AT91SAM9X35_Pwm_SetPulseParameters(const TinyCLR_Pwm_Controller* 
 
     double frequency = state->frequency;
 
-    AT91SAM9X35_Pwm_GetScaleFactor(frequency, period, scale);
+    // We save dutyCycle and polarity to state's variables,
+    // but don't store to PWM registers if frequency is not initialize yet (freq == 0.0)
+    if (frequency > 0.0) {
+        AT91SAM9X35_Pwm_GetScaleFactor(frequency, period, scale);
 
-    switch (scale) {
-    case PWM_MILLISECONDS:
-        convertedPeriod = (period * 1000000);
-        break;
+        switch (scale) {
+        case PWM_MILLISECONDS:
+            convertedPeriod = (period * 1000000);
+            break;
 
-    case PWM_MICROSECONDS:
-        convertedPeriod = (period * 1000);
-        break;
+        case PWM_MICROSECONDS:
+            convertedPeriod = (period * 1000);
+            break;
 
-    case PWM_NANOSECONDS:
-        convertedPeriod = period;
-        break;
+        case PWM_NANOSECONDS:
+            convertedPeriod = period;
+            break;
+        }
+
+        AT91SAM9X35_Pwm_GetDivider(convertedPeriod, divider, registerDividerFlag);
+
+        if (divider > 0)
+            convertedPeriod = AT91SAM9X35_Pwm_GetPeriod(self, convertedPeriod, divider);
+
+        convertedDuration = (uint32_t)(dutyCycle * convertedPeriod);
+
+        // Flips the pulse
+        if (polarity == TinyCLR_Pwm_PulsePolarity::ActiveLow)
+            pulseBeginsOnHighEdge = 1;
+        else
+            pulseBeginsOnHighEdge = 0;
+
+        *state->channelModeReg = (volatile unsigned long)(registerDividerFlag | (pulseBeginsOnHighEdge << 9) | (1 << 10));
+        *state->channelUpdateReg = (volatile unsigned long)(convertedPeriod / (divider * 7.5));
+        *state->dutyCycleReg = (volatile unsigned long)(convertedDuration / (divider * 7.5));
     }
-
-    AT91SAM9X35_Pwm_GetDivider(convertedPeriod, divider, registerDividerFlag);
-
-    if (divider > 0)
-        convertedPeriod = AT91SAM9X35_Pwm_GetPeriod(self, convertedPeriod, divider);
-
-    convertedDuration = (uint32_t)(dutyCycle * convertedPeriod);
-
-    // Flips the pulse
-    if (polarity == TinyCLR_Pwm_PulsePolarity::ActiveLow)
-        pulseBeginsOnHighEdge = 1;
-    else
-        pulseBeginsOnHighEdge = 0;
-
-    *state->channelModeReg = (volatile unsigned long)(registerDividerFlag | (pulseBeginsOnHighEdge << 9) | (1 << 10));
-    *state->channelUpdateReg = (volatile unsigned long)(convertedPeriod / (divider * 7.5));
-    *state->dutyCycleReg = (volatile unsigned long)(convertedDuration / (divider * 7.5));
 
     state->invert[channel] = polarity;
     state->dutyCycle[channel] = dutyCycle;
